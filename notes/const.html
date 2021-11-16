@@ -16,7 +16,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Upcoming" href="upcoming.html" />
+    <link rel="next" title="PDK abstraction" href="adding_pdk.html" />
     <link rel="prev" title="Debug" href="debug.html" /> 
 </head>
 
@@ -35,7 +35,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Notes:</span></p>
+              <p class="caption"><span class="caption-text">Get started:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
@@ -73,8 +73,16 @@
 <li class="toctree-l2"><a class="reference internal" href="#example-constraints">Example constraints</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="adding_pdk.html">PDK abstraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#pdk-options">PDK options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-beol-design-rules">Defintion of BEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-feol-design-rules">Defintion of FEOL Design rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adding_pdk.html#cell-generator">Cell generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#standalone-usage">Standalone usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#cell-fabric">Cell fabric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#primitive">Primitive</a></li>
 </ul>
 </li>
 </ul>
@@ -87,6 +95,15 @@
 <li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute to ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#some-example-contributions">Some example contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="success_stories.html">ALIGN gallery</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Package Reference</span></p>
 <ul>
@@ -147,7 +164,9 @@
              
   <div class="section" id="constraints">
 <h1>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h1>
-<p>The ALIGN flow generates symmetry constraints automatically but designers can add their own constraint for better control.
+<p>Analog designers uses constraints to achieve best performance from a layout.</p>
+<img alt="../_images/constraints.png" src="../_images/constraints.png" />
+<p>The ALIGN flow identifies symmetries and array structures in the design and generate layout constraints automatically but designers can add their own constraint for better control.
 Here, are the list of constraints used in align. These constraints are applied on the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
 These constraints need to be defined seperately for each of the hierachies with name <code class="docutils literal notranslate"><span class="pre">&lt;hier</span> <span class="pre">name&gt;.const.json</span></code>, defined in the schematic.</p>
 <div class="section" id="constraint-options">
@@ -574,7 +593,7 @@ Only works on NMOS/PMOS/CAP/RES</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="debug.html" class="btn btn-neutral float-left" title="Debug" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="upcoming.html" class="btn btn-neutral float-right" title="Upcoming" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="adding_pdk.html" class="btn btn-neutral float-right" title="PDK abstraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

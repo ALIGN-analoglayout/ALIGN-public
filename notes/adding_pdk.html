@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDK abstraction &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Constraints" href="const.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/LOGO.PNG" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Get started:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="flow.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-0-check-prerequisites">Step 0: Check prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-1-clone-the-align-source-code-to-your-local-environment">Step 1: Clone the ALIGN source code to your local environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-2-create-a-python-virtualenv">Step 2: Create a Python virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3a-install-align-as-a-user">Step 3a: Install ALIGN as a USER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-3b-install-align-as-a-developer">Step 3b: Install ALIGN as a DEVELOPER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-4-run-align">Step 4: Run ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#step-5-view-layout">Step 5: View layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction by Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Layout viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#klayout-viewer">KLayout viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#align-viewer">ALIGN viewer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#reinstalling-align">Reinstalling ALIGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#warnings-that-can-be-ignored">Warnings that can be ignored:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="const.html">Constraints</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="const.html#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="const.html#example-constraints">Example constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PDK abstraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pdk-options">PDK options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#defintion-of-beol-design-rules">Defintion of BEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#defintion-of-feol-design-rules">Defintion of FEOL Design rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#cell-generator">Cell generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#standalone-usage">Standalone usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cell-fabric">Cell fabric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#primitive">Primitive</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Datasets:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="database.html#sized-netlists">Sized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#unsized-netlists">Unsized netlists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="database.html#generalized-testbenches">Generalized testbenches</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute to ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#some-example-contributions">Some example contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="success_stories.html">ALIGN gallery</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.html">align package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.cell_fabric.html">align.cell_fabric package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ALIGN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>PDK abstraction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notes/adding_pdk.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="pdk-abstraction">
+<h1>PDK abstraction<a class="headerlink" href="#pdk-abstraction" title="Permalink to this headline">¶</a></h1>
+<p>ALIGN uses a gridded mock <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK">PDK</a> which mimics a FinFET PDK to generate layouts.
+It follows a similar gridded structure for <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK">bulk echnology nodes</a> .
+A DPK information can be divided into three critical groups: Front End of Line (FEOL), Back End of Line (BEOL), and packaging.
+ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts.</p>
+<div class="section" id="pdk-options">
+<h2>PDK options<a class="headerlink" href="#pdk-options" title="Permalink to this headline">¶</a></h2>
+<p>List of PDKs options available for users.
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK">FinFET14nm_Mock_PDK</a>
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK">Bulk65nm_Mock_PDK</a></p>
+</div>
+<div class="section" id="defintion-of-beol-design-rules">
+<h2>Defintion of BEOL Design rules<a class="headerlink" href="#defintion-of-beol-design-rules" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Layer</strong>: Defines name of a layer e.g. Poly, M1 etc.</p></li>
+<li><p><strong>GdsLayerNo</strong>: This number is used for layer mapping in GDSII generation</p></li>
+<li><p><strong>Direction</strong>: Defines the allowed direction for a layer e.g. V (Vertical) or H (Horizontal); for ‘Via’ layer direction is not applicable</p></li>
+<li><p><strong>Width</strong>:  Defines valid widths for a layer</p></li>
+<li><p><strong>Pitch</strong>: Center-to-Center distance for a same layer (Fig. 1); for ‘Via’ pitch is not applicable</p></li>
+<li><p><strong>EndToEnd</strong>: Minimum end-to-end spacing for a same layer (Fig. 2); NA for ‘Via’ layer</p></li>
+<li><p><strong>Offset</strong>: Defines a layer offset from X or Y- axis; It is shown in Fig. 3 for a layer in V direction</p></li>
+<li><p><strong>MinL</strong>: Minimum required metal length for a metal layer in a defined direction (nm)</p></li>
+<li><p><strong>MaxL</strong>: Maximum allowed metal length for a metal layer in a defined direction (nm)</p></li>
+<li><p><strong>UnitC</strong>: Unit capacitance for a metal layer (pF/nm)</p></li>
+<li><p><strong>UnitCC</strong>: Unit coupling capacitance for a metal layer (pF/nm)</p></li>
+<li><p><strong>UnitR</strong>: Unit resistance for a metal layer (ohm/nm)</p></li>
+<li><p><strong>Color</strong>: List of masks for Double Patterning Technology, DPT</p></li>
+<li><p><strong>SpaceX/SpaceY</strong>: Minimum spacing between Vias along X/Y direction</p></li>
+<li><p><strong>Stack</strong>: Metal layers which are connected using the Via</p></li>
+<li><p><strong>VencA_L/VencA_H</strong> Minimum enclosure of a Via by a lower/higher metal layer along its ‘Direction’</p></li>
+<li><p><strong>VencP_L/VencP_H</strong>:  Minimum enclosure of a Via by a lower/higher metal layer along perpendicular to its ‘Direction’</p></li>
+</ul>
+<img alt="../_images/design_rules.PNG" src="../_images/design_rules.PNG" />
+<img alt="../_images/via_rules.PNG" src="../_images/via_rules.PNG" />
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a metal layer</span>
+<span class="p">{</span>
+<span class="s2">&quot;Layer&quot;</span><span class="p">:</span> <span class="s2">&quot;M2&quot;</span><span class="p">,</span>
+<span class="s2">&quot;GdsLayerNo&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
+<span class="s2">&quot;GdsDatatype&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Draw&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;c1&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;c2&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Pin&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Label&quot;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Blockage&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">},</span>
+<span class="s2">&quot;Direction&quot;</span><span class="p">:</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span>
+<span class="s2">&quot;Color&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c2&quot;</span><span class="p">,</span> <span class="s2">&quot;c1&quot;</span><span class="p">],</span>
+<span class="s2">&quot;Pitch&quot;</span><span class="p">:</span> <span class="mi">84</span><span class="p">,</span>
+<span class="s2">&quot;Width&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+<span class="s2">&quot;MinL&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+<span class="s2">&quot;MaxL&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+<span class="s2">&quot;EndToEnd&quot;</span><span class="p">:</span> <span class="mi">48</span><span class="p">,</span>
+<span class="s2">&quot;Offset&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="s2">&quot;UnitC&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;L_3Sigma&quot;</span><span class="p">:</span><span class="mf">0.16</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;U_3Sigma&quot;</span><span class="p">:</span><span class="mf">0.24</span><span class="p">},</span>
+<span class="s2">&quot;UnitCC&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;L_3Sigma&quot;</span><span class="p">:</span><span class="mf">0.08</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;U_3Sigma&quot;</span><span class="p">:</span><span class="mf">0.12</span><span class="p">},</span>
+<span class="s2">&quot;UnitR&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;L_3Sigma&quot;</span><span class="p">:</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;U_3Sigma&quot;</span><span class="p">:</span><span class="mi">60</span><span class="p">}</span>
+<span class="p">},</span>
+<span class="p">{</span>
+<span class="s2">&quot;Layer&quot;</span><span class="p">:</span> <span class="s2">&quot;V2&quot;</span><span class="p">,</span>
+<span class="s2">&quot;GdsLayerNo&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+<span class="s2">&quot;GdsDatatype&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Draw&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+<span class="s2">&quot;Stack&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;M2&quot;</span><span class="p">,</span> <span class="s2">&quot;M3&quot;</span><span class="p">],</span>
+<span class="s2">&quot;SpaceX&quot;</span><span class="p">:</span> <span class="mi">48</span><span class="p">,</span>
+<span class="s2">&quot;SpaceY&quot;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span>
+<span class="s2">&quot;WidthX&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+<span class="s2">&quot;WidthY&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+<span class="s2">&quot;VencA_L&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+<span class="s2">&quot;VencA_H&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+<span class="s2">&quot;VencP_L&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="s2">&quot;VencP_H&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="s2">&quot;R&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;L_3Sigma&quot;</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;Mean&quot;</span><span class="p">:</span><span class="mi">25</span><span class="p">,</span> <span class="s2">&quot;U_3Sigma&quot;</span><span class="p">:</span><span class="mi">35</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="defintion-of-feol-design-rules">
+<h2>Defintion of FEOL Design rules<a class="headerlink" href="#defintion-of-feol-design-rules" title="Permalink to this headline">¶</a></h2>
+<p>These layers are used by the cell generator and may vary based on the PDK. Our placer and router does not use these layers.
+We are defining here a list of common FEOL layer rules and it is not an exhaustive set. Some technology nodes may have different FEOL layers.</p>
+<ul class="simple">
+<li><p><strong>Layer</strong>: Defines name of a layer e.g. Nwell, Active, Nselect, Pselect, Gcut, Lisd, Rvt, Lvt, Hvt, Boundary etc.</p></li>
+<li><p><strong>PcWidth</strong>: Poly-contact width</p></li>
+<li><p><strong>PcExt</strong>: Poly-contact extension</p></li>
+</ul>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Example technology abstarction for a metal layer</span>
+<span class="p">{</span>
+<span class="s2">&quot;Layer&quot;</span><span class="p">:</span> <span class="s2">&quot;Pc&quot;</span><span class="p">,</span>
+<span class="s2">&quot;GdsLayerNo&quot;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
+<span class="s2">&quot;GdsDatatype&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Draw&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+<span class="s2">&quot;PcWidth&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+<span class="s2">&quot;PcExt&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cell-generator">
+<h1>Cell generator<a class="headerlink" href="#cell-generator" title="Permalink to this headline">¶</a></h1>
+<p>Cell generator creates layout of primitive cells which are common across analog designs such as transistors, differential pairs, current mirrors.
+A list of <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/generators.json">cell generators</a> is available for each PDK.
+ALIGN cell generator can also be used as a standalone tool. The image shows some of the align generated primitives.</p>
+<img alt="../_images/primitives.png" src="../_images/primitives.png" />
+<div class="section" id="standalone-usage">
+<h2>Standalone usage<a class="headerlink" href="#standalone-usage" title="Permalink to this headline">¶</a></h2>
+<p>Individual cells can be generated in ALIGN using primitive generator. During full flow compiler identifies these primitives and
+call primitive generator to create the layout of these primitives.</p>
+<p>ALIGN generated primitives as an array of individual transistors/resistors. The aspect ratio of generated cells can be controlled using Xcells and Ycells parameters.
+There are four basic cell types which are handled using align cell generrator.
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/Align_primitives.py">Transistor</a>
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py">Capacitor</a>
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_Res.py">Resistor</a>.
+* <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_ring.py">Guard ring</a>.</p>
+</div>
+<div class="section" id="cell-fabric">
+<h2>Cell fabric<a class="headerlink" href="#cell-fabric" title="Permalink to this headline">¶</a></h2>
+<p>Cell fabric module defines the common structure for cell generation utilities which are used in the primitive generator. This remains common across PDKs.</p>
+</div>
+<div class="section" id="primitive">
+<h2>Primitive<a class="headerlink" href="#primitive" title="Permalink to this headline">¶</a></h2>
+<p>This module is used to generate the actual primitives (Resistor/Capacitor/Transistor/Via-array/GuardRing) for a PDK.
+These may need to be modified for each PDK based on the available layers. It uses the functions defined in the Cell fabric module to create cell layers.</p>
+<p>Here is an example on how to add a layer for a <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/primitive/default/mos.py">mos generator</a>.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: adding a Poly metal layer</span>
+
+<span class="bp">self</span><span class="o">.</span><span class="n">pl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Wire</span><span class="p">(</span> <span class="s1">&#39;pl&#39;</span><span class="p">,</span> <span class="s1">&#39;Poly&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span>
+                           <span class="n">clg</span><span class="o">=</span><span class="n">UncoloredCenterLineGrid</span><span class="p">(</span> <span class="n">pitch</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Width&#39;</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Offset&#39;</span><span class="p">]),</span>
+                           <span class="n">spg</span><span class="o">=</span><span class="n">SingleGrid</span><span class="p">(</span> <span class="n">offset</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Offset&#39;</span><span class="p">],</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unitCellHeight</span><span class="p">)</span>
+                           <span class="p">)</span>
+                     <span class="p">)</span>
+
+<span class="c1"># Example: adding a Via</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">va</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Via</span><span class="p">(</span> <span class="s1">&#39;va&#39;</span><span class="p">,</span> <span class="s1">&#39;V0&#39;</span><span class="p">,</span>
+                        <span class="n">h_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span>
+                        <span class="n">v_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span>
+                        <span class="n">WidthX</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V0&#39;</span><span class="p">][</span><span class="s1">&#39;WidthX&#39;</span><span class="p">],</span>
+                        <span class="n">WidthY</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V0&#39;</span><span class="p">][</span><span class="s1">&#39;WidthY&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="const.html" class="btn btn-neutral float-left" title="Constraints" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, ALIGN team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Contribute to ALIGN &mdash; ALIGN</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,8 +16,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Database" href="database.html" />
-    <link rel="prev" title="PDK abstraction" href="adding_pdk.html" /> 
+    <link rel="next" title="ALIGN gallery" href="success_stories.html" />
+    <link rel="prev" title="Database" href="database.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -87,8 +87,8 @@
 </li>
 </ul>
 <p class="caption"><span class="caption-text">Datasets:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="database.html">Database</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="database.html#sized-netlists">Sized netlists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="database.html#unsized-netlists">Unsized netlists</a></li>
@@ -97,10 +97,10 @@
 </li>
 </ul>
 <p class="caption"><span class="caption-text">Notes:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute to ALIGN</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contribute.html#some-example-contributions">Some example contributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="contribute.html#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contribute to ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#some-example-contributions">Some example contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="success_stories.html">ALIGN gallery</a></li>
@@ -152,9 +152,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Examples</li>
+      <li>Contribute to ALIGN</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/notes/examples.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/notes/contribute.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -162,19 +162,75 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="contribute-to-align">
+<h1>Contribute to ALIGN<a class="headerlink" href="#contribute-to-align" title="Permalink to this headline">¶</a></h1>
+<p>ALIGN is an open source tool for analog layout generation. We appreciate any contribution to ALIGN.
+Layout generation requires multiple components for the flow to produce a good layout. There are multiple ways you can contribute.</p>
+<div class="section" id="some-example-contributions">
+<h2>Some example contributions<a class="headerlink" href="#some-example-contributions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples">examples</a>: Contains example circuits with netlists running on circleci</p></li>
+<li><p>New analog designs can be added to ALIGN <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/CircuitsDatabase">database</a></p></li>
+<li><p>New open source <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/">PDKs</a></p></li>
+<li><p>New primitives in <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/primitive/main.py">cell generator</a></p></li>
+<li><p>Adding <a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/tests">unit-tests</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/docs">Documentation</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ALIGN-analoglayout/ALIGN-public/issues">Bug-fixes</a></p></li>
+<li><p>Feature recommendations</p></li>
 </ul>
+</div>
+<div class="section" id="install-align-setup-as-a-developer">
+<h2>Install ALIGN setup as a developer<a class="headerlink" href="#install-align-setup-as-a-developer" title="Permalink to this headline">¶</a></h2>
+<p>If you are a developer, you may wish to install align with some additional flags.</p>
+<p>For python developers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -e .<span class="o">[</span>test<span class="o">]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <cite>-e</cite> or <cite>–editable</cite> flag generates links to the align package within your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that below.</p>
+</div>
+<p>For ALIGN (C++) Extension developers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The second command doesn’t just install ALIGN inplace, it also caches generated object files etc. under an <cite>_skbuild</cite> subdirectory. Re-running <cite>pip install -v -e .[test] –no-build-isolation</cite> will reuse this cache to perform an incremental build. We add the <cite>-v</cite> or <cite>–verbose</cite> flag to be able to see build flags in the terminal.</p>
+</div>
+<p>If you want the build-type to be Release (-O3), you can issue the following three lines:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+pip install -v --no-build-isolation -e . --no-deps --install-option<span class="o">=</span><span class="s1">&#39;--build-type=Release&#39;</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install setuptools wheel pybind11 scikit-build cmake ninja
+pip install -v -e .<span class="o">[</span>test<span class="o">]</span> --no-build-isolation
+pip install -v --no-build-isolation -e . --no-deps --install-option<span class="o">=</span><span class="s1">&#39;--build-type=RelWithDebInfo&#39;</span>
+</pre></div>
+</div>
+<p>Use the <cite>Release</cite> mode if you are mostly developing in Python and don’t need the C++ debugging symbols. Use the <cite>RelWithDebInfo</cite> if you need both debug symbols and optimized code.</p>
+<p>To debug runtime issues, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python -m cProfile -o stats <span class="nv">$ALIGN_HOME</span>/bin/schematic2layout.py <span class="nv">$ALIGN_HOME</span>/examples/sc_dc_dc_converter
+</pre></div>
+</div>
+<p>Then in a python shell:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pstats</span>
+<span class="kn">from</span> <span class="nn">pstats</span> <span class="kn">import</span> <span class="n">SortKey</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">pstats</span><span class="o">.</span><span class="n">Stats</span><span class="p">(</span><span class="s1">&#39;stats&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">sort_stats</span><span class="p">(</span><span class="n">SortKey</span><span class="o">.</span><span class="n">TIME</span><span class="p">)</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="adding_pdk.html" class="btn btn-neutral float-left" title="PDK abstraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="database.html" class="btn btn-neutral float-right" title="Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="database.html" class="btn btn-neutral float-left" title="Database" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="success_stories.html" class="btn btn-neutral float-right" title="ALIGN gallery" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
