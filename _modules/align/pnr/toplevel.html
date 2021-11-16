@@ -33,7 +33,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Notes:</span></p>
+              <p class="caption"><span class="caption-text">Get started:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../notes/flow.html">ALIGN: flow</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/flow.html#inputs">Inputs</a></li>
@@ -71,8 +71,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../notes/upcoming.html">Upcoming</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../notes/upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/adding_pdk.html">PDK abstraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#pdk-options">PDK options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#defintion-of-beol-design-rules">Defintion of BEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#defintion-of-feol-design-rules">Defintion of FEOL Design rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/adding_pdk.html#cell-generator">Cell generator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#standalone-usage">Standalone usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#cell-fabric">Cell fabric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/adding_pdk.html#primitive">Primitive</a></li>
 </ul>
 </li>
 </ul>
@@ -85,6 +93,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/database.html#generalized-testbenches">Generalized testbenches</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Notes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/contribute.html">Contribute to ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/contribute.html#some-example-contributions">Some example contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../notes/contribute.html#install-align-setup-as-a-developer">Install ALIGN setup as a developer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notes/success_stories.html">ALIGN gallery</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Package Reference</span></p>
 <ul>
@@ -456,6 +473,8 @@
     <span class="n">hyper</span><span class="o">.</span><span class="n">ALPHA</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hyper</span><span class="o">.</span><span class="n">T_MIN</span><span class="o">/</span><span class="n">hyper</span><span class="o">.</span><span class="n">T_INT</span><span class="p">)</span><span class="o">/</span><span class="mf">1e4</span><span class="p">)</span>
     <span class="c1"># hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations</span>
     <span class="c1"># hyper.ALPHA = 0.99925</span>
+    <span class="c1"># hyper.max_init_trial_count = 10000</span>
+    <span class="c1"># hyper.max_cache_hit_count = 10</span>
     <span class="n">hyper</span><span class="o">.</span><span class="n">SEED</span> <span class="o">=</span> <span class="n">seed</span>  <span class="c1"># if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.</span>
     <span class="c1"># hyper.COUNT_LIMIT = 200</span>
     <span class="n">hyper</span><span class="o">.</span><span class="n">LAMBDA</span> <span class="o">=</span> <span class="n">lambda_coeff</span>
@@ -537,8 +556,11 @@
     <span class="n">placement_verilog_alternatives</span><span class="p">[</span><span class="n">concrete_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaled_placement_verilog_d</span></div>
 
 <div class="viewcode-block" id="per_placement"><a class="viewcode-back" href="../../../modules/align.pnr.html#align.pnr.toplevel.per_placement">[docs]</a><span class="k">def</span> <span class="nf">per_placement</span><span class="p">(</span> <span class="n">placement_verilog_d</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">hN</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">gui</span><span class="p">,</span> <span class="n">opath</span><span class="p">,</span> <span class="n">tagged_bboxes</span><span class="p">,</span> <span class="n">leaf_map</span><span class="p">,</span> <span class="n">placement_verilog_alternatives</span><span class="p">):</span>
-    <span class="n">concrete_name</span> <span class="o">=</span> <span class="n">placement_verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;concrete_name&#39;</span><span class="p">]</span>
-    <span class="n">abstract_name</span> <span class="o">=</span> <span class="n">placement_verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;abstract_name&#39;</span><span class="p">]</span>
+    <span class="n">concrete_names</span> <span class="o">=</span> <span class="p">{</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;concrete_name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">placement_verilog_d</span><span class="p">[</span><span class="s1">&#39;modules&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;abstract_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">hN</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">concrete_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="n">abstract_name</span> <span class="o">=</span> <span class="n">hN</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">concrete_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">concrete_names</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">gui</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Working on </span><span class="si">{</span><span class="n">concrete_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>

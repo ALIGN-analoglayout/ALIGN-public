@@ -11,6 +11,8 @@ The ALIGN flow includes the following steps:
 
 * *Placement and routing* performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete.
 
+.. image:: ../images/architecture.png
+
 Inputs
 ---------
 

@@ -16,7 +16,7 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
 .. toctree::
    :glob:
    :maxdepth: 1
-   :caption: Notes:
+   :caption: Get started:
 
    notes/flow
    notes/installation
@@ -24,7 +24,7 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
    notes/viewer
    notes/debug
    notes/const
-   notes/upcoming
+   notes/adding_pdk
 
 .. toctree::
    :glob:
@@ -33,6 +33,15 @@ The goal of ALIGN is to automatically translate an unannotated (or partially ann
 
    notes/examples
    notes/database
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+   :caption: Notes:
+
+   notes/contribute
+   notes/success_stories
+
 
 .. toctree::
    :glob:
