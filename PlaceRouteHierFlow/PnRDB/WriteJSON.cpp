@@ -434,7 +434,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   json jsonElements = json::array();
 
   int x[5], y[5];
-  int write_blockPins_name = 0;
+  int write_blockPins_name = 1;
   if (write_blockPins_name && node.isTop == 1) {
     for (unsigned int i = 0; i < node.blockPins.size(); i++) {
       int write = 0;
