@@ -1,7 +1,10 @@
 Constraints
 ===========================================================
+Analog designers uses constraints to achieve best performance from a layout.
 
-The ALIGN flow generates symmetry constraints automatically but designers can add their own constraint for better control.
+.. image:: ../images/constraints.png
+
+The ALIGN flow identifies symmetries and array structures in the design and generate layout constraints automatically but designers can add their own constraint for better control.
 Here, are the list of constraints used in align. These constraints are applied on the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
 These constraints need to be defined seperately for each of the hierachies with name ``<hier name>.const.json``, defined in the schematic.
 
