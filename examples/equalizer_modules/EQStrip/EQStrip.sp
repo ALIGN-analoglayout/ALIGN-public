@@ -18,7 +18,8 @@
 	R1 vps vout2_ctle 800
     R0 vps vout1_ctle 800
     R4 n2 n4 3K
-
+    C00 n2 n4 200f
+    C01 n2 n4 200f
 .ends CTLE
 
 .subckt Adder vbiasn vbiasp vps vgnd vin1 vin2 vout
@@ -35,8 +36,8 @@
 
 .subckt AdderWithCC vbiasn vbiasp vps vgnd vin vout
 	X00 vbiasn vbiasp vps vgnd vin1 vin2 vout Adder
-	R0 vin vin1 10000
-	R1 vin vin2 10000
+	C0 vin vin1 200f
+	C1 vin vin2 200f
 .ends AdderWithCC
 
 .subckt Adder2x vbiasn vbiasp vps vgnd vin1 vin2 vout1 vout2
@@ -84,8 +85,28 @@
 	R6 vps vout_vga1 5000
 .ends VGA
 
-.subckt EQStrip vin1 vin2 vout1 vout2 vps vgnd vm_ctle vbn_adder vbp_adder vm_vga s0 s1
+.subckt SDC vbias vd vgnd vin vps vs
+    R2 vbias n1 20000
+    R1 vs vgnd 5000
+    R0 vps vd 5000
+	C0 vin n1 200f
+	C1 vin n1 200f
+    M00 vd n1 net11 vgnd n m=1 l=14n nfin=8 nf=1
+    M01 net11 n1 vs vgnd n m=1 l=14n nfin=8 nf=1
+.ends SDC
+
+.subckt RCCircuit in1 in2 out1 out2
+	C0 in1 n1 200f
+	C1 in2 n2 200f
+	R0 n1 out1 5000
+	R1 n2 out2 5000
+	C2 out1 out2 100f
+.ends RCCircuit
+
+.subckt EQStrip vin vout1 vout2 vps vgnd vm_ctle vbn_adder vbp_adder vm_vga s0 s1 vb_sdc
 	X00 vm_ctle vgnd vin1_ctle vin2_ctle vout1 vout2 vps CTLE
 	X01 vbn_adder vbp_adder vps vgnd vout_vga1 vout_vga2 vin1_ctle vin2_ctle Adder2x
-	X02 vm_vga vin1 vin2 s0 s1 vout_vga1 vout_vga2 vps vgnd VGA
+	X02 vm_vga vout1_RC vout2_RC s0 s1 vout_vga1 vout_vga2 vps vgnd VGA
+	X03 vb_sdc vout1_sdc vgnd vin vps vout2_sdc SDC
+	X04 vout1_sdc vout2_sdc vout1_RC vout2_RC RCCircuit
 .ends EQStrip

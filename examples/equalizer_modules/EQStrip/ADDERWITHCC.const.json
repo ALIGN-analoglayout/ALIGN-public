@@ -1,7 +1,7 @@
 [
     {"constraint": "PowerPorts", "ports": ["VPS"]},
     {"constraint": "GroundPorts", "ports": ["VGND"]},
-    {"constraint": "GroupBlocks", "instances": ["R0", "R1"],   "name": "caps"},
+    {"constraint": "GroupBlocks", "instances": ["C0", "C1"],   "name": "caps"},
     {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["X00", "caps"]

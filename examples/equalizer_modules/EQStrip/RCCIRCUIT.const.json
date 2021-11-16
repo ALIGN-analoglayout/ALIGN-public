@@ -1,0 +1,10 @@
+[
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["R0","R1"], ["C0", "C1"], ["C2"]]
+    },
+	{"constraint": "align",
+		"line" : "h_bottom",
+		"instances": ["C0", "C1", "C2"]
+	}
+]

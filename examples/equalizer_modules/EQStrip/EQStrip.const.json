@@ -3,10 +3,10 @@
         {"constraint": "GroundPorts", "ports": ["VGND"]},
 		{"constraint": "SymmetricBlocks",
 		 "direction" : "V",
-		 "pairs": [["X00"], ["X01"]]
+		 "pairs": [["X00"], ["X01"], ["X02"], ["X03"], ["X04"]]
 		},
 		{"constraint": "Order",
 			"direction" : "top_to_bottom",
-			"instances": ["X00", "X01"]
+			"instances": ["X00", "X01", "X02", "X04", "X03"]
 		}
 ]
