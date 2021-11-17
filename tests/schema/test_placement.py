@@ -1,15 +1,12 @@
-from align.schema.placement import OffsetsScalings, PlacementGrid
+from align.schema import constraint
 
 
-def test_offsets_scalings():
-    os = OffsetsScalings()
-    print(os)
+def test_place_on_grid():
+    os = constraint.OffsetsScalings()
     assert os.offsets == [0]
     assert os.scalings == [1]
 
-
-def test_placement_grid():
-    pg = PlacementGrid(direction='H', pitch=0)
-    print(pg)
+    pg = constraint.PlaceOnGrid(direction='H', pitch=1000)
     os = pg.ored_terms[0]
     assert os.offsets == [0]
+    assert os.scalings == [1]

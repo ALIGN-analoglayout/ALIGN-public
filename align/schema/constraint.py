@@ -3,7 +3,9 @@ import more_itertools as itertools
 import re
 
 from . import types
-from .types import Union, Optional, Literal, List, set_context
+from .types import BaseModel, Union, Optional, Literal, List, set_context
+
+from pydantic import Field
 
 import logging
 logger = logging.getLogger(__name__)
@@ -722,6 +724,17 @@ class SymmetricBlocks(SoftConstraint):
         return value
 
 
+class OffsetsScalings(BaseModel):
+    offsets: List[int] = Field(default_factory=lambda: [0])
+    scalings: List[Literal[-1, 1]] = Field(default_factory=lambda: [1])
+
+
+class PlaceOnGrid(SoftConstraint):
+    direction: Literal['H', 'V']
+    pitch: int
+    ored_terms: List[OffsetsScalings] = Field(default_factory=lambda: [OffsetsScalings()])
+
+
 class BlockDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
@@ -806,6 +819,7 @@ ConstraintType = Union[
     GroupBlocks,
     MatchBlocks,
     DoNotIdentify,
+    PlaceOnGrid,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
