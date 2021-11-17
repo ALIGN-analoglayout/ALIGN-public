@@ -348,8 +348,8 @@ class Spread(HardConstraint):
                 )
 
 
-class SetBoundingBox(HardConstraint):
-    instance: str
+class AssignBboxVariables(HardConstraint):
+    bbox_name: str
     llx: int
     lly: int
     urx: int
@@ -793,7 +793,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
-    SetBoundingBox,
+    AssignBboxVariables,
     AspectRatio,
     Boundary,
     # Additional User constraints
