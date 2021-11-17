@@ -33,6 +33,10 @@ def validate_instances(cls, value):
     return [x.upper() for x in value]
 
 
+def upper_case(cls, value):
+    return [v.upper() for v in value]
+
+
 class SoftConstraint(types.BaseModel):
 
     constraint: str
@@ -586,12 +590,16 @@ class PowerPorts(SoftConstraint):
     '''
     ports: List[str]
 
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+
 
 class GroundPorts(SoftConstraint):
     '''
     Ground port for each hieararchy
     '''
     ports: List[str]
+
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
 
 class ClockPorts(SoftConstraint):
@@ -789,6 +797,12 @@ class MultiConnection(SoftConstraint):
     multiplier: int
 
 
+class DoNotRoute(SoftConstraint):
+    nets: List[str]
+
+    _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
+
+
 ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
@@ -816,6 +830,7 @@ ConstraintType = Union[
     PortLocation,
     SymmetricNets,
     MultiConnection,
+    DoNotRoute,
     # Setup constraints
     PowerPorts,
     GroundPorts,

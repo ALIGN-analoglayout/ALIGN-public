@@ -1,4 +1,6 @@
+import json
 import textwrap
+from align.pdk.finfet import CanvasPDK
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
@@ -102,3 +104,33 @@ def test_align_center():
         ]
     example = build_example(name, netlist, constraints)
     run_example(example)
+
+
+def test_donotroute():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt inv vi vo vccx vssx
+        mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
+        mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
+        .ends
+        .subckt {name} vo vccx vssx
+        xi0 vo v1 vccx vssx inv
+        xi1 v1 v2 vccx vssx inv
+        .ends
+        """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["v1", "vccx"]}
+        ]
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        d = json.load(fp)
+
+        cv = CanvasPDK()
+        cv.terminals = d['terminals']
+        cv.gen_data(run_drc=True, run_pex=False)
+        assert cv.drc.num_errors > 0, f'Layout should have opens'
