@@ -91,8 +91,8 @@
     R0 vps vd 5000
 	C0 vin n1 200f
 	C1 vin n1 200f
-    M00 vd n1 net11 vgnd nfet m=1 l=14n nfin=8 nf=1
-    M01 net11 n1 vs vgnd nfet m=1 l=14n nfin=8 nf=1
+    M00 vd n1 net11 vgnd n m=1 l=14n nfin=8 nf=1
+    M01 net11 n1 vs vgnd n m=1 l=14n nfin=8 nf=1
 .ends SDC
 
 .subckt RCCircuit in1 in2 out1 out2
@@ -103,14 +103,33 @@
 	C2 out1 out2 100f
 .ends RCCircuit
 
+.subckt CompMod in1 in2 out1 out2
+	R0 out1 out2 2400
+	C0 in1 n1 200f
+	C1 in2 n2 200f
+	C2 n1 out1 100f
+	C3 n2 out2 100f
+.ends CompMod
+
 .subckt VGAdder vin1 vin2 vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1
 	X00 vbn_adder vbp_adder vps vgnd vout_vga1 vout_vga2 vout1 vout2 Adder2x
 	X01 vm_vga vin1 vin2 s0 s1 vout_vga1 vout_vga2 vps vgnd VGA
 .ends VGAdder
 
+.subckt VGAdderWithRC1 vin1 vin2 vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1
+	X00 vin1 vin2 vout1_RC vout2_RC RCCircuit
+	X01 vout1_RC vout2_RC vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdder
+.ends VGAdderWithRC1
 
-.subckt EQStrip3x vin1 vin2 vin3 vin4 vin5 vin6 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1
-	X00 vin1 vin2 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdder
-	X01 vin3 vin4 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdder
-	X02 vin5 vin6 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdder
+.subckt VGAdderWithRC2 vin1 vin2 vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1
+	X00 vin1 vin2 vout1_RC vout2_RC CompMod
+	X01 vout1_RC vout2_RC vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdder
+.ends VGAdderWithRC2
+
+.subckt EQStrip3x vin vin3 vin4 vin5 vin6 vout1 vout2 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 vm_ctle vb_sdc
+	X00 vout1_sdc vout2_sdc vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdderWithRC1
+	X01 vin3 vin4 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdderWithRC2
+	X02 vin5 vin6 vout11 vout21 vps vgnd vbn_adder vbp_adder vm_vga s0 s1 VGAdderWithRC2
+	X03 vm_ctle vgnd vout11 vout21 vout1 vout2 vps CTLE
+	X04 vb_sdc vout1_sdc vgnd vin vps vout2_sdc SDC
 .ends EQStrip3x
