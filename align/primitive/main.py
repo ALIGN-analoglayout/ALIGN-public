@@ -483,10 +483,10 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         if "NFIN" in values['M0'].keys():
             #FinFET design
-            if len(values) > 1:
+            '''if len(values) > 1:
                 assert int(values['M0']["NFIN"])==int(values['M1']["NFIN"]), f"NFIN must be same in all transistors"
             else:
-                assert int(values['M0']["NFIN"]), f"unrecognized size {values['NFIN']}"
+                assert int(values['M0']["NFIN"]), f"unrecognized size {values['NFIN']}"'''
             size = int(values['M0']["NFIN"])
             name_arg ='NFIN'+str(size)
         elif "W" in values['M0'].keys():
