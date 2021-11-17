@@ -27,6 +27,9 @@ def test_place_cmp_1():
         DONT_CONST = {name}
         """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -111,6 +114,9 @@ def test_place_cmp_2():
         DONT_CONST = {name}
         """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
@@ -173,6 +179,9 @@ def test_place_cmp_seed(seed, analytical_placer):
         DONT_CONST = {name}
         """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -239,6 +248,9 @@ def test_cmp_analytical():
         DONT_CONST = {name}
         """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
