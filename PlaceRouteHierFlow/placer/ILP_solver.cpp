@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
+#include "glpk.h"
 
 ILP_solver::ILP_solver() {}
 

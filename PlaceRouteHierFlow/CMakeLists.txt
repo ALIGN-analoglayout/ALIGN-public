@@ -27,6 +27,7 @@ target_link_libraries(
      superlu
      pybind11::module
      Boost::boost
+     glpk::glpk
 )
 target_code_coverage(PnR)
 
@@ -56,5 +57,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           pybind11::module
           Boost::boost
           GTest::gtest
-          GTest::gtest_main)
+          GTest::gtest_main
+          glpk::glpk)
 endif()

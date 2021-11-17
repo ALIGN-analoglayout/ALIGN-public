@@ -1,0 +1,265 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(glpk C)
+set(GLPK_VERSION_MAJOR 5)
+set(GLPK_VERSION_MINOR 0)
+set(GLPK_VERSION ${GLPK_VERSION_MAJOR}.${GLPK_VERSION_MINOR})
+
+
+SET(GLPK_C_WARNING_FLAGS ${C_WARNING} CACHE STRING "GLPK warning flags.")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GLPK_C_WARNING_FLAGS}")
+
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
+endif ()
+
+
+INCLUDE(CheckTypeSize)
+CHECK_TYPE_SIZE("long long" LONG_LONG)
+SET(GLPK_HAVE_LONG_LONG ${HAVE_LONG_LONG})
+
+SET(CMAKE_INSTALL_CMAKECONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/glpk)
+INCLUDE(GNUInstallDirs)
+
+add_library(glpk SHARED
+    src/amd/amd_1.c
+    src/amd/amd_2.c
+    src/amd/amd_aat.c
+    src/amd/amd_control.c
+    src/amd/amd_defaults.c
+    src/amd/amd_dump.c
+    src/amd/amd_info.c
+    src/amd/amd_order.c
+    src/amd/amd_postorder.c
+    src/amd/amd_post_tree.c
+    src/amd/amd_preprocess.c
+    src/amd/amd_valid.c
+    src/api/advbas.c
+    src/api/asnhall.c
+    src/api/asnlp.c
+    src/api/asnokalg.c
+    src/api/ckasn.c
+    src/api/ckcnf.c
+    src/api/cplex.c
+    src/api/cpp.c
+    src/api/cpxbas.c
+    src/api/graph.c
+    src/api/gridgen.c
+    src/api/intfeas1.c
+    src/api/maxffalg.c
+    src/api/maxflp.c
+    src/api/mcflp.c
+    src/api/mcfokalg.c
+    src/api/mcfrelax.c
+    src/api/minisat1.c
+    src/api/mpl.c
+    src/api/mps.c
+    src/api/netgen.c
+    src/api/npp.c
+    src/api/pript.c
+    src/api/prmip.c
+    src/api/prob1.c
+    src/api/prob2.c
+    src/api/prob3.c
+    src/api/prob4.c
+    src/api/prob5.c
+    src/api/prrngs.c
+    src/api/prsol.c
+    src/api/rdasn.c
+    src/api/rdcc.c
+    src/api/rdcnf.c
+    src/api/rdipt.c
+    src/api/rdmaxf.c
+    src/api/rdmcf.c
+    src/api/rdmip.c
+    src/api/rdprob.c
+    src/api/rdsol.c
+    src/api/rmfgen.c
+    src/api/strong.c
+    src/api/topsort.c
+    src/api/wcliqex.c
+    src/api/weak.c
+    src/api/wrasn.c
+    src/api/wrcc.c
+    src/api/wrcnf.c
+    src/api/wript.c
+    src/api/wrmaxf.c
+    src/api/wrmcf.c
+    src/api/wrmip.c
+    src/api/wrprob.c
+    src/api/wrsol.c
+    src/bflib/btf.c
+    src/bflib/btfint.c
+    src/bflib/fhv.c
+    src/bflib/fhvint.c
+    src/bflib/ifu.c
+    src/bflib/luf.c
+    src/bflib/lufint.c
+    src/bflib/scf.c
+    src/bflib/scfint.c
+    src/bflib/sgf.c
+    src/bflib/sva.c
+    src/colamd/colamd.c
+    src/draft/bfd.c
+    src/draft/bfx.c
+    src/draft/glpapi06.c
+    src/draft/glpapi07.c
+    src/draft/glpapi08.c
+    src/draft/glpapi09.c
+    src/draft/glpapi10.c
+    src/draft/glpapi12.c
+    src/draft/glpapi13.c
+    src/draft/glpios01.c
+    src/draft/glpios02.c
+    src/draft/glpios03.c
+    src/draft/glpios07.c
+    src/draft/glpios09.c
+    src/draft/glpios11.c
+    src/draft/glpios12.c
+    src/draft/glpipm.c
+    src/draft/glpmat.c
+    src/draft/glpscl.c
+    src/draft/glpssx01.c
+    src/draft/glpssx02.c
+    src/draft/lux.c
+    src/env/alloc.c
+    src/env/dlsup.c
+    src/env/env.c
+    src/env/error.c
+    src/env/stdc.c
+    src/env/stdout.c
+    src/env/stream.c
+    src/env/time.c
+    src/env/tls.c
+    src/intopt/cfg.c
+    src/intopt/cfg1.c
+    src/intopt/cfg2.c
+    src/intopt/clqcut.c
+    src/intopt/covgen.c
+    src/intopt/fpump.c
+    src/intopt/gmicut.c
+    src/intopt/gmigen.c
+    src/intopt/mirgen.c
+    src/intopt/spv.c
+    src/minisat/minisat.c
+    src/misc/avl.c
+    src/misc/bignum.c
+    src/misc/dimacs.c
+    src/misc/dmp.c
+    src/misc/ffalg.c
+    src/misc/fp2rat.c
+    src/misc/fvs.c
+    src/misc/gcd.c
+    src/misc/hbm.c
+    src/misc/jd.c
+    src/misc/keller.c
+    src/misc/ks.c
+    src/misc/mc13d.c
+    src/misc/mc21a.c
+    src/misc/mt1.c
+    src/misc/mygmp.c
+    src/misc/okalg.c
+    src/misc/qmd.c
+    src/misc/relax4.c
+    src/misc/rgr.c
+    src/misc/rng.c
+    src/misc/rng1.c
+    src/misc/round2n.c
+    src/misc/spm.c
+    src/misc/str2int.c
+    src/misc/str2num.c
+    src/misc/strspx.c
+    src/misc/strtrim.c
+    src/misc/triang.c
+    src/misc/wclique.c
+    src/misc/wclique1.c
+    src/mpl/mpl1.c
+    src/mpl/mpl2.c
+    src/mpl/mpl3.c
+    src/mpl/mpl4.c
+    src/mpl/mpl5.c
+    src/mpl/mpl6.c
+    src/mpl/mplsql.c
+    src/npp/npp1.c
+    src/npp/npp2.c
+    src/npp/npp3.c
+    src/npp/npp4.c
+    src/npp/npp5.c
+    src/npp/npp6.c
+    src/proxy/main.c
+    src/proxy/proxy.c
+    src/proxy/proxy1.c
+    src/simplex/spxat.c
+    src/simplex/spxchuzc.c
+    src/simplex/spxchuzr.c
+    src/simplex/spxlp.c
+    src/simplex/spxnt.c
+    src/simplex/spxprim.c
+    src/simplex/spxprob.c
+    src/simplex/spychuzc.c
+    src/simplex/spychuzr.c
+    src/simplex/spydual.c
+    src/zlib/adler32.c
+    src/zlib/compress.c
+    src/zlib/crc32.c
+    src/zlib/deflate.c
+    src/zlib/gzclose.c
+    src/zlib/gzlib.c
+    src/zlib/gzread.c
+    src/zlib/gzwrite.c
+    src/zlib/inffast.c
+    src/zlib/inflate.c
+    src/zlib/inftrees.c
+    src/zlib/trees.c
+    src/zlib/uncompr.c
+    src/zlib/zio.c
+    src/zlib/zutil.c
+)
+
+target_include_directories(glpk PRIVATE
+${CMAKE_CURRENT_SOURCE_DIR}/src/amd
+${CMAKE_CURRENT_SOURCE_DIR}/src/api
+${CMAKE_CURRENT_SOURCE_DIR}/src/bflib
+${CMAKE_CURRENT_SOURCE_DIR}/src/colamd
+${CMAKE_CURRENT_SOURCE_DIR}/src/cplex
+${CMAKE_CURRENT_SOURCE_DIR}/src/draft
+${CMAKE_CURRENT_SOURCE_DIR}/src/env
+${CMAKE_CURRENT_SOURCE_DIR}/src/glpk.h
+${CMAKE_CURRENT_SOURCE_DIR}/src/intopt
+${CMAKE_CURRENT_SOURCE_DIR}/src/minisat
+${CMAKE_CURRENT_SOURCE_DIR}/src/misc
+${CMAKE_CURRENT_SOURCE_DIR}/src/mpl
+${CMAKE_CURRENT_SOURCE_DIR}/src/npp
+${CMAKE_CURRENT_SOURCE_DIR}/src/oldapi
+${CMAKE_CURRENT_SOURCE_DIR}/src/proxy
+${CMAKE_CURRENT_SOURCE_DIR}/src/simplex
+${CMAKE_CURRENT_SOURCE_DIR}/src/threads
+${CMAKE_CURRENT_SOURCE_DIR}/src/tsp
+${CMAKE_CURRENT_SOURCE_DIR}/src/zlib
+${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+
+include (CheckLibraryExists)
+check_library_exists(m ceil "" HAVE_LIBM)
+if (HAVE_LIBM)
+  target_link_libraries (glpk m)
+endif ()
+
+#ADD_SUBDIRECTORY(src)
+#ADD_LIBRARY(glpk-shared SHARED ${GLPK_LIB_SOURCES})
+#ADD_LIBRARY(glpk-static STATIC ${GLPK_LIB_SOURCES})
+#SET_TARGET_PROPERTIES(glpk-static PROPERTIES OUTPUT_NAME glpk PUBLIC_HEADER src/glpk.h)
+#SET_TARGET_PROPERTIES(glpk-static PROPERTIES PREFIX "lib")
+
+#SET_TARGET_PROPERTIES(glpk-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+SET_TARGET_PROPERTIES(glpk PROPERTIES OUTPUT_NAME glpk
+    PUBLIC_HEADER src/glpk.h)
+
+
+INSTALL(
+  TARGETS glpk
+	LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/align/thirdparty"
+  PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+)
+

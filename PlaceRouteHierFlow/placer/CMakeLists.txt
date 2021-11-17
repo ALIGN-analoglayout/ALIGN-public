@@ -26,6 +26,7 @@ target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
      lpsolve::lpsolve55
+     glpk::glpk
      Boost::boost
      nlohmann_json::nlohmann_json
 )
