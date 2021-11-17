@@ -212,7 +212,7 @@ void assignBoxPoints(int* x, int* y, struct PnRDB::bbox b, double unit) {
 void addTextElements(json& jsonElements, int cenX, int cenY, int layer, const PnRDB::Drc_info& drc_info, int layer_index, const string& text) {
   int test_font = 1, test_vp = 1, test_hp = 1;
   // const int test_texttype=3; //draw 0, label 2, pin 3, blockage 4
-  double test_mag = 0.03;
+  double test_mag = 3e-8;
   json element;
   element["type"] = "text";
   element["layer"] = layer;
@@ -221,6 +221,7 @@ void addTextElements(json& jsonElements, int cenX, int cenY, int layer, const Pn
   // reminder, layer_index is not metal layer number. It is the index of metal in drc_info.Metal_info
   element["presentation"] = JSON_Presentation(test_font, test_vp, test_hp);
 
+  element["width"] = -1;
   element["strans"] = 0;
   element["mag"] = test_mag;
   json xy = json::array();
@@ -434,7 +435,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   json jsonElements = json::array();
 
   int x[5], y[5];
-  int write_blockPins_name = 0;
+  int write_blockPins_name = 1;
   if (write_blockPins_name && node.isTop == 1) {
     for (unsigned int i = 0; i < node.blockPins.size(); i++) {
       int write = 0;
