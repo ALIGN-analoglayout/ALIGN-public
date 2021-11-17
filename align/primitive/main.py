@@ -427,9 +427,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 nf: number of fingers
                 w:  effective width of an instance (width of instance x number of fingers)
             """
-            assert 'M' in values,  f'm: Number of instances not specified {values}'
-            assert 'NF' in values, f'nf: Number of fingers not specified {values}'
-            assert 'W' in values,  f'w: Width is not specified {values}'
+            assert 'M' in values['M0'],  f'm: Number of instances not specified {values}'
+            assert 'NF' in values['M0'], f'nf: Number of fingers not specified {values}'
+            assert 'W' in values['M0'],  f'w: Width is not specified {values}'
 
             def x_by_y(m):
                 y_sqrt = floor(sqrt(m))
