@@ -29,7 +29,7 @@ def test_place_cmp_1():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "AutoConstraint", "isTrue": False}
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -116,7 +116,7 @@ def test_place_cmp_2():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "AutoConstraint", "isTrue": False}
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
@@ -181,7 +181,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "AutoConstraint", "isTrue": False}
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -250,7 +250,7 @@ def test_cmp_analytical():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "AutoConstraint", "isTrue": False}
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
