@@ -24,6 +24,7 @@ def test_mirror():
         """)
     constraints = [
         # {"constraint": "DoNotIdentify", "instances": ["x0", "x1", "x2", "x3"]},  # This should be auto-generated
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x0", "x1"]], "mirror": True},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["x2", "x3"]], "mirror": False}
@@ -36,5 +37,5 @@ def test_mirror():
         for key, _ in primitives.items():
             assert key.startswith('NMOS'), f"Incorrect subcircuit identification: {key}"
 
-    shutil.rmtree(run_dir)
-    shutil.rmtree(ckt_dir)
+    #shutil.rmtree(run_dir)
+    #shutil.rmtree(ckt_dir)
