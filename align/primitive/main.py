@@ -453,14 +453,16 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
-            values['real_inst_type'] = vt
+            #for ele in subckt.elements:
+                #values[ele.name]['real_inst_type'] = vt
+            values['M0']['real_inst_type'] = vt
 
             block_args= {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
                 'value': 1, # hack. This is used as nfin later.
-                'parameters':values
+                'parameters':values['M0']
             }
 
             if 'STACK' in values and int(values['M0']['STACK']) >1:
@@ -537,7 +539,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'value': unit_size_mos,
                 'x_cells': xval,
                 'y_cells': yval,
-                'parameters':values['M0']
+                'parameters':values
             }
             if 'STACK' in values['M0'].keys() and int(values['M0']["STACK"])>1:
                 block_args['stack']=int(values['M0']["STACK"])
