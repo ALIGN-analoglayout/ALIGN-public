@@ -4,7 +4,6 @@ import re
 
 from . import types
 from .types import Union, Optional, Literal, List, set_context
-from . import checker
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ def validate_instances(cls, value):
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
     assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
-    return value
+    return [x.upper() for x in value]
 
 
 class SoftConstraint(types.BaseModel):
@@ -52,14 +51,14 @@ class SoftConstraint(types.BaseModel):
 class HardConstraint(SoftConstraint, abc.ABC):
 
     @abc.abstractmethod
-    def check(self, checker):
+    def translate(self, solver):
         '''
         Abstract Method for built in self-checks
           Every class that inherits from HardConstraint
           MUST implement this function.
 
         Function must yield a list of mathematical
-          expressions supported by the 'checker'
+          expressions supported by the 'solver'
           backend. This can be done using multiple
           'yield' statements or returning an iterable
           object such as list
@@ -80,9 +79,9 @@ class UserConstraint(HardConstraint, abc.ABC):
         '''
         pass
 
-    def check(self, checker):
+    def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.check(checker)
+            yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
@@ -120,7 +119,7 @@ class Order(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
+    def translate(self, solver):
 
         def cc(b1, b2, c='x'):  # Create coordinate constraint
             if self.abut:
@@ -128,7 +127,7 @@ class Order(HardConstraint):
             else:
                 return getattr(b1, f'ur{c}') <= getattr(b2, f'll{c}')
 
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'left_to_right':
                 yield cc(b1, b2, 'x')
@@ -139,15 +138,15 @@ class Order(HardConstraint):
             elif self.direction == 'top_to_bottom':
                 yield cc(b2, b1, 'y')
             elif self.direction == 'horizontal':
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b2, b1, 'x'))
             elif self.direction == 'vertical':
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'y'),
                     cc(b2, b1, 'y'))
             else:
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b2, b1, 'x'),
                     cc(b1, b2, 'y'),
@@ -190,8 +189,8 @@ class Align(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
-        bvars = checker.iter_bbox_vars(self.instances)
+    def translate(self, solver):
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
                 yield b1.ury == b2.ury
@@ -200,9 +199,9 @@ class Align(HardConstraint):
             elif self.line == 'h_center':
                 yield (b1.lly + b1.ury) / 2 == (b2.lly + b2.ury) / 2
             elif self.line == 'h_any':
-                yield checker.Or(  # We don't know which bbox is higher yet
-                    checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                    checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                yield solver.Or(  # We don't know which bbox is higher yet
+                    solver.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                    solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
             elif self.line == 'v_left':
                 yield b1.llx == b2.llx
@@ -211,16 +210,16 @@ class Align(HardConstraint):
             elif self.line == 'v_center':
                 yield (b1.llx + b1.urx) / 2 == (b2.llx + b2.urx) / 2
             elif self.line == 'v_any':
-                yield checker.Or(  # We don't know which bbox is wider yet
-                    checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                    checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
+                yield solver.Or(  # We don't know which bbox is wider yet
+                    solver.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                    solver.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
                 )
             else:
-                yield checker.Or(  # h_any OR v_any
-                    checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                    checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
-                    checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                    checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                yield solver.Or(  # h_any OR v_any
+                    solver.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                    solver.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
+                    solver.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                    solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
 
 
@@ -266,8 +265,8 @@ class Enclose(HardConstraint):
         ), 'Too many optional fields'
         return value
 
-    def check(self, checker):
-        bb = checker.bbox_vars(checker.label(self))
+    def translate(self, solver):
+        bb = solver.bbox_vars(solver.label(self))
         if self.min_width:
             yield bb.urx - bb.llx >= self.min_width
         if self.min_height:
@@ -277,14 +276,14 @@ class Enclose(HardConstraint):
         if self.max_height:
             yield bb.ury - bb.lly <= self.max_height
         if self.min_aspect_ratio:
-            yield checker.cast(
+            yield solver.cast(
                 (bb.ury - bb.lly) / (bb.urx - bb.llx),
                 float) >= self.min_aspect_ratio
         if self.max_aspect_ratio:
-            yield checker.cast(
+            yield solver.cast(
                 (bb.ury - bb.lly) / (bb.urx - bb.llx),
                 float) <= self.max_aspect_ratio
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b in bvars:
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
@@ -316,16 +315,16 @@ class Spread(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
+    def translate(self, solver):
 
         def cc(b1, b2, c='x'):
             d = 'y' if c == 'x' else 'x'
-            return checker.Implies(
-                checker.And(  # overlap orthogonal to c
+            return solver.Implies(
+                solver.And(  # overlap orthogonal to c
                     getattr(b1, f'ur{d}') > getattr(b2, f'll{d}'),
                     getattr(b2, f'ur{d}') > getattr(b1, f'll{d}'),
                 ),
-                checker.Abs(  # distance in c coords
+                solver.Abs(  # distance in c coords
                     (
                         getattr(b1, f'll{c}')
                         + getattr(b1, f'ur{c}')
@@ -336,26 +335,25 @@ class Spread(HardConstraint):
                 ) >= self.distance * 2
             )
 
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'horizontal':
                 yield cc(b1, b2, 'x')
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b1, b2, 'y')
                 )
 
 
-class SetBoundingBox(HardConstraint):
-    instance: str
+class AssignBboxVariables(HardConstraint):
+    bbox_name: str
     llx: int
     lly: int
     urx: int
     ury: int
-    is_subcircuit: Optional[bool] = False
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
@@ -367,8 +365,8 @@ class SetBoundingBox(HardConstraint):
         assert value > values['lly'], f'Reflection is not supported yet'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
+    def translate(self, solver):
+        bvar = solver.bbox_vars(self.bbox_name)
         yield bvar.llx == self.llx
         yield bvar.lly == self.lly
         yield bvar.urx == self.urx
@@ -396,10 +394,10 @@ class AspectRatio(HardConstraint):
         assert value > values['ratio_low'], f'AspectRatio:ratio_high {value} should be greater than ratio_low {values["ratio_low"]}'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
-        yield checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * checker.cast(bvar.ury-bvar.lly, float)
-        yield checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high * checker.cast(bvar.ury-bvar.lly, float)
+    def translate(self, solver):
+        bvar = solver.bbox_vars('subcircuit')
+        yield solver.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * solver.cast(bvar.ury-bvar.lly, float)
+        yield solver.cast(bvar.urx-bvar.llx, float) < self.ratio_high * solver.cast(bvar.ury-bvar.lly, float)
 
 
 class Boundary(HardConstraint):
@@ -420,19 +418,49 @@ class Boundary(HardConstraint):
         assert value >= 0, f'Boundary:max_height should be greater than zero {value}'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+    def translate(self, solver):
+        bvar = solver.bbox_vars('subcircuit')
         if self.max_width is not None:
-            yield checker.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
+            yield solver.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
         if self.max_height is not None:
-            yield checker.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
+            yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
 
+class GroupBlocks(HardConstraint):
+    ''' Force heirarchy creation '''
+    name: str
+    instances: List[str]
+    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+
+    @types.validator('name', allow_reuse=True)
+    def group_block_name(cls, value):
+        assert value, 'Cannot be an empty string'
+        return value.upper()
+
+    def translate(self, solver):
+        # Non-zero width / height
+        bb = solver.bbox_vars(self.name)
+        yield bb.llx < bb.urx
+        yield bb.lly < bb.ury
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars(self.instances):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        instances = get_instances_from_hacked_dataclasses(self)
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances )):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
-# Note: Do not implement check() here. It will be ignored.
-#       Only ALIGN internal constraints may be translated
+# Note: Do not implement translate() here as it may be ignored
+#       by certain engines
 
 class AlignInOrder(UserConstraint):
     '''
@@ -535,6 +563,7 @@ class CompactPlacement(SoftConstraint):
         'center'
     ] = 'left'
 
+
 class SameTemplate(SoftConstraint):
     instances: List[str]
 
@@ -542,13 +571,6 @@ class SameTemplate(SoftConstraint):
 class CreateAlias(SoftConstraint):
     instances: List[str]
     name: str
-
-
-class GroupBlocks(SoftConstraint):
-    ''' Force heirarchy creation '''
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
 class MatchBlocks(SoftConstraint):
@@ -584,7 +606,7 @@ class DoNotUseLib(SoftConstraint):
     Primitive libraries which should not be used
     '''
     libraries: List[str]
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IsDigital(SoftConstraint):
@@ -593,7 +615,7 @@ class IsDigital(SoftConstraint):
     Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoConstraint(SoftConstraint):
@@ -601,7 +623,7 @@ class AutoConstraint(SoftConstraint):
     Forbids/Allow any auto-constraint generation
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IdentifyArray(SoftConstraint):
@@ -609,7 +631,7 @@ class IdentifyArray(SoftConstraint):
     Forbids/Alow any array identification
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoGroupCaps(SoftConstraint):
@@ -617,7 +639,7 @@ class AutoGroupCaps(SoftConstraint):
     Forbids/Allow creation of arrays for symmetric caps
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class FixSourceDrain(SoftConstraint):
@@ -626,7 +648,7 @@ class FixSourceDrain(SoftConstraint):
     Traverses and fix them based on power to gnd traversal
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class KeepDummyHierarchies(SoftConstraint):
@@ -634,7 +656,7 @@ class KeepDummyHierarchies(SoftConstraint):
     Removes any single instance hierarchies
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeSeriesDevices(SoftConstraint):
@@ -643,7 +665,7 @@ class MergeSeriesDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeParallelDevices(SoftConstraint):
@@ -652,7 +674,7 @@ class MergeParallelDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class DoNotIdentify(SoftConstraint):
@@ -678,25 +700,25 @@ class SymmetricBlocks(SoftConstraint):
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
-            validate_instances(cls, pair)
+        value = [validate_instances(cls, pair) for pair in value]
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return value
-        if len(cls._validator_ctx().parent.parent.elements)==0:
-            #skips the check while reading user constraints
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
             return value
         group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                #Skip check for group block elements as they are added later in the flow
+            if len([ele for ele in pair if ele in group_block_instances]) > 0:
+                # Skip check for group block elements as they are added later in the flow
                 continue
-            elif len(pair)==2:
+            elif len(pair) == 2:
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
 
@@ -771,7 +793,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
-    SetBoundingBox,
+    AssignBboxVariables,
     AspectRatio,
     Boundary,
     # Additional User constraints
@@ -812,49 +834,20 @@ ConstraintType = Union[
 
 class ConstraintDB(types.List[ConstraintType]):
 
-    #
-    # Private attribute affecting class behavior
-    #
-    _checker = types.PrivateAttr(None)
-
-    def _check(self, constraint):
-        assert constraint.parent is not None, 'parent is not set'
-        assert constraint.parent.parent is not None, 'parent.parent is not set'
-        if self._checker and hasattr(constraint, 'check'):
-            generator = constraint.check(self._checker)
-            if generator is None:
-                raise NotImplementedError(f'{constraint}.check() did not return a valid generator')
-            formulae = list(generator)
-            if len(formulae) == 0:
-                raise NotImplementedError(f'{constraint}.check() yielded an empty list of expressions')
-            try:
-                self._checker.append(
-                    self._checker.And(
-                        *formulae
-                    ) if len(formulae) > 1 else formulae[0],
-                    label=self._checker.label(constraint)
-                )
-            except checker.CheckerError as e:
-                logger.debug(f'Checker raised error:\n {e}')
-                assert self._checker.label(constraint) in e.labels, "Something went terribly wrong. Current constraint not in unsat core"
-                core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
-                logger.error(f'Failed to add constraint {constraint.json()}')
-                logger.error(f'   due to conflict with {core}')
-                raise checker.CheckerError(f'Failed to add constraint {constraint.json()} due to conflict with {core}')
-
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
+        if hasattr(constraint, 'translate'):
+            if self.parent._checker is None:
+                self.parent.verify()
+            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
         super().append(constraint)
-        self._check(self.__root__[-1])
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
         super().remove(constraint)
 
-    def __init__(self, *args, check=True, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        if check:
-            self._checker = checker.Z3Checker()
         # Constraints may need to access parent scope for subcircuit information
         # To ensure parent is set appropriately, force users to use append
         if '__root__' in kwargs:
@@ -866,24 +859,19 @@ class ConstraintDB(types.List[ConstraintType]):
         else:
             assert len(args) == 0 and len(kwargs) == 0
             data = []
+        # TODO: Shouldn't need to invalidate this
+        #       Lots of thrash happening here
+        self.parent._checker = None
         with set_context(self):
             for x in data:
-                if x['constraint'] == 'GroupBlocks':
-                    logger.info(f'first reading groupblock data {x}')
-                    self.append(x)
-            for x in data:
-                if x['constraint'] != 'GroupBlocks':
-                    logger.info(f'reading rest data {x}')
-                    self.append(x)
+                super().append(x)
 
     def checkpoint(self):
-        if self._checker:
-            self._checker.checkpoint()
+        self.parent._checker.checkpoint()
         return super().checkpoint()
 
     def _revert(self):
-        if self._checker:
-            self._checker.revert()
+        self.parent._checker.revert()
         super()._revert()
 
 
