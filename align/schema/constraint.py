@@ -366,7 +366,7 @@ class AssignBboxVariables(HardConstraint):
         return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars(self.instance)
+        bvar = solver.bbox_vars(self.bbox_name)
         yield bvar.llx == self.llx
         yield bvar.lly == self.lly
         yield bvar.urx == self.urx
