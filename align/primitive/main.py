@@ -280,7 +280,7 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
-def merge_subckt_param(ckt):
+'''def merge_subckt_param(ckt):
     max_value = {}
     logger.debug(f"creating generator parameters for subcircuit: {ckt.name}")
     vt_types=[]
@@ -322,7 +322,7 @@ def merged_value(values1, values2):
             merged_vals[param] = max(value, merged_vals[param])
         else:
             merged_vals[param] = value
-    return merged_vals
+    return merged_vals'''
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
@@ -403,13 +403,20 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         subckt = element.parent.parent.parent.find(element.model)
         vt = None
+        values = {}
+        vt_types_temp = []
         if isinstance(subckt,SubCircuit):
             ## Hack to get generator parameters based on max sized cell in subcircuit
-            values,vt_types = merge_subckt_param(subckt)
+            #values,vt_types = merge_subckt_param(subckt)
+            #print(subckt)
+            for ele in subckt.elements:
+                values[ele.name] = ele.parameters
+                vt_types_temp.append(ele.model)
+            vt_types = vt_types_temp[0]
             if "vt_type" in design_config:
                 vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
         else:
-            values = element.parameters
+            values['M0'] = element.parameters
             if "vt_type" in design_config:
                 vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
 
@@ -432,9 +439,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                     elif m % y == 0:
                         return m//y, y
 
-            m  = int(values['M'])
-            nf = int(values['NF'])
-            w = int(float(values['W'])*1e9)
+            m  = int(values['M0']['M'])
+            nf = int(values['M0']['NF'])
+            w = int(float(values['M0']['W'])*1e9)
             if isinstance(subckt,SubCircuit):
                 for e in subckt.elements:
                     vt = e.model
@@ -456,10 +463,10 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'parameters':values
             }
 
-            if 'STACK' in values and int(values['STACK']) >1:
+            if 'STACK' in values and int(values['M0']['STACK']) >1:
                 assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['stack']=int(values['STACK'])
-                block_name += f'_st'+str(int(values['STACK']))
+                block_args['stack']=int(values['M0']['STACK'])
+                block_name += f'_st'+str(int(values['M0']['STACK']))
             else:
                 block_name += f'_nf{nf}'
 
@@ -472,12 +479,15 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if "NFIN" in values.keys():
+        if "NFIN" in values['M0'].keys():
             #FinFET design
-            assert int(values["NFIN"]), f"unrecognized size {values['NFIN']}"
-            size = int(values["NFIN"])
+            if len(values) > 1:
+                assert int(values['M0']["NFIN"])==int(values['M1']["NFIN"]), f"NFIN must be same in all transistors"
+            else:
+                assert int(values['M0']["NFIN"]), f"unrecognized size {values['NFIN']}"
+            size = int(values['M0']["NFIN"])
             name_arg ='NFIN'+str(size)
-        elif "W" in values.keys():
+        elif "W" in values['M0'].keys():
             #Bulk design
             if isinstance(values["W"],str):
                 size = unit_size_mos
@@ -487,26 +497,27 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             name_arg ='NFIN'+str(size)
         else:
             size = '_'.join(param+str(values[param]) for param in values)
-        if 'NF' in values.keys():
-            if values['NF'] == 'unit_size':
-                values['NF'] =size
-            size=size*int(values["NF"])
-            name_arg =name_arg+'_NF'+str(int(values["NF"]))
 
-        if 'M' in values.keys():
-            if values['M'] == 'unit_size':
-                values['M'] = 1
-            if "PARALLEL" in values.keys() and int(values['PARALLEL'])>1:
-                values["PARALLEL"]=int(values['PARALLEL'])
-                values['M'] = int(values['M'])*int(values['PARALLEL'])
-            size=size*int(values["M"])
-            name_arg =name_arg+'_M'+str(int(values["M"]))
+        if 'NF' in values['M0'].keys():
+            if values['M0']['NF'] == 'unit_size':
+                values['M0']['NF'] =size
+            size=int(values['M0']["NF"])
+            name_arg =name_arg+'_NF'+str(int(values['M0']["NF"]))
 
-        no_units = ceil(size / unit_size_mos)
+        if 'M' in values['M0'].keys():
+            if values['M0']['M'] == 'unit_size':
+                values['M0']['M'] = 1
+            if "PARALLEL" in values['M0'].keys() and int(values['M0']['PARALLEL'])>1:
+                values['M0']["PARALLEL"]=int(values['M0']['PARALLEL'])
+                values['M0']['M'] = int(values['M0']['M'])*int(values['M0']['PARALLEL'])
+            size=size*int(values['M0']["M"])
+            name_arg =name_arg+'_M'+str(int(values['M0']["M"]))
+
+        no_units = size
 
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
-            no_units = ceil(size / unit_size_mos)
+            no_units = size
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
                 square_y = floor(sqrt(no_units/3))
             else:
@@ -528,9 +539,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'y_cells': yval,
                 'parameters':values
             }
-            if 'STACK' in values.keys() and int(values["STACK"])>1:
-                block_args['stack']=int(values["STACK"])
-                block_name = block_name+'_ST'+str(int(values["STACK"]))
+            if 'STACK' in values['M0'].keys() and int(values['M0']["STACK"])>1:
+                block_args['stack']=int(values['M0']["STACK"])
+                block_name = block_name+'_ST'+str(int(values['M0']["STACK"]))
             if vt:
                 block_args['vt_type']=vt[0]
                 block_name = block_name+'_'+vt[0]
