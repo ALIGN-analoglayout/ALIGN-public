@@ -75,7 +75,7 @@ class VerilogJsonModule(DictEmulator):
 
     def translate(self, solver):
         # Initialize subcircuit bounding box
-        bb = solver.bbox_vars('subckt')
+        bb = solver.bbox_vars('subcircuit')
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
         # Initialize element bounding boxes
