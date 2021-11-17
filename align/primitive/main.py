@@ -537,7 +537,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'value': unit_size_mos,
                 'x_cells': xval,
                 'y_cells': yval,
-                'parameters':values
+                'parameters':values['M0']
             }
             if 'STACK' in values['M0'].keys() and int(values['M0']["STACK"])>1:
                 block_args['stack']=int(values['M0']["STACK"])
