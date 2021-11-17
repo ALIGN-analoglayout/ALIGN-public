@@ -18,7 +18,7 @@ if (NOT glpk)
       ${glpk_SOURCE_DIR}/CMakeLists.txt
       COPYONLY)
     add_subdirectory(${glpk_SOURCE_DIR} ${glpk_BINARY_DIR})
-    target_include_directories(glpk INTERFACE "${CMAKE_INSTALL_PREFIX}/include")
+    target_include_directories(glpk INTERFACE ${glpk_SOURCE_DIR}/src)
   endif()
   add_library(glpk::glpk ALIAS glpk)
 else()
