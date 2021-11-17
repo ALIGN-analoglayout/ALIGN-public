@@ -122,7 +122,7 @@ def test_donotroute():
         {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotRoute", "nets": ["v1", "vccx"]}
+        {"constraint": "DoNotRoute", "nets": ["v1", "vccx", "vssx"]}
         ]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False)
