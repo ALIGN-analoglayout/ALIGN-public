@@ -1516,6 +1516,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
 
     get_variables(lp, var.data());
     delete_lp(lp);
+    int minx(INT_MAX), miny(INT_MAX);
 
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = var.at(i * 4);
@@ -1634,7 +1635,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       // use the bottom/left flush solution
       Blocks = blockslocal;
     }
-  }*/
+  }
 
   // calculate LL and UR
   LL.x = INT_MAX, LL.y = INT_MAX;
