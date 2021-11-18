@@ -1039,9 +1039,36 @@ class TimeMeasure {
     }
 };
 
+struct UniqRow {
+  int _id1, _id2, _id3;
+  int _d1, _ll, _ur;
+  UniqRow(int id1, int id2, int id3, int d1, int ll, int ur) :
+    _id1(id1), _id2(id2), _id3(id3), _d1(d1), _ll(ll), _ur(ur) {}
+  bool operator < (const UniqRow& r) const
+  {
+    if (_id1 == r._id1) {
+      if (_id2 == r._id2) {
+        if (_id3 == r._id3) {
+          if (_d1 == r._d1) {
+            if (_ll == r._ll) {
+              return _ur < r._ur;
+            }
+            return _ll < r._ll;
+          }
+          return _d1 < r._d1;
+        }
+        return _id3 < r._id3;
+      }
+      return _id2 < r._id2;
+    }
+    return _id1 < r._id1;
+  }
+};
+
+
 bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPglpk");
 
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -1073,6 +1100,9 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
   ia.reserve(Nsize);
   ja.reserve(Nsize);
   ar.reserve(Nsize);
+  ia.push_back(0);
+  ja.push_back(0);
+  ar.push_back(0.);
 
   lp = glp_create_prob();
   glp_set_obj_dir(lp, GLP_MIN);
@@ -1094,9 +1124,13 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
 
   for (int i = 0; i < mydesign.Nets.size(); ++i) {
     int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
+    glp_set_col_kind(lp, ind, GLP_CV);
     glp_set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_x").c_str()));
+    glp_set_col_kind(lp, ind, GLP_CV);
     glp_set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_y").c_str()));
+    glp_set_col_kind(lp, ind, GLP_CV);
     glp_set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ur_x").c_str()));
+    glp_set_col_kind(lp, ind, GLP_CV);
     glp_set_col_name(lp, ind,   const_cast<char*>((mydesign.Nets[i].name + "_ur_y").c_str()));
   }
 
@@ -1104,20 +1138,18 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
         if (prev) {
-          glp_set_col_bnds(lp, (id * 4 + 1), GLP_LO, (*prev)[id].x, 0.);
-          glp_set_col_bnds(lp, (id * 4 + 2), GLP_LO, (*prev)[id].y, 0.);
+          glp_set_col_bnds(lp, (id * 4 + 1), GLP_DB, (*prev)[id].x, (int)mydesign.GetMaxBlockHPWLSum());
+          glp_set_col_bnds(lp, (id * 4 + 2), GLP_DB, (*prev)[id].y, (int)mydesign.GetMaxBlockHPWLSum());
         } else {
-          // x>=0
-          glp_set_col_bnds(lp, (id * 4 + 1), GLP_LO, 0., 0.);
-          // y>=0
-          glp_set_col_bnds(lp, (id * 4 + 2), GLP_LO, 0., 0.);
+          glp_set_col_bnds(lp, (id * 4 + 1), GLP_DB, 0., (int)mydesign.GetMaxBlockHPWLSum()); // x>=0
+          glp_set_col_bnds(lp, (id * 4 + 2), GLP_DB, 0., (int)mydesign.GetMaxBlockHPWLSum()); // y>=0
         }
       }
     }
     for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
       const auto& ind = (mydesign.Blocks.size() + i) * 4 + 1;
       for (int j = 0; j < 4; ++j) {
-        glp_set_col_bnds(lp, ind+j, GLP_LO, 0., 0.);
+        glp_set_col_bnds(lp, ind+j, GLP_DB, 0., (int)mydesign.GetMaxBlockHPWLSum());
       }
     }
   } else {
@@ -1140,7 +1172,7 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
     for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
       const auto& ind = (mydesign.Blocks.size() + i) * 4 + 1;
       for (int j = 0; j < 4; ++j) {
-        glp_set_col_bnds(lp, ind+j, GLP_UP, 0., 0.);
+        glp_set_col_bnds(lp, ind+j, GLP_DB, -(int)mydesign.GetMaxBlockHPWLSum(), 0.);
       }
     }
   }
@@ -1167,10 +1199,8 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
               mydesign.Abut_Constraints.end()) {
             rowbounds.push_back(std::make_tuple(GLP_FX, -mydesign.Blocks[i][curr_sp.selected[i]].width, -mydesign.Blocks[i][curr_sp.selected[i]].width));
-            //glp_set_row_bnds(lp, rowiter++, GLP_FX, -mydesign.Blocks[i][curr_sp.selected[i]].width, -mydesign.Blocks[i][curr_sp.selected[i]].width);
           } else {
             rowbounds.push_back(std::make_tuple(GLP_UP, 0, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph));
-            //glp_set_row_bnds(lp, rowiter++, GLP_UP, 0, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
           }
         } else {
           // i is above j
@@ -1179,9 +1209,9 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
           ++rowiter;
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
               mydesign.Abut_Constraints.end()) {
-            rowbounds.push_back(std::make_tuple(GLP_FX, -mydesign.Blocks[i][curr_sp.selected[i]].height, -mydesign.Blocks[i][curr_sp.selected[i]].height));
+            rowbounds.push_back(std::make_tuple(GLP_FX, mydesign.Blocks[j][curr_sp.selected[j]].height, mydesign.Blocks[j][curr_sp.selected[j]].height));
           } else {
-            rowbounds.push_back(std::make_tuple(GLP_UP, 0, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph));
+            rowbounds.push_back(std::make_tuple(GLP_LO, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph, 0.));
           }
         }
       } else {
@@ -1203,15 +1233,14 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
           ++rowiter;
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H)) !=
               mydesign.Abut_Constraints.end()) {
-            rowbounds.push_back(std::make_tuple(GLP_FX, -mydesign.Blocks[i][curr_sp.selected[i]].width, -mydesign.Blocks[i][curr_sp.selected[i]].width));
+            rowbounds.push_back(std::make_tuple(GLP_FX, mydesign.Blocks[j][curr_sp.selected[j]].width, mydesign.Blocks[j][curr_sp.selected[j]].width));
           } else {
-            rowbounds.push_back(std::make_tuple(GLP_UP, 0, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph));
+            rowbounds.push_back(std::make_tuple(GLP_LO, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph, 0));
           }
         }
       }
     }
   }
-
 
   // symmetry block constraint
   for (const auto& SPBlock : mydesign.SPBlocks) {
@@ -1390,12 +1419,8 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
     for (unsigned int j = 0; j < alignment_unit.blocks.size() - 1; j++) {
       int first_id = alignment_unit.blocks[j], second_id = alignment_unit.blocks[j + 1];
       if (alignment_unit.horizon == 1) {
-        ia.push_back(rowiter);
-        ja.push_back(first_id * 4 + 2);
-        ar.push_back(1);
-        ia.push_back(rowiter);
-        ja.push_back(second_id * 4 + 2);
-        ar.push_back(-1);
+        ia.push_back(rowiter); ja.push_back(first_id * 4 + 2); ar.push_back(1);
+        ia.push_back(rowiter); ja.push_back(second_id * 4 + 2); ar.push_back(-1);
         double bias{0.};
         if (alignment_unit.line != 0) {
           if (alignment_unit.line == 1) {
@@ -1409,12 +1434,8 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
         rowbounds.push_back(std::make_tuple(GLP_FX, bias, bias));
         ++rowiter;
       } else {
-        ia.push_back(rowiter);
-        ja.push_back(first_id * 4 + 1);
-        ar.push_back(1);
-        ia.push_back(rowiter);
-        ja.push_back(second_id * 4 + 1);
-        ar.push_back(-1);
+        ia.push_back(rowiter); ja.push_back(first_id * 4 + 1); ar.push_back(1);
+        ia.push_back(rowiter); ja.push_back(second_id * 4 + 1); ar.push_back(-1);
         double bias{0.};
         if (alignment_unit.line == 0) {
           if (alignment_unit.line == 1) {
@@ -1430,16 +1451,17 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
       }
     }
   }
-  glp_add_rows(lp, rowbounds.size());
-  for (int i = 0; i < rowbounds.size(); ++i) {
-    glp_set_row_bnds(lp, i + 1, std::get<0>(rowbounds[i]), std::get<1>(rowbounds[i]), std::get<2>(rowbounds[i]));
-  }
-
+  std::set<UniqRow> uniqueXRows, uniqueYRows;
   {
     ConstGraph const_graph;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       if (mydesign.Nets[i].connected.size() < 2) continue;
+      int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
+      glp_set_obj_coef(lp, ind,     -const_graph.LAMBDA);
+      glp_set_obj_coef(lp, ind + 1, -const_graph.LAMBDA);
+      glp_set_obj_coef(lp, ind + 2,  const_graph.LAMBDA);
+      glp_set_obj_coef(lp, ind + 3,  const_graph.LAMBDA);
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
           int block_id = mydesign.Nets[i].connected[j].iter2, pin_id = mydesign.Nets[i].connected[j].iter;
@@ -1452,30 +1474,57 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
             pin_urx = blk.blockPins[pin_id].bbox.UR.x;
             pin_ury = blk.blockPins[pin_id].bbox.UR.y;
           }
-          int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
-          {
-            double sparserow[3] = {1,                1.*(blk.width - pin_llx - pin_urx), -1};
-            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3,                   ind};
-            glp_set_obj_coef(lp, ind++, -const_graph.LAMBDA);
-          }
-          {
-            double sparserow[3] = {1,                1.*(blk.height - pin_lly - pin_ury), -1};
-            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4,                   ind};
-            glp_set_obj_coef(lp, ind++, -const_graph.LAMBDA);
-          }
-          {
-            double sparserow[3] = {1,                1.*(blk.width - pin_llx - pin_urx), -1};
-            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3,                   ind};
-            glp_set_obj_coef(lp, ind++, const_graph.LAMBDA);
-          }
-          {
-            double sparserow[3] = {1,                1.*(blk.height - pin_lly - pin_ury), -1};
-            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4,                   ind};
-            glp_set_obj_coef(lp, ind++, const_graph.LAMBDA);
-          }
+          uniqueXRows.emplace(block_id * 4 + 1, block_id * 4 + 3, ind, (blk.width - pin_llx - pin_urx), -pin_llx, -pin_urx);
+          uniqueYRows.emplace(block_id * 4 + 2, block_id * 4 + 4, ind + 1, (blk.height - pin_lly - pin_ury), -pin_lly, -pin_ury);
         }
       }
     }
+
+    for (const auto& it : uniqueXRows) {
+      ia.push_back(rowiter); ja.push_back(it._id1); ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(it._id2); ar.push_back(1.*it._d1);
+      ia.push_back(rowiter); ja.push_back(it._id3); ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_LO, it._ll, 0.));
+      ++rowiter;
+      ia.push_back(rowiter); ja.push_back(it._id1);     ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(it._id2);     ar.push_back(1.*it._d1);
+      ia.push_back(rowiter); ja.push_back(it._id3 + 2); ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_UP, 0., it._ur));
+      ++rowiter;
+    }
+    for (const auto& it : uniqueYRows) {
+      ia.push_back(rowiter); ja.push_back(it._id1); ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(it._id2); ar.push_back(1.*it._d1);
+      ia.push_back(rowiter); ja.push_back(it._id3); ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_LO, it._ll, 0.));
+      ++rowiter;
+      ia.push_back(rowiter); ja.push_back(it._id1);     ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(it._id2);     ar.push_back(1.*it._d1);
+      ia.push_back(rowiter); ja.push_back(it._id3 + 2); ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_UP, 0., it._ur));
+      ++rowiter;
+    }
+    /*for (const auto& it : uniqueXRows) {
+      ia.push_back(rowiter); ja.push_back(block_id * 4 + 2); ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(block_id * 4 + 4); ar.push_back(1.*(blk.height - pin_lly - pin_ury));
+      ia.push_back(rowiter); ja.push_back(ind + 1);              ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_LO, -pin_lly, 0.));
+      ++rowiter;
+      ia.push_back(rowiter); ja.push_back(block_id * 4 + 2); ar.push_back(1.0);
+      ia.push_back(rowiter); ja.push_back(block_id * 4 + 4); ar.push_back(1.*(blk.height - pin_lly - pin_ury));
+      ia.push_back(rowiter); ja.push_back(ind + 3);              ar.push_back(-1.0);
+      rowbounds.push_back(std::make_tuple(GLP_UP, 0., -pin_ury));
+      ++rowiter;
+    }*/
+
+    glp_add_rows(lp, rowbounds.size());
+    for (int i = 0; i < rowbounds.size(); ++i) {
+      glp_set_row_bnds(lp, i + 1, std::get<0>(rowbounds[i]), std::get<1>(rowbounds[i]), std::get<2>(rowbounds[i]));
+    }
+    if (ia.size() > 1) {
+      glp_load_matrix(lp, ia.size()-1, ia.data(), ja.data(), ar.data());
+    }
+    rowbounds.clear();
 
     // add area in cost
     int URblock_pos_id = 0, URblock_neg_id = 0;
@@ -1522,14 +1571,20 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
     glp_iocp control_parm;
     glp_init_iocp(&control_parm);
     control_parm.tm_lim = 1000;
-    glp_load_matrix(lp, 4, ia.data(), ja.data(), ar.data());
-    int ret{0};
+    control_parm.ps_tm_lim = 1000;
+    control_parm.msg_lev = GLP_MSG_OFF;
+    control_parm.presolve = GLP_ON;
+    int ret{1};
     {
       TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_solve_runtime);
+      //glp_simplex(lp, NULL);
       ret = glp_intopt(lp, &control_parm);
+      int status = glp_mip_status(lp);
+      if (ret == 0 && (status == GLP_OPT || status == GLP_FEAS)) ret = 0;
+      else ret = 1;
     }
-    if (ret != 0 && ret != GLP_EMIPGAP && ret != GLP_ETMLIM) {
-      static int fail_cnt{0};
+    if (ret != 0) {
+      /*static int fail_cnt{0};
       static std::string block_name;
       if (block_name != mydesign.name) {
         fail_cnt = 0;
@@ -1537,13 +1592,8 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
       }
       if (fail_cnt < 10) {
         glp_write_lp(lp, nullptr, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
-        std::string tmpstrpos, tmpstrneg;
-        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
-        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
-        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
-        logger->info("ILP fail {0}", fail_cnt);
         ++fail_cnt;
-      }
+      }*/
       glp_delete_prob(lp);
       glp_free_env();
       ++const_cast<design&>(mydesign)._infeasILPFail;
@@ -1566,12 +1616,12 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
 
     int minx(INT_MAX), miny(INT_MAX);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = glp_ipt_col_prim(lp, i * 4);
-      Blocks[i].y = glp_ipt_col_prim(lp, i * 4 + 1);
+      Blocks[i].x = glp_mip_col_val(lp, i * 4 + 1);
+      Blocks[i].y = glp_mip_col_val(lp, i * 4 + 2);
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = glp_ipt_col_prim(lp, i * 4 + 2);
-      Blocks[i].V_flip = glp_ipt_col_prim(lp, i * 4 + 3);
+      Blocks[i].H_flip = glp_mip_col_val(lp, i * 4 + 3);
+      Blocks[i].V_flip = glp_mip_col_val(lp, i * 4 + 4);
     }
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
@@ -1580,15 +1630,16 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
     // calculate HPWL from ILP solution
     HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) + i)*4;
-      HPWL_ILP += (glp_ipt_col_prim(lp, ind + 3) + glp_ipt_col_prim(lp, ind + 2)
-          - glp_ipt_col_prim(lp, ind + 1) - glp_ipt_col_prim(lp, ind));
+      int ind = (int(mydesign.Blocks.size()) + i)*4 + 1;
+      HPWL_ILP += (glp_mip_col_val(lp, ind + 3) + glp_mip_col_val(lp, ind + 2)
+          - glp_mip_col_val(lp, ind + 1) - glp_mip_col_val(lp, ind));
     }
     glp_delete_prob(lp);
     glp_free_env();
   }
   return true;
 }
+
 bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
