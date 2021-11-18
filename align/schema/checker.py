@@ -1,19 +1,18 @@
+import z3
 import abc
 import collections
 
 import logging
 logger = logging.getLogger(__name__)
 
-import z3
-
-class CheckerError(Exception):
+class SolutionNotFoundError(Exception):
     def __init__(self, message, labels=None):
         self.message = message
         self.labels = labels
         super().__init__(self.message)
 
 
-class AbstractChecker(abc.ABC):
+class AbstractSolver(abc.ABC):
     @abc.abstractmethod
     def append(self, formula, label=None):
         '''
@@ -26,12 +25,36 @@ class AbstractChecker(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def solve(self):
+        '''
+        Solve & return solutions
+
+        If no solution is found, raise SolutionNotFoundError
+        '''
+        pass
+
+    @abc.abstractmethod
     def label(self, object):
         '''
         Generate label that can be used for 
         back-annotation
+
+        Note: Return None if solver
+              doesn't support back-annotation
         '''
-        return None
+        pass
+
+    @abc.abstractmethod
+    def annotate(self, formulae, label):
+        '''
+        Yield formulae annotated with label      
+
+        Note: Input 'formulae' is iterable.
+        Note: MUST return an iterable object
+        Note: Return original iterable if solver
+              doesn't support back-annotation
+        '''
+        pass
 
     @abc.abstractmethod
     def checkpoint(self):
@@ -134,35 +157,35 @@ class AbstractChecker(abc.ABC):
         '''
         pass
 
+AnnotatedFormula = collections.namedtuple('AnnotatedFormula', ['formula', 'label'])
 
-class Z3Checker(AbstractChecker):
+class Z3Checker(AbstractSolver):
 
     def __init__(self):
-        self._label_cache = {}
-        self._bbox_cache = {}
-        self._bbox_subcircuit = {}
         self._solver = z3.Solver()
         self._solver.set(unsat_core=True)
 
-    def append(self, formula, label=None):
-        if label is not None:
-            self._solver.assert_and_track(formula, label)
+    def annotate(self, formulae, label):
+        yield AnnotatedFormula(
+        formula=self.And(
+            *formulae
+        ) if len(formulae) > 1 else formulae[0],
+        label=label)
+
+    def append(self, formula):
+        if isinstance(formula, AnnotatedFormula):
+            self._solver.assert_and_track(formula.formula, formula.label)
         else:
             self._solver.add(formula)
+
+    def solve(self):
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
             logger.debug(f"Unsat encountered: {self._solver}")
-            raise CheckerError(
-                message=f'Trying to add {formula} resulted in unsat',
+            raise SolutionNotFoundError(
+                message=f'No satisfying solution could be found',
                 labels=self._solver.unsat_core())
-
-    def label(self, object):
-        # Z3 throws 'index out of bounds' error
-        # if more than 9 digits are used
-        return z3.Bool(
-            hash(repr(object)) % 10**9
-        )
 
     def checkpoint(self):
         self._solver.push()
@@ -170,40 +193,21 @@ class Z3Checker(AbstractChecker):
     def revert(self):
         self._solver.pop()
 
-    def bbox_vars(self, name, is_subcircuit=False):
-        # bbox was previously generated
-        if name in self._bbox_cache:
-            return self._bbox_cache[name]
+    def bbox_vars(self, name):
         # generate new bbox
-        b = self._generate_var(
+        return self._generate_var(
             'Bbox',
             llx=f'{name}_llx',
             lly=f'{name}_lly',
             urx=f'{name}_urx',
-            ury=f'{name}_ury',
-            sx=f'{name}_sx',
-            sy=f'{name}_sy')
-        # width / height cannot be 0
-        self.append(b.llx < b.urx)
-        self.append(b.lly < b.ury)
-        self.append(self.Or(b.sx == 1, b.sx == -1))
-        self.append(self.Or(b.sy == 1, b.sy == -1))
-        if is_subcircuit:
-            self._bbox_subcircuit[name] = True
-        else:
-            # Do not overlap with other instance bboxes
-            for k2, b2 in self._bbox_cache.items():
-                if k2 not in self._bbox_subcircuit:
-                    self.append(
-                        self.Or(
-                            b.urx <= b2.llx,
-                            b2.urx <= b.llx,
-                            b.ury <= b2.lly,
-                            b2.ury <= b.lly,
-                        )
-                    )
-        self._bbox_cache[name] = b
-        return b
+            ury=f'{name}_ury')
+
+    def label(self, object):
+        # Z3 throws 'index out of bounds' error
+        # if more than 9 digits are used
+        return z3.Bool(
+            hash(repr(object)) % 10**9
+        )
 
     @staticmethod
     def Or(*expressions):
