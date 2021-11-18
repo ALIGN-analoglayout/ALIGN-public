@@ -1028,7 +1028,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
-  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -1043,8 +1042,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       break;
     }
   }
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
@@ -1476,7 +1475,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
       if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-      row.at(curr_sp.negPair[i] * 4 + 2) += estimated_width / 2;
+      row.at(curr_sp.negPair[i] * 4 + 2) += ((flushbl ? estimated_width : -estimated_width) / 2);
     }
     // estimate height
     for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
@@ -1487,7 +1486,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     // add estimated area
     for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
       if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-      row.at(curr_sp.negPair[i] * 4 + 1) += estimated_height / 2;
+      row.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_height : -estimated_height) / 2);
     }
 
     set_obj_fn(lp, row.data());
@@ -1495,6 +1494,23 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
+      /*static int fail_cnt{0};
+      static std::string block_name;
+      if (block_name != mydesign.name) {
+        fail_cnt = 0;
+        block_name = mydesign.name;
+      }
+      if (fail_cnt < 10) {
+        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+        curr_sp.PrintSeqPair();
+        std::string tmpstrpos, tmpstrneg;
+        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+        logger->info("ILP fail {0}", fail_cnt);
+        curr_sp.PrintSeqPair(mydesign);
+        ++fail_cnt;
+      }*/
       delete_lp(lp);
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
@@ -1516,13 +1532,13 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
 
     get_variables(lp, var.data());
     delete_lp(lp);
-    int minx(INT_MAX), miny(INT_MAX);
 
+    int minx(INT_MAX), miny(INT_MAX);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = var.at(i * 4);
       Blocks[i].y = var.at(i * 4 + 1);
-      roundup(Blocks[i].x, x_pitch);
-      roundup(Blocks[i].y, y_pitch);
+      minx = std::min(minx, Blocks[i].x);
+      miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = var.at(i * 4 + 2);
       Blocks[i].V_flip = var.at(i * 4 + 3);
     }
@@ -1635,6 +1651,12 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       // use the bottom/left flush solution
       Blocks = blockslocal;
     }
+  }
+
+  // snap up coordinates to grid
+  for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+    roundup(Blocks[i].x, x_pitch);
+    roundup(Blocks[i].y, y_pitch);
   }
 
   // calculate LL and UR
