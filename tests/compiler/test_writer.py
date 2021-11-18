@@ -53,7 +53,7 @@ def test_verilog_writer():
             name in available_cell_generator
             or name.split("_type")[0] in available_cell_generator
         ):
-            const = ConstraintDB()
+            pass
         else:
             with set_context(subckt.constraints):
                 subckt.constraints.append(constraint.PowerPorts(ports=['VDD!']))
