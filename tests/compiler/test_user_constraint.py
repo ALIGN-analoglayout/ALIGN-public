@@ -4,7 +4,7 @@ import json
 import shutil
 
 from align.compiler.compiler import compiler_input, constraint_generator
-from align.schema.checker import SolutionNotFoundError
+from align.schema.checker import CheckerError
 
 pdk_dir = (
     pathlib.Path(__file__).resolve().parent.parent.parent
@@ -80,8 +80,8 @@ def test_constraint_checking(dir_name):
         / dir_name
         / (circuit_name + ".sp")
     )
-    with pytest.raises(SolutionNotFoundError):
-        updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+    with pytest.raises(CheckerError):
+        compiler_input(test_path, circuit_name, pdk_dir, config_path)
 
 
 def test_scf():
