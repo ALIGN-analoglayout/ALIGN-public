@@ -1437,7 +1437,7 @@ bool ILP_solver::FrameSolveILPglpk(const design& mydesign, const SeqPair& curr_s
         ia.push_back(rowiter); ja.push_back(first_id * 4 + 1); ar.push_back(1);
         ia.push_back(rowiter); ja.push_back(second_id * 4 + 1); ar.push_back(-1);
         double bias{0.};
-        if (alignment_unit.line == 0) {
+        if (alignment_unit.line != 0) {
           if (alignment_unit.line == 1) {
             // align center x
             bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;

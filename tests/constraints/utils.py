@@ -87,6 +87,7 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
     os.chdir(run_dir)
 
     args = [str(example), '-p', str(pdk_dir), '-l', log_level, '-n', str(n)]
+    print(args)
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
@@ -98,7 +99,6 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
             assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
 
     if cleanup:
-        shutil.rmtree(run_dir)
         shutil.rmtree(example)
     else:
         return (example, run_dir)
