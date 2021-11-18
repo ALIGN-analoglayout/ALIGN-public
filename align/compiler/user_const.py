@@ -50,9 +50,7 @@ class ConstraintParser:
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
-                constraints = constraint.ConstraintDB.parse_file(json_path)
-            with types.set_context(node.constraints):
-                node.constraints.extend(constraints)
+                node.constraints.extend(constraint.ConstraintDB.parse_file(json_path))
             # ALL inst in caps
             for const in node.constraints:
                 if hasattr(const, "instances") and len(const.instances) > 0:

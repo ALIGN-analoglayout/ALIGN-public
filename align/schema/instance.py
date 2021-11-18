@@ -23,15 +23,6 @@ class Instance(types.BaseModel):
             f' {self.model.name} ' + \
             ' '.join(f'{x}={{{y}}}' for x, y in self.parameters.items())
 
-    def translate(self, solver):
-        '''
-        Bounding boxes must have non-zero
-        height & width
-        '''
-        b = solver.bbox_vars(self.name)
-        yield b.llx < b.urx
-        yield b.lly < b.ury
-
     #
     # Private attributes affecting class behavior
     #

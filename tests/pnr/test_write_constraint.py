@@ -64,10 +64,8 @@ def test_group_block_hsc(results_file, mock_circuit):
     tmp_file = tmp_dir / (name + '.pnr.const.json')
     with types.set_context(mock_circuit):
         constraints = constraint.ConstraintDB.parse_file(constraint_file)
-    with types.set_context(mock_circuit.constraints):
-        mock_circuit.constraints.extend(constraints)
     with open(tmp_file, 'w') as outfile:
-        json.dump(PnRConstraintWriter().map_valid_const(mock_circuit.constraints), outfile, indent=4)
+        json.dump(PnRConstraintWriter().map_valid_const(constraints), outfile, indent=4)
     with open(tmp_file, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]
         gen_const.sort(key=lambda item: item.get("const_name"))
