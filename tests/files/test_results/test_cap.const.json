@@ -1,50 +1,26 @@
 [
-    {
-        "constraint": "group_caps",
-        "name": "c0",
-        "instances": [
-            "c0"
-        ],
-        "unit_cap": "Cap_12f",
-        "num_units": [
-            5
-        ],
-        "dummy": false
-    },
-    {
-        "constraint": "group_caps",
-        "name": "c2_c1",
-        "instances": [
-            "c2_c1"
-        ],
-        "unit_cap": "Cap_12f",
-        "num_units": [
-            3,
-            3
-        ],
-        "dummy": false
-    },
-    {
-        "constraint": "symmetric_blocks",
-        "pairs": [
+        {
+          "constraint": "symmetric_nets",
+          "net1": "OUT1",
+          "net2": "OUT2",
+          "pins1": [
+            "C2/MINUS",
+            "OUT1"
+          ],
+          "pins2": [
+            "C1/MINUS",
+            "OUT2"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
             [
-                "c2_c1"
+              "C2",
+              "C1"
             ]
-        ],
-        "direction": "V"
-    },
-    {
-        "constraint": "symmetric_nets",
-        "net1": "out1",
-        "net2": "out2",
-        "pins1": [
-            "c2_c1/PLUS0",
-            "out1"
-        ],
-        "pins2": [
-            "c2_c1/PLUS1",
-            "out2"
-        ],
-        "direction": "V"
-    }
+          ],
+          "direction": "V"
+        }
 ]

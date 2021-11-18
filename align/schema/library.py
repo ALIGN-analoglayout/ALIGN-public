@@ -57,7 +57,7 @@ with set_context(default):
     default.append(
         Model(
             name='CAP',
-            pins=['+', '-'],
+            pins=['PLUS', 'MINUS'],
             parameters={
                 'VALUE': 0
             },
@@ -68,7 +68,7 @@ with set_context(default):
     default.append(
         Model(
             name='RES',
-            pins=['+', '-'],
+            pins=['PLUS', 'MINUS'],
             parameters={
                 'VALUE': 0
             },
@@ -78,7 +78,7 @@ with set_context(default):
     default.append(
         Model(
             name='IND',
-            pins=['+', '-'],
+            pins=['PLUS', 'MINUS'],
             parameters={
                 'VALUE': 0
             },

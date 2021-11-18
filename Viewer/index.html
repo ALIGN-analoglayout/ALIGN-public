@@ -513,7 +513,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
+      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect},${d.netType}`);
 
       /*========================*/
 
@@ -549,7 +549,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
+      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect},${d.netType}`);
     }
   }
 </script>

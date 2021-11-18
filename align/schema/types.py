@@ -75,10 +75,14 @@ class BaseModel(pydantic.BaseModel):
                 return [to_dict(v) for v in val]
             elif isinstance(val, dict):
                 return {to_dict(k): to_dict(v) for k, v in val.items()}
-            elif isinstance(val, (BaseModel, List, Dict)):
+            elif isinstance(val, (BaseModel, Dict)):
                 return val.dict(
                     exclude_unset=True,
                     exclude_defaults=True)
+            elif isinstance(val, List):
+                return val.dict(
+                    exclude_unset=True,
+                    exclude_defaults=True)['__root__']
             else:
                 return val
         ctx = self.parent if _ctx.get() is None else _ctx.get()
@@ -138,6 +142,9 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     def pop(self, index=-1):
         return self.__root__.pop(index)
+
+    def clear(self):
+        self.__root__.clear()
 
     def __len__(self):
         return len(self.__root__)

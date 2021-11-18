@@ -25,17 +25,18 @@ class UnionFind:
 
     def connect( self, other):
         other.root().dad = self.root()
-    
+
 class ScanlineRect(UnionFind):
     def __init__(self):
         super().__init__()
         self.rect = None
         self.netName = None
+        self.netType = None
         self.terminal = None
         self.isPorted = False
 
     def __repr__(self):
-        return str( (self.rect, self.netName))
+        return str( (self.rect, self.netName, self.netType))
 
 class Scanline:
     def __init__(self, indices, dIndex):
@@ -48,9 +49,10 @@ class Scanline:
         return len(self.rects) == 0
 
     @staticmethod
-    def new_slr_no_add( rect, netName, *, isPorted=False):
+    def new_slr_no_add( rect, netName, netType, *, isPorted=False):
         slr = ScanlineRect()
         slr.rect = rect[:]
+        slr.netType = netType
         if netName is not None and ':' in netName:
             slr.terminal = tuple(netName.split(':'))
             assert len(slr.terminal) == 2
@@ -63,12 +65,12 @@ class Scanline:
         self.rects.append(slr)
         return slr
 
-    def new_slr(self, rect, netName, *, isPorted=False):
-        self.add_slr( self.new_slr_no_add( rect, netName, isPorted=isPorted))
+    def new_slr(self, rect, netName, netType, *, isPorted=False):
+        self.add_slr( self.new_slr_no_add( rect, netName, netType, isPorted=isPorted))
         return slr
 
     def merge_slr(self, base_slr, new_slr):
-        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])
         base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
@@ -178,20 +180,19 @@ class RemoveDuplicates():
 
     def build_centerline_tbl( self):
         tbl = defaultdict(lambda: defaultdict(list))
-
         for d in self.canvas.terminals:
             layer = d['layer']
             rect = d['rect']
             netName = d['netName']
-            isPorted = 'pin' in d
+            netType = d['netType']
+            isPorted = 'pin' in d['netType']
             if isPorted:
-                assert netName == d['pin'], f"{netName} does not match {d['pin']}"
+                assert netName != None, f'netName for pin rectange {rect} on layer {layer} is None'
             if layer in self.skip_layers: continue
-
             if layer in self.layers:
                 twice_center = sum(rect[index]
                                    for index in self.indicesTbl[self.layers[layer]][0])
-                tbl[layer][twice_center].append((rect, netName, isPorted))
+                tbl[layer][twice_center].append((rect, netName, netType, isPorted))
             else:
                 logger.warning( f"Layer {layer} not in {self.layers}")
 
@@ -212,28 +213,31 @@ class RemoveDuplicates():
 
                 different_widths_in_bin = False
 
-                (rect0, _, _) = v[0]
-                for (rect, _, _) in v[1:]:
+                (rect0, _, _, _) = v[0]
+                for (rect, _, _, _) in v[1:]:
                     if not all(rect[i] == rect0[i] for i in indices):
                         widths = set()
-                        for (r, _, _) in v:
+                        for (r, _, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
                         if layer not in skip_layers_for_different_widths:
                             different_widths_in_bin = True
                             tup = (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
-                            logger.warning( f"{tup}")
+                            #logger.warning( f"{tup}")
                             self.different_widths.append( tup)
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline( indices, dIndex)
 
                 current_slr = None
-                for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
-                    potential_slr = sl.new_slr_no_add(rect, netName, isPorted=isPorted)
+                for (rect, netName, netType, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
+                    potential_slr = sl.new_slr_no_add(rect, netName, netType, isPorted=isPorted)
                     if not sl.isEmpty() and \
-                       rect[dIndex] <= current_slr.rect[dIndex+2] and \
-                       all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
+                        rect[dIndex] <= current_slr.rect[dIndex+2] and \
+                        all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
                         if self.connectPair(layer,current_slr, potential_slr):
-                            sl.merge_slr(current_slr, potential_slr)
+                            if (potential_slr.netType not in ['blockage'] and current_slr.netType not in ['blockage']):
+                                sl.merge_slr(current_slr, potential_slr)
+                            else:
+                                current_slr = sl.add_slr( potential_slr)
                         else:
                             current_slr = sl.add_slr( potential_slr)
                     else:  # empty or gap or different width
@@ -243,7 +247,8 @@ class RemoveDuplicates():
                     assert current_slr == sl.rects[-1]
 
                 if different_widths_in_bin:
-                    logger.warning( f"Different widths: {layer} {sl}")
+                    pass
+                    #logger.warning( f"Different widths: {layer} {sl}")
 
     def check_shorts_induced_by_vias( self):
 
@@ -308,15 +313,15 @@ class RemoveDuplicates():
             for _, v in vv.items():
                 for slr in v.rects:
                     root = slr.root()
-                    terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect})
+                    terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect, 'netType':slr.netType})
                     if slr.isPorted:
-                        terminals[-1]['pin'] = root.netName
+                        terminals[-1]['netType'] = 'pin'
                     if slr.terminal is not None:
                         terminals[-1]['terminal'] = slr.terminal
 
         return terminals
 
-    def remove_duplicates( self):
+    def remove_duplicates( self, silence_errors=False):
 
         self.build_scan_lines( self.build_centerline_tbl())
 
@@ -327,7 +332,10 @@ class RemoveDuplicates():
         # Trying fewer error messages
         if True:
             if self.shorts or self.opens or self.different_widths:
-                logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+                if silence_errors:
+                    logger.debug(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
+                else:
+                    logger.error(f'Found errors: SHORT: {len(self.shorts)} OPEN: {len(self.opens)} DIFFERENT WIDTH: {len(self.different_widths)}')
         else:
             for short in self.shorts:
                 logger.warning("SHORT" + pprint.pformat(short))

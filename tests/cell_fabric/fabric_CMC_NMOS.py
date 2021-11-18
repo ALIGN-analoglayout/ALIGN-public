@@ -144,14 +144,14 @@ class UnitCell(CanvasNMOS):
 # Try to remove self.plPitch and self.activeWidth_h
         grid_x1 = grid_x0 + self.activeWidth_h//self.plPitch
 
-        self.addWire( self.active, 'active', None, y, grid_x0, grid_x1) 
-        self.addWire( self.RVT,    'RVT',    None, y, grid_x0, grid_x1) 
+        self.addWire( self.active, 'active', y, grid_x0, grid_x1) 
+        self.addWire( self.RVT,    'RVT',    y, grid_x0, grid_x1) 
 
         #####   Active fins   #####
         grid_x0 = x*self.gate
         grid_x1 = grid_x0 + self.gate
         for i in range(fin):  
-            self.addWire( self.fin, 'fin', None,  i+y*fin, (grid_x0, -1), (grid_x1, -1))
+            self.addWire( self.fin, 'fin', i+y*fin, (grid_x0, -1), (grid_x1, -1))
 
         #####   Gate Placement   #####
         for i in range(self.gate):
@@ -159,7 +159,7 @@ class UnitCell(CanvasNMOS):
             assert y_length % self.finPitch == 0
             grid_y0 = y * fin
             grid_y1 = (1+y)*fin
-            self.addWire( self.pl, 'g', None, xx, (grid_y0, -1), (grid_y1, 1 if y == y_cells-1 else -1))
+            self.addWire( self.pl, 'g', xx, (grid_y0, -1), (grid_y1, 1 if y == y_cells-1 else -1))
                 
         #####   Nselect Placement   #####
         if x == x_cells -1 and y == y_cells -1:
@@ -197,10 +197,10 @@ class UnitCell(CanvasNMOS):
                 if y == 0:
                     grid_y0 = adjust + (self.finDummy-1)//2 - 1
                     grid_y1 = grid_y0 + (y_cells-1)*(fin//2)
-                    self.addWire( self.m3, 'm3', None, grid_x, (grid_y0,-1), (grid_y1,1))
+                    self.addWire( self.m3, 'm3', grid_x, (grid_y0,-1), (grid_y1,1))
 
                 grid_y = y*(m2_tracks //y_cells) + self.finDummy//2 + adjust
-                self.addVia( self.v2, 'v2', None, grid_x, grid_y-1)
+                self.addVia( self.v2, 'v2', grid_x, grid_y-1)
 
 
 ############### M2 routing ###########################
@@ -211,7 +211,7 @@ class UnitCell(CanvasNMOS):
                     assert self.m1Pitch == self.plPitch
                     grid_x0 = self.gateDummy-1
                     grid_x1 = x_cells*self.gate - 2*self.gateDummy + 2
-                    self.addWire( self.m2, pin, pin, i-1, (grid_x0, -1), (grid_x1, 1))
+                    self.addWire( self.m2, pin, i-1, (grid_x0, -1), (grid_x1, 1), netType = "pin")
 
                                                      
 ################# M1 routing ######################
@@ -220,12 +220,12 @@ class UnitCell(CanvasNMOS):
             grid_y1 = grid_y0 + (fin_u+2)//2
 
             for i in S + D:
-                self.addWire( self.m0, 'm0', None, i, (y, -1), (y, 1))
+                self.addWire( self.m0, 'm0', i, (y, -1), (y, 1))
                 SD = 'S' if i in S else 'D'
-                self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1))
+                self.addWire( self.m1, SD, i, (grid_y0, -1), (grid_y1, 1))
 
             for i in G:
-                self.addWire( self.m1, 'G', None, i, (grid_y0, -1), (grid_y1, 1))
+                self.addWire( self.m1, 'G', i, (grid_y0, -1), (grid_y1, 1))
 
 ######## Vias placement ########
         if x_cells - 1 == x:

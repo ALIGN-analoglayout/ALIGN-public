@@ -87,30 +87,30 @@ class Canvas(AbstractCanvas):
 
         (ds0, ds1) = ('s', 'd')
 
-        self.addRegion( self.nd, None, None, (0, -1), (0*h,  2), (1, 1), (0*h,  6))
-        self.addRegion( self.pd, None, None, (0, -1), (1*h, -6), (1, 1), (1*h, -2))
+        self.addRegion( self.nd, None, (0, -1), (0*h,  2), (1, 1), (0*h,  6))
+        self.addRegion( self.pd, None, (0, -1), (1*h, -6), (1, 1), (1*h, -2))
 
-        self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 2, -1), (0*h + 6,  1))
-        self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.dc, ds0, (0, 0), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.dc, ds0, (0, 0), (0*h + 8, -1), (0*h + 12, 1))
 
-        self.addWire( self.pl, None, None, (0,-1), (0*h + 2, -1), (0*h + 6,  1))
-        self.addWire( self.pl, 'g', None,  (0, 1), (0*h + 2, -1), (0*h + 6,  1))
-        self.addWire( self.pl, 'g', None,  (1,-1), (0*h + 2, -1), (0*h + 6,  1))
-        self.addWire( self.pl, None, None, (1, 1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, None, (0,-1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, 'g', (0, 1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, 'g', (1,-1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, None, (1, 1), (0*h + 2, -1), (0*h + 6,  1))
 
-        self.addWire( self.pl, None, None, (0,-1), (0*h + 8, -1), (0*h + 12, 1))
-        self.addWire( self.pl, 'g', None,  (0, 1), (0*h + 8, -1), (0*h + 12, 1))
-        self.addWire( self.pl, 'g', None,  (1,-1), (0*h + 8, -1), (0*h + 12, 1))
-        self.addWire( self.pl, None, None, (1, 1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, None, (0,-1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, 'g', (0, 1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, 'g', (1,-1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, None, (1, 1), (0*h + 8, -1), (0*h + 12, 1))
 
-        self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 2, -1), (0*h + 6,  1))
-        self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.dc, ds1, (1, 0), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.dc, ds1, (1, 0), (0*h + 8, -1), (0*h + 12, 1))
 
-        self.addWire( self.m1, ds0, None, (0, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
-        self.addWire( self.m1, 'g', None, (0, 1), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
-        self.addWire( self.m1, ds1, None, (1, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, ds0, (0, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, 'g', (0, 1), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, ds1, (1, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
         for o in range(0,self.m2PerUnitCell+1):
-            self.addWire( self.m2, None, None, (0, o), (0, -1), (1, 1))
+            self.addWire( self.m2, None, (0, o), (0, -1), (1, 1))

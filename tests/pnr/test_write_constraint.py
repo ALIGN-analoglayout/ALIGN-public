@@ -14,22 +14,45 @@ def mock_circuit():
         subckt = SubCircuit(
                 name = 'high_speed_comparator',
                 pins = ['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss'])
+        dummy_sub = SubCircuit(
+                name = 'dummy',
+                pins = ['D', 'G', 'S', 'B'])
     library.append(subckt)
+    library.append(dummy_sub)
     for instance in [
-        'mn0', 'mn1', 'mn2', 'mn3', 'mn4', 
-        'mp5', 'mp6', 'mp7', 'mp8', 'mp9', 
-        'mp10', 'mp11', 'mn13', 'mp12', 'mn14',
-        'mn1_mn2', 'mn3_mn4', 'mp5_mp6', 'mp11_mn13', 'mp12_mn14']:
+        'MN0', 'MN1', 'MN2', 'MN3', 'MN4', 'X_CMC_S_NMOS_B_I1_M12_M14',
+        'MP5', 'MP6', 'MP7', 'MP8', 'MP9', 'C2', 'C5', 'C1', 'X_CMC_S_NMOS_B_I1_M6_M7', 'C8', 'C9',
+        'MP10', 'MP11', 'MN13', 'MP12', 'MN14', 'X_CMC_PMOS_MP10_MP7', 'X_CMC_PMOS_MP8_MP9',
+        'X_DP_MN1_MN2', 'X_CCN_MN3_MN4', 'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13', 'X_INV_P_MP12_MN14']:
         with types.set_context(subckt.elements):
-            subckt.elements.append(
-                Instance(
-                    name=instance,
-                    model='nmos',
-                    pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
-            )
+            if instance.startswith('M'):
+                subckt.elements.append(
+                    Instance(
+                        name=instance,
+                        model='nmos',
+                        generator='',
+                        pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
+                )
+            elif instance.startswith('C'):
+                subckt.elements.append(
+                    Instance(
+                        name=instance,
+                        model='cap',
+                        generator='',
+                        pins={'PLUS': 'NET10', 'MINUS': 'NET12'})
+                )
+            else:
+                subckt.elements.append(
+                    Instance(
+                        name=instance,
+                        model='dummy',
+                        generator='',
+                        pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET11', 'B': 'NET13'})
+                )
+
     return subckt
 
-@pytest.mark.parametrize('results_file', 
+@pytest.mark.parametrize('results_file',
     (pathlib.Path(__file__).parent.parent / 'files' / 'test_results').glob('*.pnr.const.json'),
     ids=lambda x: pathlib.Path(pathlib.Path(x.stem).stem).stem)
 def test_group_block_hsc(results_file, mock_circuit):
@@ -45,7 +68,7 @@ def test_group_block_hsc(results_file, mock_circuit):
         json.dump(PnRConstraintWriter().map_valid_const(constraints), outfile, indent=4)
     with open(tmp_file, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]
-        gen_const.sort(key=lambda item: item.get("const_name")) 
+        gen_const.sort(key=lambda item: item.get("const_name"))
     with open(results_file, "r") as const_fp:
         gold_const = json.load(const_fp)["constraints"]
         gold_const.sort(key=lambda item: item.get("const_name"))

@@ -1,4 +1,5 @@
 .subckt p_stack_4 d g s b
+.param m=1
 mi4 inet3 g s b p w=180n l=40n nf=1
 mi3 inet2 g inet3 b p w=180n l=40n nf=1
 mi2 inet1 g inet2 b p w=180n l=40n nf=1
@@ -6,11 +7,13 @@ mi1 d g inet1 b p w=180n l=40n nf=1
 .ends
 
 .subckt p_stack_2 d g s b
+.param m=1
 mi2 inet1 g s b p w=180n l=40n nf=1
 mi1 d g inet1 b p w=180n l=40n nf=1
 .ends
 
 .subckt n_stack_4 d g s b
+.param m=1
 mi1 d g inet1 b n w=180n l=40n nf=1
 mi2 inet1 g inet2 b n w=180n l=40n nf=1
 mi3 inet2 g inet3 b n w=180n l=40n nf=1
@@ -18,6 +21,7 @@ mi4 inet3 g s b n w=180n l=40n nf=1
 .ends
 
 .subckt n_stack_2 d g s b
+.param m=1
 mi1 d g inet1 b n w=180n l=40n nf=1
 mi2 inet1 g s b n w=180n l=40n nf=1
 .ends

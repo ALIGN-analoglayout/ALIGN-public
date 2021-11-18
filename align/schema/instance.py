@@ -1,5 +1,5 @@
 from . import types
-from .types import Union, Dict, Optional, List
+from .types import Union, Dict, Optional, List, set_context
 
 import logging
 logger = logging.getLogger(__name__)
@@ -10,6 +10,10 @@ class Instance(types.BaseModel):
     name: str
     pins : Dict[str, str]
     parameters : Optional[Dict[str, str]]
+    generator: str #Handles different sized instantiation of same subcircuit to same generator
+    abstract_name: Optional[str] # Added during primitive generator, in case no primitive generator found = generator
+    class Config:
+        allow_mutation = True
 
     def xyce(self):
         return f'{self.name} ' + \
@@ -25,6 +29,15 @@ class Instance(types.BaseModel):
     def _get_model(library, name):
         return next((x for x in library if x.name == name), None)
 
+    def add_generator(self,gen):
+        with set_context(self.parent):
+            self.generator = gen
+    def add_abs_name(self,abn):
+        with set_context(self.parent):
+            self.abstract_name = abn
+    def add_actual_name(self, acn):
+        with set_context(self.parent):
+            self.actual_name = acn
 
     @property
     def mclass(self):
@@ -66,7 +79,7 @@ class Instance(types.BaseModel):
         if parameters:
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \
-                f"{self.__class__.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
+                f"{cls.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
             parameters = {k: parameters[k] if k in parameters else v \
                 for k, v in model.parameters.items()}
         elif model.parameters:
