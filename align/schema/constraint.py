@@ -92,6 +92,7 @@ class Order(HardConstraint):
     Args:
         instances (list[str]): List of :obj:`instances`
         direction (str, optional): The following options for direction are supported
+
             :obj:`'horizontal'`, placement order is left to right or vice-versa.
 
             :obj:`'vertical'`,  placement order is bottom to top or vice-versa.
@@ -331,14 +332,19 @@ class Spread(HardConstraint):
         instances (list[str]): List of `instances`
         direction (str, optional): Direction for placement spread.
             (:obj:`'horizontal'` or :obj:`'vertical'` or :obj:`None`)
-        distance (int): Distance in nm
+        distance (int): Distance in nanometer
 
     WARNING: This constraint checks for overlap but
     doesn't enforce it (See `Align`)
 
     Example: ::
 
-        {"constraint": "Spread", "instances": ['MN0', 'MN1', 'MN2'], "direction": horizontal, "distance": 100 }
+        {
+            "constraint": "Spread",
+            "instances": ['MN0', 'MN1', 'MN2'],
+            "direction": horizontal,
+            "distance": 100
+        }
     '''
 
     instances: List[str]
@@ -481,7 +487,25 @@ class Boundary(HardConstraint):
 
 
 class GroupBlocks(HardConstraint):
-    ''' Force heirarchy creation '''
+    """GroupBlocks
+
+    Forces a hierarchy creation for group of instances.
+    This brings the instances closer.
+    This reduces the problem statement for placer thus providing
+    better solutions.
+
+    Args:
+      instances (list[str]): List of :obj:`instances`
+      name (str): alias for the list of :obj:`instances`
+
+    Example: ::
+
+        {
+            "constraint":"GroupBlocks",
+            "name": "group1",
+            "instances": ["MN0", "MN1", "MN3"]
+        }
+    """
     name: str
     instances: List[str]
     style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
@@ -698,31 +722,6 @@ class CreateAlias(SoftConstraint):
     """
     instances: List[str]
     name: str
-
-
-class GroupBlocks(SoftConstraint):
-    """GroupBlocks
-
-    Forces a hierarchy creation for group of instances.
-    This brings the instances closer.
-    This reduces the problem statement for placer thus providing
-    better solutions.
-
-    Args:
-      instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
-
-    Example: ::
-
-        {
-            "constraint":"GroupBlocks",
-            "instances": ["MN0", "MN1", "MN3"],
-            "name": "group1"
-        }
-    """
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
 class MatchBlocks(SoftConstraint):
