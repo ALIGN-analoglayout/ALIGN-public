@@ -17,6 +17,7 @@ Inputs
 ---------
 
 * Design netlist (SPICE format): Input from designers
+
 	* `Example <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.sp>`_ of the analog circuit.
 
 * Library (SPICE format): Commonly used basic building blocks for analog design

@@ -59,14 +59,51 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Constraints</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#constraint-options">Constraint options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constraint-options">Constraint options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#symmetricblocks">SymmetricBlocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#order">Order</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#align">Align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enclose">Enclose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spread">Spread</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aspectratio">AspectRatio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#boundary">Boundary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aligninorder">AlignInOrder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compactplacement">CompactPlacement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sametemplate">SameTemplate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#createalias">CreateAlias</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#groupblocks">GroupBlocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#matchblocks">MatchBlocks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#donotidentify">DoNotIdentify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blockdistance">BlockDistance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#horizontaldistance">HorizontalDistance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#verticaldistance">VerticalDistance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#guardring">GuardRing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#groupcaps">GroupCaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#netconst">NetConst</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#portlocation">PortLocation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#symmetricnets">SymmetricNets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiconnection">MultiConnection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#powerports">PowerPorts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#groundports">GroundPorts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clockports">ClockPorts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#donotuselib">DoNotUseLib</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#isdigital">IsDigital</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autoconstraint">AutoConstraint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#autogroupcaps">AutoGroupCaps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixsourcedrain">FixSourceDrain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keepdummyhierarchies">KeepDummyHierarchies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mergeseriesdevices">MergeSeriesDevices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mergeparalleldevices">MergeParallelDevices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#identifyarray">IdentifyArray</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#example-constraints">Example constraints</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="adding_pdk.html">PDK abstraction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#pdk-options">PDK options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-beol-design-rules">Defintion of BEOL Design rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#defintion-of-feol-design-rules">Defintion of FEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#definition-of-beol-design-rules">Definition of BEOL Design rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adding_pdk.html#definition-of-feol-design-rules">Definition of FEOL Design rules</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="adding_pdk.html#cell-generator">Cell generator</a><ul>
@@ -102,9 +139,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.compiler.html">align.compiler package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.gdsconv.html">align.gdsconv package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.gui.html">align.gui package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.pdk.html">align.pdk package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/align.pdk.finfet.html">align.pdk.finfet package</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.pnr.html">align.pnr package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/align.primitive.html">align.primitive package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../modules/align.primitive.default.html">align.primitive.default package</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.schema.html">align.schema package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../modules/align.utils.html">align.utils package</a></li>
 </ul>
@@ -179,25 +222,65 @@ These constraints need to be defined seperately for each of the hierachies with 
 <div class="section" id="constraint-options">
 <h2>Constraint options<a class="headerlink" href="#constraint-options" title="Permalink to this headline">¶</a></h2>
 <p>List of options available for users.</p>
+<div class="section" id="symmetricblocks">
+<h3>SymmetricBlocks<a class="headerlink" href="#symmetricblocks" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pairs</span><span class="p">:</span> <span class="n">align.schema.constraint.List<span class="p">[</span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricBlocks"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Defines a symmetry constraint between pair of blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – List of pair of instances.
+A pair can have one <code class="xref py py-obj docutils literal notranslate"><span class="pre">instance</span></code> or two instances,
+where single instance implies self-symmetry</p></li>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Direction for axis of symmetry.</p></li>
+<li><p><strong>mirrot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/ False, Mirror instances along line of symmetry</p></li>
+</ul>
+</dd>
+</dl>
+<img alt="../_images/SymmetricBlocks1.PNG" class="align-center" src="../_images/SymmetricBlocks1.PNG" />
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;SymmetricBlocks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pairs&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span><span class="s2">&quot;MN1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;MN2&quot;</span><span class="p">,</span><span class="s2">&quot;MN3&quot;</span><span class="p">],[</span><span class="s2">&quot;MN4&quot;</span><span class="p">]],</span>
+    <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s2">&quot;vertical&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
 <div class="section" id="order">
 <h3>Order<a class="headerlink" href="#order" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Order</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">, </span>left_to_right<span class="p">, </span>right_to_left<span class="p">, </span>bottom_to_top<span class="p">, </span>top_to_bottom<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">abut</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Order"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>All <cite>instances</cite> will be ordered along <cite>direction</cite></p>
-<img alt="../_images/OrderBlocks1.PNG" src="../_images/OrderBlocks1.PNG" />
+<dd><p>Defines a placement order for instances in a subcircuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.Order.instances" title="align.schema.constraint.Order.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The following options for direction are supported
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code>, placement order is left to right or vice-versa.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code>,  placement order is bottom to top or vice-versa.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'left_to_right'</span></code>, placement order is left to right.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'right_to_left'</span></code>, placement order is right to left.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'bottom_to_top'</span></code>, placement order is bottom to top.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'top_to_bottom'</span></code>, placement order is top to bottom.</p>
+<p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>: default (<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code>)</p>
+</p></li>
+<li><p><strong>abut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – If <cite>abut</cite> is <cite>True</cite> adjoining instances will touch</p></li>
+</ul>
+</dd>
+</dl>
+<img alt="../_images/OrderBlocks1.PNG" class="align-center" src="../_images/OrderBlocks1.PNG" />
 <p>WARNING: <cite>Order</cite> does not imply aligment / overlap
 of any sort (See <cite>Align</cite>)</p>
-<p>The following <cite>direction</cite> values are supported:
-&gt; <cite>None</cite> : default (<cite>‘horizontal’</cite> or <cite>‘vertical’</cite>)</p>
-<p>&gt; <cite>‘horizontal’</cite>: left to right or vice-versa</p>
-<p>&gt; <cite>‘vertical’</cite>: bottom to top or vice-versa</p>
-<p>&gt; <cite>‘left_to_right’</cite>
-&gt; <cite>‘right_to_left’</cite>
-&gt; <cite>‘bottom_to_top’</cite>
-&gt; <cite>‘top_to_bottom’</cite></p>
-<p>If <cite>abut</cite> is <cite>True</cite>:
-&gt; adjoining instances will touch</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Order&quot;</span><span class="p">,</span> <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;left_to_right&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -206,21 +289,33 @@ of any sort (See <cite>Align</cite>)</p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Align</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">line</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>h_any<span class="p">, </span>h_top<span class="p">, </span>h_bottom<span class="p">, </span>h_center<span class="p">, </span>v_any<span class="p">, </span>v_left<span class="p">, </span>v_right<span class="p">, </span>v_center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Align"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p><cite>instances</cite> will be aligned along <cite>line</cite>. Could be
+<dd><p><cite>Instances</cite> will be aligned along <cite>line</cite>. Could be
 strict or relaxed depending on value of <cite>line</cite></p>
-<img alt="../_images/AlignBlocks1.PNG" src="../_images/AlignBlocks1.PNG" />
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <cite>instances</cite></p></li>
+<li><p><strong>line</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The following <cite>line</cite> values are currently supported:</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">h_any</span></code>, align instance’s top, bottom or anything in between.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'v_any'</span></code>, align instance’s left, right or anything in between.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'h_top'</span></code>, align instance’s horizontally based on top.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'h_bottom'</span></code>, align instance’s horizomtally based on bottom.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'h_center'</span></code>, align instance’s horizontally based on center.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'v_left'</span></code>, align instance’s vertically based on left.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'v_right'</span></code>, align instance’s vertically based on right.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'v_center'</span></code>, align instance’s vertically based on center.</p>
+<p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>:default (<code class="xref py py-obj docutils literal notranslate"><span class="pre">'h_any'</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">'v_any'</span></code>).</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<img alt="../_images/AlignBlocks1.PNG" class="align-center" src="../_images/AlignBlocks1.PNG" />
 <p>WARNING: <cite>Align</cite> does not imply ordering of any sort
 (See <cite>Order</cite>)</p>
-<p>The following <cite>line</cite> values are currently supported:
-&gt; <cite>None</cite> : default (<cite>‘h_any’</cite> or <cite>‘v_any’</cite>)</p>
-<p>&gt; <cite>‘h_any’</cite>: top, bottom or anything in between</p>
-<p>&gt; <cite>‘v_any’</cite>: left, right or anything in between</p>
-<p>&gt; <cite>‘h_top’</cite>
-&gt; <cite>‘h_bottom’</cite>
-&gt; <cite>‘h_center’</cite></p>
-<p>&gt; <cite>‘v_left’</cite>
-&gt; <cite>‘v_right’</cite>
-&gt; <cite>‘v_center’</cite></p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Align&quot;</span><span class="p">,</span> <span class="s2">&quot;line&quot;</span><span class="p">:</span> <span class="s2">&quot;v_center&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -231,15 +326,26 @@ strict or relaxed depending on value of <cite>line</cite></p>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Enclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_aspect_ratio</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_aspect_ratio</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Enclose"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Enclose <cite>instances</cite> within a flexible bounding box
 with <cite>min_</cite> &amp; <cite>max_</cite> bounds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – List of <cite>instances</cite></p></li>
+<li><p><strong>min_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – assign minimum height to the subcircuit</p></li>
+<li><p><strong>max_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – assign maximum height to the subcircuit</p></li>
+<li><p><strong>min_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – assign minimum width to the subcircuit</p></li>
+<li><p><strong>max_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – assign maximum width to the subcircuit</p></li>
+<li><p><strong>min_aspect_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – assign minimum aspect ratio to the subcircuit</p></li>
+<li><p><strong>max_aspect_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – assign maximum aspect ratio to the subcircuit</p></li>
+</ul>
+</dd>
+</dl>
 <p>Note: Specifying any one of the following variables
 makes it a valid constraint but you may wish to
 specify more than one for practical purposes</p>
-<p>&gt; <cite>min_height</cite>
-&gt; <cite>max_height</cite></p>
-<p>&gt; <cite>min_width</cite>
-&gt; <cite>max_width</cite></p>
-<p>&gt; <cite>min_aspect_ratio</cite>
-&gt; <cite>max_aspect_ratio</cite></p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Enclose&quot;</span><span class="p">,</span> <span class="s2">&quot;min_aspect_ratio&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;max_aspect_ratio&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -250,12 +356,22 @@ specify more than one for practical purposes</p>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Spread</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Spread"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Spread <cite>instances</cite> by forcing minimum spacing along
 <cite>direction</cite> if two instances overlap in other direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <cite>instances</cite></p></li>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Direction for placement spread.
+(<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
+<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance in nm</p></li>
+</ul>
+</dd>
+</dl>
 <p>WARNING: This constraint checks for overlap but
 doesn’t enforce it (See <cite>Align</cite>)</p>
-<p>The following <cite>direction</cite> values are supported:
-&gt; <cite>None</cite> : default (<cite>‘horizontal’</cite> or <cite>‘vertical’</cite>)</p>
-<p>&gt; <cite>‘horizontal’</cite>
-&gt; <cite>‘vertical’</cite></p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;Spread&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span> <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">horizontal</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">100</span> <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -266,6 +382,20 @@ doesn’t enforce it (See <cite>Align</cite>)</p>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AspectRatio</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">subcircuit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ratio_low</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">ratio_high</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AspectRatio"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit</p>
 <p><cite>ratio_low</cite> &lt;= width/height &lt;= <cite>ratio_high</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subcircuit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of subciruit</p></li>
+<li><p><strong>ratio_low</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Minimum aspect ratio (default 0.1)</p></li>
+<li><p><strong>ratio_high</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Maximum aspect ratio (default 10)</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Weigth of this constraint (default 1)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;AspectRatio&quot;</span><span class="p">,</span> <span class="s2">&quot;ratio_low&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;ratio_high&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -275,6 +405,19 @@ doesn’t enforce it (See <cite>Align</cite>)</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">Boundary</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">subcircuit</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">max_width</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">max_height</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></span> <span class="o">=</span> <span class="default_value">10000</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#Boundary"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Define <cite>max_height</cite> and/or <cite>max_width</cite> on a subcircuit in micrometers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subcircuit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of subcircuit</p></li>
+<li><p><strong>max_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>Optional</em>) – </p></li>
+<li><p><strong>max_height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>Optional</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;Boundary&quot;</span><span class="p">,</span> <span class="s2">&quot;subcircuit&quot;</span><span class="p">:</span> <span class="s2">&quot;OTA&quot;</span><span class="p">,</span> <span class="s2">&quot;max_height&quot;</span><span class="p">:</span> <span class="mi">100</span> <span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -284,10 +427,41 @@ doesn’t enforce it (See <cite>Align</cite>)</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AlignInOrder</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">line</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>top<span class="p">, </span>bottom<span class="p">, </span>left<span class="p">, </span>right<span class="p">, </span>center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'bottom'</span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>horizontal<span class="p">, </span>vertical<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">abut</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AlignInOrder"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Align <cite>instances</cite> on <cite>line</cite> ordered along <cite>direction</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.AlignInOrder.instances" title="align.schema.constraint.AlignInOrder.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+<li><p><strong>line</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The following <cite>line</cite> values are currently supported:</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'top'</span></code>, align instance’s horizontally based on top.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'bottom'</span></code>, align instance’s horizomtally based on bottom.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'center'</span></code>, align instance’s horizontally based on center.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'left'</span></code>, align instance’s vertically based on left.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'right'</span></code>, align instance’s vertically based on right.</p>
+</p></li>
+<li><p><strong>direction</strong> – <p>The following <cite>direction</cite> values are supported:</p>
+<dl class="field-list simple">
+<dt class="field-odd">obj</dt>
+<dd class="field-odd"><p><cite>’horizontal’</cite>, left to right</p>
+</dd>
+<dt class="field-even">obj</dt>
+<dd class="field-even"><p><cite>’vertical’</cite>, bottom to top</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Align&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;line&quot;</span><span class="p">:</span> <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;horizontal&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>Note: This is a user-convenience constraint. Same
 effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
-<p>&gt; <cite>direction == ‘horizontal’</cite> =&gt; left_to_right</p>
-<p>&gt; <cite>direction == ‘vertical’</cite>   =&gt; bottom_to_top</p>
 </dd></dl>
 
 </div>
@@ -296,7 +470,21 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">CompactPlacement</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>left<span class="p">, </span>right<span class="p">, </span>center<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'left'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#CompactPlacement"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Defines snapping position of placement for all blocks in design.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>style</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Following options are available.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'left'</span></code>, Moves all instances towards left during post-processing of placement.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'right'</span></code>, Moves all instances towards right during post-processing of placement.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'center'</span></code>, Moves all instances towards center during post-processing of placement.</p>
+</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;CompactPlacement&quot;</span><span class="p">,</span> <span class="s2">&quot;style&quot;</span><span class="p">:</span> <span class="s2">&quot;center&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="sametemplate">
@@ -304,7 +492,17 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SameTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SameTemplate"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Makes identical copy of all isntances</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.SameTemplate.instances" title="align.schema.constraint.SameTemplate.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;SameTemplate&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">]}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="createalias">
@@ -312,7 +510,25 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">CreateAlias</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#CreateAlias"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Creates an alias for list of instances. You can use this
+alias later while defining constraints</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.CreateAlias.instances" title="align.schema.constraint.CreateAlias.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – alias for the list of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.CreateAlias.instances" title="align.schema.constraint.CreateAlias.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;CreateAlias&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;alias1&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="groupblocks">
@@ -320,7 +536,26 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>tbd_interdigitated<span class="p">, </span>tbd_common_centroid<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupBlocks"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Force heirarchy creation</p>
+<dd><p>Forces a hierarchy creation for group of instances.
+This brings the instances closer.
+This reduces the problem statement for placer thus providing
+better solutions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroupBlocks.instances" title="align.schema.constraint.GroupBlocks.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – alias for the list of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroupBlocks.instances" title="align.schema.constraint.GroupBlocks.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;group1&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -338,7 +573,8 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotIdentify</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotIdentify"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>TODO: Can be replicated by Enclose??</p>
+<dd><p>TODO: Can be replicated by Enclose??
+Auto generated constraint based on all intances which are constrained</p>
 </dd></dl>
 
 </div>
@@ -348,7 +584,23 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">BlockDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#BlockDistance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>TODO: Replace with Spread</p>
-<img alt="../_images/HorizontalDistance1.PNG" src="../_images/HorizontalDistance1.PNG" />
+<p>Places the instances with a fixed gap.
+Also used in situations when routing is congested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>abs_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance between two blocks.
+The number should be multiple of pitch of
+lowest horizontal and vertical routing layer i.e., M2 and M1</p>
+</dd>
+</dl>
+<img alt="../_images/HorizontalDistance1.PNG" class="align-center" src="../_images/HorizontalDistance1.PNG" />
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;BlockDistance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;abs_distance&quot;</span> <span class="p">:</span> <span class="mi">420</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -358,7 +610,23 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">HorizontalDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#HorizontalDistance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>TODO: Replace with Spread</p>
-<img alt="../_images/HorizontalDistance1.PNG" src="../_images/HorizontalDistance1.PNG" />
+<p>Places the instances with a fixed horizontal gap.
+Also used in situations when routing is congested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>abs_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance between two blocks.
+The number should be multiple of pitch of
+lowest vertical routing layer i.e., M1</p>
+</dd>
+</dl>
+<img alt="../_images/HorizontalDistance1.PNG" class="align-center" src="../_images/HorizontalDistance1.PNG" />
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;HorizontalDistance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;abs_distance&quot;</span> <span class="p">:</span> <span class="mi">80</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -368,7 +636,23 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">VerticalDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#VerticalDistance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>TODO: Replace with Spread</p>
-<img alt="../_images/VerticalDistance1.PNG" src="../_images/VerticalDistance1.PNG" />
+<p>Places the instances with a fixed vertical gap.
+Also used in situations when routing is congested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>abs_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance between two blocks.
+The number should be multiple of pitch of
+lowest horizontal routing layer i.e., M2</p>
+</dd>
+</dl>
+<img alt="../_images/VerticalDistance1.PNG" class="align-center" src="../_images/VerticalDistance1.PNG" />
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;VerticalDistance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;abs_distance&quot;</span> <span class="p">:</span> <span class="mi">84</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -377,29 +661,24 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GuardRing</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">guard_ring_primitives</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">global_pin</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">block_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GuardRing"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Adds guard ring for particular hierarchy</p>
-</dd></dl>
-
-</div>
-<div class="section" id="symmetricblocks">
-<h3>SymmetricBlocks<a class="headerlink" href="#symmetricblocks" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pairs</span><span class="p">:</span> <span class="n">align.schema.constraint.List<span class="p">[</span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricBlocks"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>SymmetricBlocks [summary]</p>
-<img alt="../_images/SymmetricBlocks1.PNG" src="../_images/SymmetricBlocks1.PNG" />
-<p>[extended_summary]</p>
+<dd><p>Adds guard ring for particular hierarchy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>SoftConstraint</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>]</em>) – [description]</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>[description]</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)">type</a>]</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>guard_ring_primitives</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Places this instance across boundary of a hierarchy</p></li>
+<li><p><strong>global_pin</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – connect the pin of guard ring to this pin, mostly ground pin</p></li>
+<li><p><strong>block_name</strong> – Name of the hierarchy</p></li>
+</ul>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;GuardRing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;guard_ring_primitives&quot;</span> <span class="p">:</span> <span class="s2">&quot;guard_ring&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;global_pin</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -408,7 +687,28 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupCaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">unit_cap</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">num_units</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span></em>, <em class="sig-param"><span class="n">dummy</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupCaps"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Common Centroid Cap</p>
+<dd><dl>
+<dt>Creates a common centroid cap using a combination</dt><dd><p>of unit sized caps. It can be of multiple caps.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>name (str): name for grouped caps
+instances (List[str]): list of cap <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroupCaps.instances" title="align.schema.constraint.GroupCaps.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a>
+unit_cap (str): Capacitance value in fF
+num_units (List[int]): Number of units for each capacitance instance
+dummy (bool):  Whether to fill in dummies or not</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;GroupCaps&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span> <span class="p">:</span> <span class="s2">&quot;cap_group1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;num_units&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+    <span class="s2">&quot;dummy&quot;</span> <span class="p">:</span> <span class="kc">True</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -416,8 +716,28 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <h3>NetConst<a class="headerlink" href="#netconst" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">NetConst</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">nets</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">shield</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">criticality</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#NetConst"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">NetConst</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">nets</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">shield</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">criticality</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#NetConst"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Net based constraint. Shielding and critically can be defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nets</strong> (<a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of net names.</p></li>
+<li><p><strong>shield</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Name of net for shielding.</p></li>
+<li><p><strong>criticality</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – Criticality of net.
+Higher criticality means the net would be routed first.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;NetConst&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nets&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;net1&quot;</span><span class="p">,</span> <span class="s2">&quot;net2&quot;</span><span class="p">,</span> <span class="s2">&quot;net3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;shield&quot;</span> <span class="p">:</span> <span class="s2">&quot;VSS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;criticality&quot;</span> <span class="p">:</span> <span class="mi">10</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="portlocation">
@@ -425,7 +745,31 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">PortLocation</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span></em>, <em class="sig-param"><span class="n">location</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>TL<span class="p">, </span>TC<span class="p">, </span>TR<span class="p">, </span>RT<span class="p">, </span>RC<span class="p">, </span>RB<span class="p">, </span>BL<span class="p">, </span>BC<span class="p">, </span>BR<span class="p">, </span>LB<span class="p">, </span>LC<span class="p">, </span>LT<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#PortLocation"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>T (top), L (left), C (center), R (right), B (bottom)</p>
+<dd><p>Defines approximate location of the port.
+T (top), L (left), C (center), R (right), B (bottom)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ports</strong> (<a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of ports</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Literal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;TL&#39;</span><span class="p">,</span> <span class="s1">&#39;TC&#39;</span><span class="p">,</span> <span class="s1">&#39;TR&#39;</span><span class="p">,</span>
+<span class="s1">&#39;RT&#39;</span><span class="p">,</span> <span class="s1">&#39;RC&#39;</span><span class="p">,</span> <span class="s1">&#39;RB&#39;</span><span class="p">,</span>
+<span class="s1">&#39;BL&#39;</span><span class="p">,</span> <span class="s1">&#39;BC&#39;</span><span class="p">,</span> <span class="s1">&#39;BR&#39;</span><span class="p">,</span>
+<span class="s1">&#39;LB&#39;</span><span class="p">,</span> <span class="s1">&#39;LC&#39;</span><span class="p">,</span> <span class="s1">&#39;LT&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;PortLocation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ports&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;P0&quot;</span><span class="p">,</span> <span class="s2">&quot;P1&quot;</span><span class="p">,</span> <span class="s2">&quot;P2&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;location&quot;</span> <span class="p">:</span> <span class="s2">&quot;TL&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -434,7 +778,32 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricNets</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">net1</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">net2</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pins1</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pins2</span><span class="p">:</span> <span class="n"><a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List">align.schema.types.List</a></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricNets"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Defines two nets as symmetric.
+A symmetric net will also enforce a SymmetricBlock between blocks
+connected to the nets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>net1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name on net1</p></li>
+<li><p><strong>net2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of net2</p></li>
+<li><p><strong>pins1</strong> (<a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List"><em>List</em></a><em>, </em><em>Optional</em>) – oredered list of connected pins to be matched</p></li>
+<li><p><strong>pins2</strong> (<a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List"><em>List</em></a><em>, </em><em>Optional</em>) – oredered list of connected pins to be matched</p></li>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Literal [‘H’, ‘V’], Horizontal or vertical line of symmetry</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;SymmetricNets&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;net1&quot;</span> <span class="p">:</span> <span class="s2">&quot;net1&quot;</span>
+    <span class="s2">&quot;net2&quot;</span> <span class="p">:</span> <span class="s2">&quot;net2&quot;</span>
+    <span class="s2">&quot;pins1&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;block1/A&quot;</span><span class="p">,</span> <span class="s2">&quot;block2/A&quot;</span><span class="p">,</span> <span class="s2">&quot;port1&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;pins2&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;block1/B&quot;</span><span class="p">,</span> <span class="s2">&quot;block2/B&quot;</span><span class="p">,</span> <span class="s2">&quot;port2&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s1">&#39;V&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="multiconnection">
@@ -442,7 +811,26 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MultiConnection</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">nets</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">multiplier</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MultiConnection"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Defines multiple parallel wires for a net.
+This constraint is used to reduce parasitics and
+Electro-migration (EM) violations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nets</strong> (<a class="reference internal" href="../modules/align.schema.html#align.schema.types.List" title="align.schema.types.List"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of nets</p></li>
+<li><p><strong>multiplier</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of parallel wires</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;MultiConnection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nets&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;N1&quot;</span><span class="p">,</span> <span class="s2">&quot;N2&quot;</span><span class="p">,</span> <span class="s2">&quot;N3&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;multiplier&quot;</span> <span class="p">:</span> <span class="mi">4</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </div>
 <div class="section" id="powerports">
@@ -450,7 +838,22 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">PowerPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#PowerPorts"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>power port for each hieararchy</p>
+<dd><p>Defines power port for each hieararchy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.PowerPorts.ports" title="align.schema.constraint.PowerPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.
+The first port of top hierarchy will be used for power grid creation.
+Power ports are used to identify source and drain of transistors
+by identifying the terminal at higher potential.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;PowerPorts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;VDD&quot;</span><span class="p">,</span> <span class="s2">&quot;VDD1&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -460,6 +863,21 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroundPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroundPorts"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Ground port for each hieararchy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroundPorts.ports" title="align.schema.constraint.GroundPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.
+The first port of top hierarchy will be used for ground grid creation.
+Power ports are used to identify source and drain of transistors
+by identifying the terminal at higher potential.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;GroundPorts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GND&quot;</span><span class="p">,</span> <span class="s2">&quot;GNVD1&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -468,7 +886,24 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">ClockPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#ClockPorts"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Clock port for each hieararchy</p>
+<dd><p>Clock port for each hieararchy. These are used as stop-points
+during auto-constraint identification, means no constraint search
+will be done beyond the nets connected to these ports</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.ClockPorts.ports" title="align.schema.constraint.ClockPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.
+The first port of top hierarchy will be used for ground grid creation.
+Power ports are used to identify source and drain of transistors
+by identifying the terminal at higher potential.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;ClockPorts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CLK1&quot;</span><span class="p">,</span> <span class="s2">&quot;CLK2&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -477,7 +912,23 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotUseLib</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">libraries</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotUseLib"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Primitive libraries which should not be used</p>
+<dd><p>Primitive libraries which should not be used during hierarchy annotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libraries</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.DoNotUseLib.libraries" title="align.schema.constraint.DoNotUseLib.libraries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">libraries</span></code></a>.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;DoNotUseLib&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;libraries&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;DP_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;INV&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -486,8 +937,25 @@ effect can be realized using <cite>Order</cite> &amp; <cite>Align</cite></p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IsDigital</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IsDigital"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Place this block digitally
-Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation</p>
+<dd><p>Place this hierarchy as a digital hierarchy
+Forbids any preprocessing, auto-annotation,
+array-identification or auto-constraint generation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;IsDigital&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -497,6 +965,22 @@ Forbids any preprocessing, auto-annotation, array-identification or auto-constra
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoConstraint"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Forbids/Allow any auto-constraint generation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;AutoConstraint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -506,6 +990,22 @@ Forbids any preprocessing, auto-annotation, array-identification or auto-constra
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoGroupCaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoGroupCaps"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Forbids/Allow creation of arrays for symmetric caps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;AutoGroupCaps&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -514,8 +1014,25 @@ Forbids any preprocessing, auto-annotation, array-identification or auto-constra
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">FixSourceDrain</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#FixSourceDrain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Checks the netlist for any source/drain interchange.
-Traverses and fix them based on power to gnd traversal</p>
+<dd><p>Forbids auto checking of source/drain terminals of transistors.
+If <cite>True</cite>, Traverses from power to ground and vice-versa to
+ensure (drain of NMOS/ source of PMOS) is at higher potential.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;FixSourceDrain&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -524,7 +1041,23 @@ Traverses and fix them based on power to gnd traversal</p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">KeepDummyHierarchies</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#KeepDummyHierarchies"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Removes any single instance hierarchies</p>
+<dd><p>Removes any single instance hierarchies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;KeepDummyHierarchies&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -534,7 +1067,23 @@ Traverses and fix them based on power to gnd traversal</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeSeriesDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeSeriesDevices"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Allow stacking of series devices
-Only works on NMOS/PMOS/CAP/RES</p>
+Only works on NMOS/PMOS/CAP/RES.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;MergeSeriesDevices&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -543,8 +1092,24 @@ Only works on NMOS/PMOS/CAP/RES</p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeParallelDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeParallelDevices"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Allow merging of parallel devices
-Only works on NMOS/PMOS/CAP/RES</p>
+<dd><p>Allow merging of parallel devices.
+Only works on NMOS/PMOS/CAP/RES.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;MergeParallelDevices&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -554,6 +1119,22 @@ Only works on NMOS/PMOS/CAP/RES</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IdentifyArray</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IdentifyArray"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Forbids/Alow any array identification</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
+<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;IdentifyArray&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
