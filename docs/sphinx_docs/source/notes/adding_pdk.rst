@@ -15,7 +15,7 @@ List of PDKs options available for users.
 * `Bulk65nm_Mock_PDK <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK>`_
 
 
-Defintion of BEOL Design rules
+Definition of BEOL Design rules
 -------------------------------
 
 * **Layer**: Defines name of a layer e.g. Poly, M1 etc.
@@ -76,7 +76,7 @@ Defintion of BEOL Design rules
    }
 
 
-Defintion of FEOL Design rules
+Definition of FEOL Design rules
 -------------------------------
 
 These layers are used by the cell generator and may vary based on the PDK. Our placer and router does not use these layers.
@@ -114,6 +114,7 @@ call primitive generator to create the layout of these primitives.
 
 ALIGN generated primitives as an array of individual transistors/resistors. The aspect ratio of generated cells can be controlled using Xcells and Ycells parameters.
 There are four basic cell types which are handled using align cell generrator.
+
 * `Transistor <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/Align_primitives.py>`_
 * `Capacitor <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py>`_
 * `Resistor <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_Res.py>`_.
@@ -127,8 +128,9 @@ Cell fabric module defines the common structure for cell generation utilities wh
 Primitive
 -----------
 
-This module is used to generate the actual primitives (Resistor/Capacitor/Transistor/Via-array/GuardRing) for a PDK.
-These may need to be modified for each PDK based on the available layers. It uses the functions defined in the Cell fabric module to create cell layers.
+`Primitive module <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/primitive/default>`_ is used to generate the basic primitives (Resistor/Capacitor/Transistor/Via-array/GuardRing) for a PDK.
+These files may need to be modified for each PDK based on the available layers.
+The definitions in these files use the functions defined in the Cell fabric module to create cell layers.
 
 Here is an example on how to add a layer for a `mos generator <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/primitive/default/mos.py>`_.
 

@@ -12,6 +12,11 @@ Constraint options
 --------------------
 List of options available for users.
 
+SymmetricBlocks
+################
+.. autoclass:: align.schema.constraint.SymmetricBlocks
+   :noindex:
+
 Order
 ######
 .. autoclass:: align.schema.constraint.Order
@@ -95,11 +100,6 @@ VerticalDistance
 GuardRing
 #############
 .. autoclass:: align.schema.constraint.GuardRing
-   :noindex:
-
-SymmetricBlocks
-################
-.. autoclass:: align.schema.constraint.SymmetricBlocks
    :noindex:
 
 GroupCaps
