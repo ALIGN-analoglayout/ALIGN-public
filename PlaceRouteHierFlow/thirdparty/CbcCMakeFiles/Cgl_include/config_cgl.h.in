@@ -1,0 +1,18 @@
+/* src/config_cgl.h.in. */
+
+#ifndef __CONFIG_CGL_H__
+#define __CONFIG_CGL_H__
+
+/* Version number of project */
+#define CGL_VERSION "@CGL_VERSION@"
+
+/* Major Version number of project */
+#define CGL_VERSION_MAJOR @CGL_VERSION_MAJOR@
+
+/* Minor Version number of project */
+#define CGL_VERSION_MINOR @CGL_VERSION_MINOR@
+
+/* Release Version number of project */
+#define CGL_VERSION_RELEASE @CGL_VERSION_RELEASE@
+
+#endif
