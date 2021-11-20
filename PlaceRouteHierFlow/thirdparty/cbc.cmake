@@ -8,6 +8,30 @@ find_library(
     Cbc_lib
     NAMES libCbc.so
     )
+find_library(
+    Cgl_lib
+    NAMES libCgl.so
+    )
+find_library(
+    Clp_lib
+    NAMES libClp.so
+    )
+find_library(
+    OsiClp_lib
+    NAMES libOsiClp.so
+    )
+find_library(
+    OsiCbc_lib
+    NAMES libOsiCbc.so
+    )
+find_library(
+    CoinUtils_lib
+    NAMES libCoinUtils.so
+    )
+find_library(
+    Osi_lib
+    NAMES libOsi.so
+    )
 if(NOT Cbc_lib)
   message(STATUS "Cbc library file not found. Building from source.")
   FetchContent_GetProperties(Cbc)
@@ -94,4 +118,38 @@ if(NOT Cbc_lib)
     target_include_directories(libCbc INTERFACE ${cbc_SOURCE_DIR})
   endif()
   add_library(Cbc::Cbc ALIAS libCbc)
+  add_library(Cgl::Cgl ALIAS libCgl)
+  add_library(Clp::Clp ALIAS libClp)
+  add_library(Osi::Osi ALIAS libOsi)
+  add_library(CoinUtils::CoinUtils ALIAS libCoinUtils)
+  add_library(OsiClp::OsiClp ALIAS libOsiClp)
+  add_library(OsiCbc::OsiCbc ALIAS libOsiCbc)
+else()
+  message(STATUS "Cbc library file found. Using headers from source distribution.")
+  FetchContent_GetProperties(Cbc)
+  if(NOT Cbc_POPULATED)
+    FetchContent_Populate(Cbc)
+    add_library(Cbc SHARED IMPORTED)
+    target_include_directories(Cbc INTERFACE ${Cbc_SOURCE_DIR})
+    set_property( TARGET Cbc PROPERTY IMPORTED_LOCATION ${Cbc_lib})
+    add_library(Cgl SHARED IMPORTED)
+    set_property( TARGET Cgl PROPERTY IMPORTED_LOCATION ${Cgl_lib})
+    add_library(Clp SHARED IMPORTED)
+    set_property( TARGET Clp PROPERTY IMPORTED_LOCATION ${Clp_lib})
+    add_library(Osi SHARED IMPORTED)
+    set_property( TARGET Osi PROPERTY IMPORTED_LOCATION ${Osi_lib})
+    add_library(OsiClp SHARED IMPORTED)
+    set_property( TARGET OsiClp PROPERTY IMPORTED_LOCATION ${OsiClp_lib})
+    add_library(OsiCbc SHARED IMPORTED)
+    set_property( TARGET OsiCbc PROPERTY IMPORTED_LOCATION ${OsiCbc_lib})
+    add_library(CoinUtils SHARED IMPORTED)
+    set_property( TARGET CoinUtils PROPERTY IMPORTED_LOCATION ${CoinUtils_lib})
+  endif()
+  add_library(Cbc::Cbc ALIAS Cbc)
+  add_library(Cgl::Cgl ALIAS Cgl)
+  add_library(Clp::Clp ALIAS Clp)
+  add_library(Osi::Osi ALIAS Osi)
+  add_library(CoinUtils::CoinUtils ALIAS CoinUtils)
+  add_library(OsiClp::OsiClp ALIAS OsiClp)
+  add_library(OsiCbc::OsiCbc ALIAS OsiCbc)
 endif()
