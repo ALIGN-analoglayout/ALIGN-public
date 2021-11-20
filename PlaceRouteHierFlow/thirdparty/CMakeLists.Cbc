@@ -993,5 +993,5 @@ message(STATUS "${color_cyan}Compilation definitions:${color_reset} ${ALL_DEFS}"
 message(STATUS "${color_cyan}C flags:${color_reset}                 ${CMAKE_C_FLAGS}")
 message(STATUS "${color_cyan}C++ flags:${color_reset}               ${CMAKE_CXX_FLAGS}")
 
-install(TARGETS libCbc libCgl libClp libOsi libOsiClp libOsiCbc EXPORT LibraryExport
+install(TARGETS libCbc libCgl libClp libOsi libCoinUtils libOsiClp libOsiCbc EXPORT LibraryExport
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/align/thirdparty)
