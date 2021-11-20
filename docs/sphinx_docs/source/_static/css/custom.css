@@ -1,0 +1,12 @@
+.wy-side-nav-search {
+  background:rgb(255, 255, 255);
+}
+
+.wy-side-nav-search input[type="text"] {
+  border: none;
+  box-shadow: none;
+  background: rgb(43, 42, 42);
+  border-radius: 0;
+  font-size: 100%;
+  color: white;
+}
