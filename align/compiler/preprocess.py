@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 17 15:49:33 2020
-
-@author: kunal001
-"""
-
-
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -277,15 +268,18 @@ def define_SD(subckt, update=True):
             logger.warning(f"changing source drain: {node}")
             swap_SD(subckt, G, node)
 
+
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
+
     if update == False:
         return
     logger.debug(
@@ -319,10 +313,13 @@ def add_series_devices(ckt, update=True):
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
+
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
+
     if update == False:
         return
     logger.debug(
