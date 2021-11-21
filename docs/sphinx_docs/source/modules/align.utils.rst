@@ -12,10 +12,18 @@ align.utils.gds2png module
    :undoc-members:
    :show-inheritance:
 
-align.utils.logging module
---------------------------
+align.utils.logging\_local module
+---------------------------------
 
-.. automodule:: align.utils.logging
+.. automodule:: align.utils.logging_local
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+align.utils.logmanager module
+-----------------------------
+
+.. automodule:: align.utils.logmanager
    :members:
    :undoc-members:
    :show-inheritance:
