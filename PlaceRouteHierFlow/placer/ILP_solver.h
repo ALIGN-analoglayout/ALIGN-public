@@ -55,6 +55,7 @@ class ILP_solver {
 
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
+  bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
   public:
   double cost = 0;

@@ -19,6 +19,15 @@
 #define COINUTILS_VERSION_RELEASE @COINUTILS_VERSION_RELEASE@
 
 /* Define to 64bit integer type */
+#define COIN_INT64_T @COIN_INT64_T@
+
+/* Define to integer type capturing pointer */
+#define COIN_INTPTR_T @COIN_INTPTR_T@
+
+/* Define to 64bit unsigned integer type */
+#define COIN_UINT64_T @COIN_UINT64_T@
+
+/* Define to 64bit integer type */
 #define COINUTILS_INT64_T @COIN_INT64_T@
 
 /* Define to integer type capturing pointer */

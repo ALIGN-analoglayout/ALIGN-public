@@ -26,6 +26,12 @@ target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
      lpsolve::lpsolve55
+     Cbc::Cbc
+     Osi::Osi
+     Clp::Clp
+     Cgl::Cgl
+     CoinUtils::CoinUtils
+     OsiClp::OsiClp
      Boost::boost
      nlohmann_json::nlohmann_json
 )
