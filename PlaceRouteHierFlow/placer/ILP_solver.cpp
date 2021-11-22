@@ -1424,11 +1424,15 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     Cbc_setLogLevel(cbcmodel, -1);
     Cbc_setMaximumSeconds(cbcmodel, 1);
     int status = Cbc_solve(cbcmodel);
-    if (status < 0 || status == 1 || status == 7) return false;
+    if (status < 0 || status == 1 || status == 7) {
+      Cbc_deleteModel(cbcmodel);
+      return false;
+    }
   }
   {
     int numberColumns = Cbc_getNumCols(cbcmodel);
     const double* solution = Cbc_getColSolution(cbcmodel);
+    Cbc_deleteModel(cbcmodel);
     //for (int iColumn=0;iColumn<numberColumns;iColumn++) {
     //  double value=solution[iColumn];
     //  if (Cbc_isInteger(cbcmodel, iColumn))
