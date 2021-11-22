@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
+#include <chrono>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -203,6 +204,7 @@ class design {
   CompactStyle compact_style = CompactStyle::L;
 
   public:
+  std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
   design(PnRDB::hierNode& node, const int seed = 0);
   design(string blockfile, string netfile);

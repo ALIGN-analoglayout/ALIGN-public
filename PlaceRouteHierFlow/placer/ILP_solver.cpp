@@ -1024,7 +1024,23 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
-bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+class TimeMeasure {
+  private:
+    std::chrono::nanoseconds& _rt;
+    std::chrono::high_resolution_clock::time_point _begin;
+  public:
+    TimeMeasure(std::chrono::nanoseconds& rt) : _rt(rt)
+    {
+      _begin = std::chrono::high_resolution_clock::now();
+    }
+    ~TimeMeasure()
+    {
+      auto _end = std::chrono::high_resolution_clock::now();
+      _rt += std::chrono::duration_cast<std::chrono::nanoseconds>(_end - _begin);
+    }
+};
+
+bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPCbc");
 
   int v_metal_index = -1;
@@ -1044,19 +1060,109 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
-  // each block has 4 vars, x, y, H_flip, V_flip;
-  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
-  // i*4+1: x
-  // i*4+2:y
-  // i*4+3:H_flip
-  // i*4+4:V_flip
   OsiClpSolverInterface solver;
+  vector<int> objX(mydesign.Blocks.size(), 0), objY(mydesign.Blocks.size(), 0);
+  // add area in cost
+  int URblock_pos_id = 0, URblock_neg_id = 0;
+  int estimated_width = 0, estimated_height = 0;
+  for (unsigned int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
+    if (curr_sp.negPair[i] < int(mydesign.Blocks.size())) {
+      URblock_neg_id = i;
+      break;
+    }
+  }
+  URblock_pos_id = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), curr_sp.negPair[URblock_neg_id]) - curr_sp.posPair.begin();
+  // estimate width
+  for (int i = URblock_pos_id; i >= 0; i--) {
+    if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
+      estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
+    }
+  }
+  // add estimated area
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
+    objY.at(curr_sp.negPair[i]) += ((flushbl ? estimated_width : -estimated_width) / 2);
+  }
+  // estimate height
+  for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
+    if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
+      estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
+    }
+  }
+  // add estimated area
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
+    objX.at(curr_sp.negPair[i]) += ((flushbl ? estimated_height : -estimated_height) / 2);
+  }
+
+  int minx{0}, miny{0};
+  if (!flushbl) {
+    // x>=0, y>=0
+    for (const auto& id : curr_sp.negPair) {
+      if (id < int(mydesign.Blocks.size())) {
+        minx += mydesign.Blocks[id][curr_sp.selected[id]].width;
+        miny += mydesign.Blocks[id][curr_sp.selected[id]].height;
+      }
+    }
+    /*for (const auto& id : curr_sp.negPair) {
+      if (id < int(mydesign.Blocks.size())) {
+        set_bounds(lp, (id * 4 + 1), -10*minx, -mydesign.Blocks[id][curr_sp.selected[id]].width);
+        set_bounds(lp, (id * 4 + 2), -10*miny, -mydesign.Blocks[id][curr_sp.selected[id]].height);
+      }
+    }*/
+  }
+  // set integer constraint, H_flip and V_flip can only be 0 or 1
+  unsigned int N_var = (mydesign.Blocks.size() + mydesign.Nets.size()) * 4;
+  CoinBigIndex tmpStarts[] = {0, 0, 0, 0};
+  double tmpb{0.};
+  solver.addCols(1, tmpStarts, NULL, NULL, &tmpb, &tmpb, &tmpb);
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    int ind = i * 4 + 1;
+    double cLB[] = {0., 0., 0., 0.};
+    double cUB[] = {1.e30, 1.e30, 1., 1.};
+    if (flushbl) {
+      if (prev) {
+        cLB[0] = (*prev)[i].x;
+        cLB[1] = (*prev)[i].y;
+      }
+    } else {
+      cLB[0] = -10 * minx;
+      cLB[1] = -10 * miny;
+      cUB[0] = -mydesign.Blocks[i][curr_sp.selected[i]].width;
+      cUB[1] = -mydesign.Blocks[i][curr_sp.selected[i]].height;
+    }
+    double obj[] = {1.*objX[i], 1.*objY[i], 0., 0.};
+    solver.addCols(4, tmpStarts, NULL, NULL, cLB, cUB, obj);
+
+    solver.setInteger(ind);
+    solver.setColName(ind++, ((mydesign.Blocks[i][0].name + "_x").c_str()));
+    solver.setInteger(ind);
+    solver.setColName(ind++, ((mydesign.Blocks[i][0].name + "_y").c_str()));
+    solver.setInteger(ind);
+    solver.setColName(ind++, ((mydesign.Blocks[i][0].name + "_flx").c_str()));
+    solver.setInteger(ind);
+    solver.setColName(ind,   ((mydesign.Blocks[i][0].name + "_fly").c_str()));
+  }
+
+  ConstGraph const_graph;
+  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+    int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
+    double obj[] = {-const_graph.LAMBDA, -const_graph.LAMBDA, const_graph.LAMBDA, const_graph.LAMBDA};
+    double cLB[] = {-1.e30, -1.e30, -1.e30, -1.e30};
+    double cUB[] = {1.e30, 1.e30, 1.e30, 1.e30};
+    if (mydesign.Nets[i].connected.size() < 2) {
+      obj[0] = 0.; obj[1] = 0.; obj[2] = 0.; obj[3] = 0.;
+    }
+    solver.addCols(4, tmpStarts, NULL, NULL, cLB, cUB, obj);
+    solver.setColName(ind++, (mydesign.Nets[i].name + "_ll_x").c_str());
+    solver.setColName(ind++, (mydesign.Nets[i].name + "_ll_y").c_str());
+    solver.setColName(ind++, (mydesign.Nets[i].name + "_ur_x").c_str());
+    solver.setColName(ind,   (mydesign.Nets[i].name + "_ur_y").c_str());
+  }
+
   lprec* lp = make_lp(0, N_var);
   set_verbose(lp, CRITICAL);
   put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
-  // set_outputfile(lp, const_cast<char*>("/dev/null"));
-
-  // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     int ind = i * 4 + 1;
     set_int(lp, ind, TRUE);
@@ -1070,67 +1176,12 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   }
 
   for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
-    set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
-    set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
+    int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_x").c_str()));
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_y").c_str()));
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ur_x").c_str()));
+    set_col_name(lp, ind,   const_cast<char*>((mydesign.Nets[i].name + "_ur_y").c_str()));
   }
-
-  int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
-  roundup(bias_Hgraph, x_pitch);
-  roundup(bias_Vgraph, y_pitch);
-
-  // overlap constraint
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
-    int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), i) - curr_sp.negPair.begin();
-    for (unsigned int j = i + 1; j < mydesign.Blocks.size(); j++) {
-      int j_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), j) - curr_sp.posPair.begin();
-      int j_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), j) - curr_sp.negPair.begin();
-      if (i_pos_index < j_pos_index) {
-        if (i_neg_index < j_neg_index) {
-          // i is left of j
-          double sparserow[2] = {1, -1};
-          int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
-              mydesign.Abut_Constraints.end()) {
-            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].width - 0)) logger->error("error");
-          } else if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph))
-            logger->error("error");
-        } else {
-          // i is above j
-          double sparserow[2] = {1, -1};
-          int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
-              mydesign.Abut_Constraints.end()) {
-            if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].height + 0)) logger->error("error");
-          } else if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph))
-            logger->error("error");
-        }
-      } else {
-        if (i_neg_index < j_neg_index) {
-          // i is be low j
-          double sparserow[2] = {1, -1};
-          int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
-          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::V)) !=
-              mydesign.Abut_Constraints.end()) {
-            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].height - 0)) logger->error("error");
-          } else if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph))
-            logger->error("error");
-        } else {
-          // i is right of j
-          double sparserow[2] = {1, -1};
-          int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
-          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H)) !=
-              mydesign.Abut_Constraints.end()) {
-            if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].width + 0)) logger->error("error");
-          } else if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph))
-            logger->error("error");
-        }
-      }
-    }
-  }
-
-
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
@@ -1160,7 +1211,84 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
         set_bounds(lp, (id * 4 + 2), -10*miny, -mydesign.Blocks[id][curr_sp.selected[id]].height);
       }
     }
+
+    // extreme coordinates of all nets will be negative for top/right flush
+    for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
+      const auto& ind = (mydesign.Blocks.size() + i) * 4 + 1;
+      for (int j = 0; j < 4; ++j) {
+        set_bounds(lp, ind+j, -get_infinite(lp), 0);
+      }
+    }
   }
+
+
+  int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
+  roundup(bias_Hgraph, x_pitch);
+  roundup(bias_Vgraph, y_pitch);
+  set_add_rowmode(lp, TRUE);
+  // overlap constraint
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
+    int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), i) - curr_sp.negPair.begin();
+    for (unsigned int j = i + 1; j < mydesign.Blocks.size(); j++) {
+      int j_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), j) - curr_sp.posPair.begin();
+      int j_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), j) - curr_sp.negPair.begin();
+      if (i_pos_index < j_pos_index) {
+        if (i_neg_index < j_neg_index) {
+          // i is left of j
+          double sparserow[2] = {1, -1};
+          int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
+          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
+              mydesign.Abut_Constraints.end()) {
+            solver.addRow(2, colno, sparserow, -mydesign.Blocks[i][curr_sp.selected[i]].width, -mydesign.Blocks[i][curr_sp.selected[i]].width);
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].width - 0)) logger->error("error");
+          } else {
+            solver.addRow(2, colno, sparserow, -1e30, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
+            if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph)) logger->error("error");
+          }
+        } else {
+          // i is above j
+          double sparserow[2] = {1, -1};
+          int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
+          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
+              mydesign.Abut_Constraints.end()) {
+            solver.addRow(2, colno, sparserow, mydesign.Blocks[j][curr_sp.selected[j]].height, mydesign.Blocks[j][curr_sp.selected[i]].height);
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].height + 0)) logger->error("error");
+          } else {
+            solver.addRow(2, colno, sparserow, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph, 1e30);
+            if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph)) logger->error("error");
+          }
+        }
+      } else {
+        if (i_neg_index < j_neg_index) {
+          // i is be low j
+          double sparserow[2] = {1, -1};
+          int colno[2] = {int(i) * 4 + 2, int(j) * 4 + 2};
+          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::V)) !=
+              mydesign.Abut_Constraints.end()) {
+            solver.addRow(2, colno, sparserow, -mydesign.Blocks[i][curr_sp.selected[i]].height, -mydesign.Blocks[i][curr_sp.selected[i]].height);
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, -mydesign.Blocks[i][curr_sp.selected[i]].height - 0)) logger->error("error");
+          } else {
+            solver.addRow(2, colno, sparserow, -1e30, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
+            if (!add_constraintex(lp, 2, sparserow, colno, LE, -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph)) logger->error("error");
+          }
+        } else {
+          // i is right of j
+          double sparserow[2] = {1, -1};
+          int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
+          if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H)) !=
+              mydesign.Abut_Constraints.end()) {
+            solver.addRow(2, colno, sparserow, mydesign.Blocks[j][curr_sp.selected[j]].width, mydesign.Blocks[j][curr_sp.selected[j]].width);
+            if (!add_constraintex(lp, 2, sparserow, colno, EQ, mydesign.Blocks[j][curr_sp.selected[j]].width + 0)) logger->error("error");
+          } else {
+            solver.addRow(2, colno, sparserow, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph, 1e30);
+            if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph)) logger->error("error");
+          }
+        }
+      }
+    }
+  }
+
 
   // symmetry block constraint
   for (const auto& SPBlock : mydesign.SPBlocks) {
@@ -1173,12 +1301,14 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           double sparserow[2] = {1, 1};
           int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          solver.addRow(2, colno, sparserow, 1, 1);
         }
         // each pair has the same H flip
         {
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          solver.addRow(2, colno, sparserow, 0, 0);
         }
         // x center of blocks in each pair are the same
         {
@@ -1187,6 +1317,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int first_x_center = mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2;
           int second_x_center = mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
           add_constraintex(lp, 2, sparserow, colno, EQ, -first_x_center + second_x_center);
+          solver.addRow(2, colno, sparserow, -first_x_center + second_x_center, -first_x_center + second_x_center);
         }
       }
 
@@ -1204,6 +1335,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int colno[4] = {i_first_id * 4 + 2, i_second_id * 4 + 2, j_first_id * 4 + 2, j_second_id * 4 + 2};
           int bias = -i_first_y_center - i_second_y_center + j_first_y_center + j_second_y_center;
           add_constraintex(lp, 4, sparserow, colno, EQ, bias);
+          solver.addRow(4, colno, sparserow, bias, bias);
         }
       }
 
@@ -1220,6 +1352,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int colno[3] = {i_first_id * 4 + 2, i_second_id * 4 + 2, j_id * 4 + 2};
           int bias = -i_first_y_center - i_second_y_center + j_y_center;
           add_constraintex(lp, 3, sparserow, colno, EQ, bias);
+          solver.addRow(3, colno, sparserow, bias, bias);
         }
       }
 
@@ -1234,7 +1367,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           double sparserow[2] = {1, -1};
           int colno[2] = {i_id * 4 + 2, j_id * 4 + 2};
           int bias = -i_y_center + j_y_center;
-          add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         }
       }
     } else {
@@ -1247,12 +1380,14 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           double sparserow[2] = {1, 1};
           int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
           add_constraintex(lp, 2, sparserow, colno, EQ, 1);
+          solver.addRow(2, colno, sparserow, 1, 1);
         }
         // each pair has the same V flip
         {
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 4, second_id * 4 + 4};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          solver.addRow(2, colno, sparserow, 0, 0);
         }
         // y center of blocks in each pair are the same
         {
@@ -1261,6 +1396,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int first_y_center = mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2;
           int second_y_center = mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
           add_constraintex(lp, 2, sparserow, colno, EQ, -first_y_center + second_y_center);
+          solver.addRow(2, colno, sparserow, -first_y_center + second_y_center, -first_y_center + second_y_center);
         }
       }
 
@@ -1278,6 +1414,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int colno[4] = {i_first_id * 4 + 1, i_second_id * 4 + 1, j_first_id * 4 + 1, j_second_id * 4 + 1};
           int bias = -i_first_x_center - i_second_x_center + j_first_x_center + j_second_x_center;
           add_constraintex(lp, 4, sparserow, colno, EQ, bias);
+          solver.addRow(4, colno, sparserow, bias, bias);
         }
       }
 
@@ -1294,6 +1431,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int colno[3] = {i_first_id * 4 + 1, i_second_id * 4 + 1, j_id * 4 + 1};
           int bias = -i_first_x_center - i_second_x_center + j_x_center;
           add_constraintex(lp, 3, sparserow, colno, EQ, bias);
+          solver.addRow(3, colno, sparserow, bias, bias);
         }
       }
 
@@ -1309,6 +1447,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           int colno[2] = {i_id * 4 + 1, j_id * 4 + 1};
           int bias = -i_x_center + j_x_center;
           add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         }
       }
     }
@@ -1324,18 +1463,21 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          solver.addRow(2, colno, sparserow, 0, 0);
         } else if (alignment_unit.line == 1) {
           // align center y
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
           int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
           add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         } else {
           // align to top
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
           int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height;
           add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         }
       } else {
         if (alignment_unit.line == 0) {
@@ -1343,18 +1485,21 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
           add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+          solver.addRow(2, colno, sparserow, 0, 0);
         } else if (alignment_unit.line == 1) {
           // align center x
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
           int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
           add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         } else {
           // align to right
           double sparserow[2] = {1, -1};
           int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
           int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
           add_constraintex(lp, 2, sparserow, colno, EQ, bias);
+          solver.addRow(2, colno, sparserow, bias, bias);
         }
       }
     }
@@ -1366,93 +1511,55 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     ConstGraph const_graph;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-      set<pair<pair<int, int>, int>> block_pos_x_set;
-      set<pair<pair<int, int>, int>> block_pos_y_set;
+
+      if (mydesign.Nets[i].connected.size() < 2) continue;
+
+      int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
+      row.at(ind) = -const_graph.LAMBDA;
+      row.at(ind + 1) = -const_graph.LAMBDA;
+      row.at(ind + 2) = const_graph.LAMBDA;
+      row.at(ind + 3) = const_graph.LAMBDA;
+
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
-          block_pos_x_set.insert(
-              std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                             find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
-          block_pos_y_set.insert(
-              std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                             find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
+          const int block_id = mydesign.Nets[i].connected[j].iter2;
+          const int pin_id = mydesign.Nets[i].connected[j].iter;
+          const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
+          int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
+          int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
+          if (blk.blockPins.size()) {
+            pin_llx = blk.blockPins[pin_id].bbox.LL.x;
+            pin_lly = blk.blockPins[pin_id].bbox.LL.y;
+            pin_urx = blk.blockPins[pin_id].bbox.UR.x;
+            pin_ury = blk.blockPins[pin_id].bbox.UR.y;
+          }
+          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
+          double deltay = 1.*(blk.height - pin_lly - pin_ury);
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind};
+            add_constraintex(lp, 3, sparserow, colno, GE, -pin_llx);
+            solver.addRow(3, colno, sparserow, -pin_llx, 1e30);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 1};
+            add_constraintex(lp, 3, sparserow, colno, GE, -pin_lly);
+            solver.addRow(3, colno, sparserow, -pin_lly, 1e30);
+          }
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind + 2};
+            add_constraintex(lp, 3, sparserow, colno, LE, -pin_urx);
+            solver.addRow(3, colno, sparserow, -1e30, -pin_urx);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 3};
+            add_constraintex(lp, 3, sparserow, colno, LE, -pin_ury);
+            solver.addRow(3, colno, sparserow, -1e30, -pin_ury);
+          }
         }
-      }
-      vector<pair<pair<int, int>, int>> block_pos_x(block_pos_x_set.begin(), block_pos_x_set.end());
-      vector<pair<pair<int, int>, int>> block_pos_y(block_pos_y_set.begin(), block_pos_y_set.end());
-      if (block_pos_x.size() < 2) continue;
-      sort(block_pos_x.begin(), block_pos_x.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
-      sort(block_pos_y.begin(), block_pos_y.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
-      int Lblock_id = block_pos_x.front().first.first, Lpin_id = block_pos_x.front().first.second;
-      int Rblock_id = block_pos_x.back().first.first, Rpin_id = block_pos_x.back().first.second;
-      int Lblock_width = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width,
-          Lblock_height = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height;
-      int Rblock_width = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width,
-          Rblock_height = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height;
-      int Lpin_x = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().x
-                       : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width / 2,
-          Lpin_y = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().y
-                       : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height / 2;
-      int Rpin_x = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().x
-                       : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width / 2,
-          Rpin_y = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().y
-                       : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height / 2;
-
-      int Dblock_id = block_pos_y.front().first.first, Dpin_id = block_pos_y.front().first.second;
-      int Ublock_id = block_pos_y.back().first.first, Upin_id = block_pos_y.back().first.second;
-      int Dblock_width = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width,
-          Dblock_height = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].height;
-      int Ublock_width = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width,
-          Ublock_height = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height;
-      int Dpin_x = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().x
-                       : mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width / 2,
-          Dpin_y = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().y
-                       : mydesign.Blocks[Dblock_id][curr_sp.selected[Ublock_id]].height / 2;
-      int Upin_x = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().x
-                       : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width / 2,
-          Upin_y = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().y
-                       : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height / 2;
-
-      // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
-      //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      if (Lblock_id != Rblock_id) {
-        {
-          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-          add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
-        }
-        {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-          add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
-        }
-        row.at(mydesign.Blocks.size() * 4 + i * 2 + 1) = 1;
-      }
-      if (Dblock_id != Ublock_id) {
-        {
-          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-          add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
-        }
-        {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-          add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
-        }
-        row.at(mydesign.Blocks.size() * 4 + i * 2 + 2) = 1;
       }
     }
 
@@ -1490,19 +1597,19 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     }
 
     set_obj_fn(lp, row.data());
+    set_add_rowmode(lp, FALSE);
+
     set_minim(lp);
     set_timeout(lp, 1);
-    int ret = solve(lp);
-    CbcModel model(solver);
-    model.setLogLevel(-1);
-    model.setMaximumSeconds(10);
-    //const double* solution = model.bestSolution();
-    //solver.writeLp("2");
-    //model.branchAndBound();
+    int ret{0};
+    {
+      //TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_solve_runtime);
+      ret = solve(lp);
+    }
     if (ret != 0 && ret != 1) {
       /*static int fail_cnt{0};
-        static std::string block_name;
-        if (block_name != mydesign.name) {
+      static std::string block_name;
+      if (block_name != mydesign.name) {
         fail_cnt = 0;
         block_name = mydesign.name;
       }
@@ -1534,6 +1641,24 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   }
 
   {
+    TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_solve_runtime);
+    logger->info("added {0} cols to solver", solver.getNumCols());
+    write_lp(lp, const_cast<char*>((mydesign.name + "_ilp.lp").c_str()));
+    solver.writeLp("2");
+    CbcModel model(solver);
+    model.setLogLevel(-1);
+    model.setMaximumSeconds(10);
+    model.branchAndBound();
+
+    int numberColumns = model.solver()->getNumCols();
+    const double* solution = model.bestSolution();
+    for (int iColumn=0;iColumn<numberColumns;iColumn++) {
+      double value=solution[iColumn];
+      if (model.solver()->isInteger(iColumn)) 
+        logger->info("col : {0} {1}", iColumn, value);
+    }
+  }
+  {
     std::vector<double> var(N_var);
 
     get_variables(lp, var.data());
@@ -1555,13 +1680,15 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     // calculate HPWL from ILP solution
     HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) * 4 + i * 2);
-      HPWL_ILP += (var[ind + 1] + var[ind]);
+      int ind = (int(mydesign.Blocks.size()) + i) * 4;
+      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
   return true;
 }
-bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+
+bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+  TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
   int v_metal_index = -1;
@@ -1582,8 +1709,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
-  // i*4+1: x
+  unsigned int N_var = (mydesign.Blocks.size() + mydesign.Nets.size()) * 4;
+  // i*4+1:x
   // i*4+2:y
   // i*4+3:H_flip
   // i*4+4:V_flip
@@ -1606,15 +1733,17 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   }
 
   for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
-    set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
-    set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
+    int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_x").c_str()));
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_y").c_str()));
+    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ur_x").c_str()));
+    set_col_name(lp, ind,   const_cast<char*>((mydesign.Nets[i].name + "_ur_y").c_str()));
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
   roundup(bias_Hgraph, x_pitch);
   roundup(bias_Vgraph, y_pitch);
-
+  set_add_rowmode(lp, TRUE);
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
@@ -1694,6 +1823,14 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       if (id < int(mydesign.Blocks.size())) {
         set_bounds(lp, (id * 4 + 1), -10*minx, -mydesign.Blocks[id][curr_sp.selected[id]].width);
         set_bounds(lp, (id * 4 + 2), -10*miny, -mydesign.Blocks[id][curr_sp.selected[id]].height);
+      }
+    }
+
+    // extreme coordinates of all nets will be negative for top/right flush
+    for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
+      const auto& ind = (mydesign.Blocks.size() + i) * 4 + 1;
+      for (int j = 0; j < 4; ++j) {
+        set_bounds(lp, ind+j, -get_infinite(lp), 0);
       }
     }
   }
@@ -1902,93 +2039,51 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     ConstGraph const_graph;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-      set<pair<pair<int, int>, int>> block_pos_x_set;
-      set<pair<pair<int, int>, int>> block_pos_y_set;
+
+      if (mydesign.Nets[i].connected.size() < 2) continue;
+
+      int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
+      row.at(ind) = -const_graph.LAMBDA;
+      row.at(ind + 1) = -const_graph.LAMBDA;
+      row.at(ind + 2) = const_graph.LAMBDA;
+      row.at(ind + 3) = const_graph.LAMBDA;
+
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
-          block_pos_x_set.insert(
-              std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                             find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
-          block_pos_y_set.insert(
-              std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                             find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin()));
+          const int block_id = mydesign.Nets[i].connected[j].iter2;
+          const int pin_id = mydesign.Nets[i].connected[j].iter;
+          const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
+          int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
+          int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
+          if (blk.blockPins.size()) {
+            pin_llx = blk.blockPins[pin_id].bbox.LL.x;
+            pin_lly = blk.blockPins[pin_id].bbox.LL.y;
+            pin_urx = blk.blockPins[pin_id].bbox.UR.x;
+            pin_ury = blk.blockPins[pin_id].bbox.UR.y;
+          }
+          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
+          double deltay = 1.*(blk.height - pin_lly - pin_ury);
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind};
+            add_constraintex(lp, 3, sparserow, colno, GE, -pin_llx);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 1};
+            add_constraintex(lp, 3, sparserow, colno, GE, -pin_lly);
+          }
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind + 2};
+            add_constraintex(lp, 3, sparserow, colno, LE, -pin_urx);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 2, block_id * 4 + 4, ind + 3};
+            add_constraintex(lp, 3, sparserow, colno, LE, -pin_ury);
+          }
         }
-      }
-      vector<pair<pair<int, int>, int>> block_pos_x(block_pos_x_set.begin(), block_pos_x_set.end());
-      vector<pair<pair<int, int>, int>> block_pos_y(block_pos_y_set.begin(), block_pos_y_set.end());
-      if (block_pos_x.size() < 2) continue;
-      sort(block_pos_x.begin(), block_pos_x.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
-      sort(block_pos_y.begin(), block_pos_y.end(), [](const pair<pair<int, int>, int>& a, const pair<pair<int, int>, int>& b) { return a.second < b.second; });
-      int Lblock_id = block_pos_x.front().first.first, Lpin_id = block_pos_x.front().first.second;
-      int Rblock_id = block_pos_x.back().first.first, Rpin_id = block_pos_x.back().first.second;
-      int Lblock_width = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width,
-          Lblock_height = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height;
-      int Rblock_width = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width,
-          Rblock_height = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height;
-      int Lpin_x = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().x
-                       : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].width / 2,
-          Lpin_y = mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].blockPins[Lpin_id].center.front().y
-                       : mydesign.Blocks[Lblock_id][curr_sp.selected[Lblock_id]].height / 2;
-      int Rpin_x = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().x
-                       : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].width / 2,
-          Rpin_y = mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].blockPins[Rpin_id].center.front().y
-                       : mydesign.Blocks[Rblock_id][curr_sp.selected[Rblock_id]].height / 2;
-
-      int Dblock_id = block_pos_y.front().first.first, Dpin_id = block_pos_y.front().first.second;
-      int Ublock_id = block_pos_y.back().first.first, Upin_id = block_pos_y.back().first.second;
-      int Dblock_width = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width,
-          Dblock_height = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].height;
-      int Ublock_width = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width,
-          Ublock_height = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height;
-      int Dpin_x = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().x
-                       : mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].width / 2,
-          Dpin_y = mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Dblock_id][curr_sp.selected[Dblock_id]].blockPins[Dpin_id].center.front().y
-                       : mydesign.Blocks[Dblock_id][curr_sp.selected[Ublock_id]].height / 2;
-      int Upin_x = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().x
-                       : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].width / 2,
-          Upin_y = mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins.size() > 0
-                       ? mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].blockPins[Upin_id].center.front().y
-                       : mydesign.Blocks[Ublock_id][curr_sp.selected[Ublock_id]].height / 2;
-
-      // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
-      //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      if (Lblock_id != Rblock_id) {
-        {
-          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-          add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
-        }
-        {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
-          int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
-          add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
-        }
-        row.at(mydesign.Blocks.size() * 4 + i * 2 + 1) = 1;
-      }
-      if (Dblock_id != Ublock_id) {
-        {
-          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-          add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
-        }
-        {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
-          int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
-          add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
-        }
-        row.at(mydesign.Blocks.size() * 4 + i * 2 + 2) = 1;
       }
     }
 
@@ -2026,9 +2121,15 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     }
 
     set_obj_fn(lp, row.data());
+    set_add_rowmode(lp, FALSE);
+
     set_minim(lp);
     set_timeout(lp, 1);
-    int ret = solve(lp);
+    int ret{0};
+    {
+      TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_solve_runtime);
+      ret = solve(lp);
+    }
     if (ret != 0 && ret != 1) {
       /*static int fail_cnt{0};
       static std::string block_name;
@@ -2085,8 +2186,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     // calculate HPWL from ILP solution
     HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) * 4 + i * 2);
-      HPWL_ILP += (var[ind + 1] + var[ind]);
+      int ind = (int(mydesign.Blocks.size()) + i) * 4;
+      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
   return true;
@@ -2189,6 +2290,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     }
   }
 
+  TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // snap up coordinates to grid
   for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
     roundup(Blocks[i].x, x_pitch);
