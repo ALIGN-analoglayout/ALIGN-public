@@ -1043,22 +1043,6 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
   TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_runtime);
-  int v_metal_index = -1;
-  int h_metal_index = -1;
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 0) {
-      v_metal_index = i;
-      break;
-    }
-  }
-  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
-    if (drcInfo.Metal_info[i].direct == 1) {
-      h_metal_index = i;
-      break;
-    }
-  }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   Cbc_Model* cbcmodel = Cbc_newModel();
   vector<int> objX(mydesign.Blocks.size(), 0), objY(mydesign.Blocks.size(), 0);
@@ -1541,22 +1525,44 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
 double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
-  ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  if (mydesign.leftAlign()) {
-  // frame and solve ILP to flush bottom/left
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
-  } else if (mydesign.rightAlign()) {
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
-  } else {
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
-    std::vector<Block> blockslocal{Blocks};
-    // frame and solve ILP to flush top/right
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
-        || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
-      // if unable to solve flush top/right or if the solution changed significantly,
-      // use the bottom/left flush solution
-      Blocks = blockslocal;
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
     }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  if (mydesign.Blocks.empty()) return -1;
+  ++const_cast<design&>(mydesign)._totalNumCostCalc;
+  if (mydesign.Blocks.size() > 1) {
+    if (mydesign.leftAlign()) {
+      // frame and solve ILP to flush bottom/left
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+    } else if (mydesign.rightAlign()) {
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+    } else {
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      std::vector<Block> blockslocal{Blocks};
+      // frame and solve ILP to flush top/right
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
+          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
+        // if unable to solve flush top/right or if the solution changed significantly,
+        // use the bottom/left flush solution
+        Blocks = blockslocal;
+      }
+    }
+  } else {
+    Blocks[0].x = 0;
+    Blocks[0].y = 0;
   }
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
