@@ -197,6 +197,7 @@ ${CoinUtils_DIR}/src/CoinPresolveIsolated.hpp
 ${CoinUtils_DIR}/src/CoinDistance.hpp
 ${CoinUtils_DIR}/src/CoinFloatEqual.hpp
 ${CoinUtils_DIR}/src/CoinSnapshot.hpp
+${CoinUtils_DIR}/src/Coin_C_defines.h
                      )
 
 if (COINUTILS_BIGINDEX_T STREQUAL "int")
