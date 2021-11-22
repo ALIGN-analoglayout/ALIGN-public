@@ -493,6 +493,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
     .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
     .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
+    .def_readwrite("max_init_trial_count", &PlacerHyperparameters::max_init_trial_count)
+    .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
