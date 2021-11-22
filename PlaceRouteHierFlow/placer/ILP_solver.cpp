@@ -1116,8 +1116,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       double obj[] = {1.*objX[i], 1.*objY[i], 0., 0.};
       Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_x").c_str(), cLB[0], cUB[0], objX[i], 1, 0, NULL, NULL);
       Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_y").c_str(), cLB[1], cUB[1], objY[i], 1, 0, NULL, NULL);
-      Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_flx").c_str(), 0, 1, objX[i], 1, 0, NULL, NULL);
-      Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_fly").c_str(), 0, 1, objY[i], 1, 0, NULL, NULL);
+      Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_flx").c_str(), 0, 1, 0, 1, 0, NULL, NULL);
+      Cbc_addCol(cbcmodel, (mydesign.Blocks[i][0].name + "_fly").c_str(), 0, 1, 0, 1, 0, NULL, NULL);
     }
 
     ConstGraph const_graph;
@@ -1161,9 +1161,9 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
             int colno[2] = {int(i) * 4, int(j) * 4};
             if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
                 mydesign.Abut_Constraints.end()) {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', -mydesign.Blocks[i][curr_sp.selected[i]].width);
+              Cbc_addRow(cbcmodel, constrname("overlapl").c_str(), 2, colno, sparserow, 'E', -mydesign.Blocks[i][curr_sp.selected[i]].width);
             } else {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'L', -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
+              Cbc_addRow(cbcmodel, constrname("overlapl").c_str(), 2, colno, sparserow, 'L', -mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
             }
           } else {
             // i is above j
@@ -1171,9 +1171,9 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
             int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
             if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
                 mydesign.Abut_Constraints.end()) {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', mydesign.Blocks[j][curr_sp.selected[i]].height);
+              Cbc_addRow(cbcmodel, constrname("overlapa").c_str(), 2, colno, sparserow, 'E', mydesign.Blocks[j][curr_sp.selected[j]].height);
             } else {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'G', mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
+              Cbc_addRow(cbcmodel, constrname("overlapa").c_str(), 2, colno, sparserow, 'G', mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
             }
           }
         } else {
@@ -1183,9 +1183,9 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
             int colno[2] = {int(i) * 4 + 1, int(j) * 4 + 1};
             if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::V)) !=
                 mydesign.Abut_Constraints.end()) {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', -mydesign.Blocks[i][curr_sp.selected[i]].height);
+              Cbc_addRow(cbcmodel, constrname("overlapb").c_str(), 2, colno, sparserow, 'E', -mydesign.Blocks[i][curr_sp.selected[i]].height);
             } else {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'L', -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
+              Cbc_addRow(cbcmodel, constrname("overlapb").c_str(), 2, colno, sparserow, 'L', -mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
             }
           } else {
             // i is right of j
@@ -1193,9 +1193,9 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
             int colno[2] = {int(i) * 4, int(j) * 4};
             if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H)) !=
                 mydesign.Abut_Constraints.end()) {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', mydesign.Blocks[j][curr_sp.selected[j]].width);
+              Cbc_addRow(cbcmodel, constrname("overlapr").c_str(), 2, colno, sparserow, 'E', mydesign.Blocks[j][curr_sp.selected[j]].width);
             } else {
-              Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'G', mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
+              Cbc_addRow(cbcmodel, constrname("overlapr").c_str(), 2, colno, sparserow, 'G', mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
             }
           }
         }
@@ -1213,13 +1213,13 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           {
             double sparserow[2] = {1, 1};
             int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
-            Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', 1);
+            Cbc_addRow(cbcmodel, constrname("sp_fl_1").c_str(), 2, colno, sparserow, 'E', 1);
           }
           // each pair has the same H flip
           {
             double sparserow[2] = {1, -1};
             int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
-            Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', 0);
+            Cbc_addRow(cbcmodel, constrname("sp_fl_2").c_str(), 2, colno, sparserow, 'E', 0);
           }
           // x center of blocks in each pair are the same
           {
@@ -1287,13 +1287,13 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           {
             double sparserow[2] = {1, 1};
             int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
-            Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', 1);
+            Cbc_addRow(cbcmodel, constrname("sp_fl_3").c_str(), 2, colno, sparserow, 'E', 1);
           }
           // each pair has the same V flip
           {
             double sparserow[2] = {1, -1};
             int colno[2] = {first_id * 4 + 3, second_id * 4 + 3};
-            Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', 0);
+            Cbc_addRow(cbcmodel, constrname("sp_fl_4").c_str(), 2, colno, sparserow, 'E', 0);
           }
           // y center of blocks in each pair are the same
           {
@@ -1363,7 +1363,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           if (alignment_unit.line == 0) {
             // align to bottom
             double sparserow[2] = {1, -1};
-            int colno[2] = {first_id * 4 + 1, second_id * 4 + 2};
+            int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
             Cbc_addRow(cbcmodel, "", 2, colno, sparserow, 'E', 0);
           } else if (alignment_unit.line == 1) {
             // align center y
@@ -1400,23 +1400,75 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         }
       }
     }
+    for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
+      if (mydesign.Nets[i].connected.size() < 2) continue;
+
+      int ind = int(mydesign.Blocks.size() + i) * 4;
+      for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
+        if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
+          const int block_id = mydesign.Nets[i].connected[j].iter2;
+          const int pin_id = mydesign.Nets[i].connected[j].iter;
+          const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
+          int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
+          int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
+          if (blk.blockPins.size()) {
+            pin_llx = blk.blockPins[pin_id].bbox.LL.x;
+            pin_lly = blk.blockPins[pin_id].bbox.LL.y;
+            pin_urx = blk.blockPins[pin_id].bbox.UR.x;
+            pin_ury = blk.blockPins[pin_id].bbox.UR.y;
+          }
+          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
+          double deltay = 1.*(blk.height - pin_lly - pin_ury);
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 0, block_id * 4 + 2, ind};
+            Cbc_addRow(cbcmodel, "", 3, colno, sparserow, 'G', -pin_llx);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind + 1};
+            Cbc_addRow(cbcmodel, "", 3, colno, sparserow, 'G', -pin_lly);
+          }
+          {
+            double sparserow[3] = {1,                deltax,           -1};
+            int    colno[3]     = {block_id * 4 + 0, block_id * 4 + 2, ind + 2};
+            Cbc_addRow(cbcmodel, "", 3, colno, sparserow, 'L', -pin_urx);
+          }
+          {
+            double sparserow[3] = {1,                deltay,           -1};
+            int    colno[3]     = {block_id * 4 + 1, block_id * 4 + 3, ind + 3};
+            Cbc_addRow(cbcmodel, "", 3, colno, sparserow, 'L', -pin_ury);
+          }
+        }
+      }
+    }
   }
 
   {
     TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_solve_runtime);
-    //Cbc_writeLp(cbcmodel, "2");
-    Cbc_setLogLevel(cbcmodel, -1);
-    Cbc_setMaximumSeconds(cbcmodel, 1);
-    int status = Cbc_solve(cbcmodel);
-    if (status < 0 || status == 1 || status == 7) {
-      Cbc_deleteModel(cbcmodel);
-      return false;
+    static int fail_cnt{0};
+    static std::string block_name;
+    if (block_name != mydesign.name) {
+      fail_cnt = 0;
+      block_name = mydesign.name;
     }
   }
-  {
-    int numberColumns = Cbc_getNumCols(cbcmodel);
-    const double* solution = Cbc_getColSolution(cbcmodel);
+  //if (fail_cnt++ < 100) {
+  //  logger->info("writing {0}", (mydesign.name + "_ilp_" + std::to_string(fail_cnt) + ".lp"));
+  //  Cbc_writeLp(cbcmodel, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+  //}
+  Cbc_setLogLevel(cbcmodel, 0);
+  Cbc_setMaximumSeconds(cbcmodel, 10);
+  int status = Cbc_solve(cbcmodel);
+  int secstatus = Cbc_secondaryStatus(cbcmodel);
+  if (status != 0 || secstatus == 1 || secstatus == 7 || secstatus < 0) {
     Cbc_deleteModel(cbcmodel);
+    //logger->info("ilp failed");
+    return false;
+  }
+  {
+    const double* solution = Cbc_getColSolution(cbcmodel);
+    //int numberColumns = Cbc_getNumCols(cbcmodel);
     //for (int iColumn=0;iColumn<numberColumns;iColumn++) {
     //  double value=solution[iColumn];
     //  if (Cbc_isInteger(cbcmodel, iColumn))
@@ -1431,6 +1483,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = solution[i * 4 + 2];
       Blocks[i].V_flip = solution[i * 4 + 3];
+      //logger->info("block : {0} {1} {2} {3} {4} {5} {6}", mydesign.Blocks[i][0].name, Blocks[i].x, Blocks[i].y, Blocks[i].H_flip, Blocks[i].V_flip, solution[i*4], solution[i*4 + 1]);
     }
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
@@ -1442,6 +1495,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       int ind = (int(mydesign.Blocks.size()) + i) * 4;
       HPWL_ILP += (solution[ind + 3] + solution[ind + 2] - solution[ind + 1] - solution[ind]);
     }
+    Cbc_deleteModel(cbcmodel);
   }
   return true;
 }
