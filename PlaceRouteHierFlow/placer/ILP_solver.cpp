@@ -1044,7 +1044,11 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
 
   TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_runtime);
 
-  Cbc_Model* cbcmodel = Cbc_newModel();
+  Cbc_Model* cbcmodel = nullptr;
+  {
+    TimeMeasure tm(const_cast<design&>(mydesign).ilp_cr_runtime);
+    cbcmodel = Cbc_newModel();
+  }
   vector<int> objX(mydesign.Blocks.size(), 0), objY(mydesign.Blocks.size(), 0);
   // add area in cost
   int URblock_pos_id = 0, URblock_neg_id = 0;
@@ -1452,20 +1456,23 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       fail_cnt = 0;
       block_name = mydesign.name;
     }
+    Cbc_setLogLevel(cbcmodel, 0);
+    Cbc_setMaximumSeconds(cbcmodel, 10);
+    int status = Cbc_solve(cbcmodel);
+    int secstatus = Cbc_secondaryStatus(cbcmodel);
+    if (status != 0 || secstatus == 1 || secstatus == 7 || secstatus < 0) {
+      {
+        TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_dm_runtime);
+        Cbc_deleteModel(cbcmodel);
+      }
+      //logger->info("ilp failed");
+      return false;
+    }
   }
   //if (fail_cnt++ < 100) {
   //  logger->info("writing {0}", (mydesign.name + "_ilp_" + std::to_string(fail_cnt) + ".lp"));
   //  Cbc_writeLp(cbcmodel, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
   //}
-  Cbc_setLogLevel(cbcmodel, 0);
-  Cbc_setMaximumSeconds(cbcmodel, 10);
-  int status = Cbc_solve(cbcmodel);
-  int secstatus = Cbc_secondaryStatus(cbcmodel);
-  if (status != 0 || secstatus == 1 || secstatus == 7 || secstatus < 0) {
-    Cbc_deleteModel(cbcmodel);
-    //logger->info("ilp failed");
-    return false;
-  }
   {
     const double* solution = Cbc_getColSolution(cbcmodel);
     //int numberColumns = Cbc_getNumCols(cbcmodel);
@@ -1495,7 +1502,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       int ind = (int(mydesign.Blocks.size()) + i) * 4;
       HPWL_ILP += (solution[ind + 3] + solution[ind + 2] - solution[ind + 1] - solution[ind]);
     }
-    Cbc_deleteModel(cbcmodel);
+    {
+      TimeMeasure tmsol(const_cast<design&>(mydesign).ilp_dm_runtime);
+      Cbc_deleteModel(cbcmodel);
+    }
   }
   return true;
 }

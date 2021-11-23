@@ -204,7 +204,7 @@ class design {
   CompactStyle compact_style = CompactStyle::L;
 
   public:
-  std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0}, add_col_runtime{0}, add_row_runtime{0};
+  std::chrono::nanoseconds ilp_dm_runtime{0}, ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0}, add_col_runtime{0}, add_row_runtime{0}, ilp_cr_runtime{0};
   design();
   design(PnRDB::hierNode& node, const int seed = 0);
   design(string blockfile, string netfile);
