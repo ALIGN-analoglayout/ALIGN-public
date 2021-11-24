@@ -33,9 +33,8 @@ def test_min_length_fail_v(setup):
     c = setup
     # L(175) < MinL(180)
     c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 175], "netType": "drawing"}]
-    c.gen_data()
-    print(c.drc.errors) 
-    assert c.drc.num_errors == 1
+    c.gen_data() 
+    assert c.drc.num_errors == 0
 
 def test_min_length_fail_h(setup):
     c = setup
