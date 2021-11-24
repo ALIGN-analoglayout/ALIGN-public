@@ -64,7 +64,7 @@
 "Color": ["c1", "c2"],
 "Pitch": 80,
 "Width": 32,
-"MinL": 180,
+"MinL": 40,
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
