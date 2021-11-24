@@ -36,28 +36,15 @@ using std::string;
 using std::vector;
 
 
-class ExtremeBlocksOfNet {
-  private:
-    std::map<int, int> _posPosition, _negPosition;
-    std::set<int> _ltExtreme, _rtExtreme, _botExtreme, _topExtreme;
-  public:
-    ExtremeBlocksOfNet(const SeqPair& sp);
-    void FindExtremes(const placerDB::net& n);
-    bool InLeftExtreme(const int i) const { return _ltExtreme.find(i) != _ltExtreme.end(); }
-    bool InRightExtreme(const int i) const { return _rtExtreme.find(i) != _rtExtreme.end(); }
-    bool InTopExtreme(const int i) const { return _topExtreme.find(i) != _topExtreme.end(); }
-    bool InBottomExtreme(const int i) const { return _botExtreme.find(i) != _botExtreme.end(); }
-
-};
-
 class ILP_solver {
   friend class Placer;
 
-  private:
+  public:
   struct Block {
     int x = 0, y = 0;            // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
   };
+  private:
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
@@ -73,6 +60,7 @@ class ILP_solver {
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
+  bool FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
   public:
   double cost = 0;
   double constraint_penalty = 0;
@@ -101,5 +89,21 @@ class ILP_solver {
   PnRDB::bbox ConvertBoundaryData(vector<placerDB::point> Bdata);
   PnRDB::point ConvertPointData(placerDB::point Pdata);
 };
+
+class ExtremeBlocksOfNet {
+  private:
+    std::map<int, int> _posPosition, _negPosition;
+    std::vector<std::set<int>> _ltExtreme, _rtExtreme, _botExtreme, _topExtreme;
+  public:
+    ExtremeBlocksOfNet(const SeqPair& sp, const int N);
+    void FindExtremes(const placerDB::net& n, const int neti);
+    void FindExtremes(const placerDB::net& n, const int neti, const std::vector<ILP_solver::Block>& Blocks, const design& mydesign, const SeqPair& curr_sp);
+    bool InLeftExtreme(const int neti, const int i) const { return _ltExtreme.size() > neti && _ltExtreme[neti].find(i) != _ltExtreme[neti].end(); }
+    bool InRightExtreme(const int neti, const int i) const { return _rtExtreme.size() > neti && _rtExtreme[neti].find(i) != _rtExtreme[neti].end(); }
+    bool InTopExtreme(const int neti, const int i) const { return _topExtreme.size() > neti && _topExtreme[neti].find(i) != _topExtreme[neti].end(); }
+    bool InBottomExtreme(const int neti, const int i) const { return _botExtreme.size() > neti && _botExtreme[neti].find(i) != _botExtreme[neti].end(); }
+
+};
+
 
 #endif
