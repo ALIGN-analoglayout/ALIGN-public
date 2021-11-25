@@ -39,12 +39,11 @@ using std::vector;
 class ILP_solver {
   friend class Placer;
 
-  public:
+  private:
   struct Block {
     int x = 0, y = 0;            // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
   };
-  private:
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
@@ -97,7 +96,6 @@ class ExtremeBlocksOfNet {
   public:
     ExtremeBlocksOfNet(const SeqPair& sp, const int N);
     void FindExtremes(const placerDB::net& n, const int neti);
-    void FindExtremes(const placerDB::net& n, const int neti, const std::vector<ILP_solver::Block>& Blocks, const design& mydesign, const SeqPair& curr_sp);
     bool InLeftExtreme(const int neti, const int i) const { return _ltExtreme.size() > neti && _ltExtreme[neti].find(i) != _ltExtreme[neti].end(); }
     bool InRightExtreme(const int neti, const int i) const { return _rtExtreme.size() > neti && _rtExtreme[neti].find(i) != _rtExtreme[neti].end(); }
     bool InTopExtreme(const int neti, const int i) const { return _topExtreme.size() > neti && _topExtreme[neti].find(i) != _topExtreme[neti].end(); }
