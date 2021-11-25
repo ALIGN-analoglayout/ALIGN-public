@@ -27,13 +27,12 @@ def check_placement(placement_verilog_d, scale_factor):
         bbox = transformation.Rect(*module['bbox'])
         with types.set_context(constraints):
             constraints.append(
-                constraint.SetBoundingBox(
-                    instance=module['concrete_name'],
+                constraint.AssignBboxVariables(
+                    bbox_name='subcircuit',
                     llx=bbox.llx/scale_factor,
                     lly=bbox.lly/scale_factor,
                     urx=bbox.urx/scale_factor,
-                    ury=bbox.ury/scale_factor,
-                    is_subcircuit=True
+                    ury=bbox.ury/scale_factor
                 )
             )
         for inst in module['instances']:
@@ -47,8 +46,8 @@ def check_placement(placement_verilog_d, scale_factor):
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             with types.set_context(constraints):
                 constraints.append(
-                    constraint.SetBoundingBox(
-                        instance=inst['instance_name'],
+                    constraint.AssignBboxVariables(
+                        bbox_name=inst['instance_name'],
                         llx=bbox.llx/scale_factor,
                         lly=bbox.lly/scale_factor,
                         urx=bbox.urx/scale_factor,

@@ -1137,8 +1137,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  unsigned int N_var = (mydesign.Blocks.size() + mydesign.Nets.size()) * 4;
-  // i*4+1:x
+  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
+  // i*4+1: x
   // i*4+2:y
   // i*4+3:H_flip
   // i*4+4:V_flip
@@ -1161,11 +1161,9 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   }
 
   for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_x").c_str()));
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ll_y").c_str()));
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Nets[i].name + "_ur_x").c_str()));
-    set_col_name(lp, ind,   const_cast<char*>((mydesign.Nets[i].name + "_ur_y").c_str()));
+    int ind = i * 2 + mydesign.Blocks.size() * 4 + 1;
+    set_col_name(lp, ind, const_cast<char*>((mydesign.Nets[i].name + "_x").c_str()));
+    set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_y").c_str()));
   }
 
   ConstGraph const_graph;
@@ -1296,14 +1294,6 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       if (id < int(mydesign.Blocks.size())) {
         set_bounds(lp, (id * 4 + 1), -10*minx, -mydesign.Blocks[id][curr_sp.selected[id]].width);
         set_bounds(lp, (id * 4 + 2), -10*miny, -mydesign.Blocks[id][curr_sp.selected[id]].height);
-      }
-    }
-
-    // extreme coordinates of all nets will be negative for top/right flush
-    for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
-      const auto& ind = (mydesign.Blocks.size() + i) * 4 + 1;
-      for (int j = 0; j < 4; ++j) {
-        set_bounds(lp, ind+j, -get_infinite(lp), 0);
       }
     }
   }
@@ -1662,8 +1652,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     // calculate HPWL from ILP solution
     HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) + i) * 4;
-      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+      int ind = (int(mydesign.Blocks.size()) * 4 + i * 2);
+      HPWL_ILP += (var[ind + 1] + var[ind]);
     }
   }
   return true;
