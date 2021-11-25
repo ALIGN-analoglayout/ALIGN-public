@@ -57,6 +57,6 @@ PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, 
     auto placer_begin = std::chrono::high_resolution_clock::now();
     Placer curr_plc(_nodeVec, opath, effort, drcInfo, hyper, select_in_ILP);
     auto placer_end = std::chrono::high_resolution_clock::now();
-    logger->info("Block {0} placement runtime : {1}", _nodeVec.back().name, std::chrono::duration_cast<std::chrono::nanoseconds>(placer_end - placer_begin).count());
+    logger->debug("Block {0} placement runtime : {1}", _nodeVec.back().name, std::chrono::duration_cast<std::chrono::nanoseconds>(placer_end - placer_begin).count());
   }
 }
