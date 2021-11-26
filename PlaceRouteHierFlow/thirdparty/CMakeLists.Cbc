@@ -5,7 +5,7 @@ project(Cbc)
 option(COIN_ENABLE_READLINE "Enable the use of the readline library" OFF)
 
 # Cbc options
-option(CBC_USE_THREADS "Enable the compilation of the SMP version of CBC" OFF)
+option(CBC_USE_THREADS "Enable the compilation of the SMP version of CBC" ON)
 set(CBC_DEFAULT_SOLVER "clp" CACHE STRING "The name of the default solver to be used in cbc-generic (clp, dylp, glpk, soplex)")
 set(CBC_CHECKLEVEL "0" CACHE STRING "The debug sanity check level of Cbc (0 if no test)")
 set(CBC_VERBOSITY  "0" CACHE STRING "The debug verbosity level of Cbc (0 if no output)")
@@ -35,7 +35,7 @@ option(COMPILE_OSI_MOSEK  "Compile the OSI Mosek solver"  OFF)
 option(COMPILE_OSI_SOPLEX "Compile the OSI Soplex solver" OFF)
 
 # CoinUtils options
-option(COINUTILS_USE_THREADS              "enables compilation of thread aware CoinUtils (mempool so far)" OFF)
+option(COINUTILS_USE_THREADS              "enables compilation of thread aware CoinUtils (mempool so far)" ON)
 option(COINUTILS_USE_MEMPOOL_OVERRIDE_NEW "enables the CoinUtils mempool to override global new/delete" OFF)
 option(COINUTILS_USE_MEMPOOL_MAXPOOLED    "Specify the default maximum memory allocation size that is served by the memory pool. If negative (or 'no') then the memory pool is disabled completely. Otherwise its value can be overridden at runtime using the COINUTILS_MEMPOOL_MAXPOOLED environment variable." OFF)
 option(COINUTILS_HAS_ZLIB  "CoinUtils uses Zlib" OFF)

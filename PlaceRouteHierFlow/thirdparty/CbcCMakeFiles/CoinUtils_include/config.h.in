@@ -22,7 +22,7 @@
 #cmakedefine COINUTILS_MEMPOOL_OVERRIDE_NEW
 
 /* Define to 1 if the thread aware version of CoinUtils should be compiled */
-#cmakedefine COINUTILS_PTHREADS
+#cmakedefine COINUTILS_PTHREADS @COINUTILS_PTHREADS@
 
 /* SVN revision number of project */
 #define COINUTILS_SVN_REV @COINUTILS_SVN_REV@

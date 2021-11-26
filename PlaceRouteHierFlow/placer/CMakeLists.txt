@@ -32,6 +32,7 @@ target_link_libraries(
      Cgl::Cgl
      CoinUtils::CoinUtils
      OsiClp::OsiClp
+     OsiCbc::OsiCbc
      Boost::boost
      nlohmann_json::nlohmann_json
 )

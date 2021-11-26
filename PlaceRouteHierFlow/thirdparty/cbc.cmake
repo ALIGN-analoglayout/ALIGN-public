@@ -117,7 +117,30 @@ if(NOT Cbc_lib)
     add_subdirectory(${cbc_SOURCE_DIR} ${cbc_BINARY_DIR})
      #target_include_directories(libCbc INTERFACE ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR})
     target_include_directories(libCbc INTERFACE ${cbc_SOURCE_DIR}/Cbc/src)
-    target_include_directories(libCgl INTERFACE ${cbc_SOURCE_DIR}/Cgl/src)
+    target_include_directories(libCgl INTERFACE ${cbc_SOURCE_DIR}/Cgl/src
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglAllDifferent
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglClique
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglDuplicateRow
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglFlowCover
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglGMI
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglGomory
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglKnapsackCover
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglLandP
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglLiftAndProject
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglMessage.hpp
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglMixedIntegerRounding
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglMixedIntegerRounding2
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglOddHole
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglParam.hpp
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglPreProcess
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglProbing
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglRedSplit
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglRedSplit2
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglResidualCapacity
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglSimpleRounding
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglTwomir
+                                                ${cbc_SOURCE_DIR}/Cgl/src/CglZeroHalf)
+
     target_include_directories(libClp INTERFACE ${cbc_SOURCE_DIR}/Clp/src)
     target_include_directories(libOsi INTERFACE ${cbc_SOURCE_DIR}/Osi/src/Osi)
     target_include_directories(libOsiClp INTERFACE ${cbc_SOURCE_DIR}/Clp/src/OsiClp)
