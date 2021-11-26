@@ -1,0 +1,72 @@
+#ifndef __CONFIG_COINUTILS_H__
+#define __CONFIG_COINUTILS_H__
+
+/* Library Visibility Attribute */
+#ifndef COINUTILSLIB_EXPORT
+#cmakedefine COINUTILSLIB_EXPORT @COINUTILSLIB_EXPORT@
+#endif
+
+/* Version number of project */
+#define COINUTILS_VERSION "@COINUTILS_VERSION@"
+
+/* Major Version number of project */
+#define COINUTILS_VERSION_MAJOR @COINUTILS_VERSION_MAJOR@
+
+/* Minor Version number of project */
+#define COINUTILS_VERSION_MINOR @COINUTILS_VERSION_MINOR@
+
+/* Release Version number of project */
+#define COINUTILS_VERSION_RELEASE @COINUTILS_VERSION_RELEASE@
+
+/* Define to 64bit integer type */
+#define COIN_INT64_T @COIN_INT64_T@
+
+/* Define to integer type capturing pointer */
+#define COIN_INTPTR_T @COIN_INTPTR_T@
+
+/* Define to 64bit unsigned integer type */
+#define COIN_UINT64_T @COIN_UINT64_T@
+
+/* Define to 64bit integer type */
+#define COINUTILS_INT64_T @COIN_INT64_T@
+
+/* Define to integer type capturing pointer */
+#define COINUTILS_INTPTR_T @COIN_INTPTR_T@
+
+/* Define to 64bit unsigned integer type */
+#define COINUTILS_UINT64_T @COIN_UINT64_T@
+
+/* Define to 1 if CoinUtils uses C++11 */
+#cmakedefine COINUTILS_CPLUSPLUS11
+
+/* Define to 1 if stdint.h is available for CoinUtils */
+#cmakedefine COINUTILS_HAS_STDINT_H
+
+/* Define to 1 if stdint.h is available for CoinUtils */
+#cmakedefine COINUTILS_HAS_CSTDINT
+
+/* Define to 1 if CoinUtils was build with Glpk support enabled */
+#cmakedefine COINUTILS_HAS_GLPK
+
+/* Define to be the name of C-function for Inf check */
+#cmakedefine COINUTILS_C_FINITE
+
+/* Define to be the name of C-function for NaN check */
+#cmakedefine COINUTILS_C_ISNAN
+
+/* Define to 64bit integer type */
+#define COINUTILS_INT64_T @COIN_INT64_T@
+
+/* Define to integer type capturing pointer */
+#define COINUTILS_INTPTR_T @COIN_INTPTR_T@
+
+/* Define to 64bit unsigned integer type */
+#define COINUTILS_UINT64_T @COIN_UINT64_T@
+
+/* Define to 1 if CoinBigIndex is int */
+#define COINUTILS_BIGINDEX_IS_INT @COINUTILS_BIGINDEX_IS_INT@
+
+/* Define to type of CoinBigIndex */
+#define COINUTILS_BIGINDEX_T @COINUTILS_BIGINDEX_T@
+
+#endif

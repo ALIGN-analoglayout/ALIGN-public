@@ -1,0 +1,1165 @@
+cmake_minimum_required(VERSION 3.0.2)
+
+project(Symphony)
+
+option(COIN_ENABLE_READLINE "Enable the use of the readline library" OFF)
+
+# Symphony options
+option(SYM_OPTION_USE_CGL_CUTS           "Use CGL cuts" ON)
+option(SYM_OPTION_USE_GMPL               "Use GMPL language" OFF)
+option(SYM_OPTION_SENSITIVITY_ANALYSIS   "Enable sensitivity analysis" OFF)
+option(SYM_OPTION_ROOT_NODE_ONLY         "Root node only" OFF)
+option(SYM_OPTION_COMPILE_FRAC_BRANCHING "Compile frac branching" OFF)
+option(SYM_OPTION_DO_TESTS               "Do tests" OFF)
+option(SYM_OPTION_TM_BASIS_TESTS         "TM Basis tests" OFF)
+option(SYM_OPTION_TRACE_PATH             "Trace PATH" OFF)
+option(SYM_OPTION_CHECK_CUT_VALIDITY     "Check cut validity" OFF)
+option(SYM_OPTION_STATISTICS             "Statistics" OFF)
+option(SYM_OPTION_PSEUDO_COSTS           "Pseudo costs" OFF)
+option(SYM_OPTION_STATICEXE              "Build a static executable" OFF)
+option(SYM_OPTION_SIGHANDLER             "Use a signal handler" ON)
+option(SYM_COMPILE_IN_CG                 "Symphony compile in CG" ON)
+option(SYM_COMPILE_IN_CP                 "Symphony compile in CP" ON)
+option(SYM_COMPILE_IN_LP                 "Symphony compile in LP" ON)
+option(SYM_COMPILE_IN_TM                 "Symphony compile in TM" ON)
+option(SYM_PARALLEL                      "Enable parallel" OFF)
+option(SYM_OPTION_USE_OPENMP             "Use OpenMP" OFF)
+
+option(SYMPHONY_BUILD_EXAMPLES "Enable the building of examples" OFF)
+
+option(COIN_HAS_READLINE       "Readline support" OFF)
+option(CLP_LP_SOLVER           "Clp LP solver support" ON)
+option(GLPK_LP_SOLVER          "Glpk LP solver support" OFF)
+option(OSL_LP_SOLVER           "OSL LP solver support" OFF)
+option(CPLEX_LP_SOLVER         "CPLEX LP solver support" OFF)
+option(SOPLEX_LP_SOLVER        "SOPlex LP solver support" OFF)
+option(XPRESS_LP_SOLVER        "Xpress LP solver support" OFF)
+
+# Clp options
+option(COIN_ENABLE_AMD "Clp uses the AMD linear solver" OFF)
+set(COIN_HAS_AMD_INCLUDE_PATH "None" CACHE PATH "The AMD linear solver include Path")
+set(COIN_HAS_AMD_LIBRARY_PATH "None" CACHE PATH "The AMD linear solver absolute library Path")
+
+option(COIN_ENABLE_CHOLMOD "Clp use the CholMod linear solver" OFF)
+set(COIN_HAS_CHOLMOD_INCLUDE_PATH "None" CACHE PATH "The CholMod linear solver include Path")
+set(COIN_HAS_CHOLMOD_LIBRARY_PATH "None" CACHE PATH "The CholMod linear solver absolute library Path")
+
+option(COIN_HAS_GLPK "Clp uses GLPK" OFF)
+set(COIN_HAS_GLPK_INCLUDE_PATH "None" CACHE PATH "The GLPK linear solver include Path")
+set(COIN_HAS_GLPK_LIBRARY_PATH "None" CACHE PATH "The GLPK linear solver absolute library Path")
+
+option(COIN_HAS_MUMPS "Clp uses the MUMPS linear solver" OFF)
+set(COIN_HAS_MUMPS_INCLUDE_PATH "None" CACHE PATH "The MUMPS linear solver include Path")
+set(COIN_HAS_MUMPS_LIBRARY_PATH "None" CACHE PATH "The MUMPS linear solver absolute library Path")
+
+option(COIN_HAS_WSMP "Clp uses the WSMP linear solver" OFF)
+set(COIN_HAS_WSMP_INCLUDE_PATH "None" CACHE PATH "The WSMP linear solver include Path")
+set(COIN_HAS_WSMP_LIBRARY_PATH "None" CACHE PATH "The WSMP linear solver absolute library Path")
+
+option(COIN_HAS_ABC "Use the Aboca solver" OFF)
+set(COIN_ABC_LEVEL      "0" CACHE STRING "Use the Aboca solver (1, 2, 3, 4) - 0, Aboca solver is not used")
+set(COIN_CLP_CHECKLEVEL "0" CACHE STRING "The debug sanity check level of Clp (0 if no test)")
+set(COIN_CLP_VERBOSITY  "0" CACHE STRING "The debug verbosity level of Clp (0 if no output)")
+
+option(COIN_HAS_MKL "Use Intel MKL library (requires Intel compiler)" OFF)
+
+# Cgl options
+set(COIN_CGL_CHECKLEVEL "0" CACHE STRING "The debug sanity check level of Cgl (0 if no test)")
+set(COIN_CGL_VERBOSITY  "0" CACHE STRING "The debug verbosity level of Cgl (0 if no output)")
+
+# Osi options
+set(COIN_OSI_CHECKLEVEL "0" CACHE STRING "The debug sanity check level of Osi (0 if no test)")
+set(COIN_OSI_VERBOSITY  "0" CACHE STRING "The debug verbosity level of Osi (0 if no output)")
+option(USE_OSI_CLP    "Use Xpress solver" ON)
+option(USE_OSI_XPRESS "Use Xpress solver" OFF)
+option(USE_OSI_CPLEX  "Use Cplex solver"  OFF)
+option(USE_OSI_GLPK   "Use GLPK solver"   OFF)
+option(USE_OSI_GUROBI "Use GUROBI solver" OFF)
+option(USE_OSI_MOSEK  "Use Mosek solver"  OFF)
+option(USE_OSI_SOPLEX "Use Soplex solver" OFF)
+option(COMPILE_OSI_CLP    "Compile the OSI Clp solver"    OFF)
+option(COMPILE_OSI_XPRESS "Compile the OSI Xpress solver" OFF)
+option(COMPILE_OSI_CPLEX  "Compile the OSI Cplex solver"  OFF)
+option(COMPILE_OSI_GLPK   "Compile the OSI GLPK solver"   OFF)
+option(COMPILE_OSI_GUROBI "Compile the OSI GUROBI solver" OFF)
+option(COMPILE_OSI_MOSEK  "Compile the OSI Mosek solver"  OFF)
+option(COMPILE_OSI_SOPLEX "Compile the OSI Soplex solver" OFF)
+
+# CoinUtils options
+option(COINUTILS_USE_THREADS              "enables compilation of thread aware CoinUtils (mempool so far)" OFF)
+option(COINUTILS_USE_MEMPOOL_OVERRIDE_NEW "enables the CoinUtils mempool to override global new/delete" OFF)
+option(COINUTILS_USE_MEMPOOL_MAXPOOLED    "Specify the default maximum memory allocation size that is served by the memory pool. If negative (or 'no') then the memory pool is disabled completely. Otherwise its value can be overridden at runtime using the COINUTILS_MEMPOOL_MAXPOOLED environment variable." OFF)
+option(COINUTILS_HAS_ZLIB  "CoinUtils uses Zlib" OFF)
+option(COINUTILS_HAS_BZLIB "CoinUtils uses BZlib" OFF)
+option(COIN_HAS_LAPACK     "Enable the Lapack support of CoinUtils" OFF)
+option(COIN_HAS_BLAS       "Enable the Blas support of CoinUtils" OFF)
+option(COIN_HAS_ASL        "Enable the ASL support" OFF)
+option(COIN_USE_FAST_CODE  "Use fast code for CoinUtils" OFF)
+
+set(COIN_COINUTILS_CHECKLEVEL "0" CACHE STRING "The debug sanity check level of CoinUtils (0 if no test)")
+set(COIN_COINUTILS_VERBOSITY  "0" CACHE STRING "The debug verbosity level of CoinUtils (0 if no output)")
+
+# External solvers
+option(USE_VOL        "Use Vol solver"    OFF)
+option(USE_DYLP       "Use DyLP solver"   OFF)
+set(COIN_XPRESS_DIR "None" CACHE PATH "The Xpress solver Path")
+set(COIN_CPLEX_DIR  "None" CACHE PATH "The Cplex solver Path")
+set(COIN_GUROBI_DIR "None" CACHE PATH "The GUROBI solver Path")
+set(COIN_MOSEK_DIR  "None" CACHE PATH "The Mosek solver Path")
+set(COIN_SOPLEX_DIR "None" CACHE PATH "The Soplex solver Path")
+set(COIN_VOL_DIR    "None" CACHE PATH "The Vol solver Path")
+set(COIN_DYLP_DIR   "None" CACHE PATH "The DyLP solver Path")
+
+# Compilation options
+option(ENABLE_SHARED_LIBRARIES       "Build libraries as shared libraries" ON)
+option(COIN_COMPILE_STATIC           "Activate the static linking" OFF)
+option(COIN_COMPILE_COVERAGE         "Activate the code coverage compilation" OFF)
+option(COIN_COMPILE_PROFILE          "Activate the code profiling compilation" OFF)
+option(COIN_COMPILE_PROFILE_VALGRIND "Activate the code profiling compilation for valgrind" OFF)
+option(COIN_COMPILE_LTO              "Activate the whole program optimization" OFF)
+option(COIN_COMPILE_WARNINGS         "Activate a set of warning options" OFF)
+option(COIN_COMPILE_CXX11            "Activate C++11 compilation" ON)
+option(COIN_TESTS_DISABLE_TIMEOUT    "Disable the timeout of the tests" OFF)
+option(COIN_ENABLE_DOXYGEN           "Enable the build of doxygen documentation" OFF)
+option(USE_PROCESSOR_EXTENSIONS      "Use sse / mmx / avx extensions during compilation" ON)
+
+
+# Set paths of source
+set(COIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "The Clp Path")
+
+set(COIN_COVERAGE_CTEST_LABEL "SAMPLE" CACHE PATH "The label sent to ctest during coverage")
+
+
+# Set paths for binary and library generation inside the build directory:
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+                      ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+macro(get_ac_init_version FileName Prefix)
+  file(READ ${FileName} configure_IN)
+  string(REGEX REPLACE "(AC_INIT.*)" "\\1" configure_REGEX ${configure_IN})
+  
+  string(REGEX REPLACE "^.*AC_INIT *\\([^,]+, *\\[([^, )]+)\\].*$" "\\1" ${Prefix}_VERSION_STRING "${configure_REGEX}")
+  if (${Prefix}_VERSION_STRING STREQUAL "trunk")
+    set(${Prefix}_MAJOR_VERSION "9")
+    set(${Prefix}_MINOR_VERSION "9")
+    set(${Prefix}_PATCH_VERSION "9999")
+  else ()
+    message(STATUS "${Prefix}_VERSION_STRING = ${${Prefix}_VERSION_STRING}")
+    
+    string(REGEX REPLACE "^([0-9]+)(\\..*)?$" "\\1" ${Prefix}_MAJOR_VERSION "${${Prefix}_VERSION_STRING}")
+    string(REGEX REPLACE "^[0-9]+\\.([0-9]+)(\\..*)?$" "\\1" ${Prefix}_MINOR_VERSION "${${Prefix}_VERSION_STRING}")
+    if (${Prefix}_VERSION_STRING MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+.*$")
+      string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*$" "\\1" ${Prefix}_PATCH_VERSION "${${Prefix}_VERSION_STRING}")
+    else ()
+      set(${Prefix}_PATCH_VERSION "0")
+    endif ()
+  endif ()
+endmacro ()
+include(GNUInstallDirs)
+
+#------------------------------------------------------------
+# Detect 64 bits
+#------------------------------------------------------------
+
+if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set(HAVE_64_BIT 0)
+else ()
+  set(HAVE_64_BIT 1)
+endif ()
+
+# Various definitions
+set(COIN_HAS_CGL 1) # Set this to 1 if cgl is compiled # NOT USED
+set(COIN_HAS_CLP 1) # Set this to 1 if clp is compiled # USED
+add_definitions(-DCOIN_HAS_CGL -DCOIN_HAS_CLP)
+
+# Name of package
+set(PACKAGE           "Symphony")
+# Define to the address where bug reports for this package should be sent.
+set(PACKAGE_BUGREPORT "bugs@coin-or.org")
+# Define to the full name of this package.
+set(PACKAGE_NAME      "Symphony")
+# Define to the full name and version of this package.
+set(PACKAGE_STRING    "Symphony")
+# Define to the one symbol short name of this package.
+set(PACKAGE_TARNAME   "symphony")
+
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/symphony_binary" 
+      CACHE PATH "SYMPHONY install prefix" FORCE)
+endif ()
+
+include(CheckCCompilerFlag)
+if (COIN_COMPILE_LTO)
+  if (NOT CMAKE_VERSION VERSION_LESS "3.9")
+    cmake_policy(SET CMP0069 NEW)
+    include(CheckIPOSupported)
+    check_ipo_supported()
+  endif ()
+endif ()
+
+if (USE_PROCESSOR_EXTENSIONS)
+  # Check for SSE* and AVX*
+  if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    execute_process(COMMAND cat /proc/cpuinfo OUTPUT_VARIABLE CPUINFO)
+  
+    string(REGEX REPLACE "^.*(mmx).*$" "\\1" MMX_THERE ${CPUINFO})
+    string(COMPARE EQUAL "mmx" "${MMX_THERE}" MMX_TRUE)
+    if (MMX_TRUE)
+      set(MMX_FOUND true CACHE BOOL "MMX available on host")
+    else ()
+      set(MMX_FOUND false CACHE BOOL "MMX available on host")
+    endif ()
+    
+    string(REGEX REPLACE "^.*(sse2).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "sse2" "${SSE_THERE}" SSE2_TRUE)
+    if (SSE2_TRUE)
+      set(SSE2_FOUND true CACHE BOOL "SSE2 available on host")
+    else ()
+      set(SSE2_FOUND false CACHE BOOL "SSE2 available on host")
+    endif ()
+    
+    # /proc/cpuinfo apparently omits sse3 :(
+    string(REGEX REPLACE "^.*[^s](sse3).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "sse3" "${SSE_THERE}" SSE3_TRUE)
+    if (NOT SSE3_TRUE)
+      string(REGEX REPLACE "^.*(T2300).*$" "\\1" SSE_THERE ${CPUINFO})
+      string(COMPARE EQUAL "T2300" "${SSE_THERE}" SSE3_TRUE)
+    endif ()
+    
+    string(REGEX REPLACE "^.*(ssse3).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "ssse3" "${SSE_THERE}" SSSE3_TRUE)
+    if (SSE3_TRUE OR SSSE3_TRUE)
+      set(SSE3_FOUND true CACHE BOOL "SSE3 available on host")
+    else ()
+      set(SSE3_FOUND false CACHE BOOL "SSE3 available on host")
+    endif ()
+    
+    if (SSSE3_TRUE)
+      set(SSSE3_FOUND true CACHE BOOL "SSSE3 available on host")
+    else ()
+      set(SSSE3_FOUND false CACHE BOOL "SSSE3 available on host")
+    endif ()
+  
+    string(REGEX REPLACE "^.*(sse4_1).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "sse4_1" "${SSE_THERE}" SSE41_TRUE)
+    if (SSE41_TRUE)
+      set(SSE4_1_FOUND true CACHE BOOL "SSE4.1 available on host")
+    else ()
+      set(SSE4_1_FOUND false CACHE BOOL "SSE4.1 available on host")
+    endif ()
+  
+    string(REGEX REPLACE "^.*(sse4_2).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "sse4_2" "${SSE_THERE}" SSE42_TRUE)
+    if (SSE42_TRUE)
+      set(SSE4_2_FOUND true CACHE BOOL "SSE4.2 available on host")
+    else ()
+      set(SSE4_2_FOUND false CACHE BOOL "SSE4.2 available on host")
+    endif ()
+    
+    string(REGEX REPLACE "^.*(avx).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "avx" "${SSE_THERE}" AVX_TRUE)
+    if (AVX_TRUE)
+      set(AVX_FOUND true CACHE BOOL "AVX available on host")
+    else ()
+      set(AVX_FOUND false CACHE BOOL "AVX available on host")
+    endif ()
+    
+    string(REGEX REPLACE "^.*(avx2).*$" "\\1" SSE_THERE ${CPUINFO})
+    string(COMPARE EQUAL "avx2" "${SSE_THERE}" AVX2_TRUE)
+    if (AVX2_TRUE)
+      set(AVX2_FOUND true CACHE BOOL "AVX2 available on host")
+    else ()
+      set(AVX2_FOUND false CACHE BOOL "AVX2 available on host")
+    endif ()
+  endif ()
+  
+  if (NOT MMX_FOUND)
+    message(STATUS "Could not find hardware support for MMX on this machine.")
+  endif ()
+  
+  if (NOT SSE2_FOUND)
+    message(STATUS "Could not find hardware support for SSE2 on this machine.")
+  endif ()
+  
+  if (NOT SSE3_FOUND)
+    message(STATUS "Could not find hardware support for SSE3 on this machine.")
+  endif ()
+  
+  if (NOT SSSE3_FOUND)
+    message(STATUS "Could not find hardware support for SSSE3 on this machine.")
+  endif ()
+  
+  if (NOT SSE4_1_FOUND)
+    message(STATUS "Could not find hardware support for SSE4.1 on this machine.")
+  endif ()
+  
+  if (NOT SSE4_2_FOUND)
+    message(STATUS "Could not find hardware support for SSE4.2 on this machine.")
+  endif ()
+  
+  if (NOT AVX_FOUND)
+    message(STATUS "Could not find hardware support for AVX on this machine.")
+  endif ()
+  
+  if (NOT AVX2_FOUND)
+    message(STATUS "Could not find hardware support for AVX2 on this machine.")
+  endif ()
+  
+  set(SSE_COMPILER_FLAGS )
+  
+  if ((CMAKE_SYSTEM_NAME MATCHES "Darwin") OR (CMAKE_SYSTEM_NAME MATCHES "Linux"))
+    if (MMX_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -mmmx")
+    endif ()
+    
+    if (SSE2_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -mfpmath=sse -msse -msse2")
+    endif ()
+    
+    if (SSE3_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -msse3")
+    endif ()
+    
+    if (SSSE3_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -mssse3")
+    endif ()
+    
+    if (SSE4_1_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -msse4 -msse4.1")
+    endif ()
+    
+    if (SSE4_2_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -msse4.2")
+    endif ()
+    
+    if (AVX_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -mavx")
+    endif ()
+    
+    if (AVX2_FOUND)
+      set(SSE_COMPILER_FLAGS "${SSE_COMPILER_FLAGS} -mavx2")
+    endif ()
+  endif ()
+
+  if (MMX_FOUND OR
+      SSE2_FOUND OR SSE3_FOUND OR SSSE3_FOUND OR SSE4_1_FOUND OR SSE4_2_FOUND OR
+      AVX_FOUND OR AVX2_FOUND)
+    set(CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} ${SSE_COMPILER_FLAGS}")
+    set(CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} ${SSE_COMPILER_FLAGS}")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${SSE_COMPILER_FLAGS}")
+  endif ()
+endif ()
+
+# Check some directories
+
+# coin_check_and_add_include_library_path: check if ${dir}/lib and ${dir}/include are pathes and exists
+# dir must be a variable containing "None" or a path
+macro(coin_check_and_add_include_library_path dir)
+  if (NOT ${dir} STREQUAL "None")
+    if (NOT EXISTS "${${dir}}/include")
+      message(FATAL_ERROR "Error: ${dir} = ${${dir}}/include which is not an existing directory")
+    else ()
+      include_directories(${${dir}}/include)
+    endif ()
+    
+    if (NOT EXISTS "${${dir}}/lib")
+      message(FATAL_ERROR "Error: ${dir} = ${${dir}}/lib which is not an existing directory")
+    else ()
+      link_directories(${${dir}}/lib)
+    endif ()
+  endif ()
+endmacro()
+
+macro(coin_check_and_add_library_path dir)
+  if (NOT ${dir} STREQUAL "None")
+    if (NOT EXISTS "${${dir}}")
+      message(FATAL_ERROR "Error: ${dir} = ${${dir}} which is not an existing directory")
+    else ()
+      link_directories(${${dir}})
+    endif ()
+  endif ()
+endmacro ()
+
+if (USE_COINOR_BIN)
+  coin_check_and_add_include_library_path(COINOR_DIR)
+endif ()
+
+if (NOT COINOR_DIR STREQUAL "None")
+  link_directories(${COINOR_DIR})
+endif ()
+
+#-----------------------------------------------------------------------------
+# Manage compilation options
+#-----------------------------------------------------------------------------
+
+if (UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-deprecated")
+
+  if (NOT ENABLE_SHARED_LIBRARIES)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fPIC")
+  endif ()
+  if (COIN_COMPILE_WARNINGS)
+    # Try to locate unitizalized variables
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wshadow -Wuninitialized ")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall -Wshadow -Wmissing-prototypes -Wuninitialized ")
+  endif ()
+endif ()
+#-----------------------------------------------------------------------------
+# Detect name mangling convention used between Fortran and C
+#-----------------------------------------------------------------------------
+
+if (CMAKE_Fortran_COMPILER)
+  enable_language(Fortran)
+  
+  include(FortranCInterface)
+  
+  FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/F77Mangle.h
+                           MACRO_NAMESPACE "F77_"
+                           SYMBOL_NAMESPACE "F77_")
+  
+  file(STRINGS ${CMAKE_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL\\(.*,.*\\) +(.*)")
+  string(REGEX MATCH "F77_GLOBAL\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
+  set(F77_FUNC              "F77_FUNC(name,NAME) ${CMAKE_MATCH_1}")
+  set(COINUTILS_LAPACK_FUNC "COIN_LAPACK_FUNC(name,NAME) ${CMAKE_MATCH_1}")
+  file(STRINGS ${CMAKE_BINARY_DIR}/F77Mangle.h CONTENTS REGEX "F77_GLOBAL_\\(.*,.*\\) +(.*)")
+  string(REGEX MATCH "F77_GLOBAL_\\(.*,.*\\) +(.*)" RESULT ${CONTENTS})
+  set(F77_FUNC_              "F77_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
+  set(COINUTILS_LAPACK_FUNC_ "COIN_LAPACK_FUNC_(name,NAME) ${CMAKE_MATCH_1}")
+else ()
+  set(F77_FUNC               "F77_FUNC(name,NAME)  name##_")
+  set(F77_FUNC_              "F77_FUNC_(name,NAME) name##__")
+  set(COINUTILS_LAPACK_FUNC  "COIN_LAPACK_FUNC(name,NAME)  name##_")
+  set(COINUTILS_LAPACK_FUNC_ "COIN_LAPACK_FUNC_(name,NAME) name##__")
+endif ()
+
+set(F77_DUMMY_MAIN "" CACHE STRING "Define to dummy 'main' function (if any) required to link to the Fortran libraries.")
+set(FC_DUMMY_MAIN  "" CACHE STRING "Define to dummy 'main' function (if any) required to link to the Fortran libraries.")
+option(FC_DUMMY_MAIN_EQ_F77 "Define if F77 and FC dummy 'main' functions are identical." OFF)
+
+if (FC_DUMMY_MAIN_EQ_F77)
+  set(FC_DUMMY_MAIN "${F77_DUMMY_MAIN}")
+endif ()
+
+mark_as_advanced(F77_FUNC
+                 F77_FUNC_
+                 F77_DUMMY_MAIN
+                 FC_DUMMY_MAIN
+                 FC_DUMMY_MAIN_EQ_F77)
+
+# Manage coverage via lcov automatically
+
+if (COIN_COMPILE_COVERAGE AND NOT ((CMAKE_BUILD_TYPE STREQUAL "DEBUG") OR (CMAKE_BUILD_TYPE STREQUAL "RELWITHDEBINFO")))
+  message(STATUS "Warning: to enable coverage, you must compile in DEBUG ou RELWITHDEBINFO mode")
+endif ()
+
+if (COIN_COMPILE_COVERAGE)
+  
+  find_program(GCOV_PATH gcov)
+  find_program(LCOV_PATH lcov)
+  find_program(GENHTML_PATH genhtml)
+
+  if (NOT GCOV_PATH)
+    message(FATAL_ERROR "gcov not found! Please install lcov and gcov. Aborting...")
+  endif ()
+  
+  if (NOT LCOV_PATH)
+    message(FATAL_ERROR "lcov not found! Please install lcov and gcov. Aborting...")
+  endif ()
+  
+  if (NOT GENHTML_PATH)
+    message(FATAL_ERROR "genhtml not found! Please install lcov and gcov. Aborting...")
+  endif ()
+  
+  # Capturing lcov counters and generating report
+  add_custom_target(coverage
+                    COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
+                    COMMAND ${LCOV_PATH} --capture --initial --directory ${CMAKE_BINARY_DIR} --output-file ${CMAKE_BINARY_DIR}/coverage.info
+                    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ${CMAKE_CTEST_COMMAND} -LE "(LONG|FAIL)" -L "${COIN_COVERAGE_CTEST_LABEL}" || true
+                    COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file ${CMAKE_BINARY_DIR}/coverage.info
+                    COMMAND ${LCOV_PATH} --remove ${CMAKE_BINARY_DIR}/coverage.info "*/usr/include/*" '${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/*' --output-file ${CMAKE_BINARY_DIR}/coverage.info.cleaned
+                    COMMAND ${GENHTML_PATH} -o ${CMAKE_BINARY_DIR}/coverage ${CMAKE_BINARY_DIR}/coverage.info.cleaned
+                    COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/coverage.info ${CMAKE_BINARY_DIR}/coverage.info.cleaned
+		    VERBATIM
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                    COMMENT "Resetting code coverage counters to zero.
+Processing code coverage counters and generating report.
+You can zip the directory ${CMAKE_BINARY_DIR}/coverage and upload the content to a web server.")
+endif ()
+
+# End of coverage
+
+#
+# Add uninstall-target
+#
+
+add_custom_target(uninstall
+  set(F77_FUNC_ "F77_FUNC_(name,NAME) name##__")
+                  COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake")
+
+# Directories where to find the source code
+
+# Structure obtained via:
+# git clone https://github.com/coin-or/coinbrew
+# coinbrew/coinbrew fetch --git --main-proj="SYMPHONY"
+set(BuildTools_DIR    ${COIN_DIR}/BuildTools)
+set(Data_DIR          ${COIN_DIR}/Data/Sample)
+set(CoinUtils_DIR     ${COIN_DIR}/CoinUtils)
+set(CoinUtilsTest_DIR ${CoinUTils_DIR}/test)
+set(Osi_DIR           ${COIN_DIR}/Osi)
+set(Clp_DIR           ${COIN_DIR}/Clp)
+set(Cgl_DIR           ${COIN_DIR}/Cgl)
+set(SYMPHONY_DIR           ${COIN_DIR}/SYMPHONY)
+
+include(CheckIncludeFileCXX)
+include(CheckIncludeFile)
+#include(VA_COPY)
+
+check_include_file("assert.h"    HAVE_ASSERT_H)
+check_include_file("bzlib.h"     HAVE_BZLIB_H)
+check_include_file("ctype.h"     HAVE_CTYPE_H)
+check_include_file("dlfcn.h"     HAVE_DLFCN_H)
+check_include_file("endian.h"    HAVE_ENDIAN_H)
+check_include_file("float.h"     HAVE_FLOAT_H)
+check_include_file("ieeefp.h"    HAVE_IEEEFP_H)
+check_include_file("inttypes.h"  HAVE_INTTYPES_H)
+check_include_file("math.h"      HAVE_MATH_H)
+check_include_file("memory.h"    HAVE_MEMORY_H)
+check_include_file("stdint.h"    HAVE_STDINT_H)
+check_include_file("stdlib.h"    HAVE_STDLIB_H)
+check_include_file("stdio.h"     HAVE_STDIO_H)
+check_include_file("stdarg.h"    HAVE_STDARG_H)
+check_include_file("stddef.h"    HAVE_STDDEF_H)
+check_include_file("strings.h"   HAVE_STRINGS_H)
+check_include_file("string.h"    HAVE_STRING_H)
+check_include_file("sys/stat.h"  HAVE_SYS_STAT_H)
+check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
+check_include_file("time.h"      HAVE_TIME_H)
+check_include_file("unistd.h"    HAVE_UNISTD_H)
+check_include_file("zlib.h"      HAVE_ZLIB_H)
+check_include_file_cxx("cctype"    HAVE_CCTYPE)
+check_include_file_cxx("cmath"     HAVE_CMATH)
+check_include_file_cxx("cieeefp"   HAVE_CIEEEFP)
+check_include_file_cxx("cfloat"    HAVE_CFLOAT)
+check_include_file_cxx("cinttypes" HAVE_CINTTYPES)
+check_include_file_cxx("cassert"   HAVE_CASSERT)
+check_include_file_cxx("cstdio"    HAVE_CSTDIO)
+check_include_file_cxx("cstdlib"   HAVE_CSTDLIB)
+check_include_file_cxx("cstdarg"   HAVE_CSTDARG)
+check_include_file_cxx("cstddef"   HAVE_CSTDDEF)
+check_include_file_cxx("cstring"   HAVE_CSTRING)
+check_include_file_cxx("ctime"     HAVE_CTIME)
+
+string(SUBSTRING ${CMAKE_SHARED_LIBRARY_SUFFIX} 1 -1 SHAREDLIBEXT)
+
+if (HAVE_CMATH)
+add_definitions(-DHAVE_CMATH)
+endif()
+
+include(CheckCXXCompilerFlag)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (COIN_COMPILE_CXX11)
+  # VS2013 activate C++11 by default
+  check_cxx_compiler_flag(-std=c++11 HAVE_STD_CPP11_FLAG)
+  if (HAVE_STD_CPP11_FLAG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  else ()
+    check_cxx_compiler_flag(-std=c++0x HAVE_STD_CPP0X_FLAG)
+    if (HAVE_STD_CPP0X_FLAG)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    endif ()
+  endif ()
+endif ()
+
+check_cxx_compiler_flag(-Qunused-arguments HAVE_QUNUSED_ARGUMENTS)
+if (HAVE_QUNUSED_ARGUMENTS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+endif ()
+
+if (UNIX)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT APPLE)
+    check_cxx_compiler_flag(-Wno-unused-local-typedefs GCC_HAS_TYPEDEFS)
+    if (GCC_HAS_TYPEDEFS)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
+    endif ()
+  endif ()
+  
+  if (NOT APPLE)
+    check_cxx_compiler_flag(-Wno-narrowing GCC_HAS_NARROWING)
+    if (GCC_HAS_NARROWING)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-narrowing")
+      set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wno-narrowing")
+    endif ()
+  endif ()
+endif ()
+
+include(CheckTypeSize)
+
+check_type_size("int64_t"   SIZEOF_INT64_T)
+check_type_size("int"       SIZEOF_INT)
+check_type_size("int *"     SIZEOF_INT_P)
+check_type_size("long"      SIZEOF_LONG)
+check_type_size("long long" SIZEOF_LONG_LONG)
+
+set(COIN_INTPTR_T "int")
+set(COIN_INT64_T  "int")
+set(COIN_UINT64_T "unsigned int")
+
+if (SIZEOF_LONG_LONG EQUAL "8")
+  set(COIN_INTPTR_T "long long")
+  set(COIN_INT64_T  "long long")
+  set(COIN_UINT64_T "unsigned long long")
+  set(COINUTILS_BIGINDEX_T "long long")
+  set(COINUTILS_BIGINDEX_IS_INT 0)
+elseif (SIZEOF_LONG EQUAL "8")
+  set(COIN_INTPTR_T "long")
+  set(COIN_INT64_T  "long")
+  set(COIN_UINT64_T "unsigned long")
+  set(COINUTILS_BIGINDEX_T "long")
+  set(COINUTILS_BIGINDEX_IS_INT 0)
+elseif (SIZEOF_INT EQUAL "8")
+  set(COIN_INTPTR_T "int")
+  set(COIN_INT64_T  "int")
+  set(COIN_UINT64_T "unsigned int")
+  set(COINUTILS_BIGINDEX_T "int")
+  set(COINUTILS_BIGINDEX_IS_INT 1)
+endif ()
+
+add_definitions(-DCOIN_INT64_T=${COIN_INT64_T} -DCOIN_INTPTR_T=${COIN_INTPTR_T} -DCOIN_UINT64_T=${COIN_UINT64_T})
+
+message(STATUS "Checking whether system has ANSI C header files")
+
+include(CheckCSourceCompiles)
+
+macro(CHECK_PROTOTYPE_EXISTS _SYMBOL _HEADER _RESULT)
+  set(_INCLUDE_FILES)
+  foreach(it ${_HEADER})
+    set(_INCLUDE_FILES "${_INCLUDE_FILES}#include <${it}>\n")
+  endforeach()
+  
+  set(_CHECK_PROTO_EXISTS_SOURCE_CODE "
+${_INCLUDE_FILES}
+void cmakeRequireSymbol(int dummy,...){(void)dummy;}
+int main()
+{
+#ifndef ${_SYMBOL}
+#ifndef _MSC_VER
+  cmakeRequireSymbol(0,&${_SYMBOL});
+#else
+  char i = sizeof(&${_SYMBOL});
+#endif
+#endif
+  return 0;
+}
+")
+check_c_source_compiles("${_CHECK_PROTO_EXISTS_SOURCE_CODE}" ${_RESULT})
+endmacro()
+include(CheckIncludeFiles)
+
+check_include_files("dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;strings.h;string.h;float.h" StandardHeadersExist)
+
+if (StandardHeadersExist)
+  check_prototype_exists(memchr string.h memchrExists)
+  if (memchrExists)
+    check_prototype_exists(free stdlib.h freeExists)
+    if (freeExists)
+      message(STATUS "ANSI C header files - found")
+      set(STDC_HEADERS    1 CACHE INTERNAL "System has ANSI C header files")
+      set(HAVE_STRINGS_H  1)
+      set(HAVE_STRING_H   1)
+      set(HAVE_FLOAT_H    1)
+      set(HAVE_STDLIB_H   1)
+      set(HAVE_STDDEF_H   1)
+      set(HAVE_STDINT_H   1)
+      set(HAVE_INTTYPES_H 1)
+      set(HAVE_DLFCN_H    1)
+    endif ()
+  endif ()
+endif ()
+
+if (NOT STDC_HEADERS)
+  message(STATUS "ANSI C header files - not found")
+  set(STDC_HEADERS 0 CACHE INTERNAL "System has ANSI C header files")
+endif ()
+
+if (UNIX)
+  set(CMAKE_REQUIRED_LIBRARIES "m")
+endif ()
+
+check_include_files(unistd.h HAVE_UNISTD_H)
+
+macro(CHECK_DIRSYMBOL_EXISTS FILES VARIABLE)
+  if (NOT DEFINED ${VARIABLE})
+    set(CMAKE_CONFIGURABLE_FILE_CONTENT "/* */\n")
+    set(MACRO_CHECK_DIRSYMBOL_EXISTS_FLAGS ${CMAKE_REQUIRED_FLAGS})
+    
+    if (CMAKE_REQUIRED_LIBRARIES)
+      set(CHECK_DIRSYMBOL_EXISTS_LIBS "-DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES}")
+    else ()
+      set(CHECK_DIRSYMBOL_EXISTS_LIBS)
+    endif ()
+    
+    if(CMAKE_REQUIRED_INCLUDES)
+      set(CMAKE_DIRSYMBOL_EXISTS_INCLUDES "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_REQUIRED_INCLUDES}")
+    else ()
+      set(CMAKE_DIRSYMBOL_EXISTS_INCLUDES)
+    endif ()
+    
+    foreach(FILE ${FILES})
+      set(CMAKE_CONFIGURABLE_FILE_CONTENT "${CMAKE_CONFIGURABLE_FILE_CONTENT}#include <${FILE}>\n")
+    endforeach ()
+    
+    set(CMAKE_CONFIGURABLE_FILE_CONTENT "${CMAKE_CONFIGURABLE_FILE_CONTENT}\nint main()\n{if ((DIR *) 0) return 0;}\n")
+
+    configure_file("${CMAKE_ROOT}/Modules/CMakeConfigurableFile.in" "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/CheckDIRSymbolExists.c" @ONLY)
+
+    message(STATUS "Looking for DIR in ${FILES}")
+    
+    try_compile(${VARIABLE}
+      ${CMAKE_BINARY_DIR}
+      ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/CheckDIRSymbolExists.c
+      COMPILE_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS}
+      CMAKE_FLAGS 
+      -DCOMPILE_DEFINITIONS:STRING=${MACRO_CHECK_DIRSYMBOL_EXISTS_FLAGS}
+      "${CHECK_DIRSYMBOL_EXISTS_LIBS}"
+      "${CMAKE_DIRSYMBOL_EXISTS_INCLUDES}"
+      OUTPUT_VARIABLE OUTPUT)
+    
+    if (${VARIABLE})
+      message(STATUS "Looking for DIR in ${FILES} - found")
+      set(${VARIABLE} 1 CACHE INTERNAL "Have symbol DIR")
+      file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeOutput.log 
+        "Determining if the DIR symbol is defined as in AC_HEADER_DIRENT "
+        "passed with the following output:\n"
+        "${OUTPUT}\nFile ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/CheckDIRSymbolExists.c:\n"
+        "${CMAKE_CONFIGURABLE_FILE_CONTENT}\n")
+    else ()
+      message(STATUS "Looking for DIR in ${FILES} - not found.")
+      set(${VARIABLE} "" CACHE INTERNAL "Have symbol DIR")
+      file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log 
+        "Determining if the DIR symbol is defined as in AC_HEADER_DIRENT "
+        "failed with the following output:\n"
+        "${OUTPUT}\nFile ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/CheckDIRSymbolExists.c:\n"
+        "${CMAKE_CONFIGURABLE_FILE_CONTENT}\n")
+    endif ()
+  endif ()
+endmacro ()
+check_dirsymbol_exists("sys/stat.h;sys/types.h;dirent.h" HAVE_DIRENT_H)
+if (HAVE_DIRENT_H)
+  set(HAVE_SYS_STAT_H  1)
+  set(HAVE_SYS_TYPES_H 1)
+endif ()
+
+if (NOT WIN32)
+  set(HAVE_LIBM 1)
+endif ()
+
+if ((COIN_ABC_LEVEL LESS 0) OR (COIN_ABC_LEVEL GREATER 4))
+  message(FATAL_ERROR "Error: COIN_ABC_LEVEL must be between 0 and 4")
+endif ()
+
+if (("${MSVC_VERSION}" STREQUAL "1900") OR ("${MSVC_VERSION}" STREQUAL "1910"))
+  add_definitions(/DHAVE_SNPRINTF /DHAVE_STRUCT_TIMESPEC)
+endif ()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  add_definitions(-DINTEL_COMPILER)
+endif ()
+
+if (COIN_HAS_ABC)
+  set(CLP_HAS_ABC ${COIN_ABC_LEVEL})
+  add_definitions(-DCLP_HAS_ABC=${COIN_ABC_LEVEL})
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -intel-extensions ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -intel-extensions ")
+  elseif ((COIN_ABC_LEVEL STREQUAL "3") OR (COIN_ABC_LEVEL STREQUAL "4"))
+    # If we compile using gcc-5.0.*, we can remove the following definition
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if ((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0) OR
+	  (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0))
+	# cilkplus is to be removed from gcc starting from version 8
+        message(STATUS "gcc Version >= 5.0")
+        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fcilkplus ")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcilkplus ")
+      else ()
+        message(STATUS "gcc Version < 5.0 or Version > 8.0")
+        message(FATAL_ERROR "Error: gcc has no Cilk extension yet (gcc-4.9 is the first version with Cilk support)")
+      endif ()
+    endif ()
+  endif ()
+endif ()
+
+include(CheckSymbolExists)
+include(CheckCXXSymbolExists)
+include(CheckFunctionExists)
+
+check_function_exists(va_copy    HAVE_VA_COPY)
+check_function_exists(vsnprintf  HAVE_VSNPRINTF)
+check_function_exists(_snprintf  HAVE__SNPRINTF)
+check_function_exists(_vsnprintf HAVE__VSNPRINTF)
+check_function_exists(dran48     HAVE_DRAND48)
+check_function_exists(rand       HAVE_RAND)
+check_function_exists(std::rand  HAVE_STD__RAND)
+check_function_exists(memcpy     USE_MEMCPY)
+set(CMAKE_REQUIRED_LIBRARIES m)
+
+if (USE_MEMCPY)
+  add_definitions(-DUSE_MEMCPY)
+endif ()
+
+if (HAVE_CMATH)
+  unset(COIN_C_FINITE_R CACHE)
+  INCLUDE(CheckCXXSourceCompiles) 
+  check_cxx_source_compiles("#include <cmath>
+  int main() { bool toto = std::isfinite(1.); return 0;}" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE std::isfinite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+check_cxx_symbol_exists(std::isfinite "cmath" COIN_C_FINITE_R)
+if (COIN_C_FINITE_R)
+  set(COIN_C_FINITE std::isfinite)
+endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_cxx_symbol_exists(finite "cmath" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE finite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_symbol_exists(isfinite "math.h" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE isfinite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_symbol_exists(_finite "math.h" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE _finite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_symbol_exists(finite "math.h" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE finite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_cxx_symbol_exists(finite "cfloat" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE finite)
+  endif ()
+endif ()
+if (NOT COIN_C_FINITE_R)
+  check_cxx_symbol_exists(isfinite "cfloat" COIN_C_FINITE_R)
+  if (COIN_C_FINITE_R)
+    set(COIN_C_FINITE isfinite)
+  endif ()
+endif ()
+
+message(STATUS "COIN_C_FINITE_R ${COIN_C_FINITE_R} ${COIN_C_FINITE}")
+check_cxx_symbol_exists(std::isnan "cmath" COIN_C_ISNAN_R)
+if (COIN_C_ISNAN_R)
+  set(COIN_C_ISNAN std::isnan)
+endif ()
+if (NOT COIN_C_ISNAN_R)
+  check_symbol_exists(isnan "math.h" COIN_C_ISNAN_R)
+  if (COIN_C_ISNAN_R)
+    set(COIN_C_NAN isnan)
+  endif ()
+endif ()
+if (NOT COIN_C_ISNAN_R)
+  check_symbol_exists(_isnan "math.h" COIN_C_ISNAN_R)
+  if (COIN_C_NAN_R)
+    set(COIN_C_NAN _isnan)
+  endif ()
+endif ()
+if (NOT COIN_C_ISNAN_R)
+  check_symbol_exists(isnand "ieeefp.h" COIN_C_ISNAN_R)
+  if (COIN_C_NAN_R)
+    set(COIN_C_NAN isnand)
+  endif ()
+endif ()
+
+if (COIN_C_FINITE_R)
+  add_definitions(-DCOIN_C_FINITE=${COIN_C_FINITE})
+endif()
+if (COIN_C_ISNAN_R)
+  add_definitions(-DCOIN_C_NAN=${COIN_C_NAN})
+endif()
+
+
+check_symbol_exists(clock_gettime time.h     HAVE_CLOCK_GETTIME)
+check_symbol_exists(gettimeofday  sys/time.h HAVE_GETTIMEOFDAY)
+           
+if (COIN_USE_FAST_CODE)
+  add_definitions(-DCOIN_FAST_CODE -DCLP_FAST_CODE -DCOIN_USE_RESTRICT -DCOIN_NOTEST_DUPLICATE)
+  
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fomit-frame-pointer ")
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fomit-frame-pointer ")
+  
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno -fp-trap=none ")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fno-math-errno -fp-trap=none ")
+  endif ()
+
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-math-errno -fno-trapping-math ")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -ffast-math -fno-math-errno -fno-trapping-math ")
+  endif ()
+  
+endif ()
+
+if (COINUTILS_USE_THREADS)
+  set(COINUTILS_PTHREADS 1)
+endif ()
+if (COINUTILS_USE_MEMPOOL_OVERRIDE_NEW)
+  set(COINUTILS_MEMPOOL_OVERRIDE_NEW ON)
+endif ()
+if (COINUTILS_USE_MEMPOOL_MAXPOOLED)
+  set(COINUTILS_MEMPOOL_MAXPOOLED 4096)
+else ()
+  set(COINUTILS_MEMPOOL_MAXPOOLED -1)
+endif ()
+if (SYMPHONY_USE_THREADS)
+  set(SYMPHONY_THREAD 1)
+  add_definitions(-DTHREAD -DSYMPHONY_THREAD) 
+endif ()
+
+add_definitions(-DHAVE_CONFIG_H)
+add_definitions(-DSYMPHONYLIB_BUILD -DSYMPHONYLVERLIB_BUILD -DCGLLIB_BUILD)
+# Set some definitions
+if (CLP_LP_SOLVER)
+  add_definitions(-D__OSI_CLP__)
+endif ()
+# Additional Definitions
+
+if (SYM_COMPILE_IN_CG)
+  add_definitions(-DCOMPILE_IN_CG)
+endif ()
+
+if (SYM_COMPILE_IN_CP)
+  add_definitions(-DCOMPILE_IN_CP)
+endif ()
+
+if (SYM_COMPILE_IN_LP)
+  add_definitions(-DCOMPILE_IN_LP)
+endif ()
+
+if (SYM_COMPILE_IN_TM)
+  add_definitions(-DCOMPILE_IN_TM)
+endif ()
+
+if (COIN_HAS_READLINE)
+  add_definitions(-DHAS_READLINE)
+endif ()
+
+if (SYM_OPTION_STATICEXE)
+  set(ENABLE_SHARED_LIBRARIES FALSE)
+endif ()
+
+if (SYM_OPTION_SENSITIVITY_ANALYSIS)
+  add_definitions(-DSENSITIVITY_ANALYSIS)
+endif ()
+
+if (SYM_OPTION_USE_CGL_CUTS)
+  add_definitions(-DUSE_CGL_CUTS)
+endif ()
+
+if (SYM_OPTION_ROOT_NODE_ONLY)
+  add_definitions(-DROOT_NODE_ONLY)
+endif ()
+
+if (SYM_OPTION_COMPILE_FRAC_BRANCHING)
+  add_definitions(-DCOMPILE_FRAC_BRANCHING)
+endif ()
+
+if (SYM_OPTION_DO_TESTS)
+  add_definitions(-DDO_TESTS)
+endif ()
+
+if (SYM_OPTION_TM_BASIS_TESTS)
+  add_definitions(-DTM_BASIS_TESTS)
+endif ()
+
+if (SYM_OPTION_TRACE_PATH)
+  add_definitions(-DTRACE_PATH)
+endif ()
+
+if (SYM_OPTION_CHECK_CUT_VALIDITY)
+  add_definitions(-DCHECK_CUT_VALIDITY)
+endif ()
+
+if (SYM_OPTION_STATISTICS)
+  add_definitions(-DSTATISTICS)
+endif ()
+
+if (SYM_OPTION_PSEUDO_COSTS)
+  add_definitions(-DPSEUDO_COSTS)
+endif ()
+
+if (SYM_OPTION_SIGHANDLER)
+  add_definitions(-DSIGHANDLER)
+endif ()
+
+if (UNIX)
+  add_definitions(-D__LINUX)
+elseif (DARWIN)
+  add_definitions(-D__DARWIN)
+else ()
+  add_definitions(-D__)
+endif ()
+
+if (SYM_PARALLEL)
+  #PCPPFLAGS += $(AM_CPPFLAGS) $(SYMPDEFS) -I`$(CYGPATH_W) $(PVM_ROOT)/include`
+  #PLDADD += $(LDADD) -lgpvm3 -lpvm3
+  #APPLPCPPFLAGS += $(PCPPFLAGS) -DUSE_SYM_APPLICATION
+endif ()
+
+#add_definitions(-DUSE_SYM_APPLICATION) # only for libSymAppl
+#add_definitions(-D_OPENMP)
+if (NOT MINGW)
+  add_definitions(-DHAS_RANDOM -DHAS_SRANDOM)
+endif ()
+
+
+include_directories(${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/include)
+link_directories(${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/lib
+                 ${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/lib64)
+
+include_directories(Osi/src/Osi)
+include_directories(Osi/src/OsiCommonTest)
+include_directories(${CMAKE_BINARY_DIR}/include)
+
+include_directories(${SYMPHONY_DIR}/include)
+
+include_directories(${CoinUtils_DIR}/src)
+
+include_directories(${Clp_DIR}/src)
+include_directories(${Clp_DIR}/src/OsiClp)
+
+include_directories(${Cgl_DIR}/src)
+include_directories(${Cgl_DIR}/src/CglAllDifferent)
+include_directories(${Cgl_DIR}/src/CglKnapsackCover)
+include_directories(${Cgl_DIR}/src/CglRedSplit2)
+include_directories(${Cgl_DIR}/src/CglZeroHalf)
+include_directories(${Cgl_DIR}/src/CglClique)
+include_directories(${Cgl_DIR}/src/CglDuplicateRow)
+include_directories(${Cgl_DIR}/src/CglLandP)
+include_directories(${Cgl_DIR}/src/CglMixedIntegerRounding)
+include_directories(${Cgl_DIR}/src/CglResidualCapacity)
+include_directories(${Cgl_DIR}/src/CglFlowCover)
+include_directories(${Cgl_DIR}/src/CglLiftAndProject)
+include_directories(${Cgl_DIR}/src/CglMixedIntegerRounding2)
+include_directories(${Cgl_DIR}/src/CglPreProcess)
+include_directories(${Cgl_DIR}/src/CglSimpleRounding)
+include_directories(${Cgl_DIR}/src/CglGMI)
+include_directories(${Cgl_DIR}/src/CglOddHole)
+include_directories(${Cgl_DIR}/src/CglProbing)
+include_directories(${Cgl_DIR}/src/CglGomory)
+include_directories(${Cgl_DIR}/src/CglRedSplit)
+include_directories(${Cgl_DIR}/src/CglTwomir)
+
+include_directories(${Osi_DIR}/src/Osi)
+include_directories(${SYMPHONY_DIR}/src/OsiSym)
+
+include_directories(${Osi_DIR}/src/OsiCommonTest)
+
+if (NOT USE_COINOR_BIN)
+  if (COIN_ENABLE_DOWNLOAD_ZLIB)
+    set(COINUTILS_HAS_ZLIB ON)
+  endif ()
+  if (COIN_ENABLE_DOWNLOAD_BZLIB)
+    set(COINUTILS_HAS_BZLIB ON)
+  endif ()
+  
+  add_subdirectory(CoinUtils)
+  add_subdirectory(Cgl)
+  add_subdirectory(Clp)
+  add_subdirectory(Clp/src/OsiClp)
+  add_subdirectory(Osi/src/Osi)
+else ()
+  include_directories(${COINOR_DIR}/include/coin)
+endif ()
+
+add_subdirectory(SYMPHONY)
+add_subdirectory(SYMPHONY/src/OsiSym)
+
+#
+# Install dll dependencies
+#
+
+#
+# Perform some tests
+#
+
+# Create a directory to store results from tests
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/tests)
+  make_directory(${CMAKE_BINARY_DIR}/tests)
+endif ()
+
+
+#
+# Packaging
+#
+
+set(CPACK_PACKAGE_NAME      "${PACKAGE_NAME}")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${SYMPHONY_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+message(STATUS "Package filename: ${CPACK_PACKAGE_FILE_NAME}")
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PACKAGE_NAME}")
+set(CPACK_PACKAGE_VERSION "${SYMPHONY_VERSION}")
+
+set(CPACK_PACKAGE_RELOCATABLE TRUE)
+
+include(CPack)
+include(CTest)
+
+###########################
+#                         #
+# Sum-up of configuration #
+#                         #
+###########################
+
+# available colors: {u,b,bg, } black, red, green, yellow, blue, purple, cyan, white, reset
+function(COLOR_MESSAGE TEXT)
+  if (CMAKE_COLOR_MAKEFILE AND NOT WIN32)
+    message(${TEXT})
+  else ()
+    string(REGEX REPLACE "${_escape}[\\[0123456789;]*m" "" __TEXT ${TEXT})
+    message("${__TEXT} ")
+  endif ()
+endfunction ()
+
+color_message("${color_green}************************")
+color_message("*                      *")
+color_message("* Configuration sum-up *")
+color_message("*                      *")
+color_message("************************")
+color_message("${color_reset} ")
+
+color_message("${color_cyan}Installation directory:${color_reset} ${CMAKE_INSTALL_PREFIX}")
+color_message("${color_cyan}Build type:${color_reset} ${CMAKE_BUILD_TYPE}")
+
+get_directory_property(ALL_INCLUDES INCLUDE_DIRECTORIES)
+get_directory_property(ALL_LINKS    LINK_DIRECTORIES)
+get_directory_property(ALL_DEFS     COMPILE_DEFINITIONS)
+
+message(STATUS "${color_cyan}Include directories:${color_reset}     ${ALL_INCLUDES}")
+message(STATUS "${color_cyan}Link directories:${color_reset}        ${ALL_LINKS}")
+message(STATUS "${color_cyan}Compilation definitions:${color_reset} ${ALL_DEFS}")
+message(STATUS "${color_cyan}C flags:${color_reset}                 ${CMAKE_C_FLAGS}")
+message(STATUS "${color_cyan}C++ flags:${color_reset}               ${CMAKE_CXX_FLAGS}")
+
+install(TARGETS libSym libCgl libClp libOsi libCoinUtils libOsiClp libOsiSym EXPORT LibraryExport
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/align/thirdparty)

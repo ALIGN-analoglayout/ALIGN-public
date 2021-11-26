@@ -1,0 +1,31 @@
+/* Library Visibility Attribute */
+#ifndef CLPLIB_EXPORT
+#cmakedefine CLPLIB_EXPORT @CLPLIB_EXPORT@
+#endif
+
+/* Define to 1, 2, 3, or 4 if Aboca should be build. */
+#cmakedefine CLP_HAS_ABC @COIN_ABC_LEVEL@
+
+/* Define to 1 if the AMD package is available */
+#cmakedefine CLP_HAS_AMD
+
+/* Define to 1 if the CHOLMOD package is available */
+#cmakedefine CLP_HAS_CHOLMOD
+
+/* Define to 1 if the MUMPS package is available. */
+#cmakedefine CLP_HAS_MUMPS
+
+/* Define to 1 if WSMP is available */
+#cmakedefine CLP_HAS_WSMP
+
+/* Version number of project */
+#define CLP_VERSION "@CLP_VERSION@"
+
+/* Major Version number of project */
+#define CLP_VERSION_MAJOR @CLP_VERSION_MAJOR@
+
+/* Minor Version number of project */
+#define CLP_VERSION_MINOR @CLP_VERSION_MINOR@
+
+/* Release Version number of project */
+#define CLP_VERSION_RELEASE @CLP_VERSION_RELEASE@

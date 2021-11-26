@@ -1,0 +1,1186 @@
+get_ac_init_version(${SYMPHONY_DIR}/configure.ac SYMPHONY)
+
+option(SYMPHONY_BUILD_EXAMPLES     "Enable the building of examples" OFF)
+option(SYMPHONY_BUILD_APPLICATIONS "Enable the building of applications" OFF)
+
+set(SYMPHONY_VERSION_MAJOR   "${SYMPHONY_MAJOR_VERSION}"  CACHE STRING "The Symphony major version number")
+set(SYMPHONY_VERSION_MINOR   "${SYMPHONY_MINOR_VERSION}"  CACHE STRING "The Symphony minor version number")
+set(SYMPHONY_VERSION_RELEASE "${SYMPHONY_PATCH_VERSION}"  CACHE STRING "The Symphony patch version number")
+set(SYMPHONY_VERSION         "${SYMPHONY_VERSION_STRING}" CACHE STRING "The Symphony version")
+
+set(SYMPHONY_WC_REVISION "0")
+if ((EXISTS "${SYMPHONY_DIR}/../.svn") OR (EXISTS "${SYMPHONY_DIR}/../../.svn"))
+  find_package(Subversion)
+  if (Subversion_FOUND)
+    Subversion_WC_INFO(${SYMPHONY_DIR}/.. SYMPHONY)
+  endif ()
+endif ()
+
+if ((EXISTS "${SYMPHONY_DIR}/../.git") OR (EXISTS "${SYMPHONY_DIR}/../../.git"))
+  find_package(Git)
+  if (Git_FOUND)
+    include(export_git)
+    GIT_WC_INFO(${SYMPHONY_DIR}/.. SYMPHONY)
+    set(SYMPHONY_WC_REVISION "${SYMPHONY_WC_SVNEQUIV}") # alphanumeric rev not yet managed
+  endif ()
+endif ()
+
+message(STATUS "Current SYMPHONY revision is ${SYMPHONY_WC_REVISION}")
+set(SYMPHONY_SVN_REV "${SYMPHONY_WC_REVISION}" CACHE STRING "The SYMPHONY subversion revision" FORCE)
+
+mark_as_advanced(SYMPHONY_VERSION_MAJOR
+                 SYMPHONY_VERSION_MINOR
+                 SYMPHONY_VERSION_RELEASE
+                 SYMPHONY_VERSION
+                 SYMPHONY_SVN_REV)
+
+add_definitions(-DSYMPHONY_BUILD -DHAVE_CONFIG_H)
+
+if (MINGW)
+  add_definitions(-D__MNO_CYGWIN)
+endif ()
+
+if (WIN32)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE)
+else ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wparentheses -Wreturn-type -Wcast-qual -Wall -Wpointer-arith -Wwrite-strings -Wconversion -Wno-unknown-pragmas -Wno-long-long -Wno-unknown-pragmas -Wno-write-strings -Wno-sign-compare -Wno-cast-qual") #-pedantic-errors
+endif ()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in     ${CMAKE_BINARY_DIR}/SYMPHONY/include/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/config_sym.h.in ${CMAKE_BINARY_DIR}/SYMPHONY/include/config_sym.h)
+
+#
+# pkg-config file generation
+#
+
+set(prefix                 "${CMAKE_INSTALL_PREFIX}")
+set(exec_prefix            "\${prefix}")
+set(libdir                 "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(includedir             "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+set(SYMPHONYLIB_PCLIBS     "")
+set(SYM_OPENMP_LIBS        "")
+set(SYM_OPENMP_FLAGS       "")
+set(SYMPHONYLIB_PCREQUIRES "cgl osi-clp coinutils osi")
+set(PACKAGE_VERSION        "${CBC_VERSION}")
+
+set(libdir         "${SYMPHONY_DIR}")
+set(abs_source_dir "${CMAKE_BINARY_DIR}/bin")
+
+#
+# Build
+#
+
+set(Symphony_SRC_LIST_Headers ${SYMPHONY_DIR}/include/sym_constants.h
+                              ${SYMPHONY_DIR}/include/sym_macros.h
+                              ${SYMPHONY_DIR}/include/sym_types.h
+                              ${SYMPHONY_DIR}/include/sym_cg.h
+                              ${SYMPHONY_DIR}/include/sym_cg_params.h
+                              ${SYMPHONY_DIR}/include/sym_cg_u.h
+                              ${SYMPHONY_DIR}/include/sym_cp.h
+                              ${SYMPHONY_DIR}/include/sym_cp_params.h
+                              ${SYMPHONY_DIR}/include/sym_cp_u.h
+                              ${SYMPHONY_DIR}/include/sym_dg.h
+                              ${SYMPHONY_DIR}/include/sym_dg_params.h
+                              ${SYMPHONY_DIR}/include/sym_dg_u.h
+                              ${SYMPHONY_DIR}/include/sym_lp.h
+                              ${SYMPHONY_DIR}/include/sym_lp_params.h
+                              ${SYMPHONY_DIR}/include/sym_lp_solver.h
+                              ${SYMPHONY_DIR}/include/sym_lp_u.h
+                              ${SYMPHONY_DIR}/include/sym_master.h
+                              ${SYMPHONY_DIR}/include/sym_master_params.h
+                              ${SYMPHONY_DIR}/include/sym_master_u.h
+                              ${SYMPHONY_DIR}/include/sym_messages.h
+                              ${SYMPHONY_DIR}/include/sym_pack_array.h
+                              ${SYMPHONY_DIR}/include/sym_pack_cut.h
+                              ${SYMPHONY_DIR}/include/sym_proccomm.h
+                              ${SYMPHONY_DIR}/include/sym_proto.h
+                              ${SYMPHONY_DIR}/include/sym_qsort.h
+                              ${SYMPHONY_DIR}/include/symphony.h
+                              ${SYMPHONY_DIR}/include/symphony_api.h
+                              ${SYMPHONY_DIR}/include/sym_timemeas.h
+                              ${SYMPHONY_DIR}/include/sym_tm.h
+                              ${SYMPHONY_DIR}/include/sym_tm_params.h
+                              ${SYMPHONY_DIR}/include/sym_primal_heuristics.h
+                              ${SYMPHONY_DIR}/include/sym_prep.h 
+                              ${SYMPHONY_DIR}/include/sym_prep_params.h
+                              ${SYMPHONY_DIR}/include/SymConfig.h)
+
+if (SYMPHONY_VERSION VERSION_LESS "5.5.4")
+  # This file has been removed in Symphony-5.5.4
+  set(Symphony_SRC_LIST_Headers ${Symphony_SRC_LIST_Headers}
+                                ${SYMPHONY_DIR}/include/sym_return_values.h)
+endif ()
+
+if (USE_CL)
+  set(Symphony_SRC_LIST_Headers ${Symphony_SRC_LIST_Headers}
+                                ${SYMPHONY_DIR}/include/sym_win32_time.h)
+endif ()
+
+set(SYM_MASTER_SRC ${SYMPHONY_DIR}/src/Master/master.c 
+                   ${SYMPHONY_DIR}/src/Master/master_wrapper.c
+                   ${SYMPHONY_DIR}/src/Master/master_io.c
+                   ${SYMPHONY_DIR}/src/Master/master_func.c
+                   ${SYMPHONY_DIR}/src/Master/master_prep.c
+                   ${SYMPHONY_DIR}/src/Master/master_prep_base.c
+                   ${SYMPHONY_DIR}/src/Master/master_prep_sr.c)
+
+set(MASTER_SRC ${SYM_MASTER_SRC})
+
+set(MASTER_MAIN_SRC ${SYMPHONY_DIR}/src/Master/main.c)
+
+set(DG_SRC ${SYMPHONY_DIR}/src/DrawGraph/draw_graph.c)
+
+set(SYM_TM_SRC ${SYMPHONY_DIR}/src/TreeManager/tm_func.c
+               ${SYMPHONY_DIR}/src/TreeManager/tm_proccomm.c)
+
+if (SYM_COMPILE_IN_TM)
+  set(TM_SRC ${SYMPHONY_DIR}/src/TreeManager/tm_func.c
+             ${SYMPHONY_DIR}/src/TreeManager/tm_proccomm.c)
+else ()
+  set(TM_SRC ${SYMPHONY_DIR}/src/TreeManager/treemanager.c
+             ${SYMPHONY_DIR}/src/TreeManager/tm_func.c
+             ${SYMPHONY_DIR}/src/TreeManager/tm_proccomm.c)
+endif ()
+
+set(SYM_LP_SRC ${SYMPHONY_DIR}/src/LP/lp_solver.c
+               ${SYMPHONY_DIR}/src/LP/lp_varfunc.c
+               ${SYMPHONY_DIR}/src/LP/lp_rowfunc.c
+               ${SYMPHONY_DIR}/src/LP/lp_genfunc.c 
+               ${SYMPHONY_DIR}/src/LP/lp_proccomm.c
+               ${SYMPHONY_DIR}/src/LP/lp_wrapper.c
+               ${SYMPHONY_DIR}/src/LP/lp_free.c
+               ${SYMPHONY_DIR}/src/LP/lp_heuristics.c
+               ${SYMPHONY_DIR}/src/LP/lp_sp.c)
+
+if (PSEUDO_COSTS)
+  set(SYM_LP_SRC ${SYM_LP_SRC}
+                 ${SYMPHONY_DIR}/src/LP/lp_pseudo_branch.c)
+else ()
+  set(SYM_LP_SRC ${SYM_LP_SRC}
+                 ${SYMPHONY_DIR}/src/LP/lp_branch.c)
+endif ()
+
+set(SYM_CG_SRC ${SYMPHONY_DIR}/src/CutGen/cg_func.c
+               ${SYMPHONY_DIR}/src/CutGen/cg_wrapper.c)
+
+set(SYM_CP_SRC ${SYMPHONY_DIR}/src/CutPool/cp_proccomm.c
+               ${SYMPHONY_DIR}/src/CutPool/cp_func.c
+               ${SYMPHONY_DIR}/src/CutPool/cp_wrapper.c)
+
+if (SYM_COMPILE_IN_LP)
+  add_definitions(-DCOMPILE_IN_LP)
+  set(TM_SRC ${TM_SRC}
+             ${SYMPHONY_DIR}/src/LP/lp_solver.c
+             ${SYMPHONY_DIR}/src/LP/lp_varfunc.c
+             ${SYMPHONY_DIR}/src/LP/lp_rowfunc.c
+             ${SYMPHONY_DIR}/src/LP/lp_genfunc.c)
+  set(TM_SRC ${TM_SRC}
+             ${SYMPHONY_DIR}/src/LP/lp_proccomm.c
+             ${SYMPHONY_DIR}/src/LP/lp_wrapper.c
+             ${SYMPHONY_DIR}/src/LP/lp_free.c)
+  if (PSEUDO_COSTS)
+    set(TM_SRC ${TM_SRC}
+               ${SYMPHONY_DIR}/src/LP/lp_pseudo_branch.c)
+  else ()
+    set(TM_SRC ${TM_SRC}
+               ${SYMPHONY_DIR}/src/LP/lp_branch.c)
+  endif ()
+  if (SYM_COMPILE_IN_CG)
+    set(TM_SRC ${TM_SRC}
+               ${SYMPHONY_DIR}/src/CutGen/cg_func.c
+               ${SYMPHONY_DIR}/src/CutGen/cg_wrapper.c)
+  endif ()
+else ()
+  set(MASTER_SRC ${MASTER_SRC}
+                 ${SYMPHONY_DIR}/src/LP/lp_solver.c)
+endif ()
+
+if (SYM_COMPILE_IN_CP)
+  add_definitions(-DCOMPILE_IN_CP)
+  set(TM_SRC ${TM_SRC}
+             ${SYMPHONY_DIR}/src/CutPool/cp_proccomm.c
+             ${SYMPHONY_DIR}/src/CutPool/cp_func.c
+             ${SYMPHONY_DIR}/src/CutPool/cp_wrapper.c)
+endif ()
+if (SYM_COMPILE_IN_TM)
+  add_definitions(-DCOMPILE_IN_TM)
+  set(MASTER_SRC ${MASTER_SRC}
+                 ${TM_SRC})
+endif ()
+
+set(LP_SRC ${SYMPHONY_DIR}/src/LP/lp_solver.c
+           ${SYMPHONY_DIR}/src/LP/lp_varfunc.c
+           ${SYMPHONY_DIR}/src/LP/lp_rowfunc.c
+           ${SYMPHONY_DIR}/src/LP/lp_genfunc.c
+           ${SYMPHONY_DIR}/src/LP/lp_proccomm.c
+           ${SYMPHONY_DIR}/src/LP/lp_wrapper.c
+           ${SYMPHONY_DIR}/src/LP/lp.c
+           ${SYMPHONY_DIR}/src/LP/lp_free.c
+           ${SYMPHONY_DIR}/src/LP/lp_heuristics.c
+           ${SYMPHONY_DIR}/src/LP/lp_sp.c)
+
+if (PSEUDO_COSTS)
+  set(LP_SRC ${LP_SRC}
+             ${SYMPHONY_DIR}/src/LP/lp_pseudo_branch.c)
+else ()
+  set(LP_SRC ${LP_SRC}
+             ${SYMPHONY_DIR}/src/LP/lp_branch.c)
+endif ()
+
+if (SYM_COMPILE_IN_CG)
+  add_definitions(-DCOMPILE_IN_CG)
+  set(LP_SRC ${LP_SRC}
+             ${SYMPHONY_DIR}/src/CutGen/cg_func.c
+             ${SYMPHONY_DIR}/src/CutGen/cg_wrapper.c)
+endif ()
+
+set(CP_SRC ${SYMPHONY_DIR}/src/CutPool/cut_pool.c
+           ${SYMPHONY_DIR}/src/CutPool/cp_proccomm.c
+           ${SYMPHONY_DIR}/src/CutPool/cp_func.c
+           ${SYMPHONY_DIR}/src/CutPool/cp_wrapper.c)
+
+set(CG_SRC ${SYMPHONY_DIR}/src/CutGen/cut_gen.c
+           ${SYMPHONY_DIR}/src/CutGen/cg_proccomm.c
+           ${SYMPHONY_DIR}/src/CutGen/cg_func.c
+           ${SYMPHONY_DIR}/src/CutGen/cg_wrapper.c)
+
+set(QSORT_SRC     ${SYMPHONY_DIR}/src/Common/sym_qsort.c)
+set(TIME_SRC      ${SYMPHONY_DIR}/src/Common/timemeas.c)
+set(PROCCOMM_SRC  ${SYMPHONY_DIR}/src/Common/proccomm.c)
+set(PACKCUT_SRC   ${SYMPHONY_DIR}/src/Common/pack_cut.c)
+set(PACKARRAY_SRC ${SYMPHONY_DIR}/src/Common/pack_array.c)
+
+set(EXAMPLES_SRC ${SYMPHONY_DIR}/Examples/bicriteria.c
+                 ${SYMPHONY_DIR}/Examples/milpOsi.c
+                 ${SYMPHONY_DIR}/Examples/milpOsi2.c
+                 ${SYMPHONY_DIR}/Examples/milp.c
+                 ${SYMPHONY_DIR}/Examples/milp2.c
+                 ${SYMPHONY_DIR}/Examples/sensitivity.c
+                 ${SYMPHONY_DIR}/Examples/warm_start1.c
+                 ${SYMPHONY_DIR}/Examples/warm_start2.c
+                 ${SYMPHONY_DIR}/Examples/warm_start3.c)
+
+set(OSISYM_SRC ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.cpp
+               ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.cpp)
+
+set(OSISYM_Headers ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.hpp
+                   ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverParameters.hpp
+                   ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.hpp)
+
+set(BB_SRC ${MASTER_SRC}
+           ${DG_SRC}
+           ${TM_SRC}
+           ${LP_SRC}
+           ${CP_SRC}
+           ${CG_SRC}
+           ${QSORT_SRC}
+           ${TIME_SRC}
+           ${PROCCOMM_SRC}
+           ${PACKCUT_SRC}
+           ${PACKARRAY_SRC}) 
+
+set(ALL_SRC ${BB_SRC})
+
+set(ALL_SYM_MASTER ${SYM_MASTER_SRC}
+                   ${SYM_TM_SRC}
+                   ${SYM_LP_SRC}
+                   ${SYM_CG_SRC}
+                   ${SYM_CP_SRC}
+                   ${TIME_SRC}
+                   ${QSORT_SRC}
+                   ${PROCCOMM_SRC}
+                   ${PACKCUT_SRC}
+                   ${PACKARRAY_SRC})
+
+set(ALL_MASTER ${MASTER_SRC}
+               ${TIME_SRC}
+               ${QSORT_SRC}
+               ${PROCCOMM_SRC}
+               ${PACKCUT_SRC}
+               ${PACKARRAY_SRC})
+
+set(ALL_LP ${LP_SRC}
+           ${TIME_SRC}
+           ${QSORT_SRC}
+           ${PROCCOMM_SRC}
+           ${PACKCUT_SRC}
+           ${PACKARRAY_SRC})
+
+set(ALL_TM ${TM_SRC}
+           ${TIME_SRC}
+           ${PROCCOMM_SRC}
+           ${PACKCUT_SRC}
+           ${PACKARRAY_SRC})
+
+if (SYM_COMPILE_IN_LP)
+  set(ALL_TM ${ALL_TM}
+             ${QSORT_SRC})
+endif ()
+
+set(ALL_CG ${CG_SRC}
+           ${TIME_SRC}
+           ${QSORT_SRC}
+           ${PROCCOMM_SRC}
+           ${PACKCUT_SRC})
+
+set(ALL_CP ${CP_SRC}
+           ${TIME_SRC}
+           ${QSORT_SRC}
+           ${PROCCOMM_SRC}
+           ${PACKCUT_SRC})
+
+set(MAIN_SRC ${MASTER_MAIN_SRC})
+
+if (COIN_ENABLE_COMPAT)
+  set(ALL_SYM_MASTER ${ALL_SYM_MASTER}
+                     ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compat.cpp
+                     ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compat.c)
+endif ()
+
+if (USE_COINOR_BIN)
+  include_directories(${COINOR_DIR}/include)
+  
+  add_library(libCoinUtils STATIC IMPORTED)
+  add_library(libClp       STATIC IMPORTED)
+  add_library(libOsi       STATIC IMPORTED)
+  add_library(libOsiClp    STATIC IMPORTED)
+  add_library(libCgl       STATIC IMPORTED)
+
+  if (WIN32 AND NOT MINGW)
+    set_property(TARGET libCoinUtils PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libCoinUtils.lib)
+    set_property(TARGET libClp       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libClp.lib)
+    set_property(TARGET libOsi       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libOsi.lib)
+    set_property(TARGET libOsiClp    PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libOsiClp.lib)
+    set_property(TARGET libCgl       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libCgl.lib)
+  else ()
+    set_property(TARGET libCoinUtils PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libCoinUtils.a)
+    set_property(TARGET libClp       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libClp.a)
+    set_property(TARGET libOsi       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libOsi.a)
+    set_property(TARGET libOsiClp    PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libOsiClp.a)
+    set_property(TARGET libCgl       PROPERTY IMPORTED_LOCATION ${COINOR_DIR}/lib/libCgl.a)
+  endif ()
+else ()
+  include_directories(${CMAKE_BINARY_DIR}/CoinUtils/include)
+  include_directories(${CMAKE_BINARY_DIR}/Cgl/include)
+  include_directories(${CMAKE_BINARY_DIR}/Clp/include)
+  include_directories(${CMAKE_BINARY_DIR}/SYMPHONY/include)
+endif ()
+
+macro(set_include_directories TARGET)
+  if (USE_COINOR_BIN)
+    target_include_directories(${TARGET} BEFORE PRIVATE ${COINOR_DIR}/include)
+  else ()
+    target_include_directories(${TARGET} BEFORE PRIVATE ${CMAKE_BINARY_DIR}/CoinUtils/include)
+    target_include_directories(${TARGET} BEFORE PRIVATE ${CMAKE_BINARY_DIR}/Cgl/include)
+    target_include_directories(${TARGET} BEFORE PRIVATE ${CMAKE_BINARY_DIR}/Clp/include)
+    target_include_directories(${TARGET} BEFORE PRIVATE ${CMAKE_BINARY_DIR}/SYMPHONY/include)
+  endif ()
+  
+  target_include_directories(${TARGET} BEFORE PRIVATE ${CMAKE_BINARY_DIR}/SYMPHONY/include)
+endmacro ()
+
+set_source_files_properties(${EXAMPLES_SRC} PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${MAIN_SRC} PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${ALL_SYM_MASTER} PROPERTIES LANGUAGE CXX)
+
+if (ENABLE_SHARED_LIBRARIES)
+  add_library(libSym    SHARED ${ALL_SYM_MASTER})
+#  add_library(libOsiSym SHARED ${OSISYM_SRC})
+else ()
+  add_library(libSym    STATIC ${ALL_SYM_MASTER})
+  add_library(libOsiSym STATIC ${OSISYM_SRC})
+endif ()
+if (COIN_COMPILE_LTO)
+  set_target_properties(libSym PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+#  set_target_properties(libOsiSym PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+endif ()
+if (NOT WIN32)
+  set_target_properties(libSym PROPERTIES PREFIX "")
+#  set_target_properties(libOsiSym PROPERTIES PREFIX "")
+endif ()
+
+set_include_directories(libSym)
+#set_include_directories(libOsiSym)
+
+macro(add_example Name)
+  add_executable(${Name} ${ARGN})
+  target_link_libraries(${Name} libSym libCgl libOsiClp libOsi libClp libCoinUtils)
+  set_include_directories(${Name})
+  if (COIN_COMPILE_LTO)
+    set_target_properties(${Name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+  endif ()
+  if (COIN_HAS_AMD)
+    target_link_libraries(${Name} amd)
+  endif ()
+  if (COIN_HAS_CHOLMOD)
+    target_link_libraries(${Name} cholmod suitesparseconfig amd ccolamd colamd camd)
+  endif ()
+  if (MKL_FOUND)
+    target_link_libraries(${Name} ${COIN_MKL_LIBS})
+  else ()
+    if (COIN_HAS_LAPACK OR COIN_USE_SYSTEM_LAPACK)
+      target_link_libraries(${Name} lapack)
+    endif ()
+    if (COIN_HAS_BLAS OR COIN_USE_SYSTEM_LAPACK)
+      target_link_libraries(${Name} blas)
+    endif ()
+    if (COIN_ENABLE_DOWNLOAD_CLAPACK)
+      target_link_libraries(${Name} f2c)
+    endif ()
+    if ((COIN_HAS_BLAS OR COIN_HAS_LAPACK) AND UNIX AND COIN_USE_SYSTEM_LAPACK)
+      target_link_libraries(${Name} gfortran)
+    endif ()
+  endif ()
+  if (COINUTILS_HAS_ZLIB OR COIN_USE_ZLIB)
+    target_link_libraries(${Name} ${ZLIB_NAME})
+  endif ()
+  if (COINUTILS_HAS_BZLIB OR COIN_USE_BZLIB)
+    target_link_libraries(${Name} ${BZLIB_NAME})
+  endif ()
+  if (COIN_HAS_GLPK OR COIN_USE_GLPK)
+    target_link_libraries(${Name} glpk)
+  endif ()
+  if (USE_OPENMP AND UNIX)
+    target_link_libraries(${Name} gomp)
+  endif ()
+  if (COINUTILS_USE_THREADS OR COIN_USE_PTHREAD_WIN32 OR COIN_ENABLE_DOWNLOAD_PTHREAD_WIN32 OR COIN_HAS_ABC)
+    if (MINGW)
+      target_link_libraries(${Name} winpthread)
+    elseif (NOT WIN32)
+      target_link_libraries(${Name} pthread)
+    else ()
+      target_link_libraries(${Name} pthreadVC2)
+    endif ()
+  endif ()
+  if (COIN_HAS_ABC AND (COIN_ABC_LEVEL GREATER 2))
+    target_link_libraries(${Name} cilkrts)
+  endif ()  
+  if (READLINE_FOUND)
+    target_link_libraries(${Name} ${READLINE_LIBRARIES})
+  endif ()  
+  if (COIN_HAS_MUMPS)
+    if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+      target_link_libraries(${Name} dmumps mumps_common seq blas lapack ifort pthread)
+    else ()
+      target_link_libraries(${Name} dmumps mumps_common seq blas lapack gfortran pthread)
+    endif ()
+  endif ()  
+  if (COIN_ENABLE_DOWNLOAD_METIS OR COIN_USE_METIS)
+    target_link_libraries(${Name} metis m)
+  endif ()  
+endmacro ()
+
+add_example(symphony ${MAIN_SRC})
+
+if (NOT SYM_COMPILE_IN_LP)
+  set_source_files_properties(${ALL_LP} PROPERTIES LANGUAGE CXX)
+  
+  if (ENABLE_SHARED_LIBRARIES)
+    add_library(libSym_lp SHARED ${ALL_LP})
+  else ()
+    add_library(libSym_lp STATIC ${ALL_LP})
+  endif ()
+  if (COIN_COMPILE_LTO)
+    set_target_properties(libSym_lp PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+  endif ()
+  
+  set_include_directories(libSym_lp)
+
+  add_example(symphony_lp ${MAIN_SRC})
+
+  install(TARGETS symphony_lp
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
+  install(TARGETS libSym_lp
+          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+endif ()
+
+if (NOT SYM_COMPILE_IN_CG)
+  set_source_files_properties(${ALL_CG} PROPERTIES LANGUAGE CXX)
+  
+  if (ENABLE_SHARED_LIBRARIES)
+    add_library(libSym_cg SHARED ${ALL_CG})
+  else ()
+    add_library(libSym_cg STATIC ${ALL_CG})
+  endif ()
+  if (COIN_COMPILE_LTO)
+    set_target_properties(libSym_cg PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+  endif ()
+  
+  set_include_directories(libSym_cg)
+
+  add_example(symphony_cg ${MAIN_SRC})
+  
+  install(TARGETS symphony_cg
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
+  install(TARGETS libSym_cg
+          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+endif ()
+
+if (NOT SYM_COMPILE_IN_CP)
+  set_source_files_properties(${ALL_CP} PROPERTIES LANGUAGE CXX)
+  
+  if (ENABLE_SHARED_LIBRARIES)
+    add_library(libSym_cp SHARED ${ALL_CP})
+  else ()
+    add_library(libSym_cp STATIC ${ALL_CP})
+  endif ()
+  if (COIN_COMPILE_LTO)
+    set_target_properties(libSym_cp PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+  endif ()
+  
+  set_include_directories(libSym_cp)
+
+  add_example(symphony_cp ${MAIN_SRC})
+  
+  install(TARGETS symphony_cp
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
+  install(TARGETS libSym_cp
+          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+endif ()
+
+if (NOT SYM_COMPILE_IN_TM)
+  set_source_files_properties(${ALL_TM} PROPERTIES LANGUAGE CXX)
+  
+  if (ENABLE_SHARED_LIBRARIES)
+    add_library(libSym_tm SHARED ${ALL_TM})
+  else ()
+    add_library(libSym_tm STATIC ${ALL_TM})
+  endif ()
+  if (COIN_COMPILE_LTO)
+    set_target_properties(libSym_tm PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+  endif ()
+  
+  set_include_directories(libSym_tm)
+
+  add_example(symphony_tm ${MAIN_SRC})
+  
+  install(TARGETS symphony_tm
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
+  install(TARGETS libSym_tm
+          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+endif ()
+
+if (SYMPHONY_BUILD_EXAMPLES)
+  set(TEST_LIB_PATH "${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/lib")
+  set(TEST_BIN_PATH "${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/bin")
+  
+  macro(add_example Name)
+    add_executable(${Name} ${ARGN})
+    target_link_libraries(${Name} libSym libCgl libOsiClp libOsi libClp libCoinUtils)
+    set_include_directories(${Name})
+    if (COIN_COMPILE_LTO)
+      set_target_properties(${Name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+    endif ()
+    if (COIN_HAS_AMD)
+      target_link_libraries(${Name} amd)
+    endif ()
+    if (COIN_HAS_CHOLMOD)
+      target_link_libraries(${Name} cholmod suitesparseconfig amd ccolamd colamd camd)
+    endif ()
+    if (MKL_FOUND)
+      target_link_libraries(${Name} ${COIN_MKL_LIBS})
+    else ()
+      if (COIN_HAS_LAPACK OR COIN_USE_SYSTEM_LAPACK)
+        target_link_libraries(${Name} lapack)
+      endif ()
+      if (COIN_HAS_BLAS OR COIN_USE_SYSTEM_LAPACK)
+        target_link_libraries(${Name} blas)
+      endif ()
+      if (COIN_ENABLE_DOWNLOAD_CLAPACK)
+        target_link_libraries(${Name} f2c)
+      endif ()
+      if ((COIN_HAS_BLAS OR COIN_HAS_LAPACK) AND UNIX AND COIN_USE_SYSTEM_LAPACK)
+        target_link_libraries(${Name} gfortran)
+      endif ()
+    endif ()
+    if (COINUTILS_HAS_ZLIB OR COIN_USE_ZLIB)
+      target_link_libraries(${Name} ${ZLIB_NAME})
+    endif ()
+    if (COINUTILS_HAS_BZLIB OR COIN_USE_BZLIB)
+      target_link_libraries(${Name} ${BZLIB_NAME})
+    endif ()
+    if (COIN_HAS_GLPK OR COIN_USE_GLPK)
+      target_link_libraries(${Name} glpk)
+    endif ()
+    if (USE_OPENMP AND UNIX)
+      target_link_libraries(${Name} gomp)
+    endif ()
+    if (COINUTILS_USE_THREADS OR COIN_USE_PTHREAD_WIN32 OR COIN_ENABLE_DOWNLOAD_PTHREAD_WIN32 OR COIN_HAS_ABC)
+      if (MINGW)
+        target_link_libraries(${Name} winpthread)
+      elseif (NOT WIN32)
+        target_link_libraries(${Name} pthread)
+      else ()
+        target_link_libraries(${Name} pthreadVC2)
+      endif ()
+    endif ()
+    if (COIN_HAS_ABC AND (COIN_ABC_LEVEL GREATER 2))
+      target_link_libraries(${Name} cilkrts)
+    endif ()  
+    if (READLINE_FOUND)
+      target_link_libraries(${Name} ${READLINE_LIBRARIES})
+    endif ()  
+    if (COIN_HAS_MUMPS)
+      if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+        target_link_libraries(${Name} dmumps mumps_common seq blas lapack ifort pthread)
+      else ()
+        target_link_libraries(${Name} dmumps mumps_common seq blas lapack gfortran pthread)
+      endif ()
+    endif ()  
+    if (COIN_ENABLE_DOWNLOAD_METIS OR COIN_USE_METIS)
+      target_link_libraries(${Name} metis m)
+    endif ()  
+  endmacro ()
+  
+  add_example(bicriteria ${SYMPHONY_DIR}/Examples/bicriteria.c)
+
+  add_test(NAME symphony_example_bicriteria
+           COMMAND $<TARGET_FILE:bicriteria> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_bicriteria PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_bicriteria PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  add_example(milp ${SYMPHONY_DIR}/Examples/milp.c)
+  
+  add_test(NAME symphony_example_milp
+           COMMAND $<TARGET_FILE:milp> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_milp PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_milp PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  add_example(milp2 ${SYMPHONY_DIR}/Examples/milp2.c)
+  
+  add_test(NAME symphony_example_milp2
+           COMMAND $<TARGET_FILE:milp2> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_milp2 PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_milp2 PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  #add_example(milpOsi ${SYMPHONY_DIR}/Examples/milpOsi.c)
+  #target_link_libraries(milpOsi libOsiSym libOsi libCgl libCoinUtils z bz2 libSym libCgl libCoinUtils libClp libOsiClp libCoinUtils libOsi)
+  # 
+  #add_test(NAME symphony_example_milpOsi
+  #         COMMAND $<TARGET_FILE:milpOsi> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  #set_tests_properties(symphony_example_milpOsi PROPERTIES TIMEOUT 30)
+  #if (WIN32)
+  #  set_tests_properties(symphony_example_milpOsi PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  #endif ()
+    
+  #ERROR: Missing include files in milpOsi2
+  #add_example(milpOsi2 ${SYMPHONY_DIR}/Examples/milpOsi2.c)
+  #
+  #add_test(NAME symphony_example_milpOsi2
+  #         COMMAND $<TARGET_FILE:milpOsi2> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  #set_tests_properties(symphony_example_milpOsi2 PROPERTIES TIMEOUT 30)
+  #if (WIN32)
+  #  set_tests_properties(symphony_example_milpOsi2 PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  #endif ()
+  #
+  
+  add_example(sensitivity ${SYMPHONY_DIR}/Examples/sensitivity.c)
+  
+  add_test(NAME symphony_example_sensitivity
+           COMMAND $<TARGET_FILE:sensitivity> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_sensitivity PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_sensitivity PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  add_example(warm_start1 ${SYMPHONY_DIR}/Examples/warm_start1.c)
+  
+  add_test(NAME symphony_example_warm_start1
+           COMMAND $<TARGET_FILE:warm_start1> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_warm_start1 PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_warm_start1 PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  add_example(warm_start2 ${SYMPHONY_DIR}/Examples/warm_start2.c)
+  
+  add_test(NAME symphony_example_warm_start2
+           COMMAND $<TARGET_FILE:warm_start2> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_warm_start2 PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_warm_start2 PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+    
+  add_example(warm_start3 ${SYMPHONY_DIR}/Examples/warm_start3.c)
+  
+  add_test(NAME symphony_example_warm_start3
+           COMMAND $<TARGET_FILE:warm_start3> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps)
+  set_tests_properties(symphony_example_warm_start3 PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_warm_start3 PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+  set_tests_properties(symphony_example_warm_start3 PROPERTIES LABELS "DISTRIB;LONG")
+
+
+
+  add_example(unitTest-Symphony ${SYMPHONY_DIR}/test/OsiSymSolverInterfaceTest.cpp ${SYMPHONY_DIR}/test/unitTestSym.cpp)
+  
+  add_test(NAME symphony_example_unitTest
+           COMMAND $<TARGET_FILE:unitTest-Symphony>)
+  set_tests_properties(symphony_example_unitTest PROPERTIES TIMEOUT 30)
+  if (WIN32)
+    set_tests_properties(symphony_example_unitTest PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+  endif ()
+  set_tests_properties(symphony_example_unitTest PROPERTIES LABELS "DISTRIB;LONG")
+endif ()
+
+install(TARGETS symphony
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
+install(TARGETS libSym
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+
+#install(TARGETS libOsiSym
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+#        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+#        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
+
+install(FILES ${Symphony_SRC_LIST_Headers} 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+
+install(FILES ${OSISYM_Headers} 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+
+# Perform some tests
+
+# Create a directory to store results from tests
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/tests)
+  make_directory(${CMAKE_BINARY_DIR}/tests)
+endif ()
+
+# With MPS files
+
+add_test(NAME afiro_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/afiro.mps -o ${CMAKE_BINARY_DIR}/tests/afiro.out)
+set_tests_properties(afiro_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(afiro_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(afiro_mps  PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+# This test seems to be specific for Ipopt
+#add_test(NAME conic_mps 
+#         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/conic.mps -o ${CMAKE_BINARY_DIR}/tests/conic.out)
+#set_tests_properties(conic_mps PROPERTIES TIMEOUT 30)
+#set_tests_properties(conic_mps PROPERTIES LABELS "DISTRIB;MPS")
+#if (WIN32)
+#  set_tests_properties(conic_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+#endif ()
+
+add_test(NAME exmip1_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/exmip1.mps -o ${CMAKE_BINARY_DIR}/tests/exmip1.out)
+set_tests_properties(exmip1_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(exmip1_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(exmip1_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME galenet_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/galenet.mps -o ${CMAKE_BINARY_DIR}/tests/galenet.out)
+set_tests_properties(galenet_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(galenet_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(galenet_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME nw460_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/nw460.mps -o ${CMAKE_BINARY_DIR}/tests/nw460.out)
+set_tests_properties(nw460_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(nw460_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(nw460_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME p0548_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/p0548.mps -o ${CMAKE_BINARY_DIR}/tests/p0548.out)
+set_tests_properties(p0548_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(p0548_mps PROPERTIES LABEL "MPS")
+if (WIN32)
+  set_tests_properties(p0548_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME scOneInt_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/scOneInt.mps -o ${CMAKE_BINARY_DIR}/tests/scOneInt.out)
+set_tests_properties(scOneInt_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(scOneInt_mps PROPERTIES TIMEOUT "MPS")
+if (WIN32)
+  set_tests_properties(scOneInt_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME tp3_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/tp3.mps -o ${CMAKE_BINARY_DIR}/tests/tp3.out)
+set_tests_properties(tp3_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(tp3_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(tp3_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME wedding_16_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/wedding_16.mps -o ${CMAKE_BINARY_DIR}/tests/wedding_16.out)
+set_tests_properties(wedding_16_mps PROPERTIES TIMEOUT 3000)
+set_tests_properties(wedding_16_mps PROPERTIES LABELS "DISTRIB;MPS;LONG")
+if (WIN32)
+  set_tests_properties(wedding_16_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME atm_5_10_1_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/atm_5_10_1.mps -o ${CMAKE_BINARY_DIR}/tests/atm_5_10_1.out)
+set_tests_properties(atm_5_10_1_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(atm_5_10_1_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(atm_5_10_1_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME e226_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/e226.mps -o ${CMAKE_BINARY_DIR}/tests/e226.out)
+set_tests_properties(e226_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(e226_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(e226_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME finnis_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/finnis.mps -o ${CMAKE_BINARY_DIR}/tests/finnis.out)
+set_tests_properties(finnis_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(finnis_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(finnis_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME hello_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/hello.mps -o ${CMAKE_BINARY_DIR}/tests/hello.out)
+set_tests_properties(hello_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(hello_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(hello_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME p0033_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/p0033.mps -o ${CMAKE_BINARY_DIR}/tests/p0033.out)
+set_tests_properties(p0033_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(p0033_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(p0033_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME pack1_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/pack1.mps -o ${CMAKE_BINARY_DIR}/tests/pack1.out)
+set_tests_properties(pack1_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(pack1_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(pack1_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME share2qp_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/share2qp.mps -o ${CMAKE_BINARY_DIR}/tests/share2qp.out)
+set_tests_properties(share2qp_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(share2qp_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(share2qp_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME tp4_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/tp4.mps -o ${CMAKE_BINARY_DIR}/tests/tp4.out)
+set_tests_properties(tp4_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(tp4_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(tp4_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME brandy_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/brandy.mps -o ${CMAKE_BINARY_DIR}/tests/brandy.out)
+set_tests_properties(brandy_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(brandy_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(brandy_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME exmip1.5_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/exmip1.5.mps -o ${CMAKE_BINARY_DIR}/tests/exmip1.5.out)
+set_tests_properties(exmip1.5_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(exmip1.5_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(exmip1.5_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME galenetbnds_mps 
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/galenetbnds.mps -o ${CMAKE_BINARY_DIR}/tests/galenetbnds.out)
+set_tests_properties(galenetbnds_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(galenetbnds_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(galenetbnds_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME lseu_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/lseu.mps -o ${CMAKE_BINARY_DIR}/tests/lseu.out)
+set_tests_properties(lseu_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(lseu_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(lseu_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME p0201_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/p0201.mps -o ${CMAKE_BINARY_DIR}/tests/p0201.out)
+set_tests_properties(p0201_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(p0201_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(p0201_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME retail3_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/retail3.mps -o ${CMAKE_BINARY_DIR}/tests/retail3.out)
+set_tests_properties(retail3_mps PROPERTIES TIMEOUT 3000)
+set_tests_properties(retail3_mps PROPERTIES LABELS "DISTRIB;MPS;LONG")
+if (WIN32)
+  set_tests_properties(retail3_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME spec_sections_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/spec_sections.mps -o ${CMAKE_BINARY_DIR}/tests/spec_sections.out)
+set_tests_properties(spec_sections_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(spec_sections_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(spec_sections_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+add_test(NAME tp5_mps
+         COMMAND $<TARGET_FILE:symphony> -F ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/tp5.mps -o ${CMAKE_BINARY_DIR}/tests/tp5.out)
+set_tests_properties(tp5_mps PROPERTIES TIMEOUT 30)
+set_tests_properties(tp5_mps PROPERTIES LABELS "DISTRIB;MPS")
+if (WIN32)
+  set_tests_properties(tp5_mps PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+# With LP files
+
+add_test(NAME exmip1_lp 
+         COMMAND $<TARGET_FILE:symphony> -L ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample/exmip1.lp -o ${CMAKE_BINARY_DIR}/tests/exmip1_lp.out)
+set_tests_properties(exmip1_lp PROPERTIES TIMEOUT 30)
+set_tests_properties(exmip1_lp PROPERTIES LABELS "DISTRIB;LP")
+if (WIN32)
+  set_tests_properties(exmip1_lp PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_DIR}")
+endif ()
+
+# Build Applications
+
+if (SYMPHONY_BUILD_APPLICATIONS)
+  # CNRP
+  include_directories(${SYMPHONY_DIR}/Applications/CNRP/include/)
+  
+  set(CNRP_SRCS ${SYMPHONY_DIR}/Applications/CNRP/src/Common/cnrp_macros.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Common/compute_cost.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Common/network.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/CutGen/biconnected.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/CutGen/cnrp_cg.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/CutGen/shrink.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/CutGen/tsp.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/CutPool/cnrp_cp.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/DrawGraph/cnrp_dg.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/DrawGraph/cnrp_dg_functions.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/DrawGraph/cnrp_dg_network.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/LP/cnrp_lp_branch.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/LP/cnrp_lp.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Master/cnrp_io.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Master/cnrp_main.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Master/cnrp_master.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Master/cnrp_master_functions.c
+                ${SYMPHONY_DIR}/Applications/CNRP/src/Master/small_graph.c)
+  
+  set_source_files_properties(${CNRP_SRCS} PROPERTIES LANGUAGE CXX)
+  # Concorde required
+  # Compilation error
+  #add_example(CNRP ${CNRP_SRCS})
+  #target_include_directories(CNRP BEFORE PRIVATE ${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/include)
+  #target_link_libraries(CNRP concorde)
+  
+  # MATCH
+  include_directories(${SYMPHONY_DIR}/Applications/MATCH/include/)
+  
+  set(MATCH_SRCS ${SYMPHONY_DIR}/Applications/MATCH/src/CutGen/user_cg.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/CutPool/user_cp.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/DrawGraph/user_dg.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/LP/user_lp_branch.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/LP/user_lp.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/Master/user_main.c
+                 ${SYMPHONY_DIR}/Applications/MATCH/src/Master/user_master.c)
+  
+  set_source_files_properties(${MATCH_SRCS} PROPERTIES LANGUAGE CXX)
+  add_example(MATCH ${MATCH_SRCS})
+  
+  # MCKP
+  include_directories(${SYMPHONY_DIR}/Applications/MCKP/include/)
+  
+  set(MCKP_SRCS ${SYMPHONY_DIR}/Applications/MCKP/mckp_main.c)
+  
+  set_source_files_properties(${MCKP_SRCS} PROPERTIES LANGUAGE CXX)
+  add_example(MCKP ${MCKP_SRCS})
+  
+  # MISOCO
+  include_directories(${SYMPHONY_DIR}/Applications/MISOCO/include/)
+  
+  set(MISOCO_SRCS ${SYMPHONY_DIR}/Applications/MISOCO/src/CutGen/user_cg.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/CutPool/user_cp.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/DrawGraph/user_dg.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/LP/user_lp_branch.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/LP/user_lp.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/Master/user_main.c
+                  ${SYMPHONY_DIR}/Applications/MISOCO/src/Master/user_master.c)
+  
+  set_source_files_properties(${MISOCO_SRCS} PROPERTIES LANGUAGE CXX)
+  # Compilation error            
+  #add_example(MISOCO ${MISOCO_SRCS})
+
+  # MPP
+  include_directories(${SYMPHONY_DIR}/Applications/MPP/include/)
+  
+  set(MPP_SRCS ${SYMPHONY_DIR}/Applications/MPP/src/CutGen/mpp_cg.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/CutPool/mpp_cp.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/DrawGraph/mpp_dg.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/LP/mpp_lp_branch.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/LP/mpp_lp.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/Master/mpp_main.c
+               ${SYMPHONY_DIR}/Applications/MPP/src/Master/mpp_master.c)
+  
+  set_source_files_properties(${MPP_SRCS} PROPERTIES LANGUAGE CXX)
+  add_example(MPP ${MPP_SRCS})
+  
+  # SPP
+  include_directories(${SYMPHONY_DIR}/Applications/SPP/include/)
+  
+  set(SPP_SRCS ${SYMPHONY_DIR}/Applications/SPP/src/Common/spp_common.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/CutGen/spp_cg.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/CutPool/spp_cp.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/DrawGraph/spp_dg.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/LP/spp_lp_branch.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/LP/spp_lp.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/Master/spp_main.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/Master/spp_master.c
+               ${SYMPHONY_DIR}/Applications/SPP/src/Master/spp_master_functions.c)
+  
+  set_source_files_properties(${SPP_SRCS} PROPERTIES LANGUAGE CXX)
+  add_example(SPP ${SPP_SRCS})
+  
+  # SPP+CUTS
+  include_directories(${SYMPHONY_DIR}/Applications/SPP+CUTS/include/)
+  
+  set(SPP_CUTS_SRCS ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/Common/spp_common.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/CutGen/spp_cg.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/CutGen/spp_cg_clique.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/CutGen/spp_cg_functions.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/CutPool/spp_cp.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/DrawGraph/spp_dg.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/LP/spp_lp_branch.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/LP/spp_lp.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/LP/spp_lp_branch.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/LP/spp_lp_functions.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/Master/spp_main.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/Master/spp_master.c
+                    ${SYMPHONY_DIR}/Applications/SPP+CUTS/src/Master/spp_master_functions.c)
+  
+  set_source_files_properties(${SPP_CUTS_SRCS} PROPERTIES LANGUAGE CXX)
+  # Compilation error              
+  #add_example(SPP_CUTS ${SPP_CUTS_SRCS})
+  
+  # USER
+  include_directories(${SYMPHONY_DIR}/Applications/USER/include/)
+  
+  set(USER_SRCS ${SYMPHONY_DIR}/Applications/USER/src/CutGen/user_cg.c
+                ${SYMPHONY_DIR}/Applications/USER/src/CutPool/user_cp.c
+                ${SYMPHONY_DIR}/Applications/USER/src/DrawGraph/user_dg.c
+                ${SYMPHONY_DIR}/Applications/USER/src/LP/user_lp_branch.c
+                ${SYMPHONY_DIR}/Applications/USER/src/LP/user_lp.c
+                ${SYMPHONY_DIR}/Applications/USER/src/Master/user_main.c
+                ${SYMPHONY_DIR}/Applications/USER/src/Master/user_master.c)
+  
+  set_source_files_properties(${USER_SRCS} PROPERTIES LANGUAGE CXX)
+  # Compilation error          
+  #add_example(USER ${USER_SRCS})
+  
+  # VRP
+  set(VRP_SRCS ${SYMPHONY_DIR}/Applications/VRP/src/Common/compute_cost.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Common/network.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Common/vrp_macros.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/biconnected.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/shrink.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/tsp.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/vrp_cg.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/Decomp/decomp_lower_bound.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/Decomp/decomp_user.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/Decomp/ind_sort.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/Decomp/my_decomp_user.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/MinCut/capforest.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutGen/MinCut/min_cut.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/CutPool/vrp_cp.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/DrawGraph/vrp_dg.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/DrawGraph/vrp_dg_functions.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/DrawGraph/vrp_dg_network.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/binomial.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/exchange2.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/exchange.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/farnear_ins.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/farthest_ins.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/heur_main.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/heur_routines.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/ins_routines2.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/ins_routines.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/mst.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/mst_ins_rout.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/near_cluster.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/nearest_ins.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/qsort.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings2.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings3.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings_rout2.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings_rout3.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/savings_rout.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/s_path.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/sp.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/sweep.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/tsp_fi.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/tsp_fini.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/tsp_ins_rout.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Heuristics/tsp_ni.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/LP/vrp_lp_branch.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/LP/vrp_lp.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/small_graph.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/vrp_io.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/vrp_main.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/vrp_master.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/vrp_master_functions.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/cluster_heur.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/collect_solutions.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/exchange_heur.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/lower_bound.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/receive_rout.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/route_heur.c
+               ${SYMPHONY_DIR}/Applications/VRP/src/Master/Heuristics/start_heurs.c)
+  
+  set_source_files_properties(${VRP_SRCS} PROPERTIES LANGUAGE CXX)
+  # Concorde required
+  # Compilation error
+  #add_example(VRP ${VRP_SRCS})
+  #target_include_directories(VRP BEFORE PRIVATE ${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/include)
+  #target_include_directories(VRP BEFORE PRIVATE ${SYMPHONY_DIR}/Applications/VRP/include)
+  #target_link_libraries(VRP concorde)
+endif ()
