@@ -127,11 +127,9 @@ if(NOT Cbc_lib)
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglKnapsackCover
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglLandP
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglLiftAndProject
-                                                ${cbc_SOURCE_DIR}/Cgl/src/CglMessage.hpp
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglMixedIntegerRounding
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglMixedIntegerRounding2
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglOddHole
-                                                ${cbc_SOURCE_DIR}/Cgl/src/CglParam.hpp
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglPreProcess
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglProbing
                                                 ${cbc_SOURCE_DIR}/Cgl/src/CglRedSplit
