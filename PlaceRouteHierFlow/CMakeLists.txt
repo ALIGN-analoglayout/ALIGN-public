@@ -22,6 +22,13 @@ target_link_libraries(
      MNA
      # External Dependencies
      lpsolve::lpsolve55
+     Sym::Sym
+     Cgl::Cgl
+     Clp::Clp
+     Osi::Osi
+     OsiClp::OsiClp
+     OsiSym::OsiSym
+     CoinUtils::CoinUtils
      nlohmann_json::nlohmann_json
      spdlog::spdlog
      superlu
@@ -50,6 +57,13 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           MNA
           # External Dependencies
           lpsolve::lpsolve55
+          Sym::Sym
+          Cgl::Cgl
+          Clp::Clp
+          Osi::Osi
+          OsiClp::OsiClp
+          OsiSym::OsiSym
+          CoinUtils::CoinUtils
           nlohmann_json::nlohmann_json
           spdlog::spdlog
           superlu
