@@ -3,6 +3,7 @@
 #include "PlacerIfc.h"
 #include "Placer.h"
 #include "../EA_placer/placement.h"
+#include <chrono>
 
 double ConstGraph::LAMBDA=1.;
 double ConstGraph::GAMAR=30;
@@ -52,6 +53,10 @@ PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, 
     _nodeVec.push_back(currentNode);
 
   } else {
+    auto logger = spdlog::default_logger()->clone("placer.PlacerIfc.PlacerIfc");
+    auto placer_begin = std::chrono::high_resolution_clock::now();
     Placer curr_plc(_nodeVec, opath, effort, drcInfo, hyper, select_in_ILP);
+    auto placer_end = std::chrono::high_resolution_clock::now();
+    logger->debug("Block {0} placement runtime : {1}", _nodeVec.back().name, std::chrono::duration_cast<std::chrono::nanoseconds>(placer_end - placer_begin).count());
   }
 }

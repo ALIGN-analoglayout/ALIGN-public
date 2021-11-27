@@ -7,110 +7,59 @@
 #include <iostream>
 #include <malloc.h>
 
-int temp_function() {
-
-   /* Create a SYMPHONY environment */
-   
-   sym_environment *env = sym_open_environment();
-
-   int n_cols = 2; //number of columns
-   double * objective    = 
-      (double *) malloc(sizeof(double) * n_cols);//the objective coefficients
-   double * col_lb       = 
-      (double *) malloc(sizeof(double) * n_cols);//the column lower bounds
-   double * col_ub       = 
-      (double *) malloc(sizeof(double) * n_cols);//the column upper bounds
-    
-   //Define the objective coefficients.
-   //minimize -1 x0 - 1 x1
-   objective[0] = -1.0;
-   objective[1] = -1.0;
-   
-   //Define the variable lower/upper bounds.
-   // x0 >= 0   =>  0 <= x0 <= infinity
-   // x1 >= 0   =>  0 <= x1 <= infinity
-   col_lb[0] = 0.0;
-   col_lb[1] = 0.0;
-   col_ub[0] = sym_get_infinity();
-   col_ub[1] = sym_get_infinity();
-   
-   int n_rows = 2;
-   char * row_sense = 
-      (char *) malloc (sizeof(char) * n_rows); //the row senses
-   double * row_rhs = 
-      (double *) malloc (sizeof(double) * n_rows); //the row right-hand-sides
-   double * row_range = NULL; //the row ranges   
-   row_sense[0] = 'L';
-   row_rhs[0] = 3;
-   row_sense[1] = 'L';
-   row_rhs[1] = 3;
-
-   /* Constraint matrix definitions */
-   int non_zeros = 4;
-   int * start = (int *) malloc (sizeof(int) * (n_cols + 1)); 
-   int * index = (int *) malloc (sizeof(int) * non_zeros);
-   double * value = (double *) malloc (sizeof(double) *non_zeros);
-
-   start[0] = 0; 
-   start[1] = 2;
-   start[2] = 4;
-
-   index[0] = 0;
-   index[1] = 1;
-   index[2] = 0;
-   index[3] = 1;
-
-   value[0] = 1;
-   value[1] = 2;
-   value[2] = 2;
-   value[3] = 1;
-
-   //define the integer variables
-
-   char * int_vars = (char *) malloc (sizeof(char) * n_cols);
-
-   int_vars[0] = TRUE;
-   int_vars[1] = TRUE;
-
-   //load the problem to environment
-   sym_explicit_load_problem(env, n_cols, n_rows, start, index, value, col_lb, 
-			     col_ub, int_vars, objective, NULL, row_sense, 
-			     row_rhs, row_range, TRUE);
-   sym_set_int_param(env, "verbosity", -2);
-
-    //solve the integer program
-   sym_solve(env);
-   
-   //get, print the solution
-   double * solution = (double *) malloc (sizeof(double) * n_cols);
-   double objective_value = 0.0;
-
-   sym_get_col_solution(env, solution);
-   sym_get_obj_val(env, &objective_value);
-
-   printf("%s\n%s%f\n%s%f\n%s%f\n","The optimal solution is",
-	  " x0 = ",solution[0],
-	  " x1 = ",solution[1],
-	  " with objective value = ",objective_value);
-   
-   //free the memory
-   sym_close_environment(env);
-
-   if(objective){free(objective);}
-   if(col_lb)   {free(col_lb);}
-   if(col_ub)   {free(col_ub);}
-   if(row_rhs)  {free(row_rhs);}
-   if(row_sense){free(row_sense);}
-   if(row_range){free(row_range);}
-   if(index)    {free(index);}
-   if(start)    {free(start);}
-   if(value)    {free(value);}
-   if(int_vars) {free(int_vars);}
-   if(solution) {free(solution);}
-   return 0;
-
+ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
+{
+  for (unsigned i = 0; i < sp.posPair.size(); ++i) {
+    _posPosition[sp.posPair[i]] = i;
+    _negPosition[sp.negPair[i]] = i;
+  }
+  _ltExtreme.resize(N); _rtExtreme.resize(N);
+  _topExtreme.resize(N); _botExtreme.resize(N);
 }
 
+void ExtremeBlocksOfNet::FindExtremes(const placerDB::net& n, const int neti)
+{
+  _ltExtreme[neti].clear(); _rtExtreme[neti].clear();
+  _botExtreme[neti].clear(); _topExtreme[neti].clear();
+  std::set<int> blocks;
+  for (const auto& con : n.connected) {
+    if (con.type == placerDB::Block) {
+      blocks.insert(con.iter2);
+    }
+  }
+  std::vector<int> blks(blocks.begin(), blocks.end());
+  std::vector<int> abOf(blks.size(), 1), beOf(blks.size(), 1);
+  std::vector<int> ltOf(blks.size(), 1), rtOf(blks.size(), 1);
+  for (unsigned i = 0; i < blks.size(); ++i) {
+    const auto& blki = blks[i];
+    for (unsigned j = i+1; j < blks.size(); ++j) {
+      const auto& blkj = blks[j];
+      if (_posPosition[blki] < _posPosition[blkj]) {
+        if (_negPosition[blki] < _negPosition[blkj]) {
+          rtOf[i] = 0;
+          ltOf[j] = 0;
+        } else {
+          beOf[i] = 0;
+          abOf[j] = 0;
+        }
+      } else {
+        if (_negPosition[blki] > _negPosition[blkj]) {
+          rtOf[j] = 0;
+          ltOf[i] = 0;
+        } else {
+          abOf[i] = 0;
+          beOf[j] = 0;
+        }
+      }
+    }
+  }
+  for (unsigned i = 0; i < blks.size(); ++i) {
+    if (abOf[i]) _topExtreme[neti].insert(blks[i]);
+    if (beOf[i]) _botExtreme[neti].insert(blks[i]);
+    if (rtOf[i]) _rtExtreme[neti].insert(blks[i]);
+    if (ltOf[i]) _ltExtreme[neti].insert(blks[i]);
+  }
+}
 
 ILP_solver::ILP_solver() {}
 
@@ -476,11 +425,6 @@ ILP_solver::ILP_solver(design& mydesign) {
   LL.y = INT_MAX;
   UR.x = INT_MIN;
   UR.y = INT_MIN;
-  static int try1{0};
-  if (!try1) {
-    temp_function();
-    try1 = 1;
-  }
   Blocks.resize(mydesign.Blocks.size());
   Aspect_Ratio_weight = mydesign.Aspect_Ratio_weight;
   memcpy(Aspect_Ratio, mydesign.Aspect_Ratio, sizeof(mydesign.Aspect_Ratio));
@@ -1134,6 +1078,22 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
+class TimeMeasure {
+  private:
+    std::chrono::nanoseconds& _rt;
+    std::chrono::high_resolution_clock::time_point _begin;
+  public:
+    TimeMeasure(std::chrono::nanoseconds& rt) : _rt(rt)
+    {
+      _begin = std::chrono::high_resolution_clock::now();
+    }
+    ~TimeMeasure()
+    {
+      auto _end = std::chrono::high_resolution_clock::now();
+      _rt += std::chrono::duration_cast<std::chrono::nanoseconds>(_end - _begin);
+    }
+};
+
 bool ILP_solver::FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPOrig");
 
@@ -1666,6 +1626,7 @@ bool ILP_solver::FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_s
 }
 
 bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+  TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
   int v_metal_index = -1;
@@ -1693,8 +1654,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   // i*4+3:V_flip
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
-  std::vector<int> rowindices, rowstarts;
-  std::vector<double> constrvalues;
+  std::vector<int> rowindofcol[N_var];
+  std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
   std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
   intvars.resize(N_var, FALSE);
@@ -1704,25 +1665,6 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     colub[i * 4 + 2] = 1;
     colub[i * 4 + 3] = 1;
   }
-  /*for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    int ind = i * 4 + 1;
-    set_int(lp, ind, TRUE);
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Blocks[i][0].name + "_x").c_str()));
-    set_int(lp, ind, TRUE);
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Blocks[i][0].name + "_y").c_str()));
-    set_binary(lp, ind, TRUE);
-    set_col_name(lp, ind++, const_cast<char*>((mydesign.Blocks[i][0].name + "_flx").c_str()));
-    set_binary(lp, ind, TRUE);
-    set_col_name(lp, ind,   const_cast<char*>((mydesign.Blocks[i][0].name + "_fly").c_str()));
-  }
-
-  for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    int ind = i * 4 + mydesign.Blocks.size() * 4 + 1;
-    set_col_name(lp, ind,     const_cast<char*>((mydesign.Nets[i].name + "_ll_x").c_str()));
-    set_col_name(lp, ind + 1, const_cast<char*>((mydesign.Nets[i].name + "_ll_y").c_str()));
-    set_col_name(lp, ind + 2, const_cast<char*>((mydesign.Nets[i].name + "_ur_x").c_str()));
-    set_col_name(lp, ind + 3, const_cast<char*>((mydesign.Nets[i].name + "_ur_y").c_str()));
-  }*/
 
 
   if (flushbl) {
@@ -1791,25 +1733,21 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
     objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
   }
-  //for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-  //  if (mydesign.Nets[i].connected.size() < 2) continue;
-  //  int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-  //  objective.at(ind)     = -const_graph.LAMBDA;
-  //  objective.at(ind + 1) = -const_graph.LAMBDA;
-  //  objective.at(ind + 2) = const_graph.LAMBDA;
-  //  objective.at(ind + 3) = const_graph.LAMBDA;
-  //}
+  for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
+    if (mydesign.Nets[i].connected.size() < 2) continue;
+    int ind = int(mydesign.Blocks.size() * 4 + i * 4);
+    objective.at(ind)     = -const_graph.LAMBDA;
+    objective.at(ind + 1) = -const_graph.LAMBDA;
+    objective.at(ind + 2) = const_graph.LAMBDA;
+    objective.at(ind + 3) = const_graph.LAMBDA;
+  }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
   roundup(bias_Hgraph, x_pitch);
   roundup(bias_Vgraph, y_pitch);
-  rowstarts.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
-  rowindices.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
-  constrvalues.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
 
-  rowstarts.push_back(0);
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
@@ -1820,9 +1758,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       if (i_pos_index < j_pos_index) {
         if (i_neg_index < j_neg_index) {
           // i is left of j
-          rowindices.insert(rowindices.end(), {(int(i) * 4), (int(j) * 4)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i * 4].push_back(rhs.size());
+          rowindofcol[j * 4].push_back(rhs.size());
+          constrvalues[i * 4].push_back(1);
+          constrvalues[j * 4].push_back(-1);
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
@@ -1833,9 +1772,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           }
         } else {
           // i is above j
-          rowindices.insert(rowindices.end(), {(int(i) * 4 + 1), (int(j) * 4 + 1)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i * 4 + 1].push_back(rhs.size());
+          rowindofcol[j * 4 + 1].push_back(rhs.size());
+          constrvalues[i * 4 + 1].push_back(1);
+          constrvalues[j * 4 + 1].push_back(-1);
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
@@ -1848,9 +1788,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       } else {
         if (i_neg_index < j_neg_index) {
           // i is below j
-          rowindices.insert(rowindices.end(), {(int(i) * 4 + 1), (int(j) * 4 + 1)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i * 4 + 1].push_back(rhs.size());
+          rowindofcol[j * 4 + 1].push_back(rhs.size());
+          constrvalues[i * 4 + 1].push_back(1);
+          constrvalues[j * 4 + 1].push_back(-1);
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::V)) !=
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
@@ -1861,9 +1802,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           }
         } else {
           // i is right of j
-          rowindices.insert(rowindices.end(), {(int(i) * 4), (int(j) * 4)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i * 4].push_back(rhs.size());
+          rowindofcol[j * 4].push_back(rhs.size());
+          constrvalues[i * 4].push_back(1);
+          constrvalues[j * 4].push_back(-1);
           if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(j), int(i)), placerDB::H)) !=
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
@@ -1886,17 +1828,19 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
         // each pair has opposite V flip
         {
-          rowindices.insert(rowindices.end(), {(first_id * 4 + 3), (second_id * 4 + 3)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, 1});
+          rowindofcol[first_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[second_id * 4 + 3].push_back(rhs.size());
+          constrvalues[first_id * 4 + 3].push_back(1);
+          constrvalues[second_id * 4 + 3].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
         }
         // each pair has the same H flip
         {
-          rowindices.insert(rowindices.end(), {(first_id * 4 + 2), (second_id * 4 + 2)});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[first_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[second_id * 4 + 2].push_back(rhs.size());
+          constrvalues[first_id * 4 + 2].push_back(1);
+          constrvalues[second_id * 4 + 2].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
         }
@@ -1904,9 +1848,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         {
           int first_x_center = mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2;
           int second_x_center = mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
-          rowstarts.push_back(rowindices.size());
-          rowindices.insert(rowindices.end(), {(first_id * 4), (second_id * 4)});
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[first_id * 4].push_back(rhs.size());
+          rowindofcol[second_id * 4].push_back(rhs.size());
+          constrvalues[first_id * 4].push_back(1);
+          constrvalues[second_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(-first_x_center + second_x_center);
         }
@@ -1923,9 +1868,14 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_first_y_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].height / 4;
           int j_second_y_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].height / 4;
           int bias = -i_first_y_center - i_second_y_center + j_first_y_center + j_second_y_center;
-          rowindices.insert(rowindices.end(), {i_first_id * 4 + 1, i_second_id * 4 + 1, j_first_id * 4 + 1, j_second_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {0.5, 0.5, -0.5, -0.5});
+          rowindofcol[i_first_id  * 4 + 1].push_back(rhs.size());
+          rowindofcol[i_second_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[j_first_id  * 4 + 1].push_back(rhs.size());
+          rowindofcol[j_second_id * 4 + 1].push_back(rhs.size());
+          constrvalues[i_first_id  * 4 + 1].push_back(0.5);
+          constrvalues[i_second_id * 4 + 1].push_back(0.5);
+          constrvalues[j_first_id  * 4 + 1].push_back(-0.5);
+          constrvalues[j_second_id * 4 + 1].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -1941,9 +1891,12 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_id = SPBlock.selfsym[j].first;
           int j_y_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].height / 2;
           int bias = -i_first_y_center - i_second_y_center + j_y_center;
-          rowindices.insert(rowindices.end(), {i_first_id * 4 + 1, i_second_id * 4 + 1, j_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {0.5, 0.5, -1});
+          rowindofcol[i_first_id  * 4 + 1].push_back(rhs.size());
+          rowindofcol[i_second_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[j_id * 4 + 1].push_back(rhs.size());
+          constrvalues[i_first_id  * 4 + 1].push_back(0.5);
+          constrvalues[i_second_id * 4 + 1].push_back(0.5);
+          constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -1958,9 +1911,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_id = SPBlock.selfsym[j].first;
           int j_y_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].height / 2;
           int bias = -i_y_center + j_y_center;
-          rowindices.insert(rowindices.end(), {i_id * 4 + 1, j_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[j_id * 4 + 1].push_back(rhs.size());
+          constrvalues[i_id * 4 + 1].push_back(1);
+          constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -1972,17 +1926,19 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         int first_id = SPBlock.sympair[i].first, second_id = SPBlock.sympair[i].second;
         // each pair has opposite H flip
         {
-          rowindices.insert(rowindices.end(), {first_id * 4 + 2, second_id * 4 + 2});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, 1});
+          rowindofcol[first_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[second_id * 4 + 2].push_back(rhs.size());
+          constrvalues[first_id * 4 + 2].push_back(1);
+          constrvalues[second_id * 4 + 2].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
         }
         // each pair has the same V flip
         {
-          rowindices.insert(rowindices.end(), {first_id * 4 + 3, second_id * 4 + 3});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[first_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[second_id * 4 + 3].push_back(rhs.size());
+          constrvalues[first_id * 4 + 3].push_back(1);
+          constrvalues[second_id * 4 + 3].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
         }
@@ -1990,9 +1946,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         {
           int first_y_center = mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2;
           int second_y_center = mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
-          rowindices.insert(rowindices.end(), {first_id * 4 + 1, second_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[first_id   * 4 + 1].push_back(rhs.size());
+          rowindofcol[second_id  * 4 + 1].push_back(rhs.size());
+          constrvalues[first_id  * 4 + 1].push_back(1);
+          constrvalues[second_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(-first_y_center + second_y_center);
         }
@@ -2009,9 +1966,14 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_first_x_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].width / 4;
           int j_second_x_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].width / 4;
           int bias = -i_first_x_center - i_second_x_center + j_first_x_center + j_second_x_center;
-          rowindices.insert(rowindices.end(), {i_first_id * 4, i_second_id * 4, j_first_id * 4, j_second_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {0.5, 0.5, -0.5, -0.5});
+          rowindofcol[i_first_id  * 4].push_back(rhs.size());
+          rowindofcol[i_second_id * 4].push_back(rhs.size());
+          rowindofcol[j_first_id  * 4].push_back(rhs.size());
+          rowindofcol[j_second_id * 4].push_back(rhs.size());
+          constrvalues[i_first_id  * 4].push_back(0.5);
+          constrvalues[i_second_id * 4].push_back(0.5);
+          constrvalues[j_first_id  * 4].push_back(-0.5);
+          constrvalues[j_second_id * 4].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -2027,9 +1989,12 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_id = SPBlock.selfsym[j].first;
           int j_x_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].width / 2;
           int bias = -i_first_x_center - i_second_x_center + j_x_center;
-          rowindices.insert(rowindices.end(), {i_first_id * 4, i_second_id * 4, j_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {0.5, 0.5, -1});
+          rowindofcol[i_first_id  * 4].push_back(rhs.size());
+          rowindofcol[i_second_id * 4].push_back(rhs.size());
+          rowindofcol[j_id * 4].push_back(rhs.size());
+          constrvalues[i_first_id  * 4].push_back(0.5);
+          constrvalues[i_second_id * 4].push_back(0.5);
+          constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -2044,9 +2009,10 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           int j_id = SPBlock.selfsym[j].first;
           int j_x_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].width / 2;
           int bias = -i_x_center + j_x_center;
-          rowindices.insert(rowindices.end(), {i_id * 4, j_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
+          rowindofcol[i_id * 4].push_back(rhs.size());
+          rowindofcol[j_id * 4].push_back(rhs.size());
+          constrvalues[i_id * 4].push_back(1);
+          constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
         }
@@ -2059,61 +2025,46 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     for (unsigned int j = 0; j < alignment_unit.blocks.size() - 1; j++) {
       int first_id = alignment_unit.blocks[j], second_id = alignment_unit.blocks[j + 1];
       if (alignment_unit.horizon == 1) {
-        if (alignment_unit.line == 0) {
-          // align to bottom
-          rowindices.insert(rowindices.end(), {first_id * 4 + 1, second_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(0);
-        } else if (alignment_unit.line == 1) {
+        rowindofcol[first_id  * 4 + 1].push_back(rhs.size());
+        rowindofcol[second_id * 4 + 1].push_back(rhs.size());
+        constrvalues[first_id  * 4 + 1].push_back(1);
+        constrvalues[second_id * 4 + 1].push_back(-1);
+        int bias{0};
+        if (alignment_unit.line == 1) {
           // align center y
-          int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
-          rowindices.insert(rowindices.end(), {first_id * 4 + 1, second_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(bias);
-        } else {
+          bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height / 2;
+        } else if (alignment_unit.line == 2) {
           // align to top
-          int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height;
-          rowindices.insert(rowindices.end(), {first_id * 4 + 1, second_id * 4 + 1});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(bias);
+          bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height;
         }
+        sens.push_back('E');
+        rhs.push_back(bias);
       } else {
-        if (alignment_unit.line == 0) {
-          // align to left
-          rowindices.insert(rowindices.end(), {first_id * 4, second_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(0);
-        } else if (alignment_unit.line == 1) {
+        rowindofcol[first_id  * 4].push_back(rhs.size());
+        rowindofcol[second_id * 4].push_back(rhs.size());
+        constrvalues[first_id  * 4].push_back(1);
+        constrvalues[second_id * 4].push_back(-1);
+        int bias{0};
+        if (alignment_unit.line == 1) {
           // align center x
-          int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
-          rowindices.insert(rowindices.end(), {first_id * 4, second_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(bias);
-        } else {
+          bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width / 2 + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width / 2;
+        } else if (alignment_unit.line == 2) {
           // align to right
-          int bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
-          rowindices.insert(rowindices.end(), {first_id * 4, second_id * 4});
-          rowstarts.push_back(rowindices.size());
-          constrvalues.insert(constrvalues.end(), {1, -1});
-          sens.push_back('E');
-          rhs.push_back(bias);
+          bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
         }
+        sens.push_back('E');
+        rhs.push_back(bias);
       }
     }
   }
 
+  ExtremeBlocksOfNet netExtremes(curr_sp, mydesign.Nets.size());
+  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+    netExtremes.FindExtremes(mydesign.Nets[i], i);
+  }
+
   // set_add_rowmode(lp, FALSE);
-  /*{
+  {
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -2134,49 +2085,68 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
           }
           double deltax = 1.*(blk.width  - pin_llx - pin_urx);
           double deltay = 1.*(blk.height - pin_lly - pin_ury);
-          {
-            rowindices.insert(rowindices.end(), {block_id * 4, block_id * 4 + 2, ind});
-            rowstarts.push_back(rowindices.size());
-            constrvalues.insert(constrvalues.end(), {1, deltax, -1});
+          if (netExtremes.InLeftExtreme(i, block_id)) {
+            rowindofcol[block_id * 4].push_back(rhs.size());
+            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+            rowindofcol[ind].push_back(rhs.size());
+            constrvalues[block_id * 4].push_back(1);
+            constrvalues[block_id * 4 + 2].push_back(deltax);
+            constrvalues[ind].push_back(-1);
             sens.push_back('G');
             rhs.push_back(-pin_llx);
           }
-          {
-            rowindices.insert(rowindices.end(), {block_id * 4 + 1, block_id * 4 + 3, ind + 1});
-            rowstarts.push_back(rowindices.size());
-            constrvalues.insert(constrvalues.end(), {1, deltay, -1});
+          if (netExtremes.InBottomExtreme(i, block_id)) {
+            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+            rowindofcol[ind + 1].push_back(rhs.size());
+            constrvalues[block_id * 4 + 1].push_back(1);
+            constrvalues[block_id * 4 + 3].push_back(deltay);
+            constrvalues[ind + 1].push_back(-1);
             sens.push_back('G');
             rhs.push_back(-pin_lly);
           }
-          {
-            rowindices.insert(rowindices.end(), {block_id * 4, block_id * 4 + 2, ind + 2});
-            rowstarts.push_back(rowindices.size());
-            constrvalues.insert(constrvalues.end(), {1, deltax, -1});
+          if (netExtremes.InRightExtreme(i, block_id)) {
+            rowindofcol[block_id * 4].push_back(rhs.size());
+            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+            rowindofcol[ind + 2].push_back(rhs.size());
+            constrvalues[block_id * 4].push_back(1);
+            constrvalues[block_id * 4 + 2].push_back(deltax);
+            constrvalues[ind + 2].push_back(-1);
             sens.push_back('L');
             rhs.push_back(-pin_urx);
           }
-          {
-            rowindices.insert(rowindices.end(), {block_id * 4 + 1, block_id * 4 + 3, ind + 3});
-            rowstarts.push_back(rowindices.size());
-            constrvalues.insert(constrvalues.end(), {1, deltay, -1});
+          if (netExtremes.InTopExtreme(i, block_id)) {
+            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+            rowindofcol[ind + 3].push_back(rhs.size());
+            constrvalues[block_id * 4 + 1].push_back(1);
+            constrvalues[block_id * 4 + 3].push_back(deltay);
+            constrvalues[ind + 3].push_back(-1);
             sens.push_back('L');
             rhs.push_back(-pin_ury);
           }
         }
       }
     }
-  }*/
+  }
   {
+    std::vector<int> starts, indices;
+    std::vector<double> values;
+    starts.push_back(0);
+    for (int i = 0; i < N_var; ++i) {
+      starts.push_back(starts.back() + rowindofcol[i].size());
+      //logger->info("starts {0} rowind size {1} conctr val {2}", starts.back(), rowindofcol[i].size(), constrvalues[i].size());
+      indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
+      values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
+    }
     sym_environment *env = sym_open_environment();
-    logger->info("row size : {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}", N_var, rhs.size(), rowstarts[0],
-        (*rowstarts.rbegin()), rowstarts.size(), rowindices.size(), constrvalues.size(), rowstarts[1], rowindices[0], rowindices[1], sens.size());
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), rowstarts.data(), rowindices.data(),
-        constrvalues.data(), collb.data(), colub.data(),
+    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+        values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
     sym_set_int_param(env, "verbosity", -2);
 
     //solve the integer program
-    static int write_cnt{0};
+    /*static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -2211,44 +2181,19 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       sym_set_col_names(env, names);
       sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
+    }*/
+    {
+      TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
+      sym_solve(env);
     }
-    int ret = sym_solve(env);
-    std::vector<double> var(N_var);
-    if (ret == FUNCTION_TERMINATED_NORMALLY) {
-      sym_get_col_solution(env, var.data());
-    }
-    sym_close_environment(env);
-    if (ret != FUNCTION_TERMINATED_NORMALLY) {
-      /*static int fail_cnt{0};
-      static std::string block_name;
-      if (block_name != mydesign.name) {
-        fail_cnt = 0;
-        block_name = mydesign.name;
-      }
-      if (fail_cnt < 10) {
-        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
-        curr_sp.PrintSeqPair();
-        std::string tmpstrpos, tmpstrneg;
-        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
-        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
-        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
-        logger->info("ILP fail {0}", fail_cnt);
-        curr_sp.PrintSeqPair(mydesign);
-        ++fail_cnt;
-      }*/
+    int status = sym_get_status(env);
+    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
+      sym_close_environment(env);
       return false;
     }
-    /*static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
-    }*/
+    std::vector<double> var(N_var);
+    sym_get_col_solution(env, var.data());
     int minx(INT_MAX), miny(INT_MAX);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = var.at(i * 4);
@@ -2258,6 +2203,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       Blocks[i].H_flip = var.at(i * 4 + 2);
       Blocks[i].V_flip = var.at(i * 4 + 3);
     }
+    sym_close_environment(env);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
       Blocks[i].y -= miny;
@@ -2349,32 +2295,38 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
 }
 
 double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
 
+  if (mydesign.Blocks.empty()) return -1;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  if (mydesign.leftAlign()) {
-  // frame and solve ILP to flush bottom/left
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
-  } else if (mydesign.rightAlign()) {
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+  if (mydesign.Blocks.size() == 1) {
+    Blocks[0].x = 0; Blocks[0].y = 0;
+    Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
   } else {
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
-    std::vector<Block> blockslocal{Blocks};
-    // frame and solve ILP to flush top/right
-    if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
-        || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
-      // if unable to solve flush top/right or if the solution changed significantly,
-      // use the bottom/left flush solution
-      Blocks = blockslocal;
+    if (mydesign.leftAlign()) {
+      // frame and solve ILP to flush bottom/left
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+    } else if (mydesign.rightAlign()) {
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+    } else {
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      std::vector<Block> blockslocal{Blocks};
+      // frame and solve ILP to flush top/right
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
+          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
+        // if unable to solve flush top/right or if the solution changed significantly,
+        // use the bottom/left flush solution
+        Blocks = blockslocal;
+      }
+    }
+    // snap up coordinates to grid
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      roundup(Blocks[i].x, x_pitch);
+      roundup(Blocks[i].y, y_pitch);
     }
   }
 
-  // snap up coordinates to grid
-  for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-    roundup(Blocks[i].x, x_pitch);
-    roundup(Blocks[i].y, y_pitch);
-  }
-
+  TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // calculate LL and UR
   LL.x = INT_MAX, LL.y = INT_MAX;
   UR.x = INT_MIN, UR.y = INT_MIN;
@@ -5202,4 +5154,3 @@ PnRDB::point ILP_solver::ConvertPointData(placerDB::point Pdata) {
   newPdata.y = Pdata.y;
   return newPdata;
 }
-

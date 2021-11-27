@@ -86,4 +86,18 @@ class ILP_solver {
   PnRDB::point ConvertPointData(placerDB::point Pdata);
 };
 
+class ExtremeBlocksOfNet {
+  private:
+    std::map<int, int> _posPosition, _negPosition;
+    std::vector<std::set<int>> _ltExtreme, _rtExtreme, _botExtreme, _topExtreme;
+  public:
+    ExtremeBlocksOfNet(const SeqPair& sp, const int N);
+    void FindExtremes(const placerDB::net& n, const int neti);
+    bool InLeftExtreme(const int neti, const int i) const { return _ltExtreme.size() > neti && _ltExtreme[neti].find(i) != _ltExtreme[neti].end(); }
+    bool InRightExtreme(const int neti, const int i) const { return _rtExtreme.size() > neti && _rtExtreme[neti].find(i) != _rtExtreme[neti].end(); }
+    bool InTopExtreme(const int neti, const int i) const { return _topExtreme.size() > neti && _topExtreme[neti].find(i) != _topExtreme[neti].end(); }
+    bool InBottomExtreme(const int neti, const int i) const { return _botExtreme.size() > neti && _botExtreme[neti].find(i) != _botExtreme[neti].end(); }
+
+};
+
 #endif
