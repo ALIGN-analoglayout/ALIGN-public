@@ -1230,7 +1230,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
-    if (Blocks.size() <= 10) {
+    if (useRightHPWL) {
       int ind = int(mydesign.Blocks.size() * 4 + i * 4 + 1);
       row.at(ind) = -const_graph.LAMBDA;
       row.at(ind + 1) = -const_graph.LAMBDA;
