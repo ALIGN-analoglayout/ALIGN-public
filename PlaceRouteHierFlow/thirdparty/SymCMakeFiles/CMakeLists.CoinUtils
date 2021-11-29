@@ -264,41 +264,8 @@ if (NOT WIN32 OR MINGW)
 endif ()
 target_include_directories(libCoinUtils BEFORE PRIVATE ${CMAKE_BINARY_DIR}/CoinUtils/include)
 
-if (COINUTILS_ENABLE_UNITTEST)
-  add_executable(unitTest-coinutils ${CoinUtilsTest_SRC_LIST})
-  target_link_libraries(unitTest-coinutils libCoinUtils)
-  target_include_directories(unitTest-coinutils BEFORE PRIVATE ${CMAKE_BINARY_DIR}/CoinUtils/include)
-  if (COIN_COMPILE_LTO)
-    set_target_properties(unitTest-coinutils PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
-  endif ()
-  if (COINUTILS_HAS_ZLIB)
-    target_link_libraries(unitTest-coinutils ${ZLIB_NAME})
-  endif ()
-  if (COINUTILS_HAS_BZLIB)
-    target_link_libraries(unitTest-coinutils ${BZLIB_NAME})
-  endif ()
-  if (COINUTILS_USE_THREADS)
-    if (MINGW)
-      target_link_libraries(unitTest-coinutils winpthread)
-    elseif (NOT WIN32)
-      target_link_libraries(unitTest-coinutils pthread)
-    else ()
-      target_link_libraries(unitTest-coinutils pthreadVC2)
-    endif ()
-  endif ()
-  
-  set(TEST_LIB_PATH "${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/lib")
-  set(TEST_BIN_PATH "${CMAKE_BINARY_DIR}/Dependencies/${CMAKE_CFG_INTDIR}/bin")
-  
-  add_test(NAME unitTest_coinutils
-           COMMAND $<TARGET_FILE:unitTest-coinutils> -mpsDir=${CMAKE_CURRENT_SOURCE_DIR}/../Data/Sample)
-  set_tests_properties(unitTest_coinutils PROPERTIES TIMEOUT 30)
-  if (WIN32)
-    set_tests_properties(unitTest_coinutils PROPERTIES ENVIRONMENT "PATH=${TEST_LIB_DIR}\\;${TEST_BIN_PATH}")
-  endif ()
-endif ()
-
 install(TARGETS libCoinUtils 
+        CONFIGURATIONS Release
         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
