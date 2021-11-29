@@ -260,12 +260,6 @@ set(EXAMPLES_SRC ${SYMPHONY_DIR}/Examples/bicriteria.c
                  ${SYMPHONY_DIR}/Examples/warm_start2.c
                  ${SYMPHONY_DIR}/Examples/warm_start3.c)
 
-set(OSISYM_SRC ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.cpp
-               ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.cpp)
-
-set(OSISYM_Headers ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.hpp
-                   ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverParameters.hpp
-                   ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.hpp)
 
 set(BB_SRC ${MASTER_SRC}
            ${DG_SRC}
@@ -385,22 +379,17 @@ set_source_files_properties(${ALL_SYM_MASTER} PROPERTIES LANGUAGE CXX)
 
 if (ENABLE_SHARED_LIBRARIES)
   add_library(libSym    SHARED ${ALL_SYM_MASTER})
-#  add_library(libOsiSym SHARED ${OSISYM_SRC})
 else ()
   add_library(libSym    STATIC ${ALL_SYM_MASTER})
-  add_library(libOsiSym STATIC ${OSISYM_SRC})
 endif ()
 if (COIN_COMPILE_LTO)
   set_target_properties(libSym PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
-#  set_target_properties(libOsiSym PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
 endif ()
 if (NOT WIN32)
   set_target_properties(libSym PROPERTIES PREFIX "")
-#  set_target_properties(libOsiSym PROPERTIES PREFIX "")
 endif ()
 
 set_include_directories(libSym)
-#set_include_directories(libOsiSym)
 
 macro(add_example Name)
   add_executable(${Name} ${ARGN})
@@ -557,15 +546,7 @@ install(TARGETS libSym
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
 
-#install(TARGETS libOsiSym
-#        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-#        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-#        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
-
 install(FILES ${Symphony_SRC_LIST_Headers} 
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
-
-install(FILES ${OSISYM_Headers} 
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
 
 # Perform some tests
