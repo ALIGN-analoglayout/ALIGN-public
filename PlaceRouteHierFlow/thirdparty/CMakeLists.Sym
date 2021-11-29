@@ -1166,4 +1166,4 @@ message(STATUS "${color_cyan}C flags:${color_reset}                 ${CMAKE_C_FL
 message(STATUS "${color_cyan}C++ flags:${color_reset}               ${CMAKE_CXX_FLAGS}")
 
 install(TARGETS libSym libCgl libClp libOsi libCoinUtils libOsiClp libOsiSym EXPORT LibraryExport
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/align/thirdparty)
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/align)
