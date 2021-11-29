@@ -2143,7 +2143,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
     sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", 0);
+    sym_set_int_param(env, "verbosity", -2);
 
     //solve the integer program
     /*static int write_cnt{0};
@@ -2152,7 +2152,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       write_cnt = 0;
       block_name = mydesign.name;
     }
-    if (write_cnt < 100) {
+    if (write_cnt < 10) {
       char* names[N_var];
       std::vector<std::string> namesvec(N_var);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
