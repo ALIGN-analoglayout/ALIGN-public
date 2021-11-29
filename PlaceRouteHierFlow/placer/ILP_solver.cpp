@@ -1695,14 +1695,18 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   get_variables(lp, var.data());
   delete_lp(lp);
 
+  auto roundupint = [](const double x) -> int {
+    int ix = int(x);
+    return (((x-ix) > 0.5) ? (ix + 1) : ix);
+  };
   int minx(INT_MAX), miny(INT_MAX);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    Blocks[i].x = var.at(i * 4);
-    Blocks[i].y = var.at(i * 4 + 1);
+    Blocks[i].x = roundupint(var.at(i * 4));
+    Blocks[i].y = roundupint(var.at(i * 4 + 1));
     minx = std::min(minx, Blocks[i].x);
     miny = std::min(miny, Blocks[i].y);
-    Blocks[i].H_flip = var.at(i * 4 + 2);
-    Blocks[i].V_flip = var.at(i * 4 + 3);
+    Blocks[i].H_flip = (var.at(i * 4 + 2) > 0.5) ? 1 : 0;
+    Blocks[i].V_flip = (var.at(i * 4 + 3) > 0.5) ? 1 : 0;
   }
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x -= minx;
