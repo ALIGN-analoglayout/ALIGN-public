@@ -1647,7 +1647,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
   y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 4;
+  unsigned int N_var = (mydesign.Blocks.size() + mydesign.Nets.size()) * 4 + 2;
   // i*4:x
   // i*4+1:y
   // i*4+2:H_flip
@@ -1697,6 +1697,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         collb[ind + j] = -sym_get_infinity(); colub[ind + j] = 0;
       }
     }
+    collb[N_var - 1] = -sym_get_infinity(); colub[N_var - 1] = 0;
+    collb[N_var - 2] = -sym_get_infinity(); colub[N_var - 2] = 0;
   }
 
   ConstGraph const_graph;
@@ -1717,21 +1719,18 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
     }
   }
-  // add estimated area
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-    objective.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_width : -estimated_width) / 2);
-  }
   // estimate height
   for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
     if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
       estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
     }
   }
-  // add estimated area
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-    objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
+  if (flushbl) {
+    objective.at(N_var - 1) = estimated_width;
+    objective.at(N_var - 2) = estimated_height;
+  } else {
+    objective.at(N_var - 1) = -estimated_width;
+    objective.at(N_var - 2) = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -1750,6 +1749,31 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
 
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    {
+      rowindofcol[i * 4].push_back(rhs.size());
+      rowindofcol[N_var - 2].push_back(rhs.size());
+      constrvalues[i * 4].push_back(1);
+      constrvalues[N_var - 2].push_back(-1);
+      if (flushbl) {
+        sens.push_back('L');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width);
+      } else {
+        sens.push_back('G');
+        rhs.push_back(0);
+      }
+
+      rowindofcol[i * 4 + 1].push_back(rhs.size());
+      rowindofcol[N_var - 1].push_back(rhs.size());
+      constrvalues[i * 4 + 1].push_back(1);
+      constrvalues[N_var - 1].push_back(-1);
+      if (flushbl) {
+        sens.push_back('L');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height);
+      } else {
+        sens.push_back('G');
+        rhs.push_back(0);
+      }
+    }
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
     int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), i) - curr_sp.negPair.begin();
     for (unsigned int j = i + 1; j < mydesign.Blocks.size(); j++) {
@@ -2180,6 +2204,15 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
+      if (flushbl) {
+        namesvec[N_var - 2] = mydesign.name + "_area_ur_x\0";
+        namesvec[N_var - 1] = mydesign.name + "_area_ur_y\0";
+      } else {
+        namesvec[N_var - 2] = mydesign.name + "_area_ll_x\0";
+        namesvec[N_var - 1] = mydesign.name + "_area_ll_y\0";
+      }
+      names[N_var - 2] = &(namesvec[N_var - 2][0]);
+      names[N_var - 1] = &(namesvec[N_var - 1][0]);
       sym_set_col_names(env, names);
       sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
@@ -2189,18 +2222,17 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       sym_solve(env);
     }
     int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    if (status != TM_OPTIMAL_SOLUTION_FOUND) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       sym_close_environment(env);
+      env = nullptr;
       return false;
     }
     std::vector<double> var(N_var, 0.);
     sym_get_col_solution(env, var.data());
     sym_close_environment(env);
+    env = nullptr;
     int minx(INT_MAX), miny(INT_MAX);
-    for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
-      area_ilp += (objective[i] * var[i]);
-    }
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
@@ -2213,6 +2245,7 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       Blocks[i].x -= minx;
       Blocks[i].y -= miny;
     }
+    area_ilp = (objective[N_var - 1] * var[N_var - 1] + objective[N_var -2] * var[N_var -2]);
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
@@ -2500,8 +2533,8 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
   if (cost >= 0.) {
-    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    logger->debug("ILP__HPWL_compare : name={0} HPWL_extend={1} HPWL_ILP={2}", mydesign.name, HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare : name={0} area={1} area_ilp={2}", mydesign.name, area, area_ilp);
   }
   return calculated_cost;
 }
