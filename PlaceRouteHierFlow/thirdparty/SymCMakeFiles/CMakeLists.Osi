@@ -100,9 +100,9 @@ install(TARGETS libOsi
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
 
 
-install(FILES ${CMAKE_BINARY_DIR}/Osi/include/config_osi.h
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin
-        RENAME OsiConfig.h)
-
-install(FILES ${CMAKE_BINARY_DIR}/Osi/include/config_osi.h
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+#install(FILES ${CMAKE_BINARY_DIR}/Osi/include/config_osi.h
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin
+#        RENAME OsiConfig.h)
+#
+#install(FILES ${CMAKE_BINARY_DIR}/Osi/include/config_osi.h
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)

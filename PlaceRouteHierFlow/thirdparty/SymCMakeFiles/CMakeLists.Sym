@@ -461,80 +461,6 @@ endmacro ()
 
 add_example(symphony ${MAIN_SRC})
 
-if (NOT SYM_COMPILE_IN_LP)
-  set_source_files_properties(${ALL_LP} PROPERTIES LANGUAGE CXX)
-  
-  if (ENABLE_SHARED_LIBRARIES)
-    add_library(libSym_lp SHARED ${ALL_LP})
-  else ()
-    add_library(libSym_lp STATIC ${ALL_LP})
-  endif ()
-  if (COIN_COMPILE_LTO)
-    set_target_properties(libSym_lp PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
-  endif ()
-  
-  set_include_directories(libSym_lp)
-
-  add_example(symphony_lp ${MAIN_SRC})
-
-  install(TARGETS symphony_lp
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
-  install(TARGETS libSym_lp
-          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
-endif ()
-
-if (NOT SYM_COMPILE_IN_CG)
-  set_source_files_properties(${ALL_CG} PROPERTIES LANGUAGE CXX)
-  
-  if (ENABLE_SHARED_LIBRARIES)
-    add_library(libSym_cg SHARED ${ALL_CG})
-  else ()
-    add_library(libSym_cg STATIC ${ALL_CG})
-  endif ()
-  if (COIN_COMPILE_LTO)
-    set_target_properties(libSym_cg PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
-  endif ()
-  
-  set_include_directories(libSym_cg)
-
-  add_example(symphony_cg ${MAIN_SRC})
-  
-  install(TARGETS symphony_cg
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
-  install(TARGETS libSym_cg
-          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
-endif ()
-
-if (NOT SYM_COMPILE_IN_CP)
-  set_source_files_properties(${ALL_CP} PROPERTIES LANGUAGE CXX)
-  
-  if (ENABLE_SHARED_LIBRARIES)
-    add_library(libSym_cp SHARED ${ALL_CP})
-  else ()
-    add_library(libSym_cp STATIC ${ALL_CP})
-  endif ()
-  if (COIN_COMPILE_LTO)
-    set_target_properties(libSym_cp PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
-  endif ()
-  
-  set_include_directories(libSym_cp)
-
-  add_example(symphony_cp ${MAIN_SRC})
-  
-  install(TARGETS symphony_cp
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
-  install(TARGETS libSym_cp
-          RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-          LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-          ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
-endif ()
 
 install(TARGETS symphony
         CONFIGURATIONS Release
@@ -546,7 +472,7 @@ install(TARGETS libSym
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
 
-install(FILES ${Symphony_SRC_LIST_Headers} 
+install(FILES  ${SYMPHONY_DIR}/include/symphony.h
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
 
 # Perform some tests

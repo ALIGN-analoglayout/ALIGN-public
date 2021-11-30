@@ -270,12 +270,12 @@ install(TARGETS libCoinUtils
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
 
-install(FILES ${Coin_SRC_Headers} 
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
-
-install(FILES ${CMAKE_BINARY_DIR}/CoinUtils/include/config_coinutils.h
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin
-        RENAME CoinUtilsConfig.h)
-
-install(FILES ${CMAKE_BINARY_DIR}/CoinUtils/include/config_coinutils.h
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+#install(FILES ${Coin_SRC_Headers} 
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+#
+#install(FILES ${CMAKE_BINARY_DIR}/CoinUtils/include/config_coinutils.h
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin
+#        RENAME CoinUtilsConfig.h)
+#
+#install(FILES ${CMAKE_BINARY_DIR}/CoinUtils/include/config_coinutils.h
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)

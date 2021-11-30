@@ -60,5 +60,5 @@ install(TARGETS libOsiSym
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/static)
 
-install(FILES ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.hpp ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverParameters.hpp  ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.hpp
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)
+#install(FILES ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverInterface.hpp ${SYMPHONY_DIR}/src/OsiSym/OsiSymSolverParameters.hpp  ${SYMPHONY_DIR}/src/OsiSym/SymWarmStart.hpp
+#        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/coin)

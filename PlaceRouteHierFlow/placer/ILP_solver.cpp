@@ -1604,12 +1604,12 @@ bool ILP_solver::FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_s
 
     int minx(INT_MAX), miny(INT_MAX);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = var.at(i * 4);
-      Blocks[i].y = var.at(i * 4 + 1);
+      Blocks[i].x = roundupint(var.at(i * 4));
+      Blocks[i].y = roundupint(var.at(i * 4 + 1));
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = var.at(i * 4 + 2);
-      Blocks[i].V_flip = var.at(i * 4 + 3);
+      Blocks[i].H_flip = roundupint(var.at(i * 4 + 2));
+      Blocks[i].V_flip = roundupint(var.at(i * 4 + 3));
     }
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
@@ -2129,6 +2129,8 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       }
     }
   }
+  area_ilp = 0.;
+  HPWL_ILP = 0.;
   {
     std::vector<int> starts, indices;
     std::vector<double> values;
@@ -2192,33 +2194,32 @@ bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, c
       sym_close_environment(env);
       return false;
     }
-    double var[N_var];
-    sym_get_col_solution(env, var);
+    std::vector<double> var(N_var, 0.);
+    sym_get_col_solution(env, var.data());
+    sym_close_environment(env);
     int minx(INT_MAX), miny(INT_MAX);
-    auto roundupint = [](const double x) -> int {
-      int ix = int(x);
-      return (((x-ix) > 0.5) ? (ix + 1) : ix);
-    };
+    for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
+      area_ilp += (objective[i] * var[i]);
+    }
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = (var[i * 4 + 2] > 0.5) ? 1 : 0;
-      Blocks[i].V_flip = (var[i * 4 + 3] > 0.5) ? 1 : 0;
+      Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
+      Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     }
-    sym_close_environment(env);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
       Blocks[i].y -= miny;
     }
     // calculate HPWL from ILP solution
-    HPWL_ILP = 0.;
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) * 4 + i * 2);
-      HPWL_ILP += (var[ind + 1] + var[ind]);
+      int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
+
   return true;
 }
 
@@ -2306,6 +2307,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (mydesign.Blocks.size() == 1) {
     Blocks[0].x = 0; Blocks[0].y = 0;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
+    area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
@@ -2499,6 +2501,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   cost = calculated_cost;
   if (cost >= 0.) {
     logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
   }
   return calculated_cost;
 }

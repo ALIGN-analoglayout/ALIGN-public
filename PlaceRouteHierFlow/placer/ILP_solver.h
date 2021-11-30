@@ -43,7 +43,7 @@ class ILP_solver {
   };
   vector<Block> Blocks;
   placerDB::point LL, UR;
-  double area = 0, HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
+  double area = 0, area_ilp = 0., HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
@@ -53,6 +53,10 @@ class ILP_solver {
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
 
+  int roundupint (const double& x) const {
+    int ix = int(x);
+    return ((fabs(x-ix) > 0.5) ? ((ix < 0) ? ix - 1 : ix + 1) : ix);
+  };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
   bool FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
