@@ -103,23 +103,23 @@ class CapGenerator(DefaultCanvas):
             pin = 'PLUS' if i == 0 else None
             if i == 0:
                 netType = 'pin'
-                pin_ext = 3
+                pin_ext = 0   ## make it 3 to extend pins
             else:
                 netType = 'drawing'
                 pin_ext = 0
             self.addWire( self.m2n, net, i, (grid_x0-pin_ext, -1), (grid_x1+pin_ext, 1), netType = netType)
 
         pin = 'MINUS'
-        self.addWire( self.m2, 'MINUS', last_y1_track, (grid_x0-3, -1), (grid_x1+3, 1), netType = 'pin')
+        self.addWire( self.m2, 'MINUS', last_y1_track, (grid_x0, -1), (grid_x1, 1), netType = 'pin')
 
         self.addRegion( self.boundary, 'Boundary', -4, -2,
                         last_x1_track+4,
                         last_y1_track+2)
 
         self.addRegion( self.Cboundary, 'Cboundary',
-                            -1, -1,
-                            last_x1_track+1,
-                            last_y1_track+1)
+                            0, 1,
+                            last_x1_track,
+                            last_y1_track-1)
 
         logger.debug( f"Computed Boundary: {self.terminals[-1]} {self.terminals[-1]['rect'][2]} {self.terminals[-1]['rect'][2]%80}")
 
