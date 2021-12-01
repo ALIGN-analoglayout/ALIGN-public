@@ -20,20 +20,18 @@ set(sources
      Preadfile.cpp
      design.cpp)
 
+ExternalProject_Get_Property(symphony binary_dir)
+ExternalProject_Get_Property(symphony source_dir)
+include_directories(${source_dir}/SYMPHONY/include)
 add_library(placer STATIC ${sources} ${headers})
 
 target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
      lpsolve::lpsolve55
-     Sym::Sym
-     Osi::Osi
-     Clp::Clp
-     Cgl::Cgl
-     CoinUtils::CoinUtils
-     OsiClp::OsiClp
-     OsiSym::OsiSym
      Boost::boost
      nlohmann_json::nlohmann_json
-)
+     ${symphony_LIBRARIES}
+     )
+
 target_code_coverage(placer)
