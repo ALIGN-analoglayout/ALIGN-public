@@ -1,0 +1,13 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VPS"]},
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "GroupBlocks", "instances": ["C0", "C1"],   "name": "caps_adder2"},
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["X00", "caps_adder2"]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["X00"], ["caps_adder2"]]
+    }
+]

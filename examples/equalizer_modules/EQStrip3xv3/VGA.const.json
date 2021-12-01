@@ -1,0 +1,48 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VPS"]},
+    {"constraint": "GroundPorts", "ports": ["VGND"]},
+    {"constraint": "GroupBlocks", "instances": ["MDP00", "MDP10"],   "name": "dp_vga1"},
+    {"constraint": "GroupBlocks", "instances": ["MDP20", "MDP30"],   "name": "dp_vga2"},
+    {"constraint": "GroupBlocks", "instances": ["MDP40", "MDP50"],   "name": "dp_vga3"},
+    {"constraint": "GroupBlocks", "instances": ["MCM00", "MCM10", "MCM20", "MCM30"],   "name": "cmb_vga"},
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["R5", "R6"], ["dp_vga2"], ["cmb_vga"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp_vga1"], ["MSW0"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp_vga2"], ["MSW1"]]
+    },
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["dp_vga3"], ["MSW2"]]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["dp_vga1", "dp_vga2", "dp_vga3"]
+    },
+    {"constraint": "align",
+        "line" : "h_bottom",
+        "instances": ["MSW0", "MSW1", "MSW2"]
+    },
+    {"constraint": "Order",
+        "direction" : "left_to_right",
+        "instances": ["dp_vga1", "dp_vga2", "dp_vga3"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp_vga1", "MSW0"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp_vga2", "MSW1"]
+    },
+    {"constraint": "Order",
+        "direction" : "top_to_bottom",
+        "instances": ["dp_vga3", "MSW2"]
+    }
+]

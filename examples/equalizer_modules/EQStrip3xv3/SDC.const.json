@@ -1,0 +1,16 @@
+[
+    {"constraint": "SymmetricBlocks",
+        "direction" : "V",
+        "pairs": [["R0","R1"], ["M00"], ["R2"], ["C0", "C1"]]
+    },
+	{"constraint": "align",
+		"line" : "h_bottom",
+		"instances": ["C0", "R2", "C1"]
+	},
+	{"constraint": "Order",
+		"direction" : "top_to_bottom",
+		"instances": ["M00", "R2"]
+	},
+    {"constraint": "PowerPorts", "ports": ["VPS"]},
+    {"constraint": "GroundPorts", "ports": ["VGND"]}
+]
