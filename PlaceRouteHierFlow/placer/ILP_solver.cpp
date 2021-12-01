@@ -419,8 +419,9 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
   int a = 1;
 }
 
-ILP_solver::ILP_solver(design& mydesign) {
+ILP_solver::ILP_solver(design& mydesign, int ilps) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.ILP_solver");
+  use_ilp_solver = ilps;
   LL.x = INT_MAX;
   LL.y = INT_MAX;
   UR.x = INT_MIN;
@@ -447,6 +448,7 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   linear_const = solver.linear_const;
   multi_linear_const = solver.multi_linear_const;
   Aspect_Ratio_weight = solver.Aspect_Ratio_weight;
+  use_ilp_solver = solver.use_ilp_solver;
   memcpy(Aspect_Ratio, solver.Aspect_Ratio, sizeof(solver.Aspect_Ratio));
   memcpy(placement_box, solver.placement_box, sizeof(solver.placement_box));
 }
@@ -1094,7 +1096,7 @@ class TimeMeasure {
     }
 };
 
-bool ILP_solver::FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPOrig");
 
   int v_metal_index = -1;
@@ -1625,7 +1627,7 @@ bool ILP_solver::FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_s
   return true;
 }
 
-bool ILP_solver::FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 

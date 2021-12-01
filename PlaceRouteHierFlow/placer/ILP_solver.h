@@ -52,6 +52,8 @@ class ILP_solver {
   static void lpsolve_logger(lprec* lp, void* userhandle, char* buf);
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
+  enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE};
+  int use_ilp_solver = SYMPHONY;
 
   int roundupint (const double& x) const {
     int ix = int(x);
@@ -59,14 +61,19 @@ class ILP_solver {
   };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
-  bool FrameSolveILPOrig(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
-  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr);
+  bool FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
+  {
+    if (use_ilp_solver == SYMPHONY) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
+  }
   public:
   double cost = 0;
   double constraint_penalty = 0;
   ILP_solver();
   ILP_solver(design& mydesign, PnRDB::hierNode& node);
-  ILP_solver(design& mydesign);
+  ILP_solver(design& mydesign, int ilps = SYMPHONY);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
