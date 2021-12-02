@@ -5,6 +5,7 @@ __all__ = [
     'NamedTuple', 'Literal',
     'ClassVar', 'PrivateAttr'
 ]
+
 # Pass through directly from typing
 from typing import \
     Optional, \
@@ -197,6 +198,21 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
             assert name in self._commits
             self._revert()
             self.revert(name)
+
+    def _translate_and_annotate(self, item, solver):
+        generator = item.translate(solver)
+        if generator is None:
+            raise NotImplementedError(f'{item}.translate() did not return a valid generator')
+        assert solver is not None
+        formulae = list(generator)
+        if len(formulae) == 0:
+            raise NotImplementedError(f'{item}.translate() yielded an empty list of expressions')
+        yield from solver.annotate(formulae, solver.label(item))
+
+    def translate(self, solver):
+        for item in self:
+            if hasattr(item, 'translate'):
+                yield from self._translate_and_annotate(item, solver)
 
 
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):

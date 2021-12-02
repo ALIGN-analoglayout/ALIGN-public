@@ -1,14 +1,14 @@
 import abc
 import more_itertools as itertools
 import re
+import logging
+
 
 from . import types
 from .types import Union, Optional, Literal, List, set_context
-from . import checker
 
-import logging
+
 logger = logging.getLogger(__name__)
-
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -31,7 +31,7 @@ def validate_instances(cls, value):
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
     assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
-    return value
+    return [x.upper() for x in value]
 
 
 class SoftConstraint(types.BaseModel):
@@ -52,14 +52,14 @@ class SoftConstraint(types.BaseModel):
 class HardConstraint(SoftConstraint, abc.ABC):
 
     @abc.abstractmethod
-    def check(self, checker):
+    def translate(self, solver):
         '''
         Abstract Method for built in self-checks
           Every class that inherits from HardConstraint
           MUST implement this function.
 
         Function must yield a list of mathematical
-          expressions supported by the 'checker'
+          expressions supported by the 'solver'
           backend. This can be done using multiple
           'yield' statements or returning an iterable
           object such as list
@@ -80,32 +80,44 @@ class UserConstraint(HardConstraint, abc.ABC):
         '''
         pass
 
-    def check(self, checker):
+    def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.check(checker)
+            yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
     '''
-    All `instances` will be ordered along `direction`
+    Defines a placement order for instances in a subcircuit.
+
+    Args:
+        instances (list[str]): List of :obj:`instances`
+        direction (str, optional): The following options for direction are supported
+
+            :obj:`'horizontal'`, placement order is left to right or vice-versa.
+
+            :obj:`'vertical'`,  placement order is bottom to top or vice-versa.
+
+            :obj:`'left_to_right'`, placement order is left to right.
+
+            :obj:`'right_to_left'`, placement order is right to left.
+
+            :obj:`'bottom_to_top'`, placement order is bottom to top.
+
+            :obj:`'top_to_bottom'`, placement order is top to bottom.
+
+            :obj:`None`: default (:obj:`'horizontal'` or :obj:`'vertical'`)
+        abut (bool, optional): If `abut` is `True` adjoining instances will touch
+
+    .. image:: ../images/OrderBlocks.PNG
+        :align: center
 
     WARNING: `Order` does not imply aligment / overlap
     of any sort (See `Align`)
 
-    The following `direction` values are supported:
-    > `None` : default (`'horizontal'` or `'vertical'`)
+    Example: ::
 
-    > `'horizontal'`: left to right or vice-versa
+        {"constraint":"Order", "direction": "left_to_right"}
 
-    > `'vertical'`: bottom to top or vice-versa
-
-    > `'left_to_right'`
-    > `'right_to_left'`
-    > `'bottom_to_top'`
-    > `'top_to_bottom'`
-
-    If `abut` is `True`:
-    > adjoining instances will touch
     '''
     instances: List[str]
     direction: Optional[Literal[
@@ -120,7 +132,7 @@ class Order(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
+    def translate(self, solver):
 
         def cc(b1, b2, c='x'):  # Create coordinate constraint
             if self.abut:
@@ -128,7 +140,7 @@ class Order(HardConstraint):
             else:
                 return getattr(b1, f'ur{c}') <= getattr(b2, f'll{c}')
 
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'left_to_right':
                 yield cc(b1, b2, 'x')
@@ -139,15 +151,15 @@ class Order(HardConstraint):
             elif self.direction == 'top_to_bottom':
                 yield cc(b2, b1, 'y')
             elif self.direction == 'horizontal':
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b2, b1, 'x'))
             elif self.direction == 'vertical':
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'y'),
                     cc(b2, b1, 'y'))
             else:
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b2, b1, 'x'),
                     cc(b1, b2, 'y'),
@@ -156,26 +168,41 @@ class Order(HardConstraint):
 
 class Align(HardConstraint):
     '''
-    `instances` will be aligned along `line`. Could be
+    `Instances` will be aligned along `line`. Could be
     strict or relaxed depending on value of `line`
+
+    Args:
+        instances (list[str]): List of `instances`
+        line (str, optional): The following `line` values are currently supported:
+
+            :obj:`h_any`, align instance's top, bottom or anything in between.
+
+            :obj:`'v_any'`, align instance's left, right or anything in between.
+
+            :obj:`'h_top'`, align instance's horizontally based on top.
+
+            :obj:`'h_bottom'`, align instance's horizomtally based on bottom.
+
+            :obj:`'h_center'`, align instance's horizontally based on center.
+
+            :obj:`'v_left'`, align instance's vertically based on left.
+
+            :obj:`'v_right'`, align instance's vertically based on right.
+
+            :obj:`'v_center'`, align instance's vertically based on center.
+
+            :obj:`None`:default (:obj:`'h_any'` or :obj:`'v_any'`).
+
+    .. image:: ../images/AlignBlocks.PNG
+        :align: center
 
     WARNING: `Align` does not imply ordering of any sort
     (See `Order`)
 
-    The following `line` values are currently supported:
-    > `None` : default (`'h_any'` or `'v_any'`)
+    Example: ::
 
-    > `'h_any'`: top, bottom or anything in between
+        {"constraint":"Align", "line": "v_center"}
 
-    > `'v_any'`: left, right or anything in between
-
-    > `'h_top'`
-    > `'h_bottom'`
-    > `'h_center'`
-
-    > `'v_left'`
-    > `'v_right'`
-    > `'v_center'`
     '''
     instances: List[str]
     line: Optional[Literal[
@@ -190,8 +217,8 @@ class Align(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
-        bvars = checker.iter_bbox_vars(self.instances)
+    def translate(self, solver):
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.line == 'h_top':
                 yield b1.ury == b2.ury
@@ -200,9 +227,9 @@ class Align(HardConstraint):
             elif self.line == 'h_center':
                 yield (b1.lly + b1.ury) / 2 == (b2.lly + b2.ury) / 2
             elif self.line == 'h_any':
-                yield checker.Or(  # We don't know which bbox is higher yet
-                    checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                    checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                yield solver.Or(  # We don't know which bbox is higher yet
+                    solver.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                    solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
             elif self.line == 'v_left':
                 yield b1.llx == b2.llx
@@ -211,16 +238,16 @@ class Align(HardConstraint):
             elif self.line == 'v_center':
                 yield (b1.llx + b1.urx) / 2 == (b2.llx + b2.urx) / 2
             elif self.line == 'v_any':
-                yield checker.Or(  # We don't know which bbox is wider yet
-                    checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                    checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
+                yield solver.Or(  # We don't know which bbox is wider yet
+                    solver.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                    solver.And(b2.urx <= b1.urx, b2.llx >= b1.llx)
                 )
             else:
-                yield checker.Or(  # h_any OR v_any
-                    checker.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
-                    checker.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
-                    checker.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
-                    checker.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
+                yield solver.Or(  # h_any OR v_any
+                    solver.And(b1.urx <= b2.urx, b1.llx >= b2.llx),
+                    solver.And(b2.urx <= b1.urx, b2.llx >= b1.llx),
+                    solver.And(b1.lly >= b2.lly, b1.ury <= b2.ury),
+                    solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
 
 
@@ -229,18 +256,22 @@ class Enclose(HardConstraint):
     Enclose `instances` within a flexible bounding box
     with `min_` & `max_` bounds
 
+    Args:
+        instances (list[str], optional): List of `instances`
+        min_height (int, optional):  assign minimum height to the subcircuit
+        max_height (int, optional):  assign maximum height to the subcircuit
+        min_width (int, optional):  assign minimum width to the subcircuit
+        max_width (int, optional):  assign maximum width to the subcircuit
+        min_aspect_ratio (float, optional):  assign minimum aspect ratio to the subcircuit
+        max_aspect_ratio (float, optional):  assign maximum aspect ratio to the subcircuit
+
     Note: Specifying any one of the following variables
     makes it a valid constraint but you may wish to
     specify more than one for practical purposes
 
-    > `min_height`
-    > `max_height`
+    Example: ::
 
-    > `min_width`
-    > `max_width`
-
-    > `min_aspect_ratio`
-    > `max_aspect_ratio`
+        {"constraint":"Enclose", "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
     '''
     instances: Optional[List[str]]
     min_height: Optional[int]
@@ -266,8 +297,8 @@ class Enclose(HardConstraint):
         ), 'Too many optional fields'
         return value
 
-    def check(self, checker):
-        bb = checker.bbox_vars(checker.label(self))
+    def translate(self, solver):
+        bb = solver.bbox_vars(solver.label(self))
         if self.min_width:
             yield bb.urx - bb.llx >= self.min_width
         if self.min_height:
@@ -277,14 +308,14 @@ class Enclose(HardConstraint):
         if self.max_height:
             yield bb.ury - bb.lly <= self.max_height
         if self.min_aspect_ratio:
-            yield checker.cast(
+            yield solver.cast(
                 (bb.ury - bb.lly) / (bb.urx - bb.llx),
                 float) >= self.min_aspect_ratio
         if self.max_aspect_ratio:
-            yield checker.cast(
+            yield solver.cast(
                 (bb.ury - bb.lly) / (bb.urx - bb.llx),
                 float) <= self.max_aspect_ratio
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b in bvars:
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
@@ -297,14 +328,23 @@ class Spread(HardConstraint):
     Spread `instances` by forcing minimum spacing along
     `direction` if two instances overlap in other direction
 
+    Args:
+        instances (list[str]): List of `instances`
+        direction (str, optional): Direction for placement spread.
+            (:obj:`'horizontal'` or :obj:`'vertical'` or :obj:`None`)
+        distance (int): Distance in nanometer
+
     WARNING: This constraint checks for overlap but
     doesn't enforce it (See `Align`)
 
-    The following `direction` values are supported:
-    > `None` : default (`'horizontal'` or `'vertical'`)
+    Example: ::
 
-    > `'horizontal'`
-    > `'vertical'`
+        {
+            "constraint": "Spread",
+            "instances": ['MN0', 'MN1', 'MN2'],
+            "direction": horizontal,
+            "distance": 100
+        }
     '''
 
     instances: List[str]
@@ -316,16 +356,16 @@ class Spread(HardConstraint):
         assert len(value) >= 2, 'Must contain at least two instances'
         return validate_instances(cls, value)
 
-    def check(self, checker):
+    def translate(self, solver):
 
         def cc(b1, b2, c='x'):
             d = 'y' if c == 'x' else 'x'
-            return checker.Implies(
-                checker.And(  # overlap orthogonal to c
+            return solver.Implies(
+                solver.And(  # overlap orthogonal to c
                     getattr(b1, f'ur{d}') > getattr(b2, f'll{d}'),
                     getattr(b2, f'ur{d}') > getattr(b1, f'll{d}'),
                 ),
-                checker.Abs(  # distance in c coords
+                solver.Abs(  # distance in c coords
                     (
                         getattr(b1, f'll{c}')
                         + getattr(b1, f'ur{c}')
@@ -336,26 +376,25 @@ class Spread(HardConstraint):
                 ) >= self.distance * 2
             )
 
-        bvars = checker.iter_bbox_vars(self.instances)
+        bvars = solver.iter_bbox_vars(self.instances)
         for b1, b2 in itertools.pairwise(bvars):
             if self.direction == 'horizontal':
                 yield cc(b1, b2, 'x')
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                yield checker.Or(
+                yield solver.Or(
                     cc(b1, b2, 'x'),
                     cc(b1, b2, 'y')
                 )
 
 
-class SetBoundingBox(HardConstraint):
-    instance: str
+class AssignBboxVariables(HardConstraint):
+    bbox_name: str
     llx: int
     lly: int
     urx: int
     ury: int
-    is_subcircuit: Optional[bool] = False
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
@@ -367,8 +406,8 @@ class SetBoundingBox(HardConstraint):
         assert value > values['lly'], f'Reflection is not supported yet'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.instance, is_subcircuit=self.is_subcircuit)
+    def translate(self, solver):
+        bvar = solver.bbox_vars(self.bbox_name)
         yield bvar.llx == self.llx
         yield bvar.lly == self.lly
         yield bvar.urx == self.urx
@@ -380,6 +419,16 @@ class AspectRatio(HardConstraint):
     Define lower and upper bounds on aspect ratio (=width/height) of a subcircuit
 
     `ratio_low` <= width/height <= `ratio_high`
+
+    Args:
+        subcircuit (str) : Name of subciruit
+        ratio_low (float): Minimum aspect ratio (default 0.1)
+        ratio_high (float): Maximum aspect ratio (default 10)
+        weight (int): Weigth of this constraint (default 1)
+
+    Example: ::
+
+        {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 10, "weight": 1 }
     """
     subcircuit: str
     ratio_low: float = 0.1
@@ -396,15 +445,24 @@ class AspectRatio(HardConstraint):
         assert value > values['ratio_low'], f'AspectRatio:ratio_high {value} should be greater than ratio_low {values["ratio_low"]}'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
-        yield checker.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * checker.cast(bvar.ury-bvar.lly, float)
-        yield checker.cast(bvar.urx-bvar.llx, float) < self.ratio_high * checker.cast(bvar.ury-bvar.lly, float)
+    def translate(self, solver):
+        bvar = solver.bbox_vars('subcircuit')
+        yield solver.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * solver.cast(bvar.ury-bvar.lly, float)
+        yield solver.cast(bvar.urx-bvar.llx, float) < self.ratio_high * solver.cast(bvar.ury-bvar.lly, float)
 
 
 class Boundary(HardConstraint):
     """
     Define `max_height` and/or `max_width` on a subcircuit in micrometers.
+
+    Args:
+        subcircuit (str) : Name of subcircuit
+        max_width (float, Optional) = 10000
+        max_height (float, Optional) = 10000
+
+    Example: ::
+
+        {"constraint": "Boundary", "subcircuit": "OTA", "max_height": 100 }
     """
     subcircuit: str
     max_width: Optional[float] = 10000
@@ -420,30 +478,105 @@ class Boundary(HardConstraint):
         assert value >= 0, f'Boundary:max_height should be greater than zero {value}'
         return value
 
-    def check(self, checker):
-        bvar = checker.bbox_vars(self.subcircuit, is_subcircuit=True)
+    def translate(self, solver):
+        bvar = solver.bbox_vars('subcircuit')
         if self.max_width is not None:
-            yield checker.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
+            yield solver.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
         if self.max_height is not None:
-            yield checker.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
+            yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
 
+
+class GroupBlocks(HardConstraint):
+    """GroupBlocks
+
+    Forces a hierarchy creation for group of instances.
+    This brings the instances closer.
+    This reduces the problem statement for placer thus providing
+    better solutions.
+
+    Args:
+      instances (list[str]): List of :obj:`instances`
+      name (str): alias for the list of :obj:`instances`
+
+    Example: ::
+
+        {
+            "constraint":"GroupBlocks",
+            "name": "group1",
+            "instances": ["MN0", "MN1", "MN3"]
+        }
+    """
+    name: str
+    instances: List[str]
+    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+
+    @types.validator('name', allow_reuse=True)
+    def group_block_name(cls, value):
+        assert value, 'Cannot be an empty string'
+        return value.upper()
+
+    def translate(self, solver):
+        # Non-zero width / height
+        bb = solver.bbox_vars(self.name)
+        yield bb.llx < bb.urx
+        yield bb.lly < bb.ury
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars(self.instances):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        instances = get_instances_from_hacked_dataclasses(self)
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
-# Note: Do not implement check() here. It will be ignored.
-#       Only ALIGN internal constraints may be translated
+# Note: Do not implement translate() here as it may be ignored
+#       by certain engines
+
 
 class AlignInOrder(UserConstraint):
     '''
     Align `instances` on `line` ordered along `direction`
 
+    Args:
+        instances (list[str]): List of :obj:`instances`
+        line (str, optional): The following `line` values are currently supported:
+
+            :obj:`'top'`, align instance's horizontally based on top.
+
+            :obj:`'bottom'`, align instance's horizomtally based on bottom.
+
+            :obj:`'center'`, align instance's horizontally based on center.
+
+            :obj:`'left'`, align instance's vertically based on left.
+
+            :obj:`'right'`, align instance's vertically based on right.
+        direction: The following `direction` values are supported:
+
+            :obj: `'horizontal'`, left to right
+
+            :obj: `'vertical'`, bottom to top
+
+    Example: ::
+
+        {
+            "constraint":"Align",
+            "instances": ["MN0", "MN1", "MN3"],
+            "line": "center",
+            "direction": "horizontal"
+        }
+
     Note: This is a user-convenience constraint. Same
     effect can be realized using `Order` & `Align`
 
-    > `direction == 'horizontal'` => left_to_right
-
-    > `direction == 'vertical'`   => bottom_to_top
     '''
     instances: List[str]
     line: Literal[
@@ -506,7 +639,7 @@ class PlaceSymmetric(SoftConstraint):
     effect can be realized using `Align` & `Group`
 
     For example:
-    `instances` = [['1'], ['4', '5'], ['2', '3'], ['6']],
+    `instances` = [['1'], ['4', '5'], ['2', '3'], ['6']]
     `direction` = 'vertical'
        1   |  5 4  |   6   |  4 5  |   1   |  5 4
       4 5  |   1   |  5 4  |   6   |   6   |   1
@@ -524,31 +657,71 @@ class PlaceSymmetric(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
+
         assert len(value) >= 1, 'Must contain at least one instance'
         assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {self.instances}'
         return value
 
 
 class CompactPlacement(SoftConstraint):
+    """CompactPlacement
+
+    Defines snapping position of placement for all blocks in design.
+
+    Args:
+        style (str): Following options are available.
+
+            :obj:`'left'`, Moves all instances towards left during post-processing of placement.
+
+            :obj:`'right'`, Moves all instances towards right during post-processing of placement.
+
+            :obj:`'center'`, Moves all instances towards center during post-processing of placement.
+
+    Example: ::
+
+        {"constraint": "CompactPlacement", "style": "center"}
+    """
     style: Literal[
         'left', 'right',
         'center'
     ] = 'left'
 
+
 class SameTemplate(SoftConstraint):
+    """SameTemplate
+
+    Makes identical copy of all isntances
+
+    Args:
+        instances (list[str]): List of :obj:`instances`
+
+    Example: ::
+
+        {"constraint":"SameTemplate", "instances": ["MN0", "MN1", "MN3"]}
+    """
     instances: List[str]
 
 
 class CreateAlias(SoftConstraint):
+    """CreateAlias
+
+    Creates an alias for list of instances. You can use this
+    alias later while defining constraints
+
+    Args:
+      instances (list[str]): List of :obj:`instances`
+      name (str): alias for the list of :obj:`instances`
+
+    Example: ::
+
+        {
+            "constraint":"CreateAlias",
+            "instances": ["MN0", "MN1", "MN3"],
+            "name": "alias1"
+        }
+    """
     instances: List[str]
     name: str
-
-
-class GroupBlocks(SoftConstraint):
-    ''' Force heirarchy creation '''
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
 
 class MatchBlocks(SoftConstraint):
@@ -560,7 +733,20 @@ class MatchBlocks(SoftConstraint):
 
 class PowerPorts(SoftConstraint):
     '''
-    power port for each hieararchy
+    Defines power port for each hieararchy
+
+    Args:
+        ports (list[str]): List of :obj:`ports`.
+            The first port of top hierarchy will be used for power grid creation.
+            Power ports are used to identify source and drain of transistors
+            by identifying the terminal at higher potential.
+
+    Example: ::
+
+        {
+            "constraint":"PowerPorts",
+            "ports": ["VDD", "VDD1"],
+        }
     '''
     ports: List[str]
 
@@ -568,101 +754,263 @@ class PowerPorts(SoftConstraint):
 class GroundPorts(SoftConstraint):
     '''
     Ground port for each hieararchy
+
+    Args:
+        ports (list[str]): List of :obj:`ports`.
+            The first port of top hierarchy will be used for ground grid creation.
+            Power ports are used to identify source and drain of transistors
+            by identifying the terminal at higher potential.
+
+    Example: ::
+
+        {
+            "constraint": "GroundPorts",
+            "ports": ["GND", "GNVD1"],
+        }
     '''
     ports: List[str]
 
 
 class ClockPorts(SoftConstraint):
     '''
-    Clock port for each hieararchy
+    Clock port for each hieararchy. These are used as stop-points
+    during auto-constraint identification, means no constraint search
+    will be done beyond the nets connected to these ports
+
+    Args:
+        ports (list[str]): List of :obj:`ports`.
+            The first port of top hierarchy will be used for ground grid creation.
+            Power ports are used to identify source and drain of transistors
+            by identifying the terminal at higher potential.
+
+    Example: ::
+
+        {
+            "constraint": "ClockPorts",
+            "ports": ["CLK1", "CLK2"],
+        }
     '''
     ports: List[str]
 
 
 class DoNotUseLib(SoftConstraint):
     '''
-    Primitive libraries which should not be used
+    Primitive libraries which should not be used during hierarchy annotation.
+
+    Args:
+        libraries (list[str]): List of :obj:`libraries`.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "DoNotUseLib",
+            "libraries": ["DP_NMOS", "INV"],
+            "propagate": False
+        }
     '''
     libraries: List[str]
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IsDigital(SoftConstraint):
     '''
-    Place this block digitally
-    Forbids any preprocessing, auto-annotation, array-identification or auto-constraint generation
+    Place this hierarchy as a digital hierarchy
+    Forbids any preprocessing, auto-annotation,
+    array-identification or auto-constraint generation
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "IsDigital",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoConstraint(SoftConstraint):
     '''
     Forbids/Allow any auto-constraint generation
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "AutoConstraint",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class IdentifyArray(SoftConstraint):
     '''
     Forbids/Alow any array identification
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "IdentifyArray",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class AutoGroupCaps(SoftConstraint):
     '''
     Forbids/Allow creation of arrays for symmetric caps
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "AutoGroupCaps",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class FixSourceDrain(SoftConstraint):
     '''
-    Checks the netlist for any source/drain interchange.
-    Traverses and fix them based on power to gnd traversal
+    Forbids auto checking of source/drain terminals of transistors.
+    If `True`, Traverses from power to ground and vice-versa to
+    ensure (drain of NMOS/ source of PMOS) is at higher potential.
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "FixSourceDrain",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class KeepDummyHierarchies(SoftConstraint):
     '''
-    Removes any single instance hierarchies
+    Removes any single instance hierarchies.
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "KeepDummyHierarchies",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeSeriesDevices(SoftConstraint):
     '''
     Allow stacking of series devices
-    Only works on NMOS/PMOS/CAP/RES
+    Only works on NMOS/PMOS/CAP/RES.
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "MergeSeriesDevices",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class MergeParallelDevices(SoftConstraint):
     '''
-    Allow merging of parallel devices
-    Only works on NMOS/PMOS/CAP/RES
+    Allow merging of parallel devices.
+    Only works on NMOS/PMOS/CAP/RES.
+
+    Args:
+        isTrue (bool): True/False.
+        propagate: Copy this constraint to sub-hierarchies
+
+    Example: ::
+
+        {
+            "constraint": "MergeParallelDevices",
+            "isTrue": True,
+            "propagate": False
+        }
     '''
     isTrue: bool
-    propagate : Optional[bool]
+    propagate: Optional[bool]
 
 
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
+    Auto generated constraint based on all intances which are constrained
     '''
     instances: List[str]
 
 
 class SymmetricBlocks(SoftConstraint):
+    """SymmetricBlocks
+
+    Defines a symmetry constraint between pair of blocks.
+
+    Args:
+        pairs (list[list[str]]): List of pair of instances.
+            A pair can have one :obj:`instance` or two instances,
+            where single instance implies self-symmetry
+        direction (str) : Direction for axis of symmetry.
+        mirrot (bool) : True/ False, Mirror instances along line of symmetry
+
+    .. image:: ../images/SymmetricBlocks.PNG
+        :align: center
+
+    Example: ::
+
+        {
+            "constraint" : "SymmetricBlocks",
+            "pairs" : [["MN0","MN1"], ["MN2","MN3"],["MN4"]],
+            "direction" : "vertical"
+        }
+
+    """
     pairs: List[List[str]]
     direction: Literal['H', 'V']
 
@@ -678,31 +1026,49 @@ class SymmetricBlocks(SoftConstraint):
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
-            validate_instances(cls, pair)
+        value = [validate_instances(cls, pair) for pair in value]
         if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
             # PnR stage VerilogJsonModule
             return value
-        if len(cls._validator_ctx().parent.parent.elements)==0:
-            #skips the check while reading user constraints
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
             return value
         group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
-            if len([ele for ele in pair if ele in group_block_instances])>0:
-                #Skip check for group block elements as they are added later in the flow
+            if len([ele for ele in pair if ele in group_block_instances]) > 0:
+                # Skip check for group block elements as they are added later in the flow
                 continue
-            elif len(pair)==2:
+            elif len(pair) == 2:
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]), f"element {pair[0]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                        f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
 
 class BlockDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    Places the instances with a fixed gap.
+    Also used in situations when routing is congested.
+
+    Args:
+        abs_distance (int) : Distance between two blocks.
+            The number should be multiple of pitch of
+            lowest horizontal and vertical routing layer i.e., M2 and M1
+
+    .. image:: ../images/HorizontalDistance.PNG
+        :align: center
+
+    Example: ::
+
+        {
+            "constraint" : "BlockDistance",
+            "abs_distance" : 420
+        }
     '''
     abs_distance: int
 
@@ -710,6 +1076,25 @@ class BlockDistance(SoftConstraint):
 class VerticalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    Places the instances with a fixed vertical gap.
+    Also used in situations when routing is congested.
+
+    Args:
+        abs_distance (int) : Distance between two blocks.
+            The number should be multiple of pitch of
+            lowest horizontal routing layer i.e., M2
+
+    .. image:: ../images/VerticalDistance.PNG
+        :align: center
+
+    Example: ::
+
+        {
+            "constraint" : "VerticalDistance",
+            "abs_distance" : 84
+        }
+
     '''
     abs_distance: int
 
@@ -717,13 +1102,45 @@ class VerticalDistance(SoftConstraint):
 class HorizontalDistance(SoftConstraint):
     '''
     TODO: Replace with Spread
+
+    Places the instances with a fixed horizontal gap.
+    Also used in situations when routing is congested.
+
+    Args:
+        abs_distance (int) : Distance between two blocks.
+            The number should be multiple of pitch of
+            lowest vertical routing layer i.e., M1
+
+    .. image:: ../images/HorizontalDistance.PNG
+        :align: center
+
+    Example: ::
+
+        {
+            "constraint" : "HorizontalDistance",
+            "abs_distance" : 80
+        }
+
     '''
     abs_distance: int
 
 
 class GuardRing(SoftConstraint):
     '''
-    Adds guard ring for particular hierarchy
+    Adds guard ring for particular hierarchy.
+
+    Args:
+        guard_ring_primitives (str) : Places this instance across boundary of a hierarchy
+        global_pin (str): connect the pin of guard ring to this pin, mostly ground pin
+        block_name: Name of the hierarchy
+
+    Example: ::
+
+        {
+            "constraint" : "GuardRing",
+            "guard_ring_primitives" : "guard_ring",
+            "global_pin
+        }
     '''
     guard_ring_primitives: str
     global_pin: str
@@ -731,7 +1148,27 @@ class GuardRing(SoftConstraint):
 
 
 class GroupCaps(SoftConstraint):
-    ''' Common Centroid Cap '''
+    '''GroupCaps
+    Creates a common centroid cap using a combination
+    of unit sized caps. It can be of multiple caps.
+
+    Args:
+        name (str): name for grouped caps
+        instances (List[str]): list of cap :obj:`instances`
+        unit_cap (str): Capacitance value in fF
+        num_units (List[int]): Number of units for each capacitance instance
+        dummy (bool):  Whether to fill in dummies or not
+
+   Example: ::
+
+        {
+            "constraint" : "GroupCaps",
+            "name" : "cap_group1",
+            "instances" : ["C0", "C1", "C2"],
+            "num_units" : [2, 4, 8],
+            "dummy" : True
+        }
+    '''
     name: str  # subcircuit name
     instances: List[str]
     unit_cap: str  # cap value in fF
@@ -740,13 +1177,52 @@ class GroupCaps(SoftConstraint):
 
 
 class NetConst(SoftConstraint):
+    """NetConst
+
+    Net based constraint. Shielding and critically can be defined.
+
+    Args:
+        nets (List[str]) : List of net names.
+        shield (str, optional) : Name of net for shielding.
+        criticality (int, optional) : Criticality of net.
+            Higher criticality means the net would be routed first.
+
+    Example: ::
+
+        {
+            "constraint" : "NetConst",
+            "nets" : ["net1", "net2", "net3"],
+            "shield" : "VSS",
+            "criticality" : 10
+        }
+    """
     nets: List[str]
-    shield: str
-    criticality: int
+    shield: Optional[str]
+    criticality: Optional[int]
 
 
 class PortLocation(SoftConstraint):
-    '''T (top), L (left), C (center), R (right), B (bottom)'''
+    '''PortLocation
+    Defines approximate location of the port.
+    T (top), L (left), C (center), R (right), B (bottom)
+
+    Args:
+        ports (List[str]) : List of ports
+        location (str): Literal::
+
+            ['TL', 'TC', 'TR',
+            'RT', 'RC', 'RB',
+            'BL', 'BC', 'BR',
+            'LB', 'LC', 'LT']
+
+    Example ::
+
+        {
+            "constraint" : "PortLocation",
+            "ports" : ["P0", "P1", "P2"],
+            "location" : "TL"
+        }
+    '''
     ports: List
     location: Literal['TL', 'TC', 'TR',
                       'RT', 'RC', 'RB',
@@ -755,6 +1231,30 @@ class PortLocation(SoftConstraint):
 
 
 class SymmetricNets(SoftConstraint):
+    '''SymmetricNets
+    Defines two nets as symmetric.
+    A symmetric net will also enforce a SymmetricBlock between blocks
+    connected to the nets.
+
+    Args:
+        net1 (str) : Name on net1
+        net2 (str) : Name of net2
+        pins1 (List, Optional) : oredered list of connected pins to be matched
+        pins2 (List, Optional) : oredered list of connected pins to be matched
+        direction (str) : Literal ['H', 'V'], Horizontal or vertical line of symmetry
+
+    Example ::
+
+        {
+            "constraint" : "SymmetricNets",
+            "net1" : "net1"
+            "net2" : "net2"
+            "pins1" : ["block1/A", "block2/A", "port1"]
+            "pins2" : ["block1/B", "block2/B", "port2"]
+            "direction" : 'V'
+        }
+     '''
+
     net1: str
     net2: str
     pins1: Optional[List]
@@ -763,6 +1263,23 @@ class SymmetricNets(SoftConstraint):
 
 
 class MultiConnection(SoftConstraint):
+    '''MultiConnection
+    Defines multiple parallel wires for a net.
+    This constraint is used to reduce parasitics and
+    Electro-migration (EM) violations
+
+    Args:
+        nets (List[str]) : List of nets
+        multiplier (int): Number of parallel wires
+
+    Example ::
+
+        {
+            "constraint" : "MultiConnection",
+            "nets" : ["N1", "N2", "N3"],
+            "multiplier" : 4
+        }
+    '''
     nets: List[str]
     multiplier: int
 
@@ -771,7 +1288,7 @@ ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
     Enclose, Spread,
-    SetBoundingBox,
+    AssignBboxVariables,
     AspectRatio,
     Boundary,
     # Additional User constraints
@@ -812,49 +1329,20 @@ ConstraintType = Union[
 
 class ConstraintDB(types.List[ConstraintType]):
 
-    #
-    # Private attribute affecting class behavior
-    #
-    _checker = types.PrivateAttr(None)
-
-    def _check(self, constraint):
-        assert constraint.parent is not None, 'parent is not set'
-        assert constraint.parent.parent is not None, 'parent.parent is not set'
-        if self._checker and hasattr(constraint, 'check'):
-            generator = constraint.check(self._checker)
-            if generator is None:
-                raise NotImplementedError(f'{constraint}.check() did not return a valid generator')
-            formulae = list(generator)
-            if len(formulae) == 0:
-                raise NotImplementedError(f'{constraint}.check() yielded an empty list of expressions')
-            try:
-                self._checker.append(
-                    self._checker.And(
-                        *formulae
-                    ) if len(formulae) > 1 else formulae[0],
-                    label=self._checker.label(constraint)
-                )
-            except checker.CheckerError as e:
-                logger.debug(f'Checker raised error:\n {e}')
-                assert self._checker.label(constraint) in e.labels, "Something went terribly wrong. Current constraint not in unsat core"
-                core = [x.json() for x in self.__root__ if self._checker.label(x) in e.labels and x != constraint]
-                logger.error(f'Failed to add constraint {constraint.json()}')
-                logger.error(f'   due to conflict with {core}')
-                raise checker.CheckerError(f'Failed to add constraint {constraint.json()} due to conflict with {core}')
-
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
+        if hasattr(constraint, 'translate'):
+            if self.parent._checker is None:
+                self.parent.verify()
+            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
         super().append(constraint)
-        self._check(self.__root__[-1])
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
         super().remove(constraint)
 
-    def __init__(self, *args, check=True, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__()
-        if check:
-            self._checker = checker.Z3Checker()
         # Constraints may need to access parent scope for subcircuit information
         # To ensure parent is set appropriately, force users to use append
         if '__root__' in kwargs:
@@ -866,24 +1354,19 @@ class ConstraintDB(types.List[ConstraintType]):
         else:
             assert len(args) == 0 and len(kwargs) == 0
             data = []
+        # TODO: Shouldn't need to invalidate this
+        #       Lots of thrash happening here
+        self.parent._checker = None
         with set_context(self):
             for x in data:
-                if x['constraint'] == 'GroupBlocks':
-                    logger.info(f'first reading groupblock data {x}')
-                    self.append(x)
-            for x in data:
-                if x['constraint'] != 'GroupBlocks':
-                    logger.info(f'reading rest data {x}')
-                    self.append(x)
+                super().append(x)
 
     def checkpoint(self):
-        if self._checker:
-            self._checker.checkpoint()
+        self.parent._checker.checkpoint()
         return super().checkpoint()
 
     def _revert(self):
-        if self._checker:
-            self._checker.revert()
+        self.parent._checker.revert()
         super()._revert()
 
 
