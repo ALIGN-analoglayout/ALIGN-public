@@ -18,5 +18,6 @@
 	R1 vps vout2_ctle 800
     R0 vps vout1_ctle 800
     R4 n2 n4 3K
-
+    C00 n2 n4 500f
+    C01 n2 n4 500f
 .ends CTLE
