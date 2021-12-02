@@ -76,6 +76,7 @@ class SeqPairEnumerator {
 class SeqPair {
   private:
   friend class ILP_solver;
+  friend class ExtremeBlocksOfNet;
   friend class Placer;
   vector<int> posPair;
   vector<int> negPair;

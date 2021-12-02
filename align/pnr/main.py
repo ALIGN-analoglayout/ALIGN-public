@@ -281,7 +281,7 @@ def write_verilog_json(verilog_d):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
-                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, placer_mode='bottom_up'):
+                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, placer_mode='bottom_up', ilp_solver='symphony'):
 
     subckt = subckt.upper()
 
@@ -380,7 +380,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                         lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                         reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
-                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
+                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode, ilp_solver=ilp_solver)
 
         os.chdir(current_working_dir)
 

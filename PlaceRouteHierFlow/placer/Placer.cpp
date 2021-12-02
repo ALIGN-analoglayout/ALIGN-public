@@ -17,7 +17,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP = false, const bool bottom_up = true) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP, const bool bottom_up, int ilp_solver) : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
@@ -28,7 +28,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
       //#define analytical_placer
       PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
     else
-      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP, bottom_up);
+      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP, bottom_up, ilp_solver);
   }
 }
 
@@ -708,7 +708,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo,
-                                                                                      bool select_in_ILP = false) {
+                                                                                      bool select_in_ILP, int ilp_solver) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
@@ -863,7 +863,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       ++num_perturb;
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
-      ILP_solver trial_sol(designData);
+      ILP_solver trial_sol(designData, ilp_solver);
       double trial_cost = 0;
       if (select_in_ILP)
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
@@ -964,7 +964,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
 }
 
 void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo,
-                                             bool select_in_ILP = false, const bool bottom_up = true) {
+                                             bool select_in_ILP, const bool bottom_up, int ilp_solver) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize = nodeVec.size();
 // cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
@@ -984,12 +984,12 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
   curr_sp.PrintSeqPair();
-  ILP_solver curr_sol(designData);
+  ILP_solver curr_sol(designData, ilp_solver);
   // clock_t start, finish;
   // double   duration;
   // start = clock();
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec =
-      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, select_in_ILP);
+      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, select_in_ILP, ilp_solver);
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
   // logger->info("lpsolve time: {0}", duration);

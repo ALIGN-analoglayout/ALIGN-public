@@ -153,6 +153,12 @@ class CmdlineParser():
                             choices=['top_down','bottom_up'],
                             help='Placer mode')
 
+        parser.add_argument('--ilp_solver',
+                            type=str,
+                            default='symphony',
+                            choices=['symphny', 'lpsolve'],
+                            help='ILP Solver used by placer ')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

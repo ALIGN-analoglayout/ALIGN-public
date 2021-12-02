@@ -293,7 +293,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, placer_mode='bottom_up'):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, placer_mode, ilp_solver):
 
     logger.info(f'Starting {placer_mode} placement on {DB.hierTree[idx].name} {idx}')
 
@@ -321,7 +321,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP, placer_mode == 'bottom_up')
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP, placer_mode == 'bottom_up', ilp_solver)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
@@ -553,7 +553,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
 def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d,
                     router_mode, gui, skipGDS, lambda_coeff, scale_factor,
-                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer, placer_mode):
+                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer, placer_mode, ilp_solver):
 
     if reference_placement_verilog_json:
         with open(reference_placement_verilog_json, "rt") as fp:
@@ -568,21 +568,21 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
                   lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
                   seed=seed, use_analytical_placer=use_analytical_placer,
-                  modules_d=modules[nm])
+                  modules_d=modules[nm], ilp_solver=ilp_solver)
 
     else:
         if placer_mode == 'bottom_up':
             for idx in DB.TraverseHierTree():
                 place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
                       lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
+                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode, ilp_solver=ilp_solver)
         else:
             traverseTree = DB.TraverseHierTree()
             traverseTree.reverse()
             for idx in traverseTree:
                 place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
                       lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
+                      seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode, ilp_solver=ilp_solver)
 
     placements_to_run = None
     if verilog_d is not None:
@@ -627,7 +627,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
              lambda_coeff=1.0, scale_factor=2,
              reference_placement_verilog_json=None,
              nroutings=1, select_in_ILP=False,
-             seed=0, use_analytical_placer=False, placer_mode='bottom_up'):
+             seed=0, use_analytical_placer=False, placer_mode='bottom_up', ilp_solver='symphony'):
 
     assert len(args) == 9
 
@@ -638,6 +638,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile)
 
+    logger.debug(f'Using {ilp_solver} to solve ILP in placer')
     if results_dir is None:
         opath = './Results/'
     else:
@@ -653,7 +654,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode)
+                                       seed=seed, use_analytical_placer=use_analytical_placer, placer_mode=placer_mode, ilp_solver=(0 if (ilp_solver=='symphony') else 1))
 
     return DB, results_name_map
 
