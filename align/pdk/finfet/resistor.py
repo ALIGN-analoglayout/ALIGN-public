@@ -14,6 +14,9 @@ class tfr_prim(CanvasPDK):
         b_idx = (4, -1)
         e_idx = (7, -1)
 
+        if netlist_parameters is None:
+            netlist_parameters = dict()
+
         p1 = netlist_parameters.get('P1', 'SIG')
         if p1 == 'SIG':
             self.addWire(self.m2, ports[0], 12, b_idx, e_idx, netType="pin")
