@@ -492,6 +492,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
   // QQQ Vdd_grid Gnd_grid Terminals PowerNets Nets
 
   for (unsigned int i = 0; i < PowerNets.size(); i++) {
+    if(PowerNets[i].DoNotRoute) continue;
     int multi_number = FindMulti_Connection_Number(i, node);
     // std::cout<<"Power routing multi_number "<<PowerNets[i].netName<<" "<<multi_number<<std::endl;
 
@@ -1397,6 +1398,12 @@ void PowerRouter::getPowerNetData(PnRDB::hierNode& node) {
       temp_net.pins.push_back(temp_pin);
     }
 
+    for(auto net_name: node.DoNotRoute){
+       if(net_name==temp_net.netName){
+          temp_net.DoNotRoute = true;
+       }
+    }
+
     PowerNets.push_back(temp_net);
   }
 };
@@ -1682,29 +1689,45 @@ void PowerRouter::Max_Min_Contact(PnRDB::contact& temp_contact, int& LLx, int& L
 
 void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node) {
   // vdd
-  for (unsigned int i = 0; i < Vdd_grid.metals.size(); i++) {
-    PnRDB::Metal temp_metal;
-    ConvertToMetalPnRDB_Placed_Placed(temp_metal, Vdd_grid.metals[i]);
-    node.Vdd.metals.push_back(temp_metal);
+  bool return_vdd = true;
+  bool return_gnd = true;
+
+  for(auto net_name: node.DoNotRoute){
+     if(net_name==Vdd_grid.name){
+        return_vdd = false;
+     }
+     if(net_name==Gnd_grid.name){
+        return_gnd = false;
+     }    
   }
 
-  for (unsigned int i = 0; i < Vdd_grid.vias.size(); i++) {
-    PnRDB::Via temp_via;
-    ConvertToViaPnRDB_Placed_Placed(temp_via, Vdd_grid.vias[i]);
-    node.Vdd.vias.push_back(temp_via);
+  if(return_vdd){
+    for (unsigned int i = 0; i < Vdd_grid.metals.size(); i++) {
+      PnRDB::Metal temp_metal;
+      ConvertToMetalPnRDB_Placed_Placed(temp_metal, Vdd_grid.metals[i]);
+      node.Vdd.metals.push_back(temp_metal);
+    }
+
+    for (unsigned int i = 0; i < Vdd_grid.vias.size(); i++) {
+      PnRDB::Via temp_via;
+      ConvertToViaPnRDB_Placed_Placed(temp_via, Vdd_grid.vias[i]);
+      node.Vdd.vias.push_back(temp_via);
+    }
   }
   node.Vdd.name = Vdd_grid.name;
   // Gnd
-  for (unsigned int i = 0; i < Gnd_grid.metals.size(); i++) {
-    PnRDB::Metal temp_metal;
-    ConvertToMetalPnRDB_Placed_Placed(temp_metal, Gnd_grid.metals[i]);
-    node.Gnd.metals.push_back(temp_metal);
-  }
+  if(return_gnd){
+    for (unsigned int i = 0; i < Gnd_grid.metals.size(); i++) {
+      PnRDB::Metal temp_metal;
+      ConvertToMetalPnRDB_Placed_Placed(temp_metal, Gnd_grid.metals[i]);
+      node.Gnd.metals.push_back(temp_metal);
+    }
 
-  for (unsigned int i = 0; i < Gnd_grid.vias.size(); i++) {
-    PnRDB::Via temp_via;
-    ConvertToViaPnRDB_Placed_Placed(temp_via, Gnd_grid.vias[i]);
-    node.Gnd.vias.push_back(temp_via);
+    for (unsigned int i = 0; i < Gnd_grid.vias.size(); i++) {
+      PnRDB::Via temp_via;
+      ConvertToViaPnRDB_Placed_Placed(temp_via, Gnd_grid.vias[i]);
+      node.Gnd.vias.push_back(temp_via);
+    }
   }
   node.Gnd.name = Gnd_grid.name;
 };

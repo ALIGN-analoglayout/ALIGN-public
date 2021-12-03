@@ -616,6 +616,12 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       node.Same_Template_Constraints.push_back(temp_const);
     } else if (constraint["const_name"] == "CompactPlacement") {
       node.compact_style = constraint["style"];
+    } else if(constraint["const_name"] == "DoNotRoute"){
+      vector<string> DoNotRoute;
+      for(auto net : constraint["nets"]){
+         DoNotRoute.push_back(net);
+      }
+      node.DoNotRoute = DoNotRoute;
     }
   }
 }
