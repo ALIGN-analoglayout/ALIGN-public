@@ -21,6 +21,17 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
 
     for i in cell_pin:
         if i == 'B' and bodyswitch==0:continue
+
+        # # Check if there are any rectangles for this pin
+        # pin_found = False
+        # for obj in layout_d['terminals']:
+        #     if obj['netType'] == 'pin' and obj['netName'] == i:
+        #         pin_found = True
+        #         break
+
+        # if not pin_found:
+        #     continue
+
         fp.write("  PIN %s\n" % i)
         #fp.write( "    DIRECTION %s ;\n" % obj[ported'])
         fp.write("    DIRECTION INOUT ;\n")
