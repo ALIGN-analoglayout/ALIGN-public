@@ -113,9 +113,9 @@ def test_donotroute():
         mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
         mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
         .ends
-        .subckt {name} vo vccx vssx
-        xi0 vo v1 vccx vssx inv
-        xi1 v1 v2 vccx vssx inv
+        .subckt {name} vi vo vccx vssx
+        xi0 vi v1 vccx vssx inv
+        xi1 v1 vo vccx vssx inv
         .ends
         """)
     constraints = [
@@ -132,5 +132,5 @@ def test_donotroute():
 
         cv = CanvasPDK()
         cv.terminals = d['terminals']
-        cv.gen_data(run_drc=True, run_pex=False)
-        assert cv.drc.num_errors > 0, f'Layout should have opens'
+        cv.removeDuplicates()
+        assert len(cv.rd.opens) > 0, 'Layout should have opens'
