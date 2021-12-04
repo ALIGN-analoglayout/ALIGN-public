@@ -46,7 +46,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         if (obj['netType'] != 'pin' or obj['netName'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
             fp.write("    LAYER %s ;\n" % obj['layer'])
             fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
-        elif (blockM == 1) and obj['layer'] == 'Boundary':
+        elif (blockM == 1) and obj['layer'] == 'Cboundary':
             for capL in cap_layers: 
                 fp.write("    LAYER %s ;\n" % capL)
                 fp.write("      RECT %s %s %s %s ;\n" % tuple(obj['rect']))
