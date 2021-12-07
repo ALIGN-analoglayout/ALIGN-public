@@ -2,7 +2,7 @@ import textwrap
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example
     import circuits
 

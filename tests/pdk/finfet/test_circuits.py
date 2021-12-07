@@ -7,7 +7,7 @@ import shutil
 try:
     from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     from . import circuits
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     import circuits
 
@@ -17,9 +17,8 @@ cleanup = False
 def test_cmp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
     # TODO: Generalize this test to all primitives based on m value
@@ -35,17 +34,20 @@ def test_cmp():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
 
 @pytest.mark.nightly
 def test_cmp_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]}
+    ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
@@ -53,13 +55,13 @@ def test_cmp_pg():
 def test_cmp_pg_clk():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        CLOCK = clk
-        """)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "ClockPorts", "ports": ["CLK"]}
+    ]
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
@@ -67,11 +69,9 @@ def test_cmp_pg_clk():
 def test_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -87,7 +87,7 @@ def test_cmp_1():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=4e10)
 
 
@@ -95,11 +95,9 @@ def test_cmp_1():
 def test_cmp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -115,7 +113,7 @@ def test_cmp_2():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 1.5}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=5e9)
 
 
@@ -123,12 +121,10 @@ def test_cmp_2():
 def test_cmp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        CLOCK = clk
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "ClockPorts", "ports": ["CLK"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -138,7 +134,7 @@ def test_cmp_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, area=3.5e9)
 
 
@@ -146,13 +142,12 @@ def test_cmp_3():
 def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
@@ -174,10 +169,9 @@ def test_cmp_order():
     """ mp7 and mp8 should not be identified as a primitive """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = ""
     constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
@@ -198,15 +192,13 @@ def test_cmp_order():
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
-    setup = textwrap.dedent(f"""\
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, log_level='DEBUG')
     # plot_sa_cost(name.upper())
     # plot_sa_seq(name.upper())
@@ -215,22 +207,20 @@ def test_ota_six():
 def test_tia():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
 
 def test_ldo_opamp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
     # constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
-    constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]}
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
     with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
         data = json.load(fp)
@@ -244,13 +234,12 @@ def test_ldo_opamp_1():
 def test_ldo_opamp_2():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
-        """)
-    constraints = [{"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]},
+        {"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
     with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
         data = json.load(fp)
@@ -264,22 +253,20 @@ def test_ldo_opamp_2():
 def test_ldo_opamp_3():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
-        NO_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]},
         {"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}
         # ,{"constraint": "GroupBlocks", "instances": ["mp29", "mp30"], "name": "cp2"}
-        ]
-    example = build_example(name, netlist, setup, constraints)
+    ]
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, max_errors=100, n=1)
     with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
         abstract_names = set([instance['abstract_name'] for instance in placement['leaves']])
-        prim = 'CMC_S_PMOS_B_plplvt_w2160_m1_nf12'
+        prim = 'CMC_S_PMOS_B_P_w2160_m1_nf12'
         assert prim in abstract_names, f'{prim} not found in placement'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
@@ -288,12 +275,10 @@ def test_ldo_opamp_3():
 def test_ldo_opamp_4():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_opamp(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        DONT_USE_CELLS = CASCODED_CMC_NMOS CMB_PMOS_2 LSB_PMOS_2 LSB_NMOS_2
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2.0},
         {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp4"], "name": "cm1"},
@@ -302,12 +287,13 @@ def test_ldo_opamp_4():
         {"constraint": "GroupBlocks", "instances": ["xmn9", "xmn10"], "name": "cm4"},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["cm1"], ["cm2"], ["cm3"], ["cm4"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "abut": True, "instances": ["cm1", "cm2", "cm3", "cm4"]},
-        {"constraint": "GroupBlocks", "instances": ["mp11", "xmp12", "xmp13", "xmn14", "xmn15","mn16", "mp17", "mn18", "mp19", "mp20", "xmn40"], "name": "buf"},
+        {"constraint": "GroupBlocks", "instances": ["mp11", "xmp12", "xmp13", "xmn14",
+                                                    "xmn15", "mn16", "mp17", "mn18", "mp19", "mp20", "xmn40"], "name": "buf"},
         {"constraint": "GroupBlocks", "instances": ["xmn105", "xmn101", "mn102", "xmn103", "mp103", "xmp104"], "name": "bias"},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["dp", "cm1", "buf"]},
         {"constraint": "Order", "direction": "top_to_bottom", "abut": True, "instances": ["dp", "bias"]}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
     with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
         data = json.load(fp)
@@ -316,3 +302,35 @@ def test_ldo_opamp_4():
                 assert '/' not in term['netName'], f'Broken connectivity: {term}'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
+
+
+def test_ro_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt ro_stage vi vo vccx vssx
+    mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
+    mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
+    .ends
+    .subckt {name} vo vccx vssx
+    xi0 vo v1 vccx vssx ro_stage
+    xi1 v1 v2 vccx vssx ro_stage
+    xi2 v2 v3 vccx vssx ro_stage
+    xi3 v3 v4 vccx vssx ro_stage
+    xi4 v4 vo vccx vssx ro_stage
+    .ends {name}
+    """)
+    constraints = {
+        'ro_stage': [
+            {"constraint": "Order", "direction": "left_to_right", "instances": ["mn0", "mp0"]},
+        ],
+        name: [
+            {"constraint": "AutoConstraint", "isTrue": False},
+            {"constraint": "Order", "direction": "left_to_right", "instances": [f'xi{k}' for k in range(5)]},
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=cleanup)
+
+    with (run_dir / '3_pnr' / 'inputs' / 'RO_STAGE.pnr.const.json').open('rt') as fp:
+        d = json.load(fp)
+        assert len(d['constraints']) > 0, 'Where is the order constraint???'

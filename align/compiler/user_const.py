@@ -6,7 +6,6 @@ Created on Wed Jan 13 14:50:24 2021
 @author: kunal001
 """
 import pathlib
-import json
 import logging
 from ..schema import constraint, types
 
@@ -51,7 +50,9 @@ class ConstraintParser:
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
-                node.constraints.extend(constraint.ConstraintDB.parse_file(json_path))
+                constraints = constraint.ConstraintDB.parse_file(json_path)
+            with types.set_context(node.constraints):
+                node.constraints.extend(constraints)
             # ALL inst in caps
             for const in node.constraints:
                 if hasattr(const, "instances") and len(const.instances) > 0:
@@ -83,12 +84,6 @@ class ConstraintParser:
                     node.constraints.append(
                         {"instances": do_not_identify, "constraint": "DoNotIdentify"}
                     )
-
-        elif (self.input_dir / (design_name + ".const")).is_file():
-            # TODO: Reimplement using pydantic-cli if you really want this
-            raise NotImplementedError(
-                "Command-line interface has not been upgraded. Please use json constraints"
-            )
         else:
             logger.info(
                 f"No user constraints found for block {design_name} in path {self.input_dir}"

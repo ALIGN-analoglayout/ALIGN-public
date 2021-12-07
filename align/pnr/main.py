@@ -26,13 +26,15 @@ logger = logging.getLogger(__name__)
 
 from memory_profiler import profile
 
-def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True):
+
+def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True,
+                   pnr_const_ds=None):
 
     logger.debug(
         f"_generate_json: {hN} {variant} {primitive_dir} {pdk_dir} {output_dir} {extract} {input_dir} {toplevel} {gds_json}")
 
     cnv, d = gen_viewer_json(hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir),
-                             extract=extract, input_dir=input_dir, toplevel=toplevel)
+                             extract=extract, input_dir=input_dir, toplevel=toplevel, pnr_const_ds=pnr_const_ds)
 
     if gds_json and toplevel:
         # Hack in Outline layer
@@ -81,7 +83,8 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
 
     return ret
 
-def gen_constraint_files( verilog_d, input_dir):
+
+def gen_constraint_files(verilog_d, input_dir):
     pnr_const_ds = {}
     for module in verilog_d['modules']:
         nm = module['name']
@@ -94,10 +97,22 @@ def gen_constraint_files( verilog_d, input_dir):
         fn = input_dir / f'{nm}.pnr.const.json'
         with open(fn, 'w') as outfile:
             json.dump(constraints, outfile, indent=4)
+        constraint_files.add(fn)
 
     return constraint_files, pnr_const_ds
 
-def extract_capacitor_constraints( pnr_const_ds):
+
+def load_constraint_files(input_dir):
+    pnr_const_ds = dict()
+    constraint_files = set(input_dir.glob('*.pnr.const.json'))
+    for fn in constraint_files:
+        nm = fn.name.split('.pnr.const.json')[0]
+        with open(fn, 'r') as fp:
+            pnr_const_ds[nm] = json.load(fp)
+    return constraint_files, pnr_const_ds
+
+
+def extract_capacitor_constraints(pnr_const_ds):
     cap_constraints = {}
     for nm, pnr_const_d in pnr_const_ds.items():
         cap_constraints[nm] = { const['cap_name'].upper() : const for const in pnr_const_d['constraints'] if const['const_name'] == "CC"}
@@ -184,6 +199,12 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     verilog_d['modules'].append(nm)
     return updated_ckt_name
 
+def check_floating_pins(verilog_d):
+    """exit in case of floating pins in design
+    """
+    for module in verilog_d["modules"]:
+        all_nets = set(fa_map["actual"]  for inst in module["instances"] for fa_map in inst['fa_map'])
+        assert set(module["parameters"]).issubset(all_nets), f"floating port found in module {module['name']}"
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     non_leaves = { module['name'] for module in verilog_d['modules'] }
@@ -256,7 +277,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 def check_modules(verilog_d):
     all_module_pins = {}
     for mod in verilog_d["modules"]:
-        all_module_pins[mod["name"]]=mod["parameters"]
+        all_module_pins[mod['name']]=mod["parameters"]
     for mod in verilog_d["modules"]:
         for inst in mod["instances"]:
             assert 'abstract_template_name' in inst, f'no generated data for {inst}'
@@ -275,21 +296,11 @@ def write_verilog_json(verilog_d):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
-                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False):
+                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
+
+    subckt = subckt.upper()
 
     logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
-    # Generate file name inputs
-    for cf in topology_dir.rglob('*.verilog.json'):
-        if cf.stem == subckt+'.verilog':
-            #File name and module name are small or both are capital letters
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem.upper()==subckt+'.verilog':
-            #File name is small and module name is caps
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
-        elif cf.stem == subckt.upper()+'.verilog':
-            #File name is caps and module name is small
-            subckt = subckt.upper()
-            assert subckt in [m.name for m in VerilogJsonTop.parse_file(cf).modules], f"file name {cf} does nto match module {subckt}"
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
@@ -304,11 +315,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Create working & input directories
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
-        verilog_d = VerilogJsonTop.parse_file((topology_dir / verilog_file))
-        #with (topology_dir / verilog_file).open( 'rt') as fp:
-        #    verilog_d = json.load(fp)
+        verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
+        check_floating_pins(verilog_d)
         remove_pg_pins(verilog_d, subckt, pg_connections)
         clean_if_extra(verilog_d, subckt)
         check_modules(verilog_d)
@@ -317,8 +327,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         with (input_dir/verilog_file).open("wt") as fp:
             json.dump(write_verilog_json(verilog_d), fp=fp, indent=2, default=str)
         # SMB: I want this to be in main (perhaps), or in the topology stage
-        constraint_files, pnr_const_ds = gen_constraint_files( verilog_d, input_dir)
-        logger.debug( f'constraint_files: {constraint_files}')
+        constraint_files, pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
+        logger.debug(f'Generated constraint files: {constraint_files}')
 
         leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 
@@ -368,23 +378,28 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         with (working_dir / "__capacitors__.json").open("rt") as fp:
             capacitors = json.load(fp)
 
+        constraint_files, pnr_const_ds = load_constraint_files(input_dir)
+        logger.debug(f'Loaded constraint files: {constraint_files}')
+
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
         with (pdk_dir / pdk_file).open( 'rt') as fp:
             scale_factor = json.load(fp)["ScaleFactor"]
 
         # Run pnr_compiler
-        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
-                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
         # print(cmd)
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
+
+        cmd = [str(x) for x in ('align.PnR', input_dir, lef_file,
+                                verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
+
         DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                         lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                         reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
-                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer)
-        
+                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
+
         os.chdir(current_working_dir)
 
         # Copy generated cap jsons from results_dir to working_dir
@@ -409,7 +424,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                     output_dir=working_dir,
                                     extract=extract,
                                     gds_json=gds_json,
-                                    toplevel=hN.isTop)
+                                    toplevel=hN.isTop,
+                                    pnr_const_ds=pnr_const_ds)
 
             if hN.isTop:
                 variants[variant].update(result)

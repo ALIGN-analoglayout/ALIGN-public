@@ -115,7 +115,7 @@ jobs:
       - run:
           name: "Test align using coverage.py"
           command: |
-            ./runcoverage.py tests/
+            ./runcoverage.py tests/ --maxerrors 10
             cp junit.xml coverage-reports
       - store_test_results:
           path: coverage-reports
@@ -226,7 +226,6 @@ workflows:
             branches:
               only:
                 - master
-                - compiler/code_coverage
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:

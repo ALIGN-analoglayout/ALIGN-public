@@ -5,14 +5,13 @@ Created on Wed Feb 21 13:12:15 2020
 @author: kunal
 """
 
-from typing import List
 from align.schema.types import set_context
 import pprint
 from itertools import combinations, combinations_with_replacement
 import logging
 
-from .create_array_hierarchy import array_hierarchy
-from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
+from .create_array_hierarchy import process_arrays
+from .util import compare_two_nodes, get_base_model, get_ports_weight, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection, get_ports_weight
 from ..schema import constraint
 from ..schema.graph import Graph
 from align.schema.subcircuit import SubCircuit
@@ -59,11 +58,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
 
     """
     logger.debug(f"comparing {node1}, {node2}, traversed {traversed}")
-    nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
+    nbrs1 = sorted(set(G.neighbors(node1)) - traversed)
     # remove dummies get_leaf_connection(subckt, port)
 
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
-    nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
+    nbrs2 = sorted(set(G.neighbors(node2)) - traversed)
     # remove dummies
     nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
     logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
@@ -79,7 +78,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         else:
             match_pair["start_point"] = [node1, node2]
         logger.debug(f"skipping high fanout nets{node1, nbrs1}")
-        traversed.append(node1)
+        traversed.add(node1)
         return
 
     if node1 == node2:
@@ -96,7 +95,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         elif len(SD_nbrs) == 1:
             logger.debug(f"traversing single S/D path {SD_nbrs}")
             match_pair[node1] = node1
-            traversed.append(node1)
+            traversed.add(node1)
             compare_nodes(
                 G,
                 match_pairs,
@@ -110,8 +109,8 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             logger.debug(f"multiple nodes diverging {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs]}")
             match_pair[node1] = node1
-            traversed.append(node1)
-            new_sp = sorted(set(SD_nbrs) - set(traversed))
+            traversed.add(node1)
+            new_sp = sorted(set(SD_nbrs) - traversed)
             all_match_pairs_local = {}
             for nbr1, nbr2 in combinations(new_sp, 2):
                 logger.debug(f"recursive pair call from single branch {nbr1} {nbr2}")
@@ -165,7 +164,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     elif node1 == node2 and nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
         match_pair[node1] = node2
-        traversed += [node1, node2]
+        traversed.update([node1, node2])
         nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
         logger.debug(f"all non traversed neighbours: {nbrs1}")
         if len(nbrs1) == 1:
@@ -187,7 +186,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G,node1, nbr)]))
         nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G,node2, nbr)]))
         match_pair[node1] = node2
-        traversed += [node1, node2]
+        traversed.update([node1, node2])
         logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
         nbrs1_wt = [pin for nbr in nbrs1 for pin in G.get_edge_data(node1, nbr)["pin"]]
         nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)["pin"]]
@@ -201,7 +200,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         elif unique_match:
             logger.debug(f"traversing unique matches {unique_match}")
             match_pair[node1] = node2
-            traversed += [node1, node2]
+            traversed.update([node1, node2])
             for nbr1, nbr2 in unique_match.items():
                 logger.debug(f"recursive call from pair {node1}:{node2} to {nbr1}:{nbr2}")
                 compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
@@ -234,51 +233,9 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
     # TODO: use tuple instead of string
     match_pairs[node1 + node2] = pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
-    # Check for array start points
-    hier_start_points = []
-    for k, pair in match_pairs.items():
-        logger.debug(f"all pairs from {k}:{pair}")
-        if "start_point" in pair.keys():
-            if pair["start_point"] and isinstance(pair["start_point"][0], str):
-                # Check later for CTDTDSM
-                hier_start_points.extend(pair["start_point"])
-            del pair["start_point"]
-            logger.debug(f"New symmetrical start points {pair}")
-    logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
-    if not hier_start_points:
-        return
-    assert hier_start_points
-    # TODO array hieararchy to be reimplemented
     return
-    logger.debug(f"Creating new node from binary branch: {hier_start_points}")
-    for sp in sorted(set(hier_start_points)):
-        logger.debug(
-            f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(match_pairs, indent=4)}"
-        )
-        if sp not in G.nodes():
-            logger.debug(f"{sp} not found in graph {G.nodes()}")
-            continue
-        multifanout = array_hierarchy(G, sp, traversed, ports_weight)
-        if multifanout and isinstance(multifanout[sp], list):
-            logger.debug(
-                f"only one level matched so putting as align block:{multifanout[sp]}"
-            )
-            match_pairs[node1 + node2 + "_align"] = {"start_point": multifanout[sp]}
-        elif multifanout and isinstance(multifanout[sp], dict):
-            logger.debug(
-                f"more than one depth matched so creating new hierarchy :{multifanout[sp]}"
-            )
-            traversed += [node1, node2]
-            match_pairs[sp + "_new_hier"] = multifanout[sp].copy()
-            # for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
-            #     recursive_start_points(multifanout[sp]['graph'],match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])
-        else:
-            logger.debug(f"no symmetry from {sp}")
-    logger.debug(
-        f"updating match pairs end: {pprint.pformat(match_pairs, indent=4)}"
-    )
 
-def FindSymmetry(subckt, stop_points: list):
+def FindSymmetry(subckt, stop_points: set):
     """
     Find matching constraint starting from all port pairs.
     check: recursive_start_points
@@ -294,73 +251,60 @@ def FindSymmetry(subckt, stop_points: list):
     graph = Graph(subckt)
     ports = subckt.pins
     match_pairs = dict()
-    non_power_ports = sorted(set(sorted(ports)) - set(stop_points))
+    if not stop_points:
+        stop_points = set()
+    non_power_ports = sorted(set(sorted(ports)) - stop_points)
     logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
-    ports_weight = dict()
-    for port in subckt.pins:
-        leaf_conn = get_leaf_connection(subckt, port)
-        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        assert len(leaf_conn) > 0, f"floating port:{port} in subckt {subckt.name}"
-        ports_weight[port] = set(sorted(leaf_conn))
+
+    ports_weight = get_ports_weight(graph)
     # TODO start from primitives
     for port1, port2 in combinations_with_replacement(non_power_ports, 2):
         traversed = stop_points.copy()
         if ports_weight[port1] == ports_weight[port2] and ports_weight[port2]:
-            traversed += [port1, port2]
+            traversed.update([port1, port2])
             recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
-def FindConst(ckt_data, name, stop_points=None):
-    logger.debug(f"Searching constraints for block {name}")
-    logger.debug(f"Stop_points : {stop_points}")
+def FindConst(subckt):
+    logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
-    if stop_points == None:
-        stop_points = []
-    # TODO: methodology for array layout
-    if "array_hier" in name:
+    if "ARRAY_HIER" in subckt.name.upper():
+        #TODO Generate consraints for array hierarchies
         return
-    subckt = ckt_data.find(name)
+    stop_points = set()
+    auto_constraint = True
+    for const in subckt.constraints:
+            if isinstance(const, constraint.PowerPorts) or\
+                isinstance(const, constraint.GroundPorts) or \
+                isinstance(const, constraint.ClockPorts):
+                stop_points.update(const.ports)
+            elif isinstance(const, constraint.IsDigital) or \
+                isinstance(const, constraint.AutoConstraint):
+                auto_constraint = const.isTrue
+    logger.debug(f"Stop_points : {stop_points}")
+
     # Search symmetry constraints
     # TODO move search after processing input const
-    match_pairs = FindSymmetry(subckt, stop_points)
     pp = process_input_const(subckt)
+    if not auto_constraint:
+        return
+
+    match_pairs = FindSymmetry(subckt, stop_points)
     written_symmblocks = pp.process_all()
     skip_const = written_symmblocks.copy()
     ## Generate hiearchies based on array identification
-    array_hier = add_array_const(subckt, match_pairs)
-    hier_keys = array_hier.filter_array()
-    written_symmblocks.extend(hier_keys)
+    array_hier = process_arrays(subckt, match_pairs)
+    array_hier.add_align_block_const()
+    array_hier.add_new_array_hier()
+    match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
+    for pair in match_pairs.values():
+        if "start_point" in pair.keys():
+            del pair["start_point"]
     ## Add symmetry constraints
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
     add_symm.loop_through_pairs()
-
-class add_array_const:
-    def __init__(self, subckt, match_pairs):
-        self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
-        self.subckt = subckt
-        self.name = subckt.name
-        self.G = Graph(subckt)
-        self.iconst = subckt.constraints
-
-    def filter_array(self):
-        align_const_keys = [key for key, value in self.match_pairs.items() if isinstance(value, list)]
-        logger.debug(f"AlignBlock const gen{align_const_keys}")
-        check_duplicate = []
-        for key in align_const_keys:
-            array = self.match_pairs[key]
-            logger.debug(f"group1: {array}")
-            h_blocks = [ele for ele in array if ele in self.G and ele not in check_duplicate]
-            if len(h_blocks) > 0:
-                check_duplicate += h_blocks
-                self.iconst.append(constraint.AlignBlock(direction="H", instances=h_blocks))
-            del self.match_pairs[key]
-        logger.debug(f"AlignBlock const update {self.iconst}")
-        hier_keys = [key for key, value in self.match_pairs.items() if "name" in value.keys()]
-        for key in hier_keys:
-            del self.match_pairs[key]
-        return hier_keys
 
 class process_input_const:
     def __init__(self, subckt):
@@ -409,7 +353,7 @@ class process_input_const:
                             ),
                         )
                     )
-                    pairsj = []
+                    pairsj = list()
                     for key, value in pairs.items():
                         if key in s1:
                             continue
@@ -443,7 +387,10 @@ class add_symmetry_const:
         self.name = subckt.name
         self.G = Graph(subckt)
         self.iconst = subckt.constraints
-        self.stop = stop_points # TODO: Can be removed?
+        if stop_points:
+            self.stop = stop_points # TODO: Can be removed?
+        else:
+            self.stop = list()
         self.skip_const = skip_const
         logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
         logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
@@ -458,32 +405,37 @@ class add_symmetry_const:
         for pairs in self.all_pairs:
             pairs = sorted(pairs.items(), key=lambda k: k[0])
             logger.debug(f"symmnet pairs: {pairs}, existing: {self.written_symmblocks}")
-            pairsj = self.filter_symnet_const(pairs)
-            add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
+            self.filter_symnet_const(pairs)
+            # add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
     def pre_fiter(self, key, value):
-        smb_1d =[]
+        smb_1d = set()
+        assert isinstance(key, str), f'invlid instance {key}'
+        assert isinstance(value, str), f'invlid instance {value}'
         for inst in self.written_symmblocks:
             # extend list elements to one_d list
             if isinstance(inst, str):
-                smb_1d.append(inst)
+                smb_1d.add(inst)
             else:
-                smb_1d.extend(inst)
+                smb_1d.update(inst)
         if key in self.stop:
-            # logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop points")
+            logger.debug(f"skipping symmetry b/w {key, value} as they are present in stop points")
             return True
-        elif {key, value} & set(smb_1d) :
-            # logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmblocks}")
+        elif {key, value} & smb_1d:
+            logger.debug(f"skipping symmetry b/w {key, value} as already written {self.written_symmblocks}")
             return True
         elif key not in self.G.nodes():
-            # logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
+            logger.debug(f"skipping symmetry b/w {key, value} as {key} is not in graph")
             return True
 
     def filter_symblock_const(self, pairs: list):
-        pairsj = []
+        pairsj = list()
+        insts_in_single_symmetry = set()
         for key, value in pairs:
             if self.pre_fiter(key, value):
+                continue
+            if {key, value} & insts_in_single_symmetry:
                 continue
             if not self.G.nodes[key].get("instance"):
                 continue
@@ -495,12 +447,13 @@ class add_symmetry_const:
                     logger.debug(f"Skipping self symmetry for single device {key}")
                 elif key !=value:
                     pairsj.append([key,value])
+                    insts_in_single_symmetry.update([key,value])
                 else:
                     pairsj.append([key])
+                    insts_in_single_symmetry.add(key)
         return pairsj
 
     def filter_symnet_const(self, pairs:list):
-        pairsj = []
         for key, value in pairs:
             if self.pre_fiter(key, value):
                 continue
@@ -530,7 +483,6 @@ class add_symmetry_const:
                         # TODO Need update in placer to simplify this
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
-        return pairsj
 
 def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
     logger.debug(f"filterd symmetry pairs: {pairsj}")

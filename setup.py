@@ -69,7 +69,6 @@ setup(name='align',
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
-          'matplotlib',
           'pyyaml',
           'pybind11',
           'pydantic>=1.8',

@@ -1,8 +1,13 @@
+import json
 import textwrap
+from align.pdk.finfet import CanvasPDK
+from align.pnr.main import load_constraint_files, gen_constraint_files
+from align.schema.hacks import VerilogJsonTop
+
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example
     import circuits
 
@@ -10,56 +15,49 @@ except BaseException:
 def test_aspect_ratio_low():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    setup = ""
     constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_min", "ratio_low": 3}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
 def test_aspect_ratio_high():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    setup = ""
     constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_max", "ratio_high": 1}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
 def test_boundary_max_width():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    setup = ""
     constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 3.5}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
 def test_boundary_max_height():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    setup = ""
     constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
 def test_do_not_identify():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_five(name)
-    setup = ""
     constraints = [{"constraint": "AlignInOrder", "line": "left", "instances": ["mp1", "mn1"]}]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
 def test_order_abut():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent("""\
-        POWER = vccx
-        GND = vssx
-        """)
     constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -73,7 +71,7 @@ def test_order_abut():
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5},
         {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["invn", "invp"]}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     run_example(example)
 
@@ -87,12 +85,11 @@ def test_align_top_right():
         mn0 vmd vin vss vss n w=720e-9 nf=4 m=4
         .ends {name}
         """)
-    setup = ""
     constraints = [
         {"constraint": "AlignInOrder", "direction": "vertical", "line": "right", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "direction": "horizontal", "line": "top", "instances": ["mn1", "mp1"]}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
 
 
@@ -105,9 +102,47 @@ def test_align_center():
         mn0 vmd vin vss vss n w=720e-9 nf=4 m=16
         .ends {name}
         """)
-    setup = ""
     constraints = [
         {"constraint": "AlignInOrder", "direction": "vertical", "line": "center", "instances": ["mn0", "mn1", "mp1"]}
         ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     run_example(example)
+
+
+def test_donotroute():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt inv vi vo vccx vssx
+        mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
+        mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
+        .ends
+        .subckt {name} vi vo vccx vssx
+        xi0 vi v1 vccx vssx inv
+        xi1 v1 vo vccx vssx inv
+        .ends
+        """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["v1", "vccx", "vssx"]}
+        ]
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False)
+
+    # There should be opens in the generated layout
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        d = json.load(fp)
+
+        cv = CanvasPDK()
+        cv.terminals = d['terminals']
+        cv.removeDuplicates()
+        assert len(cv.rd.opens) > 0, 'Layout should have opens'
+
+    # The generated and loaded files should be identical
+    input_dir = run_dir / '3_pnr' / 'inputs'
+    verilog_d = VerilogJsonTop.parse_file(input_dir / f'{name.upper()}.verilog.json')
+    constraint_files_l, pnr_const_ds_l = load_constraint_files(input_dir)
+    constraint_files_g, pnr_const_ds_g = gen_constraint_files(verilog_d, input_dir)
+    assert constraint_files_l == constraint_files_g
+    assert pnr_const_ds_l == pnr_const_ds_g

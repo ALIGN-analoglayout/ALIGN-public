@@ -322,7 +322,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "AlignBlock") {
       PnRDB::AlignBlock alignment_unit;
       size_t found;
-      if(constraint["line"] == "h_bottom") {
+      if (constraint["line"] == "h_bottom") {
         alignment_unit.horizon = 1;
         alignment_unit.line = 0;
       } else if (constraint["line"] == "h_center") {
@@ -614,6 +614,14 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         temp_const.insert(node.Block_name_map[b]);
       }
       node.Same_Template_Constraints.push_back(temp_const);
+    } else if (constraint["const_name"] == "CompactPlacement") {
+      node.compact_style = constraint["style"];
+    } else if(constraint["const_name"] == "DoNotRoute"){
+      vector<string> DoNotRoute;
+      for(auto net : constraint["nets"]){
+         DoNotRoute.push_back(net);
+      }
+      node.DoNotRoute = DoNotRoute;
     }
   }
 }

@@ -28,9 +28,6 @@ for pyver in "$@"; do
     "/opt/python/${pyver}/bin/python" -m venv .venv
     source .venv/bin/activate
     pip install pip --upgrade
-    if [ "$AUDITWHEEL_PLAT" == "manylinux2010_x86_64" ]; then
-        pip install "pillow==8.3.2"
-    fi
     pip install align[test] -f "$align_root"/wheelhouse
     pytest -n "$MAX_JOBS" -vv --max-worker-restart 0 tests
     # Reset ALIGN_WORK_DIR
