@@ -222,7 +222,7 @@ def test_ldo_opamp_1():
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
-    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+    with (run_dir / '3_pnr' / f'{name.upper}_0.json').open('rt') as fp:
         data = json.load(fp)
         for term in data['terminals']:
             if term['layer'].startswith('M') and term['netName'] is not None:
@@ -241,7 +241,7 @@ def test_ldo_opamp_2():
         {"constraint": "AspectRatio", "subcircuit": "ldo_opamp", "ratio_low": 0.5, "ratio_high": 2.0}]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
-    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+    with (run_dir / '3_pnr' / f'{name.upper}_0.json').open('rt') as fp:
         data = json.load(fp)
         for term in data['terminals']:
             if term['layer'].startswith('M') and term['netName'] is not None:
@@ -263,7 +263,7 @@ def test_ldo_opamp_3():
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, max_errors=100, n=1)
-    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.placement_verilog.json').open('rt') as fp:
+    with (run_dir / '3_pnr' / 'Results' / f'{name.upper}_0.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
         abstract_names = set([instance['abstract_name'] for instance in placement['leaves']])
         prim = 'CMC_S_PMOS_B_P_w2160_m1_nf12'
@@ -295,7 +295,7 @@ def test_ldo_opamp_4():
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
-    with (run_dir / '3_pnr' / f'{name}_0.json').open('rt') as fp:
+    with (run_dir / '3_pnr' / f'{name.upper}_0.json').open('rt') as fp:
         data = json.load(fp)
         for term in data['terminals']:
             if term['layer'].startswith('M') and term['netName'] is not None:
