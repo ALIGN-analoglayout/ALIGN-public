@@ -585,7 +585,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
-    if 'Cap' in primitive:
+    if 'cap' in primitive:
         blockM = 1
     else:
         blockM = 0
