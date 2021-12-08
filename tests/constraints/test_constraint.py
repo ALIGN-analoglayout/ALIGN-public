@@ -1,10 +1,13 @@
 import json
 import textwrap
 from align.pdk.finfet import CanvasPDK
+from align.pnr.main import load_constraint_files, gen_constraint_files
+from align.schema.hacks import VerilogJsonTop
+
 try:
     from .utils import get_test_id, build_example, run_example
     from . import circuits
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example
     import circuits
 
@@ -127,6 +130,7 @@ def test_donotroute():
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False)
 
+    # There should be opens in the generated layout
     with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
         d = json.load(fp)
 
@@ -134,3 +138,11 @@ def test_donotroute():
         cv.terminals = d['terminals']
         cv.removeDuplicates()
         assert len(cv.rd.opens) > 0, 'Layout should have opens'
+
+    # The generated and loaded files should be identical
+    input_dir = run_dir / '3_pnr' / 'inputs'
+    verilog_d = VerilogJsonTop.parse_file(input_dir / f'{name.upper()}.verilog.json')
+    constraint_files_l, pnr_const_ds_l = load_constraint_files(input_dir)
+    constraint_files_g, pnr_const_ds_g = gen_constraint_files(verilog_d, input_dir)
+    assert constraint_files_l == constraint_files_g
+    assert pnr_const_ds_l == pnr_const_ds_g

@@ -5,7 +5,7 @@ from align.cell_fabric import Pdk
 import align.pdk.finfet
 try:
     from .utils import compare_with_golden, export_to_viewer
-except BaseException:
+except ImportError:
     from utils import compare_with_golden, export_to_viewer
 
 

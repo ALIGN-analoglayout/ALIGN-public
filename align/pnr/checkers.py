@@ -25,7 +25,9 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False, toplevel=True):
+
+def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False,
+                    toplevel=True, pnr_const_ds=None):
 
     logger.info( f'Checking: {hN.name}')
 
@@ -298,13 +300,10 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         cnv.subinsts[inst].parameters.update(parameters)
 
     nets_dnr = []
-    pnr_const_file = input_dir / 'inputs' / f'{hN.name}.pnr.const.json'
-    if pnr_const_file.is_file():
-        with open(pnr_const_file, 'r') as fp:
-            constraints = json.load(fp)
-            for const in constraints['constraints']:
-                if const['const_name'] == 'DoNotRoute':
-                    nets_dnr.extend(const['nets'])
+    if pnr_const_ds is not None and hN.name in pnr_const_ds:
+        for const in pnr_const_ds[hN.name]['constraints']:
+            if const['const_name'] == 'DoNotRoute':
+                nets_dnr.extend(const['nets'])
 
     nets_allowed_to_be_open = set(nets_dnr)
     if not toplevel:

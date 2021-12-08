@@ -1,7 +1,7 @@
 from align.pdk.finfet import tfr_prim
 try:
     from .utils import export_to_viewer
-except BaseException:
+except ImportError:
     from utils import export_to_viewer
 
 

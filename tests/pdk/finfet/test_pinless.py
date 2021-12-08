@@ -1,7 +1,7 @@
 import textwrap
 try:
     from .utils import get_test_id, build_example, run_example
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example
 
 cleanup = False
