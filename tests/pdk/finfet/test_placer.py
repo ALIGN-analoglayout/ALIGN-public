@@ -9,7 +9,7 @@ from align.pnr.render_placement import standalone_overlap_checker
 try:
     from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     from . import circuits
-except BaseException:
+except ImportError:
     from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
     import circuits
 

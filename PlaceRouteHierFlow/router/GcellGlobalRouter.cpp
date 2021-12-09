@@ -1009,6 +1009,13 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
       temp_connectNode.iter2 = node.Nets[i].connected[j].iter2;
       temp_net.connected.push_back(temp_connectNode);
     }
+
+    for(auto net_name: node.DoNotRoute){
+       if(net_name==temp_net.netName){
+          temp_net.DoNotRoute = true;
+       }
+    }
+    
     Nets.push_back(temp_net);
   }
 
@@ -1189,6 +1196,11 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
       AssignContact(temp_via.LowerMetalRect, vit->LowerMetalRect);
       AssignContact(temp_via.UpperMetalRect, vit->UpperMetalRect);
       temp_power_net.path_via.push_back(temp_via);
+    }
+    for(auto net_name: node.DoNotRoute){
+       if(net_name==temp_power_net.netName){
+          temp_power_net.DoNotRoute = true;
+       }
     }
     PowerNets.push_back(temp_power_net);
   }

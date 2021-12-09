@@ -4,7 +4,7 @@ import json
 import shutil
 try:
     from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
-except BaseException:
+except ImportError:
     from utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
 from align.primitive import main
 

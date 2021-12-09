@@ -25,7 +25,9 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False, toplevel=True):
+
+def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False,
+                    toplevel=True, pnr_const_ds=None):
 
     logger.info( f'Checking: {hN.name}')
 
@@ -297,7 +299,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     for inst, parameters in subinsts.items():
         cnv.subinsts[inst].parameters.update(parameters)
 
-    nets_allowed_to_be_open = [] if toplevel else global_power_names
+    nets_dnr = []
+    if pnr_const_ds is not None and hN.name in pnr_const_ds:
+        for const in pnr_const_ds[hN.name]['constraints']:
+            if const['const_name'] == 'DoNotRoute':
+                nets_dnr.extend(const['nets'])
+
+    nets_allowed_to_be_open = set(nets_dnr)
+    if not toplevel:
+        nets_allowed_to_be_open = set.union(nets_allowed_to_be_open, global_power_names)
 
     new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
