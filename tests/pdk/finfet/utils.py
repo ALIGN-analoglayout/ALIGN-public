@@ -10,7 +10,7 @@ try:
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-except:
+except ImportError:
     plt = None
 
 align_home = os.getenv('ALIGN_HOME')
