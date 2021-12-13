@@ -1,8 +1,5 @@
 from align.pdk.finfet import tfr_prim
-try:
-    from .utils import export_to_viewer
-except ImportError:
-    from utils import export_to_viewer
+from .utils import export_to_viewer
 
 
 def test_zero():

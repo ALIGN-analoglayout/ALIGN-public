@@ -169,22 +169,18 @@ def ldo_amp(name):
     return netlist
 
 
-# def buffer(name):
-#     netlist = textwrap.dedent(f"""\
-#         .subckt inv vi vo vccx vssx
-#         mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
-#         mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
-#         .ends
-#         .subckt buf vi vo vccx vssx
-#         xinv0 vi vm vccx vssx inv
-#         xinv1 vm vo vccx vssx inv
-#         .ends
-#         .subckt inv3 vi vo vccx vssx
-#         xinv0 vi vm vccx vssx inv
-#         xbuf0 vm vo vccx vssx buf
-#         .ends
-#         .subckt {name} vi vo vccx vssx
-#         xinv3_0 vi vo vccx vssx inv3
-#         .ends {name}
-#     """)
-#     return netlist
+def ro_simple(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt ro_stage vi vo vccx vssx
+        mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
+        mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
+        .ends
+        .subckt {name} vo vccx vssx
+        xi0 vo v1 vccx vssx ro_stage
+        xi1 v1 v2 vccx vssx ro_stage
+        xi2 v2 v3 vccx vssx ro_stage
+        xi3 v3 v4 vccx vssx ro_stage
+        xi4 v4 vo vccx vssx ro_stage
+        .ends {name}
+    """)
+    return netlist
