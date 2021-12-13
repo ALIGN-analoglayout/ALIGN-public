@@ -35,7 +35,6 @@ def test_cmp_vanilla_pg():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
-    constraints = []
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 

@@ -18,10 +18,7 @@
     "Vspace": 0,
     "unit_size_nmos":null,
     "unit_size_pmos":null,
-    "unit_size_cap":1,
-    "max_nfin_mos":8,
-    "Gate_pitch":45,
-    "unit_height_res":600
+    "Gate_pitch":45
   },
   "Abstraction": [
     {
@@ -59,17 +56,12 @@
       "GdsLayerNo": 99,
       "GdsDatatype": {"Draw":0},
       "Direction": "H",
-      "Pitch": 450,
-      "Width": 450,
-      "MinL": null,
-      "MaxL": null,
-      "EndToEnd": null,
-      "Offset": 0
+      "Pitch": 450
     },
     {
       "Layer": "M1",
       "GdsLayerNo": 1,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "V",
       "Color": [],
       "Pitch": 1080,
@@ -85,7 +77,7 @@
     {
       "Layer": "M2",
       "GdsLayerNo": 2,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "H",
       "Color": [],
       "Pitch": 900,
@@ -101,7 +93,7 @@
     {
       "Layer": "M3",
       "GdsLayerNo": 3,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "V",
       "Color": [],
       "Pitch": 1080,
@@ -117,7 +109,7 @@
     {
       "Layer": "M4",
       "GdsLayerNo": 4,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "H",
       "Color": [],
       "Pitch": 900,
@@ -133,7 +125,7 @@
     {
       "Layer": "M5",
       "GdsLayerNo": 5,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "V",
       "Color": [],
       "Pitch": 1080,
@@ -149,7 +141,7 @@
     {
       "Layer": "M6",
       "GdsLayerNo": 6,
-      "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
+      "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
       "Direction": "H",
       "Color": [],
       "Pitch": 900,
