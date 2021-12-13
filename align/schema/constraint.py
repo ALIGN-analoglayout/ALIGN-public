@@ -737,7 +737,7 @@ class MatchBlocks(SoftConstraint):
 
 class PowerPorts(SoftConstraint):
     '''
-    Defines power port for each hieararchy
+    Defines power ports for each hieararchy
 
     Args:
         ports (list[str]): List of :obj:`ports`.
@@ -783,13 +783,10 @@ class ClockPorts(SoftConstraint):
     '''
     Clock port for each hieararchy. These are used as stop-points
     during auto-constraint identification, means no constraint search
-    will be done beyond the nets connected to these ports
+    will be done beyond the nets connected to these ports.
 
     Args:
         ports (list[str]): List of :obj:`ports`.
-            The first port of top hierarchy will be used for ground grid creation.
-            Power ports are used to identify source and drain of transistors
-            by identifying the terminal at higher potential.
 
     Example: ::
 
@@ -799,6 +796,8 @@ class ClockPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
 
 class DoNotUseLib(SoftConstraint):

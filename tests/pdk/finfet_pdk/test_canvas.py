@@ -3,10 +3,7 @@ from align.pdk.finfet import CanvasPDK
 from align.primitive.default import DefaultCanvas
 from align.cell_fabric import Pdk
 import align.pdk.finfet
-try:
-    from .utils import compare_with_golden, export_to_viewer
-except ImportError:
-    from utils import compare_with_golden, export_to_viewer
+from .utils import compare_with_golden, export_to_viewer
 
 
 layers_json = pathlib.Path(align.pdk.finfet.__file__).parent / 'layers.json'
