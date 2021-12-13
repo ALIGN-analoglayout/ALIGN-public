@@ -98,7 +98,10 @@ def test_cmp_fp1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
+    # Stop flow early for memory profiling
     run_example(example, cleanup=cleanup, area=4e10)
+    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '2_primitives'])
+    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
 
 
 def test_cmp_fp2():
@@ -205,3 +208,15 @@ def test_ro_simple():
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
+
+def test_cs_grid():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.common_source_mini(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)

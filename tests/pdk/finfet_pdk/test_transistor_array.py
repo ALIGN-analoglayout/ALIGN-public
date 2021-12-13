@@ -1,9 +1,6 @@
 import pytest
 from align.pdk.finfet import MOSGenerator
-try:
-    from .utils import get_test_id, export_to_viewer
-except ImportError:
-    from utils import get_test_id, export_to_viewer
+from .utils import get_test_id, export_to_viewer
 import logging
 logger = logging.getLogger(__name__)
 

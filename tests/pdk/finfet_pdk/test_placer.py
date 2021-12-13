@@ -4,14 +4,8 @@ import json
 import shutil
 from align.pnr.hpwl import gen_netlist, calculate_HPWL_from_placement_verilog_d
 from align.pnr.render_placement import standalone_overlap_checker
-
-
-try:
-    from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
-    from . import circuits
-except ImportError:
-    from utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
-    import circuits
+from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
+from . import circuits
 
 cleanup = False
 
@@ -21,12 +15,10 @@ def test_place_cmp_1():
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -42,8 +34,8 @@ def test_place_cmp_1():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level='DEBUG',
                                    additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op'])
 
     print(f'run_dir: {run_dir}')
@@ -105,12 +97,10 @@ def test_place_cmp_2():
         mp14 vop vip_o vccx vccx p w=360e-9 m=1 nf=2
         .ends {name}
     """)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
         {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
@@ -122,7 +112,7 @@ def test_place_cmp_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "ccn"]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     # TODO: Separate below to a separate PR to debug: Constraints for the subhierarchy not respected..
     # setup = textwrap.dedent("""\
@@ -166,12 +156,10 @@ def test_place_cmp_seed(seed):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -221,3 +209,7 @@ def test_place_cmp_seed(seed):
 
     plot_sa_cost(name.upper())
     plot_sa_seq(name.upper())
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
