@@ -1,5 +1,4 @@
-from os import name
-import pytest
+import os
 import pathlib
 import shutil
 import json
@@ -65,6 +64,7 @@ def ring_oscillator(name):
     )
     return netlist
 
+
 def ring_oscillator_flat(name):
     netlist = textwrap.dedent(
         f"""\
@@ -84,34 +84,36 @@ def ring_oscillator_flat(name):
     )
     return netlist
 
+
 def variable_gain_amplifier_equal(name):
     netlist = textwrap.dedent(
         f"""\
         .subckt {name} vmirror_vga s0 s1 s2 s3 vin1 vin2 vout_vga1 vout_vga2 vps vgnd
         .param nfpf_sw=72 nfpf_cm=72 nfpf_dp=48 rl=400
         M03 vmirror_vga vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1 nf=1
-		M02 net3p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
-		M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
-		M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
-		Msw0 net3 s0 net3p vgnd nfet l=0.014u nfin=nfpf_sw
-		Msw1 net5 s1 net5p vgnd nfet l=0.014u nfin=nfpf_sw
-		M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
-		M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
-		M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
-		Msw2 net4 s2 net4p vgnd nfet l=0.014u nfin=nfpf_sw
-		M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
-		M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp
-		M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp
-		Msw3 net6 s3 net6p vgnd nfet l=0.014u nfin=nfpf_sw
-		M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
-		M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp
-		M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp
-		R5 vps vout_vga2 rl
-		R6 vps vout_vga1 rl
+        M02 net3p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
+        M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
+        M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
+        Msw0 net3 s0 net3p vgnd nfet l=0.014u nfin=nfpf_sw
+        Msw1 net5 s1 net5p vgnd nfet l=0.014u nfin=nfpf_sw
+        M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+        M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
+        M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
+        Msw2 net4 s2 net4p vgnd nfet l=0.014u nfin=nfpf_sw
+        M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+        M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp
+        M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp
+        Msw3 net6 s3 net6p vgnd nfet l=0.014u nfin=nfpf_sw
+        M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+        M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp
+        M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp
+        R5 vps vout_vga2 rl
+        R6 vps vout_vga1 rl
         .ends {name}
     """
     )
     return netlist
+
 
 def variable_gain_amplifier_ratioed(name):
     netlist = textwrap.dedent(
@@ -120,32 +122,34 @@ def variable_gain_amplifier_ratioed(name):
         .param nfpf_sw=72 nfpf_sw_2=144 nfpf_sw_4=288 nfpf_cm=72 nfpf_cm_2=144 nfpf_cm_4=288 nfpf_dp=48 nfpf_dp_2=96 nfpf_dp_4=192 rl=400
 
         M03 vmirror_vga vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1 nf=1
-		M02 net3 vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
-		M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
-		M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
-		Msw0 net5 s0 net5p vgnd nfet l=0.014u nfin=nfpf_sw
-		M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
-		M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
-		M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
-		Msw1 net4 s1 net4p vgnd nfet l=0.014u nfin=nfpf_sw_2
-		M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_2
-		M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp_2
-		M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp_2
-		Msw2 net6 s2 net6p vgnd nfet l=0.014u nfin=nfpf_sw_4
-		M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_4
-		M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp_4
-		M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp_4
-		R5 vps vout_vga2 rl
-		R6 vps vout_vga1 rl
+        M02 net3 vmirror_vga vgnd vgnd nfet nfin=nfpf_cm m=1  nf=1
+        M01 vout_vga2 vin2 net3 vgnd nfet nfin=nfpf_dp m=1 nf=1
+        M00 vout_vga1 vin1 net3 vgnd nfet nfin=nfpf_dp
+        Msw0 net5 s0 net5p vgnd nfet l=0.014u nfin=nfpf_sw
+        M12 net5p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm
+        M11 vout_vga2 vin2 net5 vgnd nfet nfin=nfpf_dp
+        M10 vout_vga1 vin1 net5 vgnd nfet nfin=nfpf_dp
+        Msw1 net4 s1 net4p vgnd nfet l=0.014u nfin=nfpf_sw_2
+        M22 net4p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_2
+        M21 vout_vga2 vin2 net4 vgnd nfet nfin=nfpf_dp_2
+        M20 vout_vga1 vin1 net4 vgnd nfet nfin=nfpf_dp_2
+        Msw2 net6 s2 net6p vgnd nfet l=0.014u nfin=nfpf_sw_4
+        M32 net6p vmirror_vga vgnd vgnd nfet nfin=nfpf_cm_4
+        M31 vout_vga2 vin2 net6 vgnd nfet nfin=nfpf_dp_4
+        M30 vout_vga1 vin1 net6 vgnd nfet nfin=nfpf_dp_4
+        R5 vps vout_vga2 rl
+        R6 vps vout_vga1 rl
         .ends {name}
     """
     )
     return netlist
 
+
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
+
 
 def build_example(name, netlist, constraints):
     example = my_dir / name
@@ -157,3 +161,14 @@ def build_example(name, netlist, constraints):
     with open(example / f"{name}.const.json", "w") as fp:
         fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")
+
+
+def get_test_id():
+    try:
+        t = os.environ.get('PYTEST_CURRENT_TEST')
+        t = t.split(' ')[0].split(':')[-1]
+        t = t.replace('[', '_').replace(']', '').replace('-', '_')
+        t = t[5:]
+    except BaseException:
+        t = 'debug'
+    return t

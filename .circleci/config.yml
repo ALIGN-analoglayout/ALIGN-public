@@ -115,7 +115,7 @@ jobs:
       - run:
           name: "Test align using coverage.py"
           command: |
-            ./runcoverage.py tests/
+            ./runcoverage.py tests/ --maxerrors 10
             cp junit.xml coverage-reports
       - store_test_results:
           path: coverage-reports

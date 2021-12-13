@@ -2,7 +2,7 @@ from align.schema.transistor import Transistor
 from align.pdk.finfet import MOS, CanvasPDK
 try:
     from .utils import compare_with_golden, place
-except BaseException:
+except ImportError:
     from utils import compare_with_golden, place
 
 

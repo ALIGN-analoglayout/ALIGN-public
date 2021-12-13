@@ -1037,6 +1037,46 @@ void Placer_Router_Cap::addVia(net& temp_net, PnRDB::point& coord_pos, const PnR
   }
 }
 
+void Placer_Router_Cap::addVia_extend_metal(net& temp_net, PnRDB::point& coord_pos, const PnRDB::Drc_info& drc_info, const string& HV_via_metal, int HV_via_metal_index,
+                               int isPin) {
+  const auto& vm = drc_info.Via_model.at(HV_via_metal_index);
+
+  temp_net.via_pos.push_back(coord_pos);  // DAK: Replace .via with .via_pos throughout
+  temp_net.via_metal.push_back(HV_via_metal);
+
+  int minL_x = 0;
+  int minL_y = 0;
+
+  if (drc_info.Metal_info.at(vm.LowerIdx).direct == 1) {
+    minL_x = drc_info.Metal_info.at(vm.LowerIdx).minL/2;
+    minL_y = drc_info.Metal_info.at(vm.UpperIdx).minL/2;
+  } else {
+    minL_y = drc_info.Metal_info.at(vm.LowerIdx).minL/2;
+    minL_x = drc_info.Metal_info.at(vm.UpperIdx).minL/2;
+  }
+
+  auto apply_aux_pt = [&](PnRDB::point p0, PnRDB::point p1, int idx) {
+    PnRDB::point start_pos = p0;
+    start_pos = start_pos + coord_pos;
+    temp_net.start_connection_pos.push_back(start_pos);
+    temp_net.Is_pin.push_back(isPin);
+    temp_net.metal.push_back(drc_info.Metal_info[idx].name);
+    PnRDB::point end_pos = p1;
+    end_pos = end_pos + coord_pos;
+    temp_net.end_connection_pos.push_back(end_pos);
+  };
+  auto apply_viax = [&](const auto& ra, int idx) { apply_aux_pt(PnRDB::point(min(ra[0].x,-minL_x), 0), PnRDB::point(max(ra[1].x,minL_x), 0), idx); };
+  auto apply_viay = [&](const auto& ra, int idx) { apply_aux_pt(PnRDB::point(0, min(ra[0].y,-minL_x)), PnRDB::point(0, max(ra[1].y,minL_y)), idx); };
+
+  if (drc_info.Metal_info.at(vm.LowerIdx).direct == 1) {
+    apply_viax(vm.LowerRect, vm.LowerIdx);  // use the LL.x and the UR.x with y = 0 for LoweRect
+    apply_viay(vm.UpperRect, vm.UpperIdx);  // Use the LL.y and the UR.y with x = 0 for UpperRect
+  } else {
+    apply_viay(vm.LowerRect, vm.LowerIdx);  //
+    apply_viax(vm.UpperRect, vm.UpperIdx);
+  }
+}
+
 void Placer_Router_Cap::check_grid(const net& n) const {
   auto logger = spdlog::default_logger()->clone("cap_placer.Placer_Router_Cap.check_grid");
 
@@ -1129,7 +1169,8 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(vector<net>& n_array, vector<
           PnRDB::point shift_final = shift.scale(sign, -sign);
           coordP = Caps[n.cap_index[k]].pos + shift_final;
 
-          addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+          //addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+          addVia_extend_metal(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
 
           shift = half_cap_dim - shifting + min_dis;
           shift_final = shift.scale(sign, -sign);
@@ -1142,6 +1183,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(vector<net>& n_array, vector<
             n.Is_pin.push_back(0);
             n.metal.push_back(V_metal);
             addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+            //addVia_extend_metal(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
           }
           n.start_connection_pos.push_back(coordP);
           if (lr == 0) {
@@ -1154,8 +1196,9 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(vector<net>& n_array, vector<
           n.end_connection_pos.push_back(coordP);
           n.Is_pin.push_back(0);
           n.metal.push_back(H_metal);
-
+         
           addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+          //addVia_extend_metal(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
           mb.update(Caps[n.cap_index[k]].index_y, n.cap_index[k], lr);
 
           Caps[n.cap_index[k]].access = 1;
@@ -1300,7 +1343,8 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(vector<net>& n_array, vector<
             PnRDB::point shift = half_cap_dim - shifting;
             PnRDB::point shift_final = shift.scale(sign, -sign);
             coordP = Caps[n.Set[j].cap_index[k]].pos + shift_final;
-            addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+            //addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+            addVia_extend_metal(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
             n.start_connection_pos.push_back(coordP);
             coordP = Caps[n.Set[j].cap_index[index]].pos + shift_final;
             n.end_connection_pos.push_back(coordP);
@@ -1312,8 +1356,8 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(vector<net>& n_array, vector<
             } else if (absx == 0 && absy == 1) {
               n.metal.push_back(V_metal);
             }
-            addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
-
+            //addVia(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
+            addVia_extend_metal(n, coordP, drc_info, HV_via_metal, HV_via_metal_index, 0);
             Caps[n.Set[j].cap_index[k]].access = 1;
             index = 0;
             found = 1;

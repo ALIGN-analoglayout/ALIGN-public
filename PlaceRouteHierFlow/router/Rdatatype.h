@@ -189,6 +189,7 @@ struct PowerNet {
   std::vector<Metal> path_metal;
   std::vector<Via> path_via;
   std::vector<int> extend_label;
+  bool DoNotRoute=false;
 };
 
 struct SinkData {
@@ -258,6 +259,7 @@ struct Net {
   std::vector<C_const> C_constraints;
   int STindex = 0;
   int multi_connection = 1;
+  bool DoNotRoute=false;
   // void display();
 };
 

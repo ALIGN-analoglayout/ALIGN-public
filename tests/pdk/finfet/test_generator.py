@@ -1,7 +1,7 @@
 from align.primitive import main
 try:
     from .utils import pdk_dir, export_to_viewer
-except BaseException:
+except ImportError:
     from utils import pdk_dir, export_to_viewer
 
 

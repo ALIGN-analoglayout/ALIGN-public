@@ -477,6 +477,7 @@ struct hierNode {
   double constraint_penalty = -1;
   double cost = -1;
   std::string compact_style = "left";
+  vector<string> DoNotRoute;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
