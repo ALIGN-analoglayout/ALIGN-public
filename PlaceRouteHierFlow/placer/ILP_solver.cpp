@@ -6,6 +6,7 @@
 #include "symphony.h"
 #include <iostream>
 #include <malloc.h>
+#include <signal.h>
 
 ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
 {
@@ -1627,10 +1628,16 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   return true;
 }
 
+static void dummy_signal_handler(int sig)
+{
+  return;
+}
+
 bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
 
+  auto sighandler = signal(SIGINT, dummy_signal_handler);
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -1655,6 +1662,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   // i*4+2:H_flip
   // i*4+3:V_flip
 
+  const auto infty = sym_get_infinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -1662,7 +1670,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
   intvars.resize(N_var, FALSE);
   std::vector<char> sens;
-  std::vector<double> collb(N_var, 0), colub(N_var, sym_get_infinity());
+  std::vector<double> collb(N_var, 0), colub(N_var, infty);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     colub[i * 4 + 2] = 1;
     colub[i * 4 + 3] = 1;
@@ -1696,7 +1704,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
       const auto& ind = (mydesign.Blocks.size() + i) * 4;
       for (int j = 0; j < 4; ++j) {
-        collb[ind + j] = -sym_get_infinity(); colub[ind + j] = 0;
+        collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
   }
@@ -2194,11 +2202,13 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       sym_close_environment(env);
+      sighandler = signal(SIGINT, sighandler);
       return false;
     }
     std::vector<double> var(N_var, 0.);
     sym_get_col_solution(env, var.data());
     sym_close_environment(env);
+    sighandler = signal(SIGINT, sighandler);
     int minx(INT_MAX), miny(INT_MAX);
     for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
       area_ilp += (objective[i] * var[i]);
