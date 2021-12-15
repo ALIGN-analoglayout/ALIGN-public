@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "symphony.h"
+//#include "symphony.h"
 #include <iostream>
 #include <malloc.h>
 
@@ -1080,24 +1080,8 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   return cost;
 }
 
-class TimeMeasure {
-  private:
-    std::chrono::nanoseconds& _rt;
-    std::chrono::high_resolution_clock::time_point _begin;
-  public:
-    TimeMeasure(std::chrono::nanoseconds& rt) : _rt(rt)
-    {
-      _begin = std::chrono::high_resolution_clock::now();
-    }
-    ~TimeMeasure()
-    {
-      auto _end = std::chrono::high_resolution_clock::now();
-      _rt += std::chrono::duration_cast<std::chrono::nanoseconds>(_end - _begin);
-    }
-};
-
 bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPOrig");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPLpsolve");
 
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -1627,9 +1611,11 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   return true;
 }
 
-bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const vector<placerDB::point>* prev) {
+  return false;
+  /*
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILP");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPSymphony");
 
   int v_metal_index = -1;
   int h_metal_index = -1;
@@ -2148,44 +2134,45 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
     sym_set_int_param(env, "verbosity", -2);
+    //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
 
-    //solve the integer program
-    /*static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      char* names[N_var];
-      std::vector<std::string> namesvec(N_var);
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        int ind = i * 4;
-        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
-      }
+    ////solve the integer program
+    //static int write_cnt{0};
+    //static std::string block_name;
+    //if (block_name != mydesign.name) {
+    //  write_cnt = 0;
+    //  block_name = mydesign.name;
+    //}
+    //if (write_cnt < 10) {
+    //  char* names[N_var];
+    //  std::vector<std::string> namesvec(N_var);
+    //  for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    //    int ind = i * 4;
+    //    namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+    //    names[ind] = &(namesvec[ind][0]);
+    //    namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
+    //    names[ind + 1] = &(namesvec[ind + 1][0]);
+    //    namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
+    //    names[ind + 2] = &(namesvec[ind + 2][0]);
+    //    namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
+    //    names[ind + 3] = &(namesvec[ind + 3][0]);
+    //  }
 
-      for (int i = 0; i < mydesign.Nets.size(); ++i) {
-        int ind = i * 4 + mydesign.Blocks.size() * 4;
-        namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
-      }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
-    }*/
+    //  for (int i = 0; i < mydesign.Nets.size(); ++i) {
+    //    int ind = i * 4 + mydesign.Blocks.size() * 4;
+    //    namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
+    //    names[ind] = &(namesvec[ind][0]);
+    //    namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
+    //    names[ind + 1] = &(namesvec[ind + 1][0]);
+    //    namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
+    //    names[ind + 2] = &(namesvec[ind + 2][0]);
+    //    namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
+    //    names[ind + 3] = &(namesvec[ind + 3][0]);
+    //  }
+    //  sym_set_col_names(env, names);
+    //  sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+    //  ++write_cnt;
+    //}
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       sym_solve(env);
@@ -2223,9 +2210,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   }
 
   return true;
+  */
 }
 
-bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
+bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool genvalid) {
   std::vector<placerDB::point> slackxy(Blocks.size());
   for (unsigned i = 0; i < Blocks.size(); ++i) {
     slackxy[i].x = Blocks[i].x - blockslocal[i].x;
@@ -2297,11 +2285,11 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
     blockpts[i].x = (Blocks[i].x - slackxy[i].x/2);
     blockpts[i].y = (Blocks[i].y - slackxy[i].y/2);
   }
-  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true, &blockpts)) return false;
+  return FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, &blockpts);
   return true;
 }
 
-double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
+double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
 
   if (mydesign.Blocks.empty()) return -1;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
@@ -2313,14 +2301,14 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
     } else if (mydesign.rightAlign()) {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
     } else {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
       std::vector<Block> blockslocal{Blocks};
       // frame and solve ILP to flush top/right
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -2502,8 +2490,8 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
   if (cost >= 0.) {
-    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    logger->debug("ILP__HPWL_compare block {0} : HPWL_extend={1} HPWL_ILP={2}", mydesign.name, HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare block {0} : area={1} area_ilp={2}", mydesign.name, area, area_ilp);
   }
   return calculated_cost;
 }
@@ -2581,6 +2569,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       int colno[mydesign.Blocks[i].size()];
       for (unsigned int j = 0; j < mydesign.Blocks[i].size(); j++) colno[j] = select_begin_id[i] + j;
       if (!add_constraintex(lp, mydesign.Blocks[i].size(), sparserow, colno, EQ, 1)) logger->error("error");
+      //if (!add_SOS(lp, mydesign.Blocks[i][0].name().c_str(), 1, 1, (int)mydesign.Blocks[i].size(), colno, NULL)) logger->error("error");
     }
     {
       double sparserow[mydesign.Blocks[i].size() + 1];

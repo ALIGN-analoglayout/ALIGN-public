@@ -2,7 +2,6 @@
 #include "Placer.h"
 
 #include "spdlog/spdlog.h"
-#define NUM_THREADS 8
 
 std::mt19937_64 Placer::_rng{0};
 
@@ -17,7 +16,7 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP, int ilp_solver) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
@@ -26,9 +25,9 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
   }else{
     if (hyper.use_analytical_placer)
       //#define analytical_placer
-      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo, select_in_ILP);
+      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
     else
-      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo, select_in_ILP, ilp_solver);
+      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
   }
 }
 
@@ -421,10 +420,10 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
 #ifdef MTMODE
       int id;
       int good_idx = -1;
-      Thread_data td[NUM_THREADS];
+      Thread_data td[hyper.NUM_THREADS];
       std::vector<std::thread> threads;
       // Create threads
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         // cout <<"Placer-Info: creating thread, " << id << endl;
         td[id].thread_id = id;
         td[id].thread_designData = designData;
@@ -433,19 +432,19 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
         threads.push_back(std::thread(&Placer::ThreadFunc, this, td + id));
       }
       // Join threads
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         threads.at(id).join();
         // cout<<"Placer-Info: joining thread, "<<id<<endl;
       }
 
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         if (td[id].thread_succeed) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
           break;
         }
       }
-      for (; id < NUM_THREADS; id++) {
+      for (; id < hyper.NUM_THREADS; id++) {
         if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
@@ -580,10 +579,10 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       double trial_cost;
       int id;
       int good_idx = -1;
-      Thread_data td[NUM_THREADS];
+      Thread_data td[hyper.NUM_THREADS];
       std::vector<std::thread> threads;
       // Create threads
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         // cout <<"Placer-Info: creating thread, " << id << endl;
         td[id].thread_id = id;
         td[id].thread_designData = designData;
@@ -592,19 +591,19 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
         threads.push_back(std::thread(&Placer::ThreadFunc, this, td + id));
       }
       // Join threads
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         threads.at(id).join();
         // cout<<"Placer-Info: joining thread, "<<id<<endl;
       }
 
-      for (id = 0; id < NUM_THREADS; id++) {
+      for (id = 0; id < hyper.NUM_THREADS; id++) {
         if (td[id].thread_succeed) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
           break;
         }
       }
-      for (; id < NUM_THREADS; id++) {
+      for (; id < hyper.NUM_THREADS; id++) {
         if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
           trial_cost = td[id].thread_trial_cost;
           good_idx = id;
@@ -707,8 +706,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
 }
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo,
-                                                                                      bool select_in_ILP, int ilp_solver) {
+                                                                                      int nodeSize, int effort, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio_ILP");
 
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
@@ -730,10 +728,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (select_in_ILP)
-      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    else
-      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+    if (hyper.select_in_ILP) {
+      curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    } else {
+      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    }
 
     curr_sp.cacheSeq(designData);
 
@@ -758,6 +757,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (curr_cost < 0) {
     logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
+  } else if (!curr_sp.Enumerate() && hyper.select_in_ILP) {
+    curr_sol.cost = curr_cost;
+    oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+    ReshapeSeqPairMap(oData, nodeSize);
+    return oData;
   }
 
   curr_sol.cost = curr_cost;
@@ -778,7 +782,9 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, T, T_index);
   logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
 
+  unsigned cnt{0};
   while (T > hyper.T_MIN) {
+    if (++cnt > 10) break;
     int i = 1;
     int MAX_Iter = 1;
     if (effort <= 0) {
@@ -863,12 +869,13 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       ++num_perturb;
       trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
-      ILP_solver trial_sol(designData, ilp_solver);
+      ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (select_in_ILP)
-        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      else
-        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+      if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+        trial_cost = trial_sol.PlaceUsingILP(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      } else {
+        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      }
       logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
@@ -963,8 +970,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>&
   }
 }
 
-void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo,
-                                             bool select_in_ILP, int ilp_solver) {
+void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize = nodeVec.size();
 // cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
@@ -984,12 +990,12 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
   curr_sp.PrintSeqPair();
-  ILP_solver curr_sol(designData, ilp_solver);
+  ILP_solver curr_sol(designData, hyper.ilp_solver);
   // clock_t start, finish;
   // double   duration;
   // start = clock();
   std::map<double, std::pair<SeqPair, ILP_solver>> spVec =
-      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo, select_in_ILP, ilp_solver);
+      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
   // logger->info("lpsolve time: {0}", duration);
@@ -1017,8 +1023,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   }
 }
 
-void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo,
-                                                        bool select_in_ILP) {
+void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
   int nodeSize = nodeVec.size();
 // cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
