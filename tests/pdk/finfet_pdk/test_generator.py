@@ -1,8 +1,5 @@
 from align.primitive import main
-try:
-    from .utils import pdk_dir, export_to_viewer
-except BaseException:
-    from utils import pdk_dir, export_to_viewer
+from .utils import pdk_dir, export_to_viewer
 
 
 def test_example():

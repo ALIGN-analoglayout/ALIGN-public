@@ -1,9 +1,6 @@
 from align.schema.transistor import Transistor
 from align.pdk.finfet import MOS, CanvasPDK
-try:
-    from .utils import compare_with_golden, place
-except BaseException:
-    from utils import compare_with_golden, place
+from .utils import compare_with_golden, place
 
 
 def test_zero():

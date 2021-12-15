@@ -1,14 +1,8 @@
-import pytest
 import textwrap
-import json
-import shutil
-try:
-    from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
-except BaseException:
-    from utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
 from align.primitive import main
+from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
 
-cleanup = False
+cleanup = True
 
 
 def test_dig22inv():
@@ -20,9 +14,6 @@ def test_dig22inv():
 
 def test_dig_1():
     name = f'ckt_{get_test_id()}'
-    setup = textwrap.dedent(f"""\
-        DONT_CONST = {name}
-        """)
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
     mp0 o a vccx vccx p w=45e-9 m=1 nf=1
@@ -35,6 +26,9 @@ def test_dig_1():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]}]
-    example = build_example(name, netlist, setup, constraints)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]}
+    ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)

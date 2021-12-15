@@ -34,6 +34,10 @@ def validate_instances(cls, value):
     return [x.upper() for x in value]
 
 
+def upper_case(cls, value):
+    return [v.upper() for v in value]
+
+
 class SoftConstraint(types.BaseModel):
 
     constraint: str
@@ -733,7 +737,7 @@ class MatchBlocks(SoftConstraint):
 
 class PowerPorts(SoftConstraint):
     '''
-    Defines power port for each hieararchy
+    Defines power ports for each hieararchy
 
     Args:
         ports (list[str]): List of :obj:`ports`.
@@ -749,6 +753,8 @@ class PowerPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
 
 class GroundPorts(SoftConstraint):
@@ -770,18 +776,17 @@ class GroundPorts(SoftConstraint):
     '''
     ports: List[str]
 
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+
 
 class ClockPorts(SoftConstraint):
     '''
     Clock port for each hieararchy. These are used as stop-points
     during auto-constraint identification, means no constraint search
-    will be done beyond the nets connected to these ports
+    will be done beyond the nets connected to these ports.
 
     Args:
         ports (list[str]): List of :obj:`ports`.
-            The first port of top hierarchy will be used for ground grid creation.
-            Power ports are used to identify source and drain of transistors
-            by identifying the terminal at higher potential.
 
     Example: ::
 
@@ -791,6 +796,8 @@ class ClockPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+
+    _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
 
 class DoNotUseLib(SoftConstraint):
@@ -1284,6 +1291,12 @@ class MultiConnection(SoftConstraint):
     multiplier: int
 
 
+class DoNotRoute(SoftConstraint):
+    nets: List[str]
+
+    _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
+
+
 ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align,
@@ -1311,6 +1324,7 @@ ConstraintType = Union[
     PortLocation,
     SymmetricNets,
     MultiConnection,
+    DoNotRoute,
     # Setup constraints
     PowerPorts,
     GroundPorts,

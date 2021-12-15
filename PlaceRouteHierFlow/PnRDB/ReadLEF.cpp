@@ -253,7 +253,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 || macroPins.back().pinContacts.back().metal == "") {
-            logger->error("Error: LEF Physical Pin information Missing");
+            logger->warn("Error: LEF Physical Pin information Missing");
             assert(0);
           }
           stage = 2;

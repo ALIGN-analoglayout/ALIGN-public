@@ -241,10 +241,11 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
     return uc, ['Body']
 
+
 def get_generator(name, pdkdir):
     if pdkdir is None:
         return False
-    
+
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -252,20 +253,18 @@ def get_generator(name, pdkdir):
 
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
-        return getattr(module, name)
-    except:
+    except ImportError:
         init_file = pdk_dir_path / '__init__.py'
         if init_file.is_file():  # is pdk a package
             spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
             module = importlib.util.module_from_spec(spec)
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
-            return getattr(module, name, False)
         else:  # is pdk old school (backward compatibility)
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            return getattr(module, name, False)
+    return getattr(module, name, False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):

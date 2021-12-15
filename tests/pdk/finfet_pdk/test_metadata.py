@@ -1,19 +1,14 @@
 import json
 import shutil
-try:
-    from .utils import get_test_id, build_example, run_example
-    from . import circuits
-except BaseException:
-    from utils import get_test_id, build_example, run_example
-    import circuits
+from .utils import get_test_id, build_example, run_example
+from . import circuits
 
 
 def test_dependencies():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '2_primitives' / '__primitives__.json').open('rt') as fp:
