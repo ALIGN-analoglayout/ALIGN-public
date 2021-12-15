@@ -168,6 +168,7 @@ class Placer_Router_Cap {
                                               const map<string, PnRDB::lefMacro>& lefData, bool aspect_ratio, int num_aspect);
   void addVia(net& temp_net, pair<double, double>& coord, const PnRDB::Drc_info& drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
   void addVia(net& temp_net, PnRDB::point& pt, const PnRDB::Drc_info& drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
+  void addVia_extend_metal(net& temp_net, PnRDB::point& coord_pos, const PnRDB::Drc_info& drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
 
   void WriteLef(const PnRDB::block& temp_block, const string& file, const string& opath);
   void check_grid(const net& n) const;

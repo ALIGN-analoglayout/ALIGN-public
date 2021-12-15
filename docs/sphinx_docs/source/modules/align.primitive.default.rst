@@ -20,6 +20,14 @@ align.primitive.default.cap module
    :undoc-members:
    :show-inheritance:
 
+align.primitive.default.guard\_ring module
+------------------------------------------
+
+.. automodule:: align.primitive.default.guard_ring
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 align.primitive.default.mos module
 ----------------------------------
 

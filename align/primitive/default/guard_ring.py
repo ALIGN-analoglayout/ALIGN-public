@@ -51,7 +51,7 @@ class RingGenerator(DefaultCanvas):
         gridY = math.ceil(self.WidthY/self.pdk['M2']['Pitch'])
 
         i = gridX//2+self.ring_enclosureX
-        self.addWire(self.m1_ring, 'Body', 0, (self.ring_enclosureY, -1), (gridY+self.ring_enclosureY, -1))
+        self.addWire(self.m1_ring, 'Body', 0, (self.ring_enclosureY, -1), (gridY+self.ring_enclosureY, -1), netType="pin")
         for j in range(self.ring_enclosureY+1, gridY+self.ring_enclosureY):
             self.addVia(self.va, 'Body', 0, j)
 

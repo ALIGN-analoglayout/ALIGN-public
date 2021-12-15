@@ -2659,5 +2659,8 @@ design::~design() {
   logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
   logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
                 _infeasPlBound, _totalNumCostCalc);
+  logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
+  logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
+  logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
   //_debugofs.close();
 }

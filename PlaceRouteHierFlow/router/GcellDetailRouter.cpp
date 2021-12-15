@@ -650,6 +650,7 @@ void GcellDetailRouter::create_detailrouter() {
   // Copy_tile_metals();
   for (unsigned int i = 0; i < Nets.size(); i++) {
     // int multi_number = R_constraint_based_Parallel_routing_number(i);
+    if(Nets[i].DoNotRoute) continue;
     int multi_number = Nets[i].multi_connection;
     // std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
     std::vector<RouterDB::Metal> symmetry_path;
