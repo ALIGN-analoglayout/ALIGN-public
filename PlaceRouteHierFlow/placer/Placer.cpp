@@ -871,7 +871,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+      if (hyper.select_in_ILP) {
         trial_cost = trial_sol.PlaceUsingILP(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       } else {
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);

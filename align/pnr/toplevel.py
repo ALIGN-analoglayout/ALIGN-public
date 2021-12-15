@@ -316,12 +316,15 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
+    # hyper.NUM_THREADS = 4
+    hyper.ilp_solver = 0 if (ilp_solver == 'symphony') else 1
+    hyper.select_in_ILP = select_in_ILP
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP, ilp_solver)
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
