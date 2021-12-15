@@ -94,6 +94,7 @@ class PnRdatabase {
   int topidx;
   PnRDB::Drc_info DRC_info;
   vector<PnRDB::hierNode> hierTree;  // each module in verilog file is a node
+  int ScaleFactor = 1;
 
   // default constructor
   inline PnRdatabase() {
@@ -163,6 +164,7 @@ class PnRdatabase {
   void PrintLEFData();  // print LEF data for debugging
   map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
   void ReadConstraint_Json(PnRDB::hierNode &node, const string &jsonStr);
+  void ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, const string &jsonStr);
   bool MergeLEFMapData(PnRDB::hierNode &node);
   void PrintHierTree();
 

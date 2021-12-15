@@ -137,6 +137,16 @@ def _attach_constraint_files( DB, fpath):
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
+    
+    for name, instances in DB.lefData.items():
+        fp = d / f"{name}.json"
+        if fp.exists():
+            with fp.open( "rt") as fp:
+                jsonStr = fp.read()
+            DB.ReadPrimitiveOffsetPitch(instances, jsonStr)
+            logger.debug(f"Finished reading primitive json file {name}.json")
+        else:
+            logger.warning(f"No primitive json file for primitive {name}")
 
 def _ReadLEF( DB, path, lefname):
     p = pathlib.Path(path) / lefname

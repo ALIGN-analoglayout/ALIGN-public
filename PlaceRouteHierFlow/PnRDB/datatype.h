@@ -602,6 +602,10 @@ struct lefMacro {
   vector<contact> interMetals;
   vector<Via> interVias;
   string master = "";
+  vector<int> xoffset;
+  int xpitch = 1;
+  vector<int> yoffset;
+  int ypitch = 1;
 };
 
 /// PArt 5: declaration of structures for design rule data
