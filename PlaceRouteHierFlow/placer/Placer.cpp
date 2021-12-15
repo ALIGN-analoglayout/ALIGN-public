@@ -757,7 +757,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (curr_cost < 0) {
     logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
-  } else if (!curr_sp.Enumerate() && hyper.select_in_ILP) {
+  } else if (hyper.select_in_ILP) {
     curr_sol.cost = curr_cost;
     oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
     ReshapeSeqPairMap(oData, nodeSize);
