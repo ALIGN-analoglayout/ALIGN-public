@@ -104,11 +104,12 @@ def remove_dummies(library, dummy_hiers, top):
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
                             _prefix = library.find(y.model).prefix
-                            if not _prefix:
-                                _prefix = "M"  # default value, used in testing
+                            nm = ele.name
+                            if _prefix and not nm.startswith(_prefix):
+                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=ele.name.replace("X", _prefix),
+                                    name=nm,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters,
@@ -193,7 +194,7 @@ def define_SD(subckt, update=True):
         elif isinstance(const, constraint.GroundPorts):
             gnd = const.ports
     if not power or not gnd:
-        logger.warning(f"No power nor ground port specified for {subckt.name}")
+        logger.debug(f"No power nor ground port specified for {subckt.name}")
         return
 
     G = Graph(subckt)

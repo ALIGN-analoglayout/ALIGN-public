@@ -77,9 +77,7 @@ class ConstraintParser:
 
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))
-                logger.warning(
-                    f"Following instances will be excluded from subcircuit identification: {do_not_identify} "
-                )
+                logger.debug(f"Following instances will be excluded from subcircuit identification: {do_not_identify}")
                 with types.set_context(node.constraints):
                     node.constraints.append(
                         {"instances": do_not_identify, "constraint": "DoNotIdentify"}
