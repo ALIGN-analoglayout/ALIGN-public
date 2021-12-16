@@ -69,6 +69,10 @@ class design {
     bool bigMacro = true;
     int mapIdx = -1;
     vector<pin> blockPins;
+    vector<int> xoffset;
+    int xpitch = 1;
+    vector<int> yoffset;
+    int ypitch = 1;
   };
 
   struct terminal {

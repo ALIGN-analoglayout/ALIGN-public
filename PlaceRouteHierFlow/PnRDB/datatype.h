@@ -353,6 +353,10 @@ struct block {
   vector<pin> dummy_power_pin;  // power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
   int HPWL_extend_wo_terminal = 0;
+  vector<int> xoffset;
+  int xpitch = 1;
+  vector<int> yoffset;
+  int ypitch = 1;
 };  // structure of block
 
 struct terminal {
