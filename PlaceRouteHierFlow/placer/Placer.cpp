@@ -782,9 +782,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, T, T_index);
   logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
 
-  unsigned cnt{0};
   while (T > hyper.T_MIN) {
-    if (++cnt > 10) break;
     int i = 1;
     int MAX_Iter = 1;
     if (effort <= 0) {

@@ -316,7 +316,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.COUNT_LIMIT = 200
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
-    # hyper.NUM_THREADS = 4
+    # hyper.NUM_THREADS = 8
     hyper.ilp_solver = 0 if (ilp_solver == 'symphony') else 1
     hyper.select_in_ILP = select_in_ILP
 
@@ -649,7 +649,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=(0 if (ilp_solver=='symphony') else 1))
+                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
     return DB, results_name_map
 

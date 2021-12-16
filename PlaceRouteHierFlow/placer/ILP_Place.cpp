@@ -285,11 +285,12 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
   std::vector<char> intvars;
   intvars.reserve(N_var_max);
   intvars.resize(N_var, 0);
-  std::vector<char> sens;
+  std::vector<char> sens, rowtype;
   std::vector<double> collb, colub;
   collb.reserve(N_var_max); colub.reserve(N_var_max);
   collb.resize(N_var, 0);   colub.resize(N_var, infty);
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 5);
+  rowtype.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 5);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 5);
 
 
@@ -411,6 +412,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     constrvalues[N_area_max - 1].push_back(aspectratio);
     sens.push_back('E');
     rhs.push_back(0.);
+    rowtype.push_back('a');
   } else {
     rowindofcol[N_aspect_ratio_max - 1].push_back(rhs.size());
     rowindofcol[N_aspect_ratio_max - 2].push_back(rhs.size());
@@ -422,6 +424,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     constrvalues[N_area_max - 1].push_back(-aspectratio);
     sens.push_back('E');
     rhs.push_back(0.);
+    rowtype.push_back('a');
   }
 
   const int maxxdim = maxhierwidth  * 5;
@@ -492,6 +495,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
         rhs.push_back(0);
+        rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
         rowindofcol[j * 6].push_back(rhs.size());
@@ -505,6 +509,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
         rhs.push_back(maxxdim);
+        rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
         rowindofcol[j * 6 + 1].push_back(rhs.size());
@@ -518,6 +523,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
         rhs.push_back(-maxdim);
+        rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
         rowindofcol[j * 6 + 1].push_back(rhs.size());
@@ -531,6 +537,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
         rhs.push_back(maxydim + maxdim);
+        rowtype.push_back('o');
       } else if (alignhij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
         if (collb.size() < N_var) {
@@ -550,6 +557,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
         rhs.push_back(0);
+        rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
         rowindofcol[j * 6].push_back(rhs.size());
@@ -561,6 +569,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
         rhs.push_back(maxxdim);
+        rowtype.push_back('o');
       } else if (alignvij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
         if (collb.size() < N_var) {
@@ -580,6 +589,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
         rhs.push_back(0);
+        rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
         rowindofcol[j * 6 + 1].push_back(rhs.size());
@@ -591,6 +601,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
         rhs.push_back(maxydim);
+        rowtype.push_back('o');
       }
     }
   }
@@ -615,6 +626,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       }
       sens.push_back('E');
       rhs.push_back(1);
+      rowtype.push_back('s');
       for (unsigned v : {0, 1}) {
         for (unsigned j = 0; j < blk.size(); ++j) {
           rowindofcol[N_var - blk.size() + j].push_back(rhs.size());
@@ -624,16 +636,19 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[6 * i + 4 + v].push_back(-1);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
     } else if (blk.size() == 1) {
       rowindofcol[6 * i + 4].push_back(rhs.size());
       constrvalues[6 * i + 4].push_back(1);
       sens.push_back('E');
+      rowtype.push_back('s');
       rhs.push_back(blk[0].width);
       rowindofcol[6 * i + 5].push_back(rhs.size());
       constrvalues[6 * i + 5].push_back(1);
       sens.push_back('E');
       rhs.push_back(blk[0].height);
+      rowtype.push_back('s');
     }
   }
 
@@ -688,6 +703,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + j].push_back(-1);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('p');
       }
       if (samedeltax || deltaxneg) {
         std::get<1>(it.second) = deltax;
@@ -700,6 +716,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + 4].push_back(-1);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('p');
         collb[std::get<0>(it.second) + 4] = (deltaxneg ? -infty : 0);
         colub[std::get<0>(it.second) + 4] = bbox_max[4];
         rowindofcol[std::get<0>(it.second)  + 6].push_back(rhs.size());
@@ -708,12 +725,14 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + 4].push_back(-1);
         sens.push_back('L');
         rhs.push_back(0);
+        rowtype.push_back('p');
         rowindofcol[std::get<0>(it.second)  + 6].push_back(rhs.size());
         constrvalues[std::get<0>(it.second) + 6].push_back(1);
         rowindofcol[block_id * 6  + 2].push_back(rhs.size());
         constrvalues[block_id * 6 + 2].push_back(-bbox_max[4]);
         sens.push_back('L');
         rhs.push_back(0);
+        rowtype.push_back('p');
         rowindofcol[std::get<0>(it.second)  + 6].push_back(rhs.size());
         constrvalues[std::get<0>(it.second) + 6].push_back(1);
         rowindofcol[std::get<0>(it.second)  + 4].push_back(rhs.size());
@@ -722,6 +741,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[block_id * 6 + 2].push_back(-bbox_max[4]);
         sens.push_back('G');
         rhs.push_back(-bbox_max[4]);
+        rowtype.push_back('p');
       }
       if (samedeltay || deltayneg) {
         std::get<2>(it.second) = deltay;
@@ -734,6 +754,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + 5].push_back(-1);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('p');
         collb[std::get<0>(it.second) + 5] = (deltayneg ? -infty : 0);
         colub[std::get<0>(it.second) + 5] = bbox_max[5];
         rowindofcol[std::get<0>(it.second)  + 7].push_back(rhs.size());
@@ -742,12 +763,14 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + 5].push_back(-1);
         sens.push_back('L');
         rhs.push_back(0);
+        rowtype.push_back('p');
         rowindofcol[std::get<0>(it.second)  + 7].push_back(rhs.size());
         constrvalues[std::get<0>(it.second) + 7].push_back(1);
         rowindofcol[block_id * 6  + 3].push_back(rhs.size());
         constrvalues[block_id * 6 + 3].push_back(-bbox_max[5]);
         sens.push_back('L');
         rhs.push_back(0);
+        rowtype.push_back('p');
         rowindofcol[std::get<0>(it.second)  + 7].push_back(rhs.size());
         constrvalues[std::get<0>(it.second) + 7].push_back(1);
         rowindofcol[std::get<0>(it.second)  + 5].push_back(rhs.size());
@@ -756,6 +779,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[block_id * 6 + 3].push_back(-bbox_max[5]);
         sens.push_back('G');
         rhs.push_back(-bbox_max[5]);
+        rowtype.push_back('p');
       }
     } else {
       const auto& blk = mydesign.Blocks[block_id][0];
@@ -778,6 +802,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[std::get<0>(it.second) + j].push_back(1);
         sens.push_back('E');
         rhs.push_back(bbox[j]);
+        rowtype.push_back('p');
       }
       std::get<1>(it.second) = bbox[4];
       std::get<2>(it.second) = bbox[5];
@@ -820,6 +845,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       constrvalues[j * 6 + v].push_back(-1);
       sens.push_back('L');
       rhs.push_back(-bias);
+      rowtype.push_back('v');
     }
     for (const auto& it : (v ? abut_v : abut_h)) {
       const auto& i = it.first;
@@ -832,10 +858,11 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       constrvalues[j * 6 + v].push_back(-1);
       sens.push_back('E');
       rhs.push_back(0);
+      rowtype.push_back('a');
     }
   }
 
-  // area variablts Area_x >= x_i + w_i, Area_y >= y_i + h_i for all blocks {i}
+  // area variables Area_x >= x_i + w_i, Area_y >= y_i + h_i for all blocks {i}
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     rowindofcol[i * 6].push_back(rhs.size());
     rowindofcol[N_area_max - 2].push_back(rhs.size());
@@ -849,6 +876,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       sens.push_back('G');
     }
     rhs.push_back(0);
+    rowtype.push_back('A');
 
     rowindofcol[i * 6 + 1].push_back(rhs.size());
     rowindofcol[N_area_max - 1].push_back(rhs.size());
@@ -862,6 +890,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       sens.push_back('G');
     }
     rhs.push_back(0);
+    rowtype.push_back('A');
   }
 
 
@@ -884,6 +913,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 3].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
+          rowtype.push_back('s');
         }
         // each pair has the same H flip
         {
@@ -893,6 +923,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 2].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
+          rowtype.push_back('s');
         }
         // x center of blocks in each pair are the same
         {
@@ -906,6 +937,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 4].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(0);
+          rowtype.push_back('s');
         }
       }
 
@@ -934,6 +966,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_second_id * 6 + 5].push_back(-0.25);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
       // constraint between two selfsyms
       for (auto i = selfsym.begin(); i != selfsym.end(); ++i) {
@@ -952,6 +985,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_id * 6 + 5].push_back(-0.5);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
       if (!sympair.empty() && !selfsym.empty()) {
         // constraint between a pair and a selfsym
@@ -973,6 +1007,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_id * 6 + 5].push_back(-0.5);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
     } else {
       // axis_dir==V
@@ -987,6 +1022,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 2].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
+          rowtype.push_back('s');
         }
         // each pair has the same V flip
         {
@@ -996,6 +1032,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 3].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
+          rowtype.push_back('s');
         }
         // y center of blocks in each pair are the same
         {
@@ -1009,6 +1046,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           constrvalues[second_id * 6 + 5].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(0);
+          rowtype.push_back('s');
         }
       }
 
@@ -1037,6 +1075,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_second_id * 6 + 4].push_back(-0.25);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
       // constraint between two selfsyms
       for (auto i = selfsym.begin(); i != selfsym.end(); ++i) {
@@ -1055,6 +1094,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_id * 6 + 4].push_back(-0.5);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
       if (!sympair.empty() && !selfsym.empty()) {
         // constraint between a pair and a selfsym
@@ -1076,6 +1116,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         constrvalues[j_id * 6 + 4].push_back(-0.5);
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('s');
       }
     } 
   }
@@ -1104,6 +1145,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         }
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('l');
       } else {
         rowindofcol[first_id  * 6].push_back(rhs.size());
         rowindofcol[second_id * 6].push_back(rhs.size());
@@ -1124,6 +1166,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         }
         sens.push_back('E');
         rhs.push_back(0);
+        rowtype.push_back('l');
       }
     }
   }
@@ -1173,6 +1216,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           }
           sens.push_back('G');
           rhs.push_back(0);
+          rowtype.push_back('h');
         }
         {
           rowindofcol[block_id * 6 + 1].push_back(rhs.size());
@@ -1190,6 +1234,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           }
           sens.push_back('G');
           rhs.push_back(0);
+          rowtype.push_back('h');
         }
         {
           rowindofcol[block_id * 6].push_back(rhs.size());
@@ -1207,6 +1252,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           }
           sens.push_back('L');
           rhs.push_back(0);
+          rowtype.push_back('h');
         }
         {
           rowindofcol[block_id * 6 + 1].push_back(rhs.size());
@@ -1224,6 +1270,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           }
           sens.push_back('L');
           rhs.push_back(0);
+          rowtype.push_back('h');
         }
       }
     }
@@ -1349,7 +1396,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         osiclp.setColName(i, names[i]);
       }
       for (unsigned i = 0; i < rhs.size(); ++i) {
-        osiclp.setRowName(i, ("r" + std::to_string(i)).c_str());
+        osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
       }
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
@@ -1359,16 +1406,16 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      model.setLogLevel(-1);
+      model.setLogLevel(0);
       model.setMaximumSeconds(500);
       if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
         model.setNumberThreads(num_threads);
         model.setMaximumSeconds(500 * num_threads);
       }
-      //model.branchAndBound();
       logger->info("status : {0} {1}" , CbcModel::haveMultiThreadSupport(), num_threads);
-      const char* argv[] = {"-log", "0"};
-      status = CbcMain1(2, argv, model);
+      model.branchAndBound();
+      //const char* argv[] = {"", "-solve"};
+      //status = CbcMain1(2, argv, model);
     }
     //int status = model.secondaryStatus();
     const double* var = model.bestSolution();

@@ -1648,7 +1648,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   std::vector<double> rhs;
   std::vector<char> intvars(mydesign.Blocks.size() * 4, 1);
   intvars.resize(N_var, 0);
-  std::vector<char> sens;
+  std::vector<char> sens, rowtype;
   std::vector<double> collb(N_var, 0), colub(N_var, infty);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     colub[i * 4 + 2] = 1;
@@ -1734,6 +1734,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   roundup(bias_Hgraph, x_pitch);
   roundup(bias_Vgraph, y_pitch);
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
+  rowtype.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
 
   // overlap constraint
@@ -1758,6 +1759,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             sens.push_back('L');
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
           }
+          rowtype.push_back('o');
         } else {
           // i is above j
           rowindofcol[i * 4 + 1].push_back(rhs.size());
@@ -1772,6 +1774,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             sens.push_back('G');
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
           }
+          rowtype.push_back('o');
         }
       } else {
         if (i_neg_index < j_neg_index) {
@@ -1788,6 +1791,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             sens.push_back('L');
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
           }
+          rowtype.push_back('o');
         } else {
           // i is right of j
           rowindofcol[i * 4].push_back(rhs.size());
@@ -1802,6 +1806,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             sens.push_back('G');
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
           }
+          rowtype.push_back('o');
         }
       }
     }
@@ -1822,6 +1827,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 3].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
+          rowtype.push_back('s');
         }
         // each pair has the same H flip
         {
@@ -1831,6 +1837,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 2].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
+          rowtype.push_back('s');
         }
         // x center of blocks in each pair are the same
         {
@@ -1842,6 +1849,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(-first_x_center + second_x_center);
+          rowtype.push_back('s');
         }
       }
 
@@ -1865,6 +1873,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_first_id  * 4 + 1].push_back(-0.5);
           constrvalues[j_second_id * 4 + 1].push_back(-0.5);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -1886,6 +1895,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[i_second_id * 4 + 1].push_back(0.5);
           constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -1904,6 +1914,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[i_id * 4 + 1].push_back(1);
           constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -1919,6 +1930,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[first_id * 4 + 2].push_back(1);
           constrvalues[second_id * 4 + 2].push_back(1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(1);
         }
         // each pair has the same V flip
@@ -1928,6 +1940,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[first_id * 4 + 3].push_back(1);
           constrvalues[second_id * 4 + 3].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(0);
         }
         // y center of blocks in each pair are the same
@@ -1939,6 +1952,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[first_id  * 4 + 1].push_back(1);
           constrvalues[second_id * 4 + 1].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(-first_y_center + second_y_center);
         }
       }
@@ -1963,6 +1977,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_first_id  * 4].push_back(-0.5);
           constrvalues[j_second_id * 4].push_back(-0.5);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -1984,6 +1999,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[i_second_id * 4].push_back(0.5);
           constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -2002,6 +2018,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[i_id * 4].push_back(1);
           constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
+          rowtype.push_back('s');
           rhs.push_back(bias);
         }
       }
@@ -2026,6 +2043,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].height + mydesign.Blocks[second_id][curr_sp.selected[second_id]].height;
         }
         sens.push_back('E');
+        rowtype.push_back('a');
         rhs.push_back(bias);
       } else {
         rowindofcol[first_id  * 4].push_back(rhs.size());
@@ -2041,6 +2059,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           bias = -mydesign.Blocks[first_id][curr_sp.selected[first_id]].width + mydesign.Blocks[second_id][curr_sp.selected[second_id]].width;
         }
         sens.push_back('E');
+        rowtype.push_back('a');
         rhs.push_back(bias);
       }
     }
@@ -2080,6 +2099,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             constrvalues[block_id * 4 + 2].push_back(deltax);
             constrvalues[ind].push_back(-1);
             sens.push_back('G');
+            rowtype.push_back('h');
             rhs.push_back(-pin_llx);
           }
           if (netExtremes.InBottomExtreme(i, block_id)) {
@@ -2090,6 +2110,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             constrvalues[block_id * 4 + 3].push_back(deltay);
             constrvalues[ind + 1].push_back(-1);
             sens.push_back('G');
+            rowtype.push_back('h');
             rhs.push_back(-pin_lly);
           }
           if (netExtremes.InRightExtreme(i, block_id)) {
@@ -2100,6 +2121,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             constrvalues[block_id * 4 + 2].push_back(deltax);
             constrvalues[ind + 2].push_back(-1);
             sens.push_back('L');
+            rowtype.push_back('h');
             rhs.push_back(-pin_urx);
           }
           if (netExtremes.InTopExtreme(i, block_id)) {
@@ -2110,6 +2132,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             constrvalues[block_id * 4 + 3].push_back(deltay);
             constrvalues[ind + 3].push_back(-1);
             sens.push_back('L');
+            rowtype.push_back('h');
             rhs.push_back(-pin_ury);
           }
         }
@@ -2139,6 +2162,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         case 'L':
           rowlb[i] = -infty;
           rowub[i] = rhs[i];
+          break;
         case 'G':
           rowlb[i] = rhs[i];
           rowub[i] = infty;
@@ -2187,22 +2211,34 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
-      sym_set_col_names(env, names);
+      for (unsigned i = 0; i < N_var; ++i) {
+        osiclp.setColName(i, names[i]);
+      }
+      for (unsigned i = 0; i < rhs.size(); ++i) {
+        osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
+      }
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
-    } */
+    }*/
     CbcModel model(osiclp);
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      model.setLogLevel(-1);
+      model.setLogLevel(0);
       model.setMaximumSeconds(50);
-      if (num_threads > 0) {
+      if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
         model.setNumberThreads(num_threads);
+        model.setMaximumSeconds(50 * num_threads);
+        //model.branchAndBound();
+        const char* argv[] = {"", "-threads", std::to_string(num_threads).c_str(), "-solve"};
+        status = CbcMain1(4, argv, model);
+      } else {
+        const char* argv[] = {"", "-solve"};
+        status = CbcMain1(2, argv, model);
       }
-      model.branchAndBound();
     }
     const double* var = model.bestSolution();
-    int status = model.secondaryStatus();
+    //int status = model.secondaryStatus();
     if (status != 0 || !var) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
@@ -2306,7 +2342,6 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
     blockpts[i].y = (Blocks[i].y - slackxy[i].y/2);
   }
   return FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, &blockpts);
-  return true;
 }
 
 double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
