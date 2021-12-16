@@ -24,6 +24,10 @@ set(sources
 ExternalProject_Get_Property(cbc binary_dir)
 ExternalProject_Get_Property(cbc source_dir)
 include_directories(${source_dir}/Cbc/src)
+include_directories(${source_dir}/Cgl/src)
+include_directories(${source_dir}/Clp/src)
+include_directories(${source_dir}/Clp/src/OsiClp)
+include_directories(${source_dir}/Osi/src/Osi)
 include_directories(${source_dir}/CoinUtils/src)
 add_library(placer STATIC ${sources} ${headers})
 

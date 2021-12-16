@@ -3,7 +3,8 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "Cbc_C_Interface.h"
+#include "CbcModel.hpp"
+#include "OsiClpSolverInterface.hpp"
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
@@ -275,7 +276,8 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
   // i*6+3:V_flip
   // i*6+4:Width
   // i*6+5:Height
-  const double infty = 1.e30;
+  OsiClpSolverInterface osiclp;
+  const double infty{osiclp.getInfinity()};
 
   std::vector<int> rowindofcol[N_var_max];
   std::vector<double> constrvalues[N_var_max];
@@ -792,17 +794,43 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     }
   }
 
+
+  std::set<std::pair<int, int>> abut_h, abut_v;
+  for (const auto& it : mydesign.Abut_Constraints) {
+    if (it.second == placerDB::H) {
+      abut_h.emplace(it.first);
+    } else {
+      abut_v.emplace(it.first);
+    }
+  }
   for (int v : {1, 0}) {
+    const auto& bias = v ? bias_Vgraph : bias_Hgraph;
     for (const auto& it : (v ? ordering_v : ordering_h)) {
-      const auto& i = it.second;
-      const auto& j = it.first;
+      auto itabut = (v ? abut_v.find(it) : abut_h.find(it));
+      if ((v && abut_v.find(it) != abut_v.end()) || (!v && abut_h.find(it) != abut_h.end())) {
+        continue;
+      }
+      const auto& i = v ? it.second : it.first;
+      const auto& j = v ? it.first  : it.second;
       rowindofcol[i * 6 + v].push_back(rhs.size());
-      rowindofcol[j * 6 + v].push_back(rhs.size());
       rowindofcol[i * 6 + 4 + v].push_back(rhs.size());
+      rowindofcol[j * 6 + v].push_back(rhs.size());
       constrvalues[i * 6 + v].push_back(1);
-      constrvalues[j * 6 + v].push_back(-1);
       constrvalues[i * 6 + 4 + v].push_back(1);
+      constrvalues[j * 6 + v].push_back(-1);
       sens.push_back('L');
+      rhs.push_back(-bias);
+    }
+    for (const auto& it : (v ? abut_v : abut_h)) {
+      const auto& i = it.first;
+      const auto& j = it.second;
+      rowindofcol[i * 6 + v].push_back(rhs.size());
+      rowindofcol[i * 6 + 4 + v].push_back(rhs.size());
+      rowindofcol[j * 6 + v].push_back(rhs.size());
+      constrvalues[i * 6 + v].push_back(1);
+      constrvalues[i * 6 + 4 + v].push_back(1);
+      constrvalues[j * 6 + v].push_back(-1);
+      sens.push_back('E');
       rhs.push_back(0);
     }
   }
@@ -1231,19 +1259,15 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       }
     }
 
-    Cbc_Model *cbcmodel = Cbc_newModel();
-    Cbc_loadProblem(cbcmodel, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub);
     for (int i = 0; i < intvars.size(); ++i) {
       if (intvars[i]) {
-        Cbc_setInteger(cbcmodel, i);
+        osiclp.setInteger(i);
       }
     }
-    Cbc_setLogLevel(cbcmodel, 0);
-    Cbc_setMaximumSeconds(cbcmodel, 100);
     //sym_set_int_param(env, "gap_limit", (getenv("SYM_GAP_LIMIT") ? std::atoi(getenv("SYM_GAP_LIMIT")) : -1));
-    //Cbc_setAllowableFractionGap(cbcmodel, allowedFracionGap);
 
     static int write_cnt{0};
     static std::string block_name;
@@ -1322,26 +1346,37 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       names[N_aspect_ratio_max - 2]    = &(namesvec[N_aspect_ratio_max - 2][0]);
 
       for (unsigned i = 0; i < N_var; ++i) {
-        Cbc_setColName(cbcmodel, i, names[i]);
+        osiclp.setColName(i, names[i]);
       }
       for (unsigned i = 0; i < rhs.size(); ++i) {
-        Cbc_setRowName(cbcmodel, i, ("r" + std::to_string(i)).c_str());
+        osiclp.setRowName(i, ("r" + std::to_string(i)).c_str());
       }
-      Cbc_writeLp(cbcmodel, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }
     //solve the integer program
+    CbcModel model(osiclp);
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      Cbc_solve(cbcmodel);
+      model.setLogLevel(-1);
+      model.setMaximumSeconds(500);
+      if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
+        model.setNumberThreads(num_threads);
+        model.setMaximumSeconds(500 * num_threads);
+      }
+      //model.branchAndBound();
+      logger->info("status : {0} {1}" , CbcModel::haveMultiThreadSupport(), num_threads);
+      const char* argv[] = {"-log", "0"};
+      status = CbcMain1(2, argv, model);
     }
-    int status = Cbc_secondaryStatus(cbcmodel);
-    if (status < 0 || status == 7 || status == 8 || status == 5 || status == 1) {
+    //int status = model.secondaryStatus();
+    const double* var = model.bestSolution();
+    logger->info("status : {0}", status);
+    if (status != 0 || !var) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      Cbc_deleteModel(cbcmodel);
       return false;
     }
-    const double *var = Cbc_getColSolution(cbcmodel);
     int minx(INT_MAX), miny(INT_MAX);
     area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -1364,7 +1399,6 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         }
       }
     }
-    Cbc_deleteModel(cbcmodel);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
       Blocks[i].y -= miny;

@@ -3,9 +3,10 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-//#include "symphony.h"
 #include <iostream>
 #include <malloc.h>
+#include "CbcModel.hpp"
+#include "OsiClpSolverInterface.hpp"
 
 ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
 {
@@ -1612,8 +1613,6 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
 }
 
 bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const vector<placerDB::point>* prev) {
-  return false;
-  /*
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPSymphony");
 
@@ -1641,19 +1640,20 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   // i*4+2:H_flip
   // i*4+3:V_flip
 
+  OsiClpSolverInterface osiclp;
+  const auto infty{osiclp.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
-  std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
-  intvars.resize(N_var, FALSE);
+  std::vector<char> intvars(mydesign.Blocks.size() * 4, 1);
+  intvars.resize(N_var, 0);
   std::vector<char> sens;
-  std::vector<double> collb(N_var, 0), colub(N_var, sym_get_infinity());
+  std::vector<double> collb(N_var, 0), colub(N_var, infty);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     colub[i * 4 + 2] = 1;
     colub[i * 4 + 3] = 1;
   }
-
 
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
@@ -1682,7 +1682,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
       const auto& ind = (mydesign.Blocks.size() + i) * 4;
       for (int j = 0; j < 4; ++j) {
-        collb[ind + j] = -sym_get_infinity(); colub[ind + j] = 0;
+        collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
   }
@@ -2051,7 +2051,6 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     netExtremes.FindExtremes(mydesign.Nets[i], i);
   }
 
-  // set_add_rowmode(lp, FALSE);
   {
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
@@ -2129,63 +2128,85 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    double rowlb[rhs.size()], rowub[rhs.size()];
+    for (unsigned i = 0; i < sens.size(); ++i) {
+      switch(sens[i]) {
+        case 'E':
+        default:
+          rowlb[i] = rhs[i];
+          rowub[i] = rhs[i];
+          break;
+        case 'L':
+          rowlb[i] = -infty;
+          rowub[i] = rhs[i];
+        case 'G':
+          rowlb[i] = rhs[i];
+          rowub[i] = infty;
+          break;
+      }
+    }
+    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
-    //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
+        objective.data(), rowlb, rowub);
+    for (unsigned i = 0; i < intvars.size(); ++i) {
+      if (intvars[i]) {
+        osiclp.setInteger(i);
+      }
+    }
 
-    ////solve the integer program
-    //static int write_cnt{0};
-    //static std::string block_name;
-    //if (block_name != mydesign.name) {
-    //  write_cnt = 0;
-    //  block_name = mydesign.name;
-    //}
-    //if (write_cnt < 10) {
-    //  char* names[N_var];
-    //  std::vector<std::string> namesvec(N_var);
-    //  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    //    int ind = i * 4;
-    //    namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
-    //    names[ind] = &(namesvec[ind][0]);
-    //    namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
-    //    names[ind + 1] = &(namesvec[ind + 1][0]);
-    //    namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
-    //    names[ind + 2] = &(namesvec[ind + 2][0]);
-    //    namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
-    //    names[ind + 3] = &(namesvec[ind + 3][0]);
-    //  }
+    //solve the integer program
+    /*static int write_cnt{0};
+    static std::string block_name;
+    if (block_name != mydesign.name) {
+      write_cnt = 0;
+      block_name = mydesign.name;
+    }
+    if (write_cnt < 10) {
+      char* names[N_var];
+      std::vector<std::string> namesvec(N_var);
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        int ind = i * 4;
+        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+        names[ind] = &(namesvec[ind][0]);
+        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
+        names[ind + 1] = &(namesvec[ind + 1][0]);
+        namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
+        names[ind + 2] = &(namesvec[ind + 2][0]);
+        namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
+        names[ind + 3] = &(namesvec[ind + 3][0]);
+      }
 
-    //  for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    //    int ind = i * 4 + mydesign.Blocks.size() * 4;
-    //    namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
-    //    names[ind] = &(namesvec[ind][0]);
-    //    namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
-    //    names[ind + 1] = &(namesvec[ind + 1][0]);
-    //    namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
-    //    names[ind + 2] = &(namesvec[ind + 2][0]);
-    //    namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
-    //    names[ind + 3] = &(namesvec[ind + 3][0]);
-    //  }
-    //  sym_set_col_names(env, names);
-    //  sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-    //  ++write_cnt;
-    //}
+      for (int i = 0; i < mydesign.Nets.size(); ++i) {
+        int ind = i * 4 + mydesign.Blocks.size() * 4;
+        namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
+        names[ind] = &(namesvec[ind][0]);
+        namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
+        names[ind + 1] = &(namesvec[ind + 1][0]);
+        namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
+        names[ind + 2] = &(namesvec[ind + 2][0]);
+        namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
+        names[ind + 3] = &(namesvec[ind + 3][0]);
+      }
+      sym_set_col_names(env, names);
+      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      ++write_cnt;
+    } */
+    CbcModel model(osiclp);
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      model.setLogLevel(-1);
+      model.setMaximumSeconds(50);
+      if (num_threads > 0) {
+        model.setNumberThreads(num_threads);
+      }
+      model.branchAndBound();
     }
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    const double* var = model.bestSolution();
+    int status = model.secondaryStatus();
+    if (status != 0 || !var) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       return false;
     }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    sym_close_environment(env);
     int minx(INT_MAX), miny(INT_MAX);
     for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
       area_ilp += (objective[i] * var[i]);
@@ -2210,7 +2231,6 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   }
 
   return true;
-  */
 }
 
 bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool genvalid) {
@@ -2554,13 +2574,13 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   for (unsigned int i = 0; i < N_var; i++) {
-    set_int(lp, i + 1, TRUE);
+    set_int(lp, i + 1, 1);
   }
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    set_binary(lp, i * 6 + 3, TRUE);
-    set_binary(lp, i * 6 + 4, TRUE);
+    set_binary(lp, i * 6 + 3, 1);
+    set_binary(lp, i * 6 + 4, 1);
     for (unsigned int j = 0; j < mydesign.Blocks[i].size(); j++) {
-      set_binary(lp, select_begin_id[i] + j, TRUE);
+      set_binary(lp, select_begin_id[i] + j, 1);
     }
     {
       // select of one block sum up to one
