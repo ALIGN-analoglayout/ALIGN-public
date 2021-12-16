@@ -45,7 +45,7 @@ class ConstraintParser:
             for cf in self.input_dir.rglob("*.const.json")
             if cf.stem.upper() == design_name + ".CONST"
         ]
-        logger.debug(f"constraint json path {json_path} {self.input_dir}")
+        logger.info(f"Reading constraints for {design_name.lower()}")
         if json_path and json_path[0].is_file():
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
@@ -85,6 +85,4 @@ class ConstraintParser:
                         {"instances": do_not_identify, "constraint": "DoNotIdentify"}
                     )
         else:
-            logger.info(
-                f"No user constraints found for block {design_name} in path {self.input_dir}"
-            )
+            logger.debug(f"No user constraints found for block {design_name} in path {self.input_dir}")

@@ -222,3 +222,14 @@ def test_common_source():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
+
+
+def test_ota():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.two_stage_ota_differential(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)
