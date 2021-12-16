@@ -1683,13 +1683,17 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()){
       for (unsigned int j = 0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
         colub[temp_pointer + j] = 1;
+        intvars[temp_pointer + j] = 1;
       }
+      intvars[temp_pointer + int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size())] = 1;
       temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
     }
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()){
       for (unsigned int j = 0;j<mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size();j++){
         colub[temp_pointer + j] = 1;
+        intvars[temp_pointer + j] = 1;
       }
+      intvars[temp_pointer + int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size())] = 1;
       temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
     }
   }
