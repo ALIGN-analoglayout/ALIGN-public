@@ -36,12 +36,12 @@ def test_NMOS(library, test_ckt):
                 model='NMOS',
                 pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'},
                 generator='MOS')
-        with pytest.raises(Exception):
-            inst = Instance(
-                name='X1',
-                model='NMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
-                generator='MOS')
+        # with pytest.raises(Exception):
+        #     inst = Instance(
+        #         name='X1',
+        #         model='NMOS',
+        #         pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+        #         generator='MOS')
         inst = Instance(
             name='M1',
             model='NMOS',
@@ -72,12 +72,12 @@ def test_PMOS(library, test_ckt):
                 model='PMOS',
                 pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13'},
                 generator='MOS')
-        with pytest.raises(Exception):
-            inst = Instance(
-                name='X1',
-                model='PMOS',
-                pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
-                generator='MOS')
+        # with pytest.raises(Exception):
+        #     inst = Instance(
+        #         name='X1',
+        #         model='PMOS',
+        #         pins={'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'},
+        #         generator='MOS')
         inst = Instance(
             name='M1',
             model='PMOS',

@@ -39,7 +39,7 @@ def test_simple_circuit():
         "STACK": "1",
     }
     # TBF: Document base model
-    assert model.prefix == "M"
+    assert model.prefix == ''
     assert circuit.elements[0].parameters == {
         "W": "2.7E-08",
         "L": "2E-08",

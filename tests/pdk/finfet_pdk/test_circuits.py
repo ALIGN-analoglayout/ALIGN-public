@@ -5,13 +5,15 @@ from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 
-cleanup = True
+cleanup = False
 
 
 def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    constraints = []
+    constraints = [
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+    ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
@@ -33,9 +35,9 @@ def test_cmp_vanilla_pg():
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]}
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
-    constraints = []
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
@@ -210,13 +212,33 @@ def test_ro_simple():
         shutil.rmtree(ckt_dir)
 
 
-def test_cs_grid():
+def test_common_source():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.common_source_mini(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)
+
+
+def test_two_stage_ota():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.two_stage_ota_differential(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2.0},
+        # {"constraint": "AutoConstraint", "isTrue": false, "propagate": false},
+        {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "name": "scn"},
+        {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "name": "scp"},
+        {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp1"], "name": "dp2"},
+        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "name": "sc2"},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["sc2", "dp2", "scp", "dp", "scn"], "abut": True},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["sc2"], ["dp2"], ["scp"], ["dp"], ["scn"]]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
