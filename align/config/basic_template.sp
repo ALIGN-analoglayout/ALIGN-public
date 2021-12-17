@@ -28,14 +28,26 @@ M1 DB DA S B NMOS w=w l=90n
 .ends SCM_NMOS_B
 
 .subckt SCM_PMOS_B DA DB S B
+* @: SymmetricBlocks(pairs=[['M0','M1']], direction='V')
 M0 DA DA S B PMOS w=w l=90n
 M1 DB DA S B PMOS w=w l=90n
 .ends SCM_PMOS_B
 
 .subckt SCM_NMOS DA DB S
+* @: SymmetricBlocks(pairs=[['M0','M1']], direction='V')
 M0 DA DA S S NMOS w=w l=90n
 M1 DB DA S S NMOS w=w l=90n
 .ends SCM_NMOS
+
+.subckt CM_PMOS_B DA DB S B
+M0 DA DA S B PMOS w=w l=90n
+M1 DB DA S B PMOS w=w l=90n
+.ends CM_PMOS_B
+
+.subckt CM_NMOS DA DB S
+M0 DA DA S S NMOS w=w l=90n
+M1 DB DA S S NMOS w=w l=90n
+.ends CM_NMOS
 
 .subckt SCM_PMOS DA DB S
 M0 DA DA S S PMOS w=w l=90n
