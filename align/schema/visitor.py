@@ -1,10 +1,10 @@
+from . import types
 import abc
 import logging
 import functools
 
 logger = logging.getLogger(__name__)
 
-from . import types
 
 def cache(function=None, *, types=None):
     '''
@@ -26,6 +26,7 @@ def cache(function=None, *, types=None):
        Cache all incoming nodes that are instances of types
        (Mostly used by generic_visit)
     '''
+
     def decorator(f):
         @functools.wraps(f)
         def cached_method(visitor, node):
@@ -43,6 +44,7 @@ def cache(function=None, *, types=None):
         return decorator(function)
     else:
         return decorator
+
 
 class Visitor(object):
     """
@@ -73,7 +75,7 @@ class Visitor(object):
         self.cache = {}
 
     def visit(self, node):
-        if isinstance(node, (types.BaseModel, types.List, types.Dict, str, int, type(None))):
+        if isinstance(node, (types.BaseModel, types.List, types.Dict, list, dict, str, int, type(None))):
             method = 'visit_' + node.__class__.__name__
             return getattr(self, method, self.generic_visit)(node)
         else:
@@ -99,17 +101,19 @@ class Visitor(object):
 
     @cache(types=(types.BaseModel, types.List, types.Dict))
     def generic_visit(self, node):
+
         if isinstance(node, types.BaseModel):
             return self.flatten(self.visit(v) for _, v in self.iter_fields(node))
-        elif isinstance(node, types.List):
+        elif isinstance(node, types.List) or isinstance(node, list):
             return self.flatten(self.visit(v) for v in node)
-        elif isinstance(node, types.Dict):
+        elif isinstance(node, types.Dict) or isinstance(node, dict):
             return self.flatten(self.visit(v) for _, v in node.items())
         elif isinstance(node, (str, int, type(None))):
             return None
         else:
-            raise NotImplementedError( \
+            raise NotImplementedError(
                 f'{self.__class__.__name__}.generic_visit() does not support node of type {node.__class__.__name__}:\n{node}')
+
 
 class Transformer(Visitor):
     """
@@ -134,14 +138,14 @@ class Transformer(Visitor):
             field_dict = dict(self.iter_fields(node))
             new_field_dict = {k: self.visit(v) for k, v in field_dict.items()}
             return node if all(x is y for x, y in zip(field_dict.values(), new_field_dict.values())) else node.__class__(**new_field_dict)
-        elif isinstance(node, types.List):
+        elif isinstance(node, types.List) or isinstance(node, list):
             new_node = [self.visit(v) for v in node]
             return node if all(x is y for x, y in zip(node, new_node)) else new_node
-        elif isinstance(node, types.Dict):
+        elif isinstance(node, types.Dict) or isinstance(node, dict):
             new_node = {k: self.visit(v) for k, v in node.items()}
             return node if all(x is y for x, y in zip(node.values(), new_node.values())) else new_node
         elif isinstance(node, (int, str, type(None))):
             return node
         else:
-            raise NotImplementedError( \
+            raise NotImplementedError(
                 f'{self.__class__.__name__}.generic_visit() does not support node of type {node.__class__.__name__}:\n{node}')

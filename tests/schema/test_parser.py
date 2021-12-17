@@ -15,7 +15,7 @@ def setup_basic():
 @pytest.fixture
 def setup_multiline():
     return '''
-    X1 a b  testdev x =1f y= 0.1 
+    X1 a b  testdev x =1f y= 0.1
     X2 a  b testdev x = {capval*2}
     '''
 
@@ -85,6 +85,17 @@ def test_lexer_multiline(setup_multiline):
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
+def test_lexer_continuation(setup_basic):
+    str_ = "param fin_p_diff2sing=6 \\  \nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
+
+    str_ = "param fin_p_diff2sing=6 \\\nwidth_n_diff2sing=10\n"
+    types = ['NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert [tok.type for tok in tokens] == types
 
 def test_lexer_annotation(setup_annotation):
     str_ = setup_annotation
@@ -183,4 +194,4 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 31
+    assert len(parser.library) - libsize == 23

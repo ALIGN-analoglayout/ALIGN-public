@@ -1,4 +1,7 @@
 [
+    {"constraint": "PowerPorts", "ports": ["VCC"]},
+    {"constraint": "GroundPorts", "ports": ["VSS"]},
+    {"constraint": "ClockPorts", "ports": ["clk"]},
     {"constraint":"HorizontalDistance", "abs_distance":0},
     {"constraint":"VerticalDistance",   "abs_distance":0},
     {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
@@ -10,7 +13,7 @@
         "direction" : "V",
         "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
     },
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["mn0", "dp", "ccn", "ccp"]
     },

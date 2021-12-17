@@ -12,15 +12,17 @@ from ..schema.hacks import VerilogJsonTop
 logger = logging.getLogger(__name__)
 
 NType = PnR.NType
+Omark = PnR.Omark
 
-def ReadVerilogJson( DB, j):
+def ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
 
     for module in j['modules']:
 
         temp_node = PnR.hierNode()
-        temp_node.name = module['name']
+        temp_node.name = module['name'] if 'name' in module else module['abstract_name']
         temp_node.isCompleted = 0
+
 
         Terminals = []
         for parameter in module['parameters']:
@@ -64,7 +66,7 @@ def ReadVerilogJson( DB, j):
                     Nets.append( PnR.net())
                     Connecteds.append( [])
                     Nets[-1].name = net_name
-                    
+
                     net_map[net_name] = net_index
 
                 # Use a python list of list to workaround not being able to append to a C++ vector
@@ -82,7 +84,7 @@ def ReadVerilogJson( DB, j):
                 net_name = fa['actual']
                 temp_pin.netIter = process_connection( i, net_name)
                 blockPins.append( temp_pin)
-                
+
             current_instance.blockPins = blockPins
             temp_blockComplex.instance = [ current_instance ]
             Blocks.append( temp_blockComplex)
@@ -123,8 +125,9 @@ def _attach_constraint_files( DB, fpath):
     d = pathlib.Path(fpath)
 
     for curr_node in DB.hierTree:
-        curr_node.bias_Vgraph = DB.getDrc_info().Design_info.Vspace
-        curr_node.bias_Hgraph = DB.getDrc_info().Design_info.Hspace
+        curr_node.bias_Vgraph  = DB.getDrc_info().Design_info.Vspace
+        curr_node.bias_Hgraph  = DB.getDrc_info().Design_info.Hspace
+        curr_node.compact_style = DB.getDrc_info().Design_info.compact_style
 
         fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():
@@ -134,7 +137,7 @@ def _attach_constraint_files( DB, fpath):
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
-                
+
 def _ReadLEF( DB, path, lefname):
     p = pathlib.Path(path) / lefname
     if p.exists():
@@ -143,6 +146,12 @@ def _ReadLEF( DB, path, lefname):
             DB.ReadLEFFromString( s)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
+        
+def semantic(DB, path, topcell, global_signals):
+    _attach_constraint_files( DB, path)
+    DB.semantic0( topcell)
+    DB.semantic1( global_signals)
+    DB.semantic2()
 
 def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB = PnR.PnRdatabase()
@@ -157,12 +166,9 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     if vname.endswith(".verilog.json"):
         j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
         global_signals = ReadVerilogJson( DB, j)
+        semantic(DB, path, topcell, global_signals)
     else:
         global_signals = DB.ReadVerilog( path, vname, topcell)
-
-    _attach_constraint_files( DB, path)
-    DB.semantic0( topcell)
-    DB.semantic1( global_signals)
-    DB.semantic2()
+        semantic(DB, path, topcell, global_signals)
 
     return DB, j

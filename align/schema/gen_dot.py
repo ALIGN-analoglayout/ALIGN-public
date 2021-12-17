@@ -77,7 +77,7 @@ def gen_dot_file(nm, ifn, ofn):
                 print( f"\t{n}{idx} [label=\"{n}\"]", file=fp)
 
         m = { "S": "f2", "G": "f1", "D": "f0"}
-        m_cap = { "+": "f1", "-": "f0"}
+        m_cap = { "PLUS": "f1", 'MINUS': "f0"}
 
         for e in elements_no_dummys:
             for k,v in e.pins.items():

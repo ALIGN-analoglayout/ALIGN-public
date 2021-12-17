@@ -132,7 +132,26 @@ class CmdlineParser():
 
         parser.add_argument('--viewer',
                             action='store_true',
-                            help='Start lightweight viewer')
+                            help='Start lightweight viewer.')
+
+        parser.add_argument('--select_in_ILP',
+                            action='store_true',
+                            help='Use ILP to determine subcircuit selection.')
+
+        parser.add_argument('--use_analytical_placer',
+                            action='store_true',
+                            help='Use analytical placer.')
+
+        parser.add_argument('--seed',
+                            type=int,
+                            default=0,
+                            help='Random number generator seed for the placement algorithm')
+
+        parser.add_argument('--ilp_solver',
+                            type=str,
+                            default='symphony',
+                            choices=['symphny', 'lpsolve'],
+                            help='ILP Solver used by placer ')
 
         self.parser = parser
 

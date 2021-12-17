@@ -2,10 +2,7 @@
         {
           "constraint": "group_caps",
           "name": "c1_c3",
-          "instances": [
-            "c1",
-            "c3"
-          ],
+          "instances": [],
           "unit_cap": "Cap_12f",
           "num_units": [
             3,
@@ -16,10 +13,7 @@
         {
           "constraint": "group_caps",
           "name": "c7_c6",
-          "instances": [
-            "c7",
-            "c6"
-          ],
+          "instances": [],
           "unit_cap": "Cap_12f",
           "num_units": [
             3,
@@ -28,54 +22,16 @@
           "dummy": false
         },
         {
-          "constraint": "symmetric_nets",
-          "net1": "net66",
-          "net2": "net64",
-          "pins1": [
-            "m7/D",
-            "xi0/vinp",
-            "c1_c3/MINUS1",
-            "c2_c5/MINUS0"
-          ],
-          "pins2": [
-            "m10/D",
-            "xi0/vinn",
-            "c7_c6/MINUS1",
-            "c2_c5/PLUS1"
-          ],
-          "direction": "V"
-        },
-        {
-          "constraint": "symmetric_nets",
-          "net1": "vinp",
-          "net2": "vinn",
-          "pins1": [
-            "m12/S",
-            "vinp"
-          ],
-          "pins2": [
-            "m6/S",
-            "vinn"
-          ],
-          "direction": "V"
-        },
-        {
-          "constraint": "symmetric_nets",
-          "net1": "voutn",
-          "net2": "voutp",
-          "pins1": [
-            "m0/D",
-            "xi0/voutn",
-            "c1_c3/PLUS1",
-            "c8_c9/MINUS0",
-            "voutn"
-          ],
-          "pins2": [
-            "m14/D",
-            "xi0/voutp",
-            "c7_c6/PLUS1",
-            "c8_c9/PLUS1",
-            "voutp"
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C5",
+              "C2"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M6_M7",
+              "X_CMC_S_NMOS_B_I1_M12_M14"
+            ]
           ],
           "direction": "V"
         },
@@ -83,86 +39,27 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "c0_c4"
-            ],
-            [
-              "c1_c3",
-              "c7_c6"
-            ],
-            [
-              "c2_c5"
-            ],
-            [
-              "c4_c0"
-            ],
-            [
-              "c8_c9"
-            ],
-            [
-              "m0",
-              "m14"
-            ],
-            [
-              "m12",
-              "m6"
-            ],
-            [
-              "m3",
-              "m11"
-            ],
-            [
-              "m5",
-              "m9"
-            ],
-            [
-              "m7",
-              "m10"
-            ],
-            [
-              "m8",
-              "m4"
+              "C8",
+              "C9"
             ]
           ],
           "direction": "V"
         },
         {
-          "constraint": "group_caps",
-          "name": "c0_c4",
-          "instances": [
-            "c0_c4"
+          "constraint": "symmetric_nets",
+          "net1": "VINN",
+          "net2": "VINP",
+          "pins1": [
+            "C5/PLUS",
+            "X_CMC_S_NMOS_B_I1_M6_M7/SB",
+            "VINN"
           ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            5,
-            5
+          "pins2": [
+            "C2/PLUS",
+            "X_CMC_S_NMOS_B_I1_M12_M14/SA",
+            "VINP"
           ],
-          "dummy": false
-        },
-        {
-          "constraint": "group_caps",
-          "name": "c2_c5",
-          "instances": [
-            "c2_c5"
-          ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            3,
-            3
-          ],
-          "dummy": false
-        },
-        {
-          "constraint": "group_caps",
-          "name": "c8_c9",
-          "instances": [
-            "c8_c9"
-          ],
-          "unit_cap": "Cap_12f",
-          "num_units": [
-            5,
-            5
-          ],
-          "dummy": false
+          "direction": "V"
         }
 ]
 

@@ -29,7 +29,7 @@ class Macro:
         self.scale_factor = 10000
 
     def prnt(self):
-        print( f"macroName {self.macroName} ox {self.ox} oy {self.oy} sx {self.sx} sy {self.sy} bbox {self.bbox}")
+        # print( f"macroName {self.macroName} ox {self.ox} oy {self.oy} sx {self.sx} sy {self.sy} bbox {self.bbox}")
         for pin in self.pins:
             pin.prnt()
         self.obs.prnt()
@@ -57,7 +57,7 @@ class Obs:
             print( '      port', port)
 
 
-# Parser 
+# Parser
 class LEFParser:
     '''
     Implementation of a recursive descent parser for LEF.   Each method
@@ -109,7 +109,7 @@ class LEFParser:
             raise SyntaxError('Expected keyword' + k)
 
     def pA( self, m):
-        self._expect('NUM')     
+        self._expect('NUM')
         return float(self.tok.value)
 
     # Grammar rules follow
@@ -122,21 +122,21 @@ class LEFParser:
             elif self._accept_keyword( 'LAYER'):
                 self._expect('NAME')
                 layer = self.tok.value
-                self._expect('SEMI')    
+                self._expect('SEMI')
             elif self._accept_keyword( 'RECT'):
                 lst = [ self.pA(m) for _ in range(4)]
-                self._expect('SEMI')    
+                self._expect('SEMI')
                 assert layer is not None
                 pin.ports.append( ( layer, tuple(lst)))
             else:
-                raise SyntaxError('Expected END, LAYER, or RECT keywords.')     
+                raise SyntaxError('Expected END, LAYER, or RECT keywords.')
 
     def macro(self):
         m = Macro()
         m.pins = []
 
         self._expect('NAME')
-        m.macroName = self.tok.value 
+        m.macroName = self.tok.value
         while True:
             if self._accept_keyword( 'END'):
                 self._expect_keyword(m.macroName)
@@ -167,14 +167,14 @@ class LEFParser:
                     elif self._accept_keyword( 'DIRECTION'):
                         self._expect('NAME')
                         pin.direction = self.tok.value
-                        self._expect('SEMI')    
+                        self._expect('SEMI')
                     elif self._accept_keyword( 'USE'):
                         self._expect('NAME')
-                        self._expect('SEMI')    
+                        self._expect('SEMI')
                     elif self._accept_keyword( 'PORT'):
                         self.ports(m, pin)
                     else:
-                        raise SyntaxError('Expected END, DIRECTION, USE, or PORT keywords.')     
+                        raise SyntaxError('Expected END, DIRECTION, USE, or PORT keywords.')
                 m.pins.append(pin)
             elif self._accept_keyword( 'UNITS'):
                 self._expect_keyword( 'DATABASE')
@@ -182,7 +182,7 @@ class LEFParser:
                 self._expect_keyword('UNITS')
                 self._expect('NUM')
                 m.scale_factor = float(self.tok.value)
-                self._expect('SEMI')    
+                self._expect('SEMI')
                 self._expect_keyword( 'END')
                 self._expect_keyword('UNITS')
             elif self._accept_keyword( 'OBS'):
@@ -191,7 +191,7 @@ class LEFParser:
             elif self._accept_keyword( 'PROPERTY'):
                 self._expect('NAME')
                 if self._accept( 'LIT') or self._accept( 'NUM'):
-                    self._expect('SEMI')                                
+                    self._expect('SEMI')
                 else:
                     raise SyntaxError('Expected LIT or NUM tokens')
             else:
@@ -207,7 +207,7 @@ class LEFParser:
             if self._accept_keyword('END'):
                 self._accept_keyword('LIBRARY')
                 break
-            elif self._accept_keyword( 'VERSION'): 
+            elif self._accept_keyword( 'VERSION'):
                 self._expect('NUM')
                 self._expect('SEMI')
             elif self._accept_keyword( 'BUSBITCHARS'):

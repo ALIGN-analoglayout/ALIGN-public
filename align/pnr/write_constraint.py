@@ -30,7 +30,7 @@ class PnRConstraintWriter:
             # Create dict for PnR constraint
             # and handle common field aliasing
             const = input_const.dict(
-                exclude={'constraint'},
+                exclude = {'constraint'},
                 exclude_unset=True)
             const['const_name'] = input_const.__class__.__name__
             if 'instances' in const:
@@ -57,7 +57,7 @@ class PnRConstraintWriter:
                 del const['blocks']
             elif const["const_name"] == 'BlockDistance':
                 const["const_name"] = 'bias_graph'
-                const["distance"] = const.pop('abs_distance')               
+                const["distance"] = const.pop('abs_distance')
             elif const["const_name"] == 'HorizontalDistance':
                 const["const_name"] = 'bias_Hgraph'
                 const["distance"] = const.pop('abs_distance')
@@ -94,8 +94,8 @@ class PnRConstraintWriter:
                 const["pairs"] = pairs
             elif const["const_name"] == 'GroupCaps':
                 const["const_name"] = 'CC'
-                const["cap_name"] = const.pop("name")
-                const["unit_capacitor"] = const.pop("unit_cap")
+                const["cap_name"] = const.pop("name").upper()
+                const["unit_capacitor"] = const.pop("unit_cap").upper()
                 const["size"] = const.pop("num_units")
                 const["nodummy"] = not const["dummy"]
                 const["cap_r"] = -1
@@ -104,7 +104,7 @@ class PnRConstraintWriter:
                 del const["blocks"]
             elif const["const_name"] == 'Align':
                 const["const_name"] = 'AlignBlock'
-                if const['line'] not in ['h_bottom', 'h_top', 'v_right', 'v_left', 'v_center']:
+                if const['line'] not in ['h_bottom', 'h_top', 'h_center', 'v_right', 'v_left', 'v_center']:
                     raise NotImplementedError(f'PnR does not support edge {const["line"]} yet')
             elif const["const_name"] == 'SymmetricNets':
                 const["const_name"] = 'SymmNet'
@@ -134,14 +134,14 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'MultiConnection':
                 for net in const["nets"]:
                     extra = {
-                        "const_name" : 'Multi_Connection',
-                        "multi_number" : int(const["multiplier"]),
-                        "net_name" : net
+                        "const_name": 'Multi_Connection',
+                        "multi_number": int(const["multiplier"]),
+                        "net_name": net.upper()  # TODO: Revert after case sensitivity is restored
                     }
                     pnr_const.append(extra)
             elif const["const_name"] == 'NetConst':
                 for net in const["nets"]:
-                    if 'shield' in const and 'criticality' in const and not const['shield'] =="None":
+                    if 'shield' in const and 'criticality' in const and not const['shield'] == "None":
                         extra = {
                             "const_name" : 'ShieldNet',
                             "net_name" : net,
@@ -161,7 +161,7 @@ class PnRConstraintWriter:
                             "shield_net" : const["shield"]
                             }
                         pnr_const.append(extra)
-    
+
                     elif 'criticality' in const and const['shield'] =="None":
                         extra = {
                             "const_name" : 'CritNet',
@@ -185,7 +185,7 @@ class PnRConstraintWriter:
             else:
                 temp = {
                     "type":"terminal",
-                    "name":pin, 
+                    "name":pin,
                     "pin":None
                     }
             blocks.append(temp)

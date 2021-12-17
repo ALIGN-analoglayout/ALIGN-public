@@ -12,34 +12,34 @@
             "pairs": [
                 {
                     "type": "selfsym",
-                    "block": "mn0"
+                    "block": "MN0"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mn1_mn2"
+                    "block": "X_DP_MN1_MN2"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mn3_mn4"
+                    "block": "X_CCN_MN3_MN4"
                 },
                 {
                     "type": "selfsym",
-                    "block": "mp5_mp6"
+                    "block": "X_CCP_MP5_MP6"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp7",
-                    "block2": "mp8"
+                    "block1": "MP7",
+                    "block2": "MP8"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp9",
-                    "block2": "mp10"
+                    "block1": "MP9",
+                    "block2": "MP10"
                 },
                 {
                     "type": "sympair",
-                    "block1": "mp11_mn13",
-                    "block2": "mp12_mn14"
+                    "block1": "X_INV_N_MP11_MN13",
+                    "block2": "X_INV_P_MP12_MN14"
                 }
             ],
             "const_name": "SymmBlock",
@@ -50,50 +50,50 @@
             "abut": false,
             "const_name": "Ordering",
             "blocks": [
-                "mn0",
-                "mn1_mn2",
-                "mn3_mn4",
-                "mp5_mp6"
+                "MN0",
+                "X_DP_MN1_MN2",
+                "X_CCN_MN3_MN4",
+                "X_CCP_MP5_MP6"
             ]
         },
         {
             "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
-                "mp9",
-                "mp7",
-                "mn1_mn2",
-                "mp8",
-                "mp10"
+                "MP9",
+                "MP7",
+                "X_DP_MN1_MN2",
+                "MP8",
+                "MP10"
             ]
         },
         {
             "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
-                "mp11_mn13",
-                "mp5_mp6",
-                "mp12_mn14"
+                "X_INV_N_MP11_MN13",
+                "X_CCP_MP5_MP6",
+                "X_INV_P_MP12_MN14"
             ]
         },
         {
             "const_name": "Multi_Connection",
             "multi_number": 3,
-            "net_name": "vcom"
+            "net_name": "VCOM"
         },
         {
             "const_name": "DoNotIdentify",
             "blocks": [
-                "mn3_mn4",
-                "mp5_mp6",
-                "mn1_mn2",
-                "mp11_mn13",
-                "mp12_mn14",
-                "mn0",
-                "mp10",
-                "mp7",
-                "mp8",
-                "mp9"
+                "X_CCN_MN3_MN4",
+                "X_CCP_MP5_MP6",
+                "X_DP_MN1_MN2",
+                "X_INV_N_MP11_MN13",
+                "X_INV_P_MP12_MN14",
+                "MN0",
+                "MP10",
+                "MP7",
+                "MP8",
+                "MP9"
             ]
         }
     ]
