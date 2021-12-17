@@ -45,8 +45,8 @@ class ConstraintParser:
             for cf in self.input_dir.rglob("*.const.json")
             if cf.stem.upper() == design_name + ".CONST"
         ]
-        logger.info(f"Reading constraints for {design_name.lower()}")
         if json_path and json_path[0].is_file():
+            logger.info(f"Reading constraints for {design_name.lower()}")
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
