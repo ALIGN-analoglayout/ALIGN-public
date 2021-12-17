@@ -728,7 +728,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+    if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
       curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
     } else {
       curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
@@ -757,7 +757,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (curr_cost < 0) {
     logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
-  } else if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+  } else if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
     curr_sol.cost = curr_cost;
     oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
     ReshapeSeqPairMap(oData, nodeSize);
@@ -869,7 +869,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+      if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
         trial_cost = trial_sol.PlaceUsingILP(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       } else {
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);

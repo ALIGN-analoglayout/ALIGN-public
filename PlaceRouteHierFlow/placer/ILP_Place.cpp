@@ -49,12 +49,14 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
     } else {
       if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
       std::vector<Block> blockslocal{Blocks};
+      auto selectedlocal = curr_sp.selected;
       // frame and solve ILP to flush top/right
       if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
         Blocks = blockslocal;
+        const_cast<SeqPair&>(curr_sp).selected = selectedlocal;
       }
     }
     // snap up coordinates to grid
@@ -862,6 +864,27 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     }
   }
 
+  for (const auto& group : mydesign.Same_Template_Constraints) {
+    auto it1 = group.begin();
+    auto it2 = std::next(it1);
+    while (it2 != group.end()) {
+      if (mydesign.Blocks[*it1].size() == mydesign.Blocks[*it2].size()) {
+        for (unsigned idx1 = blk_select_idx[*it1], idx2 = blk_select_idx[*it2];
+            idx1 < (blk_select_idx[*it1] + mydesign.Blocks[*it1].size());
+            ++idx1, ++idx2) {
+          rowindofcol[idx1].push_back(rhs.size());
+          rowindofcol[idx2].push_back(rhs.size());
+          constrvalues[idx1].push_back(1);
+          constrvalues[idx2].push_back(-1);
+          sens.push_back('E');
+          rhs.push_back(0);
+          rowtype.push_back('e');
+        }
+      }
+      it1 = it2++;
+    }
+  }
+
   // area variables Area_x >= x_i + w_i, Area_y >= y_i + h_i for all blocks {i}
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     rowindofcol[i * 6].push_back(rhs.size());
@@ -1411,11 +1434,14 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
         model.setNumberThreads(num_threads);
         model.setMaximumSeconds(500 * num_threads);
+        const char* argv[] = {"", "-threads", std::to_string(num_threads).c_str(), "-solve"};
+        status = CbcMain1(4, argv, model);
+      } else {
+        const char* argv[] = {"", "-solve"};
+        status = CbcMain1(2, argv, model);
       }
       logger->info("status : {0} {1}" , CbcModel::haveMultiThreadSupport(), num_threads);
-      model.branchAndBound();
-      //const char* argv[] = {"", "-solve"};
-      //status = CbcMain1(2, argv, model);
+      //model.branchAndBound();
     }
     //int status = model.secondaryStatus();
     const double* var = model.bestSolution();
