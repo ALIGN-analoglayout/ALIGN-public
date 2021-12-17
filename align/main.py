@@ -160,7 +160,7 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                     more_primitives[concrete_name]['y_cells'] = newy
         else:
             if not (k.startswith( "Res") or k.startswith( "Cap")):
-                logger.warning( f'Didn\'t match primitive {k}')
+                logger.debug( f'Didn\'t match primitive {k}')
             map_d[k].append( k)
 
     primitives.update( more_primitives)

@@ -127,7 +127,7 @@ class MOSGenerator(CanvasPDK):
             else:
                 track_pattern_2['S'] = [3]
 
-            if   self.transistor_array.ports[2]['D'] == self.transistor_array.ports[1]['D']:
+            if self.transistor_array.ports[2]['D'] == self.transistor_array.ports[1]['D']:
                 track_pattern_2['D'] = [2]
             else:
                 track_pattern_2['D'] = [1]

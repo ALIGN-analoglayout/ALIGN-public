@@ -311,7 +311,7 @@ def test_remove_dummy_hier(dbr):
     assert "LEAF_CKT" in dummy_hiers
     assert "TRUNK_CKT" in dummy_hiers
     remove_dummies(dbr, ["LEAF_CKT"], "TOP_CKT")
-    assert trunk.elements[0].name == "MTR1"
+    assert trunk.elements[0].name == "XTR1"
     assert trunk.elements[0].model == "TESTMOS"
     assert trunk.elements[0].parameters == {
         "PARAM1": "1.0",
@@ -321,7 +321,7 @@ def test_remove_dummy_hier(dbr):
     }
     assert trunk.elements[0].pins == {"D": "TD", "G": "TG", "S": "TS", "B": "TB"}
     remove_dummies(dbr, ["TRUNK_CKT"], "TOP_CKT")
-    assert top.elements[0].name == "MTT1"
+    assert top.elements[0].name == "XTT1"
     assert top.elements[0].model == "TESTMOS"
     assert top.elements[0].parameters == {
         "PARAM1": "1.0",

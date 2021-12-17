@@ -5,16 +5,17 @@ from .types import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
 
+
 class Model(types.BaseModel):
     '''
     Model creation class
     '''
 
-    name : str                 # Model Name
-    base : Optional[str]       # Model Base (for derived models)
-    pins : Optional[List[str]] # List of pin names (derived from base if base exists)
-    parameters : Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
-    prefix : Optional[str]     # Instance name prefix, optional
+    name: str                  # Model Name
+    base: Optional[str]        # Model Base (for derived models)
+    pins: Optional[List[str]]  # List of pin names (derived from base if base exists)
+    parameters: Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
+    prefix: Optional[str]     # Instance name prefix, optional
 
     def xyce(self):
         params = ' '.join(f'{k}={{{v}}}' for k, v in self.parameters.items())
@@ -78,4 +79,3 @@ class Model(types.BaseModel):
         if 'base' in values and values['base']:
             prefix = cls._get_base_model(cls._validator_ctx().parent, values['base']).prefix
         return prefix
-

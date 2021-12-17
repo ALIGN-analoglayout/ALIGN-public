@@ -38,7 +38,7 @@ with set_context(default):
                 'W': 0,
                 'L': 0,
                 'NFIN': 1},
-            prefix='M'
+            prefix=''
         )
     )
 
@@ -50,7 +50,7 @@ with set_context(default):
                 'W': 0,
                 'L': 0,
                 'NFIN': 1},
-            prefix='M'
+            prefix=''
         )
     )
 
