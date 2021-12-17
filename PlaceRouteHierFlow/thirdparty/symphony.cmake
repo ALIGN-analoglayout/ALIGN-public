@@ -18,7 +18,7 @@ if(NOT symphony_POPULATED)
   message(STATUS ${symphony_PREFIX_DIR})
   ExternalProject_Add(symphony
       SOURCE_DIR ${symphony_SOURCE_DIR}
-      CONFIGURE_COMMAND ${symphony_SOURCE_DIR}/configure --disable-openmp --disable-signal-handler --disable-zlib --disable-bzlib --without-blas --without-lapack --enable-static --disable-shared --with-pic --prefix=${symphony_BINARY_DIR}
+      CONFIGURE_COMMAND ${symphony_SOURCE_DIR}/configure --disable-openmp --disable-zlib --disable-bzlib --without-blas --without-lapack --enable-static --disable-shared --with-pic --prefix=${symphony_BINARY_DIR}
       BUILD_BYPRODUCTS ${symphony_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Sym${CMAKE_STATIC_LIBRARY_SUFFIX}
       BUILD_COMMAND make -j${N}
       BUILD_IN_SOURCE 1
