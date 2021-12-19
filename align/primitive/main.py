@@ -22,7 +22,7 @@ def get_xcells_pattern( primitive, pattern, x_cells):
         x_cells = 2*x_cells + 2
     elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
-        x_cells = x_cells
+        x_cells = 2*x_cells
         # TODO: Fix difficulties associated with CC patterns matching this condition
         pattern = 2 if x_cells%4 != 0 else pattern ### CC is not possible; default is interdigitated
     return x_cells, pattern
@@ -411,7 +411,6 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             #for ele in subckt.elements:
                 #values[ele.name]['real_inst_type'] = vt
             values['M0']['real_inst_type'] = vt
-
             block_args= {
                 'primitive': name,
                 'x_cells': x,
@@ -472,7 +471,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             for key in values:
                 size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
 
-            no_units = ceil(size / (2*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
+            no_units = ceil(size / (4*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
                 square_y = floor(sqrt(no_units/3))
             else:
