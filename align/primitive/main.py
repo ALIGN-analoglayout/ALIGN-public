@@ -22,7 +22,7 @@ def get_xcells_pattern( primitive, pattern, x_cells):
         x_cells = 2*x_cells + 2
     elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
-        x_cells = 2*x_cells
+        x_cells = x_cells
         # TODO: Fix difficulties associated with CC patterns matching this condition
         pattern = 2 if x_cells%4 != 0 else pattern ### CC is not possible; default is interdigitated
     return x_cells, pattern
@@ -279,50 +279,6 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
-'''def merge_subckt_param(ckt):
-    max_value = {}
-    logger.debug(f"creating generator parameters for subcircuit: {ckt.name}")
-    vt_types=[]
-    for ele in ckt.elements:
-        max_value = merged_value(max_value, ele.parameters)
-        vt_types.append(ele.model)
-    return max_value, ','.join(vt_types)
-
-def merged_value(values1, values2):
-    """
-    combines values of different devices:
-    (right now since primitive generator takes only one value we use max value)
-    try:
-    #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-    #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-    #merged_value(val1,val2)
-
-    Parameters
-    ----------
-    values1 : TYPE. dict
-        DESCRIPTION. dict of parametric values
-    values2 : TYPE. dict
-        DESCRIPTION.dict of parametric values
-
-    Returns
-    -------
-    merged_vals : TYPE dict
-        DESCRIPTION. max of each parameter value
-
-    """
-    if not values1:
-        return values2
-    merged_vals={}
-    if values1:
-        for param,value in values1.items():
-            merged_vals[param] = value
-    for param,value in values2.items():
-        if param in merged_vals.keys():
-            merged_vals[param] = max(value, merged_vals[param])
-        else:
-            merged_vals[param] = value
-    return merged_vals'''
-
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
@@ -482,51 +438,53 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         if "NFIN" in values['M0'].keys():
             #FinFET design
-            '''if len(values) > 1:
-                assert int(values['M0']["NFIN"])==int(values['M1']["NFIN"]), f"NFIN must be same in all transistors"
-            else:
-                assert int(values['M0']["NFIN"]), f"unrecognized size {values['NFIN']}"'''
-            size = int(values['M0']["NFIN"])
+            for ele in subckt.elements:
+                assert int(values[ele.name]["NFIN"]), f"unrecognized size {values[ele.name]['NFIN']}" 
+                size = int(values[ele.name]["NFIN"])
             name_arg ='NFIN'+str(size)
         elif "W" in values['M0'].keys():
             #Bulk design
-            if isinstance(values["W"],str):
-                size = unit_size_mos
-            else:
-                size = int(values["w"]*1E+9/design_config["Gate_pitch"])
-            values["NFIN"]=size
+            for ele in subckt.elements:
+                assert values[ele.name]["w"] != str, f"unrecognized size {values[ele.name]['w']}"
+                size = int(values[ele.name]["w"]*1E+9/design_config["Gate_pitch"])
+                values[ele.name]["NFIN"]=size
             name_arg ='NFIN'+str(size)
         else:
             size = '_'.join(param+str(values[param]) for param in values)
 
         if 'NF' in values['M0'].keys():
-            if values['M0']['NF'] == 'unit_size':
-                values['M0']['NF'] =size
-            size=int(values['M0']["NF"])
+            for ele in subckt.elements:
+                assert int(values[ele.name]["NF"]), f"unrecognized size {values[ele.name]['NF']}"
+            #assert size%2==0, f"NF must be even" 
             name_arg =name_arg+'_NF'+str(int(values['M0']["NF"]))
 
         if 'M' in values['M0'].keys():
-            if values['M0']['M'] == 'unit_size':
-                values['M0']['M'] = 1
-            if "PARALLEL" in values['M0'].keys() and int(values['M0']['PARALLEL'])>1:
-                values['M0']["PARALLEL"]=int(values['M0']['PARALLEL'])
-                values['M0']['M'] = int(values['M0']['M'])*int(values['M0']['PARALLEL'])
-            size=size*int(values['M0']["M"])
+            for ele in subckt.elements:
+                assert int(values[ele.name]["M"]), f"unrecognized size {values[ele.name]['M']}"
+                if "PARALLEL" in values[ele.name].keys() and int(values[ele.name]['PARALLEL'])>1:
+                    values[ele.name]["PARALLEL"]=int(values[ele.name]['PARALLEL'])
+                    values[ele.name]['M'] = int(values[ele.name]['M'])*int(values[ele.name]['PARALLEL'])
             name_arg =name_arg+'_M'+str(int(values['M0']["M"]))
-
-        no_units = size
-
+            size = 0
+        
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
-            no_units = size
+            for ele in subckt.elements:
+                size = size + int(values[ele.name]["NFIN"])*int(values[ele.name]["NF"])*int(values[ele.name]["M"])
+
+            no_units = ceil(size / (2*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
                 square_y = floor(sqrt(no_units/3))
             else:
                 square_y = floor(sqrt(no_units))
             while no_units % square_y != 0:
                 square_y -= 1
+            if 'SCM' in name:
+                if int(values['M0']["NFIN"])*int(values['M0']["NF"])*int(values['M0']["M"]) != int(values['M1']["NFIN"])*int(values['M1']["NF"])*int(values['M1']["M"]):
+                    square_y = 1
             yval = square_y
             xval = int(no_units / square_y)
+            xval = xval+1 if (xval%2 !=0 and len(values) > 1) else xval
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:

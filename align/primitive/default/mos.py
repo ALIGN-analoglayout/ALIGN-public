@@ -290,6 +290,7 @@ class MOSGenerator(DefaultCanvas):
         self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + self.lFin//4)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
+        print(parameters)
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
@@ -297,6 +298,11 @@ class MOSGenerator(DefaultCanvas):
             self.minvias = minvias
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
         self._nets = collections.defaultdict(lambda: collections.defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
+        ### Needs to be generalized
+        if len(parameters) > 2:
+            if int(parameters['M0']["NFIN"])*int(parameters['M0']["NF"])*int(parameters['M0']["M"]) != int(parameters['M1']["NFIN"])*int(parameters['M1']["NF"])*int(parameters['M1']["M"]):
+                pattern=3
+         ##########################
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
             
@@ -324,8 +330,8 @@ class MOSGenerator(DefaultCanvas):
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
-                    self._addMOS(x, y, x_cells, vt_type, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False,  **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
+                    self._addMOS(x, y, x_cells, vt_type, names[0 if x == x_cells // 2 else 1], False,  **parameters)
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x == x_cells // 2 else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
