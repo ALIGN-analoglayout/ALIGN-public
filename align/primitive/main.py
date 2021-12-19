@@ -438,39 +438,39 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         if "NFIN" in values['M0'].keys():
             #FinFET design
-            for ele in subckt.elements:
-                assert int(values[ele.name]["NFIN"]), f"unrecognized size {values[ele.name]['NFIN']}" 
-                size = int(values[ele.name]["NFIN"])
+            for key in values:
+                assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}" 
+                size = int(values[key]["NFIN"])
             name_arg ='NFIN'+str(size)
         elif "W" in values['M0'].keys():
             #Bulk design
-            for ele in subckt.elements:
-                assert values[ele.name]["w"] != str, f"unrecognized size {values[ele.name]['w']}"
-                size = int(values[ele.name]["w"]*1E+9/design_config["Gate_pitch"])
-                values[ele.name]["NFIN"]=size
+            for key in values:
+                assert values[key]["w"] != str, f"unrecognized size {values[key]['w']}"
+                size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
+                values[key]["NFIN"]=size
             name_arg ='NFIN'+str(size)
         else:
             size = '_'.join(param+str(values[param]) for param in values)
 
         if 'NF' in values['M0'].keys():
-            for ele in subckt.elements:
-                assert int(values[ele.name]["NF"]), f"unrecognized size {values[ele.name]['NF']}"
+            for key in values:
+                assert int(values[key]["NF"]), f"unrecognized size {values[key]['NF']}"
             #assert size%2==0, f"NF must be even" 
             name_arg =name_arg+'_NF'+str(int(values['M0']["NF"]))
 
         if 'M' in values['M0'].keys():
-            for ele in subckt.elements:
-                assert int(values[ele.name]["M"]), f"unrecognized size {values[ele.name]['M']}"
-                if "PARALLEL" in values[ele.name].keys() and int(values[ele.name]['PARALLEL'])>1:
-                    values[ele.name]["PARALLEL"]=int(values[ele.name]['PARALLEL'])
-                    values[ele.name]['M'] = int(values[ele.name]['M'])*int(values[ele.name]['PARALLEL'])
+            for key in values:
+                assert int(values[key]["M"]), f"unrecognized size {values[key]['M']}"
+                if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL'])>1:
+                    values[key]["PARALLEL"]=int(values[key]['PARALLEL'])
+                    values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
             name_arg =name_arg+'_M'+str(int(values['M0']["M"]))
             size = 0
         
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
-            for ele in subckt.elements:
-                size = size + int(values[ele.name]["NFIN"])*int(values[ele.name]["NF"])*int(values[ele.name]["M"])
+            for key in values:
+                size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
 
             no_units = ceil(size / (2*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
