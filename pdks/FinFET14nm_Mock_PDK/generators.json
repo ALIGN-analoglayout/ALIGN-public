@@ -11,8 +11,6 @@
     "SCM_PMOS_B": "SCM_PMOS_B",
     "SCM_NMOS": "SCM_NMOS",
     "SCM_PMOS": "SCM_PMOS",
-    "CM_NMOS": "CM_NMOS",
-    "CM_PMOS": "CM_PMOS",
     "CMC_S_NMOS_B": "CMC_S_NMOS_B",
     "CMC_S_PMOS_B": "CMC_S_PMOS_B",
     "CMC_NMOS": "CMC_NMOS",

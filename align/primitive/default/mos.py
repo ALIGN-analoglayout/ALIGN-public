@@ -290,7 +290,6 @@ class MOSGenerator(DefaultCanvas):
         self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + self.lFin//4)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
-        print(parameters)
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )

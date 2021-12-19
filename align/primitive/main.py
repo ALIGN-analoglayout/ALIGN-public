@@ -479,12 +479,16 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 square_y = floor(sqrt(no_units))
             while no_units % square_y != 0:
                 square_y -= 1
-            if 'SCM' in name:
-                if int(values['M0']["NFIN"])*int(values['M0']["NF"])*int(values['M0']["M"]) != int(values['M1']["NFIN"])*int(values['M1']["NF"])*int(values['M1']["M"]):
-                    square_y = 1
             yval = square_y
             xval = int(no_units / square_y)
             xval = xval+1 if (xval%2 !=0 and len(values) > 1) else xval
+
+            if 'SCM' in name:
+                if int(values['M0']["NFIN"])*int(values['M0']["NF"])*int(values['M0']["M"]) != int(values['M1']["NFIN"])*int(values['M1']["NF"])*int(values['M1']["M"]):
+                    square_y = 1
+                    yval = square_y
+                    xval = int(no_units / square_y)
+
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:
