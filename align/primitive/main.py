@@ -480,7 +480,6 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
-            xval = xval+1 if (xval%2 !=0 and len(values) > 1) else xval
 
             if 'SCM' in name:
                 if int(values['M0']["NFIN"])*int(values['M0']["NF"])*int(values['M0']["M"]) != int(values['M1']["NFIN"])*int(values['M1']["NF"])*int(values['M1']["M"]):
