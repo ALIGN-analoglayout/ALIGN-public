@@ -104,11 +104,12 @@ def remove_dummies(library, dummy_hiers, top):
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
                             _prefix = library.find(y.model).prefix
-                            if not _prefix:
-                                _prefix = "M"  # default value, used in testing
+                            nm = ele.name
+                            if _prefix and not nm.startswith(_prefix):
+                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=ele.name.replace("X", _prefix),
+                                    name=nm,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters,
@@ -127,7 +128,7 @@ def remove_dummies(library, dummy_hiers, top):
             all_subckt_updated = [
                 module.name for module in library if isinstance(module, SubCircuit)
             ]
-            assert library.find(dh) == None, f"{all_subckt_updated}"
+            assert library.find(dh) is None, f"{all_subckt_updated}"
 
 
 def find_dummy_hier(library, ckt, dummy_hiers):
@@ -193,7 +194,7 @@ def define_SD(subckt, update=True):
         elif isinstance(const, constraint.GroundPorts):
             gnd = const.ports
     if not power or not gnd:
-        logger.warning(f"No power or gnd in this circuit {subckt.name}, please check setup file")
+        logger.debug(f"No power nor ground port specified for {subckt.name}")
         return
 
     G = Graph(subckt)
@@ -280,7 +281,7 @@ def add_parallel_devices(ckt, update=True):
         update (bool, optional): [description]. Defaults to True.
     """
 
-    if update == False:
+    if update is False:
         return
     logger.debug(
         f"Checking parallel devices in {ckt.name}, initial ckt size: {len(ckt.elements)}"
@@ -320,7 +321,7 @@ def add_series_devices(ckt, update=True):
         update (bool, optional): [description]. Defaults to True.
     """
 
-    if update == False:
+    if update is False:
         return
     logger.debug(
         f"Checking stacked/series devices, initial ckt size: {len(ckt.elements)}"

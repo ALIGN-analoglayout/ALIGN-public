@@ -314,6 +314,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
+    # hyper.select_in_ILP = False
+    hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
 
@@ -321,7 +323,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
 
-    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper, select_in_ILP, ilp_solver)
+    curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
     actualNumLayout = curr_plc.getNodeVecSize()
 
@@ -646,7 +648,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=(0 if (ilp_solver=='symphony') else 1))
+                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
     return DB, results_name_map
 
