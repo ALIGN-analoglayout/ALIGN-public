@@ -1,10 +1,6 @@
 import pyparsing as pp
 from geom import Point, Rect
-import logging
-logging.basicConfig(filename='pnr.log', filemode='a',
-    format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-    datefmt='%H:%M:%S', level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from logger import logger
 class LayerRects:
 
   def __init__(self, tokens = []):
