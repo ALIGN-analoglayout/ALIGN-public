@@ -86,13 +86,14 @@ class Macro:
       for pin in token.pins:
         if pin._name and pin._name not in self._pins:
           self._pins[pin._name] = pin
-          
+      '''    
       for l in token.obs:
         if l._layer:
           if l._layer not in self._obs:
             self._obs[l._layer] = l._rects[:]
           else:
             self._obs[l._layer] += l._rects
+      '''    
 
   def __str__(self):
     s  = ("name : "     + str(self._name))
@@ -128,40 +129,41 @@ class Macros:
     if lefFile:
       sc_      = pp.Suppress(pp.Keyword(';'))
       macro_   = pp.Suppress(pp.Keyword("MACRO"))
+      pin_     = pp.Suppress(pp.Keyword("PIN"))
+      port_    = pp.Suppress(pp.Keyword("PORT"))
+      obs_     = pp.Suppress(pp.Keyword("OBS"))
       units_   = pp.Suppress(pp.Keyword("UNITS"))
       origin_  = pp.Suppress(pp.Keyword("ORIGIN"))
       foreign_ = pp.Suppress(pp.Keyword("FOREIGN"))
       end_     = pp.Suppress(pp.Keyword("END"))
       dir_     = pp.Suppress(pp.Keyword("DIRECTION"))
       use_     = pp.Suppress(pp.Keyword("USE"))
-      port_    = pp.Suppress(pp.Keyword("PORT"))
-      pin_     = pp.Suppress(pp.Keyword("PIN"))
       layer_   = pp.Suppress(pp.Keyword("LAYER"))
       rect_    = pp.Suppress(pp.Keyword("RECT"))
-      obs_     = pp.Suppress(pp.Keyword("OBS"))
       db_      = pp.Suppress(pp.Keyword("DATABASE"))
       microns_ = pp.Suppress(pp.Keyword("MICRONS"))
       units_   = pp.Suppress(pp.Keyword("UNITS"))
       size_    = pp.Suppress(pp.Keyword("SIZE"))
       by_      = pp.Suppress(pp.Keyword("BY"))
       
-      
-      name = pp.Word(pp.alphanums + "_").setParseAction(lambda s, l, t: t[0])
-      num = pp.pyparsing_common.fnumber.setParseAction(lambda s, l, t: int(t[0]))
-      pointparser = pp.Group(num("x") + num("y")).setParseAction(lambda t: Point(t[0].x, t[0].y))
-      rectparser = pp.Group(rect_ + num("llx") + num("lly") + num("urx") + num("ury") + sc_).setParseAction(lambda t: Rect(t[0].llx, t[0].lly, t[0].urx, t[0].ury))
+      name            = pp.Word(pp.alphanums + "_")
+      num             = pp.pyparsing_common.fnumber
+      pointparser     = pp.Group(num("x") + num("y")).setParseAction(lambda t: Point(t[0].x, t[0].y))
+      rectparser      = pp.Group(rect_ + num("llx") + num("lly") + num("urx") + num("ury") + sc_).setParseAction(lambda t: Rect(t[0].llx, t[0].lly, t[0].urx, t[0].ury))
       layerrectparser = pp.Group(layer_ + name("layer") + sc_ + pp.ZeroOrMore(rectparser)("rects")).setParseAction(LayerRects)
-      portparser = pp.Group(port_ + pp.ZeroOrMore(layerrectparser) + end_).setParseAction(Port)
-      pinparser = pp.Group(pin_ + name("name") + pp.ZeroOrMore((dir_ + name + sc_)("direction") | (use_ + name + sc_)("use"))
-          + pp.ZeroOrMore(portparser)("ports")
-          + end_ + pp.Suppress(name)).setParseAction(Pin)
-      macroparser = pp.Group(macro_ + name("name") + pp.Optional(units_ + db_ + microns_ + units_ + num("units") + sc_ + end_ + units_)
-          + pp.ZeroOrMore((origin_ + pointparser("origin") + sc_) | pp.Suppress(foreign_ + name + num + num + sc_) | (size_ + num("width") + by_ + num("height") + sc_))
-          + pp.ZeroOrMore(pinparser)("pins")
-          + pp.Group(obs_ + pp.ZeroOrMore(layerrectparser) + end_)("obs")
-          + end_ + name("endname")).setParseAction(Macro)
-      macrosparser = pp.ZeroOrMore(macroparser)
-      tmpmacros =  macrosparser.parseFile(lefFile)
+      portparser      = pp.Group(port_ + pp.ZeroOrMore(layerrectparser) + end_).setParseAction(Port)
+      pinparser       = pp.Group(pin_ + name("name") + pp.ZeroOrMore((dir_ + name + sc_)("direction") | (use_ + name + sc_)("use"))
+          + pp.ZeroOrMore(portparser)("ports") + end_ + pp.Suppress(name)).setParseAction(Pin)
+      foreignparser   = pp.Suppress(foreign_ + name + num + num + sc_)
+      originparser    = pp.Group(origin_ + pointparser + sc_)
+      obsparser       = pp.Group(obs_ + pp.ZeroOrMore(layerrectparser) + end_)
+      unitparser      = pp.Group(units_ + db_ + microns_ + units_ + num("units") + sc_ + end_ + units_)
+      macroparser     = pp.Group(macro_ + name("name") + pp.Optional(unitparser)("units")
+          + pp.ZeroOrMore(originparser("origin") | foreignparser | (size_ + num("width") + by_ + num("height") + sc_))
+          + pp.ZeroOrMore(pinparser)("pins") + pp.ZeroOrMore(obsparser)("obs") + end_ + name).setParseAction(Macro)
+      macrosparser    = pp.ZeroOrMore(macroparser)
+
+      tmpmacros    =  macrosparser.parseFile(lefFile)
       for m in tmpmacros:
         self._macros[m._name] = m
 

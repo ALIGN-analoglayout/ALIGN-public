@@ -20,7 +20,6 @@ class Point:
       return Point(p._x, p._y)
     return Point(max(self._x, p._x), max(self._y, p._y))
 
-
 class Rect:
 
   def __init__( self, llx = None, lly = None, urx = None, ury = None):
@@ -62,4 +61,5 @@ class Rect:
     if (y2 == math.trunc(y2)): y2 = math.trunc(y2)
     tmpstr = str(x1) + ' ' + str(y1) + ' ' + str(x2) + ' ' + str(y2)
     return tmpstr
+
 
