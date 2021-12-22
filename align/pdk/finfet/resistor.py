@@ -29,7 +29,7 @@ class tfr_prim(CanvasPDK):
         y1 = self.pdk['M2']['Pitch']*(14)
         bbox = [0, 0, x1, y1]
 
-        t = {'layer': 'Boundary', 'netName': None, 'rect': bbox, 'netType': 'drawing'}
+        t = {'layer': 'Boundary', 'netName': 'tfr_boundary', 'rect': bbox, 'netType': 'drawing'}
         self.terminals.append(t)
 
         # Additional metadata for layout post-processing
