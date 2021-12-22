@@ -10,9 +10,8 @@ except BaseException:
 def test_place_on_grid():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False)
 
     name = name.upper()
