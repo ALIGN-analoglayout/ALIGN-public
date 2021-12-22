@@ -38,14 +38,14 @@ examples = [
 
 for root, dirs, files in os.walk(os.environ["ALIGN_HOME"]):
     for file in files:
-        if file.endswith("model.txt"):
-            model_statemenets = os.path.join(root, file)
+        if file.endswith("models.sp"):
+            model_statements = os.path.join(root, file)
 
 
 @pytest.fixture
 def get_parser():
     parser = SpiceParser()
-    with open(model_statemenets) as f:
+    with open(model_statements) as f:
         lines = f.read()
     parser.parse(lines)
     return parser
