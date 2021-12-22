@@ -1656,6 +1656,16 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   // i*4+1:y
   // i*4+2:H_flip
   // i*4+3:V_flip
+  // x = pitch * n_p + offset_i * is_ith_offset
+  // sum(is_ith_offset) = 1
+  // one var for each offset and each pitch
+  int place_on_grid_var_start = N_var;
+  int place_on_grid_var_count = 0;
+  for(unsigned int i=0;i<mydesign.Blocks.size();i++){
+    if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) place_on_grid_var_count += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
+    if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) place_on_grid_var_count += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
+  }
+  N_var += place_on_grid_var_count;
 
   const auto infty = sym_get_infinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
@@ -1670,7 +1680,26 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     colub[i * 4 + 2] = 1;
     colub[i * 4 + 3] = 1;
   }
-
+  // offset is ORed, only one is chosen, the select vars are 0 or 1, with sum 1
+  int temp_pointer = place_on_grid_var_start;
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()){
+      for (unsigned int j = 0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
+        colub[temp_pointer + j] = 1;
+        intvars[temp_pointer + j] = 1;
+      }
+      intvars[temp_pointer + int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size())] = 1;
+      temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
+    }
+    if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()){
+      for (unsigned int j = 0;j<mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size();j++){
+        colub[temp_pointer + j] = 1;
+        intvars[temp_pointer + j] = 1;
+      }
+      intvars[temp_pointer + int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size())] = 1;
+      temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
+    }
+  }
 
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
@@ -1752,6 +1781,53 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   roundup(bias_Vgraph, y_pitch);
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
+
+  //place on grid constraint
+  temp_pointer = place_on_grid_var_start;
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) {
+      // x - pitch * n_p - offset_i * is_ith_offset = 0
+      for(unsigned int j=0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
+        rowindofcol[i * 4].push_back(rhs.size());
+        rowindofcol[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()].push_back(rhs.size());
+        rowindofcol[temp_pointer + j].push_back(rhs.size());
+        constrvalues[i * 4].push_back(1);
+        constrvalues[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].xpitch);
+        constrvalues[temp_pointer + j].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].xoffset[j]);
+        sens.push_back('E');
+        rhs.push_back(0);
+      }
+      // sum(is_ith_offset) = 1
+      for(unsigned int j=0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
+        rowindofcol[temp_pointer + j].push_back(rhs.size());
+        constrvalues[temp_pointer + j].push_back(1);
+      }
+      sens.push_back('E');
+      rhs.push_back(1);
+      temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
+    }
+    if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) {
+      // y - pitch * n_p - offset_i * is_ith_offset = 0
+      for (unsigned int j = 0; j < mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size(); j++) {
+        rowindofcol[i * 4 + 1].push_back(rhs.size());
+        rowindofcol[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()].push_back(rhs.size());
+        rowindofcol[temp_pointer + j].push_back(rhs.size());
+        constrvalues[i * 4 + 1].push_back(1);
+        constrvalues[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].ypitch);
+        constrvalues[temp_pointer + j].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].yoffset[j]);
+        sens.push_back('E');
+        rhs.push_back(0);
+      }
+      // sum(is_ith_offset) = 1
+      for (unsigned int j = 0; j < mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size(); j++) {
+        rowindofcol[temp_pointer + j].push_back(rhs.size());
+        constrvalues[temp_pointer + j].push_back(1);
+      }
+      sens.push_back('E');
+      rhs.push_back(1);
+      temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
+    }
+  }
 
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {

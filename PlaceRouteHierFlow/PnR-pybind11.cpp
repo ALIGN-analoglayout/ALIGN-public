@@ -472,11 +472,13 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
     .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
+    .def( "ReadPrimitiveOffsetPitch", &PnRdatabase::ReadPrimitiveOffsetPitch)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
+    .def_readwrite("ScaleFactor", &PnRdatabase::ScaleFactor)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")

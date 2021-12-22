@@ -2233,6 +2233,10 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node) {
       b.originBox.UR.y = lef.height;
       b.originCenter.x = lef.width / 2;
       b.originCenter.y = lef.height / 2;
+      b.xoffset = lef.xoffset;
+      b.xpitch = lef.xpitch;
+      b.yoffset = lef.yoffset;
+      b.ypitch = lef.ypitch;
 
       for (unsigned int k = 0; k < b.blockPins.size(); k++) {
         bool found = 0;
