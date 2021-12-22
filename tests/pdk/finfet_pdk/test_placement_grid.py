@@ -10,9 +10,8 @@ except BaseException:
 def test_place_on_grid():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    setup = ""
     constraints = []
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False)
 
     name = name.upper()
@@ -20,7 +19,7 @@ def test_place_on_grid():
         verilog_json = json.load(fp)
         modules = {module['concrete_name']: module for module in verilog_json['modules']}
         cn = f'{name}_0'
-        assert cn in modules, f'Concrete name {nm} not found in scaled_placement_verilog.json'
+        assert cn in modules, f'{cn} not found in scaled_placement_verilog.json'
         found = False
         for i in modules[cn]['instances']:
             if i['abstract_template_name'] == 'TFR_PRIM_L_1E06_W_1E06':
