@@ -1,7 +1,7 @@
 import json
 import geom
 from logger import logger
-from pnrmacro import Macros
+from pnrmacro import parseLef
 
 class Net:
   def __init__(self, name = "", isglobal = False):
@@ -47,13 +47,9 @@ class SameTemplateConstr:
     self._instances = instances
 
 
-class Module:
-  def __init__(self, name = "", params = list(), depth = -1):
-    self._name      = name
-    self._ports     = params
-    self._depth     = depth
-    self._nets      = dict()
-    self._instances = dict()
+class Constr:
+  def __init__(self):
+    self._symm = list()
     self._symm      = list()
     self._order     = list()
     self._align     = list()
@@ -64,23 +60,10 @@ class Module:
     self._ground    = list()
     self._clk       = list()
 
-  def __repr__(self):
-    return self._name + " sym : " + str(len(self._symm)) + " order : " + str(len(self._order)) \
-      + " align : " + str(len(self._align)) + " sametmpl : " + str(len(self._sametmpl))
-
-  def loadInstance(self, inst):
-    if "instance_name" in inst:
-      self._instances[inst["instance_name"]] = (inst["abstract_template_name"], None)
-    for fa in inst["fa_map"]:
-      if fa["actual"] not in self._nets:
-        self._nets[fa["actual"]] = [(inst["instance_name"],fa["formal"])]
-      else:
-        self._nets[fa["actual"]].append((inst["instance_name"],fa["formal"]))
-
   def loadConstr(self, constraints):
     for c in constraints:
-      if "constraint" in c:
-        ctype = c["constraint"]
+      ctype = c.get("constraint")
+      if ctype:
         if ctype == "power_ports":
           for p in c["ports"]:
             self._power.append(p)
@@ -103,7 +86,33 @@ class Module:
         elif ctype == "same_template":
           self._sametmpl.append(AlignConstr(c["instances"]))
             
+  def __repr__(self):
+    return " sym : " + str(len(self._symm)) + " order : " + str(len(self._order)) \
+      + " align : " + str(len(self._align)) + " sametmpl : " + str(len(self._sametmpl))
       
+class Module:
+  def __init__(self, name = "", params = list(), depth = -1):
+    self._name      = name
+    self._ports     = params
+    self._depth     = depth
+    self._nets      = dict()
+    self._instances = dict()
+    self._constr    = Constr()
+
+  def __repr__(self):
+    return self._name + ' ' + repr(self._ports) + repr(self._constr)
+
+  def loadInstance(self, inst):
+    iname = inst.get("instance_name")
+    if iname:
+      self._instances[iname] = (inst["abstract_template_name"], None)
+    for fa in inst["fa_map"]:
+      faa = fa.get("actual")
+      if faa not in self._nets:
+        self._nets[faa] = [(inst["instance_name"],fa["formal"])]
+      else:
+        self._nets[faa].append((inst["instance_name"],fa["formal"]))
+
 
 
 class Netlist:
@@ -112,7 +121,7 @@ class Netlist:
     self._global_signals = set()
     self._macro_map = dict()
     self._depth_list = list()
-    self._macros = Macros()
+    self._macros = dict()
 
   def print(self):
     for m, v in self._modules.items():
@@ -154,23 +163,20 @@ class Netlist:
       self._depth_list[m._depth].append(m)
 
   def loadData(self, verilogFile = "", mapFile = "", lefFile = ""):
-    self._macros.parseLef(lefFile)
+    self._macros = parseLef(lefFile)
     if verilogFile != "":
       with open(verilogFile) as fp:
         ver = json.load(fp)
-        if "modules" in ver:
-          for m in ver["modules"]:
-            modu = Module(m["name"], m["parameters"])
-            if "constraints" in m:
-              modu.loadConstr(m["constraints"])
-            if "instances" in m:
-              for inst in m["instances"]:
-                modu.loadInstance(inst)
-            self._modules[modu._name] = modu
-        if "global_signals" in ver:
-          for signal in ver["global_signals"]:
-            if "actual" in signal:
-              self._global_signals.add(signal["actual"])
+        for m in ver.get("modules"):
+          modu = Module(m["name"], m["parameters"])
+          modu._constr.loadConstr(m.get("constraints"))
+          for inst in m.get("instances"):
+            modu.loadInstance(inst)
+          self._modules[modu._name] = modu
+        for signal in ver.get("global_signals"):
+          act = signal.get("actual")
+          if act:
+            self._global_signals.add(signal["actual"])
     if mapFile != "":
       with open(mapFile) as fp:
         lines = fp.readlines()
@@ -183,7 +189,7 @@ class Netlist:
             posp = var.find(".")
             if (posp >= 0):
               var = sp[1][poss:posp]
-            m = self._macros.getMacro(var) 
+            m = self._macros.get(var)
             if m:
               if sp[0] in self._macro_map:
                 self._macro_map[sp[0]].append(m)
