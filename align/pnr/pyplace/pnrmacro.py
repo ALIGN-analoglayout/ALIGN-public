@@ -95,6 +95,9 @@ class Macro:
             self._obs[l._layer] += l._rects
       '''    
 
+  def __repr__(self):
+    return self._name
+
   def __str__(self):
     s  = ("name : "     + str(self._name))
     s += (", units : "  + str(self._units))
@@ -119,10 +122,9 @@ class Macros:
     for p in self._macros:
       logger.debug(f'{self._macros[p]}')
 
-  @property
   def getMacro(self, name):
-    if name in _macros:
-      return _macros[name]
+    if name in self._macros:
+      return self._macros[name]
     return None
 
   def parseLef(self, lefFile = ""):

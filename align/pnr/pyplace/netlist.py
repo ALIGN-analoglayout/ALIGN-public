@@ -17,15 +17,56 @@ class Instance:
     self._nets = dict()
 
 
+class SymmConstr:
+  def __init__(self, pairs = list(), direction = ''):
+    self._selfsym = list()
+    self._sympairs = list()
+    self._direction = direction
+    for p in pairs:
+      if len(p) == 1:
+        self._selfsym.append(p[0])
+      elif len(p) == 2:
+        self._sympairs.append((p[0], p[1]))
+
+
+class OrderConstr:
+  def __init__(self, instances = list(), direction = '', abut = False):
+    self._instances = instances
+    self._direction = direction
+    self._abut      = abut
+
+
+class AlignConstr:
+  def __init__(self, instances = list(), line = ''):
+    self._instances = instances
+    self._line      = line
+
+
+class SameTemplateConstr:
+  def __init__(self, instances = list()):
+    self._instances = instances
+
+
 class Module:
-  def __init__(self, name = "", params = [], depth = -1):
+  def __init__(self, name = "", params = list(), depth = -1):
     self._name      = name
     self._ports     = params
     self._depth     = depth
     self._nets      = dict()
     self._instances = dict()
+    self._symm      = list()
+    self._order     = list()
+    self._align     = list()
+    self._sametmpl  = list()
+    self._hdist     = 0
+    self._vdist     = 0
+    self._power     = list()
+    self._ground    = list()
+    self._clk       = list()
+
   def __repr__(self):
-    return self._name
+    return self._name + " sym : " + str(len(self._symm)) + " order : " + str(len(self._order)) \
+      + " align : " + str(len(self._align)) + " sametmpl : " + str(len(self._sametmpl))
 
   def loadInstance(self, inst):
     if "instance_name" in inst:
@@ -35,17 +76,43 @@ class Module:
         self._nets[fa["actual"]] = [(inst["instance_name"],fa["formal"])]
       else:
         self._nets[fa["actual"]].append((inst["instance_name"],fa["formal"]))
-      
-    
-class Netlist:
 
+  def loadConstr(self, constraints):
+    for c in constraints:
+      if "constraint" in c:
+        ctype = c["constraint"]
+        if ctype == "power_ports":
+          for p in c["ports"]:
+            self._power.append(p)
+        elif ctype == "ground_ports":
+          for p in c["ports"]:
+            self._ground.append(p)
+        elif ctype == "clock_ports":
+          for p in c["ports"]:
+            self._clk.append(p)
+        elif ctype == "horizontal_distance":
+          self._hdist = c["abs_distance"]
+        elif ctype == "vertical_distance":
+          self._vdist = c["abs_distance"]
+        elif ctype == "symmetric_blocks":
+          self._symm.append(SymmConstr(c["pairs"], c["direction"]))
+        elif ctype == "order":
+          self._order.append(OrderConstr(c["instances"], c["direction"], c["abut"]))
+        elif ctype == "align":
+          self._align.append(AlignConstr(c["instances"], c["line"]))
+        elif ctype == "same_template":
+          self._sametmpl.append(AlignConstr(c["instances"]))
+            
+      
+
+
+class Netlist:
   def __init__(self):
     self._modules = dict()
     self._global_signals = set()
     self._macro_map = dict()
-    self._depth_list = [[]]
+    self._depth_list = list()
     self._macros = Macros()
-
 
   def print(self):
     for m, v in self._modules.items():
@@ -61,41 +128,7 @@ class Netlist:
     for k in range(len(self._depth_list)):
       logger.debug(f'\t\t{k} : {self._depth_list[k]}')
 
-  def loadVerilogMap(self, verilogFile = "", mapFile = ""):
-    if verilogFile != "":
-      with open(verilogFile) as fp:
-        ver = json.load(fp)
-        if "modules" in ver:
-          for m in ver["modules"]:
-            modu = Module(m["name"], m["parameters"])
-            if "instances" in m:
-              for inst in m["instances"]:
-                modu.loadInstance(inst)
-            self._modules[modu._name] = modu
-        if "global_signals" in ver:
-          for signal in ver["global_signals"]:
-            if "actual" in signal:
-              self._global_signals.add(signal["actual"])
-    if mapFile != "":
-      with open(mapFile) as fp:
-        lines = fp.readlines()
-        for line in lines:
-          line = line.strip()
-          sp = line.split()
-          if len(sp) >= 2:
-            var = sp[1]
-            poss = max(var.find("/"), 0)
-            posp = var.find(".")
-            if (posp >= 0):
-              var = sp[1][poss:posp]
-            if sp[0] in self._macro_map:
-              self._macro_map[sp[0]].append(var)
-            else:
-              self._macro_map[sp[0]] = [var]
-
-
-  def build(self, lefFile = ""):
-    self._macros.parseLef(lefFile)
+  def build(self):
     for j, m in self._modules.items():
       for k, i in m._instances.items():
         if i[0] in self._modules:
@@ -117,5 +150,45 @@ class Netlist:
     for j, m in self._modules.items():
       if len(self._depth_list) < m._depth + 1:
         for k in range(len(self._depth_list), m._depth + 1):
-          self._depth_list.append([])
+          self._depth_list.append(list())
       self._depth_list[m._depth].append(m)
+
+  def loadData(self, verilogFile = "", mapFile = "", lefFile = ""):
+    self._macros.parseLef(lefFile)
+    if verilogFile != "":
+      with open(verilogFile) as fp:
+        ver = json.load(fp)
+        if "modules" in ver:
+          for m in ver["modules"]:
+            modu = Module(m["name"], m["parameters"])
+            if "constraints" in m:
+              modu.loadConstr(m["constraints"])
+            if "instances" in m:
+              for inst in m["instances"]:
+                modu.loadInstance(inst)
+            self._modules[modu._name] = modu
+        if "global_signals" in ver:
+          for signal in ver["global_signals"]:
+            if "actual" in signal:
+              self._global_signals.add(signal["actual"])
+    if mapFile != "":
+      with open(mapFile) as fp:
+        lines = fp.readlines()
+        for line in lines:
+          line = line.strip()
+          sp = line.split()
+          if len(sp) >= 2:
+            var = sp[1]
+            poss = max(var.find("/"), 0)
+            posp = var.find(".")
+            if (posp >= 0):
+              var = sp[1][poss:posp]
+            m = self._macros.getMacro(var) 
+            if m:
+              if sp[0] in self._macro_map:
+                self._macro_map[sp[0]].append(m)
+              else:
+                self._macro_map[sp[0]] = [m]
+      self.build()
+
+

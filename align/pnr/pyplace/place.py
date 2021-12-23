@@ -18,6 +18,5 @@ print(f"map : {args.map}")
 print(f"verilog : {args.verilog}")
 
 nl = Netlist()
-nl.loadVerilogMap(args.verilog,args.map)
-nl.build(args.lef)
+nl.loadData(args.verilog,args.map, args.lef)
 nl.print()
