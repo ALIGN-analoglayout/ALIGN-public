@@ -348,13 +348,18 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         subckt = element.parent.parent.parent.find(element.model)
         vt = None
         values = {}
-        vt_types = []
-
-        for ele in subckt.elements:
-            values[ele.name] = ele.parameters
-            vt_types.append(ele.model)
-        if "vt_type" in design_config:
-            vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
+        vt_types_temp = []
+        if isinstance(subckt,SubCircuit):
+            for ele in subckt.elements:
+                values[ele.name] = ele.parameters
+                vt_types_temp.append(ele.model)
+            vt_types = vt_types_temp[0]
+            if "vt_type" in design_config:
+                vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
+        else:
+            values['M0'] = element.parameters
+            if "vt_type" in design_config:
+                vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
 
         if unit_size_mos is None:
             """
@@ -389,6 +394,8 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
+            #for ele in subckt.elements:
+                #values[ele.name]['real_inst_type'] = vt
             values['M0']['real_inst_type'] = vt
             block_args= {
                 'primitive': name,
