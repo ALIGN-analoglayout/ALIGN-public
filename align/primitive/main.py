@@ -39,7 +39,7 @@ def get_parameters(primitive, parameters, nfin):
 # TODO: Pass cell_pin and pattern to this function to begin with
 
 
-def generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
@@ -47,10 +47,10 @@ def generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height,
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
-    shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
+    shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
-    parameters = get_parameters(primitive, parameters, nfin)
+    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    parameters = get_parameters(primitive.name, parameters, nfin)
 
     def gen(pattern, routing):
         if 'NMOS' in primitive:
@@ -59,13 +59,15 @@ def generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height,
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    if isinstance(primitive_def, SubCircuit):
-        connections = {pin: [] for pin in primitive_def.pins}
-        for ele in primitive_def.elements:
+    if isinstance(primitive, SubCircuit):
+        connections = {pin: [] for pin in primitive.pins}
+        for ele in primitive.elements:
             for formal, actual in ele.pins.items():
                 connections[actual].append((ele.name, formal))
-    elif isinstance(primitive_def, Model):
-        connections = {pin: [('M1', pin)] for pin in primitive_def.pins}
+        if len(primitive.elements) == 1:
+            pattern = 0
+    elif isinstance(primitive, Model):
+        connections = {pin: [('M1', pin)] for pin in primitive.pins}
         pattern = 0
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
@@ -193,7 +195,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         logger.debug(f"Found cap with size: {size}")
         element.add_abs_name(block_name)
         block_args = {
-            'primitive': 'cap',
+            'primitive': name,
             'value': int(size)
         }
         add_primitive(primitives, block_name, block_args)
@@ -212,7 +214,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         logger.debug(f'Generating lef for: {name} {size}')
         element.add_abs_name(block_name)
         block_args = {
-            'primitive': 'Res',
+            'primitive': name,
             'value': (height, float(size))
         }
         add_primitive(primitives, block_name, block_args)
@@ -383,22 +385,22 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(primitive_def, block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
-    if primitive == 'generic':
+    if primitive.name == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
-    elif 'MOS' in primitive:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height, value, x_cells,
+    elif 'MOS' in primitive.name:
+        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells,
                                               y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'cap' in primitive:
+    elif 'CAP' in primitive.name:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
-    elif 'Res' in primitive:
+    elif 'RES' in primitive.name:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'ring' in primitive.lower():
+    elif 'ring' in primitive.name.lower():
         uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
         # uc.setBboxFromBoundary()
     else:
