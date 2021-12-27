@@ -35,7 +35,7 @@ def get_parameters(primitive, parameters, nfin):
     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+def generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
@@ -54,7 +54,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         else:
             uc.addPMOSArray( x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
-
+    print(primitive_def)
     if primitive in ["NMOS", "PMOS"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'D')],
@@ -541,14 +541,14 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
+def generate_primitive(primitive_def, block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'MOS' in primitive:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+        uc, cell_pin = generate_MOS_primitive(pdkdir, primitive_def, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'cap' in primitive:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

@@ -2,12 +2,15 @@ import argparse
 import pathlib
 import logging
 import json
+from align import primitive
 
 from align.primitive import generate_primitive
+from align.schema.parser import SpiceParser
 
-def main( args):
+def main( args, primitive_def):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
     return generate_primitive(
+        primitive_def,
         args.block_name,
         args.primitive,
         args.height,
@@ -26,6 +29,7 @@ def main( args):
 
 def gen_parser():
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
+    parser.add_argument("-i", "--input_spice", type=str, required=False, default=None)
     parser.add_argument( "-p", "--primitive", type=str, required=True)
     parser.add_argument( "-b", "--block_name", type=str, required=True)
     parser.add_argument( "-u", "--height", type=int, required=False, default=28)
@@ -43,5 +47,25 @@ def gen_parser():
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 
+def read_primitive_spice(args):
+    model_statements = args.pdk_dir / "models.sp"
+    assert model_statements.exists(), f"No model file found for this PDK {model_statements}"
+    primitive_spice_parser = SpiceParser()
+    with open(model_statements, 'r') as f:
+        lines = f.read()
+    primitive_spice_parser.parse(lines)
+
+    primitive_spice = args.pdk_dir / args.input_spice
+    assert primitive_spice.exists(), f"No spice file found {primitive_spice}"
+
+    with open(primitive_spice) as f:
+        lines = f.read()
+    primitive_spice_parser.parse(lines)
+
+    return primitive_spice_parser.library
+
+
 if __name__ == "__main__":
-    main( gen_parser().parse_args())
+    args =  gen_parser().parse_args()
+    primitive_def = read_primitive_spice(args)
+    main(args, primitive_def)

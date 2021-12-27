@@ -117,9 +117,9 @@ def compiler_input(
     ]
     # TODO: update the order based on weighing mechanism
     primitives.sort(
-        key=lambda x: len(x.elements)
-        + 1 / len(x.nets)
-        + len(set([e.model for e in x.elements])),
+        key=lambda x: (len(x.elements),
+         1 / len(x.nets),
+         len(set([e.model for e in x.elements]))),
         reverse=True,
     )
     logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
