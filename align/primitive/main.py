@@ -114,9 +114,10 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
 
 def get_generator(name, pdkdir):
+    print(name, pdkdir)
     if pdkdir is None:
         return False
-
+    print("Hello")
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -135,14 +136,16 @@ def get_generator(name, pdkdir):
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
+    print(module, name, dir(module), pdk_dir_path)
     return getattr(module, name, False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
-
+    print(pdkdir)
     pdk = Pdk().load(pdkdir / 'layers.json')
-    primitive = get_generator(parameters["real_inst_type"], pdkdir)
-    uc = primitive()
+    primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
+    print(primitive1)
+    uc = primitive1()
     uc.generate(
         ports=parameters["ports"],
         netlist_parameters=parameters["values"],
@@ -387,8 +390,11 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
+    assert isinstance(primitive, SubCircuit) \
+        or isinstance(primitive, Model)\
+        or primitive == 'generic', f"{block_name} definition: {primitive}"
 
-    if primitive.name == 'generic':
+    if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'MOS' in primitive.name:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells,

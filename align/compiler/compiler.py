@@ -91,6 +91,7 @@ def compiler_input(
     lib_parser = SpiceParser()
     # Read model file to map devices
     model_statements = pdk_dir / "models.sp"
+
     if not model_statements.exists():
         model_statements = config_path / "models.sp"
 
