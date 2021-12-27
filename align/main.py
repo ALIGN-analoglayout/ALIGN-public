@@ -21,12 +21,13 @@ from .utils import logmanager
 import logging
 logger = logging.getLogger(__name__)
 
-def build_steps( flow_start, flow_stop):
-    steps = [ '1_topology', '2_primitives', '3_pnr']
-    sub_steps = { '3_pnr': ['prep', 'place', 'route', 'check']}
 
-    unimplemented_start_points = { '3_pnr:route', '3_pnr:check'}
-    unimplemented_stop_points = { '3_pnr:place'}
+def build_steps(flow_start, flow_stop):
+    steps = ['1_topology', '2_primitives', '3_pnr']
+    sub_steps = {'3_pnr': ['prep', 'place', 'route', 'check']}
+
+    unimplemented_start_points = {'3_pnr:route', '3_pnr:check'}
+    unimplemented_stop_points = {'3_pnr:place'}
 
     if flow_start is None:
         flow_start = steps[0]
@@ -43,26 +44,30 @@ def build_steps( flow_start, flow_stop):
     steps_to_run = []
     enabled = False
     for step in steps:
-        if (step,) == start_t: enabled = True
+        if (step,) == start_t:
+            enabled = True
         if step in sub_steps:
             for sub_step in sub_steps[step]:
-                if (step,sub_step) == start_t: enabled = True
-                if enabled: steps_to_run.append( f'{step}:{sub_step}')
-                if (step,sub_step) == stop_t:
+                if (step, sub_step) == start_t:
+                    enabled = True
+                if enabled:
+                    steps_to_run.append(f'{step}:{sub_step}')
+                if (step, sub_step) == stop_t:
                     assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
                     enabled = False
         else:
-            if enabled: steps_to_run.append( f'{step}')
+            if enabled:
+                steps_to_run.append(f'{step}')
             if (step,) == stop_t:
                 assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
                 enabled = False
 
-    logger.info( f'Running flow steps {steps_to_run}')
+    logger.info(f'Running flow steps {steps_to_run}')
 
     return steps_to_run
 
 
-def gen_more_primitives( primitives, topology_dir, subckt):
+def gen_more_primitives(primitives, topology_dir, subckt):
     """primitives dictionary updated in place"""
 
     #
@@ -71,64 +76,64 @@ def gen_more_primitives( primitives, topology_dir, subckt):
     map_d = defaultdict(list)
 
     # As a hack, add more primitives if it matches this pattern
-    p = re.compile( r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
+    p = re.compile(r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
 
-    p_2 = re.compile( r'^(\S+)_X(\d+)_Y(\d+)$')
+    p_2 = re.compile(r'^(\S+)_X(\d+)_Y(\d+)$')
 
     more_primitives = {}
 
     #
     # Hack to limit aspect ratios when there are a lot of choices
     #
-    def limit_pairs( pairs):
+    def limit_pairs(pairs):
         if len(pairs) > 12:
             new_pairs = []
             #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-            log10_aspect_ratios = [ -0.3, 0, 0.3]
+            log10_aspect_ratios = [-0.3, 0, 0.3]
             for l in log10_aspect_ratios:
-                best_pair = min( (abs( math.log10(newy) - math.log10(newx) - l), (newx, newy))
-                                 for newx,newy in pairs)[1]
-                new_pairs.append( best_pair)
+                best_pair = min((abs(math.log10(newy) - math.log10(newx) - l), (newx, newy))
+                                for newx, newy in pairs)[1]
+                new_pairs.append(best_pair)
             return new_pairs
         else:
             return pairs
 
-    def gen_pairs( n, nfin):
+    def gen_pairs(n, nfin):
         clusters = (nfin+n-1) // n
 
         pairs = set()
-        for newx in range( 1, clusters+1):
+        for newx in range(1, clusters+1):
             newy = (nfin+newx*n-1)//(newx*n)
             assert newx*newy*n >= nfin
-            pairs.add( (newx,newy))
+            pairs.add((newx, newy))
 
         by_y = defaultdict(list)
-        for x,y in pairs:
-            by_y[y].append( x)
+        for x, y in pairs:
+            by_y[y].append(x)
 
         pairs = set()
-        for y,xs in by_y.items():
-            pairs.add( (min(xs), y))
+        for y, xs in by_y.items():
+            pairs.add((min(xs), y))
 
-        return limit_pairs( pairs.difference( { (X,Y)}))
+        return limit_pairs(pairs.difference({(X, Y)}))
 
-    for k,v in primitives.items():
+    for k, v in primitives.items():
         m = p.match(k)
         mm = p_2.match(k)
 
         if m:
-            nfin,n,X,Y = tuple(int(x) for x in m.groups()[1:-1])
+            nfin, n, X, Y = tuple(int(x) for x in m.groups()[1:-1])
             prefix = f'{m.groups()[0]}_nfin{nfin}'
             suffix = m.groups()[-1]
-            pairs = gen_pairs( n, nfin)
+            pairs = gen_pairs(n, nfin)
 
             abstract_name = f'{prefix}{suffix}'
-            map_d[abstract_name].append( k)
-            for newx,newy in pairs:
+            map_d[abstract_name].append(k)
+            for newx, newy in pairs:
                 concrete_name = f'{prefix}_N{n}_X{newx}_Y{newy}{suffix}'
-                map_d[abstract_name].append( concrete_name)
+                map_d[abstract_name].append(concrete_name)
                 if concrete_name not in primitives and \
-                    concrete_name not in more_primitives:
+                        concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
@@ -151,34 +156,34 @@ def gen_more_primitives( primitives, topology_dir, subckt):
 
             abstract_name = f'{prefix}'
             map_d[abstract_name].append(k)
-            for newx,newy in pairs:
+            for newx, newy in pairs:
                 concrete_name = f'{prefix}_X{newx}_Y{newy}'
-                map_d[abstract_name].append( concrete_name)
+                map_d[abstract_name].append(concrete_name)
                 if concrete_name not in primitives and concrete_name not in more_primitives:
                     more_primitives[concrete_name] = copy.deepcopy(v)
                     more_primitives[concrete_name]['x_cells'] = newx
                     more_primitives[concrete_name]['y_cells'] = newy
         else:
-            if not (k.startswith( "Res") or k.startswith( "Cap")):
-                logger.debug( f'Didn\'t match primitive {k}')
-            map_d[k].append( k)
+            if not (k.startswith("Res") or k.startswith("Cap")):
+                logger.debug(f'Didn\'t match primitive {k}')
+            map_d[k].append(k)
 
-    primitives.update( more_primitives)
+    primitives.update(more_primitives)
 
     #
     # This code should move to 1_topology, we also need two different the primitives.json files;
     # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
     # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
     #
-    concrete2abstract = { vv:k for k,v in map_d.items() for vv in v}
+    concrete2abstract = {vv: k for k, v in map_d.items() for vv in v}
 
-    for k,v in primitives.items():
+    for k, v in primitives.items():
         v['abstract_template_name'] = concrete2abstract[k]
         v['concrete_template_name'] = k
 
     # now hack the netlist to replace the template names using the concrete2abstract mapping
 
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open( 'rt') as fp:
+    with (topology_dir / f'{subckt.upper()}.verilog.json').open('rt') as fp:
         verilog_json_d = json.load(fp)
 
     for module in verilog_json_d['modules']:
@@ -192,12 +197,11 @@ def gen_more_primitives( primitives, topology_dir, subckt):
                 del instance['template_name']
                 instance['abstract_template_name'] = t
 
+    with (topology_dir / f'{subckt.upper()}.verilog.json').open('wt') as fp:
+        json.dump(verilog_json_d, fp=fp, indent=2)
 
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open( 'wt') as fp:
-        json.dump( verilog_json_d, fp=fp, indent=2)
 
-
-def extract_netlist_files(netlist_dir,netlist_file):
+def extract_netlist_files(netlist_dir, netlist_file):
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
         logger.error(f"Netlist directory {netlist_dir} doesn't exist. Please enter a valid directory path")
@@ -258,7 +262,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                      flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None,
                      nroutings=1, viewer=False, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
-    steps_to_run = build_steps( flow_start, flow_stop)
+    steps_to_run = build_steps(flow_start, flow_stop)
 
     logmanager.reconfigure_loglevels(file_level=log_level, console_level=verbosity)
 
@@ -284,7 +288,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     # Generate hierarchy
     topology_dir = working_dir / '1_topology'
     if '1_topology' in steps_to_run:
-        netlist = extract_netlist_files(netlist_dir,netlist_file)
+        netlist = extract_netlist_files(netlist_dir, netlist_file)
         if subckt is None:
             subckt = netlist.stem.upper()
         else:
@@ -293,17 +297,17 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
-        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
+        primitives, ckt_data = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
 
-        gen_more_primitives( primitives, topology_dir, subckt)
+        gen_more_primitives(primitives, topology_dir, subckt)
 
-        with (topology_dir / '__primitives__.json').open( 'wt') as fp:
-            json.dump( primitives, fp=fp, indent=2)
+        with (topology_dir / '__primitives__.json').open('wt') as fp:
+            json.dump(primitives, fp=fp, indent=2)
     else:
         if subckt is None:
-            subckt = extract_netlist_files(netlist_dir,netlist_file).stem
+            subckt = extract_netlist_files(netlist_dir, netlist_file).stem
 
-        with (topology_dir / '__primitives__.json').open( 'rt') as fp:
+        with (topology_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
     # Generate primitives
@@ -311,15 +315,16 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            logger.debug(f"Generating primitive: {block_name}")
-            uc = generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
+            logger.debug(f"Generating primitive: {block_name} {ckt_data.find(block_args['primitive'])}")
+            uc = generate_primitive(ckt_data.find(block_args['primitive']), block_name, **block_args,
+                                    pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
             if hasattr(uc, 'metadata'):
                 primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
 
-        with (primitive_dir / '__primitives__.json').open( 'wt') as fp:
-            json.dump( primitives, fp=fp, indent=2)
+        with (primitive_dir / '__primitives__.json').open('wt') as fp:
+            json.dump(primitives, fp=fp, indent=2)
     else:
-        with (primitive_dir / '__primitives__.json').open( 'rt') as fp:
+        with (primitive_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
     # run PNR tool
@@ -332,9 +337,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
-        results.append( (subckt, variants))
+        results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
+        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(
+            variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
@@ -347,16 +353,15 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 shutil.copy(pnr_dir/f'{variant}.json',
                             pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/f'{variant}.json')
 
-
             assert skipGDS or 'gdsjson' in filemap
             if 'gdsjson' in filemap:
                 convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
-                print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+                print("Use KLayout to visualize the generated GDS:", working_dir / f'{variant}.gds')
 
             assert skipGDS or 'python_gds_json' in filemap
             if 'python_gds_json' in filemap:
                 convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')
-                print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
+                print("Use KLayout to visualize the python generated GDS:", working_dir / f'{variant}.python.gds')
 
             assert skipGDS or 'lef' in filemap
             if 'lef' in filemap:
@@ -383,4 +388,3 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                         (regression_dir / file_.name).write_text(file_.read_text())
 
     return results
-
