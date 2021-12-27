@@ -79,7 +79,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment temp_seg);
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment &temp_seg);
   // void InsertPathToCand_End(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment &temp_seg);
-  void ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
+  virtual void ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
   // void CheckOverlapMetals(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x, std::vector<RouterDB::Net>& nets);
   void Physical_metal_via();
   // void AddMetalToPin();

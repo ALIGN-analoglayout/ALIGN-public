@@ -96,6 +96,7 @@ class PowerRouter : public GcellDetailRouter {
   void ExtendX_PN(RouterDB::Metal& temp_metal, int extend_dis, bool P);
   void ExtendY_PN(RouterDB::Metal& temp_metal, int extend_dis, bool P);
   void UpdatePowerGridLLUR(int Lmetal, int Hmetal);
+  void ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
 };
 
 #endif

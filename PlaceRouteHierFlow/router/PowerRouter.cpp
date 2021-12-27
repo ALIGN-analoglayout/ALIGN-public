@@ -575,7 +575,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   logger->debug("Create Power Grid Flag 1");
   GetData(node, drc_info, Lmetal, Hmetal);
   CreatePowerGridDrc_info(h_skip_factor, v_skip_factor);
-  this->drc_info = this->PowerGrid_Drc_info;
+  //this->drc_info = this->PowerGrid_Drc_info;
   UpdatePowerGridLLUR(Lmetal, Hmetal);
   logger->debug("Create Power Grid Flag 2");
   std::vector<std::vector<RouterDB::point>> plist;
@@ -593,7 +593,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   logger->debug("Create Power Grid Flag 8");
   CreatePlistPowerGrid(plist, this->Gnd_grid);
   logger->debug("Create Power Grid Flag 9");
-
+  this->drc_info = this->PowerGrid_Drc_info;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
   logger->debug("Create Power Grid Flag 10");
@@ -1633,6 +1633,203 @@ void PowerRouter::CreatePlistPowerNets(std::vector<std::vector<RouterDB::point>>
       CreatePlistSingleContact(plist, Nets[i].path_via[j].UpperMetalRect);
       CreatePlistSingleContact(plist, Nets[i].path_via[j].LowerMetalRect);
     }
+  }
+};
+
+void PowerRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy) {
+  auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ConvertRect2GridPoints");
+
+  RouterDB::point tmpP;
+  int obs_l = 0;
+  int obs_h = this->layerNo - 1;
+  logger->debug("Enter converter");
+  logger->debug("rect info {0} {1} {2} {3} {4}", mIdx, LLx, LLy, URx, URy);
+
+  int enclose_length = 0;
+  /*
+    if(mIdx>=0 && mIdx<drc_info.Metal_info.size()-1){
+
+       int via_Idex = mIdx;
+
+       if(mIdx == drc_info.Via_model[via_Idex].LowerIdx && drc_info.Metal_info[mIdx].direct == 0){ //v
+
+          enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].y - drc_info.Via_model[via_Idex].LowerRect[0].y;
+
+         }else if(mIdx == drc_info.Via_model[via_Idex].LowerIdx && drc_info.Metal_info[mIdx].direct == 1){
+
+          enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].x - drc_info.Via_model[via_Idex].LowerRect[0].x;
+
+       }
+
+    }else if(mIdx>=0){
+
+       int via_Idex = mIdx-1;
+
+       if(mIdx == drc_info.Via_model[via_Idex].UpperIdx && drc_info.Metal_info[mIdx].direct == 0){ //v
+
+          enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].y - drc_info.Via_model[via_Idex].UpperRect[0].y;
+
+         }else if(mIdx == drc_info.Via_model[via_Idex].UpperIdx && drc_info.Metal_info[mIdx].direct == 1){
+
+          enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].x - drc_info.Via_model[via_Idex].UpperRect[0].x;
+
+       }
+
+    }
+  */
+  if (drc_info.Metal_info[mIdx].direct == 0) {  // vertical metal layer
+    int curlayer_unit = drc_info.Metal_info.at(mIdx).grid_unit_x;
+    int newLLx = LLx - curlayer_unit + drc_info.Metal_info.at(mIdx).width / 2;
+    int newURx = URx + curlayer_unit - drc_info.Metal_info.at(mIdx).width / 2;
+    // int newLLx=LLx;
+    // int newURx=URx;
+    int boundX = (newLLx % curlayer_unit == 0) ? (newLLx + curlayer_unit)
+                                               : ((newLLx / curlayer_unit) * curlayer_unit < newLLx ? (newLLx / curlayer_unit + 1) * curlayer_unit
+                                                                                                    : (newLLx / curlayer_unit) * curlayer_unit);
+    for (int x = boundX; x < newURx; x += curlayer_unit) {
+      if (mIdx != obs_l) {
+        int nexlayer_unit = drc_info.Metal_info.at(mIdx - 1).grid_unit_y;
+
+        // int newLLy=LLy-nexlayer_unit;
+        // int newURy=URy+nexlayer_unit;
+        // int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ?
+        // (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLy = LLy - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
+        int newURy = URy + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        // int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit :
+        // (newLLy/nexlayer_unit)*nexlayer_unit  ); int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+        // newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        logger->debug("converter check point 1");
+        // fix bug for power grid construction YG: 4/30/2020
+        if (boundY > newURy) {
+          newLLy = floor((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          newURy = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          boundY = newLLy;
+        }
+
+        for (int y = boundY; y <= newURy; y += nexlayer_unit) {
+          if (x >= newLLx && x <= newURx && y >= newLLy && y <= newURy) {
+            // std::cout<<"Plist problem"<<std::endl;
+            // std::cout<<x<<" "<<y<<" "<<mIdx<<" "<<plist.size()<<std::endl;
+            tmpP.x = x;
+            tmpP.y = y;
+            plist.at(mIdx).push_back(tmpP);
+          }
+          // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+      if (mIdx != obs_h) {
+        int nexlayer_unit = drc_info.Metal_info.at(mIdx + 1).grid_unit_y;
+
+        // int newLLy=LLy-nexlayer_unit;
+        // int newURy=URy+nexlayer_unit;
+        // int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ?
+        // (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLy = LLy - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
+        int newURy = URy + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        // int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit :
+        // (newLLy/nexlayer_unit)*nexlayer_unit  ); int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+        // newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        // fix bug for power grid construction YG: 4/30/2020
+        if (boundY > newURy) {
+          newLLy = floor((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          newURy = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          boundY = newLLy;
+        }
+
+        logger->debug("converter check point 2");
+        for (int y = boundY; y <= newURy; y += nexlayer_unit) {
+          if (x >= newLLx && x <= newURx && y >= newLLy && y <= newURy) {
+            // std::cout<<"Plist problem"<<std::endl;
+            tmpP.x = x;
+            tmpP.y = y;
+            plist.at(mIdx).push_back(tmpP);
+          }
+          // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+    }
+  } else if (drc_info.Metal_info[mIdx].direct == 1) {  // horizontal metal layer
+    int curlayer_unit = drc_info.Metal_info.at(mIdx).grid_unit_y;
+    int newLLy = LLy - curlayer_unit + drc_info.Metal_info.at(mIdx).width / 2;
+    int newURy = URy + curlayer_unit - drc_info.Metal_info.at(mIdx).width / 2;
+    // int newLLy=LLy;
+    // int newURy=URy;
+    int boundY = (newLLy % curlayer_unit == 0) ? (newLLy + curlayer_unit)
+                                               : ((newLLy / curlayer_unit) * curlayer_unit < newLLy ? (newLLy / curlayer_unit + 1) * curlayer_unit
+                                                                                                    : (newLLy / curlayer_unit) * curlayer_unit);
+    for (int y = boundY; y < newURy; y += curlayer_unit) {
+      if (mIdx != obs_l) {
+        int nexlayer_unit = drc_info.Metal_info.at(mIdx - 1).grid_unit_x;
+
+        // int newLLx=LLx-nexlayer_unit;
+        // int newURx=URx+nexlayer_unit;
+        // int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ?
+        // (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
+        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        // int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit :
+        // (newLLx/nexlayer_unit)*nexlayer_unit  ); int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
+        // newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unitz
+        // fix bug for power grid construction YG: 4/30/2020
+        if (boundX > newURx) {
+          newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;
+          newURx = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          boundX = newLLx;
+        }
+
+        logger->debug("converter check point 3");
+        for (int x = boundX; x <= newURx; x += nexlayer_unit) {
+          if (x >= newLLx && x <= newURx && y >= newLLy && y <= newURy) {
+            // std::cout<<"Plist problem"<<std::endl;
+            tmpP.x = x;
+            tmpP.y = y;
+            plist.at(mIdx).push_back(tmpP);
+          }
+          // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+      if (mIdx != obs_h) {
+        int nexlayer_unit = drc_info.Metal_info.at(mIdx + 1).grid_unit_x;
+
+        // int newLLx=LLx-nexlayer_unit;
+        // int newURx=URx+nexlayer_unit;
+        // int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ?
+        // (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
+        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        // int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit :
+        // (newLLx/nexlayer_unit)*nexlayer_unit  ); int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
+        // newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        // fix bug for power grid construction YG: 4/30/2020
+        if (boundX > newURx) {
+          newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;
+          newURx = ceil((double)newLLy / nexlayer_unit) * nexlayer_unit;
+          boundX = newLLx;
+        }
+
+        logger->debug("converter check point 4");
+        for (int x = boundX; x <= newURx; x += nexlayer_unit) {
+          if (x >= newLLx && x <= newURx && y >= newLLy && y <= newURy) {
+            // std::cout<<"Plist problem"<<std::endl;
+            tmpP.x = x;
+            tmpP.y = y;
+            plist.at(mIdx).push_back(tmpP);
+          }
+          // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+    }
+  } else {
+    logger->debug("Router-Error: incorrect routing direction");
   }
 };
 
