@@ -357,10 +357,11 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             if "vt_type" in design_config:
                 vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
         else:
-            values['M0'] = element.parameters
+            values[element.name] = element.parameters
             if "vt_type" in design_config:
                 vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
-
+        device_name_all = [*values.keys()]
+        device_name = device_name_all[0]
         if unit_size_mos is None:
             """
             Transistor parameters:
@@ -368,9 +369,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 nf: number of fingers
                 w:  effective width of an instance (width of instance x number of fingers)
             """
-            assert 'M' in values['M0'],  f'm: Number of instances not specified {values}'
-            assert 'NF' in values['M0'], f'nf: Number of fingers not specified {values}'
-            assert 'W' in values['M0'],  f'w: Width is not specified {values}'
+            assert 'M' in values[device_name],  f'm: Number of instances not specified {values}'
+            assert 'NF' in values[device_name], f'nf: Number of fingers not specified {values}'
+            assert 'W' in values[device_name],  f'w: Width is not specified {values}'
 
             def x_by_y(m):
                 y_sqrt = floor(sqrt(m))
@@ -380,9 +381,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                     elif m % y == 0:
                         return m//y, y
 
-            m  = int(values['M0']['M'])
-            nf = int(values['M0']['NF'])
-            w = int(float(values['M0']['W'])*1e9)
+            m  = int(values[device_name]['M'])
+            nf = int(values[device_name]['NF'])
+            w = int(float(values[device_name]['W'])*1e9)
             if isinstance(subckt,SubCircuit):
                 for e in subckt.elements:
                     vt = e.model
@@ -396,19 +397,19 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
             #for ele in subckt.elements:
                 #values[ele.name]['real_inst_type'] = vt
-            values['M0']['real_inst_type'] = vt
+            values[device_name]['real_inst_type'] = vt
             block_args= {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
                 'value': 1, # hack. This is used as nfin later.
-                'parameters':values['M0']
+                'parameters':values[device_name]
             }
 
-            if 'STACK' in values and int(values['M0']['STACK']) >1:
+            if 'STACK' in values and int(values[device_name]['STACK']) >1:
                 assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['stack']=int(values['M0']['STACK'])
-                block_name += f'_st'+str(int(values['M0']['STACK']))
+                block_args['stack']=int(values[device_name]['STACK'])
+                block_name += f'_st'+str(int(values[device_name]['STACK']))
             else:
                 block_name += f'_nf{nf}'
 
@@ -421,13 +422,13 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if "NFIN" in values['M0'].keys():
+        if "NFIN" in values[device_name].keys():
             #FinFET design
             for key in values:
                 assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}" 
                 size = int(values[key]["NFIN"])
             name_arg ='NFIN'+str(size)
-        elif "W" in values['M0'].keys():
+        elif "W" in values[device_name].keys():
             #Bulk design
             for key in values:
                 assert values[key]["w"] != str, f"unrecognized size {values[key]['w']}"
@@ -437,19 +438,19 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         else:
             size = '_'.join(param+str(values[param]) for param in values)
 
-        if 'NF' in values['M0'].keys():
+        if 'NF' in values[device_name].keys():
             for key in values:
                 assert int(values[key]["NF"]), f"unrecognized size {values[key]['NF']}"
             #assert size%2==0, f"NF must be even" 
-            name_arg =name_arg+'_NF'+str(int(values['M0']["NF"]))
+            name_arg =name_arg+'_NF'+str(int(values[device_name]["NF"]))
 
-        if 'M' in values['M0'].keys():
+        if 'M' in values[device_name].keys():
             for key in values:
                 assert int(values[key]["M"]), f"unrecognized size {values[key]['M']}"
                 if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL'])>1:
                     values[key]["PARALLEL"]=int(values[key]['PARALLEL'])
                     values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
-            name_arg =name_arg+'_M'+str(int(values['M0']["M"]))
+            name_arg =name_arg+'_M'+str(int(values[device_name]["M"]))
             size = 0
         
         logger.debug(f"Generating lef for {name} , with size {size}")
@@ -468,7 +469,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             xval = int(no_units / square_y)
 
             if 'SCM' in name:
-                if int(values['M0']["NFIN"])*int(values['M0']["NF"])*int(values['M0']["M"]) != int(values['M1']["NFIN"])*int(values['M1']["NF"])*int(values['M1']["M"]):
+                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
                     square_y = 1
                     yval = square_y
                     xval = int(no_units / square_y)
@@ -486,9 +487,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'y_cells': yval,
                 'parameters':values
             }
-            if 'STACK' in values['M0'].keys() and int(values['M0']["STACK"])>1:
-                block_args['stack']=int(values['M0']["STACK"])
-                block_name = block_name+'_ST'+str(int(values['M0']["STACK"]))
+            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"])>1:
+                block_args['stack']=int(values[device_name]["STACK"])
+                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
             if vt:
                 block_args['vt_type']=vt[0]
                 block_name = block_name+'_'+vt[0]

@@ -299,7 +299,8 @@ class MOSGenerator(DefaultCanvas):
         self._nets = collections.defaultdict(lambda: collections.defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
         ### Needs to be generalized
         if len(parameters) > 2:
-            if int(parameters['M0']["NFIN"])*int(parameters['M0']["NF"])*int(parameters['M0']["M"]) != int(parameters['M1']["NFIN"])*int(parameters['M1']["NF"])*int(parameters['M1']["M"]):
+            device_name_all = [*parameters.keys()]
+            if int(parameters[device_name_all[0]]["NFIN"])*int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]) != int(parameters[device_name_all[1]]["NFIN"])*int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]):
                 pattern=3
          ##########################
         for y in range(y_cells):
