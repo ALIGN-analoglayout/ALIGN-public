@@ -18,6 +18,8 @@
 "power_rail_frequency":2,
 "Hspace": 0,
 "Vspace": 0,
+"aspect_ratio":4,
+"cell_height": 28,
 "unit_size_nmos":12,
 "unit_size_pmos":12,
 "unit_size_cap":12,
