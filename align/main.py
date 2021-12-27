@@ -315,8 +315,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            logger.debug(f"Generating primitive: {block_name} {ckt_data.find(block_args['primitive'])}")
-            uc = generate_primitive(ckt_data.find(block_args['primitive']), block_name, **block_args,
+            primitive_def = ckt_data.find(block_args['primitive'])
+            block_args.pop("primitive", None)
+            logger.debug(f"Generating primitive: {block_name} {primitive_def}")
+            uc = generate_primitive(block_name, primitive_def, ** block_args,
                                     pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
             if hasattr(uc, 'metadata'):
                 primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)

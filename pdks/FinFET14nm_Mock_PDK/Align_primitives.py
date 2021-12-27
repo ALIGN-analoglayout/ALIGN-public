@@ -8,10 +8,9 @@ from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
 
 
-def main(args, primitive_def):
+def main(args):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
     primitive_def = read_primitive_spice(args)
-
     return generate_primitive(
         args.block_name,
         primitive_def,
@@ -75,5 +74,4 @@ def read_primitive_spice(args):
 
 
 if __name__ == "__main__":
-    args = gen_parser().parse_args()
-    main(args)
+    main(gen_parser().parse_args())
