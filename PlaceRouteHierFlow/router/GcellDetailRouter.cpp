@@ -3128,7 +3128,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
                                                                                                     : (newLLx / curlayer_unit) * curlayer_unit);
     for (int x = boundX; x < newURx; x += curlayer_unit) {
       if (mIdx != obs_l) {
-        int nexlayer_unit = drc_info.Metal_info.at(mIdx - 1).grid_unit_y;
+        int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_y;
 
         // int newLLy=LLy-nexlayer_unit;
         // int newURy=URy+nexlayer_unit;
@@ -3161,7 +3161,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         }
       }
       if (mIdx != obs_h) {
-        int nexlayer_unit = drc_info.Metal_info.at(mIdx + 1).grid_unit_y;
+        int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx + 1).grid_unit_y;
 
         // int newLLy=LLy-nexlayer_unit;
         // int newURy=URy+nexlayer_unit;
@@ -3204,7 +3204,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
                                                                                                     : (newLLy / curlayer_unit) * curlayer_unit);
     for (int y = boundY; y < newURy; y += curlayer_unit) {
       if (mIdx != obs_l) {
-        int nexlayer_unit = drc_info.Metal_info.at(mIdx - 1).grid_unit_x;
+        int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_x;
 
         // int newLLx=LLx-nexlayer_unit;
         // int newURx=URx+nexlayer_unit;
@@ -3236,7 +3236,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         }
       }
       if (mIdx != obs_h) {
-        int nexlayer_unit = drc_info.Metal_info.at(mIdx + 1).grid_unit_x;
+        int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx + 1).grid_unit_x;
 
         // int newLLx=LLx-nexlayer_unit;
         // int newURx=URx+nexlayer_unit;
