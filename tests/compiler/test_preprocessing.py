@@ -107,6 +107,7 @@ def test_parallel(db):
         "PARAM2": "2",
         "PARALLEL": 2,
     }
+    assert db.get_element("M2") is None, 'Should M2 have been removed from the db as it has been merged to M1?'
 
 
 @pytest.fixture
@@ -241,6 +242,8 @@ def test_series(dbs):
         "STACK": 3,
     }
     assert len(dbs.elements) == 4
+    assert dbs.get_element("M2") is None, 'Should M2 have been removed from the db as it has been merged to M1?'
+    assert dbs.get_element("M5") is None, 'Should M5 have been removed from the db as it has been merged to M3?'
 
 
 @pytest.fixture
