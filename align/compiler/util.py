@@ -5,7 +5,7 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 from ..schema.graph import Graph
-from ..schema import SubCircuit, SpiceParser
+from ..schema import SubCircuit
 import logging
 import pathlib
 
@@ -200,6 +200,5 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
                 return False
 
 
-def parse_primitive_lib(parser):
-    primitive_spice = pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
-    parser.parse(primitive_spice)
+def get_primitive_spice():
+    return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
