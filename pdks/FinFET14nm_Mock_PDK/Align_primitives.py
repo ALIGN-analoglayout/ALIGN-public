@@ -7,6 +7,7 @@ from align import primitive
 
 from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
+from align.compiler.util import parse_primitive_lib
 
 
 def main(args):
@@ -55,21 +56,20 @@ def gen_parser():
 def read_primitive_spice(args):
     model_statements = args.pdkdir / "models.sp"
     assert model_statements.exists(), f"No model file found for this PDK {model_statements}"
-    primitive_spice_parser = SpiceParser()
+    parser = SpiceParser()
     with open(model_statements, 'r') as f:
         lines = f.read()
-    primitive_spice_parser.parse(lines)
+    parser.parse(lines)
     if not args.input_spice:
-        config_path = pathlib.Path(__file__).resolve().parent.parent.parent / "align" / "config"
-        primitive_spice = config_path / "basic_template.sp"
+        parse_primitive_lib(parser)
     else:
         primitive_spice = args.pdkdir / args.input_spice
-    assert primitive_spice.exists(), f"No spice file found {primitive_spice} {os.listdir(pathlib.Path(__file__).resolve().parent.parent.parent)}"
+    assert primitive_spice.exists(), f"No spice file found {primitive_spice}"
 
     with open(primitive_spice) as f:
         lines = f.read()
-    primitive_spice_parser.parse(lines)
-    primitive_def = primitive_spice_parser.library.find(args.primitive.upper())
+    parser.parse(lines)
+    primitive_def = parser.library.find(args.primitive.upper())
     assert primitive_def, f"No such primitive definition found {args.primitive}"
     return primitive_def
 
