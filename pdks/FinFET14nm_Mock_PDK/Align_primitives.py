@@ -60,11 +60,11 @@ def read_primitive_spice(args):
         lines = f.read()
     primitive_spice_parser.parse(lines)
     if not args.input_spice:
-        config_path = pathlib.Path(os.getenv('ALIGN_HOME')) / "align" / "config"
+        config_path = pathlib.Path(__file__).resolve().parent.parent.parent / "align" / "config"
         primitive_spice = config_path / "basic_template.sp"
     else:
         primitive_spice = args.pdkdir / args.input_spice
-    assert primitive_spice.exists(), f"No spice file found {primitive_spice}"
+    assert primitive_spice.exists(), f"No spice file found {primitive_spice} {os.listdir(pathlib.Path(__file__).resolve().parent.parent.parent)}"
 
     with open(primitive_spice) as f:
         lines = f.read()
