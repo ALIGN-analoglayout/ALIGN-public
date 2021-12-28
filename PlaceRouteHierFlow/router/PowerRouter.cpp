@@ -575,7 +575,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   logger->debug("Create Power Grid Flag 1");
   GetData(node, drc_info, Lmetal, Hmetal);
   CreatePowerGridDrc_info(h_skip_factor, v_skip_factor);
-  this->drc_info = this->PowerGrid_Drc_info;
+  this->cross_layer_drc_info = this->PowerGrid_Drc_info;
   UpdatePowerGridLLUR(Lmetal, Hmetal);
   logger->debug("Create Power Grid Flag 2");
   std::vector<std::vector<RouterDB::point>> plist;
@@ -593,9 +593,10 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   logger->debug("Create Power Grid Flag 8");
   CreatePlistPowerGrid(plist, this->Gnd_grid);
   logger->debug("Create Power Grid Flag 9");
-
+  //this->drc_info = this->PowerGrid_Drc_info;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
+  this->drc_info = this->PowerGrid_Drc_info;
   logger->debug("Create Power Grid Flag 10");
 
   // how to crate PowerGrid here????
