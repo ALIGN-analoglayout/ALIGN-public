@@ -296,17 +296,17 @@ def add_parallel_devices(ckt, update=True):
             p = {**ele.pins, **ele.parameters}
             p["model"] = ele.model
             if p in pp_list:
-                parallel_devices[pp_list.index(p)].append(node)
+                parallel_devices[pp_list.index(p)].append(ele)
             else:
                 pp_list.append(p)
-                parallel_devices[pp_list.index(p)] = [node]
+                parallel_devices[pp_list.index(p)] = [ele]
         for pd in parallel_devices.values():
             if len(pd) > 1:
-                logger.info(f"removing parallel nodes {pd}")
-                pd0 = sorted(pd)[0]
-                ckt.get_element(pd0).parameters["PARALLEL"] = len(set(pd))
+                pd0 = sorted(pd, key=lambda x: x.name)[0]
+                logger.info(f"removing parallel instances {[x.name for x in pd[1:]]} and updating {pd0.name} parameters")
+                pd0.parameters["PARALLEL"] = sum([getattr(x.parameters, "PARALLEL", 1) for x in pd])
                 for rn in pd[1:]:
-                    G.remove_node(rn)
+                    G.remove(rn)
 
 
 def add_series_devices(ckt, update=True):

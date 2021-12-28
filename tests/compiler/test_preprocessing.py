@@ -100,7 +100,10 @@ def test_parallel(db):
     assert db.get_element("C1").parameters == {"VALUE": "2"}
     add_parallel_devices(db, update=True)
     assert db.get_element("C1").parameters == {"VALUE": "2", "PARALLEL": 2}
+    assert db.get_element("C2") is None, 'C2 should have been removed'
     assert db.get_element("R1").parameters == {"VALUE": "10", "PARALLEL": 3}
+    assert db.get_element("R2") is None, 'R2 should have been removed'
+    assert db.get_element("R3") is None, 'R3 should have been removed'
     assert db.get_element("M1").parameters == {
         "PARAM1": "1.0",
         "M": "1",
