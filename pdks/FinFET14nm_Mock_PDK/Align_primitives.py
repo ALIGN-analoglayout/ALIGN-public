@@ -7,7 +7,7 @@ from align import primitive
 
 from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
-from align.compiler.util import parse_primitive_lib
+from align.compiler.util import get_primitive_spice
 
 
 def main(args):
@@ -61,7 +61,7 @@ def read_primitive_spice(args):
         lines = f.read()
     parser.parse(lines)
     if not args.input_spice:
-        parse_primitive_lib(parser)
+        primitive_spice = get_primitive_spice()
     else:
         primitive_spice = args.pdkdir / args.input_spice
     assert primitive_spice.exists(), f"No spice file found {primitive_spice}"
