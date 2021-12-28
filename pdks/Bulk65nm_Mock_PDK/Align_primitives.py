@@ -2,6 +2,7 @@ import argparse
 import pathlib
 import logging
 import json
+import os
 
 from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
@@ -59,7 +60,7 @@ def read_primitive_spice(args):
         lines = f.read()
     primitive_spice_parser.parse(lines)
     if not args.input_spice:
-        config_path = pathlib.Path(__file__).resolve().parent.parent.parent / "align" / "config"
+        config_path = pathlib.Path(os.getenv('ALIGN_HOME')) / "align" / "config"
         primitive_spice = config_path / "basic_template.sp"
     else:
         primitive_spice = args.pdkdir / args.input_spice
