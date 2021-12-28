@@ -297,6 +297,12 @@ class MOSGenerator(DefaultCanvas):
             self.minvias = minvias
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
         self._nets = collections.defaultdict(lambda: collections.defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
+        ### Needs to be generalized
+        if len(parameters) > 2:
+            device_name_all = [*parameters.keys()]
+            if int(parameters[device_name_all[0]]["NFIN"])*int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]) != int(parameters[device_name_all[1]]["NFIN"])*int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]):
+                pattern=3
+         ##########################
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
             
