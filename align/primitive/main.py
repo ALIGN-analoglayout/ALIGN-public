@@ -114,10 +114,8 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
 
 def get_generator(name, pdkdir):
-    print(name, pdkdir)
     if pdkdir is None:
         return False
-    print("Hello")
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -136,15 +134,12 @@ def get_generator(name, pdkdir):
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-    print(module, name, dir(module), pdk_dir_path)
     return getattr(module, name, False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
-    print(pdkdir)
     pdk = Pdk().load(pdkdir / 'layers.json')
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
-    print(primitive1)
     uc = primitive1()
     uc.generate(
         ports=parameters["ports"],
@@ -308,7 +303,6 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
-
         if "NFIN" in values[device_name].keys():
             # FinFET design
             for key in values:
