@@ -2,11 +2,14 @@ import pathlib
 import pprint
 import json
 
+from align.schema import library
+
 from ..schema.subcircuit import SubCircuit
 from ..schema.parser import SpiceParser
 from ..schema import constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
+from .read_library import read_lib, read_models, order_lib
 from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
@@ -87,43 +90,15 @@ def compiler_input(
     input_dir = input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
     # TODO: flatten should be separate pass
-    ckt_parser = SpiceParser()
-    lib_parser = SpiceParser()
-    # Read model file to map devices
-    model_statements = pdk_dir / "models.sp"
 
-    if not model_statements.exists():
-        model_statements = config_path / "models.sp"
-
-    with open(model_statements, 'r') as f:
-        lines = f.read()
-    ckt_parser.parse(lines)
-    lib_parser.parse(lines)
+    ckt_parser = read_models(pdk_dir, config_path)
 
     with open(input_ckt) as f:
         lines = f.read()
     ckt_parser.parse(lines)
 
-    lib_files = ["basic_template.sp", "user_template.sp"]
-    for lib_file in lib_files:
-        with open(config_path / lib_file) as f:
-            lines = f.read()
-        lib_parser.parse(lines)
-
-    library = lib_parser.library
-
-    primitives = [
-        v for v in library
-        if isinstance(v, SubCircuit)
-    ]
-    # TODO: update the order based on weighing mechanism
-    primitives.sort(
-        key=lambda x: (len(x.elements),
-                       1 / len(x.nets),
-                       len(set([e.model for e in x.elements]))),
-        reverse=True,
-    )
-    logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
+    library = read_lib(pdk_dir, config_path)
+    primitives = order_lib(library)
 
     # generator will be called for these elments
     with open(pdk_dir / "generators.json") as fp:

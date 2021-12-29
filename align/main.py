@@ -11,7 +11,7 @@ import http.server
 import socketserver
 import functools
 
-from .compiler import generate_hierarchy
+from .compiler import generate_hierarchy, read_lib
 from .primitive import generate_primitive
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
@@ -317,7 +317,14 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             logger.info(f"Generating primitive: {block_name} {block_args}")
             if block_args['primitive'] != 'generic':
-                primitive_def = ckt_data.find(block_args['primitive'])
+                if 'ckt_data' in globals():
+                    primitive_def = ckt_data.find(block_args['primitive'])
+                else:
+                    # read in circuit from basic library
+                    primitive_def = read_lib(pdk_dir).find(block_args['primitive'])
+                    # primitive_def = next(filter(lambda obj: obj.name == block_args['primitive'], primitives), None)
+                    # [prim for prim in ReadLibrary(pdk_dir) if prim.name == block_args['primitive']]
+                assert primitive_def is not None, f"unavailable primitive {block_args['primitive']}, in {[ele.name for ele in primitives]}"
             else:
                 primitive_def = 'generic'
             block_args.pop("primitive", None)
