@@ -315,15 +315,12 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            logger.info(f"Generating primitive: {block_name} {block_args}")
             if block_args['primitive'] != 'generic':
                 if 'ckt_data' in globals():
                     primitive_def = ckt_data.find(block_args['primitive'])
                 else:
                     # read in circuit from basic library
                     primitive_def = read_lib(pdk_dir).find(block_args['primitive'])
-                    # primitive_def = next(filter(lambda obj: obj.name == block_args['primitive'], primitives), None)
-                    # [prim for prim in ReadLibrary(pdk_dir) if prim.name == block_args['primitive']]
                 assert primitive_def is not None, f"unavailable primitive {block_args['primitive']}, in {[ele.name for ele in primitives]}"
             else:
                 primitive_def = 'generic'
