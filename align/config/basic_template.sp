@@ -1,82 +1,82 @@
-* .subckt NMOS_S  D G S
-* M1 D G S S NMOS w=w1 l=l1
-* .ends NMOS_S
+.subckt NMOS_S  D G S
+M1 D G S S NMOS w=w1 l=l1
+.ends NMOS_S
 
-* .subckt PMOS_S D G S
-* M1 D G S S PMOS w=w1 l=l1
-* .ends PMOS_S
+.subckt PMOS_S D G S
+M1 D G S S PMOS w=w1 l=l1
+.ends PMOS_S
 
-* .subckt NMOS_G  D G S
-* M1 D G S G NMOS w=w1 l=l1
-* .ends NMOS_G
+.subckt NMOS_G  D G S
+M1 D G S G NMOS w=w1 l=l1
+.ends NMOS_G
 
-* .subckt PMOS_G D G S
-* M1 D G S G PMOS w=w1 l=l1
-* .ends PMOS_G
+.subckt PMOS_G D G S
+M1 D G S G PMOS w=w1 l=l1
+.ends PMOS_G
 
-* .subckt DUMMY_NMOS_S D S
-* M1 D S S S NMOS w=w l=90n
-* .ends DUMMY_NMOS_S
+.subckt DUMMY_NMOS_S D S
+M1 D S S S NMOS w=w l=90n
+.ends DUMMY_NMOS_S
 
-* .subckt DUMMY_PMOS_S D S
-* M1 D S S S PMOS w=w l=90n
-* .ends DUMMY_PMOS_S
+.subckt DUMMY_PMOS_S D S
+M1 D S S S PMOS w=w l=90n
+.ends DUMMY_PMOS_S
 
-* .subckt DCAP_NMOS_B G S B
-* M1 S G S B NMOS w=w l=90n
-* .ends DCAP_NMOS_B
+.subckt DCAP_NMOS_B G S B
+M1 S G S B NMOS w=w l=90n
+.ends DCAP_NMOS_B
 
-* .subckt DCAP_PMOS_B G S B
-* M1 S G S B PMOS w=w l=90n
-* .ends DCAP_PMOS_B
+.subckt DCAP_PMOS_B G S B
+M1 S G S B PMOS w=w l=90n
+.ends DCAP_PMOS_B
 
-* .subckt DCAP_NMOS G S
-* M1 S G S S NMOS w=w l=90n
-* .ends DCAP_NMOS
+.subckt DCAP_NMOS G S
+M1 S G S S NMOS w=w l=90n
+.ends DCAP_NMOS
 
-* .subckt DCAP_PMOS G S
-* M1 S G S S PMOS w=w l=90n
-* .ends DCAP_PMOS
+.subckt DCAP_PMOS G S
+M1 S G S S PMOS w=w l=90n
+.ends DCAP_PMOS
 
-* .subckt DCL_NMOS D S B
-* M1 D D S B NMOS w=w l=90n
-* .ends DCL_NMOS
+.subckt DCL_NMOS D S B
+M1 D D S B NMOS w=w l=90n
+.ends DCL_NMOS
 
-* .subckt DCL_PMOS D S B
-* M1 D D S B PMOS w=w l=90n
-* .ends DCL_PMOS
+.subckt DCL_PMOS D S B
+M1 D D S B PMOS w=w l=90n
+.ends DCL_PMOS
 
-* .subckt DCL_NMOS_S D S
-* M1 D D S S NMOS w=w l=90n
-* .ends DCL_NMOS_S
+.subckt DCL_NMOS_S D S
+M1 D D S S NMOS w=w l=90n
+.ends DCL_NMOS_S
 
-* .subckt DCL_PMOS_S D S
-* M1 D D S S PMOS w=w l=90n
-* .ends DCL_PMOS_S
+.subckt DCL_PMOS_S D S
+M1 D D S S PMOS w=w l=90n
+.ends DCL_PMOS_S
 
-* .subckt DUMMY_NMOS D S B
-* M1 D S S B NMOS w=w l=90n
-* .ends DUMMY_NMOS
+.subckt DUMMY_NMOS D S B
+M1 D S S B NMOS w=w l=90n
+.ends DUMMY_NMOS
 
-* .subckt DUMMY_PMOS D S B
-* M1 D S S B PMOS w=w l=90n
-* .ends DUMMY_PMOS
+.subckt DUMMY_PMOS D S B
+M1 D S S B PMOS w=w l=90n
+.ends DUMMY_PMOS
 
-* .subckt DUMMY1_NMOS S B
-* M1 S S S B NMOS w=w l=90n
-* .ends DUMMY1_NMOS
+.subckt DUMMY1_NMOS S B
+M1 S S S B NMOS w=w l=90n
+.ends DUMMY1_NMOS
 
-* .subckt DUMMY1_PMOS S B
-* M1 S S S B PMOS w=w l=90n
-* .ends DUMMY1_PMOS
+.subckt DUMMY1_PMOS S B
+M1 S S S B PMOS w=w l=90n
+.ends DUMMY1_PMOS
 
-* .subckt DUMMY1_NMOS_S S
-* M1 S S S S NMOS w=w l=90n
-* .ends DUMMY1_NMOS_S
+.subckt DUMMY1_NMOS_S S
+M1 S S S S NMOS w=w l=90n
+.ends DUMMY1_NMOS_S
 
-* .subckt DUMMY1_PMOS_S S
-* M1 S S S S PMOS w=w l=90n
-* .ends DUMMY1_PMOS_S
+.subckt DUMMY1_PMOS_S S
+M1 S S S S PMOS w=w l=90n
+.ends DUMMY1_PMOS_S
 
 .subckt SCM_NMOS_B DA DB S B
 M1 DA DA S B NMOS w=w l=90n
