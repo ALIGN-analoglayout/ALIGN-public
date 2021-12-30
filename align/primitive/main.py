@@ -211,7 +211,7 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
     generator = get_generator('ResGenerator', pdkdir)
 
     fin = height
-    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
+    finDummy = 4  #Total Dummy fins per unit cell: 2*finDummy
 
     uc = generator(pdk, fin, finDummy)
 
@@ -240,7 +240,7 @@ def get_generator(name, pdkdir):
         pdk_dir_path = pathlib.Path(pdkdir)
     pdk_dir_stem = pdk_dir_path.stem
 
-    try:  # is pdk an installed module
+    try:  #is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
     except ImportError:
         init_file = pdk_dir_path / '__init__.py'
@@ -249,7 +249,7 @@ def get_generator(name, pdkdir):
             module = importlib.util.module_from_spec(spec)
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
-        else:  # is pdk old school (backward compatibility)
+        else:  #is pdk old school (backward compatibility)
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
@@ -286,7 +286,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
     logger.debug(f"checking lef for: {name}, {element}")
 
     if name == 'generic' or get_generator(name.lower(), pdk_dir):
-        # TODO: how about hashing for unique names?
+        #TODO: how about hashing for unique names?
         value_str = ''
         if values:
             for key in sorted(values):
@@ -395,14 +395,12 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
-            #for ele in subckt.elements:
-                #values[ele.name]['real_inst_type'] = vt
             values[device_name]['real_inst_type'] = vt
             block_args= {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
-                'value': 1, # hack. This is used as nfin later.
+                'value': 1, #hack. This is used as nfin later.
                 'parameters':values[device_name]
             }
 
@@ -425,13 +423,15 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         if "NFIN" in values[device_name].keys():
             #FinFET design
             for key in values:
-                assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}" 
+                assert int(values[key]["NFIN"]), f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
+                assert unit_size_mos >= int(values[key]["NFIN"]) , f"NFIN of device {key} in {name} should not be grater than unit_size_mos"
                 size = int(values[key]["NFIN"])
             name_arg ='NFIN'+str(size)
         elif "W" in values[device_name].keys():
             #Bulk design
             for key in values:
-                assert values[key]["w"] != str, f"unrecognized size {values[key]['w']}"
+                assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
+                assert (values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, f"Width of device {key} in {name} should not be be multiple of fin pitch:{design_config['Gate_pitch']}" 
                 size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
                 values[key]["NFIN"]=size
             name_arg ='NFIN'+str(size)
@@ -440,13 +440,13 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         if 'NF' in values[device_name].keys():
             for key in values:
-                assert int(values[key]["NF"]), f"unrecognized size {values[key]['NF']}"
-            #assert size%2==0, f"NF must be even" 
+                assert int(values[key]["NF"]), f"unrecognized NF of device {key}:{values[key]['NF']} in {name}"
+                assert int(values[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{values[key]['NF']} in {name}" 
             name_arg =name_arg+'_NF'+str(int(values[device_name]["NF"]))
 
         if 'M' in values[device_name].keys():
             for key in values:
-                assert int(values[key]["M"]), f"unrecognized size {values[key]['M']}"
+                assert int(values[key]["M"]), f"unrecognized M of device {key}:{values[key]['M']} in {name}"
                 if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL'])>1:
                     values[key]["PARALLEL"]=int(values[key]['PARALLEL'])
                     values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
@@ -456,9 +456,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
             for key in values:
-                size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
-
-            no_units = ceil(size / (4*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
+                size_device = int(values[key]["NF"])*int(values[key]["M"])
+                size = size + size_device
+            no_units = ceil(size / (2*len(values))) #Factor 2 is due to NF=2 in each unit cell; needs to be generalized
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
                 square_y = floor(sqrt(no_units/3))
             else:
@@ -500,7 +500,7 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
     raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
 
 
-# WARNING: Bad code. Changing these default values breaks functionality.
+#WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
