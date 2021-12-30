@@ -92,7 +92,7 @@ def build_example(name, netlist, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
+def run_example(example, n=8, cleanup=True, max_errors=0, log_level='DEBUG', area=None, additional_args=None):
     run_dir = my_dir / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
