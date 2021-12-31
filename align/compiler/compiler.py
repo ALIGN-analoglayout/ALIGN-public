@@ -102,7 +102,7 @@ def compiler_input(
 
     # generator will be called for these elments
     with open(pdk_dir / "generators.json") as fp:
-        generators = json.load(fp).keys()
+        generators = set(json.load(fp).keys())
     logger.debug(f"Available generator for cells: {generators}")
 
     const_parse = ConstraintParser(pdk_dir, input_dir)

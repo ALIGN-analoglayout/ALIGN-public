@@ -21,7 +21,7 @@ class Annotate:
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library, existing_generator: set):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -86,9 +86,9 @@ class Annotate:
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
-
+                logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
-                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
+                    f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
                     ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
@@ -98,14 +98,16 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or \
-                        subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and
+                            subckt.name in do_not_use_lib or \
+                        (subckt.name in temp_match_dict and  # to stop searching INVB in INVB_1
                          ckt.name in temp_match_dict[subckt.name]
                          ):
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
                     )
+                    if subckt.name in self.all_lef:
+                        self.all_lef.update(new_subckts)
                     if subckt.name in temp_match_dict:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:

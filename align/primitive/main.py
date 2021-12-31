@@ -165,7 +165,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
     name = model
     values = element.parameters
     available_block_lef = all_lef
-    logger.debug(f"checking lef for: {name}, {element}")
+    logger.debug(f"checking lef for: {name}, {element}, {values}")
 
     if name == 'generic' or get_generator(name.lower(), pdk_dir):
         # TODO: how about hashing for unique names?
@@ -228,6 +228,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             unit_size_mos = design_config["unit_size_pmos"]
 
         subckt = element.parent.parent.parent.find(element.model)
+        logger.debug(f"subckt definition found: {subckt}")
         vt = None
         values = {}
         vt_types_temp = []
@@ -303,21 +304,22 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
+
         if "NFIN" in values[device_name].keys():
             # FinFET design
             for key in values:
                 assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}"
-                size = int(values[key]["NFIN"])
-            name_arg = 'NFIN'+str(size)
+                nfin = int(values[key]["NFIN"])
+            name_arg = 'NFIN'+str(nfin)
         elif "W" in values[device_name].keys():
             # Bulk design
             for key in values:
-                assert values[key]["w"] != str, f"unrecognized size {values[key]['w']}"
-                size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                values[key]["NFIN"] = size
-            name_arg = 'NFIN'+str(size)
+                assert values[key][""] != str, f"unrecognized size {values[key]['w']}"
+                nfin = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
+                values[key]["NFIN"] = nfin
+            name_arg = 'NFIN'+str(nfin)
         else:
-            size = '_'.join(param+str(values[param]) for param in values)
+            raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
 
         if 'NF' in values[device_name].keys():
             for key in values:
@@ -332,53 +334,51 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                     values[key]["PARALLEL"] = int(values[key]['PARALLEL'])
                     values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
             name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
-            size = 0
 
-        logger.debug(f"Generating lef for {name} , with size {size}")
-        if isinstance(size, int):
-            for key in values:
-                size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
+        size = 0
+        for key in values:
+            size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
+        logger.debug(f"Generating lef for {name} with size {size}")
 
-            no_units = ceil(size / (4*unit_size_mos))  # factor 2 is due to NF=2 in each unit cell; needs to be generalized
-            if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
-                square_y = floor(sqrt(no_units/3))
-            else:
-                square_y = floor(sqrt(no_units))
-            while no_units % square_y != 0:
-                square_y -= 1
-            yval = square_y
-            xval = int(no_units / square_y)
+        no_units = ceil(size / (4*unit_size_mos))  # factor 2 is due to NF=2 in each unit cell; needs to be generalized
+        if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
+            square_y = floor(sqrt(no_units/3))
+        else:
+            square_y = floor(sqrt(no_units))
+        while no_units % square_y != 0:
+            square_y -= 1
+        yval = square_y
+        xval = int(no_units / square_y)
 
-            if 'SCM' in name:
-                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
-                    square_y = 1
-                    yval = square_y
-                    xval = int(no_units / square_y)
+        if 'SCM' in name:
+            if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
+                square_y = 1
+                yval = square_y
+                xval = int(no_units / square_y)
 
-            block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
+        block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
 
-            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            block_args = {
-                'primitive': name,
-                'value': unit_size_mos,
-                'x_cells': xval,
-                'y_cells': yval,
-                'parameters': values
-            }
-            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
-                block_args['stack'] = int(values[device_name]["STACK"])
-                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
-            if vt:
-                block_args['vt_type'] = vt[0]
-                block_name = block_name+'_'+vt[0]
+        logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+        block_args = {
+            'primitive': name,
+            'value': unit_size_mos,
+            'x_cells': xval,
+            'y_cells': yval,
+            'parameters': values
+        }
+        if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
+            block_args['stack'] = int(values[device_name]["STACK"])
+            block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
+        if vt:
+            block_args['vt_type'] = vt[0]
+            block_name = block_name+'_'+vt[0]
 
-            element.add_abs_name(block_name)
-            add_primitive(primitives, block_name, block_args)
-            return True
-    raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
+        element.add_abs_name(block_name)
+        add_primitive(primitives, block_name, block_args)
+        return True
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.

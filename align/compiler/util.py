@@ -5,7 +5,7 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 from ..schema.graph import Graph
-from ..schema import SubCircuit
+from ..schema import SubCircuit, Model
 import logging
 import pathlib
 
@@ -58,10 +58,17 @@ def get_next_level(subckt, G, tree_l1):
 
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
-    if subckt.get_element(node).model in ["NMOS", "PMOS", "RES", "CAP"]:
-        base_model = subckt.get_element(node).model
-    elif subckt.parent.find(subckt.get_element(node).model):
-        base_model = subckt.parent.find(subckt.get_element(node).model).base
+    cm = subckt.get_element(node).model
+    if cm in ["NMOS", "PMOS", "RES", "CAP"]:
+        base_model = cm
+    elif subckt.parent.find(cm):
+        sub_subckt = subckt.parent.find(cm)
+        if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
+            base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
+        elif isinstance(sub_subckt, Model):
+            base_model = subckt.parent.find(cm).base
+        else:
+            base_model = sub_subckt.name + '_'.join([param+'_'+value for param, value in sub_subckt.parameters.items()])
     else:
         logger.warning(f"invalid device {node}")
     return base_model
