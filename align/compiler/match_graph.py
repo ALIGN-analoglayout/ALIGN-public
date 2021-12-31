@@ -14,6 +14,7 @@ from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
 
+
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
@@ -50,6 +51,7 @@ class Annotate:
             if isinstance(const, constraint.IsDigital):
                 IsDigital = const.isTrue
         return IsDigital
+
     def annotate(self):
         """
         main function to creates hierarchies in the block
@@ -77,9 +79,9 @@ class Annotate:
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
             if (
-                isinstance(ckt, SubCircuit) and \
-                not self._is_digital(ckt) and \
-                ckt.name not in self.all_lef and \
+                isinstance(ckt, SubCircuit) and
+                not self._is_digital(ckt) and
+                ckt.name not in self.all_lef and
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
@@ -98,8 +100,8 @@ class Annotate:
                     if subckt.name == ckt.name or \
                         subckt.name in do_not_use_lib or \
                         (subckt.name in temp_match_dict and
-                        ckt.name in temp_match_dict[subckt.name]
-                    ):
+                         ckt.name in temp_match_dict[subckt.name]
+                         ):
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
@@ -119,14 +121,6 @@ class Annotate:
             with set_context(const_list):
                 if hasattr(const, "instances") and len(const.instances) > 0:
                     is_append = True
-                # TODO: remove dict type
-                elif (
-                    isinstance(const, dict)
-                    and "instances" in const
-                    and len(const["instances"]) == 0
-                ):
-                    pass
-                    # skipping const of zero length
                 elif not hasattr(const, "instances"):
                     is_append = True
                 else:
