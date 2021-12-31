@@ -18,6 +18,7 @@ from align.schema.subcircuit import SubCircuit
 
 logger = logging.getLogger(__name__)
 
+
 def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
     logger.debug(f"finding unique matches between {nbrs1},{nbrs2}")
     match = {}
@@ -31,6 +32,7 @@ def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
         if node1 not in match:
             return False
     return match
+
 
 def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_weight):
     """
@@ -87,8 +89,8 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             return
         logger.debug(f"single node {node1}, nbrs {nbrs1}, nbr_weight {[G.get_edge_data(node1,nbr) for nbr in nbrs1]}")
         SD_nbrs = [nbr for nbr in nbrs1 if reduced_SD_neighbors(G, node1, nbr)]
-        ## TBD: filter based on primitive constraints
-        ## Right now will try to figure out S/D paths
+        # TBD: filter based on primitive constraints
+        # Right now will try to figure out S/D paths
         if len(SD_nbrs) == 0:
             logger.debug(f"No SD paths found to traverse")
             match_pair[node1] = node1
@@ -126,7 +128,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 )
                 if new_pair:
                     # new_pair[nbr1]=nbr2
-                    all_match_pairs_local[nbr1 + "_" + nbr2] = new_pair
+                    all_match_pairs_local[(nbr1, nbr2)] = new_pair
             all_match_pairs_local = {
                 k: v for k, v in all_match_pairs_local.items() if len(v) > 0
             }
@@ -139,7 +141,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 )
             else:
                 for nbr1 in new_sp:
-                    if nbr1 + "_" + nbr1 not in match_pairs.keys():
+                    if (nbr1, nbr1) not in match_pairs.keys():
                         logger.debug(
                             f"recursive single branch call from single branch {nbr1} {nbr1}"
                         )
@@ -156,7 +158,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                         # filtering multiple axis of symmetries with same block
                         # ideally they should be handled by array generation
                         if new_pair:
-                            match_pairs[nbr1 + "_" + nbr1] = new_pair
+                            match_pairs[(nbr1, nbr1)] = new_pair
                             logger.debug(
                                 f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}"
                             )
@@ -174,17 +176,17 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         else:
             for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
                 logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
-                if nbr1 + "_" + nbr2 not in match_pairs.keys():
+                if (nbr1, nbr2) not in match_pairs.keys():
                     new_pair = {}
                     compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
                     # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
                     if new_pair:
-                        match_pairs[nbr1 + "_" + nbr2] = new_pair
+                        match_pairs[(nbr1, nbr2)] = new_pair
                         logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif compare_two_nodes(G, node1, node2, ports_weight):
-        nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G,node1, nbr)]))
-        nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G,node2, nbr)]))
+        nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
+        nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
         match_pair[node1] = node2
         traversed.update([node1, node2])
         logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
@@ -230,10 +232,10 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
     if not pair:
         logger.debug(f"No pair found from {node1} {node2}")
         return
-    # TODO: use tuple instead of string
-    match_pairs[node1 + node2] = pair
+    match_pairs[(node1, node2)] = pair
     logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     return
+
 
 def FindSymmetry(subckt, stop_points: set):
     """
@@ -267,34 +269,34 @@ def FindSymmetry(subckt, stop_points: set):
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
+
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
     if "ARRAY_HIER" in subckt.name.upper():
-        #TODO Generate consraints for array hierarchies
+        # TODO Generate consraints for array hierarchies
         return
     stop_points = set()
     auto_constraint = True
     for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts) or\
+        if isinstance(const, constraint.PowerPorts) or\
                 isinstance(const, constraint.GroundPorts) or \
                 isinstance(const, constraint.ClockPorts):
-                stop_points.update(const.ports)
-            elif isinstance(const, constraint.IsDigital) or \
+            stop_points.update(const.ports)
+        elif isinstance(const, constraint.IsDigital) or \
                 isinstance(const, constraint.AutoConstraint):
-                auto_constraint = const.isTrue
+            auto_constraint = const.isTrue
     logger.debug(f"Stop_points : {stop_points}")
 
-    # Search symmetry constraints
-    # TODO move search after processing input const
     pp = process_input_const(subckt)
+    written_symmblocks = pp.process_all()
+
     if not auto_constraint:
         return
 
+    # Search symmetry constraints
     match_pairs = FindSymmetry(subckt, stop_points)
-    written_symmblocks = pp.process_all()
-    skip_const = written_symmblocks.copy()
-    ## Generate hiearchies based on array identification
+    # Generate hiearchies based on array identification
     array_hier = process_arrays(subckt, match_pairs)
     array_hier.add_align_block_const()
     array_hier.add_new_array_hier()
@@ -302,13 +304,15 @@ def FindConst(subckt):
     for pair in match_pairs.values():
         if "start_point" in pair.keys():
             del pair["start_point"]
-    ## Add symmetry constraints
+    # Add symmetry constraints
+    skip_const = written_symmblocks.copy()
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
     add_symm.loop_through_pairs()
 
+
 class process_input_const:
     def __init__(self, subckt):
-        self.user_constrained_list = list() # list of set for symmetric pairs and string
+        self.user_constrained_list = list()  # list of set for symmetric pairs and string
         self.subckt = subckt
         self.name = subckt.name
         self.G = Graph(subckt)
@@ -318,18 +322,20 @@ class process_input_const:
         self.process_symmnet()
         self.process_do_not_identify()
         return self.user_constrained_list
+
     def process_do_not_identify(self):
         for const in self.iconst:
             if isinstance(const, constraint.DoNotIdentify):
                 self.user_constrained_list.extend(const.instances)
+
     def process_symmnet(self):
         logger.debug(f"input const {self.iconst}")
         replace_const = list()
-        new_symmblock_const =list()
+        new_symmblock_const = list()
         for const in self.iconst:
             if isinstance(const, constraint.SymmetricNets):
                 # if not getattr(const, 'pins1', None):
-                # TODO: constr with pin information should be handled separately
+                # TODO: const with pin information should be handled separately
                 logger.debug(f"adding pins to user symmnet constraint {const}")
                 pairs, s1, s2 = symmnet_device_pairs(
                     self.G,
@@ -357,13 +363,13 @@ class process_input_const:
                     for key, value in pairs.items():
                         if key in s1:
                             continue
-                        if key !=value and {key,value} not in self.user_constrained_list:
-                            self.user_constrained_list.append({key,value})
-                            pairsj.append([key,value])
+                        if key != value and {key, value} not in self.user_constrained_list:
+                            self.user_constrained_list.append({key, value})
+                            pairsj.append([key, value])
                         elif key not in self.user_constrained_list:
                             self.user_constrained_list.append(key)
                             pairsj.append([key])
-                    if len(pairsj)>0:
+                    if len(pairsj) > 0:
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
@@ -375,12 +381,13 @@ class process_input_const:
             for symb in new_symmblock_const:
                 self.iconst.append(symb)
 
+
 class add_symmetry_const:
     def __init__(self, subckt, match_pairs, stop_points, written_symmblocks, skip_const):
         self.all_pairs = sorted(
-        match_pairs.values(),
-        key = lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]),
-        reverse = True,
+            match_pairs.values(),
+            key=lambda k: len([k1 for k1, v1 in k.items() if k1 != v1]),
+            reverse=True,
         )
         self.written_symmblocks = written_symmblocks
         self.subckt = subckt
@@ -388,7 +395,7 @@ class add_symmetry_const:
         self.G = Graph(subckt)
         self.iconst = subckt.constraints
         if stop_points:
-            self.stop = stop_points # TODO: Can be removed?
+            self.stop = stop_points
         else:
             self.stop = list()
         self.skip_const = skip_const
@@ -445,15 +452,15 @@ class add_symmetry_const:
                 bm = get_base_model(self.subckt, key)
                 if key == value and bm in ["NMOS", "PMOS", "RES", "CAP"]:
                     logger.debug(f"Skipping self symmetry for single device {key}")
-                elif key !=value:
-                    pairsj.append([key,value])
-                    insts_in_single_symmetry.update([key,value])
+                elif key != value:
+                    pairsj.append([key, value])
+                    insts_in_single_symmetry.update([key, value])
                 else:
                     pairsj.append([key])
                     insts_in_single_symmetry.add(key)
         return pairsj
 
-    def filter_symnet_const(self, pairs:list):
+    def filter_symnet_const(self, pairs: list):
         for key, value in pairs:
             if self.pre_fiter(key, value):
                 continue
@@ -465,9 +472,9 @@ class add_symmetry_const:
                         value,
                         self.written_symmblocks,
                         self.skip_const
-                        )
+                    )
                     if pairs:
-                        self.written_symmblocks.append({key,value})
+                        self.written_symmblocks.append({key, value})
                         with set_context(self.iconst):
                             symmnet = constraint.SymmetricNets(
                                 direction="V",
@@ -484,9 +491,10 @@ class add_symmetry_const:
                 else:
                     logger.debug(f"skipping self symmetric nets {key} {value}")
 
+
 def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
     logger.debug(f"filterd symmetry pairs: {pairsj}")
-    if len(pairsj) > 1 or (pairsj and len(pairsj[0])==2):
+    if len(pairsj) > 1 or (pairsj and len(pairsj[0]) == 2):
         _temp = len(iconst)
         try:
             with set_context(iconst):
@@ -530,11 +538,11 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                 for pin in pins:
                     leaf_conn = set(sorted([c for c in get_leaf_connection(child, pin) if c != "B"]))
                     if leaf_conn:
-                        conn[(nbr,pin)] = leaf_conn
+                        conn[(nbr, pin)] = leaf_conn
             else:
                 for pin in pins:
                     if pin != "B":
-                        conn[(nbr,pin)] = [pin]
+                        conn[(nbr, pin)] = [pin]
         if net in G.subckt.pins:
             conn[net] = set(sorted([c for c in get_leaf_connection(G.subckt, net) if c != "B"]))
         return conn
@@ -554,8 +562,8 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
     pinsB = []
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
-            #tuple of (block, pin)
-            if isinstance(ele_A,tuple) and isinstance(ele_B,tuple):
+            # tuple of (block, pin)
+            if isinstance(ele_A, tuple) and isinstance(ele_B, tuple):
                 logger.debug(f"Check ele_a {ele_A}, ele_B {ele_B}, pairs {pairs}")
                 instA_name = ele_A[0]
                 instB_name = ele_B[0]
