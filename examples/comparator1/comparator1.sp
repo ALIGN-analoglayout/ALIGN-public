@@ -1,10 +1,10 @@
-.param fck1=1 fck2=2 finnn=2 fninv=4 fpinv=4 fprst=4 fttt=4 fout1=1 fout2=2 frdynand=2 fckbuf1_seq=2 frstbuf1_compckgen=1 fpinn_latch_M=4 fpinn_latch_L=2 bit_M_Latch=2 bit_L_Latch=4
+.param fck1=2 fck2=2 finnn=2 fninv=4 fpinv=4 fprst=4 fttt=4 fout1=1 fout2=2 frdynand=2 fckbuf1_seq=2 frstbuf1_compckgen=1 fpinn_latch_M=4 fpinn_latch_L=2 bit_M_Latch=2 bit_L_Latch=4
 .param fs=1G vos=100u VCM=400m VDD=0.8
 
 .subckt INVERTER_1 A VDD VSS Z
 .param _par0=1 _par1=1
-    m0 Z A VSS VSS nmos_rvt m=1 l=14n nfin=4 nf=_par0
-    m1 Z A VDD VDD pmos_rvt m=1 l=14n nfin=6 nf=_par1
+    m0 Z A VSS VSS nmos_rvt m=1 l=14n nfin=2 nf=_par0
+    m1 Z A VDD VDD pmos_rvt m=1 l=14n nfin=3 nf=_par1
 .ends INVERTER_1
 
 .subckt INVERTER_2 A VDD VSS Z
