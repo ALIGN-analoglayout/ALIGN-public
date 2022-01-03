@@ -37,7 +37,9 @@ with set_context(default):
             parameters={
                 'W': 0,
                 'L': 0,
-                'NFIN': 1},
+                'NFIN': 1,
+                'NF': 2,
+                'M': 1},
             prefix=''
         )
     )
@@ -49,7 +51,9 @@ with set_context(default):
             parameters={
                 'W': 0,
                 'L': 0,
-                'NFIN': 1},
+                'NFIN': 1,
+                'NF': 2,
+                'M': 1},
             prefix=''
         )
     )
