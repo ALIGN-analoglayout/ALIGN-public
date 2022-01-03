@@ -28,7 +28,7 @@ xI1 B A Z VDD VSS NAND_1 fingern=fingern fppp=fppp
 .ends NAND
 
 .subckt comparator AN AP BN BP CKi ON OP RDY VDD VSS oCK
-.param _par0=1 _par1=1 _par2=1 _par3=1 _par4=1 _par5=1 _par6=1 _par7=1
+.param _par0=2 _par1=2 _par2=2 _par3=2 _par4=2 _par5=2 _par6=2 _par7=2
     m0 OP ON net65 VSS nmos_rvt m=1 l=14n nfin=4 nf=_par0
     m1 ON OP net61 VSS nmos_rvt m=1 l=14n nfin=4 nf=_par0
     m2 net65 BN net67 VSS nmos_rvt m=1 l=14n nfin=4 nf=_par1

@@ -4,7 +4,7 @@ m24 vbiasnd vbiasn net033 vss nmos_rvt w=27e-9 l=20e-9 nfin=12 nf=2
 m17 net16 vinn net24 vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=4
 m16 net24 id vss vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=2
 m15 net27 vinp net24 vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=4
-m14 id id vss vss nmos_rvt w=27e-9 l=20e-9 nfin=6 nf=2
+m14 id id vss vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=2
 m11 net033 vbiasnd vss vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=4
 m10 net034 vbiasnd vss vss nmos_rvt w=27e-9 l=20e-9 nfin=8 nf=4
 
