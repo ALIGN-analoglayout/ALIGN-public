@@ -141,7 +141,7 @@ jobs:
       nightly-dirs:
         description: "Space separated list of test directories or files"
         type: string
-        default: "test/integration"
+        default: "tests/integration"
       max-errors:
         description: "Maximum allowable errors"
         type: string
