@@ -54,7 +54,7 @@ def test_NMOS(library, test_ckt):
     assert inst.name == 'M1'
     assert inst.model == 'NMOS'
     assert inst.pins == {'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'}
-    assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M']
+    assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M', 'PARALLEL', 'STACK']
     assert inst.parameters['W'] == '0'
     assert inst.parameters['L'] == '0'
     assert inst.parameters['NFIN'] == '1'
@@ -91,7 +91,7 @@ def test_PMOS(library, test_ckt):
     assert inst.name == 'M1'
     assert inst.model == 'PMOS'
     assert inst.pins == {'D': 'NET10', 'G': 'NET12', 'S': 'NET13', 'B': 'VSS'}
-    assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M']
+    assert list(inst.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M', 'PARALLEL', 'STACK']
     assert inst.parameters['W'] == '0'
     assert inst.parameters['L'] == '0'
     assert inst.parameters['NFIN'] == '1'

@@ -39,7 +39,9 @@ with set_context(default):
                 'L': 0,
                 'NFIN': 1,
                 'NF': 2,
-                'M': 1},
+                'M': 1,
+                'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
+                'STACK': 1},
             prefix=''
         )
     )
@@ -53,7 +55,9 @@ with set_context(default):
                 'L': 0,
                 'NFIN': 1,
                 'NF': 2,
-                'M': 1},
+                'M': 1,
+                'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
+                'STACK': 1},
             prefix=''
         )
     )

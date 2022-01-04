@@ -193,7 +193,7 @@ def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
     nmos_rvt = parser.library.find('NMOS_RVT')
     assert nmos_rvt is not None
-    assert list(nmos_rvt.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M', 'KP', 'VT0']
+    assert list(nmos_rvt.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M', 'PARALLEL', 'STACK', 'KP', 'VT0']
 
 
 def test_ota_cir_parsing(parser):
