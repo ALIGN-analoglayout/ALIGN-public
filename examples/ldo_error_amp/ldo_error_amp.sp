@@ -1,4 +1,4 @@
-.subckt ldo_error_amp vbias_an vbias_bf vcc_nom vfb vg vout vref vss_x
+.subckt ldo_error_amp vbias_an vbias_bf vcc_nom vfb vg vref vss_x
 mn56 vbias6 vbias_bf vss_x vss_x nmos nfin=6 nf=2
 mn20 v5 v4 vss_x vss_x nmos nfin=12 nf=2
 mn40 vss_x vbias_bf vss_x vss_x nmos nfin=6 nf=2
