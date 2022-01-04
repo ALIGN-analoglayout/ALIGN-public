@@ -138,6 +138,14 @@ jobs:
         description: "Integer representing pytest --timeout argument"
         type: string
         default: "1800"
+      nightly-dirs:
+        description: "Space separated list of test directories or files"
+        type: string
+        default: "test/integration"
+      max-errors:
+        description: "Maximum allowable errors"
+        type: int
+        default: 20
 
     docker:
       - image: <<parameters.platform>>
@@ -161,7 +169,7 @@ jobs:
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
             filter="<<parameters.pdk>>"
-            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
@@ -217,6 +225,8 @@ workflows:
                 - "Finfet"
               ci-level:
                 - "checkin"
+              max-errors:
+                - 0
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
@@ -234,6 +244,8 @@ workflows:
                 - "Finfet"
               ci-level:
                 - "merge"
+              nightly-dirs:
+                - "tests/integration tests/pdks"
       - build-wheel:
           name: "build-wheel-<<matrix.python-tags>>-<<matrix.platform>>"
           requires:
