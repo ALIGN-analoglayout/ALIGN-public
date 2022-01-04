@@ -1,7 +1,7 @@
 //
 .param nfin=14 rres=2k lastt=60n fin_n_diff2sing=4 fin_p_diff2sing=6 \
-    width_n_diff2sing=10 width_p_diff2sing=15 fin_n_vco_type_2=4 \
-    fin_p_vco_type_2=6 fnnn=25 fppp=4 VDD=0.8 VBIAS=0.7 wpppn=1 wnnn=1
+    width_n_diff2sing=10 width_p_diff2sing=16 fin_n_vco_type_2=4 \
+    fin_p_vco_type_2=6 fnnn=24 fppp=4 VDD=0.8 VBIAS=0.7 wpppn=1 wnnn=1
 
 // Library name: CAD_modules
 // Cell name: diff2sing_v1
