@@ -144,8 +144,8 @@ jobs:
         default: "test/integration"
       max-errors:
         description: "Maximum allowable errors"
-        type: int
-        default: 20
+        type: string
+        default: "20"
 
     docker:
       - image: <<parameters.platform>>
@@ -226,7 +226,7 @@ workflows:
               ci-level:
                 - "checkin"
               max-errors:
-                - 0
+                - "0"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
