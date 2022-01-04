@@ -71,8 +71,10 @@ class design {
     vector<pin> blockPins;
     vector<int> xoffset;
     int xpitch = 1;
+    int xflip = 0;
     vector<int> yoffset;
     int ypitch = 1;
+    int yflip = 0;
   };
 
   struct terminal {

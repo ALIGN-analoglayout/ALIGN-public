@@ -1232,7 +1232,11 @@ void GcellGlobalRouter::AssignContact(RouterDB::contact &RouterDB_contact, PnRDB
   RouterDB_contact.originUR.y = PnRDB_contact.originBox.UR.y;
 };
 
-void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info &drcData) { drc_info = drcData; };
+void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info &drcData) {
+
+ drc_info = drcData; 
+ cross_layer_drc_info = drcData;
+};
 
 int GcellGlobalRouter::CopyPath(std::vector<std::pair<int, int> > &path, std::map<int, int> &temp_map, std::vector<std::pair<int, int> > &sy_path) {
   // std::vector<std::pair<int,int> > sy_path;

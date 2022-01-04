@@ -406,8 +406,10 @@ design::design(PnRDB::hierNode& node, const int seed) {
       tmpblock.height = (it->instance).at(bb).height;
       tmpblock.xoffset = (it->instance).at(bb).xoffset;
       tmpblock.xpitch = (it->instance).at(bb).xpitch;
+      tmpblock.xflip = (it->instance).at(bb).xflip;
       tmpblock.yoffset = (it->instance).at(bb).yoffset;
       tmpblock.ypitch = (it->instance).at(bb).ypitch;
+      tmpblock.yflip = (it->instance).at(bb).yflip;
       // cout<<tmpblock.height<<endl;
       // [wbxu] Following lines have be updated to support multi contacts
       for (vector<PnRDB::pin>::iterator pit = (it->instance).at(bb).blockPins.begin(); pit != (it->instance).at(bb).blockPins.end(); ++pit) {
