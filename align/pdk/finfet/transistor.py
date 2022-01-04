@@ -84,14 +84,14 @@ class MOS(CanvasPDK):
         if self.tx.model_name.startswith('n'):
             # M1/M2
             for x in range(1, 2+tx.nf, 2):
-                self.addWire(self.m1, 'B', x, (1, -1), (6, 1), netType='pin')
+                self.addWire(self.m1, 'B', x, (1, -1), (6, 1))
             self.addWire(self.m2, 'B', 2, (1, -1), (1+tx.nf, 1), netType='pin')
             self.drop_via(self.v1)
 
         else:
             # M1/M2
             for x in range(1, 2+tx.nf, 2):
-                self.addWire(self.m1, 'B', x, (1, -1), (6, 1), netType='pin')
+                self.addWire(self.m1, 'B', x, (1, -1), (6, 1))
             self.addWire(self.m2, 'B', 4, (1, -1), (1+tx.nf, 1), netType='pin')
             self.drop_via(self.v1)
 
