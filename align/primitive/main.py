@@ -469,6 +469,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
             for key in values:
+                assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name}"
                 size_device = int(values[key]["NF"])*int(values[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(values)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
