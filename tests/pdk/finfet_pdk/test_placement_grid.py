@@ -50,7 +50,10 @@ def test_scalings():
     """)
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
-        {"constraint": "AlignInOrder", "line": "left", "instances": ["xi0", "xi1", "xi2"]}
+        {"constraint": "AlignInOrder", "line": "left", "instances": ["xi0", "xi1", "xi2"]},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]}
     ]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=8)
@@ -58,6 +61,8 @@ def test_scalings():
     name = name.upper()
     for variant in range(8):
         filename = run_dir / '3_pnr' / 'Results' / f'{name}_{variant}.scaled_placement_verilog.json'
+        if not filename.exists():
+            break
         print(f'Checking {filename}')
         with (filename).open('rt') as fp:
             verilog_json = json.load(fp)
