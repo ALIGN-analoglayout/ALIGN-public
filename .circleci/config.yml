@@ -131,8 +131,8 @@ jobs:
       pdk:
         description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
         type: string
-      design:
-        description: "Choose Design (Can be substring as it gets fed to pytest -k argument)"
+      ci-level:
+        description: "Choose CI level (can be 'checkin', 'merge', and 'all')"
         type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
