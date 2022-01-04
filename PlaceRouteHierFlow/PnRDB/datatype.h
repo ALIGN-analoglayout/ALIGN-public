@@ -355,8 +355,10 @@ struct block {
   int HPWL_extend_wo_terminal = 0;
   vector<int> xoffset;
   int xpitch = 1;
+  int xflip = 0;
   vector<int> yoffset;
   int ypitch = 1;
+  int yflip = 0;
 };  // structure of block
 
 struct terminal {
@@ -609,8 +611,10 @@ struct lefMacro {
   string master = "";
   vector<int> xoffset;
   int xpitch = 1;
+  int xflip = 0;
   vector<int> yoffset;
   int ypitch = 1;
+  int yflip = 0;
 };
 
 /// PArt 5: declaration of structures for design rule data

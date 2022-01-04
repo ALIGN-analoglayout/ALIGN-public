@@ -642,6 +642,9 @@ void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, c
           }
           b.ypitch = constraint["pitch"];
           b.ypitch = b.ypitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.yflip = constraint["ored_terms"][0]["scalings"][0];
+          }
         } else if (constraint["direction"] == "V") {  // vertical metal
           for(auto offset:constraint["ored_terms"][0]["offsets"]){
             b.xoffset.push_back(offset);
@@ -649,6 +652,9 @@ void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, c
           }
           b.xpitch = constraint["pitch"];
           b.xpitch = b.xpitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+          }
         }
       }
     }
