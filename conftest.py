@@ -2,6 +2,7 @@ import pytest
 from align.utils import logmanager
 logmanager.reconfigure_loglevels(console_level='WARNING')
 
+
 def pytest_addoption(parser):
     parser.addoption(
         "--runnightly", action="store_true", default=False, help="run nightly tests"
@@ -19,6 +20,7 @@ def pytest_addoption(parser):
         "--skipGDS", action="store_true", default=False, help="Skip GDS for nightly run (Use with --runnightly)"
     )
 
+
 def pytest_collection_modifyitems(config, items):
     if not config.getoption("--runnightly"):
         skip_nightly = pytest.mark.skip(reason="need --runnightly option to run")
@@ -31,6 +33,7 @@ def pytest_collection_modifyitems(config, items):
             if "regression" in item.keywords:
                 item.add_marker(skip_regression)
 
+
 def pytest_generate_tests(metafunc):
     if "maxerrors" in metafunc.fixturenames:
         maxerrors = metafunc.config.getoption("--maxerrors")
@@ -40,3 +43,6 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("router_mode", [router_mode])
     if "skipGDS" in metafunc.fixturenames:
         metafunc.parametrize("skipGDS", [True])
+    if "ci_level" in metafunc.fixturenames:
+        ci_level = metafunc.config.getoption("--ci_level")
+        metafunc.parametrize("ci_level", [ci_level])
