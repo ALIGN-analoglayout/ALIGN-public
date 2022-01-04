@@ -179,7 +179,6 @@ class SpiceParser:
             + f"{len(args)} nets {args} were passed when instantiating {name}."
         pins = {pin: net for pin, net in zip(model.pins, args)}
         with set_context(self._scope[-1].elements):
-            print(name, model, pins, kwargs, generator)
             self._scope[-1].elements.append(Instance(name=name, model=model.name,
                                                      pins=pins, parameters=kwargs, generator=generator
                                                      ))
