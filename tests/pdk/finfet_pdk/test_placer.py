@@ -177,7 +177,7 @@ def test_place_cmp_seed(seed, analytical_placer):
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)]
     if analytical_placer:
@@ -221,14 +221,9 @@ def test_cmp_analytical():
     """ smoke test for analytical placer """
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    setup = textwrap.dedent(f"""\
-        POWER = vccx
-        GND = vssx
-        DONT_CONST = {name}
-        """)
     constraints = [
-        {"constraint": "PowerPorts", "ports": ["VCCX"]},
-        {"constraint": "GroundPorts", "ports": ["VSSX"]},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "AutoConstraint", "isTrue": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
@@ -246,7 +241,7 @@ def test_cmp_analytical():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
