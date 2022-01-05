@@ -117,6 +117,16 @@ p = pstats.Stats('stats')
 p.sort_stats(SortKey.TIME).print_stats(20)
 ```
 
+To run tests similar to the checkin and merge-to-master CI runs run:
+```
+cd $ALIGN_HOME
+# Checkin
+pytest -vv
+CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=3 -- tests/integration/
+# Merge to master
+CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 -- tests/integration/ tests/pdks
+```
+
 ### Step 4: Run ALIGN
 You may run the align tool using a simple command line tool named `schematic2layout.py`
 For most common cases, you will simply run:
