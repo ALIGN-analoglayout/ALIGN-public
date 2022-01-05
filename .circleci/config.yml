@@ -225,7 +225,7 @@ workflows:
           filters:
             branches:
               only:
-                - fix/testcases
+                - master
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:
