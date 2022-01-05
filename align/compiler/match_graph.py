@@ -14,13 +14,14 @@ from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
 
+
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library, existing_generator: set):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -50,9 +51,10 @@ class Annotate:
             if isinstance(const, constraint.IsDigital):
                 IsDigital = const.isTrue
         return IsDigital
+
     def annotate(self):
         """
-        main function to creates hierarchies in the block
+        Main function to creates hierarchies in the block
         iterativily goes through all subckts in the netlist
         Reduce graph to a list of nodes
         Returns:
@@ -77,16 +79,16 @@ class Annotate:
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
             if (
-                isinstance(ckt, SubCircuit) and \
-                not self._is_digital(ckt) and \
-                ckt.name not in self.all_lef and \
+                isinstance(ckt, SubCircuit) and
+                not self._is_digital(ckt) and
+                ckt.name not in self.all_lef and
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
-
+                logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
-                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
+                    f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
                     ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
@@ -96,14 +98,16 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or \
-                        subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and
-                        ckt.name in temp_match_dict[subckt.name]
-                    ):
+                            subckt.name in do_not_use_lib or \
+                        (subckt.name in temp_match_dict and  # to stop searching INVB in INVB_1
+                         ckt.name in temp_match_dict[subckt.name]
+                         ):
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
                     )
+                    if subckt.name in self.all_lef:
+                        self.all_lef.update(new_subckts)
                     if subckt.name in temp_match_dict:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:
