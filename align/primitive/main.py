@@ -429,7 +429,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if "NFIN" in values[device_name].keys():
+        if design_config["pdk_type"] == "FinFET":
             # FinFET design
             for key in values:
                 assert int(values[key]["NFIN"]), \
@@ -438,7 +438,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                     f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
                 size = int(values[key]["NFIN"])
             name_arg = 'NFIN'+str(size)
-        elif "W" in values[device_name].keys():
+        elif design_config["pdk_type"] == "Bulk":
             # Bulk design
             for key in values:
                 assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
@@ -449,7 +449,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 values[key]["NFIN"] = size
             name_arg = 'NFIN'+str(size)
         else:
-            size = '_'.join(param+str(values[param]) for param in values)
+            print(design_config["pdk_type"] + " pdk not supported")
+            exit()
 
         if 'NF' in values[device_name].keys():
             for key in values:

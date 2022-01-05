@@ -29,7 +29,8 @@
         "unit_size_cap": 12,
         "max_nfin_mos": 48,
         "Gate_pitch": 100,
-        "unit_height_res": 600
+        "unit_height_res": 600,
+	"pdk_type":"Bulk"
     },
     "Abstraction": [
         {
