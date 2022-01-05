@@ -313,8 +313,11 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         return True
 
     elif name == 'CAP':
-        assert float(values["VALUE"]), f"unidentified size {values} for {element.name}"
-        size = round(float(values["VALUE"]) * 1E15, 4)
+        assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
+        if "C" in values:
+            size = round(float(values["C"]) * 1E15, 4)
+        elif 'VALUE' in values:
+            size = round(float(values["VALUE"]) * 1E15, 4)
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
         logger.debug(f"Found cap with size: {size}")
@@ -327,8 +330,11 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         return True
 
     elif name == 'RES':
-        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
-        size = round(float(values["VALUE"]), 2)
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {element.name}"
+        if "R" in values:
+            size = round(float(values["R"]), 2)
+        elif 'VALUE' in values:
+            size = round(float(values["VALUE"]), 2)
         # TODO: use float in name
         if size.is_integer():
             size = int(size)

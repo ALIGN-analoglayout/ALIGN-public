@@ -1,11 +1,11 @@
 .subckt nfet2x d g s b
-.param p1=30
-    MN0 d g n1 b    nfet l=0.014u nfin=p1
-    MN1 n1 g s b    nfet l=0.014u nfin=p1
+.param p1=2
+    MN0 d g n1 b    nfet l=0.014u nfin=12 nf=p1
+    MN1 n1 g s b    nfet l=0.014u nfin=12 nf=p1
 .ends nfet2x
 
 .subckt linear_equalizer vmirror_ctle s0_ctle s3_ctle vin1 vin2 vout_ctle1 vout_ctle2 vps vgnd
-.param nfpf_cm=72 nfpf_dp=48 nfpf_sw=48 Rsw=100 Csw=24f rl=800
+.param nfpf_cm=6 nfpf_dp=4 nfpf_sw=4 Rsw=100 Csw=24f rl=800
 
 	xI0 vout_ctle2 vin2 net8 vgnd nfet2x p1=nfpf_dp
 	xI1 vout_ctle1 vin1 net5 vgnd nfet2x p1=nfpf_dp
@@ -18,6 +18,6 @@
 	C3 net5 net022 capacitor c=Csw
 	R4 net5 net016 resistor r=Rsw
 	R3 net015 net8 resistor r=Rsw
-	MN9 net021 s3_ctle net022 vgnd nfet l=0.014u nfin=nfpf_sw
-	MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=nfpf_sw
+	MN9 net021 s3_ctle net022 vgnd nfet l=0.014u nfin=12 nf=nfpf_sw
+	MN6 net015 s0_ctle net016 vgnd nfet l=0.014u nfin=12 nf=nfpf_sw
 .ends linear_equalizer
