@@ -17,17 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_xcells_pattern(primitive, pattern, x_cells):
-    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # Dual transistor (current mirror) primitives
-        # TODO: Generalize this (pattern is ignored)
-        x_cells = 2*x_cells + 2
-    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
+    if any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
         x_cells = 2*x_cells
         # TODO: Fix difficulties associated with CC patterns matching this condition
         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
     return x_cells, pattern
-
 
 def get_parameters(primitive, parameters, nfin):
     if parameters is None:
