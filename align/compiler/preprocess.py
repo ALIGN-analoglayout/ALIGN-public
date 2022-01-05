@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep 17 15:49:33 2020
-
-@author: kunal001
-"""
-
-
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -113,11 +104,12 @@ def remove_dummies(library, dummy_hiers, top):
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
                             _prefix = library.find(y.model).prefix
-                            if not _prefix:
-                                _prefix = "M"  # default value, used in testing
+                            nm = ele.name
+                            if _prefix and not nm.startswith(_prefix):
+                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=ele.name.replace("X", _prefix),
+                                    name=nm,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters,
@@ -136,7 +128,7 @@ def remove_dummies(library, dummy_hiers, top):
             all_subckt_updated = [
                 module.name for module in library if isinstance(module, SubCircuit)
             ]
-            assert library.find(dh) == None, f"{all_subckt_updated}"
+            assert library.find(dh) is None, f"{all_subckt_updated}"
 
 
 def find_dummy_hier(library, ckt, dummy_hiers):
@@ -202,7 +194,7 @@ def define_SD(subckt, update=True):
         elif isinstance(const, constraint.GroundPorts):
             gnd = const.ports
     if not power or not gnd:
-        logger.warning(f"No power or gnd in this circuit {subckt.name}, please check setup file")
+        logger.debug(f"No power nor ground port specified for {subckt.name}")
         return
 
     G = Graph(subckt)
@@ -277,16 +269,19 @@ def define_SD(subckt, update=True):
             logger.warning(f"changing source drain: {node}")
             swap_SD(subckt, G, node)
 
+
 def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
-    if update == False:
+
+    if update is False:
         return
     logger.debug(
         f"Checking parallel devices in {ckt.name}, initial ckt size: {len(ckt.elements)}"
@@ -301,17 +296,17 @@ def add_parallel_devices(ckt, update=True):
             p = {**ele.pins, **ele.parameters}
             p["model"] = ele.model
             if p in pp_list:
-                parallel_devices[pp_list.index(p)].append(node)
+                parallel_devices[pp_list.index(p)].append(ele)
             else:
                 pp_list.append(p)
-                parallel_devices[pp_list.index(p)] = [node]
+                parallel_devices[pp_list.index(p)] = [ele]
         for pd in parallel_devices.values():
             if len(pd) > 1:
-                logger.info(f"removing parallel nodes {pd}")
-                pd0 = sorted(pd)[0]
-                ckt.get_element(pd0).parameters["PARALLEL"] = len(set(pd))
+                pd0 = sorted(pd, key=lambda x: x.name)[0]
+                logger.info(f"removing parallel instances {[x.name for x in pd[1:]]} and updating {pd0.name} parameters")
+                pd0.parameters["PARALLEL"] = sum([getattr(x.parameters, "PARALLEL", 1) for x in pd])
                 for rn in pd[1:]:
-                    G.remove_node(rn)
+                    G.remove(rn)
 
 
 def add_series_devices(ckt, update=True):
@@ -319,11 +314,14 @@ def add_series_devices(ckt, update=True):
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
         #TODO Optimize later
-    Args:
+
+    Parameters:
+
         ckt ([type]): [description]
         update (bool, optional): [description]. Defaults to True.
     """
-    if update == False:
+
+    if update is False:
         return
     logger.debug(
         f"Checking stacked/series devices, initial ckt size: {len(ckt.elements)}"

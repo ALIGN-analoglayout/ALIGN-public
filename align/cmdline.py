@@ -147,6 +147,12 @@ class CmdlineParser():
                             default=0,
                             help='Random number generator seed for the placement algorithm')
 
+        parser.add_argument('--ilp_solver',
+                            type=str,
+                            default='symphony',
+                            choices=['symphony', 'lpsolve'],
+                            help='ILP Solver used by placer ')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

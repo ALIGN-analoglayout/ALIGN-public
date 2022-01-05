@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
+#include <chrono>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -35,6 +36,7 @@ class design {
   friend class Aplace;
   friend class Placer;
   friend class ILP_solver;
+  friend class ExtremeBlocksOfNet;
   //    enum NType {Block, Terminal};
   //    struct Node {
   //      NType type; // 1: blockPin; 2. Terminal
@@ -67,6 +69,12 @@ class design {
     bool bigMacro = true;
     int mapIdx = -1;
     vector<pin> blockPins;
+    vector<int> xoffset;
+    int xpitch = 1;
+    int xflip = 0;
+    vector<int> yoffset;
+    int ypitch = 1;
+    int yflip = 0;
   };
 
   struct terminal {
@@ -203,6 +211,7 @@ class design {
   CompactStyle compact_style = CompactStyle::L;
 
   public:
+  std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
   design(PnRDB::hierNode& node, const int seed = 0);
   design(string blockfile, string netfile);

@@ -90,9 +90,11 @@ def compiler_input(
     ckt_parser = SpiceParser()
     lib_parser = SpiceParser()
     # Read model file to map devices
-    # TODO: add pdk specific model files
-    model_statemenets = config_path / "model.txt"
-    with open(model_statemenets) as f:
+    model_statements = pdk_dir / "models.sp"
+    if not model_statements.exists():
+        model_statements = config_path / "models.sp"
+
+    with open(model_statements, 'r') as f:
         lines = f.read()
     ckt_parser.parse(lines)
     lib_parser.parse(lines)

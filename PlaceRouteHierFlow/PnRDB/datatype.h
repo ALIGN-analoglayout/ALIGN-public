@@ -353,6 +353,12 @@ struct block {
   vector<pin> dummy_power_pin;  // power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
   int HPWL_extend_wo_terminal = 0;
+  vector<int> xoffset;
+  int xpitch = 1;
+  int xflip = 0;
+  vector<int> yoffset;
+  int ypitch = 1;
+  int yflip = 0;
 };  // structure of block
 
 struct terminal {
@@ -477,6 +483,7 @@ struct hierNode {
   double constraint_penalty = -1;
   double cost = -1;
   std::string compact_style = "left";
+  vector<string> DoNotRoute;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -602,6 +609,12 @@ struct lefMacro {
   vector<contact> interMetals;
   vector<Via> interVias;
   string master = "";
+  vector<int> xoffset;
+  int xpitch = 1;
+  int xflip = 0;
+  vector<int> yoffset;
+  int ypitch = 1;
+  int yflip = 0;
 };
 
 /// PArt 5: declaration of structures for design rule data

@@ -404,6 +404,12 @@ design::design(PnRDB::hierNode& node, const int seed) {
       tmpblock.type = (it->instance).at(bb).type;
       tmpblock.width = (it->instance).at(bb).width;
       tmpblock.height = (it->instance).at(bb).height;
+      tmpblock.xoffset = (it->instance).at(bb).xoffset;
+      tmpblock.xpitch = (it->instance).at(bb).xpitch;
+      tmpblock.xflip = (it->instance).at(bb).xflip;
+      tmpblock.yoffset = (it->instance).at(bb).yoffset;
+      tmpblock.ypitch = (it->instance).at(bb).ypitch;
+      tmpblock.yflip = (it->instance).at(bb).yflip;
       // cout<<tmpblock.height<<endl;
       // [wbxu] Following lines have be updated to support multi contacts
       for (vector<PnRDB::pin>::iterator pit = (it->instance).at(bb).blockPins.begin(); pit != (it->instance).at(bb).blockPins.end(); ++pit) {
@@ -2659,5 +2665,8 @@ design::~design() {
   logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
   logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
                 _infeasPlBound, _totalNumCostCalc);
+  logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
+  logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
+  logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
   //_debugofs.close();
 }

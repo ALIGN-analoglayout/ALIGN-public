@@ -1009,6 +1009,13 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
       temp_connectNode.iter2 = node.Nets[i].connected[j].iter2;
       temp_net.connected.push_back(temp_connectNode);
     }
+
+    for(auto net_name: node.DoNotRoute){
+       if(net_name==temp_net.netName){
+          temp_net.DoNotRoute = true;
+       }
+    }
+    
     Nets.push_back(temp_net);
   }
 
@@ -1190,6 +1197,11 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
       AssignContact(temp_via.UpperMetalRect, vit->UpperMetalRect);
       temp_power_net.path_via.push_back(temp_via);
     }
+    for(auto net_name: node.DoNotRoute){
+       if(net_name==temp_power_net.netName){
+          temp_power_net.DoNotRoute = true;
+       }
+    }
     PowerNets.push_back(temp_power_net);
   }
   logger->debug("Router-Info: complete importing data");
@@ -1220,7 +1232,11 @@ void GcellGlobalRouter::AssignContact(RouterDB::contact &RouterDB_contact, PnRDB
   RouterDB_contact.originUR.y = PnRDB_contact.originBox.UR.y;
 };
 
-void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info &drcData) { drc_info = drcData; };
+void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info &drcData) {
+
+ drc_info = drcData; 
+ cross_layer_drc_info = drcData;
+};
 
 int GcellGlobalRouter::CopyPath(std::vector<std::pair<int, int> > &path, std::map<int, int> &temp_map, std::vector<std::pair<int, int> > &sy_path) {
   // std::vector<std::pair<int,int> > sy_path;

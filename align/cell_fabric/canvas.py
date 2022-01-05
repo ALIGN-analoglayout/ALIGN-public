@@ -414,6 +414,9 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates(nets_allowed_to_be_open=nets_allowed_to_be_open)}
 
+        if hasattr(self, 'metadata'):
+            data['metadata'] = self.metadata
+
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
 

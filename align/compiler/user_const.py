@@ -45,8 +45,8 @@ class ConstraintParser:
             for cf in self.input_dir.rglob("*.const.json")
             if cf.stem.upper() == design_name + ".CONST"
         ]
-        logger.debug(f"constraint json path {json_path} {self.input_dir}")
         if json_path and json_path[0].is_file():
+            logger.info(f"Reading constraints for {design_name.lower()}")
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
@@ -77,14 +77,10 @@ class ConstraintParser:
 
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))
-                logger.warning(
-                    f"Following instances will be excluded from subcircuit identification: {do_not_identify} "
-                )
+                logger.debug(f"Following instances will be excluded from subcircuit identification: {do_not_identify}")
                 with types.set_context(node.constraints):
                     node.constraints.append(
                         {"instances": do_not_identify, "constraint": "DoNotIdentify"}
                     )
         else:
-            logger.info(
-                f"No user constraints found for block {design_name} in path {self.input_dir}"
-            )
+            logger.debug(f"No user constraints found for block {design_name} in path {self.input_dir}")

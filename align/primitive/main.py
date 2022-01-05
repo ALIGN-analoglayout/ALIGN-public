@@ -80,17 +80,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'B')],
                             'D': [('M1', 'G'), ('M1', 'D')]})
 
-    elif primitive in ["CM_NMOS_B", "CM_PMOS_B"]:
-        cell_pin = gen( 3,      {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CM_NMOS", "CM_PMOS"]:
-        cell_pin = gen( 3,     {'S':  [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                                'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                'DB': [('M2', 'D')]})
-
     elif primitive in ["CMFB_NMOS_B", "CMFB_PMOS_B"]:
         cell_pin = gen( 3,     {'S':  [('M1', 'S'), ('M2', 'S')],
                                 'DA': [('M1', 'D'), ('M1', 'G')],
@@ -241,10 +230,11 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
     return uc, ['Body']
 
+
 def get_generator(name, pdkdir):
     if pdkdir is None:
         return False
-    
+
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -252,20 +242,18 @@ def get_generator(name, pdkdir):
 
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
-        return getattr(module, name)
-    except:
+    except ImportError:
         init_file = pdk_dir_path / '__init__.py'
         if init_file.is_file():  # is pdk a package
             spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
             module = importlib.util.module_from_spec(spec)
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
-            return getattr(module, name, False)
         else:  # is pdk old school (backward compatibility)
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            return getattr(module, name, False)
+    return getattr(module, name, False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
@@ -279,50 +267,6 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
         netlistdir=netlistdir
     )
     return uc, parameters["ports"]
-
-def merge_subckt_param(ckt):
-    max_value = {}
-    logger.debug(f"creating generator parameters for subcircuit: {ckt.name}")
-    vt_types=[]
-    for ele in ckt.elements:
-        max_value = merged_value(max_value, ele.parameters)
-        vt_types.append(ele.model)
-    return max_value, ','.join(vt_types)
-
-def merged_value(values1, values2):
-    """
-    combines values of different devices:
-    (right now since primitive generator takes only one value we use max value)
-    try:
-    #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-    #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-    #merged_value(val1,val2)
-
-    Parameters
-    ----------
-    values1 : TYPE. dict
-        DESCRIPTION. dict of parametric values
-    values2 : TYPE. dict
-        DESCRIPTION.dict of parametric values
-
-    Returns
-    -------
-    merged_vals : TYPE dict
-        DESCRIPTION. max of each parameter value
-
-    """
-    if not values1:
-        return values2
-    merged_vals={}
-    if values1:
-        for param,value in values1.items():
-            merged_vals[param] = value
-    for param,value in values2.items():
-        if param in merged_vals.keys():
-            merged_vals[param] = max(value, merged_vals[param])
-        else:
-            merged_vals[param] = value
-    return merged_vals
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
@@ -403,16 +347,21 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
         subckt = element.parent.parent.parent.find(element.model)
         vt = None
+        values = {}
+        vt_types_temp = []
         if isinstance(subckt,SubCircuit):
-            ## Hack to get generator parameters based on max sized cell in subcircuit
-            values,vt_types = merge_subckt_param(subckt)
+            for ele in subckt.elements:
+                values[ele.name] = ele.parameters
+                vt_types_temp.append(ele.model)
+            vt_types = vt_types_temp[0]
             if "vt_type" in design_config:
                 vt= [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  vt_types]
         else:
-            values = element.parameters
+            values[element.name] = element.parameters
             if "vt_type" in design_config:
                 vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in  element.model]
-
+        device_name_all = [*values.keys()]
+        device_name = device_name_all[0]
         if unit_size_mos is None:
             """
             Transistor parameters:
@@ -420,9 +369,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 nf: number of fingers
                 w:  effective width of an instance (width of instance x number of fingers)
             """
-            assert 'M' in values,  f'm: Number of instances not specified {values}'
-            assert 'NF' in values, f'nf: Number of fingers not specified {values}'
-            assert 'W' in values,  f'w: Width is not specified {values}'
+            assert 'M' in values[device_name],  f'm: Number of instances not specified {values}'
+            assert 'NF' in values[device_name], f'nf: Number of fingers not specified {values}'
+            assert 'W' in values[device_name],  f'w: Width is not specified {values}'
 
             def x_by_y(m):
                 y_sqrt = floor(sqrt(m))
@@ -432,9 +381,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                     elif m % y == 0:
                         return m//y, y
 
-            m  = int(values['M'])
-            nf = int(values['NF'])
-            w = int(float(values['W'])*1e9)
+            m  = int(values[device_name]['M'])
+            nf = int(values[device_name]['NF'])
+            w = int(float(values[device_name]['W'])*1e9)
             if isinstance(subckt,SubCircuit):
                 for e in subckt.elements:
                     vt = e.model
@@ -446,20 +395,21 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
-            values['real_inst_type'] = vt
-
+            #for ele in subckt.elements:
+                #values[ele.name]['real_inst_type'] = vt
+            values[device_name]['real_inst_type'] = vt
             block_args= {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
                 'value': 1, # hack. This is used as nfin later.
-                'parameters':values
+                'parameters':values[device_name]
             }
 
-            if 'STACK' in values and int(values['STACK']) >1:
+            if 'STACK' in values and int(values[device_name]['STACK']) >1:
                 assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['stack']=int(values['STACK'])
-                block_name += f'_st'+str(int(values['STACK']))
+                block_args['stack']=int(values[device_name]['STACK'])
+                block_name += f'_st'+str(int(values[device_name]['STACK']))
             else:
                 block_name += f'_nf{nf}'
 
@@ -472,41 +422,43 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if "NFIN" in values.keys():
+        if "NFIN" in values[device_name].keys():
             #FinFET design
-            assert int(values["NFIN"]), f"unrecognized size {values['NFIN']}"
-            size = int(values["NFIN"])
+            for key in values:
+                assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}" 
+                size = int(values[key]["NFIN"])
             name_arg ='NFIN'+str(size)
-        elif "W" in values.keys():
+        elif "W" in values[device_name].keys():
             #Bulk design
-            if isinstance(values["W"],str):
-                size = unit_size_mos
-            else:
-                size = int(values["w"]*1E+9/design_config["Gate_pitch"])
-            values["NFIN"]=size
+            for key in values:
+                assert values[key]["w"] != str, f"unrecognized size {values[key]['w']}"
+                size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
+                values[key]["NFIN"]=size
             name_arg ='NFIN'+str(size)
         else:
             size = '_'.join(param+str(values[param]) for param in values)
-        if 'NF' in values.keys():
-            if values['NF'] == 'unit_size':
-                values['NF'] =size
-            size=size*int(values["NF"])
-            name_arg =name_arg+'_NF'+str(int(values["NF"]))
 
-        if 'M' in values.keys():
-            if values['M'] == 'unit_size':
-                values['M'] = 1
-            if "PARALLEL" in values.keys() and int(values['PARALLEL'])>1:
-                values["PARALLEL"]=int(values['PARALLEL'])
-                values['M'] = int(values['M'])*int(values['PARALLEL'])
-            size=size*int(values["M"])
-            name_arg =name_arg+'_M'+str(int(values["M"]))
+        if 'NF' in values[device_name].keys():
+            for key in values:
+                assert int(values[key]["NF"]), f"unrecognized size {values[key]['NF']}"
+            #assert size%2==0, f"NF must be even" 
+            name_arg =name_arg+'_NF'+str(int(values[device_name]["NF"]))
 
-        no_units = ceil(size / unit_size_mos)
-
+        if 'M' in values[device_name].keys():
+            for key in values:
+                assert int(values[key]["M"]), f"unrecognized size {values[key]['M']}"
+                if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL'])>1:
+                    values[key]["PARALLEL"]=int(values[key]['PARALLEL'])
+                    values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
+            name_arg =name_arg+'_M'+str(int(values[device_name]["M"]))
+            size = 0
+        
         logger.debug(f"Generating lef for {name} , with size {size}")
         if isinstance(size, int):
-            no_units = ceil(size / unit_size_mos)
+            for key in values:
+                size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
+
+            no_units = ceil(size / (4*unit_size_mos)) ## factor 2 is due to NF=2 in each unit cell; needs to be generalized
             if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
                 square_y = floor(sqrt(no_units/3))
             else:
@@ -515,6 +467,13 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
+
+            if 'SCM' in name:
+                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
+                    square_y = 1
+                    yval = square_y
+                    xval = int(no_units / square_y)
+
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:
@@ -528,9 +487,9 @@ def generate_primitive_lef(element,model,all_lef, primitives, design_config:dict
                 'y_cells': yval,
                 'parameters':values
             }
-            if 'STACK' in values.keys() and int(values["STACK"])>1:
-                block_args['stack']=int(values["STACK"])
-                block_name = block_name+'_ST'+str(int(values["STACK"]))
+            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"])>1:
+                block_args['stack']=int(values[device_name]["STACK"])
+                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
             if vt:
                 block_args['vt_type']=vt[0]
                 block_name = block_name+'_'+vt[0]
@@ -572,7 +531,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
-    if 'Cap' in primitive:
+    if 'cap' in primitive:
         blockM = 1
     else:
         blockM = 0

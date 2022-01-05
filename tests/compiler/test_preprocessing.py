@@ -100,13 +100,17 @@ def test_parallel(db):
     assert db.get_element("C1").parameters == {"VALUE": "2"}
     add_parallel_devices(db, update=True)
     assert db.get_element("C1").parameters == {"VALUE": "2", "PARALLEL": 2}
+    assert db.get_element("C2") is None, 'C2 should have been removed'
     assert db.get_element("R1").parameters == {"VALUE": "10", "PARALLEL": 3}
+    assert db.get_element("R2") is None, 'R2 should have been removed'
+    assert db.get_element("R3") is None, 'R3 should have been removed'
     assert db.get_element("M1").parameters == {
         "PARAM1": "1.0",
         "M": "1",
         "PARAM2": "2",
         "PARALLEL": 2,
     }
+    assert db.get_element("M2") is None, 'Should M2 have been removed from the db as it has been merged to M1?'
 
 
 @pytest.fixture
@@ -241,6 +245,8 @@ def test_series(dbs):
         "STACK": 3,
     }
     assert len(dbs.elements) == 4
+    assert dbs.get_element("M2") is None, 'Should M2 have been removed from the db as it has been merged to M1?'
+    assert dbs.get_element("M5") is None, 'Should M5 have been removed from the db as it has been merged to M3?'
 
 
 @pytest.fixture
@@ -311,7 +317,7 @@ def test_remove_dummy_hier(dbr):
     assert "LEAF_CKT" in dummy_hiers
     assert "TRUNK_CKT" in dummy_hiers
     remove_dummies(dbr, ["LEAF_CKT"], "TOP_CKT")
-    assert trunk.elements[0].name == "MTR1"
+    assert trunk.elements[0].name == "XTR1"
     assert trunk.elements[0].model == "TESTMOS"
     assert trunk.elements[0].parameters == {
         "PARAM1": "1.0",
@@ -321,7 +327,7 @@ def test_remove_dummy_hier(dbr):
     }
     assert trunk.elements[0].pins == {"D": "TD", "G": "TG", "S": "TS", "B": "TB"}
     remove_dummies(dbr, ["TRUNK_CKT"], "TOP_CKT")
-    assert top.elements[0].name == "MTT1"
+    assert top.elements[0].name == "XTT1"
     assert top.elements[0].model == "TESTMOS"
     assert top.elements[0].parameters == {
         "PARAM1": "1.0",

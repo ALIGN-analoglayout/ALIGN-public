@@ -1,9 +1,7 @@
 import pathlib
-import pytest
-import pathlib
 from align.schema import SubCircuit
 from align.compiler.compiler import compiler_input
-from utils import clean_data, build_example
+from utils import clean_data, build_example, get_test_id
 import textwrap
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
@@ -84,26 +82,26 @@ def nested_swap_SD(name):
 
 
 def test_top_param():
-    name = "CKT_MOS"
+    name = f'ckt_{get_test_id()}'.upper()
     netlist = mos_ckt(name)
-    constraints =   [
+    constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
         {"constraint": "GroundPorts", "ports": ["S"]}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["CKT_MOS"])
+    all_modules = set([name])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
-    assert ckt_library.find("CKT_MOS").get_element("MN1")
-    assert ckt_library.find("CKT_MOS").get_element("MN1").parameters["NFIN"] == "12"
+    assert ckt_library.find(name).get_element("MN1")
+    assert ckt_library.find(name).get_element("MN1").parameters["NFIN"] == "12"
     clean_data(name)
 
 
 def test_multi_param():
-    name = "DB_CKT"
+    name = f'ckt_{get_test_id()}'.upper()
     netlist = multi_param_ckt(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
@@ -112,12 +110,12 @@ def test_multi_param():
     ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["DB_CKT", "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
+    all_modules = set([name, "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
-    dbc = ckt_library.find("DB_CKT")
+    dbc = ckt_library.find(name)
     assert dbc.get_element("XI1").model == "PARAM_MOS"
     assert dbc.get_element("XI2").model == "PARAM_MOS_1"
     assert dbc.get_element("XI3").model == "PARAM_MOS_1"
@@ -132,7 +130,7 @@ def test_multi_param():
 
 
 def test_multi_param_remove_dummy():
-    name = "DB_CKT_REMOVE_DUMMY_HIER"
+    name = f'ckt_{get_test_id()}'.upper()
     netlist = multi_param_ckt(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
@@ -140,26 +138,26 @@ def test_multi_param_remove_dummy():
     ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["DB_CKT_REMOVE_DUMMY_HIER"])
+    all_modules = set([name])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
-    ckt = ckt_library.find("DB_CKT_REMOVE_DUMMY_HIER")
+    ckt = ckt_library.find(name)
     assert ckt
-    assert ckt.get_element("MI1"), f"all instances{[ele.name for ele in ckt.elements]}"
-    assert ckt.get_element("MI1").parameters["NFIN"] == "16"
-    assert ckt.get_element("MI2")
-    assert ckt.get_element("MI2").parameters["NFIN"] == "24"
-    assert ckt.get_element("MI3")
-    assert ckt.get_element("MI3").parameters["NFIN"] == "24"
-    assert ckt.get_element("MI4")
-    assert ckt.get_element("MI4").parameters["NFIN"] == "64"
+    assert ckt.get_element("XI1"), f"all instances{[ele.name for ele in ckt.elements]}"
+    assert ckt.get_element("XI1").parameters["NFIN"] == "16"
+    assert ckt.get_element("XI2")
+    assert ckt.get_element("XI2").parameters["NFIN"] == "24"
+    assert ckt.get_element("XI3")
+    assert ckt.get_element("XI3").parameters["NFIN"] == "24"
+    assert ckt.get_element("XI4")
+    assert ckt.get_element("XI4").parameters["NFIN"] == "64"
     clean_data(name)
 
 
 def test_multi_param_skip():
-    name = "DB_CKT_1"
+    name = f'ckt_{get_test_id()}'.upper()
     netlist = multi_param_ckt_with_existing_name(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
@@ -168,7 +166,7 @@ def test_multi_param_skip():
     ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["DB_CKT_1", "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
+    all_modules = set([name, "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
@@ -183,16 +181,16 @@ def test_multi_param_skip():
 
 
 def test_preprocessing_SD():
-    name = "NESTED_MOS"
+    name = f'ckt_{get_test_id()}'.upper()
     netlist = nested_swap_SD(name)
-    constraints =   constraints = [
+    constraints = constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
         {"constraint": "GroundPorts", "ports": ["S"]},
         {"constraint": "KeepDummyHierarchies", "isTrue": True}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set(["NESTED_MOS", "PARAM_MOS", "P_MOS"])
+    all_modules = set([name, "PARAM_MOS", "P_MOS"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )

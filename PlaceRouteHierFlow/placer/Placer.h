@@ -49,15 +49,14 @@ class Placer {
   // std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int
   // nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
-                                                                                int nodeSize, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP);
+                                                                                int nodeSize, int effort, PnRDB::Drc_info& drcInfo);
   void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
   void ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& spMap, int nodeSize);
   void PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
-  void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, bool select_in_ILP);
-  void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo,
-                                                  bool select_in_ILP);
+  void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
+  void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo);
   PlacerHyperparameters hyper;
   std::uniform_real_distribution<double> _rnd{0., 1.};
@@ -65,7 +64,7 @@ class Placer {
 
   public:
   Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
-  Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in, bool select_in_ILP);
+  Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   // Placer(PnRDB::hierNode& input_node); // Constructor
   // PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
 };
