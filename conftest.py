@@ -43,6 +43,4 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("router_mode", [router_mode])
     if "skipGDS" in metafunc.fixturenames:
         metafunc.parametrize("skipGDS", [True])
-    if "ci_level" in metafunc.fixturenames:
-        ci_level = metafunc.config.getoption("--ci_level")
-        metafunc.parametrize("ci_level", [ci_level])
+
