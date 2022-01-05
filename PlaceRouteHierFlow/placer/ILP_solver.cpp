@@ -1,7 +1,4 @@
 #include "ILP_solver.h"
-
-#include <stdexcept>
-
 #include "spdlog/spdlog.h"
 #include "symphony.h"
 #include <iostream>
@@ -94,10 +91,9 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       for (const auto& i_sympair : symmetry.sympair) {
         int diff = center_x - (node.Blocks[i_sympair.first].instance[0].placedCenter.x + node.Blocks[i_sympair.second].instance[0].placedCenter.x) / 2;
-        node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff - 1;
-        node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff + 1;
-        while (distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.x - node.Blocks[i_sympair.second].instance[0].placedCenter.x)) !=
-               distance_set.end()) {
+        node.Blocks[i_sympair.first].instance[0].placedCenter.x += diff-1;
+        node.Blocks[i_sympair.second].instance[0].placedCenter.x += diff+1;
+        while(distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.x-node.Blocks[i_sympair.second].instance[0].placedCenter.x))!=distance_set.end()){
           node.Blocks[i_sympair.first].instance[0].placedCenter.x--;
           node.Blocks[i_sympair.second].instance[0].placedCenter.x++;
         }
@@ -130,8 +126,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
         int diff = center_y - (node.Blocks[i_sympair.first].instance[0].placedCenter.y + node.Blocks[i_sympair.second].instance[0].placedCenter.y) / 2;
         node.Blocks[i_sympair.first].instance[0].placedCenter.y += diff;
         node.Blocks[i_sympair.second].instance[0].placedCenter.y += diff;
-        while (distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.y - node.Blocks[i_sympair.second].instance[0].placedCenter.y)) !=
-               distance_set.end()) {
+        while(distance_set.find(abs(node.Blocks[i_sympair.first].instance[0].placedCenter.y-node.Blocks[i_sympair.second].instance[0].placedCenter.y))!=distance_set.end()){
           node.Blocks[i_sympair.first].instance[0].placedCenter.y--;
           node.Blocks[i_sympair.second].instance[0].placedCenter.y++;
         }
@@ -154,7 +149,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       LLy /= align.blocks.size();
       for (unsigned int i = 0; i < align.blocks.size(); i++) {
-        while (center_x_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.x) != center_x_set.end())
+        while(center_x_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.x)!=center_x_set.end())
           node.Blocks[align.blocks[i]].instance[0].placedCenter.x++;
         center_x_set.insert(node.Blocks[align.blocks[i]].instance[0].placedCenter.x);
         node.Blocks[align.blocks[i]].instance[0].placedCenter.y = LLy + node.Blocks[align.blocks[i]].instance[0].height / 2;
@@ -167,7 +162,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       }
       LLx /= align.blocks.size();
       for (unsigned int i = 0; i < align.blocks.size(); i++) {
-        while (center_y_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.y) != center_y_set.end())
+        while(center_y_set.find(node.Blocks[align.blocks[i]].instance[0].placedCenter.y)!=center_y_set.end())
           node.Blocks[align.blocks[i]].instance[0].placedCenter.y++;
         center_y_set.insert(node.Blocks[align.blocks[i]].instance[0].placedCenter.y);
         node.Blocks[align.blocks[i]].instance[0].placedCenter.x = LLx + node.Blocks[align.blocks[i]].instance[0].width / 2;
@@ -213,7 +208,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
             block_order[blockj][blocki] |= 0x0010;
         }
       }
-    } else {
+    }else{
       for (unsigned int i = 0; i < order.first.size() - 1; i++) {
         for (unsigned int j = i + 1; j < order.first.size(); j++) {
           int blocki = order.first[i];
@@ -268,7 +263,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       vector<int> blocks(align.blocks);
       sort(blocks.begin(), blocks.end());
       for (unsigned int i = 0; i < blocks.size(); i++) {
-        for (unsigned int j = i + 1; j < blocks.size(); j++) {
+        for (unsigned int j = i + 1; j < blocks.size(); j++){
           if (block_order[blocks[i]][blocks[j]] & 0xff00)
             logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[j]][0].name);
           else
@@ -279,7 +274,7 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
       vector<int> blocks(align.blocks);
       sort(blocks.begin(), blocks.end());
       for (unsigned int i = 0; i < blocks.size(); i++) {
-        for (unsigned int j = i + 1; j < blocks.size(); j++) {
+        for (unsigned int j = i + 1; j < blocks.size(); j++){
           if (block_order[blocks[i]][blocks[j]] & 0x00ff)
             logger->error("wrong constraint between block {0} and {1}", mydesign.Blocks[blocks[i]][0].name, mydesign.Blocks[blocks[j]][0].name);
           else
@@ -302,11 +297,12 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           block_order[first][second] |= 0x0400;  // i and j have the same y center
         }
       }
-      for (unsigned int i = 0; i < symmetry.selfsym.size(); i++) {
+      for (unsigned int i = 0; i < symmetry.selfsym.size();i++){
         for (unsigned int j = i + 1; j < symmetry.selfsym.size(); j++) {
           int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
           if (first > second) std::swap(first, second);
           block_order[first][second] |= 0x0004;
+          if (block_order[first][second] & 0x1100) continue;
           if (node.Blocks[first].instance[0].placedCenter.y < node.Blocks[second].instance[0].placedCenter.y)
             block_order[first][second] |= 0x0100;
           else
@@ -326,10 +322,11 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           block_order[first][second] |= 0x0004;  // i and j have the same x center
         }
       }
-      for (unsigned int i = 0; i < symmetry.selfsym.size(); i++) {
+      for (unsigned int i = 0; i < symmetry.selfsym.size();i++){
         for (unsigned int j = i + 1; j < symmetry.selfsym.size(); j++) {
           int first = symmetry.selfsym[i].first, second = symmetry.selfsym[j].first;
           if (first > second) std::swap(first, second);
+          if (block_order[first][second] & 0x0011) continue;
           block_order[first][second] |= 0x0400;
           if (node.Blocks[first].instance[0].placedCenter.x < node.Blocks[second].instance[0].placedCenter.x)
             block_order[first][second] |= 0x0001;
@@ -344,14 +341,14 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
     for (unsigned int j = i + 1; j < node.Blocks.size(); j++) {
       if ((block_order[i][j] & 0x000e) && (block_order[i][j] & 0x0e00))
         logger->error("wrong constranit between block {0} and {1}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name);
-      if (node.Blocks[i].instance[0].width == 0) {
+      if(node.Blocks[i].instance[0].width==0){
         block_order[i][j] |= 0x0001;
       }
       if ((block_order[i][j] & 0x1111) == 0) {  // neither left right below above
         if (block_order[i][j] & 0x00ff) {
           // align to left, x center, or right
           block_order[i][j] &= 0x00ff;
-          if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y) {
+          if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y){
             block_order[i][j] |= 0x0100;
             int i_counterpart = mydesign.SPBlocks[mydesign.Blocks[i][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[i][0].counterpart : -1;
             int j_counterpart = mydesign.SPBlocks[mydesign.Blocks[j][0].SBidx].axis_dir == placerDB::V ? mydesign.Blocks[j][0].counterpart : -1;
@@ -359,11 +356,11 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
               if (i_counterpart < j && ((block_order[i_counterpart][j] & 0x1111) == 0)) block_order[i_counterpart][j] |= 0x0100;
               if (i_counterpart > j && ((block_order[j][i_counterpart] & 0x1111) == 0)) block_order[j][i_counterpart] |= 0x1000;
             }
-            if (j_counterpart != -1) {
+            if(j_counterpart!=-1){
               if (i < j_counterpart && ((block_order[i][j_counterpart] & 0x1111) == 0)) block_order[i][j_counterpart] |= 0x0100;
               if (i > j_counterpart && ((block_order[j_counterpart][i] & 0x1111) == 0)) block_order[j_counterpart][i] |= 0x1000;
             }
-            if (i_counterpart != -1 && j_counterpart != -1) {
+            if(i_counterpart!=-1 && j_counterpart!=-1){
               if (i_counterpart < j_counterpart && ((block_order[i_counterpart][j_counterpart] & 0x1111) == 0))
                 block_order[i_counterpart][j_counterpart] |= 0x0100;
               if (i_counterpart > j_counterpart && ((block_order[j_counterpart][i_counterpart] & 0x1111) == 0))
@@ -377,11 +374,11 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
               if (i_counterpart < j && ((block_order[i_counterpart][j] & 0x1111) == 0)) block_order[i_counterpart][j] |= 0x1000;
               if (i_counterpart > j && ((block_order[j][i_counterpart] & 0x1111) == 0)) block_order[j][i_counterpart] |= 0x0100;
             }
-            if (j_counterpart != -1) {
+            if(j_counterpart!=-1){
               if (i < j_counterpart && ((block_order[i][j_counterpart] & 0x1111) == 0)) block_order[i][j_counterpart] |= 0x1000;
               if (i > j_counterpart && ((block_order[j_counterpart][i] & 0x1111) == 0)) block_order[j_counterpart][i] |= 0x0100;
             }
-            if (i_counterpart != -1 && j_counterpart != -1) {
+            if(i_counterpart!=-1 && j_counterpart!=-1){
               if (i_counterpart < j_counterpart && ((block_order[i_counterpart][j_counterpart] & 0x1111) == 0))
                 block_order[i_counterpart][j_counterpart] |= 0x1000;
               if (i_counterpart > j_counterpart && ((block_order[j_counterpart][i_counterpart] & 0x1111) == 0))
@@ -395,17 +392,18 @@ ILP_solver::ILP_solver(design& mydesign, PnRDB::hierNode& node) {
           else
             block_order[i][j] |= 0x0010;
         } else {
-          // if((!node.isFirstILP && ( node.placement_id & (1<<(count%30))))
+          //if((!node.isFirstILP && ( node.placement_id & (1<<(count%30))))
           //|| (node.isFirstILP && abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
-          // abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y))){
-          if (abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
-              abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y)) {
+            //abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y))){
+          if(abs(node.Blocks[i].instance[0].placedCenter.x - node.Blocks[j].instance[0].placedCenter.x) <
+            abs(node.Blocks[i].instance[0].placedCenter.y - node.Blocks[j].instance[0].placedCenter.y)){
             block_order[i][j] &= 0x00ff;
             if (node.Blocks[i].instance[0].placedCenter.y < node.Blocks[j].instance[0].placedCenter.y)
               block_order[i][j] |= 0x0100;
             else
               block_order[i][j] |= 0x1000;
-          } else {
+          }
+          else {
             block_order[i][j] &= 0xff00;
             if (node.Blocks[i].instance[0].placedCenter.x < node.Blocks[j].instance[0].placedCenter.x)
               block_order[i][j] |= 0x0001;
@@ -484,8 +482,10 @@ void ILP_solver::lpsolve_logger(lprec* lp, void* userhandle, char* buf) {
 }
 
 double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node) {
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolutionAnalytical");
 
+  ++mydesign._totalNumCostCalc;
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -500,12 +500,12 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       break;
     }
   }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
-  unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
-  // i*4+1:x
+  int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
+  // i*4+1: x
   // i*4+2:y
   // i*4+3:H_flip
   // i*4+4:V_flip
@@ -515,13 +515,13 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   // set_outputfile(lp, const_cast<char*>("/dev/null"));
 
   // set integer constraint, H_flip and V_flip can only be 0 or 1
-  for (int i = 0; i < mydesign.Blocks.size(); i++) {
-#ifdef ilp
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    #ifdef ilp
     set_int(lp, i * 4 + 1, TRUE);
     set_int(lp, i * 4 + 2, TRUE);
     set_int(lp, i * 4 + 3, TRUE);
     set_int(lp, i * 4 + 4, TRUE);
-#endif
+    #endif
     set_binary(lp, i * 4 + 3, TRUE);
     set_binary(lp, i * 4 + 4, TRUE);
   }
@@ -794,7 +794,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   {
     double row[N_var + 1] = {0};
     ConstGraph const_graph;
-#ifndef min_displacement
+    #ifndef min_displacement
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
@@ -809,9 +809,9 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
         if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
           block_pos_x_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                                                node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.x));
+                                               node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.x));
           block_pos_y_set.insert(std::make_pair(std::make_pair(mydesign.Nets[i].connected[j].iter2, mydesign.Nets[i].connected[j].iter),
-                                                node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.y));
+                                               node.Blocks[mydesign.Nets[i].connected[j].iter2].instance[0].placedCenter.y));
         }
         // blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) -
         // curr_sp.negPair.begin(), mydesign.Nets[i].connected[j].iter));
@@ -861,38 +861,38 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
       //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
       //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
-      if (Lblock_id != Rblock_id) {
+      if(Lblock_id!=Rblock_id){
         {
           double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+                                -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+                                (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
       }
-      if (Dblock_id != Ublock_id) {
+      if(Dblock_id!=Ublock_id){
         {
           double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+                                -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
         }
         {
           double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+                                (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
         row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
       }
     }
-#endif
+    #endif
 
     // add area in cost
     int estimated_width = 0, estimated_height = 0;
@@ -916,28 +916,29 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     set_obj_fn(lp, row);
     set_minim(lp);
     set_timeout(lp, 10);
-// print_lp(lp);
-#ifndef ilp
-// set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
-#endif
+    //print_lp(lp);
+    #ifndef ilp
+    //set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
+    #endif
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
       delete_lp(lp);
+	  ++mydesign._infeasILPFail;
       return -1;
     }
   }
 
   double var[N_var];
-#ifdef ilp
+  #ifdef ilp
   get_variables(lp, var);
-#else
+  #else
   int Norig_columns, Norig_rows, i;
   Norig_columns = get_Norig_columns(lp);
   Norig_rows = get_Norig_rows(lp);
-  for (i = 1; i <= Norig_columns; i++) {
+  for(i = 1; i <= Norig_columns; i++) {
     var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
   }
-#endif
+  #endif
   delete_lp(lp);
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
@@ -968,10 +969,12 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   **/
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
-    return -1;
+	  ++mydesign._infeasAspRatio;
+	  return -1;
   }
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
-    return -1;
+	  ++mydesign._infeasPlBound;
+	  return -1;
   }
   // calculate HPWL
   HPWL = 0;
@@ -2624,6 +2627,8 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
 double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution_select");
 
+
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -2638,8 +2643,8 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       break;
     }
   }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 6+ vars, x, y, H_flip, V_flip, width, height + nvariant;
   unsigned int N_var = mydesign.Blocks.size() * 6 + mydesign.Nets.size() * 2;
@@ -3291,10 +3296,10 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   REAL value;
   Norig_columns = get_Norig_columns(lp);
   Norig_rows = get_Norig_rows(lp);
-  for (int i = 1; i <= Norig_columns; i++) {
+  for(int i = 1; i <= Norig_columns; i++) {
     var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
   }
-  // get_variables(lp, var);
+  //get_variables(lp, var);
   delete_lp(lp);
 
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -3472,7 +3477,7 @@ double ILP_solver::CalculateCost(const design& mydesign) const {
   }
   cost += match_cost * const_graph.BETA;
   cost += ratio * Aspect_Ratio_weight;
-  cost += 0.0 / area * const_graph.PHI;  // dead_area
+  cost += 0.0 / area * const_graph.PHI; //dead_area
   cost += linear_const * const_graph.PI;
   cost += multi_linear_const * const_graph.PII;
   return cost;
@@ -3545,9 +3550,9 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
 void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
-  if (!mydesign.is_first_ILP) {
+  if(!mydesign.is_first_ILP){
     ofstream f("Results/" + mydesign.name + "_gds/" + mydesign.name + ".csv", std::ios::app);
-    if (f.is_open()) {
+    if(f.is_open()){
       f << mydesign.placement_id << " " << area << " " << HPWL << endl;
     }
     f.close();
@@ -3557,8 +3562,8 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
   vector<placerDB::point> p_pin;
   fout.open(outfile.c_str());
   fout << "#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)" << endl;
-  fout << "\nset title \" " << mydesign.name << " #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size()
-       << ", #Nets= " << mydesign.Nets.size() << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
+  fout << "\nset title \" "<< mydesign.name << " #Blocks= " << mydesign.Blocks.size() << ", #Terminals= " << mydesign.Terminals.size() << ", #Nets= " << mydesign.Nets.size()
+       << ",Area=" << area << ", HPWL= " << HPWL << " \"" << endl;
   fout << "\nset nokey" << endl;
   fout << "#   Uncomment these two lines starting with \"set\"" << endl;
   fout << "#   to save an EPS file for inclusion into a latex document" << endl;
@@ -3578,7 +3583,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
     placerDB::point tp;
     tp.x = Blocks[i].x + mydesign.Blocks[i][0].width / 2;
     tp.y = Blocks[i].y + mydesign.Blocks[i][0].height / 2;
-    if (mydesign.Blocks[i][0].width > 0 && mydesign.Blocks[i][0].height > 0)
+    if(mydesign.Blocks[i][0].width>0 && mydesign.Blocks[i][0].height>0)
       fout << "\nset label \"" << mydesign.Blocks[i][0].name << "\" at " << tp.x << " , " << tp.y << " center " << endl;
     if (plot_pin) {
       for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
@@ -3606,7 +3611,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
         if (ci.type == placerDB::Terminal) {
           int tno = ci.iter;
           fout << "\nset label \"" << mydesign.Terminals.at(tno).name << "\" at " << mydesign.Terminals.at(tno).center.x << " , "
-               << mydesign.Terminals.at(tno).center.y << " center                " << endl;
+              << mydesign.Terminals.at(tno).center.y << " center                " << endl;
           break;
         }
       }
@@ -3615,9 +3620,9 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
 
   // plot blocks
   fout << "\nplot[:][:] \'-\' with lines linestyle 3";
-  if (plot_pin) fout << ", \'-\' with lines linestyle 7";
-  if (plot_terminal) fout << ", \'-\' with lines linestyle 1";
-  if (plot_net) fout << ", \'-\' with lines linestyle 0";
+  if(plot_pin)fout << ", \'-\' with lines linestyle 7";
+  if(plot_terminal)fout << ", \'-\' with lines linestyle 1";
+  if(plot_net)fout << ", \'-\' with lines linestyle 0";
   fout << endl << endl;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     vector<placerDB::point> newp = mydesign.Blocks[i][0].boundary.polygon;
@@ -3631,7 +3636,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
   fout << "\nEOF" << endl;
 
   // plot block pins
-  if (plot_pin) {
+  if(plot_pin){
     for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
       for (unsigned int j = 0; j < mydesign.Blocks[i][0].blockPins.size(); j++) {
         for (unsigned int k = 0; k < mydesign.Blocks[i][0].blockPins[j].boundary.size(); k++) {
@@ -3682,7 +3687,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
   }
 
   // plot nets
-  if (plot_net) {
+  if(plot_net){
     for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
       placerDB::point tp;
       vector<placerDB::point> pins;
@@ -5057,6 +5062,7 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
   int y = Blocks[i].y;
 
   // SMB Hack
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -5072,8 +5078,8 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     }
   }
 
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   roundup(x, x_pitch);
   roundup(y, y_pitch);
 

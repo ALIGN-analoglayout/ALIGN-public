@@ -98,10 +98,8 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or \
-                            subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and  # to stop searching INVB in INVB_1
-                         ckt.name in temp_match_dict[subckt.name]
-                         ):
+                       subckt.name in do_not_use_lib or \
+                       (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]): # to stop searching INVB in INVB_1
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
@@ -372,7 +370,6 @@ class Annotate:
                         if pair[0] in remove_nodes and pair[1] in remove_nodes:
                             pair[0] = new_inst
                             pair.pop()
-                            # logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
                         elif pair[0] in remove_nodes and pair[1] not in remove_nodes:
                             pair[0] = new_inst
                         elif pair[1] in remove_nodes and pair[0] not in remove_nodes:
@@ -380,5 +377,4 @@ class Annotate:
                     elif len(pair) == 1:
                         if pair[0] in remove_nodes:
                             pair[0] = new_inst
-                            # logger.debug(f"updated self symmetric constraint block:{const}")
         logger.debug(f"updated constraints of {name} {const_list}")

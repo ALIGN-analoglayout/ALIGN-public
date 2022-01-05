@@ -1,8 +1,11 @@
 #include "placement.h"
+
+#include "spdlog/spdlog.h"
 // #define DEBUG
 Placement::Placement() {}
 
 void Placement::Initilize_lambda() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Initilize_lambda");
   Ppoint_F norm_wire_gradient;
   norm_wire_gradient.x = 0;
   norm_wire_gradient.y = 0;
@@ -31,6 +34,7 @@ void Placement::Initilize_lambda() {
 }
 
 void Placement::Initilize_sym_beta() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Initilize_sym_beta");
   Ppoint_F norm_wire_gradient;
   norm_wire_gradient.x = 0;
   norm_wire_gradient.y = 0;
@@ -66,6 +70,7 @@ void Placement::Initilize_sym_beta() {
 }
 
 Placement::Placement(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Placement");
   // step 1: transfroming info. of current_node to Blocks and Nets
   // create a small function for this
   float area, scale_factor;
@@ -81,7 +86,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  std::cout << "start reading node file" << std::endl;
+  logger->debug("start reading node file");
   area = readInputNode(current_node);
 
   // for blocks
@@ -112,7 +117,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
   // need to estimate a area to do placement
   // scale into 1x1
   // initial position for each block
-  std::cout << "Unify the block coordinate" << std::endl;
+  logger->debug("Unify the block coordinate");
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
@@ -137,14 +142,14 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 
   print_blocks_nets();
   // step 3: call E_placer
-  std::cout << "start ePlacement" << std::endl;
+  logger->debug("start ePlacement");
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
   E_Placer(current_node);
+  PlotPlacement(6021);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   // only for plot
 
   restore_MS();
@@ -154,6 +159,7 @@ Placement::Placement(PnRDB::hierNode &current_node) {
 }
 
 void Placement::place_ut(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.place_ut");
   // step 1: transfroming info. of current_node to Blocks and Nets
   // create a small function for this
   float area, scale_factor;
@@ -169,7 +175,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  std::cout << "start reading node file" << std::endl;
+  logger->debug("start reading node file");
   area = readInputNode(current_node);
 
   // for blocks
@@ -204,7 +210,7 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
     Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
     Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
   }
-  std::cout << "Unify the block coordinate" << std::endl;
+  logger->debug("Unify the block coordinate");
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
@@ -229,14 +235,13 @@ void Placement::place_ut(PnRDB::hierNode &current_node) {
 
   print_blocks_nets();
   // step 3: call E_placer
-  std::cout << "start ePlacement" << std::endl;
+  logger->debug("start ePlacement");
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
   UT_Placer();
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   // only for plot
 
   // restore_MS();
@@ -263,7 +268,7 @@ void Placement::place(PnRDB::hierNode &current_node) {
 
   Bin_D.x = unit_x_bin;
   Bin_D.y = unit_y_bin;
-  std::cout << "start reading node file" << std::endl;
+  logger->debug("start reading node file");
   area = readInputNode(current_node);
 
   // for blocks
@@ -298,11 +303,11 @@ void Placement::place(PnRDB::hierNode &current_node) {
     Blocks[i].original_Dpoint.x = current_node.Blocks[i].instance[0].width;
     Blocks[i].original_Dpoint.y = current_node.Blocks[i].instance[0].height;
   }
-  std::cout << "Unify the block coordinate" << std::endl;
+  logger->debug("Unify the block coordinate");
   scale_factor = 40.0;
   Unify_blocks(area, scale_factor);
   find_uni_cell();
-  readCC();
+  // readCC();
   // Initilize_Placement(current_node);
   // PlotPlacement(600);
   splitNode_MS(uni_cell_Dpoint.y, uni_cell_Dpoint.x);
@@ -323,18 +328,18 @@ void Placement::place(PnRDB::hierNode &current_node) {
   Initilize_Placement_Rand(current_node);
 #endif
   end = clock();
-  logger->info("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
+  logger->debug("initialize runtime: {0} s", (double)(end - start) / CLOCKS_PER_SEC);
 
   print_blocks_nets();
   // step 3: call E_placer
-  std::cout << "start ePlacement" << std::endl;
+  logger->debug("start ePlacement");
   PlotPlacement(602);
   // restore_MS();
   // PlotPlacement(601);
   E_Placer(current_node);
+  PlotPlacement(6021);
   bool isCompact = true;
   restore_CC_in_square(isCompact);
-
   // only for plot
 
   // restore_MS();
@@ -344,6 +349,7 @@ void Placement::place(PnRDB::hierNode &current_node) {
 }
 
 Placement::Placement(float chip_width, float chip_hight, float bin_width, float bin_hight) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Placement");
   this->Chip_D.x = chip_width;
   this->Chip_D.y = chip_hight;
   this->Bin_D.x = bin_width;
@@ -366,6 +372,7 @@ void Placement::generate_testing_data() {
 }
 
 void Placement::Random_Generation_Block_Nets() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Random_Generation_Block_Nets");
   int max_block_number = 1000;
   int max_net_number = 100;
   int max_conection_number = 100;
@@ -434,6 +441,7 @@ void Placement::Create_Placement_Bins() {
 }
 
 void Placement::Pull_back() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Pull_back");
   for (unsigned int i = 0; i < Blocks.size(); ++i) {
     if (Blocks[i].Cpoint.x + Blocks[i].Dpoint.x / 2 > Chip_D.x) {
       Blocks[i].Cpoint.x = Chip_D.x - Blocks[i].Dpoint.x / 2 - (1.5) * Bin_D.x / 2;
@@ -456,6 +464,7 @@ void Placement::Pull_back() {
 
 void Placement::Pull_back_vector(vector<float> &temp_vector, bool x_or_y) {  // 1 is x, 0 is y
 
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Pull_back_vector");
   for (unsigned int i = 0; i < temp_vector.size(); ++i) {
     if (x_or_y) {
       if (temp_vector[i] + Blocks[i].Dpoint.x / 2 > Chip_D.x) {
@@ -480,6 +489,7 @@ void Placement::Pull_back_vector(vector<float> &temp_vector, bool x_or_y) {  // 
 }
 
 void Placement::Initilize_Placement(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Initilize_Placement");
   int MaxElement = originalBlockCNT + current_node.Terminals.size();
   int n, m;
   vector<vector<float>> xa(MaxElement, vector<float>(MaxElement + 1, 0));
@@ -714,6 +724,7 @@ void Placement::Update_Bin_Density() {
 }
 
 bool Placement::Find_Common_Area(float x_center_block, float block_width, float x_center_bin, float bin_width, float &common_length) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Find_Common_Area");
   float x_lower_block = x_center_block - block_width / 2;
   float x_upper_block = x_center_block + block_width / 2;
   float x_lower_bin = x_center_bin - bin_width / 2;
@@ -732,6 +743,7 @@ bool Placement::Find_Common_Area(float x_center_block, float block_width, float 
 }
 
 void Placement::Cal_Eforce_Block(int block_id) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Cal_Eforce_Block");
   // Q: should compare with replace's implementation
   Blocks[block_id].Eforce.x = 0.0;
   Blocks[block_id].Eforce.y = 0.0;
@@ -752,7 +764,7 @@ void Placement::Cal_Eforce_Block(int block_id) {
     }
   }
   // #ifdef DEBUG
-  std::cout << "blocks gradient " << Blocks[block_id].Eforce.x << " " << Blocks[block_id].Eforce.y << std::endl;
+  logger->debug("blocks gradient {0} {1}", Blocks[block_id].Eforce.x, Blocks[block_id].Eforce.y);
   // #endif
 }
 
@@ -782,6 +794,7 @@ float Placement::Cal_HPWL() {
 }
 
 void Placement::PlotPlacement(int index) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.PlotPlacement");
   string outfile = to_string(index) + ".plt";
 #ifdef DEBUG
   cout << "create gnuplot file" << endl;
@@ -907,6 +920,7 @@ void Placement::PlotPlacement(int index) {
 // }
 
 void Placement::Cal_WA_Net_Force() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Cal_WA_Net_Force");
   for (unsigned int i = 0; i < Nets.size(); ++i) {
     Nets[i].PSumNetforce.x = LSE_Net_SUM_P(i, 1);
     Nets[i].PSumNetforce.y = LSE_Net_SUM_P(i, 0);
@@ -918,9 +932,8 @@ void Placement::Cal_WA_Net_Force() {
     Nets[i].NSumNetforce_WA.x = WA_Net_SUM_N(i, 1);
     Nets[i].NSumNetforce_WA.y = WA_Net_SUM_N(i, 0);
 
-    std::cout << "net sum " << i << " " << Nets[i].PSumNetforce.x << " " << Nets[i].PSumNetforce.y << " " << Nets[i].NSumNetforce.x << " "
-              << Nets[i].NSumNetforce.y << " " << Nets[i].PSumNetforce_WA.x << " " << Nets[i].PSumNetforce_WA.y << " " << Nets[i].NSumNetforce_WA.x << " "
-              << Nets[i].NSumNetforce_WA.y << std::endl;
+    logger->debug("net sum {0} {1} {2} {3} {4} {5} {6} {7} {8}", i, Nets[i].PSumNetforce.x, Nets[i].PSumNetforce.y, Nets[i].NSumNetforce.x,
+                  Nets[i].NSumNetforce.y, Nets[i].PSumNetforce_WA.x, Nets[i].PSumNetforce_WA.y, Nets[i].NSumNetforce_WA.x, Nets[i].NSumNetforce_WA.y);
   }
 
   for (unsigned int i = 0; i < Blocks.size(); ++i) {
@@ -928,14 +941,14 @@ void Placement::Cal_WA_Net_Force() {
     Blocks[i].Net_block_force_P.y = LSE_block_P(i, 0);
     Blocks[i].Net_block_force_N.x = LSE_block_N(i, 1);
     Blocks[i].Net_block_force_N.y = LSE_block_N(i, 0);
-    std::cout << "block single net force " << Blocks[i].Net_block_force_P.x << " " << Blocks[i].Net_block_force_P.y << " " << Blocks[i].Net_block_force_N.x
-              << " " << Blocks[i].Net_block_force_N.y << std::endl;
+    logger->debug("block single net force {0} {1} {2} {3}", Blocks[i].Net_block_force_P.x, Blocks[i].Net_block_force_P.y, Blocks[i].Net_block_force_N.x,
+                  Blocks[i].Net_block_force_N.y);
   }
 
   for (unsigned int i = 0; i < Blocks.size(); ++i) {
     Blocks[i].Netforce.x = 0;
     Blocks[i].Netforce.y = 0;
-    std::cout << "block " << i << std::endl;
+    logger->debug("block {0}", i);
     for (unsigned int j = 0; j < Blocks[i].connected_net.size(); j++) {
       int net_index = Blocks[i].connected_net[j];
 
@@ -943,9 +956,9 @@ void Placement::Cal_WA_Net_Force() {
       Ppoint_F NSumNetforce = Nets[net_index].NSumNetforce;
       Ppoint_F PSumNetforce_WA = Nets[net_index].PSumNetforce_WA;
       Ppoint_F NSumNetforce_WA = Nets[net_index].NSumNetforce_WA;
-      std::cout << "block info " << i << " net index " << net_index << " " << Nets[net_index].PSumNetforce.x << " " << Nets[net_index].PSumNetforce.y << " "
-                << Nets[net_index].NSumNetforce.x << " " << Nets[net_index].NSumNetforce.y << " " << Nets[net_index].PSumNetforce_WA.x << " "
-                << Nets[net_index].PSumNetforce_WA.y << " " << Nets[net_index].NSumNetforce_WA.x << " " << Nets[net_index].NSumNetforce_WA.y << std::endl;
+      logger->debug("block info {0} net index {1} {2} {3} {4} {5} {6} {7} {8}", i, net_index, Nets[net_index].PSumNetforce.x, Nets[net_index].PSumNetforce.y,
+                    Nets[net_index].NSumNetforce.x, Nets[net_index].NSumNetforce.y, Nets[net_index].PSumNetforce_WA.x, Nets[net_index].PSumNetforce_WA.y,
+                    Nets[net_index].NSumNetforce_WA.x, Nets[net_index].NSumNetforce_WA.y);
 
       float x_positive =
           ((1 + Blocks[i].Cpoint.x / gammar) * Blocks[i].Net_block_force_P.x * PSumNetforce.x - Blocks[i].Net_block_force_P.x * PSumNetforce_WA.x) /
@@ -967,7 +980,7 @@ void Placement::Cal_WA_Net_Force() {
         Blocks[i].Netforce.y += (y_positive - y_nagative);
       }
     }
-    std::cout << "block net force " << i << " force " << Blocks[i].Netforce.x << " " << Blocks[i].Netforce.y << std::endl;
+    logger->debug("block net force {0} force {1} {2}", i, Blocks[i].Netforce.x, Blocks[i].Netforce.y);
   }
 }
 
@@ -1190,6 +1203,7 @@ float Placement::LSE_Net_SUM_P(int net_index, bool x_or_y) {
 }
 
 float Placement::LSE_Net_SUM_N(int net_index, bool x_or_y) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Update_Bin_Density");
   float result = 0.0;
 
   for (unsigned int i = 0; i < Nets[net_index].connected_block.size(); i++) {
@@ -1252,6 +1266,8 @@ float Placement::Exp_Function(float x, float gammar) {
 // END LSE model
 
 void Placement::Cal_Density_Eforce() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Cal_Density_Eforce");
+
 #ifdef DEBUG
   cout << "start test fft functions" << endl;
 #endif
@@ -1345,6 +1361,7 @@ void Placement::Cal_force() {
 }
 
 bool Placement::Stop_Condition(float density, float &max_density) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Stop_Condition");
   // Pull_back();
 
   max_density = 0.0;
@@ -1355,17 +1372,18 @@ bool Placement::Stop_Condition(float density, float &max_density) {
       }
     }
   }
-  std::cout << "max_density " << max_density << std::endl;
+  logger->debug("max_density {0}", max_density);
   if (max_density < density) {
-    std::cout << "stop condition result: false" << std::endl;
+    logger->debug("stop condition result: false");
     return false;
   } else {
-    std::cout << "stop condition result: true" << std::endl;
+    logger->debug("stop condition result: true");
     return true;
   }
 }
 
 float Placement::Cal_Overlap() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Cal_Overlap");
   float max_overlap = 0.0f;
 
   for (unsigned int i = 0; i < Blocks.size(); ++i) {
@@ -1397,7 +1415,7 @@ float Placement::Cal_Overlap() {
     }
   }
 
-  std::cout << "Max overlap " << max_overlap << std::endl;
+  logger->debug("Max overlap {0}", max_overlap);
 
   return max_overlap;
 }
@@ -1630,6 +1648,7 @@ void Placement::Cal_UT_Force() {
 }
 
 void Placement::E_Placer(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.E_Placer");
   int i = 0;
 #ifdef DEBUG
   std::cout << "E_placer debug flage: 0" << std::endl;
@@ -1715,7 +1734,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node) {
   float max_density = 1.0;
   float current_max_density = 10.0;
   int count_number = 0;
-  int upper_count_number = 2000;
+  int upper_count_number = 80;
   float current_overlap = 1.0;
   float symmetricMin = 0.3;  // need to tune
   // initialize dummy net weight
@@ -1782,7 +1801,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node) {
       sym_beta = sym_beta * 1.05;
     }
 
-    std::cout << "sym_beta:= " << sym_beta << std::endl;
+    logger->debug("sym_beta:= {0}", sym_beta);
     // force to align
     if (i % 10 == 0) {
       force_order(vc_x, vl_x, vc_y, vl_y);
@@ -1835,7 +1854,7 @@ void Placement::E_Placer(PnRDB::hierNode &current_node) {
     std::cout << "test 2.1" << std::endl;
 #endif
     Nesterov_based_iteration(ac_y, uc_y, vc_y, vl_y, pre_vc_y, pre_vl_y, start_flag);
-    std::cout << "iteration " << i << "step size " << ac_x << " " << ac_y << std::endl;
+    logger->debug("iteration {0} step size {1} {2}", i, ac_x, ac_y);
 #ifdef DEBUG
     std::cout << "test 3" << std::endl;
 #endif
@@ -1865,12 +1884,15 @@ void Placement::E_Placer(PnRDB::hierNode &current_node) {
   Py_Finalize();
 #endif
   // exit(0);
-  force_order(vc_x, vl_x, vc_y, vl_y);
-  force_alignment(vc_x, vl_x, vc_y, vl_y);
+  while (!check_order()) {
+    force_order(vc_x, vl_x, vc_y, vl_y);
+    force_alignment(vc_x, vl_x, vc_y, vl_y);
+  }
+
   // restore_MS();
   // refine_CC();
   PlotPlacement(count_number);
-  std::cout << "iter num when stop:=" << count_number << std::endl;
+  logger->debug("iter num when stop:={0}", count_number);
 }
 
 #ifdef PERFORMANCE_DRIVEN
@@ -1950,6 +1972,7 @@ void Placement::Feedback_Placement_Vectors(vector<float> &temp_vector, bool x_or
 
 void Placement::Nesterov_based_iteration(float &ac, vector<float> &uc, vector<float> &vc, vector<float> &vl, vector<float> &pre_vc, vector<float> &pre_vl,
                                          bool start_flag) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Nesterov_based_iteration");
   // Q:
   // Cal_WA_Net_Force();
   // Cal_LSE_Net_Force();
@@ -2150,6 +2173,7 @@ float Placement::Fast_Exp(float a) {
 }
 
 void Placement::WriteOut_Blocks(int iteration) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.WriteOut_Blocks");
   std::ofstream writoutfile;
 
   std::string file_name = to_string(iteration) + "_Iter_Blocks.txt";
@@ -2165,6 +2189,7 @@ void Placement::WriteOut_Blocks(int iteration) {
 }
 
 void Placement::WriteOut_Bins(int iteration) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.WriteOut_Bins");
   std::ofstream writoutfile;
 
   std::string file_name = to_string(iteration) + "_Iter_Bins.txt";
@@ -2184,11 +2209,12 @@ void Placement::WriteOut_Bins(int iteration) {
 // donghao start
 // return the total area of all blocks
 float Placement::readInputNode(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.readInputNode");
   int blockIndex = 0;
   float totalArea = 0;
   Blocks.clear();
   Nets.clear();
-  std::cout << "start reading blocks file" << std::endl;
+  logger->debug("start reading blocks file");
   int blockCNT = current_node.Blocks.size();
   // initialize sysmmtric matrix
   symmetric_force_matrix = vector<vector<Ppoint_F>>(blockCNT);
@@ -2241,11 +2267,11 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
 
   // update net information
   int netIndex = 0;
-  std::cout << "total block number: " << blockIndex << std::endl;
-  std::cout << "start reading net file" << std::endl;
+  logger->debug("total block number: {0}", blockIndex);
+  logger->debug("start reading net file");
   for (vector<PnRDB::net>::iterator it = current_node.Nets.begin(); it != current_node.Nets.end(); ++it) {
     net tempNet;
-    std::cout << "current net id: " << netIndex << std::endl;
+    logger->debug("current net id:{0}", netIndex);
     // update name of net
     tempNet.netname = it->name;
     // based on my understanding, iter2 is the block id
@@ -2253,7 +2279,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
     tempNet.connected_block.clear();
     for (int i = 0; i != it->connected.size(); ++i) {
       int iter2 = it->connected[i].iter2;
-      std::cout << "connected block id: " << iter2 << std::endl;
+      logger->debug("connected block id: {0}", iter2);
       if (iter2 >= 0) {
         tempNet.connected_block.push_back(iter2);
         Blocks[iter2].connected_net.push_back(netIndex);
@@ -2277,12 +2303,12 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
 
   // read the symmtirc
   // #ifdef DEBUG
-  std::cout << "number of sym constrain = " << current_node.SPBlocks.size() << endl;
+  logger->debug("number of sym constrain = {0}", current_node.SPBlocks.size());
   // #endif;
   for (vector<PnRDB::SymmPairBlock>::iterator it = current_node.SPBlocks.begin(); it != current_node.SPBlocks.end(); ++it) {
     // #ifdef DEBUG
-    std::cout << "sym group start" << endl;
-    std::cout << "self size = " << it->selfsym.size() << ", pair size = " << it->sympair.size() << endl;
+    logger->debug("sym group start");
+    logger->debug("self size = {0}, pair size ={1}", it->selfsym.size(), it->sympair.size());
     // #endif;
 
     SymmPairBlock tempSPB;
@@ -2305,7 +2331,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         int id0 = it->sympair[0].first;
         int id1 = it->sympair[0].second;
         // #ifdef DEBUG
-        std::cout << "V: cond1, id0 = " << id0 << ", id1 = " << id1 << endl;
+        logger->debug("V: cond1, id0 = {0}, id1 = ", id0, id1);
         // #endif;
         symmetric_force_matrix[id0][id0].y += 2;
         symmetric_force_matrix[id0][id1].y -= 2;
@@ -2320,12 +2346,12 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         tempSPB.axis.first = base;
         tempSPB.axis.second = base;
         // #ifdef DEBUG
-        std::cout << "V: cond2, base = " << base << endl;
+        logger->debug("V: cond2, base = {0}", base);
         // #endif;
         // for self sym (xi - x0)^2
         for (int i = 1; i < it->selfsym.size(); ++i) {
           int id = it->selfsym[i].first;
-          std::cout << "V: cond2, id = " << id << endl;
+          logger->debug("V: cond2, id = {0}", id);
           symmetric_force_matrix[id][id].x += 8;
           symmetric_force_matrix[id][base].x -= 8;
           symmetric_force_matrix[base][id].x -= 8;
@@ -2335,7 +2361,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         for (int i = 0; i < it->sympair.size(); ++i) {
           int id0 = it->sympair[i].first;
           int id1 = it->sympair[i].second;
-          std::cout << "V: cond2, id0 = " << id0 << ", id1" << id1 << endl;
+          logger->debug("V: cond2, id0 = {0}, id1:{1}", id0, id1);
           //(yi - yj)^2
           symmetric_force_matrix[id0][id0].y += 2;
           symmetric_force_matrix[id0][id1].y -= 2;
@@ -2362,7 +2388,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         tempSPB.axis.first = idbase0;
         tempSPB.axis.second = idbase1;
         // #ifdef DEBUG
-        std::cout << "V: cond3, idbase0 = " << idbase0 << ", idbase1 = " << idbase1 << endl;
+        logger->debug("V: cond3, idbase0 ={0} , idbase1 ={1}", idbase0, idbase1);
         // #endif;
         symmetric_force_matrix[idbase0][idbase0].y += 2;
         symmetric_force_matrix[idbase0][idbase1].y -= 2;
@@ -2372,7 +2398,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
           int id0 = it->sympair[i].first;
           int id1 = it->sympair[i].second;
           // #ifdef DEBUG
-          std::cout << "V: cond3, id0 = " << id0 << ", id1 = " << id1 << endl;
+          logger->debug("V: cond3, id0 = {0}, id1 =  {1}", id0, id1);
           // #endif;
           //(yi - yj)^2
           symmetric_force_matrix[id0][id0].y += 2;
@@ -2413,7 +2439,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         tempSPB.axis.first = id0;
         tempSPB.axis.second = id1;
         // #ifdef DEBUG
-        std::cout << "H: cond1, id0 = " << id0 << ", idb1 = " << id1 << endl;
+        logger->debug("H: cond1, id0 = {0} idb1 = {1} ", id0, id1);
         // #endif;
         symmetric_force_matrix[id0][id0].x += 2;
         symmetric_force_matrix[id0][id1].x -= 2;
@@ -2426,12 +2452,12 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         tempSPB.axis.second = base;
         // for self sym (yi - y0)^2
         // #ifdef DEBUG
-        std::cout << "H: cond2, base = " << base << endl;
+        logger->debug("H: cond2, base = {0}", base);
         // #endif;
         for (int i = 1; i < it->selfsym.size(); ++i) {
           int id = it->selfsym[i].first;
           // #ifdef DEBUG
-          std::cout << "H: cond2, id = " << id << endl;
+          logger->debug("H: cond2, id = {0}", id);
           // std::cout<<"matrix size:"<<symmetric_force_matrix.size()<<", "<<symmetric_force_matrix[0].size()<<endl;
           // #endif;
           symmetric_force_matrix[id][id].y += 8;
@@ -2444,7 +2470,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
           int id0 = it->sympair[i].first;
           int id1 = it->sympair[i].second;
           // #ifdef DEBUG
-          std::cout << "V: cond2, id0 = " << id0 << ", id1 = " << id1 << endl;
+          logger->debug("V: cond2, id0 = {0}, id1 ={1}", id0, id1);
           // #endif;
           //(xi - xj)^2
           symmetric_force_matrix[id0][id0].x += 2;
@@ -2472,7 +2498,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
         tempSPB.axis.first = idbase0;
         tempSPB.axis.second = idbase1;
         // #ifdef DEBUG
-        std::cout << "H: cond3, idbase0 = " << idbase0 << ", idbase1 = " << idbase1 << endl;
+        logger->debug("H: cond3, idbase0 = {0}, idbase1 ={1}", idbase0, idbase1);
         // #endif;
         symmetric_force_matrix[idbase0][idbase0].x += 2;
         symmetric_force_matrix[idbase0][idbase1].x -= 2;
@@ -2482,7 +2508,7 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
           int id0 = it->sympair[i].first;
           int id1 = it->sympair[i].second;
           // #ifdef DEBUG
-          std::cout << "H: cond3, id0 = " << id0 << ", id1 = " << id1 << endl;
+          logger->debug("H: cond3, id0 ={0} , id1 = {1}", id0, id1);
           // #endif;
           //(xi - xj)^2
           symmetric_force_matrix[id0][id0].x += 2;
@@ -2517,12 +2543,11 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
     SPBlocks.push_back(tempSPB);
   }
   // PRINT symmetric _force matrix
-  std::cout << "symmetric_force matrix" << std::endl;
+  logger->debug("symmetric_force matrix");
   for (int i = 0; i < blockCNT; ++i) {
     for (int j = 0; j < blockCNT; ++j) {
-      std::cout << "(" << symmetric_force_matrix[i][j].x << ", " << symmetric_force_matrix[i][j].y << ")";
+      logger->debug("({0}, {1})", symmetric_force_matrix[i][j].x, symmetric_force_matrix[i][j].y);
     }
-    std::cout << std::endl;
   }
   // return the total area
   originalBlockCNT = Blocks.size();
@@ -2531,11 +2556,12 @@ float Placement::readInputNode(PnRDB::hierNode &current_node) {
 }
 
 void Placement::splitNode_MS(float uniHeight, float uniWidth) {
-  std::cout << "split Node MS: debug 0" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Update_Bin_Density");
+  logger->debug("split Node MS: debug 0");
   int original_block_num = originalBlockCNT;
   for (int i = 0; i < original_block_num; ++i) {
     // step 1: determine the x-direction Standard blocks num
-    std::cout << "split Node MS: debug 1" << std::endl;
+    logger->debug("split Node MS: debug 1");
     Ppoint_F split_numF;
     Ppoint_I split_numI;
     split_numF.y = ceil(Blocks[i].Dpoint.y / uniHeight);
@@ -2552,7 +2578,7 @@ void Placement::splitNode_MS(float uniHeight, float uniWidth) {
     }
     int id = Blocks.size();
     for (int j = 0; j < num_of_add_blocks; ++j) {
-      std::cout << "split Node MS: debug 2" << std::endl;
+      logger->debug("split Node MS: debug 2");
       block temp;
       temp.blockname = Blocks[i].blockname + "_" + to_string(j + 1);
       temp.Dpoint.x = uniWidth;
@@ -2566,18 +2592,19 @@ void Placement::splitNode_MS(float uniHeight, float uniWidth) {
     }
     // edit the splited module in original block, and add x*y-1 splited block into
     // push the
-    std::cout << "split Node MS: debug 3" << std::endl;
+    logger->debug("split Node MS: debug 3");
     if (num_of_add_blocks > 0 and Blocks[i].commonCentroid == 0) {
       addNet_for_one_split_Blocks(i, split_numI);
     }
 
-    std::cout << "split Node MS: debug 4" << std::endl;
+    logger->debug("split Node MS: debug 4");
   }
 }
 
 void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.addNet_for_one_split_Blocks");
   // step 1: put all block id into a x by y 2d array
-  std::cout << "add net for one splited blocks: debug 0" << std::endl;
+  logger->debug("add net for one splited blocks: debug 0");
   vector<vector<int>> ID_array;
   ID_array.clear();
   for (int i = 0; i < num.x; ++i) {
@@ -2593,41 +2620,41 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num) {
     }
     ID_array.push_back(row);
   }
-  std::cout << "add net for one splited blocks: debug 1" << std::endl;
+  logger->debug("add net for one splited blocks: debug 1");
   // put the source block into the center position
   Ppoint_I centerPoint;
   centerPoint.x = (num.x - 1) / 2;
   centerPoint.y = (num.y - 1) / 2;
-  std::cout << "add net for one splited blocks: debug 2" << std::endl;
+  logger->debug("add net for one splited blocks: debug 2");
   ID_array[num.x - 1].push_back(ID_array[centerPoint.x][centerPoint.y]);
   ID_array[centerPoint.x][centerPoint.y] = blockID;
 
-  std::cout << "add net for one splited blocks: debug 3" << std::endl;
+  logger->debug("add net for one splited blocks: debug 3");
   // add net for each block to connect the adjacent block
   int netID = Nets.size();
   for (int i = 0; i < num.x; ++i) {
     for (int j = 0; j < num.y; ++j) {
-      std::cout << "add net for one splited blocks: debug 4" << std::endl;
+      logger->debug("add net for one splited blocks: debug 4");
       net temp1, temp2;
       if (i < num.x - 1) {
-        std::cout << "add net for one splited blocks: debug 5" << std::endl;
+        logger->debug("add net for one splited blocks: debug 5");
         temp1.index = netID;
-        std::cout << "add net for one splited blocks: debug 6" << std::endl;
+        logger->debug("add net for one splited blocks: debug 6");
         temp1.connected_block.push_back(ID_array[i][j]);
-        std::cout << "add net for one splited blocks: debug 7" << std::endl;
+        logger->debug("add net for one splited blocks: debug 7");
         temp1.connected_block.push_back(ID_array[i + 1][j]);
-        std::cout << "add net for one splited blocks: debug 8" << std::endl;
+        logger->debug("add net for one splited blocks: debug 8");
         Blocks[ID_array[i][j]].connected_net.push_back(netID);
-        std::cout << "add net for one splited blocks: debug 9" << std::endl;
-        std::cout << ID_array[i + 1][j] << std::endl;
+        logger->debug("add net for one splited blocks: debug 9");
+        logger->debug("{0}", ID_array[i + 1][j]);
         Blocks[ID_array[i + 1][j]].connected_net.push_back(netID);
-        std::cout << "add net for one splited blocks: debug 10" << std::endl;
+        logger->debug("add net for one splited blocks: debug 10");
         ++netID;
         temp1.weight = dummy_net_weight;
         Nets.push_back(temp1);
       }
       if (j < num.y - 1) {
-        std::cout << "add net for one splited blocks: debug 11" << std::endl;
+        logger->debug("add net for one splited blocks: debug 11");
         temp2.index = netID;
         temp2.connected_block.push_back(ID_array[i][j]);
         temp2.connected_block.push_back(ID_array[i][j + 1]);
@@ -2639,7 +2666,7 @@ void Placement::addNet_for_one_split_Blocks(int blockID, Ppoint_I num) {
       }
     }
   }
-  std::cout << "add net for one splited blocks: debug 4" << std::endl;
+  logger->debug("add net for one splited blocks: debug 4");
 }
 
 void Placement::update_netlist_after_split_MS() {
@@ -2691,6 +2718,7 @@ void Placement::find_uni_cell() {
 }
 
 void Placement::readCC() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.readCC");
   for (int i = 0; i < originalBlockCNT; ++i) {
     int namelength = Blocks[i].blockname.size();
     string name = Blocks[i].blockname;
@@ -2698,13 +2726,13 @@ void Placement::readCC() {
 
     // int length_of_label = label.length();
     if ((pos = name.find("_c")) != string::npos || (pos = name.find("_C")) != string::npos) {
-      std::cout << "find out cc in block" << name << std::endl;
-      std::cout << "readCC: debug 0" << std::endl;
+      logger->debug("find out cc in block {0}", name);
+      logger->debug("readCC: debug 0");
       string label = name.substr(pos);
       Blocks[i].commonCentroid = 1;
       int flag = 0;
       for (int j = 0; j < commonCentroids.size(); ++j) {
-        std::cout << "readCC: debug 1" << std::endl;
+        logger->debug("readCC: debug 1");
         if (commonCentroids[j].label == label) {
           commonCentroids[j].blocks.push_back(i);
           flag = 1;
@@ -2712,7 +2740,7 @@ void Placement::readCC() {
         }
       }
       if (flag == 0) {
-        std::cout << "readCC: debug 2" << std::endl;
+        logger->debug("readCC: debug 2");
         commonCentroid temp;
         temp.label = label;
         temp.blocks.push_back(i);
@@ -2722,18 +2750,19 @@ void Placement::readCC() {
   }
 }
 void Placement::addNet_after_split_Blocks(int tol_diff, float uniHeight, float uniWidth) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.addNet_after_split_Blocks");
   // determine the shape of commonCentroid
-  std::cout << "add Net after split BLocks: debug 0" << std::endl;
+  logger->debug("add Net after split BLocks: debug 0");
   for (int i = 0; i < commonCentroids.size(); ++i) {
-    std::cout << "add Net after split BLocks: debug 1" << std::endl;
+    logger->debug("add Net after split BLocks: debug 1");
     int cell_num = 0;
     for (int j = 0; j < commonCentroids[i].blocks.size(); ++j) {
-      std::cout << "add Net after split BLocks: debug 2" << std::endl;
+      logger->debug("add Net after split BLocks: debug 2");
       int id = commonCentroids[i].blocks[j];
 
       cell_num += Blocks[id].spiltBlock.size() + 1;
     }
-    std::cout << "add Net after split BLocks: debug 3" << std::endl;
+    logger->debug("add Net after split BLocks: debug 3");
     Ppoint_I shape = determineShape(cell_num, tol_diff);
     commonCentroids[i].shape = shape;
     addNet_commonCentroid(commonCentroids[i], cell_num, uniHeight, uniWidth);
@@ -2741,16 +2770,17 @@ void Placement::addNet_after_split_Blocks(int tol_diff, float uniHeight, float u
 }
 
 Ppoint_I Placement::determineShape(int cell_num, int tol_diff) {
-  std::cout << "determine shape: debug 0" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.determineShape");
+  logger->debug("determine shape: debug 0");
   Ppoint_I shape, temp;
   shape.x = (int)ceil(sqrt(cell_num));
   shape.y = shape.x;
   int x_or_y = 0;
   int distance = shape.x * shape.y - cell_num;
   for (int i = (int)ceil(sqrt(cell_num)) - tol_diff; i < (int)ceil(sqrt(cell_num)) + tol_diff; ++i) {
-    std::cout << "determine shape: debug 1" << std::endl;
+    logger->debug("determine shape: debug 1");
     for (int j = (int)ceil(sqrt(cell_num)) - tol_diff; j < (int)ceil(sqrt(cell_num)) + tol_diff; ++j) {
-      std::cout << "determine shape: debug 2" << std::endl;
+      logger->debug("determine shape: debug 2");
       int tempDistance = i * j - cell_num;
       if (tempDistance >= 0 and tempDistance < distance) {
         shape.x = i;
@@ -2763,7 +2793,8 @@ Ppoint_I Placement::determineShape(int cell_num, int tol_diff) {
 }
 
 void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num, float uniHeight, float uniWidth) {
-  std::cout << "addNet commonCentroid: debug 0" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.addNet_commonCentroid");
+  logger->debug("addNet commonCentroid: debug 0");
   int dummyNum = CC.shape.x * CC.shape.y - cell_num;
   int id = 0;
   std::vector<std::vector<int>> ID_array;
@@ -2814,23 +2845,22 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num, float un
   // add net
   int netID = Nets.size();
   for (int i = 0; i < CC.shape.x; ++i) {
-    std::cout << "addNet commonCentroid: debug 5" << std::endl;
+    logger->debug("addNet commonCentroid: debug 5");
     for (int j = 0; j < CC.shape.y; ++j) {
-      std::cout << "addNet commonCentroid: debug 6" << std::endl;
+      logger->debug("addNet commonCentroid: debug 6");
       if (i < CC.shape.x - 1) {
         int b1, b2;
-        std::cout << "addNet commonCentroid: debug 6a" << std::endl;
-        std::cout << "shape" << CC.shape.x << " " << CC.shape.y << std::endl;
-        std::cout << "current pos" << i << " " << j << " " << std::endl;
+        logger->debug("addNet commonCentroid: debug 6a");
+        logger->debug("shape {0} {1}", CC.shape.x, CC.shape.y);
+        logger->debug("current pos {0} {1}", i, j);
         // b1 = ID_array[i][j];
         b1 = CC.fillin_matrix[i][j];
-        std::cout << "addNet commonCentroid: debug 6b" << std::endl;
+        logger->debug("addNet commonCentroid: debug 6b");
         // b2 = ID_array[i+1][j];
         b2 = CC.fillin_matrix[i + 1][j];
-        std::cout << "addNet commonCentroid: debug 6c" << std::endl;
+        logger->debug("addNet commonCentroid: debug 6c");
         if (b1 > 0 and b2 > 0) {
-          std::cout << "addNet commonCentroid: debug 7"
-                    << " " << b1 << " " << b2 << std::endl;
+          logger->debug("addNet commonCentroid: debug 7 {0} {1}", b1, b2);
           net temp;
           temp.index = netID;
           temp.connected_block.push_back(b1);
@@ -2843,7 +2873,7 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num, float un
         }
       }
       if (j < CC.shape.y - 1) {
-        std::cout << "addNet commonCentroid: debug 8" << std::endl;
+        logger->debug("addNet commonCentroid: debug 8");
         int b1, b2;
         b1 = CC.fillin_matrix[i][j];
         b2 = CC.fillin_matrix[i][j + 1];
@@ -2865,8 +2895,9 @@ void Placement::addNet_commonCentroid(commonCentroid &CC, int cell_num, float un
 }
 
 void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.match_pairs");
   // read the shape from CC
-  std::cout << "match pairs: debug 0" << std::endl;
+  logger->debug("match pairs: debug 0");
   Ppoint_I shape = CC.shape;
   vector<vector<int>> fillin_matrix;  // to store the relative position of Standard cells
   // determine the center point
@@ -2879,12 +2910,12 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
 
   // calculate the manhattan distance
   vector<pair<pair<int, int>, int>> position_q;
-  std::cout << "match pairs: debug 1" << std::endl;
+  logger->debug("match pairs: debug 1");
   for (int i = 0; i < shape.x; ++i) {
     vector<int> row;
-    std::cout << "match pairs: debug 2" << std::endl;
+    logger->debug("match pairs: debug 2");
     for (int j = 0; j < shape.y; ++j) {
-      std::cout << "match pairs: debug 3" << std::endl;
+      logger->debug("match pairs: debug 3");
       int dis;
       dis = abs(2 * i - center.x) + abs(2 * j - center.y);
       row.push_back(-1);  //-1 means dummy as default
@@ -2896,35 +2927,34 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
       position_info.second = dis;
       position_q.push_back(position_info);
     }
-    std::cout << "match pairs: debug 4" << std::endl;
+    logger->debug("match pairs: debug 4");
     fillin_matrix.push_back(row);
   }
-  std::cout << "match pairs: debug 5" << std::endl;
+  logger->debug("match pairs: debug 5");
   sort(position_q.begin(), position_q.end(), comp_position);
-  std::cout << "match pairs: debug 6" << std::endl;
+  logger->debug("match pairs: debug 6");
   // match the blocks
   vector<pair<int, int>> block_pairs;
   vector<int> block_q;
   // first find out the original block which be divided into odd number of pieces
   for (int i = 0; i < CC.blocks.size(); ++i) {
     int id = CC.blocks[i];
-    std::cout << "match pairs: debug 7" << Blocks[id].spiltBlock.size() << std::endl;
+    logger->debug("match pairs: debug 7 {0}", Blocks[id].spiltBlock.size());
 
     if (Blocks[id].spiltBlock.size() % 2 == 0) {
       block_q.push_back(id);
-      std::cout << "match pairs: debug 7b"
-                << " ,id:" << id << std::endl;
+      logger->debug("match pairs: debug 7b,id:{0}", id);
     }
   }
-  std::cout << "match pairs: debug 8" << std::endl;
+  logger->debug("match pairs: debug 8");
   match_vector_into_pairs(block_q, block_pairs);
-  std::cout << "match pairs: debug 9" << std::endl;
+  logger->debug("match pairs: debug 9");
   // write the pairs into fillin_matrix along the position_q
   int filled_num = 0;
-  std::cout << "match pairs: debug 10" << std::endl;
+  logger->debug("match pairs: debug 10");
   for (int i = 0; i < block_pairs.size(); ++i) {
     // find out the top element in position q
-    std::cout << "match pairs: debug 11" << std::endl;
+    logger->debug("match pairs: debug 11");
     pair<int, int> pos;
     pos = position_q[0].first;
     // you may ask what if we have odd number of positions and odd number of blocks
@@ -2936,9 +2966,9 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
     // find out the mirror pos in position_q with 4 steps
     position_q.erase(position_q.begin());
     if (shape.x - 1 - pos.first != pos.first or shape.y - 1 - pos.second != pos.second) {
-      std::cout << "match pairs: debug 12" << std::endl;
+      logger->debug("match pairs: debug 12");
       for (int j = 0; j < position_q.size(); ++j) {
-        std::cout << "match pairs: debug 13" << std::endl;
+        logger->debug("match pairs: debug 13");
         if (position_q[j].first.first == shape.x - 1 - pos.first and position_q[j].first.second == shape.y - 1 - pos.second) {
           position_q.erase(position_q.begin() + j);
           break;
@@ -2948,18 +2978,15 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
   }
   // deal with the remainder blocks
   block_pairs.clear();
-  std::cout << "match pairs: debug 14"
-            << " " << CC.blocks.size() << std::endl;
+  logger->debug("match pairs: debug 14 {0}", CC.blocks.size());
   for (int i = 0; i < CC.blocks.size(); ++i) {
     int id = CC.blocks[i];
-    std::cout << "match pairs: debug 15"
-              << ", " << i << " " << Blocks[id].spiltBlock.size() << std::endl;
+    logger->debug("match pairs: debug 15 {0} , {1}", i, Blocks[id].spiltBlock.size());
 
     vector<pair<int, int>> temp;
     temp.clear();
     for (int j = 0; (j + 1) < (Blocks[id].spiltBlock.size()); j += 2) {
-      std::cout << "match pairs: debug 16"
-                << " " << j << std::endl;
+      logger->debug("match pairs: debug 16 {0}", j);
       pair<int, int> cur_pair;
       cur_pair.first = Blocks[id].spiltBlock[j];
       cur_pair.second = Blocks[id].spiltBlock[j + 1];
@@ -2973,36 +3000,34 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
       cur_pair.second = id;
       temp.push_back(cur_pair);
     }
-    std::cout << "match pairs: debug 16a"
-              << " " << block_pairs.size() << " " << temp.size() << std::endl;
+    logger->debug("match pairs: debug 16a {0} {1}", block_pairs.size(), temp.size());
     for (int j = 0; j < temp.size(); ++j) {
-      std::cout << "temp element:" << temp[j].first << " ," << temp[j].second << std::endl;
+      logger->debug("temp element: {0} {1} ", temp[j].first, temp[j].second);
     }
     merge_two_vectors(block_pairs, temp);
-    std::cout << "match pairs: debug 16b"
-              << " " << block_pairs.size() << " " << temp.size() << std::endl;
+    logger->debug("match pairs: debug 16b {0}, {1}", block_pairs.size(), temp.size());
     for (int j = 0; j < block_pairs.size(); ++j) {
-      std::cout << "block pairs element:" << block_pairs[j].first << " ," << block_pairs[j].second << std::endl;
+      logger->debug("block pairs element: {0} , {1}", block_pairs[j].first, block_pairs[j].second);
     }
   }
 
   // allocate the position
   for (int i = 0; i < block_pairs.size(); ++i) {
     // find out the top element in position q
-    std::cout << "match pairs: debug 17" << std::endl;
+    logger->debug("match pairs: debug 17");
     pair<int, int> pos;
     pos = position_q[0].first;
-    std::cout << "pos" << pos.first << " " << pos.second << std::endl;
-    std::cout << "pos mirror" << shape.x - 1 - pos.first << " " << shape.y - 1 - pos.second << std::endl;
+    logger->debug("pos {0} {1}", pos.first, pos.second);
+    logger->debug("pos mirror {0}, {1}", shape.x - 1 - pos.first, shape.y - 1 - pos.second);
     fillin_matrix[shape.x - 1 - pos.first][shape.y - 1 - pos.second] = block_pairs[i].second;
     fillin_matrix[pos.first][pos.second] = block_pairs[i].first;
     // find out the mirror pos in position_q with 4 steps
     position_q.erase(position_q.begin());
     if (shape.x - 1 - pos.first != pos.first or shape.y - 1 - pos.second != pos.second) {
       for (int j = 0; j < position_q.size(); ++j) {
-        std::cout << "match pairs: debug 18" << std::endl;
+        logger->debug("match pairs: debug 18");
         if (position_q[j].first.first == shape.x - 1 - pos.first and position_q[j].first.second == shape.y - 1 - pos.second) {
-          std::cout << "match pairs: debug 19" << std::endl;
+          logger->debug("match pairs: debug 19");
           position_q.erase(position_q.begin() + j);
           break;
         }
@@ -3012,22 +3037,22 @@ void Placement::match_pairs(commonCentroid &CC, int dummyNum) {
   CC.fillin_matrix.swap(fillin_matrix);
   for (int i = 0; i < shape.x; ++i) {
     for (int j = 0; j < shape.y; ++j) {
-      std::cout << CC.fillin_matrix[i][j] << " ";
+      logger->debug("{0}", CC.fillin_matrix[i][j]);
     }
-    std::cout << std::endl;
   }
 }
 void Placement::merge_two_vectors(vector<pair<int, int>> &v1, vector<pair<int, int>> &v2) {
-  std::cout << "merge 2 vectors: debug 0a" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.merge_two_vectors");
+  logger->debug("merge 2 vectors: debug 0a");
   vector<pair<int, int>> A, B;
-  std::cout << "merge 2 vectors: debug 0b" << std::endl;
+  logger->debug("merge 2 vectors: debug 0b");
   if (v1.size() > v2.size()) {
     // A.swap(v1);
     // B.swap(v2);
   } else {
     v1.swap(v2);
   }
-  std::cout << "merge 2 vectors: debug 1" << std::endl;
+  logger->debug("merge 2 vectors: debug 1");
   // calculate the period
   int period, sizeA, sizeB, pos;
   sizeA = v1.size();
@@ -3038,19 +3063,20 @@ void Placement::merge_two_vectors(vector<pair<int, int>> &v1, vector<pair<int, i
     pos = 1;
   }
 
-  std::cout << "merge 2 vectors: debug 2" << std::endl;
+  logger->debug("merge 2 vectors: debug 2");
   for (int i = 0; i < v2.size(); ++i) {
-    std::cout << "merge 2 vectors: debug 3" << std::endl;
+    logger->debug("merge 2 vectors: debug 3");
     v1.insert(v1.begin() + pos, v2[i]);
     pos += period;
-    std::cout << "merge 2 vectors: debug 4" << std::endl;
+    logger->debug("merge 2 vectors: debug 4");
   }
   // save the result into v1
   // v1.swap(A);
   // v2.swap(B);
-  std::cout << "merge 2 vectors: debug 5" << std::endl;
+  logger->debug("merge 2 vectors: debug 5");
 }
 void Placement::match_vector_into_pairs(vector<int> &q, vector<pair<int, int>> &pairs) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.match_vector_into_pairs");
   pairs.clear();
   int i = 0;
   if (q.size() % 2 == 1) {
@@ -3091,49 +3117,50 @@ void Placement::restore_MS() {
 }
 
 void Placement::refine_CC() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.refine_CC");
   for (int i = 0; i < commonCentroids.size(); ++i) {
-    std::cout << "refine_CC: debug 0" << std::endl;
+    logger->debug("refine_CC: debug 0");
     Ppoint_F center;
     int id0, id1, id2, id3;
     Ppoint_I index0, index1;
     if (commonCentroids[i].shape.x % 2 == 0) {
-      std::cout << "refine_CC: debug 1" << std::endl;
+      logger->debug("refine_CC: debug 1");
       index0.x = commonCentroids[i].shape.x / 2;
       index1.x = index0.x - 1;
 
       // center.x = 0;
     } else {
-      std::cout << "refine_CC: debug 2" << std::endl;
+      logger->debug("refine_CC: debug 2");
       index0.x = (commonCentroids[i].shape.x - 1) / 2;
       index1.x = index0.x;
     }
     if (commonCentroids[i].shape.y % 2 == 0) {
-      std::cout << "refine_CC: debug 3" << std::endl;
+      logger->debug("refine_CC: debug 3");
       index0.y = commonCentroids[i].shape.y / 2;
       index1.y = index0.y - 1;
 
       // center.x = 0;
     } else {
-      std::cout << "refine_CC: debug 4" << std::endl;
+      logger->debug("refine_CC: debug 4");
       index0.y = (commonCentroids[i].shape.y - 1) / 2;
       index1.y = index0.y;
     }
-    std::cout << "refine_CC: debug 5" << std::endl;
+    logger->debug("refine_CC: debug 5");
     id0 = commonCentroids[i].fillin_matrix[index0.x][index0.y];
     id1 = commonCentroids[i].fillin_matrix[index0.x][index1.y];
     id2 = commonCentroids[i].fillin_matrix[index1.x][index1.y];
     id3 = commonCentroids[i].fillin_matrix[index1.x][index0.y];
-    std::cout << "refine_CC: debug 6" << std::endl;
+    logger->debug("refine_CC: debug 6");
     center.x = Blocks[id0].Cpoint.x + Blocks[id1].Cpoint.x + Blocks[id2].Cpoint.x + Blocks[id3].Cpoint.x;
 
     center.y = Blocks[id0].Cpoint.y + Blocks[id1].Cpoint.y + Blocks[id2].Cpoint.y + Blocks[id3].Cpoint.y;
     center.x /= 4;
     center.y /= 4;
-    std::cout << "refine_CC: debug 7" << commonCentroids[i].shape.x << " " << commonCentroids[i].shape.y << std::endl;
+    logger->debug("refine_CC: debug 7 {0} {1}", commonCentroids[i].shape.x, commonCentroids[i].shape.y);
     // push every pair of element to match the center
     for (int j = 0; j < commonCentroids[i].shape.x; ++j) {
       for (int k = 0; k < commonCentroids[i].shape.y; ++k) {
-        std::cout << "refine_CC: debug 8" << std::endl;
+        logger->debug("refine_CC: debug 8");
         // find mirror pos
         Ppoint_I pos;
         pos.x = commonCentroids[i].shape.x - 1 - j;
@@ -3147,7 +3174,7 @@ void Placement::refine_CC() {
         pair_center.x /= 2;
         pair_center.y /= 2;
         Ppoint_F offset;
-        std::cout << "refine_CC: debug 9" << std::endl;
+        logger->debug("refine_CC: debug 9");
         offset.x = center.x - pair_center.x;
         offset.y = center.y - pair_center.y;
         Blocks[temp_id0].Cpoint.x += offset.x;
@@ -3160,6 +3187,7 @@ void Placement::refine_CC() {
 }
 
 void Placement::restore_CC_in_square(bool isCompact) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.restore_CC_in_square");
   for (int i = 0; i < commonCentroids.size(); ++i) {
     // find X_MAX, Y_MAX, X_MIN, Y_MIN
     float X_MAX, Y_MAX, X_MIN, Y_MIN;
@@ -3219,11 +3247,12 @@ void Placement::restore_CC_in_square(bool isCompact) {
 }
 
 void Placement::restore_MS(PnRDB::hierNode &current_node) {
-  std::cout << "restore ms debug:0" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.restore_MS");
+  logger->debug("restore ms debug:0");
   current_node.isFirstILP = 0;
   PnRDB::hierNode copy_node(current_node);
   current_node.Blocks.erase(current_node.Blocks.end() - (Blocks.size() - originalBlockCNT), current_node.Blocks.end());
-  std::cout << "restore ms debug:1" << std::endl;
+  logger->debug("restore ms debug:1");
   current_node.Nets.erase(current_node.Nets.end() - (Nets.size() - originalNetCNT), current_node.Nets.end());
 
   for (int i = 0; i < current_node.SPBlocks.size(); ++i) {
@@ -3246,13 +3275,13 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
       current_node.SPBlocks[i].sympair.erase(current_node.SPBlocks[i].sympair.begin() + j, current_node.SPBlocks[i].sympair.end());
     }
   }
-  std::cout << "restore ms debug:3" << std::endl;
+  // std::cout<<"restore ms debug:3"<<std::endl;
   // restore the size of block
   int idx = 0;
   for (int i = 0; i < current_node.Nets.size(); ++i) {
     current_node.Nets[i].weight = 1.0;
   }
-  std::cout << "restore ms debug:4" << std::endl;
+  logger->debug("restore ms debug:4");
   for (int i = 0; i < current_node.Blocks.size(); ++i) {
     for (int j = 0; j < 1; ++j) {
       if (Blocks[idx].splited) {
@@ -3267,7 +3296,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
     }
   }
 
-  std::cout << "restore ms debug:5" << std::endl;
+  logger->debug("restore ms debug:5");
   // merge CC block
   // make origin block in CC size to zero
   int id_new_block = originalBlockCNT;
@@ -3317,7 +3346,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
     current_node.Blocks.push_back(tempBlockComplex);
     new_to_original_block_map[current_node.Blocks.size() - 1] = commonCentroids[i].blocks[0];
     original_to_new_block_map[commonCentroids[i].blocks[0]] = current_node.Blocks.size() - 1;
-    std::cout << "restore ms debug:6" << std::endl;
+    logger->debug("restore ms debug:6");
     for (int j = 0; j < commonCentroids[i].blocks.size(); ++j) {
       int id = commonCentroids[i].blocks[j];
       int cur_id = 0;
@@ -3348,7 +3377,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
           ++cur_id;
         }
       }
-      std::cout << "restore ms debug:7" << std::endl;
+      logger->debug("restore ms debug:7");
       for (int k = 0; k < Blocks[id].connected_net.size(); ++k) {
         int netid = Blocks[id].connected_net[k];
         // current_node.Nets[netid].weight=0;
@@ -3368,7 +3397,7 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
         }
       }
     }
-    std::cout << "restore ms debug:8" << std::endl;
+    logger->debug("restore ms debug:8");
     id_new_block++;
   }
   for (auto &s : current_node.SPBlocks) {
@@ -3395,34 +3424,34 @@ void Placement::restore_MS(PnRDB::hierNode &current_node) {
 // donghao end
 
 void Placement::print_blocks_nets() {
-  std::cout << "print information about blocks" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.print_blocks_nets");
+  logger->debug("print information about blocks");
   for (int i = 0; i < Blocks.size(); ++i) {
-    std::cout << "block id" << Blocks[i].index;
-    std::cout << "block position: (" << Blocks[i].Cpoint.x << ", " << Blocks[i].Cpoint.y << ")"
-              << "d:(" << Blocks[i].Dpoint.x << ", " << Blocks[i].Dpoint.y << ")" << std::endl;
+    logger->debug("block id {0}", Blocks[i].index);
+    logger->debug("block position: ({0}, {1}), d:({2}, {3})", Blocks[i].Cpoint.x, Blocks[i].Cpoint.y, Blocks[i].Dpoint.x, Blocks[i].Dpoint.y);
 
-    std::cout << "connect net:";
+    logger->debug("connect net:");
     for (int j = 0; j < Blocks[i].connected_net.size(); ++j) {
-      std::cout << Blocks[i].connected_net[j] << " ";
+      logger->debug("{0}", Blocks[i].connected_net[j]);
     }
-    std::cout << std::endl;
   }
 
-  std::cout << "print information about nets" << std::endl;
+  logger->debug("print information about nets");
   for (int i = 0; i < Nets.size(); ++i) {
-    std::cout << "net id" << Nets[i].index;
+    logger->debug("net id {0}", Nets[i].index);
     // std::cout << "block position: (" << Blocks[i].Cpoint.x << ", " << Blocks[i].Cpoint.y << ")"
     //           << "d:(" << Blocks[i].Dpoint.x << ", " << Blocks[i].Dpoint.y << ")" << std::endl;
 
-    std::cout << "connect block:";
+    logger->debug("connect block:");
     for (int j = 0; j < Nets[i].connected_block.size(); ++j) {
-      std::cout << Nets[i].connected_block[j] << " ";
+      logger->debug("{0}", Nets[i].connected_block[j]);
     }
-    std::cout << std::endl;
   }
 }
 
 void Placement::Cal_sym_Force() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Update_Bin_Density");
+
 #ifdef DEBUG
   std::cout << "Cal_sym_Force debug flag: 1" << std::endl;
 #endif
@@ -3539,18 +3568,26 @@ void Placement::force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector
   //     Blocks[id2].Cpoint.y = Blocks[id1].Cpoint.y + distance;
   //   }
   // }
-  std::cout << "force align begin" << std::endl;
+  auto logger = spdlog::default_logger()->clone("placer.Placement.force_alignment");
+  logger->debug("force align begin");
   for (int i = 0; i < AlignBlocks.size(); ++i) {
     int headIdx = AlignBlocks[i].blocks[0];
     Ppoint_F head_pos = Blocks[headIdx].Cpoint;
     Ppoint_F head_dem = Blocks[headIdx].Dpoint;
+    float center = 0;
     if (AlignBlocks[i].horizon) {
-      for (int j = 1; j < AlignBlocks[i].blocks.size(); ++j) {
+      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
         int cur_idx = AlignBlocks[i].blocks[j];
         Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-
-        float distance = 1 / 2 * (cur_dem.y - head_dem.y);
-        Blocks[cur_idx].Cpoint.y = head_pos.y + distance;
+        float distance = 1 / 2 * (cur_dem.y);
+        center += Blocks[cur_idx].Cpoint.y - distance;
+      }
+      center /= AlignBlocks[i].blocks.size();
+      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
+        int cur_idx = AlignBlocks[i].blocks[j];
+        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
+        float distance = 1 / 2 * (cur_dem.y);
+        Blocks[cur_idx].Cpoint.y = center + distance;
         // update vl and vc
         if (vl_y.size() > cur_idx) {
           // vl_y[cur_idx] = Blocks[cur_idx].Cpoint.y;
@@ -3558,12 +3595,18 @@ void Placement::force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector
         }
       }
     } else {
-      for (int j = 1; j < AlignBlocks[i].blocks.size(); ++j) {
+      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
         int cur_idx = AlignBlocks[i].blocks[j];
         Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
-
-        float distance = 1 / 2 * (cur_dem.x - head_dem.x);
-        Blocks[cur_idx].Cpoint.x = head_pos.x + distance;
+        float distance = 1 / 2 * (cur_dem.x);
+        center += Blocks[cur_idx].Cpoint.x - distance;
+      }
+      center /= AlignBlocks[i].blocks.size();
+      for (int j = 0; j < AlignBlocks[i].blocks.size(); ++j) {
+        int cur_idx = AlignBlocks[i].blocks[j];
+        Ppoint_F cur_dem = Blocks[cur_idx].Dpoint;
+        float distance = 1 / 2 * (cur_dem.x);
+        Blocks[cur_idx].Cpoint.x = center + distance;
         // update vl and vc
         if (vl_x.size() > cur_idx) {
           // vl_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
@@ -3572,15 +3615,79 @@ void Placement::force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector
       }
     }
   }
-  std::cout << "force align finish" << std::endl;
+  for (int i = 0; i < SPBlocks.size(); ++i) {
+    int headIdx = SPBlocks[i].selfsym[0];
+    Ppoint_F head_pos = Blocks[headIdx].Cpoint;
+    Ppoint_F head_dem = Blocks[headIdx].Dpoint;
+    float center = 0;
+    if (SPBlocks[i].horizon) {
+      for (auto i_selfsym : SPBlocks[i].selfsym) {
+        center += Blocks[i_selfsym].Cpoint.y;
+      }
+      for (auto i_sympair : SPBlocks[i].sympair) {
+        center += Blocks[i_sympair.first].Cpoint.y;
+        center += Blocks[i_sympair.second].Cpoint.y;
+      }
+      center /= (SPBlocks[i].selfsym.size() + SPBlocks[i].sympair.size() * 2);
+      for (auto i_selfsym : SPBlocks[i].selfsym) {
+        Blocks[i_selfsym].Cpoint.y = center;
+        // update vl and vc
+        if (vl_y.size() > i_selfsym) {
+          vc_y[i_selfsym] = Blocks[i_selfsym].Cpoint.y;
+        }
+      }
+      for (auto i_sympair : SPBlocks[i].sympair) {
+        int diff = center - (Blocks[i_sympair.first].Cpoint.y + Blocks[i_sympair.second].Cpoint.y) / 2;
+        Blocks[i_sympair.first].Cpoint.y += diff;
+        Blocks[i_sympair.second].Cpoint.y += diff;
+        if (vl_y.size() > i_sympair.first) {
+          vc_y[i_sympair.first] = Blocks[i_sympair.first].Cpoint.y;
+        }
+        if (vl_y.size() > i_sympair.second) {
+          vc_y[i_sympair.second] = Blocks[i_sympair.second].Cpoint.y;
+        }
+      }
+    } else {
+      for (auto i_selfsym : SPBlocks[i].selfsym) {
+        center += Blocks[i_selfsym].Cpoint.x;
+      }
+      for (auto i_sympair : SPBlocks[i].sympair) {
+        center += Blocks[i_sympair.first].Cpoint.x;
+        center += Blocks[i_sympair.second].Cpoint.x;
+      }
+      center /= (SPBlocks[i].selfsym.size() + SPBlocks[i].sympair.size() * 2);
+      for (auto i_selfsym : SPBlocks[i].selfsym) {
+        Blocks[i_selfsym].Cpoint.x = center;
+        // update vl and vc
+        if (vl_x.size() > i_selfsym) {
+          // vl_x[cur_idx] = Blocks[cur_idx].Cpoint.x;
+          vc_x[i_selfsym] = Blocks[i_selfsym].Cpoint.x;
+        }
+      }
+      for (auto i_sympair : SPBlocks[i].sympair) {
+        int diff = center - (Blocks[i_sympair.first].Cpoint.x + Blocks[i_sympair.second].Cpoint.x) / 2;
+        Blocks[i_sympair.first].Cpoint.x += diff;
+        Blocks[i_sympair.second].Cpoint.x += diff;
+        if (vl_x.size() > i_sympair.first) {
+          vc_x[i_sympair.first] = Blocks[i_sympair.first].Cpoint.x;
+        }
+        if (vl_x.size() > i_sympair.second) {
+          vc_x[i_sympair.second] = Blocks[i_sympair.second].Cpoint.x;
+        }
+      }
+    }
+  }
+  logger->debug("force align finish");
 }
 
 void Placement::read_order(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.read_order");
   Ordering_Constraints = current_node.Ordering_Constraints;
-  std::cout << "ordering constraints size: " << Ordering_Constraints.size() << std::endl;
+  logger->debug("ordering constraints size: {0}", Ordering_Constraints.size());
 }
 
 void Placement::force_symmetry(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.Update_Bin_Density");
   for (auto symmetry : current_node.SPBlocks) {
     if (symmetry.axis_dir == PnRDB::V) {
       // set<int> center_y_set;
@@ -3668,13 +3775,14 @@ void Placement::force_symmetry(PnRDB::hierNode &current_node) {
 }
 
 void Placement::force_order(vector<float> &vc_x, vector<float> &vl_x, vector<float> &vc_y, vector<float> &vl_y) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.force_order");
   // step 1: put the Cpoint into verctor
   for (int i = 0; i < Ordering_Constraints.size(); ++i) {
     vector<Ppoint_F> Centers = vector<Ppoint_F>();
     for (int j = 0; j < Ordering_Constraints[i].first.size(); ++j) {
-      std::cout << "ordering id before sort: " << Ordering_Constraints[i].first[j];
+      logger->debug("ordering id before sort: {0}", Ordering_Constraints[i].first[j]);
       Centers.push_back(Blocks[Ordering_Constraints[i].first[j]].Cpoint);
-      std::cout << "pos:" << Centers[j].x << ", " << Centers[j].y << std::endl;
+      logger->debug("pos: {0}, {1}", Centers[j].x, Centers[j].y);
     }
     // step 2: sort the Cpoint vector
     if (Ordering_Constraints[i].second == PnRDB::H) {
@@ -3686,7 +3794,7 @@ void Placement::force_order(vector<float> &vc_x, vector<float> &vl_x, vector<flo
 
     for (int j = 0; j < Ordering_Constraints[i].first.size(); ++j) {
       int id = Ordering_Constraints[i].first[j];
-      std::cout << "ordering id after sort: " << id;
+      logger->debug("ordering id after sort: {0}", id);
       if (Ordering_Constraints[i].second == PnRDB::H) {
         Blocks[id].Cpoint.x = Centers[j].x;
         if (vl_x.size() > id) {
@@ -3701,9 +3809,26 @@ void Placement::force_order(vector<float> &vc_x, vector<float> &vl_x, vector<flo
         }
       }
 
-      std::cout << "pos:" << Centers[j].x << ", " << Centers[j].y << std::endl;
+      logger->debug("pos: {0}, {1}", Centers[j].x, Centers[j].y);
     }
   }
+}
+
+bool Placement::check_order() {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.check_order");
+  // step 1: put the Cpoint into verctor
+  for (int i = 0; i < Ordering_Constraints.size(); ++i) {
+    if (Ordering_Constraints[i].second == PnRDB::H) {
+      for (int j = 0; j < Ordering_Constraints[i].first.size() - 1; ++j) {
+        if (Blocks[Ordering_Constraints[i].first[j]].Cpoint.x > Blocks[Ordering_Constraints[i].first[j + 1]].Cpoint.x) return false;
+      }
+    } else {
+      for (int j = 0; j < Ordering_Constraints[i].first.size() - 1; ++j) {
+        if (Blocks[Ordering_Constraints[i].first[j]].Cpoint.y < Blocks[Ordering_Constraints[i].first[j + 1]].Cpoint.y) return false;
+      }
+    }
+  }
+  return true;
 }
 
 bool Placement::comp_x(Ppoint_F c1, Ppoint_F c2) { return c1.x < c2.x; }
@@ -3729,6 +3854,7 @@ void Placement::writeback(PnRDB::hierNode &current_node) {
 }
 
 bool Placement::symCheck(float tol) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.symCheck");
   float tot_bias = 0;
   for (int i = 0; i < SPBlocks.size(); ++i) {
     if (SPBlocks[i].horizon) {
@@ -3771,7 +3897,7 @@ bool Placement::symCheck(float tol) {
       }
     }
   }
-  std::cout << "tot_symmetric bias = " << tot_bias << std::endl;
+  logger->debug("tot_symmetric bias = {0}", tot_bias);
   return tot_bias > tol;
 }
 
@@ -3938,31 +4064,32 @@ float Placement::cal_weight_init_increase(float &rate, float &init_val, float &t
 }
 
 void Placement::cal_dummy_net_weight(float &weight, float &rate, float &increase) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.cal_dummy_net_weight");
   weight += increase;
   increase *= rate;
-  std::cout << "dummy_net weight:= " << weight << std::endl;
+  logger->debug("dummy_net weight:= {0}", weight);
 }
 
 void Placement::set_dummy_net_weight(float init_weight, float rate, float targe) { dummy_net_weight = init_weight; }
 
 void Placement::break_merged_cc(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.break_merged_cc");
   update_pos(current_node);
-  std::cout << "restore ms debug:0" << std::endl;
-
+  logger->debug("restore ms debug:0");
   string mark_of_cc = "CC_merge_cell";
   for (int i = 0; i < current_node.Blocks.size(); ++i) {
-    std::cout << "restore ms debug:1" << std::endl;
+    logger->debug("restore ms debug:1");
     for (int j = 0; j < 1; ++j) {
-      std::cout << "restore ms debug:2" << std::endl;
+      logger->debug("restore ms debug:2");
       if (current_node.Blocks[i].instance[j].name.find(mark_of_cc) != string::npos) {
-        std::cout << "restore ms debug:3" << std::endl;
+        logger->debug("restore ms debug:3");
         // break the cc into its shape
         int pos = current_node.Blocks[i].instance[j].name.find(mark_of_cc);  // bug 1
 
         char ccID = current_node.Blocks[i].instance[j].name[pos + 15];  // bug 1
         int ccID_int = cc_name_to_id_map[current_node.Blocks[i].instance[j].name];
         // int ccID_int = ccID - 48 - 1;  // bug 2
-        std::cout << "restore ms debug:4" << std::endl;
+        logger->debug("restore ms debug:4");
         // determine the period and center
         Ppoint_F center, period, LL;
         center.x = (float)current_node.Blocks[i].instance[j].placedCenter.x / est_Size.x;
@@ -3975,35 +4102,35 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node) {
 
         // LL.x = center.x - 1/2 *uni_cell.x * commonCentroids[ccID_int].shape.x;
         // LL.y = center.y - 1/2 *uni_cell.y * commonCentroids[ccID_int].shape.y;
-        std::cout << "width of CC " << ccID_int << " =" << current_node.Blocks[i].instance[j].width << endl;    // bug
-        std::cout << "height of CC " << ccID_int << " =" << current_node.Blocks[i].instance[j].height << endl;  // bug
+        logger->debug("width of CC {0} = {1}", ccID_int, current_node.Blocks[i].instance[j].width);
+        logger->debug("height of CC {0} = {1}", ccID_int, current_node.Blocks[i].instance[j].height);
 
-        std::cout << "LL:=" << LL.x * est_Size.x << ", " << LL.y * est_Size.y << endl;
+        logger->debug("LL:= {0}, {1}", LL.x * est_Size.x, LL.y * est_Size.y);
         // std::cout<<"width *0.5:= center -LL "<<current_node.Blocks[i].instance[j].placedCenter.x - <<", "<<center.y-LL.y<<endl;
 
         if (commonCentroids[ccID_int].shape.x > 1) {
-          std::cout << "restore ms debug:5" << std::endl;
+          logger->debug("restore ms debug:5");
           period.x = (float)current_node.Blocks[i].instance[j].width / est_Size.x / (commonCentroids[ccID_int].shape.x);  // bug
           // period.x = 0;
         } else {
           period.x = 0;
         }
         if (commonCentroids[ccID_int].shape.y > 1) {
-          std::cout << "restore ms debug:6" << std::endl;
+          logger->debug("restore ms debug:6");
           period.y = (float)current_node.Blocks[i].instance[j].height / est_Size.y / (commonCentroids[ccID_int].shape.y);  // bug
           // period.y = 0;
         } else {
           period.y = 0;
         }
         // period = uni_cell;
-        std::cout << "restore ms debug:7:" << ccID_int << std::endl;
+        logger->debug("restore ms debug:7: {0}", ccID_int);
         // range the pos of each cell
         for (int ii = 0; ii < commonCentroids[ccID_int].shape.x; ++ii) {
           for (int jj = 0; jj < commonCentroids[ccID_int].shape.y; ++jj) {
             // if(commonCentroids[ccID_int].fillin_matrix[ii][jj]>=0)
             // {
             int id = commonCentroids[ccID_int].fillin_matrix[ii][jj];
-            std::cout << "restore ms debug:7a:" << id << std::endl;
+            logger->debug("restore ms debug:7a: {0}", id);
             Blocks[id].Cpoint.x = LL.x + ii * period.x + 0.5 * period.x;  // bug 3
             Blocks[id].Cpoint.y = LL.y + jj * period.y + 0.5 * period.y;
             ;
@@ -4052,6 +4179,7 @@ void Placement::break_merged_cc(PnRDB::hierNode &current_node) {
 }
 
 void Placement::update_pos(PnRDB::hierNode &current_node) {
+  auto logger = spdlog::default_logger()->clone("placer.Placement.update_pos");
   int idx = 0;
 
   for (int i = 0; i < current_node.Blocks.size(); ++i) {
@@ -4059,8 +4187,8 @@ void Placement::update_pos(PnRDB::hierNode &current_node) {
       if (current_node.Blocks[i].instance[j].isRead) {
         Blocks[idx].Cpoint.x = (float)current_node.Blocks[i].instance[j].placedCenter.x / est_Size.x;
         Blocks[idx].Cpoint.y = (float)current_node.Blocks[i].instance[j].placedCenter.y / est_Size.y;
-        std::cout << "update_pos: " << Blocks[idx].blockname << " Cpoint:=" << current_node.Blocks[i].instance[j].placedCenter.x << " "
-                  << current_node.Blocks[i].instance[j].placedCenter.y << endl;
+        logger->debug("update_pos: {0} Cpoint:= {1} {2}", Blocks[idx].blockname, current_node.Blocks[i].instance[j].placedCenter.x,
+                      current_node.Blocks[i].instance[j].placedCenter.y);
       }
 
       // Blocks[idx].Cpoint.x = 0;
