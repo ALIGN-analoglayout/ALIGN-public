@@ -120,12 +120,12 @@ class Annotate:
         with set_context(const_list):
             if hasattr(const, "instances") and len(const.instances) > 0:
                 is_append = True
-            # Modified constraint are initially of dict type
             elif (
                 isinstance(const, dict)
                 and "instances" in const
                 and len(const["instances"]) == 0
             ):
+                # Modified constraint are initially of dict type
                 pass
                 # skipping const of zero length
             elif not hasattr(const, "instances"):
@@ -282,9 +282,6 @@ class Annotate:
             self._update_const(
                 name, [const.name.upper(), *const_inst], const.name.upper()
             )
-        # Removing const with single instances.
-        for c in list(const_list):
-            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
     def _top_to_bottom_translation(self, top, match_dict, bottom):
         """
