@@ -1782,16 +1782,44 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
 
+  //place on grid flipping constraint
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][curr_sp.selected[i]].xflip == 1) {
+      rowindofcol[i * 4 + 2].push_back(rhs.size());
+      constrvalues[i * 4 + 2].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    } else if (mydesign.Blocks[i][curr_sp.selected[i]].xflip == -1) {
+      rowindofcol[i * 4 + 2].push_back(rhs.size());
+      constrvalues[i * 4 + 2].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(1);
+    }
+    if (mydesign.Blocks[i][curr_sp.selected[i]].yflip == 1) {
+      rowindofcol[i * 4 + 3].push_back(rhs.size());
+      constrvalues[i * 4 + 3].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    } else if (mydesign.Blocks[i][curr_sp.selected[i]].yflip == -1) {
+      rowindofcol[i * 4 + 3].push_back(rhs.size());
+      constrvalues[i * 4 + 3].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(1);
+    }
+  }
+
   //place on grid constraint
   temp_pointer = place_on_grid_var_start;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) {
-      // x - pitch * n_p - offset_i * is_ith_offset = 0
+      // x + is_filp *width - pitch * n_p - offset_i * is_ith_offset = 0
       for(unsigned int j=0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
         rowindofcol[i * 4].push_back(rhs.size());
+        rowindofcol[i * 4 + 2].push_back(rhs.size());
         rowindofcol[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()].push_back(rhs.size());
         rowindofcol[temp_pointer + j].push_back(rhs.size());
         constrvalues[i * 4].push_back(1);
+        constrvalues[i * 4 + 2].push_back(mydesign.Blocks[i][curr_sp.selected[i]].width);
         constrvalues[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].xpitch);
         constrvalues[temp_pointer + j].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].xoffset[j]);
         sens.push_back('E');
@@ -1807,12 +1835,14 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
     }
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) {
-      // y - pitch * n_p - offset_i * is_ith_offset = 0
+      // y + is_flip * height - pitch * n_p - offset_i * is_ith_offset = 0
       for (unsigned int j = 0; j < mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size(); j++) {
         rowindofcol[i * 4 + 1].push_back(rhs.size());
+        rowindofcol[i * 4 + 3].push_back(rhs.size());
         rowindofcol[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()].push_back(rhs.size());
         rowindofcol[temp_pointer + j].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(1);
+        constrvalues[i * 4 + 3].push_back(mydesign.Blocks[i][curr_sp.selected[i]].height);
         constrvalues[temp_pointer + mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].ypitch);
         constrvalues[temp_pointer + j].push_back(-mydesign.Blocks[i][curr_sp.selected[i]].yoffset[j]);
         sens.push_back('E');
@@ -2292,10 +2322,12 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
       Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     }
+    /** may fail place on grid constraint
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x -= minx;
       Blocks[i].y -= miny;
     }
+    **/
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
