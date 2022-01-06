@@ -404,12 +404,12 @@ class AssignBboxVariables(HardConstraint):
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
-        assert value > values['llx'], f'Reflection is not supported yet'
+        assert value > values['llx'], 'Reflection is not supported yet'
         return value
 
     @types.validator('ury', allow_reuse=True)
     def y_is_valid(cls, value, values):
-        assert value > values['lly'], f'Reflection is not supported yet'
+        assert value > values['lly'], 'Reflection is not supported yet'
         return value
 
     def translate(self, solver):
@@ -601,13 +601,13 @@ class AlignInOrder(UserConstraint):
                 v = 'horizontal'
             else:
                 assert v == 'horizontal', \
-                    f'direction is horizontal if line is bottom or top'
+                    'direction is horizontal if line is bottom or top'
         elif values['line'] in ['left', 'right']:
             if v is None:
                 v = 'vertical'
             else:
                 assert v == 'vertical', \
-                    f'direction is vertical if line is left or right'
+                    'direction is vertical if line is left or right'
         # Center needs both line & direction
         elif values['line'] == 'center':
             assert v, \
@@ -665,7 +665,7 @@ class PlaceSymmetric(SoftConstraint):
         '''
 
         assert len(value) >= 1, 'Must contain at least one instance'
-        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {self.instances}'
+        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {cls.instances}'
         return value
 
 
@@ -1066,6 +1066,14 @@ class PlaceOnGrid(SoftConstraint):
     direction: Literal['H', 'V']
     pitch: int
     ored_terms: List[OffsetsScalings] = Field(default_factory=lambda: [OffsetsScalings()])
+
+    @types.validator('ored_terms', allow_reuse=False)
+    def pairs_validator(cls, value, values):
+        pitch = values['pitch']
+        for term in value:
+            for offset in getattr(term, 'offsets'):
+                assert offset < pitch, f'offset {offset} should be less than pitch {pitch}'
+        return value
 
 
 class BlockDistance(SoftConstraint):
