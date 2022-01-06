@@ -224,7 +224,7 @@ workflows:
               pdk:
                 - "Finfet"
               ci-level:
-                - "checkin"
+                - "merge"
               max-errors:
                 - "3"
       - test-integration:
@@ -243,7 +243,7 @@ workflows:
               pdk:
                 - "Finfet"
               ci-level:
-                - "checkin"
+                - "merge"
               nightly-dirs:
                 - "tests/integration tests/pdks"
       - build-wheel:
