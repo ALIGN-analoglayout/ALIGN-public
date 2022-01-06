@@ -375,20 +375,20 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
 
-            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            block_args = {
-                'primitive': name,
-                'value': unit_size_mos,
-                'x_cells': xval,
-                'y_cells': yval,
-                'parameters': values
-            }
-            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
-                block_args['stack'] = int(values[device_name]["STACK"])
-                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
-            if vt:
-                block_args['vt_type'] = vt[0]
-                block_name = block_name+'_'+vt[0]
+        logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+        block_args = {
+            'primitive': name,
+            'value': unit_size_mos,
+            'x_cells': xval,
+            'y_cells': yval,
+            'parameters': values
+        }
+        if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
+            block_args['stack'] = int(values[device_name]["STACK"])
+            block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
+        if vt:
+            block_args['vt_type'] = vt[0]
+            block_name = block_name+'_'+vt[0]
 
         element.add_abs_name(block_name)
         add_primitive(primitives, block_name, block_args)
