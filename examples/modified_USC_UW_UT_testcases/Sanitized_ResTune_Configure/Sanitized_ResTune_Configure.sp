@@ -28,10 +28,10 @@
 
 .SUBCKT DCAP8LVT VDD VSS
 *.PININFO VDD:B VSS:B
-MMI4 VSS net9 VSS VSS lvtnfet l=LB w=WC m=1
-MM_u2 net11 net9 VSS VSS lvtnfet l=LA w=WC m=1
-MMI3 VDD net11 VDD VDD lvtpfet l=LB w=WA m=1
-MM_u1 net9 net11 VDD VDD lvtpfet l=LA w=WB m=1
+MMI4 VSS net9 VSS VSS lvtnfet l=LB w=WC m=1 nf=2
+MM_u2 net11 net9 VSS VSS lvtnfet l=LA w=WC m=1 nf=2
+MMI3 VDD net11 VDD VDD lvtpfet l=LB w=WA m=1 nf=2
+MM_u1 net9 net11 VDD VDD lvtpfet l=LA w=WB m=1 nf=2
 .ENDS
 
 ************************************************************************
@@ -42,14 +42,14 @@ MM_u1 net9 net11 VDD VDD lvtpfet l=LA w=WB m=1
 
 .SUBCKT DCAP16LVT VDD VSS
 *.PININFO VDD:B VSS:B
-MMI4 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1
-MMI8 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1
-MM_u2 net5 net11 VSS VSS lvtnfet l=LA w=WC m=1
-MMI7 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1
-MMI3 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1
-MMI6 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1
-MM_u1 net11 net5 VDD VDD lvtpfet l=LA w=WB m=1
-MMI5 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1
+MMI4 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1 nf=2
+MMI8 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1 nf=2
+MM_u2 net5 net11 VSS VSS lvtnfet l=LA w=WC m=1 nf=2
+MMI7 VSS net11 VSS VSS lvtnfet l=LB w=WC m=1 nf=2
+MMI3 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1 nf=2
+MMI6 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1 nf=2
+MM_u1 net11 net5 VDD VDD lvtpfet l=LA w=WB m=1 nf=2
+MMI5 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1 nf=2
 .ENDS
 
 ************************************************************************
@@ -60,18 +60,18 @@ MMI5 VDD net5 VDD VDD lvtpfet l=LB w=WA m=1
 
 .SUBCKT DCAP32LVT VDD VSS
 *.PININFO VDD:B VSS:B
-MMI38 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1
-MMI6 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1
-MMI39 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1
-MMI37 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1
-MM_u2 net5 net11 VSS VSS lvtnfet l=LA w=WC m=1
-MMI36 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1
-MMI33 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
-MM_u1 net11 net5 VDD VDD lvtpfet l=LA w=WB m=1
-MMI34 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
-MMI35 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
-MMI32 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
-MMI26 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
+MMI38 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1 nf=2
+MMI6 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1 nf=2
+MMI39 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1 nf=2
+MMI37 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1 nf=2
+MM_u2 net5 net11 VSS VSS lvtnfet l=LA w=WC m=1 nf=2
+MMI36 VSS net11 VSS VSS lvtnfet l=LC w=WC m=1 nf=2
+MMI33 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1 nf=2
+MM_u1 net11 net5 VDD VDD lvtpfet l=LA w=WB m=1 nf=2
+MMI34 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1 nf=2
+MMI35 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1 nf=2
+MMI32 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1 nf=2
+MMI26 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1 nf=2
 .ENDS
 
 ************************************************************************
@@ -82,26 +82,26 @@ MMI26 VDD net5 VDD VDD lvtpfet l=LC w=WA m=1
 
 .SUBCKT BUFTD16LVT I OE VDD VSS Z
 *.PININFO I:I OE:I Z:O VDD:B VSS:B
-MMI6-M_u4 net37 I VSS VSS lvtnfet l=LA w=WB m=1
-MMI5_1-M_u4 net25 net5 VSS VSS lvtnfet l=LA w=WB m=1
-MMI5_0-M_u3 net25 I VSS VSS lvtnfet l=LA w=WB m=1
-MMI5_0-M_u4 net25 net5 VSS VSS lvtnfet l=LA w=WB m=1
-MMI7-M_u3 net13 OE net9 VSS lvtnfet l=LA w=WD m=1
-MM_u7 Z net25 VSS VSS lvtnfet l=LA w=WG m=1
-MMI6-M_u3 net13 OE net37 VSS lvtnfet l=LA w=WD m=1
-MMI7-M_u4 net9 I VSS VSS lvtnfet l=LA w=WB m=1
-MM_u17-M_u2 net5 OE VSS VSS lvtnfet l=LA w=WB m=1
-MMI5_1-M_u3 net25 I VSS VSS lvtnfet l=LA w=WB m=1
-MM_u17-M_u3 net5 OE VDD VDD lvtpfet l=LA w=WE m=1
-MMI5_0-M_u1 net72 I VDD VDD lvtpfet l=LA w=WF m=1
-MMI5_0-M_u2 net25 net5 net72 VDD lvtpfet l=LA w=WF m=1
-MMI6-M_u2 net13 I VDD VDD lvtpfet l=LA w=WE m=1
-MMI7-M_u1 net13 OE VDD VDD lvtpfet l=LA w=WE m=1
-MM_u6 Z net13 VDD VDD lvtpfet l=LA w=WH m=1
-MMI5_1-M_u1 net53 I VDD VDD lvtpfet l=LA w=WF m=1
-MMI7-M_u2 net13 I VDD VDD lvtpfet l=LA w=WE m=1
-MMI5_1-M_u2 net25 net5 net53 VDD lvtpfet l=LA w=WF m=1
-MMI6-M_u1 net13 OE VDD VDD lvtpfet l=LA w=WE m=1
+MMI6-M_u4 net37 I VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MMI5_1-M_u4 net25 net5 VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MMI5_0-M_u3 net25 I VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MMI5_0-M_u4 net25 net5 VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MMI7-M_u3 net13 OE net9 VSS lvtnfet l=LA w=WD m=1 nf=2
+MM_u7 Z net25 VSS VSS lvtnfet l=LA w=WG m=1 nf=2
+MMI6-M_u3 net13 OE net37 VSS lvtnfet l=LA w=WD m=1 nf=2
+MMI7-M_u4 net9 I VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MM_u17-M_u2 net5 OE VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MMI5_1-M_u3 net25 I VSS VSS lvtnfet l=LA w=WB m=1 nf=2
+MM_u17-M_u3 net5 OE VDD VDD lvtpfet l=LA w=WE m=1 nf=2
+MMI5_0-M_u1 net72 I VDD VDD lvtpfet l=LA w=WF m=1 nf=2
+MMI5_0-M_u2 net25 net5 net72 VDD lvtpfet l=LA w=WF m=1 nf=2
+MMI6-M_u2 net13 I VDD VDD lvtpfet l=LA w=WE m=1 nf=2
+MMI7-M_u1 net13 OE VDD VDD lvtpfet l=LA w=WE m=1 nf=2
+MM_u6 Z net13 VDD VDD lvtpfet l=LA w=WH m=1 nf=2
+MMI5_1-M_u1 net53 I VDD VDD lvtpfet l=LA w=WF m=1 nf=2
+MMI7-M_u2 net13 I VDD VDD lvtpfet l=LA w=WE m=1 nf=2
+MMI5_1-M_u2 net25 net5 net53 VDD lvtpfet l=LA w=WF m=1 nf=2
+MMI6-M_u1 net13 OE VDD VDD lvtpfet l=LA w=WE m=1 nf=2
 .ENDS
 
 ************************************************************************

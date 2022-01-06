@@ -14,8 +14,8 @@ m8 vout vbiasn net014s vss nmos_rvt w=270e-9 l=20e-9 nfin=12 nf=6
 m8s net014s vbiasn net014 vss nmos_rvt w=270e-9 l=20e-9 nfin=12 nf=6
 m5 D1 D1 netm5s vss nmos_rvt w=270e-9 l=20e-9 nfin=5 nf=4
 m5s netm5s D1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=5 nf=4
-m4 net10 D1 netm4s vss nmos_rvt w=270e-9 l=20e-9 nfin=10 nf=10
-m4s netm4s D1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=10 nf=10
+m4 net10 D1 netm4s vss nmos_rvt w=270e-9 l=20e-9 nfin=5 nf=20
+m4s netm4s D1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=5 nf=20
 m3 net014 vinn netm3s vss nmos_rvt w=270e-9 l=20e-9 nfin=10 nf=14
 m3s netm3s vinn net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=10 nf=14
 m0 net8 vinp netm0s vss nmos_rvt w=270e-9 l=20e-9 nfin=10 nf=14
