@@ -2,11 +2,14 @@ import pathlib
 import pprint
 import json
 
+from align.schema import library
+
 from ..schema.subcircuit import SubCircuit
 from ..schema.parser import SpiceParser
 from ..schema import constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
+from .read_library import read_lib, read_models, order_lib
 from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
@@ -36,13 +39,13 @@ def generate_hierarchy(
         flatten_heirarchy
     )
     primitives, generators = call_primitive_generator(
-    ckt_data,
-    pdk_dir,
-    uniform_height
+        ckt_data,
+        pdk_dir,
+        uniform_height
     )
     verilog_tbl = constraint_generator(
-    ckt_data,
-    generators
+        ckt_data,
+        generators
     )
     compiler_output(
         ckt_data,
@@ -50,7 +53,7 @@ def generate_hierarchy(
         verilog_tbl,
         output_dir,
     )
-    return primitives
+    return primitives, ckt_data
 
 
 def compiler_input(
@@ -87,46 +90,19 @@ def compiler_input(
     input_dir = input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
     # TODO: flatten should be separate pass
-    ckt_parser = SpiceParser()
-    lib_parser = SpiceParser()
-    # Read model file to map devices
-    model_statements = pdk_dir / "models.sp"
-    if not model_statements.exists():
-        model_statements = config_path / "models.sp"
 
-    with open(model_statements, 'r') as f:
-        lines = f.read()
-    ckt_parser.parse(lines)
-    lib_parser.parse(lines)
+    ckt_parser = read_models(pdk_dir, config_path)
 
     with open(input_ckt) as f:
         lines = f.read()
     ckt_parser.parse(lines)
 
-    lib_files = ["basic_template.sp", "user_template.sp"]
-    for lib_file in lib_files:
-        with open(config_path / lib_file) as f:
-            lines = f.read()
-        lib_parser.parse(lines)
-
-    library = lib_parser.library
-
-    primitives = [
-        v for v in library
-        if isinstance(v, SubCircuit)
-    ]
-    # TODO: update the order based on weighing mechanism
-    primitives.sort(
-        key=lambda x: len(x.elements)
-        + 1 / len(x.nets)
-        + len(set([e.model for e in x.elements])),
-        reverse=True,
-    )
-    logger.debug(f"all library elements: {[ele.name for ele in primitives]}")
+    library = read_lib(pdk_dir, config_path)
+    primitives = order_lib(library)
 
     # generator will be called for these elments
     with open(pdk_dir / "generators.json") as fp:
-        generators = json.load(fp).keys()
+        generators = set(json.load(fp).keys())
     logger.debug(f"Available generator for cells: {generators}")
 
     const_parse = ConstraintParser(pdk_dir, input_dir)
@@ -151,11 +127,12 @@ def compiler_input(
                     assert len(ele.pins) == len(ckt_data.find(ele.model).pins), f"incorrect subckt instantiation"
     return ckt_data
 
+
 def call_primitive_generator(
     ckt_data,
     pdk_dir: pathlib.Path,
     uniform_height=False
-    ):
+):
     """call_primitive_generator [summary]
 
     [extended_summary]
@@ -202,7 +179,7 @@ def call_primitive_generator(
                     primitives,
                     design_config,
                     uniform_height,
-                    pdk_dir = pdk_dir
+                    pdk_dir=pdk_dir
                 )
             else:
                 ele.add_abs_name(ele.generator)
@@ -215,6 +192,7 @@ def call_primitive_generator(
 
     logger.debug(f"Available library cells: {', '.join(generators.keys())}")
     return primitives, generators
+
 
 def constraint_generator(ckt_data, generators: dict):
     """
@@ -234,18 +212,19 @@ def constraint_generator(ckt_data, generators: dict):
             continue
         if subckt.name not in generators:
             FindConst(subckt)
-            ## Create modified netlist & constraints as JSON
+            # Create modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {subckt.name}")
             wv = WriteVerilog(subckt, ckt_data)
             verilog_tbl["modules"].append(wv.gen_dict())
     return verilog_tbl
+
 
 def compiler_output(
     ckt_data,
     design_name: str,
     verilog_tbl: dict,
     result_dir: pathlib.Path,
-    ):
+):
     """compiler_output: write output in verilog format
     Args:
         ckt_data : annotated ckt library  and constraint
