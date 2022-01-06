@@ -60,10 +60,10 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
       }
     }
     // snap up coordinates to grid
-    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      roundup(Blocks[i].x, x_pitch);
-      roundup(Blocks[i].y, y_pitch);
-    }
+    //for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+    //  roundup(Blocks[i].x, x_pitch);
+    //  roundup(Blocks[i].y, y_pitch);
+    //}
   }
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
@@ -73,6 +73,9 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
+    logger->info("{0} {1} {2} {3} {4}", mydesign.Blocks[i][0].name,
+        mydesign.Blocks[i][curr_sp.selected[i]].width, mydesign.Blocks[i][curr_sp.selected[i]].height, 
+        Blocks[i].x, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
   }

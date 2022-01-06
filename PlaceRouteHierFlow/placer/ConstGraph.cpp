@@ -5466,8 +5466,8 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
   int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
-  roundup(x, x_pitch);
-  roundup(y, y_pitch);
+  //roundup(x, x_pitch);
+  //roundup(y, y_pitch);
 
   placerDB::point LL = {x, y};
 

@@ -1098,8 +1098,8 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
       break;
     }
   }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  x_pitch = 1;//drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = 1;//drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
@@ -1630,8 +1630,8 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       break;
     }
   }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  x_pitch = 1; //drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = 1; //drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 4 vars, x, y, H_flip, V_flip;
   unsigned int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 4;
@@ -2568,8 +2568,8 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       break;
     }
   }
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  x_pitch = 1; //drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = 1; //drcInfo.Metal_info[h_metal_index].grid_unit_y;
 
   // each block has 6+ vars, x, y, H_flip, V_flip, width, height + nvariant;
   unsigned int N_var = mydesign.Blocks.size() * 6 + mydesign.Nets.size() * 2;
@@ -5003,8 +5003,8 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     }
   }
 
-  x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  x_pitch = 1; //drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  y_pitch = 1; //drcInfo.Metal_info[h_metal_index].grid_unit_y;
   roundup(x, x_pitch);
   roundup(y, y_pitch);
 

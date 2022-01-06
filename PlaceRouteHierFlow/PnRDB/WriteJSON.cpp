@@ -387,7 +387,8 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   for (std::set<string>::iterator it = uniGDSset.begin(); it != uniGDSset.end(); ++it) {
     JSONExtractUit(*it, unitScale);
   }
-  logger->debug("unitScale {0} ", unitScale);
+  unitScale = 0.5;
+  logger->info("unitScale {0} ", unitScale);
   uniGDSset.clear();
 
   std::ofstream jsonStream;
@@ -398,7 +399,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   json jsonLib;
   jsonLib["time"] = JSON_TimeTime();
   double dbUnitUser = 0.5 * 0.000000001 / unitScale;
-  double dbUnitMeter = dbUnitUser;
+  double dbUnitMeter = 1e-9;
   /// 1e6;
   jsonLib["units"] = {dbUnitUser, dbUnitMeter};
   // jsonLib["units"] = {0.00025, 2.5e-10};

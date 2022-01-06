@@ -97,7 +97,7 @@ class SeqPair {
   SeqPair(int blockSize);
   SeqPair(string pos, string neg);
   SeqPair(const SeqPair& sp);
-  SeqPair(design& caseNL, const size_t maxIter = 0);
+  SeqPair(design& caseNL, const size_t maxIter = 0, bool select_in_ILP = false);
   SeqPair& operator=(const SeqPair& sp);
   SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
   static size_t Factorial(const size_t& t);

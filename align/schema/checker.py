@@ -182,7 +182,7 @@ class Z3Checker(AbstractSolver):
         r = self._solver.check()
         if r == z3.unsat:
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
-            logger.debug(f"Unsat encountered: {self._solver}")
+            logger.info(f"Unsat encountered: {self._solver}")
             raise SolutionNotFoundError(
                 message=f'No satisfying solution could be found',
                 labels=self._solver.unsat_core())

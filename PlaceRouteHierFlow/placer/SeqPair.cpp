@@ -678,7 +678,7 @@ void SeqPair::CompactSeq() {
   negPair = temp_n;
 }
 
-SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
+SeqPair::SeqPair(design& caseNL, const size_t maxIter, bool select_in_ILP) {
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
@@ -787,7 +787,6 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
-  KeepOrdering(caseNL);
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
@@ -796,6 +795,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
     logger->info("Enumerated search");
   } else {
+    if (!select_in_ILP) KeepOrdering(caseNL);
     _seqPairEnum.reset();
   }
 }
@@ -1729,8 +1729,8 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         }
         fail++;
       }
+      KeepOrdering(caseNL);
     }
-    KeepOrdering(caseNL);
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
   } while (retval && ++trial_cnt < max_trial_cnt);
