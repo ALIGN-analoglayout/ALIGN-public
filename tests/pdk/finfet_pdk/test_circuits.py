@@ -153,6 +153,13 @@ def test_cmp_order():
         shutil.rmtree(ckt_dir)
 
 
+def test_ota_six_noconst():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)
+
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
@@ -242,3 +249,29 @@ def test_two_stage_ota():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
+
+def test_cs_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=180e-9 nf=4 m=1
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=1
+        .ends {name}
+        """)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
+
+
+def test_cs_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=180e-9 nf=4 m=2
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=2
+        .ends {name}
+        """)
+    constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
+

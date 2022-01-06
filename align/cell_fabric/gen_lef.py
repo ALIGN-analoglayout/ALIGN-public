@@ -17,7 +17,8 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
     fp.write("  FOREIGN %s 0 0 ;\n" % out_lef)
 
     fp.write("  SIZE %s BY %s ;\n" % (bbox[2], bbox[3]))
-    cell_pin = list(cell_pin)
+
+    cell_pin = {term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin'}
 
     for i in cell_pin:
         if i == 'B' and bodyswitch==0:continue

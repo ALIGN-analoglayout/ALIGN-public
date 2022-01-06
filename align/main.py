@@ -168,7 +168,8 @@ def gen_more_primitives(primitives, topology_dir, subckt):
                 logger.debug(f'Didn\'t match primitive {k}')
             map_d[k].append(k)
 
-    primitives.update(more_primitives)
+    # SMB disable for testing partial routing
+    #primitives.update(more_primitives)
 
     #
     # This code should move to 1_topology, we also need two different the primitives.json files;

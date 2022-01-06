@@ -1,4 +1,5 @@
 from align.schema import constraint
+from align.schema.hacks import List
 import pathlib
 import os
 import io
@@ -20,7 +21,9 @@ from ..cell_fabric import gen_gds_json, transformation
 from .write_constraint import PnRConstraintWriter
 from .. import PnR
 from .toplevel import toplevel
-from ..schema.hacks import VerilogJsonTop, VerilogJsonModule
+from ..schema.hacks import FormalActualMap, VerilogJsonTop, VerilogJsonModule
+
+import copy
 
 logger = logging.getLogger(__name__)
 
@@ -315,9 +318,23 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # Create working & input directories
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
+
         verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
+        
+        # Update connectivity for partially routed primitives
+        for module in verilog_d['modules']:
+            for instance in module['instances']:
+                for _, v in primitives.items():
+                    if instance['abstract_template_name'] == v['abstract_template_name']:
+                        if 'metadata' in v and 'pins' in v['metadata']:
+                            fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
+                            new_fa_map = List[FormalActualMap]()
+                            for f, a in v['metadata']['pins'].items():
+                                new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
+                            instance['fa_map'] = copy.deepcopy(new_fa_map)
+
         check_modules(verilog_d)
-        pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}
+        pg_connections = {p["actual"]: p["actual"] for p in verilog_d['global_signals']}
         check_floating_pins(verilog_d)
         remove_pg_pins(verilog_d, subckt, pg_connections)
         clean_if_extra(verilog_d, subckt)
@@ -326,6 +343,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         logger.debug(f"updated verilog: {verilog_d}")
         with (input_dir/verilog_file).open("wt") as fp:
             json.dump(write_verilog_json(verilog_d), fp=fp, indent=2, default=str)
+
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
         logger.debug(f'Generated constraint files: {constraint_files}')
