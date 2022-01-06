@@ -14,13 +14,14 @@ from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
 
+
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library, existing_generator: set):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -50,9 +51,10 @@ class Annotate:
             if isinstance(const, constraint.IsDigital):
                 IsDigital = const.isTrue
         return IsDigital
+
     def annotate(self):
         """
-        main function to creates hierarchies in the block
+        Main function to creates hierarchies in the block
         iterativily goes through all subckts in the netlist
         Reduce graph to a list of nodes
         Returns:
@@ -77,16 +79,16 @@ class Annotate:
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
             if (
-                isinstance(ckt, SubCircuit) and \
-                not self._is_digital(ckt) and \
-                ckt.name not in self.all_lef and \
+                isinstance(ckt, SubCircuit) and
+                not self._is_digital(ckt) and
+                ckt.name not in self.all_lef and
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
-
+                logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
-                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
+                    f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
                     ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
@@ -96,14 +98,14 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or \
-                        subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and
-                        ckt.name in temp_match_dict[subckt.name]
-                    ):
+                       subckt.name in do_not_use_lib or \
+                       (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):  # to stop searching INVB in INVB_1
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
                     )
+                    if subckt.name in self.all_lef:
+                        self.all_lef.update(new_subckts)
                     if subckt.name in temp_match_dict:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:
@@ -115,27 +117,26 @@ class Annotate:
 
     def _check_const_length(self, const_list, const):
         is_append = False
-        try:
-            with set_context(const_list):
-                if hasattr(const, "instances") and len(const.instances) > 0:
-                    is_append = True
-                # TODO: remove dict type
-                elif (
-                    isinstance(const, dict)
-                    and "instances" in const
-                    and len(const["instances"]) == 0
-                ):
-                    pass
-                    # skipping const of zero length
-                elif not hasattr(const, "instances"):
-                    is_append = True
-                else:
-                    logger.debug(f"invalid constraint {const}")
-                if is_append == True and const not in const_list:
-                    logger.debug(f"constraint appended: {const}")
-                    const_list.append(const)
-        except:
-            logger.debug(f"skipping invalid constraint {const}")
+        with set_context(const_list):
+            if hasattr(const, "instances") and len(const.instances) > 0:
+                is_append = True
+            elif (
+                isinstance(const, dict)
+                and "instances" in const
+                and len(const["instances"]) == 0
+            ):
+                # Modified constraint are initially of dict type
+                pass
+                # skipping const of zero length
+            elif not hasattr(const, "instances"):
+                is_append = True
+            else:
+                logger.debug(f"invalid constraint {const}")
+            if is_append == False and const in const_list:
+                const_list.remove(const)
+            if is_append == True and const not in const_list:
+                logger.debug(f"constraint appended: {const}")
+                const_list.append(const)
 
     def _remove_group_const(self, subckt, rm_const):
         with set_context(subckt.constraints):
@@ -225,8 +226,9 @@ class Annotate:
             # Modify instance names in constraints after modifying groupblock
             self._update_const(name, [const.name.upper(), *const_inst], inst_name)
         # Removing const with single instances.
-        for c in list(const_list):
+        for c in list(self.ckt_data.find(name).constraints):
             self._check_const_length(self.ckt_data.find(name).constraints, c)
+        logger.debug(f"reduced constraints of design {name} {self.ckt_data.find(name).constraints}")
 
     def _group_cap_const(self, name):
         # TODO: merge group cap and group block
@@ -280,9 +282,6 @@ class Annotate:
             self._update_const(
                 name, [const.name.upper(), *const_inst], const.name.upper()
             )
-            # Removing const with single instances.
-        for c in list(const_list):
-            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
     def _top_to_bottom_translation(self, top, match_dict, bottom):
         """
@@ -361,6 +360,8 @@ class Annotate:
                             replace = False
                         elif old_inst in const.instances:
                             const.instances.remove(old_inst)
+                    if len(const.instances) == 0:
+                        logger.debug(f"remove const belonging to new hierarchy {const}")
                     # logger.debug(f"updated instances in the constraint:{const}")
             elif hasattr(const, "pairs"):
                 for pair in const.pairs:
@@ -368,7 +369,6 @@ class Annotate:
                         if pair[0] in remove_nodes and pair[1] in remove_nodes:
                             pair[0] = new_inst
                             pair.pop()
-                            # logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
                         elif pair[0] in remove_nodes and pair[1] not in remove_nodes:
                             pair[0] = new_inst
                         elif pair[1] in remove_nodes and pair[0] not in remove_nodes:
@@ -376,5 +376,4 @@ class Annotate:
                     elif len(pair) == 1:
                         if pair[0] in remove_nodes:
                             pair[0] = new_inst
-                            # logger.debug(f"updated self symmetric constraint block:{const}")
         logger.debug(f"updated constraints of {name} {const_list}")
