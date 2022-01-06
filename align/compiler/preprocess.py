@@ -274,11 +274,10 @@ def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
-        #TODO Optimize later
 
     Parameters:
-        ckt ([type]): [description]
-        update (bool, optional): [description]. Defaults to True.
+        ckt : subcircuit
+        update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
 
     if update is False:
@@ -310,15 +309,14 @@ def add_parallel_devices(ckt, update=True):
 
 
 def add_series_devices(ckt, update=True):
-    """add_parallel_devics
-        merge devices in parallel as single unit
+    """add_series_devics
+        merge devices in series as single unit
         Keeps 1st device out of sorted list
-        #TODO Optimize later
 
     Parameters:
 
-        ckt ([type]): [description]
-        update (bool, optional): [description]. Defaults to True.
+        ckt : subcircuit
+        update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
 
     if update is False:

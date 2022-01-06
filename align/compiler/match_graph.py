@@ -117,19 +117,26 @@ class Annotate:
 
     def _check_const_length(self, const_list, const):
         is_append = False
-        try:
-            with set_context(const_list):
-                if hasattr(const, "instances") and len(const.instances) > 0:
-                    is_append = True
-                elif not hasattr(const, "instances"):
-                    is_append = True
-                else:
-                    logger.debug(f"invalid constraint {const}")
-                if is_append == True and const not in const_list:
-                    logger.debug(f"constraint appended: {const}")
-                    const_list.append(const)
-        except:
-            logger.debug(f"skipping invalid constraint {const}")
+        with set_context(const_list):
+            if hasattr(const, "instances") and len(const.instances) > 0:
+                is_append = True
+            elif (
+                isinstance(const, dict)
+                and "instances" in const
+                and len(const["instances"]) == 0
+            ):
+                # Modified constraint are initially of dict type
+                pass
+                # skipping const of zero length
+            elif not hasattr(const, "instances"):
+                is_append = True
+            else:
+                logger.debug(f"invalid constraint {const}")
+            if is_append == False and const in const_list:
+                const_list.remove(const)
+            if is_append == True and const not in const_list:
+                logger.debug(f"constraint appended: {const}")
+                const_list.append(const)
 
     def _remove_group_const(self, subckt, rm_const):
         with set_context(subckt.constraints):
@@ -219,8 +226,9 @@ class Annotate:
             # Modify instance names in constraints after modifying groupblock
             self._update_const(name, [const.name.upper(), *const_inst], inst_name)
         # Removing const with single instances.
-        for c in list(const_list):
+        for c in list(self.ckt_data.find(name).constraints):
             self._check_const_length(self.ckt_data.find(name).constraints, c)
+        logger.debug(f"reduced constraints of design {name} {self.ckt_data.find(name).constraints}")
 
     def _group_cap_const(self, name):
         # TODO: merge group cap and group block
@@ -274,9 +282,6 @@ class Annotate:
             self._update_const(
                 name, [const.name.upper(), *const_inst], const.name.upper()
             )
-            # Removing const with single instances.
-        for c in list(const_list):
-            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
     def _top_to_bottom_translation(self, top, match_dict, bottom):
         """
@@ -355,6 +360,8 @@ class Annotate:
                             replace = False
                         elif old_inst in const.instances:
                             const.instances.remove(old_inst)
+                    if len(const.instances) == 0:
+                        logger.debug(f"remove const belonging to new hierarchy {const}")
                     # logger.debug(f"updated instances in the constraint:{const}")
             elif hasattr(const, "pairs"):
                 for pair in const.pairs:

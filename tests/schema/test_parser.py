@@ -8,9 +8,11 @@ from align.schema.types import set_context
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
 #          Please formulate tests accordingly
 
+
 @pytest.fixture
 def setup_basic():
     return 'X1 a b testdev x=1f y=0.1'
+
 
 @pytest.fixture
 def setup_multiline():
@@ -18,6 +20,7 @@ def setup_multiline():
     X1 a b  testdev x =1f y= 0.1
     X2 a  b testdev x = {capval*2}
     '''
+
 
 @pytest.fixture
 def setup_realistic():
@@ -31,6 +34,7 @@ M2 outminus inminus src 0 NMOS l=0.014u nfin=2
 C1 outplus 0 1e-12
 C2 outminus 0 1e-12
 '''
+
 
 @pytest.fixture
 def setup_annotation():
@@ -49,15 +53,19 @@ M2 outminus inminus src 0 NMOS l=0.014u nfin=2
 
 .ends
 '''
+
+
 @pytest.fixture
 def parser():
     parser = SpiceParser()
     return parser
 
+
 def test_lexer_basic(setup_basic):
     str_ = setup_basic
     types = ['NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
 
 def test_lexer_with_comments1(setup_basic):
     str_ = '''* Some comment here
@@ -69,6 +77,7 @@ X1 a b testdev; COMMENT ABOUT M1 pins
     assert tokens.pop(0).type == 'NEWL'
     assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
+
 def test_lexer_with_comments2(setup_basic):
     str_ = '''; Some comment here
 X1 a b testdev; COMMENT ABOUT M1 pins
@@ -79,12 +88,14 @@ X1 a b testdev; COMMENT ABOUT M1 pins
     assert tokens.pop(0).type == 'NEWL'
     assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
+
 def test_lexer_multiline(setup_multiline):
     str_ = setup_multiline
     types = ['NEWL',
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
              'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
 
 def test_lexer_continuation(setup_basic):
     str_ = "param fin_p_diff2sing=6 \\  \nwidth_n_diff2sing=10\n"
@@ -97,6 +108,7 @@ def test_lexer_continuation(setup_basic):
     tokens = list(SpiceParser._generate_tokens(str_))
     assert [tok.type for tok in tokens] == types
 
+
 def test_lexer_annotation(setup_annotation):
     str_ = setup_annotation
     types = ['NEWL', 'DECL', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME',
@@ -107,6 +119,7 @@ def test_lexer_annotation(setup_annotation):
              'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
              'DECL', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
 
 def test_lexer_realistic(setup_realistic):
     str_ = setup_realistic
@@ -119,18 +132,20 @@ def test_lexer_realistic(setup_realistic):
              'NAME', 'NAME', 'NUMBER', 'NUMBER', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
+
 def test_parser_basic(setup_basic, parser):
     with set_context(parser.library):
-        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'}))
+        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X': '1F', 'Y': '0.1'}))
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[0].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
+
 def test_parser_multiline(setup_multiline, parser):
     with set_context(parser.library):
-        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X':'1F', 'Y':'0.1'}))
+        parser.library.append(SubCircuit(name='TESTDEV', pins=['+', '-'], parameters={'X': '1F', 'Y': '0.1'}))
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
@@ -139,12 +154,14 @@ def test_parser_multiline(setup_multiline, parser):
     assert parser.circuit.elements[1].model == 'TESTDEV'
     assert parser.circuit.nets == ['A', 'B']
 
+
 def test_parser_realistic(setup_realistic, parser):
     parser.parse(setup_realistic)
     assert len(parser.circuit.elements) == 6, parser.circuit.elements
     assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2'], parser.circuit.elements
     assert len(parser.circuit.nets) == 7, parser.circuit.nets
     assert parser.circuit.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
+
 
 def test_parser_annotation(setup_annotation, parser):
     parser.parse(setup_annotation)
@@ -155,6 +172,7 @@ def test_parser_annotation(setup_annotation, parser):
     assert len(diffamp.nets) == 7, diffamp.nets
     assert diffamp.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
     assert len(diffamp.constraints) == 3
+
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''
@@ -170,11 +188,13 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].model == 'DIFFAMP'
 
+
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
     nmos_rvt = parser.library.find('NMOS_RVT')
     assert nmos_rvt is not None
-    assert list(nmos_rvt.parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
+    assert list(nmos_rvt.parameters.keys()) == ['W', 'L', 'NFIN', 'NF', 'M', 'PARALLEL', 'STACK', 'KP', 'VT0']
+
 
 def test_ota_cir_parsing(parser):
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.cir').resolve()) as fp:
@@ -183,12 +203,14 @@ def test_ota_cir_parsing(parser):
     assert ota is not None
     assert len(ota.elements) == 10
 
+
 def test_ota_sp_parsing(parser):
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     ota = parser.library.find('OTA')
     assert ota is not None
     assert len(ota.elements) == 10
+
 
 def test_basic_template_parsing(parser):
     libsize = len(parser.library)
