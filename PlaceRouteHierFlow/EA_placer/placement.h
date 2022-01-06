@@ -140,6 +140,7 @@ class Placement {
   void force_alignment(vector<float> &vc_x, vector<float> &vl_x, vector<float> &vc_y, vector<float> &vl_y);
   void force_order(vector<float> &vc_x, vector<float> &vl_x, vector<float> &vc_y, vector<float> &vl_y);
   void force_symmetry(PnRDB::hierNode &current_node);
+  bool check_order();
   static bool comp_x(Ppoint_F c1, Ppoint_F c2);
   static bool comp_y(Ppoint_F c1, Ppoint_F c2);
   static bool comp_position(pair<pair<int, int>, int> p1, pair<pair<int, int>, int> p2);

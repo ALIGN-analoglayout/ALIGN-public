@@ -1,3 +1,9 @@
+from ..cell_fabric.pdk import Pdk
+from ..cell_fabric import gen_gds_json
+from ..cell_fabric import positive_coord
+from ..cell_fabric import gen_lef
+from ..schema.subcircuit import SubCircuit, Model
+
 import sys
 import datetime
 import pathlib
@@ -6,17 +12,12 @@ import json
 import importlib.util
 from copy import deepcopy
 from math import sqrt, ceil, floor
-from ..schema.subcircuit import SubCircuit
-
-from ..cell_fabric import gen_lef
-from ..cell_fabric import positive_coord
-from ..cell_fabric import gen_gds_json
-from ..cell_fabric.pdk import Pdk
 
 logger = logging.getLogger(__name__)
 
 
 def get_xcells_pattern(primitive, pattern, x_cells):
+
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
@@ -47,10 +48,10 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
-    shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
+    shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
-    parameters = get_parameters(primitive, parameters, nfin)
+    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    parameters = get_parameters(primitive.name, parameters, nfin)
 
     def gen(pattern, routing):
         if 'NMOS' in primitive:
@@ -59,144 +60,19 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    if primitive in ["NMOS", "PMOS"]:
-        cell_pin = gen(0, {'S': [('M1', 'S')],
-                           'D': [('M1', 'D')],
-                           'G': [('M1', 'G')],
-                           'B': [('M1', 'B')]})
-
-    elif primitive in ["Switch_NMOS", "Switch_PMOS"]:
-        cell_pin = gen(0, {'S': [('M1', 'S'), ('M1', 'B')],
-                           'D': [('M1', 'D')],
-                           'G': [('M1', 'G')]})
-
-    elif primitive in ["Switch_GB_NMOS", "Switch_GB_PMOS"]:
-        cell_pin = gen(0, {'S': [('M1', 'S')],
-                           'D': [('M1', 'D')],
-                           'G': [('M1', 'G'), ('M1', 'B')]})
-
-    elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
-        cell_pin = gen(0, {'S': [('M1', 'S')],
-                           'D': [('M1', 'G'), ('M1', 'D')],
-                           'B': [('M1', 'B')]})
-
-    elif primitive in ["DCL_NMOS", "DCL_PMOS"]:
-        cell_pin = gen(0, {'S': [('M1', 'S'), ('M1', 'B')],
-                           'D': [('M1', 'G'), ('M1', 'D')]})
-
-    elif primitive in ["CMFB_NMOS_B", "CMFB_PMOS_B"]:
-        cell_pin = gen(3,     {'S':  [('M1', 'S'), ('M2', 'S')],
-                               'DA': [('M1', 'D'), ('M1', 'G')],
-                               'DB': [('M2', 'D')],
-                               'GB': [('M2', 'G')],
-                               'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CMFB_NMOS", "CMFB_PMOS"]:
-        cell_pin = gen(3,     {'S':  [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                               'DA': [('M1', 'D'), ('M1', 'G')],
-                               'DB': [('M2', 'D')],
-                               'GB': [('M2', 'G')]})
-
-    elif primitive in ["Dummy_NMOS_B", "Dummy_PMOS_B"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'G')],
-                               'D': [('M1', 'D')],
-                               'B': [('M1', 'B')]})
-
-    elif primitive in ["Dummy_NMOS", "Dummy_PMOS"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'G'), ('M1', 'B')],
-                               'D': [('M1', 'D')]})
-
-    elif primitive in ["Dcap_NMOS_B", "Dcap_PMOS_B"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'D')],
-                               'G': [('M1', 'G')],
-                               'B': [('M1', 'B')]})
-
-    elif primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'B')],
-                               'G': [('M1', 'G')]})
-
-    elif primitive in ["Dummy1_NMOS_B", "Dummy1_PMOS_B"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')],
-                               'B': [('M1', 'B')]})
-
-    elif primitive in ["Dummy1_NMOS", "Dummy1_PMOS"]:
-        cell_pin = gen(0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G'), ('M1', 'B')]})
-
-    elif primitive in ["SCM_NMOS_B", "SCM_PMOS_B"]:
-        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["SCM_NMOS", "SCM_PMOS"]:
-        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')]})
-
-    elif primitive in ["CMC_S_NMOS_B", "CMC_S_PMOS_B"]:
-        cell_pin = gen(pattern, {'SA': [('M1', 'S')],
-                                 'DA': [('M1', 'D')],
-                                 'SB': [('M2', 'S')],
-                                 'DB': [('M2', 'D')],
-                                 'G':  [('M1', 'G'), ('M2', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CMC_NMOS_B", "CMC_PMOS_B"]:
-        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D')],
-                                 'DB': [('M2', 'D')],
-                                 'G':  [('M1', 'G'), ('M2', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CMC_NMOS", "CMC_PMOS"]:
-        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                                 'DA': [('M1', 'D')],
-                                 'DB': [('M2', 'D')],
-                                 'G':  [('M1', 'G'), ('M2', 'G')]})
-
-    elif primitive in ["DP_NMOS_B", "DP_PMOS_B"]:
-        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D')],
-                                 'DB': [('M2', 'D')],
-                                 'GA': [('M1', 'G')],
-                                 'GB': [('M2', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["DP_NMOS", "DP_PMOS"]:
-        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                                 'DA': [('M1', 'D')],
-                                 'DB': [('M2', 'D')],
-                                 'GA': [('M1', 'G')],
-                                 'GB': [('M2', 'G')]})
-
-    elif primitive in ["LS_S_NMOS_B", "LS_S_PMOS_B"]:
-        cell_pin = gen(pattern, {'SA':  [('M1', 'S')],
-                                 'SB': [('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CCP_NMOS_B", "CCP_PMOS_B"]:
-        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M2', 'G')],
-                                 'DB': [('M2', 'D'), ('M1', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
-    elif primitive in ["CCP_NMOS", "CCP_PMOS"]:
-        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
-                                 'DA': [('M1', 'D'), ('M2', 'G')],
-                                 'DB': [('M2', 'D'), ('M1', 'G')]})
-
-    elif primitive in ["CCP_S_NMOS_B", "CCP_S_PMOS_B"]:
-        cell_pin = gen(pattern, {'SA': [('M1', 'S')],
-                                 'SB': [('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M2', 'G')],
-                                 'DB': [('M2', 'D'), ('M1', 'G')],
-                                 'B':  [('M1', 'B'), ('M2', 'B')]})
-
+    if isinstance(primitive, SubCircuit):
+        connections = {pin: [] for pin in primitive.pins}
+        for ele in primitive.elements:
+            for formal, actual in ele.pins.items():
+                connections[actual].append((ele.name, formal))
+        if len(primitive.elements) == 1:
+            pattern = 0
+    elif isinstance(primitive, Model):
+        connections = {pin: [('M1', pin)] for pin in primitive.pins}
+        pattern = 0
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
-    return uc, cell_pin
+    return uc, gen(pattern, connections)
 
 
 def generate_Cap(pdkdir, block_name, unit_cap):
@@ -241,7 +117,6 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 def get_generator(name, pdkdir):
     if pdkdir is None:
         return False
-
     pdk_dir_path = pdkdir
     if isinstance(pdkdir, str):
         pdk_dir_path = pathlib.Path(pdkdir)
@@ -264,10 +139,9 @@ def get_generator(name, pdkdir):
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
-
     pdk = Pdk().load(pdkdir / 'layers.json')
-    primitive = get_generator(parameters["real_inst_type"], pdkdir)
-    uc = primitive()
+    primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
+    uc = primitive1()
     uc.generate(
         ports=parameters["ports"],
         netlist_parameters=parameters["values"],
@@ -292,7 +166,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
     name = model
     values = element.parameters
     available_block_lef = all_lef
-    logger.debug(f"checking lef for: {name}, {element}")
+    logger.debug(f"checking lef for: {name}, {element}, {values}")
 
     if name == 'generic' or get_generator(name.lower(), pdk_dir):
         # TODO: how about hashing for unique names?
@@ -323,7 +197,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         logger.debug(f"Found cap with size: {size}")
         element.add_abs_name(block_name)
         block_args = {
-            'primitive': 'cap',
+            'primitive': name,
             'value': int(size)
         }
         add_primitive(primitives, block_name, block_args)
@@ -345,7 +219,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         logger.debug(f'Generating lef for: {name} {size}')
         element.add_abs_name(block_name)
         block_args = {
-            'primitive': 'Res',
+            'primitive': name,
             'value': (height, float(size))
         }
         add_primitive(primitives, block_name, block_args)
@@ -361,6 +235,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             unit_size_mos = design_config["unit_size_pmos"]
 
         subckt = element.parent.parent.parent.find(element.model)
+        logger.debug(f"subckt definition found: {subckt}")
         vt = None
         values = {}
         vt_types_temp = []
@@ -489,16 +364,16 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             yval = square_y
             xval = int(no_units / square_y)
 
-            if 'SCM' in name:
-                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
-                    square_y = 1
-                    yval = square_y
-                    xval = int(no_units / square_y)
+        if 'SCM' in name:
+            if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
+                square_y = 1
+                yval = square_y
+                xval = int(no_units / square_y)
 
-            block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
+        block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
 
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             block_args = {
@@ -515,29 +390,30 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 block_args['vt_type'] = vt[0]
                 block_name = block_name+'_'+vt[0]
 
-            element.add_abs_name(block_name)
-            add_primitive(primitives, block_name, block_args)
-            return True
-    raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
+        element.add_abs_name(block_name)
+        add_primitive(primitives, block_name, block_args)
+        return True
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
-
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
+    assert isinstance(primitive, SubCircuit) \
+        or isinstance(primitive, Model)\
+        or primitive == 'generic', f"{block_name} definition: {primitive}"
 
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
-    elif 'MOS' in primitive:
+    elif 'MOS' in primitive.name:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                               pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'cap' in primitive:
+    elif 'CAP' in primitive.name:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
-    elif 'Res' in primitive:
+    elif 'RES' in primitive.name:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'ring' in primitive.lower():
+    elif 'ring' in primitive.name.lower():
         uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
         # uc.setBboxFromBoundary()
     else:

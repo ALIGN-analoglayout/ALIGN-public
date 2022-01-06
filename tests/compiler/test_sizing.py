@@ -68,4 +68,4 @@ def test_sizing4(ckt):
     assert len(ckt.elements) == 5
     assert ckt.get_element("X_CMB_PMOS_2_XMP11_XMP12_XMP13")
     assert ckt.get_element("X_INV_B_I1_XMN0_XMP0")
-    assert len([v for v in ckt.parent if isinstance(v, SubCircuit)]) == 5
+    assert len([v.name for v in ckt.parent if isinstance(v, SubCircuit)]) == 5

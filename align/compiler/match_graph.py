@@ -21,7 +21,7 @@ class Annotate:
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library, existing_generator: set):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -54,7 +54,7 @@ class Annotate:
 
     def annotate(self):
         """
-        main function to creates hierarchies in the block
+        Main function to creates hierarchies in the block
         iterativily goes through all subckts in the netlist
         Reduce graph to a list of nodes
         Returns:
@@ -86,9 +86,9 @@ class Annotate:
             ):
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
-
+                logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
-                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
+                    f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
                     ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
@@ -98,14 +98,14 @@ class Annotate:
                 traversed.append(ckt.name)
                 for subckt in self.lib:
                     if subckt.name == ckt.name or \
-                        subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and
-                         ckt.name in temp_match_dict[subckt.name]
-                         ):
+                       subckt.name in do_not_use_lib or \
+                       (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):  # to stop searching INVB in INVB_1
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
                     )
+                    if subckt.name in self.all_lef:
+                        self.all_lef.update(new_subckts)
                     if subckt.name in temp_match_dict:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:
@@ -369,7 +369,6 @@ class Annotate:
                         if pair[0] in remove_nodes and pair[1] in remove_nodes:
                             pair[0] = new_inst
                             pair.pop()
-                            # logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
                         elif pair[0] in remove_nodes and pair[1] not in remove_nodes:
                             pair[0] = new_inst
                         elif pair[1] in remove_nodes and pair[0] not in remove_nodes:
@@ -377,5 +376,4 @@ class Annotate:
                     elif len(pair) == 1:
                         if pair[0] in remove_nodes:
                             pair[0] = new_inst
-                            # logger.debug(f"updated self symmetric constraint block:{const}")
         logger.debug(f"updated constraints of {name} {const_list}")
