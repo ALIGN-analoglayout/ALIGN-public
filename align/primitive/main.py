@@ -1,3 +1,9 @@
+from ..cell_fabric.pdk import Pdk
+from ..cell_fabric import gen_gds_json
+from ..cell_fabric import positive_coord
+from ..cell_fabric import gen_lef
+from ..schema.subcircuit import SubCircuit, Model
+
 import sys
 import datetime
 import pathlib
@@ -6,23 +12,23 @@ import json
 import importlib.util
 from copy import deepcopy
 from math import sqrt, ceil, floor
-from ..schema.subcircuit import SubCircuit, Model
-
-from ..cell_fabric import gen_lef
-from ..cell_fabric import positive_coord
-from ..cell_fabric import gen_gds_json
-from ..cell_fabric.pdk import Pdk
 
 logger = logging.getLogger(__name__)
 
 
 def get_xcells_pattern(primitive, pattern, x_cells):
-    if any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
+
+    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
+        # Dual transistor (current mirror) primitives
+        # TODO: Generalize this (pattern is ignored)
+        x_cells = 2*x_cells + 2
+    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
         x_cells = 2*x_cells
         # TODO: Fix difficulties associated with CC patterns matching this condition
         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
     return x_cells, pattern
+
 
 def get_parameters(primitive, parameters, nfin):
     if parameters is None:
@@ -181,8 +187,11 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         return True
 
     elif name == 'CAP':
-        assert float(values["VALUE"]), f"unidentified size {values} for {element.name}"
-        size = round(float(values["VALUE"]) * 1E15, 4)
+        assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
+        if "C" in values:
+            size = round(float(values["C"]) * 1E15, 4)
+        elif 'VALUE' in values:
+            size = round(float(values["VALUE"]) * 1E15, 4)
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
         logger.debug(f"Found cap with size: {size}")
@@ -195,8 +204,11 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         return True
 
     elif name == 'RES':
-        assert float(values["VALUE"]), f"unidentified size {values['VALUE']} for {element.name}"
-        size = round(float(values["VALUE"]), 2)
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {element.name}"
+        if "R" in values:
+            size = round(float(values["R"]), 2)
+        elif 'VALUE' in values:
+            size = round(float(values["VALUE"]), 2)
         # TODO: use float in name
         if size.is_integer():
             size = int(size)
@@ -273,8 +285,6 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
             block_name = f'{name}_{vt}_w{w}_m{m}'
 
-            # for ele in subckt.elements:
-            #values[ele.name]['real_inst_type'] = vt
             values[device_name]['real_inst_type'] = vt
             block_args = {
                 'primitive': name,
@@ -300,50 +310,59 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if "NFIN" in values[device_name].keys():
+        if design_config["pdk_type"] == "FinFET":
             # FinFET design
             for key in values:
-                assert int(values[key]["NFIN"]), f"unrecognized size {values[key]['NFIN']}"
-                nfin = int(values[key]["NFIN"])
-            name_arg = 'NFIN'+str(nfin)
-        elif "W" in values[device_name].keys():
+                assert int(values[key]["NFIN"]), \
+                    f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
+                assert unit_size_mos >= int(values[key]["NFIN"]), \
+                    f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
+                size = int(values[key]["NFIN"])
+            name_arg = 'NFIN'+str(size)
+        elif design_config["pdk_type"] == "Bulk":
             # Bulk design
             for key in values:
-                assert values[key][""] != str, f"unrecognized size {values[key]['w']}"
-                nfin = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                values[key]["NFIN"] = nfin
-            name_arg = 'NFIN'+str(nfin)
+                assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
+                assert (
+                    values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
+                    f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
+                size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
+                values[key]["NFIN"] = size
+            name_arg = 'NFIN'+str(size)
         else:
-            raise NotImplementedError(f"Could not generate LEF for {name} parameters: {values}")
+            print(design_config["pdk_type"] + " pdk not supported")
+            exit()
 
         if 'NF' in values[device_name].keys():
             for key in values:
-                assert int(values[key]["NF"]), f"unrecognized size {values[key]['NF']}"
-            #assert size%2==0, f"NF must be even"
+                assert int(values[key]["NF"]), f"unrecognized NF of device {key}:{values[key]['NF']} in {name}"
+                assert int(values[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{values[key]['NF']} in {name}"
             name_arg = name_arg+'_NF'+str(int(values[device_name]["NF"]))
 
         if 'M' in values[device_name].keys():
             for key in values:
-                assert int(values[key]["M"]), f"unrecognized size {values[key]['M']}"
+                assert int(values[key]["M"]), f"unrecognized M of device {key}:{values[key]['M']} in {name}"
                 if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL']) > 1:
                     values[key]["PARALLEL"] = int(values[key]['PARALLEL'])
                     values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
             name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
+            size = 0
 
-        size = 0
-        for key in values:
-            size = size + int(values[key]["NFIN"])*int(values[key]["NF"])*int(values[key]["M"])
-        logger.debug(f"Generating lef for {name} with size {size}")
-
-        no_units = ceil(size / (4*unit_size_mos))  # factor 2 is due to NF=2 in each unit cell; needs to be generalized
-        if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
-            square_y = floor(sqrt(no_units/3))
-        else:
-            square_y = floor(sqrt(no_units))
-        while no_units % square_y != 0:
-            square_y -= 1
-        yval = square_y
-        xval = int(no_units / square_y)
+        logger.debug(f"Generating lef for {name} , with size {size}")
+        if isinstance(size, int):
+            for key in values:
+                assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name}"
+                size_device = int(values[key]["NF"])*int(values[key]["M"])
+                size = size + size_device
+            no_units = ceil(size / (2*len(values)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
+            if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
+                square_y = floor(sqrt(no_units/3))
+            else:
+                square_y = floor(sqrt(no_units))
+            while no_units % square_y != 0:
+                square_y -= 1
+            yval = square_y
+            xval = int(no_units / square_y)
 
         if 'SCM' in name:
             if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
@@ -386,8 +405,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'MOS' in primitive.name:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells,
-                                              y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
+                                              pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'CAP' in primitive.name:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

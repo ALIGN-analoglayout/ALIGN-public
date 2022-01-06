@@ -162,14 +162,14 @@ xi3 net1b outn vdd vss INVx1_8Phase
 xi2 net1 outp vdd vss INVx1_8Phase
 xi1 net2 net1b vdd vss INVx1_8Phase
 xi0 net3 net1 vdd vss INVx1_8Phase
-m6 net1 net1b vss vss nmos_rvt l=60e-9 w=600e-9 nf=1
-m4 net1b net1 vss vss nmos_rvt l=60e-9 w=600e-9 nf=1
-m0 bias bias net026 vss nmos_rvt l=60e-9 w=600e-9 nf=1
-m2 net026 vdd vss vss nmos_rvt l=60e-9 w=600e-9 nf=1
-m7 net1 net1b vdd vdd pmos_rvt l=60e-9 w=600e-9 nf=1
-m5 net1b net1 vdd vdd pmos_rvt l=60e-9 w=600e-9 nf=1
-m3 net011 vss vdd vdd pmos_rvt l=60e-9 w=1.5e-6 nf=1
-m1 bias bias net011 vdd pmos_rvt l=60e-9 w=1.5e-6 nf=1
+m6 net1 net1b vss vss nmos_rvt l=60e-9 w=300e-9 nf=2
+m4 net1b net1 vss vss nmos_rvt l=60e-9 w=300e-9 nf=2
+m0 bias bias net026 vss nmos_rvt l=60e-9 w=300e-9 nf=2
+m2 net026 vdd vss vss nmos_rvt l=60e-9 w=300e-9 nf=2
+m7 net1 net1b vdd vdd pmos_rvt l=60e-9 w=300e-9 nf=2
+m5 net1b net1 vdd vdd pmos_rvt l=60e-9 w=300e-9 nf=2
+m3 net011 vss vdd vdd pmos_rvt l=60e-9 w=7.5e-7 nf=2
+m1 bias bias net011 vdd pmos_rvt l=60e-9 w=7.5e-7 nf=2
 .ends CLK_IO
 ** End of subcircuit definition.
 
