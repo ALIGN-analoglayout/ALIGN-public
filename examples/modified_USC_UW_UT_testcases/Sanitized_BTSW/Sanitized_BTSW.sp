@@ -31,7 +31,7 @@
 MM9 VBTSW net7 net12 net12 pch l=LA w=WA m=1 nf=2
 MM8 AVDD VBTSW net12 net12 pch l=LA w=WA m=1 nf=2
 MM7 net7 CKSBT AVDD AVDD pch l=LA w=WA m=1 nf=2
-MM10 net013 net12 net013 AVSS nch l=LB w=WC m=4
+MM10 net013 net12 net013 AVSS nch l=LB w=WC m=4 nf=2
 MM6 net27 CKSBTB AVSS AVSS nch l=LA w=WB m=1 nf=2
 MM5 VBTSW AVDD net27 AVSS nch l=LA w=WB m=1 nf=2
 MM3 VIN VBTSW net013 AVSS nch l=LA w=WB m=1 nf=2
