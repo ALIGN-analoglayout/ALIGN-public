@@ -63,7 +63,7 @@
                     {
                         "type": "pin",
                         "name": "X_CMC_S_NMOS_B_I1_M6_M7",
-                        "pin": "SB"
+                        "pin": "SA"
                     },
                     {
                         "type": "terminal",
