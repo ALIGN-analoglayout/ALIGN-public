@@ -1,6 +1,6 @@
-from .canvas import DefaultCanvas
-from ...cell_fabric.generators import *
-from ...cell_fabric.grid import *
+from align.primitive.default.canvas import DefaultCanvas
+from align.cell_fabric.generators import *
+from align.cell_fabric.grid import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -177,8 +177,41 @@ class MOSGenerator(DefaultCanvas):
             dummy_gates = self.gatesPerUnitCell*x_cells+self.gateDummy if x == x_cells-1 else 0
             for i in range(self.gateDummy):
                 self.addWire( self.pl, None, dummy_gates+i,   (y,0), (y,1))
-        # Source, Drain, Gate Connections
 
+        def _addRVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.RVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.RVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+    
+        def _addLVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.LVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.LVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+    
+        def _addHVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.HVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.HVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+        if vt_type == 'RVT':
+            _addRVT(x, y, x_cells)
+        elif vt_type == 'LVT':
+            _addLVT(x, y, x_cells)
+        elif vt_type == 'HVT':
+            _addHVT(x, y, x_cells)
+        else:
+            print("This VT type not supported")
+            exit()
+
+        # Source, Drain, Gate Connections
         grid_y0 = y*self.m2PerUnitCell + 1
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
