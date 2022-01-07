@@ -67,7 +67,10 @@ def _transform_leaf(module, instance, leaf):
     else:
         tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
     tr_inst = transformation.Transformation(**instance['transformation'])
-    name = leaf.get('name', leaf['concrete_name'])
+    if 'name' in leaf:
+        name = leaf['name']
+    else:
+        name = leaf['concrete_name']
     flat_leaf = dict()
     flat_leaf['concrete_name'] = leaf['concrete_name']
     flat_leaf['name'] = instance['instance_name'] + '/' + name
@@ -99,12 +102,10 @@ def _check_place_on_grid(leaf, constraints):
 
         is_satisfied = False
         for term in const['ored_terms']:
-            # term['offsets']
-            # term['scalings']
             for offset in term['offsets']:
                 if (o - offset) % const['pitch'] == 0 and s in term['scalings']:
                     is_satisfied = True
-                    logger.info(f'{leaf["name"]} satisfied {term} in {const}')  # TODO: change to debug
+                    logger.debug(f'{leaf["name"]} satisfied {term} in {const}')
                     break
             if is_satisfied:
                 break
@@ -113,7 +114,7 @@ def _check_place_on_grid(leaf, constraints):
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
 
-    if True:
+    if False:
         # Load JSON file for easier debug
         filename = (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json')
         with (filename).open('rt') as fp:
