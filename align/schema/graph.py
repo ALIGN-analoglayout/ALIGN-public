@@ -95,7 +95,14 @@ class Graph(networkx.Graph):
             self, graph, node_match=node_match, edge_match=edge_match)
         ret = []
         _temp = len(self.subckt.constraints)
-        for match in sorted(matcher.subgraph_isomorphisms_iter(), key=lambda i: '_'.join(sorted(i.keys()))):
+        # Three possible scenarios of non determinism (M1, M2, M3, M4, M5) (Ma, Mb, Mc)
+        # 1. Different keys [{M1:Ma, M2:Mb, M3:Mc}, {M4:Ma, M2:Mb, M3:Mc}]
+        # 2. keys in diff order: [{M1:Ma, M2:Mb, M3:Mc}, {M2:Mb, M1:Ma, M3:Mb}]
+        # 3. Different values: [{M1:Ma, M2:Mb, M3:Mc}, {M1:Ma, M2:Mc, M3:Mb}]
+        # Thus sorting based on key,value pair
+        matches = sorted(matcher.subgraph_isomorphisms_iter(), key=lambda k: [(x, y)for x, y in k.items()])
+        for match in matches:
+            # for match in sorted(matcher.subgraph_isomorphisms_iter(), key=lambda i: tuple(i.keys())):
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
                 try:
                     self.check_constraint_satisfiability(graph, match)
