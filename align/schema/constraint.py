@@ -1068,7 +1068,7 @@ class PlaceOnGrid(SoftConstraint):
     ored_terms: List[OffsetsScalings] = Field(default_factory=lambda: [OffsetsScalings()])
 
     @types.validator('ored_terms', allow_reuse=False)
-    def pairs_validator(cls, value, values):
+    def ored_terms_validator(cls, value, values):
         pitch = values['pitch']
         for term in value:
             for offset in getattr(term, 'offsets'):

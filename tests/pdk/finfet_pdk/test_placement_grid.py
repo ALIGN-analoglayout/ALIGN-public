@@ -5,7 +5,6 @@ from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 
-@pytest.mark.skip(reason='Bug to be resolved in a future PR')
 def test_place_on_grid():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
