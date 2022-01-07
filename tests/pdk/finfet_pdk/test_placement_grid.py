@@ -1,5 +1,4 @@
 import json
-import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
