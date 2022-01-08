@@ -8,7 +8,7 @@ from itertools import chain
 from .. import PnR
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .build_pnr_model import *
-from .checker import check_placement
+from .checker import check_placement, check_place_on_grid
 from ..gui.mockup import run_gui
 from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
@@ -392,6 +392,7 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
     (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     check_placement( scaled_placement_verilog_d, scale_factor)
+    check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
 def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives):
