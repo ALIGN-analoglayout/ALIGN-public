@@ -1073,8 +1073,7 @@ class PlaceOnGrid(SoftConstraint):
         assert pitch > 0
         for term in value:
             for offset in getattr(term, 'offsets'):
-                assert offset > 0
-                assert offset < pitch, f'offset {offset} should be less than pitch {pitch}'
+                assert 0 <= offset < pitch, f'offset {offset} should be less than pitch {pitch}'
         return value
 
 
