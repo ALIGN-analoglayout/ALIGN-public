@@ -24,7 +24,7 @@ def test_cap():
         verilog_tbl,
         pathlib.Path(__file__).parent / "Results",
     )
-    assert "CAP_30f" in primitives.keys()
+    assert "CAP_VALUE_3E14" in primitives.keys()
     with open(gen_const_path, "r") as const_fp:
         gen_const = next(
             x for x in json.load(const_fp)["modules"] if x["name"] == "TEST_CAP"
