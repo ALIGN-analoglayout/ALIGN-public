@@ -1070,7 +1070,6 @@ class PlaceOnGrid(SoftConstraint):
     @types.validator('ored_terms', allow_reuse=False)
     def ored_terms_validator(cls, value, values):
         pitch = values['pitch']
-        assert pitch > 0
         for term in value:
             for offset in getattr(term, 'offsets'):
                 assert 0 <= offset < pitch, f'offset {offset} should be less than pitch {pitch}'
