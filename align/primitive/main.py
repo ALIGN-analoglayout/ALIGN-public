@@ -168,7 +168,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}, {values}")
 
-    if name == 'generic' or get_generator(name.lower(), pdk_dir):
+    if name == 'generic':
         # TODO: how about hashing for unique names?
         value_str = ''
         if values:
