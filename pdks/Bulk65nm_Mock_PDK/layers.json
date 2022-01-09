@@ -605,22 +605,9 @@
             "GdsDatatype": {
                 "Draw": 0
             },
-            "ActiveRvtEnc": 100,
-            "ActiveNpEnc": 100,
-            "ActivePpEnc": 100,
+	    "active_enclosure": 42,
             "activebWidth": 168,
-            "activebWidth_H": 160,
-            "active_enclosure": 42,
-            "plActive_s": 72,
-            "ActivePolyHEnc": 48,
-            "PolyActiveHang": 400,
-            "v0Width": 90,
-            "v0Pitch": 150,
-            "v0Enc": 20,
-            "activeRvtEnc": 48,
             "activebWidth_H": 180,
-            "cbWidth": 30,
-            "cbGateExt": 10,
 	    "activePolyExTracks": 2
         },
         {
@@ -636,14 +623,6 @@
             "GdsDatatype": {
                 "Draw": 0
             }
-        },
-        {
-            "Layer": "Lisd",
-            "GdsLayerNo": 98,
-            "GdsDatatype": {
-                "Draw": 0
-            },
-            "LisdWidth": 40
         },
         {
             "Layer": "Rvt",
