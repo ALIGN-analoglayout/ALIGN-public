@@ -620,7 +620,8 @@
             "activeRvtEnc": 48,
             "activebWidth_H": 180,
             "cbWidth": 30,
-            "cbGateExt": 10
+            "cbGateExt": 10,
+	    "activePolyExTracks": 2
         },
         {
             "Layer": "Nselect",

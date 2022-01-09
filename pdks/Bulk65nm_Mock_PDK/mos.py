@@ -33,10 +33,11 @@ class MOSGenerator(DefaultCanvas):
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
 
+
+        stoppoint = self.pdk['Active']['activePolyExTracks']*self.pdk['M2']['Pitch']
         self.pl = self.addGen( Wire( 'pl', 'Poly', 'v',
                                      clg=UncoloredCenterLineGrid( pitch= self.pdk['Poly']['Pitch'], width= self.pdk['Poly']['Width'], offset= self.pdk['Poly']['Offset']),
-                                     spg=SingleGrid( offset= self.pdk['M2']['Offset'], pitch=self.unitCellHeight)))
-
+                                     spg=EnclosureGrid( pitch=self.unitCellHeight, offset=self.pdk['M2']['Offset'], stoppoint=stoppoint, check=True)))
 
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
@@ -170,13 +171,8 @@ class MOSGenerator(DefaultCanvas):
         else:
             pass
 
-        for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
-
-        if self.shared_diff == 1 and (x == 0 or x == x_cells-1):
-            dummy_gates = self.gatesPerUnitCell*x_cells+self.gateDummy if x == x_cells-1 else 0
-            for i in range(self.gateDummy):
-                self.addWire( self.pl, None, dummy_gates+i,   (y,0), (y,1))
+        for i in range(self.gate):
+            self.addWire( self.pl, None, i+self.gatesPerUnitCell*x+self.gateDummy,   (y,1), (y+1,-1))
 
         def _addRVT(x, y, x_cells):
             if self.shared_diff == 0:
