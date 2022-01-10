@@ -1,8 +1,7 @@
 import math
-
-from .canvas import DefaultCanvas
-from ...cell_fabric.generators import *
-from ...cell_fabric.grid import *
+from align.primitive.default.canvas import DefaultCanvas
+from align.cell_fabric.generators import *
+from align.cell_fabric.grid import *
 
 import logging
 logger = logging.getLogger(__name__)

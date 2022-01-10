@@ -168,25 +168,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}, {values}")
 
-    if name == 'generic' or get_generator(name.lower(), pdk_dir):
-        # TODO: how about hashing for unique names?
-        value_str = ''
-        if values:
-            for key in sorted(values):
-                val = values[key].replace('-', '')
-                value_str += f'_{key}_{val}'
-        attr = {'ports': list(element.pins.keys()),
-                'values': values if values else None,
-                'real_inst_type': element.model.lower()
-                }
-        block_name = element.model + value_str
-        element.add_abs_name(block_name)
-        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
-        add_primitive(primitives, block_name, block_args)
-        return True
-
-    elif name == 'CAP':
+    if name == 'CAP':
         assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
         if "C" in values:
             size = round(float(values["C"]) * 1E15, 4)
@@ -222,6 +204,23 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             'primitive': name,
             'value': (height, float(size))
         }
+        add_primitive(primitives, block_name, block_args)
+        return True
+    elif name == 'generic' or get_generator(name.lower(), pdk_dir):
+        # TODO: how about hashing for unique names?
+        value_str = ''
+        if values:
+            for key in sorted(values):
+                val = values[key].replace('-', '')
+                value_str += f'_{key}_{val}'
+        attr = {'ports': list(element.pins.keys()),
+                'values': values if values else None,
+                'real_inst_type': element.model.lower()
+                }
+        block_name = element.model + value_str
+        element.add_abs_name(block_name)
+        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
+        logger.debug(f"creating generic primitive {block_name} {block_args}")
         add_primitive(primitives, block_name, block_args)
         return True
 
