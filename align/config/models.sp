@@ -28,3 +28,4 @@
 .model nsvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model plvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model nlvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
+

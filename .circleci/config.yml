@@ -168,8 +168,7 @@ jobs:
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
-            filter="<<parameters.pdk>>"
-            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- <<parameters.nightly-dirs>>
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
@@ -288,3 +287,4 @@ workflows:
             branches:
               only:
                 - master
+

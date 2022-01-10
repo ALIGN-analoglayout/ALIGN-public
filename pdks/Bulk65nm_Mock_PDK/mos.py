@@ -1,6 +1,6 @@
-from .canvas import DefaultCanvas
-from ...cell_fabric.generators import *
-from ...cell_fabric.grid import *
+from align.primitive.default.canvas import DefaultCanvas
+from align.cell_fabric.generators import *
+from align.cell_fabric.grid import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -33,10 +33,11 @@ class MOSGenerator(DefaultCanvas):
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
 
+
+        stoppoint = self.pdk['Active']['activePolyExTracks']*self.pdk['M2']['Pitch']
         self.pl = self.addGen( Wire( 'pl', 'Poly', 'v',
                                      clg=UncoloredCenterLineGrid( pitch= self.pdk['Poly']['Pitch'], width= self.pdk['Poly']['Width'], offset= self.pdk['Poly']['Offset']),
-                                     spg=SingleGrid( offset= self.pdk['M2']['Offset'], pitch=self.unitCellHeight)))
-
+                                     spg=EnclosureGrid( pitch=self.unitCellHeight, offset=self.pdk['M2']['Offset'], stoppoint=stoppoint, check=True)))
 
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
@@ -66,11 +67,6 @@ class MOSGenerator(DefaultCanvas):
         self.SLVT = self.addGen( Wire( 'SLVT', 'Slvt', 'h',
                                       clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
                                       spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
-
-        stoppoint = activeOffset-activeWidth//2
-        self.LISD = self.addGen( Wire( 'LISD', 'Lisd', 'v',
-                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M1']['Pitch'], width=self.pdk['Lisd']['LisdWidth'], offset=self.pdk['M1']['Offset']),
-                                         spg=EnclosureGrid( pitch=self.unitCellHeight, offset=0, stoppoint=stoppoint, check=True)))
 
         offset = self.gateDummy*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Offset'] - self.pdk['Poly']['Pitch']//2
         stoppoint = self.gateDummy*self.pdk['Poly']['Pitch'] + self.pdk['Poly']['Offset']-self.pdk['Pc']['PcExt']-self.pdk['Poly']['Width']//2
@@ -127,10 +123,6 @@ class MOSGenerator(DefaultCanvas):
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pb']['pbWidth'], offset= offset_active_body),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
-        self.LISDb = self.addGen( Wire( 'LISDb', 'Lisd', 'v',
-                                     clg=UncoloredCenterLineGrid( pitch=   self.pdk['M1']['Pitch'], width= self.pdk['Lisd']['LisdWidth'], offset= self.pdk['M1']['Offset']),
-                                     spg=EnclosureGrid( pitch=self.pdk['M2']['Pitch'], offset=0, stoppoint= self.pdk['M2']['Width']//2+self.pdk['V1']['VencA_L'], check=True)))
-
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
                                     v_clg=self.m1.clg,
@@ -170,15 +162,43 @@ class MOSGenerator(DefaultCanvas):
         else:
             pass
 
-        for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
+        for i in range(self.gate):
+            self.addWire( self.pl, None, i+self.gatesPerUnitCell*x+self.gateDummy,   (y,1), (y+1,-1))
 
-        if self.shared_diff == 1 and (x == 0 or x == x_cells-1):
-            dummy_gates = self.gatesPerUnitCell*x_cells+self.gateDummy if x == x_cells-1 else 0
-            for i in range(self.gateDummy):
-                self.addWire( self.pl, None, dummy_gates+i,   (y,0), (y,1))
+        def _addRVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.RVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.RVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+    
+        def _addLVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.LVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.LVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+    
+        def _addHVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.HVT,  None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.HVT_diff,  None, y, 0, self.gate*x_cells+1)
+            else:
+                pass
+        if vt_type == 'RVT':
+            _addRVT(x, y, x_cells)
+        elif vt_type == 'LVT':
+            _addLVT(x, y, x_cells)
+        elif vt_type == 'HVT':
+            _addHVT(x, y, x_cells)
+        else:
+            print("This VT type not supported")
+            exit()
+
         # Source, Drain, Gate Connections
-
         grid_y0 = y*self.m2PerUnitCell + 1
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
@@ -302,6 +322,12 @@ class MOSGenerator(DefaultCanvas):
             device_name_all = [*parameters.keys()]
             if int(parameters[device_name_all[0]]["NFIN"])*int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]) != int(parameters[device_name_all[1]]["NFIN"])*int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]):
                 pattern=3
+                if int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]) > int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]):
+                    x_left = x_cells//2 - (int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]))//2
+                    x_right = x_cells//2 + (int(parameters[device_name_all[1]]["NF"])*int(parameters[device_name_all[1]]["M"]))//2
+                else:
+                    x_left = x_cells//2 - (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
+                    x_right = x_cells//2 + (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
          ##########################
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
@@ -330,8 +356,8 @@ class MOSGenerator(DefaultCanvas):
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
-                    self._addMOS(x, y, x_cells, vt_type, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False,  **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
+                    self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)

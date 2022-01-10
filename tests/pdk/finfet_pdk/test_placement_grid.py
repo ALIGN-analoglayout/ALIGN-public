@@ -1,39 +1,15 @@
 import json
-import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 
-@pytest.mark.skip(reason='Bug to be resolved in a future PR')
 def test_place_on_grid():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
     constraints = []
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=8)
-
-    name = name.upper()
-    for variant in range(8):
-        filename = run_dir / '3_pnr' / 'Results' / f'{name}_{variant}.scaled_placement_verilog.json'
-        print(f'Checking {filename}')
-        with (filename).open('rt') as fp:
-            verilog_json = json.load(fp)
-            modules = {module['concrete_name']: module for module in verilog_json['modules']}
-            cn = f'{name}_{variant}'
-            assert cn in modules, f'{cn} not found in *.scaled_placement_verilog.json'
-            instances = [i for i in modules[cn]['instances'] if i['abstract_template_name'] == 'TFR_PRIM_L_1E06_W_1E06']
-            assert len(instances) == 1, 'There should be one resistor instance'
-            for i in instances:
-                t = i['transformation']
-                # PlaceOnGrid(direction='H', pitch=2*row_height, ored_terms=[OffsetsScalings(offsets=[1*row_height], scalings=[1])]).dict()
-                # PlaceOnGrid(direction='V', pitch=5*poly_pitch, ored_terms=[OffsetsScalings(offsets=[1*poly_pitch], scalings=[1])]).dict()
-                row_height = 6300
-                poly_pitch = 1080
-                assert t['sX'] == 1
-                assert t['sY'] == 1
-                assert (t['oX'] - poly_pitch) % (5*poly_pitch) == 0, f"Illegal horizontal placement {t['oX']}"
-                assert (t['oY'] - row_height) % (2*row_height) == 0, f"Illegal vertical placement {t['oY']}"
+    run_example(example, cleanup=True, n=8)
 
 
 def test_scalings():
@@ -60,21 +36,18 @@ def test_scalings():
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=8)
 
-    name = name.upper()
-    for variant in range(8):
-        filename = run_dir / '3_pnr' / 'Results' / f'{name}_{variant}.scaled_placement_verilog.json'
-        if not filename.exists():
-            break
-        print(f'Checking {filename}')
-        with (filename).open('rt') as fp:
-            verilog_json = json.load(fp)
-            modules = {module['concrete_name']: module for module in verilog_json['modules']}
-            cn = f'{name}_{variant}'
-            assert cn in modules, f'{cn} not found in *.scaled_placement_verilog.json'
-            instances = [i for i in modules[cn]['instances'] if i['abstract_template_name'] == 'DIG22INV']
-            assert len(instances) == 3, 'There should be three inverter instances'
-            for i in instances:
-                t = i['transformation']
-                # PlaceOnGrid(direction='H', pitch=2*row_height, ored_terms=[OffsetsScalings(offsets=[0], scalings=[1, -1])]).dict()
-                row_height = 6300
-                assert t['oY'] % (2*row_height) == 0, f"Illegal placement oY={t['oY']} is not a multiple of {2*row_height}"
+    # Check if the PlaceOnGrid constraint is written to primitive.json
+    filename = run_dir / '3_pnr' / 'inputs' / 'DIG22INV.json'
+    assert filename.exists() and filename.is_file()
+    with (filename).open('rt') as fp:
+        primitive = json.load(fp)
+        assert 'metadata' in primitive
+        assert 'constraints' in primitive['metadata']
+
+        golden = [{
+            "constraint": "place_on_grid",
+            "direction": "H",
+            "pitch": 12600,
+            "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
+        }]
+        assert primitive['metadata']['constraints'] == golden

@@ -1,87 +1,87 @@
 .subckt TEST gnd ibias vdd vref vrefp
-m72 net0211 net0211 net0211 gnd nfet w=w0 l=l0
-m71 gnd gnd gnd gnd nfet w=w1 l=l0
-m70 net0176 net0176 net0176 gnd nfet w=w2 l=l1
-m69 net0211 net0211 net0211 gnd nfet w=w3 l=l1
-m54 net0144 net0144 net0144 gnd nfet w=w4 l=l1
-m51 net0111 net0111 net0111 gnd nfet w=w4 l=l1
-m50 net0111 net0111 net0111 gnd nfet w=w4 l=l1
-m48 net0129 net0129 net0129 gnd nfet w=w4 l=l1
-m43 net0109 net0109 net0109 gnd nfet w=w4 l=l1
-m68 net0160 net0160 net0160 gnd nfet w=w3 l=l1
-m62 net0147 net0147 net0147 gnd nfet w=w3 l=l2
-m65 net0149 net0149 net0149 gnd nfet w=w0 l=l0
-m58 net0103 net0103 net0103 gnd nfet w=w3 l=l2
-m55 net0103 net0103 net0103 gnd nfet w=w4 l=l1
-m57 net0111 net0111 net0111 gnd nfet w=w2 l=l1
-m59 net0144 net0144 net0144 gnd nfet w=w3 l=l2
-m61 net0149 net0149 net0149 gnd nfet w=w3 l=l2
-m25 net0147 vdd gnd gnd nfet w=w5 l=l0
-m24 net0148 vdd gnd gnd nfet w=w0 l=l0
-m23 net0149 vdd gnd gnd nfet w=w5 l=l0
-m22 net0144 net0103 net0147 gnd nfet w=w6 l=l2
-m1 net0103 net0103 net0149 gnd nfet w=w6 l=l2
-m20 net0111 ibias net0148 gnd nfet w=w3 l=l1
-m19 net0129 vfb net0111 gnd nfet w=w7 l=l1
-m18 net0103 vfb net0111 gnd nfet w=w7 l=l1
-m17 net0109 vref net0111 gnd nfet w=w7 l=l1
-m16 net0144 vref net0111 gnd nfet w=w7 l=l1
-m67 net0211 vdd gnd gnd nfet w=w5 l=l0
-m21 net0160 ibias net0211 gnd nfet w=w6 l=l1
-m63 gnd gnd gnd gnd nfet w=w1 l=l0
-m64 net0147 net0147 net0147 gnd nfet w=w0 l=l0
-m30 net0176 ibias net0207 gnd nfet w=w8 l=l1
-m14 net0140 net0140 net0140 gnd nfet w=w3 l=l1
-m8 net0140 ibias net016 gnd nfet w=w6 l=l1
-m7 ibias ibias net017 gnd nfet w=w6 l=l1
-m6 net017 vdd gnd gnd nfet w=w0 l=l0
-m3 net016 vdd gnd gnd nfet w=w5 l=l0
-m9 gnd gnd gnd gnd nfet w=w1 l=l0
-m10 net016 net016 net016 gnd nfet w=w0 l=l0
-m11 ibias ibias ibias gnd nfet w=w3 l=l1
-m66 net0207 vdd gnd gnd nfet w=w9 l=l0
-m13 net016 net016 net016 gnd nfet w=w3 l=l1
-m12 net017 net017 net017 gnd nfet w=w3 l=l1
-m35 vdd net0144 vdd vdd lvtpfet w=w10 l=l3
-m2 vfb vfb vfb vdd lvtpfet w=w11 l=l1
-m4 net0168 net0168 net0168 vdd lvtpfet w=w12 l=l1
-m5 vrefp vrefp vrefp vdd lvtpfet w=w13 l=l1
-m31 net0160 net0160 net0160 vdd lvtpfet w=w14 l=l1
-m28 vrefp net0176 net0168 vdd lvtpfet w=w15 l=l1
-m26 vfb vfb vfb vdd lvtpfet w=w14 l=l1
-m0 net0156 net0156 net0156 vdd lvtpfet w=w11 l=l1
-m34 vdd net0160 vdd vdd lvtpfet w=w16 l=l4
-m29 net0176 net0160 vrefp vdd lvtpfet w=w17 l=l1
-m15 vfb net0144 net0156 vdd lvtpfet w=w18 l=l1
-m27 net0160 net0160 vfb vdd lvtpfet w=w19 l=l1
-m79 net0122 net0122 net0122 vdd pfet w=w20 l=l1
-m75 vdd vdd vdd vdd pfet w=w21 l=l0
-m60 net0134 gnd vdd vdd pfet w=w22 l=l0
-m56 net0118 gnd vdd vdd pfet w=w10 l=l0
-m53 net0122 gnd vdd vdd pfet w=w10 l=l0
-m52 net0101 gnd vdd vdd pfet w=w22 l=l0
-m49 net093 gnd vdd vdd pfet w=w9 l=l0
-m47 net0144 net0140 net0133 vdd pfet w=w23 l=l1
-m46 net0103 net0140 net0102 vdd pfet w=w23 l=l1
-m45 net0140 net0140 net093 vdd pfet w=w24 l=l5
-m44 net0129 net0129 net0122 vdd pfet w=w4 l=l1
-m42 net0133 net0129 net0134 vdd pfet w=w25 l=l1
-m41 net0109 net0109 net0118 vdd pfet w=w4 l=l1
-m40 net0102 net0109 net0101 vdd pfet w=w25 l=l1
-m85 net0133 net0133 net0133 vdd pfet w=w23 l=l1
-m84 net0102 net0102 net0102 vdd pfet w=w23 l=l1
-m83 net0134 net0134 net0134 vdd pfet w=w26 l=l1
-m82 net0101 net0101 net0101 vdd pfet w=w26 l=l1
-m81 net0129 net0129 net0129 vdd pfet w=w20 l=l1
-m80 net0109 net0109 net0109 vdd pfet w=w20 l=l1
-m73 net0140 net0140 net0140 vdd pfet w=w27 l=l5
-m77 net0118 net0118 net0118 vdd pfet w=w9 l=l0
-m78 net0118 net0118 net0118 vdd pfet w=w20 l=l1
-m74 net093 net093 net093 vdd pfet w=w27 l=l5
-m89 net0156 net0156 net0156 vdd pfet w=w9 l=l0
-m88 vdd vdd vdd vdd pfet w=w28 l=l0
-m86 net0168 gnd vdd vdd pfet w=w22 l=l0
-m87 net0156 gnd vdd vdd pfet w=w10 l=l0
-m76 net0122 net0122 net0122 vdd pfet w=w9 l=l0
+m72 net0211 net0211 net0211 gnd nfet w=w0 l=l0 nf=2
+m71 gnd gnd gnd gnd nfet w=w1 l=l0 nf=2
+m70 net0176 net0176 net0176 gnd nfet w=w2 l=l1 nf=2
+m69 net0211 net0211 net0211 gnd nfet w=w3 l=l1 nf=2
+m54 net0144 net0144 net0144 gnd nfet w=w4 l=l1 nf=2
+m51 net0111 net0111 net0111 gnd nfet w=w4 l=l1 nf=2
+m50 net0111 net0111 net0111 gnd nfet w=w4 l=l1 nf=2
+m48 net0129 net0129 net0129 gnd nfet w=w4 l=l1 nf=2
+m43 net0109 net0109 net0109 gnd nfet w=w4 l=l1 nf=2
+m68 net0160 net0160 net0160 gnd nfet w=w3 l=l1 nf=2
+m62 net0147 net0147 net0147 gnd nfet w=w3 l=l2 nf=2
+m65 net0149 net0149 net0149 gnd nfet w=w0 l=l0 nf=2
+m58 net0103 net0103 net0103 gnd nfet w=w3 l=l2 nf=2
+m55 net0103 net0103 net0103 gnd nfet w=w4 l=l1 nf=2
+m57 net0111 net0111 net0111 gnd nfet w=w2 l=l1 nf=2
+m59 net0144 net0144 net0144 gnd nfet w=w3 l=l2 nf=2
+m61 net0149 net0149 net0149 gnd nfet w=w3 l=l2 nf=2
+m25 net0147 vdd gnd gnd nfet w=w5 l=l0 nf=2
+m24 net0148 vdd gnd gnd nfet w=w0 l=l0 nf=2
+m23 net0149 vdd gnd gnd nfet w=w5 l=l0 nf=2
+m22 net0144 net0103 net0147 gnd nfet w=w6 l=l2 nf=2
+m1 net0103 net0103 net0149 gnd nfet w=w6 l=l2 nf=2
+m20 net0111 ibias net0148 gnd nfet w=w3 l=l1 nf=2
+m19 net0129 vfb net0111 gnd nfet w=w7 l=l1 nf=2
+m18 net0103 vfb net0111 gnd nfet w=w7 l=l1 nf=2
+m17 net0109 vref net0111 gnd nfet w=w7 l=l1 nf=2
+m16 net0144 vref net0111 gnd nfet w=w7 l=l1 nf=2
+m67 net0211 vdd gnd gnd nfet w=w5 l=l0 nf=2
+m21 net0160 ibias net0211 gnd nfet w=w6 l=l1 nf=2
+m63 gnd gnd gnd gnd nfet w=w1 l=l0 nf=2
+m64 net0147 net0147 net0147 gnd nfet w=w0 l=l0 nf=2
+m30 net0176 ibias net0207 gnd nfet w=w8 l=l1 nf=2
+m14 net0140 net0140 net0140 gnd nfet w=w3 l=l1 nf=2
+m8 net0140 ibias net016 gnd nfet w=w6 l=l1 nf=2
+m7 ibias ibias net017 gnd nfet w=w6 l=l1 nf=2
+m6 net017 vdd gnd gnd nfet w=w0 l=l0 nf=2
+m3 net016 vdd gnd gnd nfet w=w5 l=l0 nf=2
+m9 gnd gnd gnd gnd nfet w=w1 l=l0 nf=2
+m10 net016 net016 net016 gnd nfet w=w0 l=l0 nf=2
+m11 ibias ibias ibias gnd nfet w=w3 l=l1 nf=2
+m66 net0207 vdd gnd gnd nfet w=w9 l=l0 nf=2
+m13 net016 net016 net016 gnd nfet w=w3 l=l1 nf=2
+m12 net017 net017 net017 gnd nfet w=w3 l=l1 nf=2
+m35 vdd net0144 vdd vdd lvtpfet w=w10 l=l3 nf=2
+m2 vfb vfb vfb vdd lvtpfet w=w11 l=l1 nf=2
+m4 net0168 net0168 net0168 vdd lvtpfet w=w12 l=l1 nf=2
+m5 vrefp vrefp vrefp vdd lvtpfet w=w13 l=l1 nf=2
+m31 net0160 net0160 net0160 vdd lvtpfet w=w14 l=l1 nf=2
+m28 vrefp net0176 net0168 vdd lvtpfet w=w15 l=l1 nf=2
+m26 vfb vfb vfb vdd lvtpfet w=w14 l=l1 nf=2
+m0 net0156 net0156 net0156 vdd lvtpfet w=w11 l=l1 nf=2
+m34 vdd net0160 vdd vdd lvtpfet w=w16 l=l4 nf=2
+m29 net0176 net0160 vrefp vdd lvtpfet w=w17 l=l1 nf=2
+m15 vfb net0144 net0156 vdd lvtpfet w=w18 l=l1 nf=2
+m27 net0160 net0160 vfb vdd lvtpfet w=w19 l=l1 nf=2
+m79 net0122 net0122 net0122 vdd pfet w=w20 l=l1 nf=2
+m75 vdd vdd vdd vdd pfet w=w21 l=l0 nf=2
+m60 net0134 gnd vdd vdd pfet w=w22 l=l0 nf=2
+m56 net0118 gnd vdd vdd pfet w=w10 l=l0 nf=2
+m53 net0122 gnd vdd vdd pfet w=w10 l=l0 nf=2
+m52 net0101 gnd vdd vdd pfet w=w22 l=l0 nf=2
+m49 net093 gnd vdd vdd pfet w=w9 l=l0 nf=2
+m47 net0144 net0140 net0133 vdd pfet w=w23 l=l1 nf=2
+m46 net0103 net0140 net0102 vdd pfet w=w23 l=l1 nf=2
+m45 net0140 net0140 net093 vdd pfet w=w24 l=l5 nf=2
+m44 net0129 net0129 net0122 vdd pfet w=w4 l=l1 nf=2
+m42 net0133 net0129 net0134 vdd pfet w=w25 l=l1 nf=2
+m41 net0109 net0109 net0118 vdd pfet w=w4 l=l1 nf=2
+m40 net0102 net0109 net0101 vdd pfet w=w25 l=l1 nf=2
+m85 net0133 net0133 net0133 vdd pfet w=w23 l=l1 nf=2
+m84 net0102 net0102 net0102 vdd pfet w=w23 l=l1 nf=2
+m83 net0134 net0134 net0134 vdd pfet w=w26 l=l1 nf=2
+m82 net0101 net0101 net0101 vdd pfet w=w26 l=l1 nf=2
+m81 net0129 net0129 net0129 vdd pfet w=w20 l=l1 nf=2
+m80 net0109 net0109 net0109 vdd pfet w=w20 l=l1 nf=2
+m73 net0140 net0140 net0140 vdd pfet w=w27 l=l5 nf=2
+m77 net0118 net0118 net0118 vdd pfet w=w9 l=l0 nf=2
+m78 net0118 net0118 net0118 vdd pfet w=w20 l=l1 nf=2
+m74 net093 net093 net093 vdd pfet w=w27 l=l5 nf=2
+m89 net0156 net0156 net0156 vdd pfet w=w9 l=l0 nf=2
+m88 vdd vdd vdd vdd pfet w=w28 l=l0 nf=2
+m86 net0168 gnd vdd vdd pfet w=w22 l=l0 nf=2
+m87 net0156 gnd vdd vdd pfet w=w10 l=l0 nf=2
+m76 net0122 net0122 net0122 vdd pfet w=w9 l=l0 nf=2
 .ends TEST
 
