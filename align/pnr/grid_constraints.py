@@ -47,7 +47,11 @@ def merge(*rs):
                     yield (coarse_offset + offset, scaling)
 
     pairs = set.intersection(*(set(gen_pairs(r)) for r in rs))
-    return PlaceOnGrid(direction=new_direction, pitch=new_pitch, ored_terms=list(simplify(pairs)))
+    res = PlaceOnGrid(direction=new_direction, pitch=new_pitch, ored_terms=list(simplify(pairs)))
+
+    assert res.ored_terms, f'No legal grid positions.'
+
+    return res
 
 def split_directions_and_merge(*rs):
     split_directions = defaultdict(list)
@@ -68,12 +72,12 @@ def gen_constraints_for_module(m, modules, leaves):
         else:
             assert False, f'{ctn} not found in leaves or modules.'
 
-        place_on_grid_cnsts = [constraint for constraint in constraints if constraint['constraint'] == 'place_on_grid']
+        place_on_grid_constraints = [constraint for constraint in constraints if constraint['constraint'] == 'place_on_grid']
 
         tr = instance['transformation']
         assert tr['sX'] == 1 and tr['sY'] == 1
 
-        for pog in place_on_grid_cnsts:
+        for pog in place_on_grid_constraints:
             if pog['direction'] == 'H': 
                 delta = tr['oX']
             elif pog['direction'] == 'V':
@@ -92,8 +96,6 @@ def gen_constraints_for_module(m, modules, leaves):
             pog_constraints.append(PlaceOnGrid(direction=pog['direction'], pitch=pog['pitch'], ored_terms=new_ored_terms))
 
     m['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))
-
-
 
 
 def gen_constraints(placement_verilog_d, top_level_name):

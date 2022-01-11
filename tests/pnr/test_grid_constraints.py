@@ -300,9 +300,19 @@ def test_gen_constraints_internal():
     gen_constraints(placement_verilog_d, 'T_0')
     print(json.dumps(module_top['constraints'], indent=2))
 
+    print(module_internal['constraints'])
+    print(module_top['constraints'])
+
     assert module_internal['constraints'][0]['pitch'] == 12
     assert module_internal['constraints'][0]['ored_terms'][0]['offsets'] == [0, 4, 11]
 
     assert module_top['constraints'][0]['pitch'] == 12
     assert module_top['constraints'][0]['ored_terms'][0]['offsets'] == [0]
+
+    module_top['instances'][2]['transformation']['oY'] = 10
+    module_internal['constraints'] = []
+    module_top['constraints'] = []
+
+    with raises(AssertionError):
+        gen_constraints(placement_verilog_d, 'T_0')
 
