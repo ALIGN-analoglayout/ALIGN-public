@@ -77,8 +77,6 @@ def gen_constraints(placement_verilog_d):
         tr = instance['transformation']
         assert tr['sX'] == 1 and tr['sY'] == 1
 
-        print(ctn, instance['instance_name'], tr, place_on_grid_cnsts)
-
         for pog in place_on_grid_cnsts:
             if pog['direction'] == 'H':
                 delta = tr['oX']
@@ -91,13 +89,10 @@ def gen_constraints(placement_verilog_d):
             for ored_term in pog['ored_terms']:
                 new_offsets = []
                 for offset in ored_term['offsets']:
-                    new_offsets.append(offset-delta)
+                    new_offsets.append((offset-delta) % pog['pitch'])
 
                 new_ored_terms.append(OffsetsScalings(offsets=new_offsets,scalings=ored_term['scalings']))
 
             pog_constraints.append(PlaceOnGrid(direction=pog['direction'], pitch=pog['pitch'], ored_terms=new_ored_terms))
 
-    res = split_directions_and_merge(*pog_constraints)
-    print(res)
-
-    return res
+    top_module['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))

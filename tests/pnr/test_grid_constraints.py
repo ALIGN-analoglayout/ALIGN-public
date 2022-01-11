@@ -89,7 +89,6 @@ def test_split_directions_and_merge():
     
 def test_gen_constraints():
 
-
     leaf_a0 = {"abstract_name": "A",
                "concrete_name": "A_0",
                "bbox": [0,0,10,10],
@@ -141,6 +140,65 @@ def test_gen_constraints():
 
     placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0, leaf_b0], "modules": [module_top]}
 
-    print(json.dumps(placement_verilog_d, indent=2))
+    gen_constraints(placement_verilog_d)
+    print(json.dumps(module_top['constraints'], indent=2))
+
+def test_gen_constraints_multiple():
+
+    leaf_a0 = {"abstract_name": "A",
+               "concrete_name": "A_0",
+               "bbox": [0,0,1,1],
+               "terminals": [],
+               "constraints": [
+                   {
+                       "constraint": "place_on_grid",
+                       "direction": "V",
+                       "pitch": 4,
+                       "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
+                   }
+               ]
+    }
+
+    leaf_b0 = {"abstract_name": "B",
+               "concrete_name": "B_0",
+               "bbox": [0,0,1,1],
+               "terminals": [],
+               "constraints": [
+                   {
+                       "constraint": "place_on_grid",
+                       "direction": "V",
+                       "pitch": 6,
+                       "ored_terms": [{"offsets": [0, 1, 2], "scalings": [1]}]
+                   }
+               ]
+
+    }
+
+    module_top = {"abstract_name": "T",
+                  "concrete_name": "T_0",
+                  "bbox": [0,0,1,6],
+                  "constraints": [],
+                  "instances": [
+                      {"abstract_template_name": "A",
+                       "concrete_template_name": "A_0",
+                       "fa_map": [],
+                       "instance_name": "U0",
+                       "transformation": { 'oX': 0, 'oY': 5, 'sX': 1, 'sY': 1}
+                      },
+                      {"abstract_template_name": "B",
+                       "concrete_template_name": "B_0",
+                       "fa_map": [],
+                       "instance_name": "U1",
+                       "transformation": { 'oX': 0, 'oY': 2, 'sX': 1, 'sY': 1}
+                      }
+                      ]
+                  }
+
+    placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0, leaf_b0], "modules": [module_top]}
 
     gen_constraints(placement_verilog_d)
+    print(json.dumps(module_top['constraints'], indent=2))
+
+    assert module_top['constraints'][0]['pitch'] == 12
+    assert set(module_top['constraints'][0]['ored_terms'][0]['offsets']) == {0, 4, 11}
+
