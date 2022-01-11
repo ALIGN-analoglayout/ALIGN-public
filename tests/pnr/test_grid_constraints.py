@@ -147,6 +147,44 @@ def test_gen_constraints():
     gen_constraints(placement_verilog_d, 'T_0')
     print(json.dumps(module_top['constraints'], indent=2))
 
+def test_gen_constraints_flip():
+
+    leaf_a0 = {
+        "abstract_name": "A",
+        "concrete_name": "A_0",
+        "bbox": [0,0,10,10],
+        "terminals": [],
+        "constraints": [
+            {
+                "constraint": "place_on_grid",
+                "direction": "V",
+                "pitch": 20,
+                "ored_terms": [{"offsets": [0], "scalings": [1]}, {"offsets": [3], "scalings": [-1]}]
+            }
+        ]
+    }
+
+    module_top = {
+        "abstract_name": "T",
+        "concrete_name": "T_0",
+        "bbox": [0,0,10,20],
+        "constraints": [],
+        "instances": [
+            {
+                "abstract_template_name": "A",
+                "concrete_template_name": "A_0",
+                "fa_map": [],
+                "instance_name": "U0",
+                "transformation": { 'oX': 0, 'oY': 7, 'sX': 1, 'sY': -1}
+            },
+        ]
+    }
+
+    placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0], "modules": [module_top]}
+
+    gen_constraints(placement_verilog_d, 'T_0')
+    print(json.dumps(module_top['constraints'], indent=2))
+
 def test_gen_constraints_multiple():
 
     leaf_a0 = {

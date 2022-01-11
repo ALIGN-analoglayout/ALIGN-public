@@ -13,6 +13,8 @@ from ..gui.mockup import run_gui
 from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 
+from .grid_constraints import gen_constraints
+
 import math
 
 logger = logging.getLogger(__name__)
@@ -556,28 +558,49 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
 def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d,
                     router_mode, gui, skipGDS, lambda_coeff, scale_factor,
-                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer, ilp_solver):
+                    reference_placement_verilog_json, nroutings, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
+    
     if reference_placement_verilog_json:
         with open(reference_placement_verilog_json, "rt") as fp:
             j = json.load(fp)
-
         modules = collections.defaultdict(list)
         for m in j['modules']:
             modules[m['abstract_name']].append(m)
 
-        for idx in DB.TraverseHierTree():
-            nm = DB.hierTree[idx].name
-            place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-                  lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-                  seed=seed, use_analytical_placer=use_analytical_placer,
-                  modules_d=modules[nm], ilp_solver=ilp_solver)
+    for idx in DB.TraverseHierTree():
+        modules_d = modules[DB.hierTree[idx].name] if reference_placement_verilog_json else None
+        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+              seed=seed, use_analytical_placer=use_analytical_placer,
+              modules_d=modules_d, ilp_solver=ilp_solver)
 
-    else:
-        for idx in DB.TraverseHierTree():
-            place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-                  lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
-                  seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
+        # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
+        # convert the restrictions into the form needed for the subsequent placements
+
+        if verilog_d is not None:
+            # (We probably want to retire the "no" verilog_d mode.)
+
+            # Restrict verilog_d to include only sub-hierachies of the current name
+            s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
+
+            for sel in range(DB.hierTree[idx].numPlacement):
+                # create new verilog for each placement
+                hN = DB.CheckoutHierNode( idx, sel)
+                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
+
+                for leaf in placement_verilog_d['leaves']:
+                    ctn = leaf['concrete_name']
+                    primitive = primitives[ctn]
+                    if 'metadata' in primitive and 'constraints' in primitive['metadata']:
+                        if 'constraints' not in leaf:
+                            leaf['constraints'] = []
+
+                        leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
+
+                top_name = f'{hN.name}_{sel}'
+                print(top_name)
+                gen_constraints(placement_verilog_d, top_name)
 
     placements_to_run = None
     if verilog_d is not None:
@@ -622,7 +645,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
              lambda_coeff=1.0, scale_factor=2,
              reference_placement_verilog_json=None,
              nroutings=1, select_in_ILP=False,
-             seed=0, use_analytical_placer=False, ilp_solver='symphony'):
+             seed=0, use_analytical_placer=False, ilp_solver='symphony', primitives=None):
 
     assert len(args) == 9
 
@@ -649,7 +672,7 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                                        reference_placement_verilog_json=reference_placement_verilog_json,
                                        nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
+                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives)
 
     return DB, results_name_map
 
