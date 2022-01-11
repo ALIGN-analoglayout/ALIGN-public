@@ -43,21 +43,21 @@ def get_parameters(primitive, parameters, nfin):
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
-    generator = get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSArrayGenerator', pdkdir)
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
     shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
+    uc = generator(pdk, height, bodyswitch)
     x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
     parameters = get_parameters(primitive.name, parameters, nfin)
 
     def gen(pattern, routing):
         if 'NMOS' in primitive:
-            uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, fin, gate, gateDummy, shared_diff, stack, routing, **parameters)
         else:
-            uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, fin, gate, gateDummy, shared_diff, stack, routing, **parameters)
         return routing.keys()
 
     if isinstance(primitive, SubCircuit):
