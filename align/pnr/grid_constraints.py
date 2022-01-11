@@ -2,6 +2,7 @@ import math
 from itertools import product
 from functools import reduce
 from collections import defaultdict
+from .hpwl import compute_topoorder
 
 from ..schema.constraint import OffsetsScalings, PlaceOnGrid
 
@@ -56,29 +57,24 @@ def split_directions_and_merge(*rs):
     return [merge(*v) for v in split_directions.values()]
 
 
-def gen_constraints(placement_verilog_d):
-    """Assumes the leaves include the constraint metadata
-"""
-    
-    # Find the top level or internal hierarchy cells 
-    # for now let's do the top
-
-    leaves = {leaf['concrete_name']: leaf for leaf in placement_verilog_d['leaves']}
-
-    assert len(placement_verilog_d['modules']) == 1
-    top_module = placement_verilog_d['modules'][0]
-
+def gen_constraints_for_module(m, modules, leaves):
     pog_constraints = []
-    for instance in top_module['instances']:
+    for instance in m['instances']:
         ctn = instance['concrete_template_name']
-        leaf = leaves[ctn]
-        place_on_grid_cnsts = [cnst for cnst in leaf['constraints'] if cnst['constraint'] == 'place_on_grid']
+        if ctn in leaves:
+            constraints = leaves[ctn]['constraints']
+        elif ctn in modules:
+            constraints = modules[ctn]['constraints']
+        else:
+            assert False, f'{ctn} not found in leaves or modules.'
+
+        place_on_grid_cnsts = [constraint for constraint in constraints if constraint['constraint'] == 'place_on_grid']
 
         tr = instance['transformation']
         assert tr['sX'] == 1 and tr['sY'] == 1
 
         for pog in place_on_grid_cnsts:
-            if pog['direction'] == 'H':
+            if pog['direction'] == 'H': 
                 delta = tr['oX']
             elif pog['direction'] == 'V':
                 delta = tr['oY']
@@ -95,4 +91,20 @@ def gen_constraints(placement_verilog_d):
 
             pog_constraints.append(PlaceOnGrid(direction=pog['direction'], pitch=pog['pitch'], ored_terms=new_ored_terms))
 
-    top_module['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))
+    m['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))
+
+
+
+
+def gen_constraints(placement_verilog_d, top_level_name):
+
+    modules = {module['concrete_name']: module for module in placement_verilog_d['modules']}
+    leaves = {leaf['concrete_name']: leaf for leaf in placement_verilog_d['leaves']}
+
+    order, _, _ = compute_topoorder(modules, top_level_name)
+
+    for concrete_name in order:
+        if concrete_name in modules:
+            gen_constraints_for_module(modules[concrete_name], modules, leaves)
+        else:
+            assert concrete_name in leaves
