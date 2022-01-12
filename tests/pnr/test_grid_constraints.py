@@ -145,7 +145,12 @@ def test_gen_constraints():
     placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0, leaf_b0], "modules": [module_top]}
 
     gen_constraints(placement_verilog_d, 'T_0')
-    print(json.dumps(module_top['constraints'], indent=2))
+
+    assert module_top['constraints'][0]['pitch'] == 20
+    assert set(module_top['constraints'][0]['ored_terms'][0]['offsets']) == {0}
+    assert set(module_top['constraints'][0]['ored_terms'][0]['scalings']) == {1}
+    
+
 
 def test_gen_constraints_flip():
 
@@ -159,7 +164,7 @@ def test_gen_constraints_flip():
                 "constraint": "place_on_grid",
                 "direction": "V",
                 "pitch": 20,
-                "ored_terms": [{"offsets": [0,2], "scalings": [-1]}]
+                "ored_terms": [{"offsets": [0,2], "scalings": [1]}]
             }
         ]
     }
@@ -183,7 +188,21 @@ def test_gen_constraints_flip():
     placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0], "modules": [module_top]}
 
     gen_constraints(placement_verilog_d, 'T_0')
-    print(json.dumps(module_top['constraints'], indent=2))
+
+    assert module_top['constraints'][0]['pitch'] == 20
+    assert set(module_top['constraints'][0]['ored_terms'][0]['offsets']) == {5, 7}
+    assert set(module_top['constraints'][0]['ored_terms'][0]['scalings']) == {-1}
+
+    leaf_a0['constraints'][0]['ored_terms'][0]['scalings'] = [-1]
+    module_top['constraints'] = []
+
+    gen_constraints(placement_verilog_d, 'T_0')
+
+    assert module_top['constraints'][0]['pitch'] == 20
+    assert set(module_top['constraints'][0]['ored_terms'][0]['offsets']) == {15, 17}
+    assert set(module_top['constraints'][0]['ored_terms'][0]['scalings']) == {1}
+
+
 
 def test_gen_constraints_multiple():
 
@@ -243,7 +262,6 @@ def test_gen_constraints_multiple():
     placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0, leaf_b0], "modules": [module_top]}
 
     gen_constraints(placement_verilog_d, 'T_0')
-    print(json.dumps(module_top['constraints'], indent=2))
 
     assert module_top['constraints'][0]['pitch'] == 12
     assert module_top['constraints'][0]['ored_terms'][0]['offsets'] == [0, 4, 11]
@@ -336,10 +354,6 @@ def test_gen_constraints_internal():
     placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0, leaf_b0], "modules": [module_top,module_internal]}
 
     gen_constraints(placement_verilog_d, 'T_0')
-    print(json.dumps(module_top['constraints'], indent=2))
-
-    print(module_internal['constraints'])
-    print(module_top['constraints'])
 
     assert module_internal['constraints'][0]['pitch'] == 12
     assert module_internal['constraints'][0]['ored_terms'][0]['offsets'] == [0, 4, 11]

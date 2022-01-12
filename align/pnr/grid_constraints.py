@@ -72,8 +72,6 @@ def gen_constraints_for_module(m, modules, leaves):
         else:
             assert False, f'{ctn} not found in leaves or modules.'
 
-        print(ctn, instance['instance_name'], constraints)
-
         new_constraints = [constraint.dict() if type(constraint) == PlaceOnGrid else constraint for constraint in constraints]
         place_on_grid_constraints = [constraint for constraint in new_constraints if constraint['constraint'] == 'place_on_grid']
 
@@ -89,9 +87,10 @@ def gen_constraints_for_module(m, modules, leaves):
 
             new_ored_terms = []
             for ored_term in pog['ored_terms']:
-                new_offsets = [(offset-s*o) % pog['pitch'] for offset in ored_term['offsets']]
-                new_scalings = [s*scaling for scaling in ored_term['scalings']]
-                new_ored_terms.append(OffsetsScalings(offsets=new_offsets,scalings=new_scalings))
+                for offset, scaling in product(ored_term['offsets'], ored_term['scalings']):
+                    new_offset = (offset-s*o*scaling) % pog['pitch']
+                    new_scaling = s*scaling
+                    new_ored_terms.append(OffsetsScalings(offsets=[new_offset],scalings=[new_scaling]))
 
             pog_constraints.append(PlaceOnGrid(direction=pog['direction'], pitch=pog['pitch'], ored_terms=new_ored_terms))
 

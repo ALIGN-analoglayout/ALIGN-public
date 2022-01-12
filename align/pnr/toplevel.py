@@ -568,7 +568,15 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         for m in j['modules']:
             modules[m['abstract_name']].append(m)
 
+    
+    grid_constraints = {}
+
+    frontier = {}
+
     for idx in DB.TraverseHierTree():
+
+        print(frontier)
+
         modules_d = modules[DB.hierTree[idx].name] if reference_placement_verilog_json else None
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
@@ -583,6 +591,8 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
             # Restrict verilog_d to include only sub-hierachies of the current name
             s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
+
+            frontier = {}
 
             for sel in range(DB.hierTree[idx].numPlacement):
                 # create new verilog for each placement
@@ -599,8 +609,14 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                         leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
 
                 top_name = f'{hN.name}_{sel}'
-                print(top_name)
                 gen_constraints(placement_verilog_d, top_name)
+                modules = {module['concrete_name']: module for module in placement_verilog_d['modules']}
+                top_module_constraints = modules[top_name]['constraints']
+
+                
+                frontier[top_name] = [constraint.dict() for constraint in top_module_constraints if constraint.constraint == 'place_on_grid']
+
+            grid_constraints.update(frontier)
 
     placements_to_run = None
     if verilog_d is not None:
