@@ -295,7 +295,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
@@ -320,6 +320,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
+
+    hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
@@ -575,18 +577,19 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
     for idx in DB.TraverseHierTree():
 
-        print(frontier)
+        json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
+        print(json_str)
 
         modules_d = modules[DB.hierTree[idx].name] if reference_placement_verilog_json else None
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
-              modules_d=modules_d, ilp_solver=ilp_solver)
+              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
         # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
         # convert the restrictions into the form needed for the subsequent placements
 
-        if verilog_d is not None:
+        if verilog_d is not None and primitives is not None:
             # (We probably want to retire the "no" verilog_d mode.)
 
             # Restrict verilog_d to include only sub-hierachies of the current name
@@ -609,8 +612,10 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                         leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
 
                 top_name = f'{hN.name}_{sel}'
+                print('Trying', top_name)
                 gen_constraints(placement_verilog_d, top_name)
                 modules = {module['concrete_name']: module for module in placement_verilog_d['modules']}
+
                 top_module_constraints = modules[top_name]['constraints']
 
                 
