@@ -152,13 +152,13 @@ class MOSGenerator(DefaultCanvas):
 
         fullname = f'{name}_X{x}_Y{y}'
         self.subinsts[fullname].parameters.update(parameters)
-
+        self._xpins_local = collections.defaultdict(lambda: collections.defaultdict(list))
         def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, i, (grid_y0, -1), (grid_y1, 1))
             self.addWire( self.LISD, None, i, (y, 1), (y+1, -1))
             for j in range(1,self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', i, (y, j))
-            self._xpins[name][pin].append(i)
+            self._xpins_local[name][pin].append(i)
             
         # Draw FEOL Layers
         if self.shared_diff == 0:
@@ -235,7 +235,7 @@ class MOSGenerator(DefaultCanvas):
         self.addWire( self.m1, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
         self.addWire( self.pc, None, grid_y1+1, (x,1), (x+1,-1))
         self.addVia( self.va, f'{fullname}:G', gate_x, grid_y1+2)
-        self._xpins[name]['G'].append(gate_x)
+        self._xpins_local[name]['G'].append(gate_x)
 
         # Connect Source & Drain
         (center_terminal, side_terminal) = ('S', 'D') if self.gate%4 == 0 else ('D', 'S')
@@ -252,6 +252,8 @@ class MOSGenerator(DefaultCanvas):
             else:
                 _connect_diffusion(gate_x - x_terminal, terminal)
                 _connect_diffusion(gate_x + x_terminal, terminal)
+        return self._xpins_local
+
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
