@@ -159,7 +159,7 @@ def test_gen_constraints_flip():
                 "constraint": "place_on_grid",
                 "direction": "V",
                 "pitch": 20,
-                "ored_terms": [{"offsets": [0], "scalings": [1]}, {"offsets": [3], "scalings": [-1]}]
+                "ored_terms": [{"offsets": [0,2], "scalings": [-1]}]
             }
         ]
     }
@@ -175,7 +175,7 @@ def test_gen_constraints_flip():
                 "concrete_template_name": "A_0",
                 "fa_map": [],
                 "instance_name": "U0",
-                "transformation": { 'oX': 0, 'oY': 7, 'sX': 1, 'sY': -1}
+                "transformation": { 'oX': 0, 'oY': 5, 'sX': 1, 'sY': -1}
             },
         ]
     }

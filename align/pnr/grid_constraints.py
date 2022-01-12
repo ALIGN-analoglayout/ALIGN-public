@@ -89,7 +89,7 @@ def gen_constraints_for_module(m, modules, leaves):
 
             new_ored_terms = []
             for ored_term in pog['ored_terms']:
-                new_offsets = [(s*offset-o) % pog['pitch'] for offset in ored_term['offsets']]
+                new_offsets = [(offset-s*o) % pog['pitch'] for offset in ored_term['offsets']]
                 new_scalings = [s*scaling for scaling in ored_term['scalings']]
                 new_ored_terms.append(OffsetsScalings(offsets=new_offsets,scalings=new_scalings))
 
