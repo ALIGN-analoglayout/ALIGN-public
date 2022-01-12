@@ -361,10 +361,13 @@ def test_gen_constraints_internal():
     assert module_top['constraints'][0]['pitch'] == 12
     assert module_top['constraints'][0]['ored_terms'][0]['offsets'] == [0]
 
+
     module_top['instances'][2]['transformation']['oY'] = 10
     module_internal['constraints'] = []
     module_top['constraints'] = []
 
-    with raises(AssertionError):
-        gen_constraints(placement_verilog_d, 'T_0')
+    gen_constraints(placement_verilog_d, 'T_0')
+    assert module_top['constraints'][0]['pitch'] == 12
+    assert module_top['constraints'][0]['ored_terms'] == []
+
 
