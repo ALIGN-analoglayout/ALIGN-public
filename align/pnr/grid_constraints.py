@@ -3,8 +3,11 @@ from itertools import product
 from functools import reduce
 from collections import defaultdict
 from .hpwl import compute_topoorder
+import logging
 
 from ..schema.constraint import OffsetsScalings, PlaceOnGrid
+
+logger = logging.getLogger(__name__)
 
 def check(r, x, scaling):
     return any((x % r.pitch) in ored_term.offsets and
@@ -49,7 +52,8 @@ def merge(*rs):
     pairs = set.intersection(*(set(gen_pairs(r)) for r in rs))
     res = PlaceOnGrid(direction=new_direction, pitch=new_pitch, ored_terms=list(simplify(pairs)))
 
-    assert res.ored_terms, f'No legal grid positions.'
+    if not res.ored_terms:
+        logger.error(f'No legal grid positions: {res}')
 
     return res
 
