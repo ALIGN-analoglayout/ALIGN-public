@@ -1,4 +1,5 @@
 import json
+import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 
@@ -12,13 +13,21 @@ def dump_simplified_json(modules, filename):
         for inst in v['instances']:
             new_inst = {k: v for k, v in inst.items()}
             del new_inst['fa_map']
-            del new_inst['abstract_template_name']
+            # del new_inst['abstract_template_name']
             modules_simple[k]['instances'].append(new_inst)
     with (filename).open('w') as fp:
         json.dump(modules_simple, fp=fp, indent=2)
     return modules_simple
 
 
+def find_instance(instances, pattern):
+    inst = [key for key in instances.keys() if all([p in key for p in pattern])]
+    assert len(inst) > 0, f'{pattern} not found in {instances.keys()}'
+    assert len(inst) == 1, f'Collision: {inst}'
+    return instances[inst[0]]
+
+
+# @pytest.mark.skip()
 def test_identification():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -52,12 +61,6 @@ def test_identification():
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
         modules_simple = dump_simplified_json(modules, filename)
 
-        def find_instance(instances, pattern):
-            inst = [key for key in instances.keys() if all([p in key for p in pattern])]
-            assert len(inst) > 0, f'{pattern} not found in {instances.keys()}'
-            assert len(inst) == 1, f'Collision: {inst}'
-            return instances[inst[0]]
-
         atn = 'abstract_template_name'
 
         mn01 = find_instance(instances, ['MN01'])
@@ -70,3 +73,29 @@ def test_identification():
 
         inst = [key for key in instances.keys() if all([p in key for p in ['MN3', 'MN4']])]
         assert len(inst) == 2, 'MN3 and MN4 should be distinct primitives'
+
+
+def test_parallel_stack():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} d1 d2 d3 g1 g2 g3 vssx
+    mn01 d1 g1 vssx vssx n w=360e-9 m=1 nf=2 parallel=2
+    mn02 d2 g2 vssx vssx n w=360e-9 m=1 nf=2 parallel=3
+    mn03 d3 g3 vssx vssx n w=360e-9 m=1 parallel=2 stack=2
+    .ends {name}
+    .END
+    """)
+    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+
+    name = name.upper()
+    filename = run_dir / '1_topology' / f'{name}.verilog.json'
+    assert filename.exists() and filename.is_file(), f'File not found:{filename}'
+    with (filename).open('rt') as fp:
+        data = json.load(fp)
+        modules = {m['name']: m for m in data['modules']}
+        instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
+
+        filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
+        modules_simple = dump_simplified_json(modules, filename)
