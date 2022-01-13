@@ -3,6 +3,21 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 
 
+def dump_simplified_json(modules, filename):
+    # simplify for debug
+    modules_simple = dict()
+    for k, v in modules.items():
+        modules_simple[k] = dict()
+        modules_simple[k]['instances'] = list()
+        for inst in v['instances']:
+            del inst['fa_map']
+            del inst['abstract_template_name']
+            modules_simple[k]['instances'].append(inst)
+    with (filename).open('w') as fp:
+        json.dump(modules_simple, fp=fp, indent=2)
+    return modules_simple
+
+
 def test_identification():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -32,6 +47,9 @@ def test_identification():
         data = json.load(fp)
         modules = {m['name']: m for m in data['modules']}
         instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
+
+        filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
+        modules_simple = dump_simplified_json(modules, filename)
 
         def find_instance(instances, pattern):
             inst = [key for key in instances.keys() if all([p in key for p in pattern])]
