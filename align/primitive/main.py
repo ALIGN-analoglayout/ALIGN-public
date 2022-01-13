@@ -153,9 +153,9 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
-            logger.warn(f"Distinct devices mapped to the same primitive {block_name}: \
-                           existing: {primitives[block_name]}\
-                           new: {block_args}")
+            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
+                             existing: {primitives[block_name]}\
+                             new: {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name] = block_args
@@ -239,6 +239,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         vt = None
         values = {}
         vt_types_temp = []
+        # TODO: Clean up this vt_type mess 
         if isinstance(subckt, SubCircuit):
             for ele in subckt.elements:
                 values[ele.name] = ele.parameters
@@ -309,6 +310,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
+        
+        # TODO: simplify this logic.. if - else - common finish
 
         if design_config["pdk_type"] == "FinFET":
             # FinFET design

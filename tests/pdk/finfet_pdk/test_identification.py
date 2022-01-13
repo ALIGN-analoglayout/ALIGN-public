@@ -10,9 +10,10 @@ def dump_simplified_json(modules, filename):
         modules_simple[k] = dict()
         modules_simple[k]['instances'] = list()
         for inst in v['instances']:
-            del inst['fa_map']
-            del inst['abstract_template_name']
-            modules_simple[k]['instances'].append(inst)
+            new_inst = {k: v for k, v in inst.items()}
+            del new_inst['fa_map']
+            del new_inst['abstract_template_name']
+            modules_simple[k]['instances'].append(new_inst)
     with (filename).open('w') as fp:
         json.dump(modules_simple, fp=fp, indent=2)
     return modules_simple
