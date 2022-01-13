@@ -153,8 +153,9 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
-            logger.warning(f"Primitve {block_name} of size {primitives[block_name]}\
-            with args got approximated to size {block_args}")
+            logger.warn(f"Distinct devices mapped to the same primitive {block_name}: \
+                           existing: {primitives[block_name]}\
+                           new: {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name] = block_args
