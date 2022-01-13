@@ -53,7 +53,7 @@ def merge(*rs):
     res = PlaceOnGrid(direction=new_direction, pitch=new_pitch, ored_terms=list(simplify(pairs)))
 
     if not res.ored_terms:
-        logger.error(f'No legal grid positions: {res}')
+        logger.debug(f'No legal grid positions: {res}')
 
     return res
 

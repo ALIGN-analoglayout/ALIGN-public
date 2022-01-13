@@ -616,10 +616,11 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                 gen_constraints(placement_verilog_d, top_name)
                 modules = {module['concrete_name']: module for module in placement_verilog_d['modules']}
 
-                top_module_constraints = modules[top_name]['constraints']
+                frontier[top_name] = [constraint.dict() for constraint in modules[top_name]['constraints'] if constraint.constraint == 'place_on_grid']
 
-                
-                frontier[top_name] = [constraint.dict() for constraint in top_module_constraints if constraint.constraint == 'place_on_grid']
+                for constraint in frontier[top_name]:
+                    assert constraint['constraint'] == 'place_on_grid'
+                    assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
 
             grid_constraints.update(frontier)
 
