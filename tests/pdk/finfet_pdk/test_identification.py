@@ -7,7 +7,8 @@ def test_identification():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt {name} cm vb ip1 ip2 in1 in2 on1 on2 op1 op2 vssx
-    mn0 cm   vb vssx vssx n w=360e-9 m=1 nf=2
+    mn01 cm   vb vssx vssx n w=360e-9 m=1 nf=2
+    mn02 cm   vb vssx vssx n w=360e-9 m=1 nf=2 dd=1
     *** case 1: DP1 (dd=0 by default)
     mn1 on1 ip1   cm vssx n w=360e-9 m=1 nf=2
     mn2 op1 in1   cm vssx n w=360e-9 m=1 nf=2 dd=0
@@ -39,6 +40,11 @@ def test_identification():
             return instances[inst[0]]
 
         atn = 'abstract_template_name'
+
+        mn01 = find_instance(instances, ['MN01'])
+        mn02 = find_instance(instances, ['MN02'])
+        assert mn01[atn] != mn02[atn], 'Collision'
+
         dp12 = find_instance(instances, ['MN1', 'MN2'])
         dp56 = find_instance(instances, ['MN5', 'MN6'])
         assert dp12[atn] != dp56[atn], 'Collision'
