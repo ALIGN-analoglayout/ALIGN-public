@@ -179,9 +179,13 @@ class SpiceParser:
             + f"{len(args)} nets {args} were passed when instantiating {name}."
         pins = {pin: net for pin, net in zip(model.pins, args)}
         with set_context(self._scope[-1].elements):
-            self._scope[-1].elements.append(Instance(name=name, model=model.name,
-                                                     pins=pins, parameters=kwargs, generator=generator
-                                                     ))
+            try:
+                self._scope[-1].elements.append(Instance(name=name, model=model.name,
+                                                         pins=pins, parameters=kwargs,
+                                                         generator=generator
+                                                         ))
+            except ValueError:
+                assert False, f"could not identified device parameters {name} {kwargs} allowed parameters are {model.name} {model.parameters}"
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):

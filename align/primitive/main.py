@@ -153,8 +153,9 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
-            logger.warning(f"Primitve {block_name} of size {primitives[block_name]}\
-            with args got approximated to size {block_args}")
+            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
+                             existing: {primitives[block_name]}\
+                             new: {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name] = block_args
@@ -168,25 +169,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
     available_block_lef = all_lef
     logger.debug(f"checking lef for: {name}, {element}, {values}")
 
-    if name == 'generic' or get_generator(name.lower(), pdk_dir):
-        # TODO: how about hashing for unique names?
-        value_str = ''
-        if values:
-            for key in sorted(values):
-                val = values[key].replace('-', '')
-                value_str += f'_{key}_{val}'
-        attr = {'ports': list(element.pins.keys()),
-                'values': values if values else None,
-                'real_inst_type': element.model.lower()
-                }
-        block_name = element.model + value_str
-        element.add_abs_name(block_name)
-        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
-        add_primitive(primitives, block_name, block_args)
-        return True
-
-    elif name == 'CAP':
+    if name == 'CAP':
         assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
         if "C" in values:
             size = round(float(values["C"]) * 1E15, 4)
@@ -224,6 +207,23 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         }
         add_primitive(primitives, block_name, block_args)
         return True
+    elif name == 'generic' or get_generator(name.lower(), pdk_dir):
+        # TODO: how about hashing for unique names?
+        value_str = ''
+        if values:
+            for key in sorted(values):
+                val = values[key].replace('-', '')
+                value_str += f'_{key}_{val}'
+        attr = {'ports': list(element.pins.keys()),
+                'values': values if values else None,
+                'real_inst_type': element.model.lower()
+                }
+        block_name = element.model + value_str
+        element.add_abs_name(block_name)
+        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
+        logger.debug(f"creating generic primitive {block_name} {block_args}")
+        add_primitive(primitives, block_name, block_args)
+        return True
 
     else:
 
@@ -239,6 +239,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         vt = None
         values = {}
         vt_types_temp = []
+        # TODO: Clean up this vt_type mess 
         if isinstance(subckt, SubCircuit):
             for ele in subckt.elements:
                 values[ele.name] = ele.parameters
@@ -309,6 +310,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
+        
+        # TODO: simplify this logic.. if - else - common finish
 
         if design_config["pdk_type"] == "FinFET":
             # FinFET design
