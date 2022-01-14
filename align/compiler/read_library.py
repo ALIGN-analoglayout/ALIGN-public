@@ -18,7 +18,7 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
     if not model_statements.exists():
         model_statements = config_path / "models.sp"
 
-    logger.info(f"Using model file from {config_path}")
+    logger.info(f"Using model file from {model_statements}")
     with open(model_statements, 'r') as f:
         lines = f.read()
     ckt_parser.parse(lines)
