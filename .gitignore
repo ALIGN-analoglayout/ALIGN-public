@@ -68,7 +68,8 @@ coverage-reports/
 !**/layers.json
 !**/generators.json
 !dev/**/*.json
-!align/config/model.txt
+!align/config/models.sp
+!align/pdk/finfet/models.sp
 !dev/**/*.lef
 !PlaceRouteHierFlow/gold/*.json
 !PlaceRouteHierFlow/testcase_*/*.gds
