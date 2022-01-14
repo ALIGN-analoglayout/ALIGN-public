@@ -58,7 +58,7 @@ setup(name='align',
           'align': [
               'config/*',
               'pdk/finfet/*.json',
-              'pdk/finfet/*.py'
+              'pdk/finfet/*.sp'
           ]
       },
       cmake_args=cmake_args,
