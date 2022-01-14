@@ -276,6 +276,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 assert False, 'Number of legs do not match'
 
             exclude_keys = ['M', 'real_inst_type']
+            if 'W' in values:
+                exclude_keys.append('NFIN')
             if 'PARALLEL' in values:
                 exclude_keys.append('PARALLEL')
             if st > 1:
