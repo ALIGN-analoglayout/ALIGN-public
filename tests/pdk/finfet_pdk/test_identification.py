@@ -75,17 +75,23 @@ def test_identification():
         assert len(inst) == 2, 'MN3 and MN4 should be distinct primitives'
 
 
-def test_parallel_stack():
+def test_disable_fix_merge():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
-    .subckt {name} d1 d2 d3 g1 g2 g3 vssx
-    mn01 d1 g1 vssx vssx n w=360e-9 m=1 nf=2 parallel=2
-    mn02 d2 g2 vssx vssx n w=360e-9 m=1 nf=2 parallel=3
-    mn03 d3 g3 vssx vssx n w=360e-9 m=1 parallel=2 stack=2
+    .subckt {name} d1 g1 s1 d2 g2 s2 vssx
+    mn01 d1 g1 s1 vssx n w=360e-9 m=1 nf=2
+    mn02 d1 g1 s1 vssx n w=360e-9 m=1 nf=2
+    mn03 d2 g2 i2 vssx n w=360e-9 m=1 nf=2
+    mn04 i2 g2 s2 vssx n w=360e-9 m=1 nf=2
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "FixSourceDrain", "isTrue": False, "propagate": True},
+        {"constraint": "MergeSeriesDevices", "isTrue": False, "propagate": True},
+        {"constraint": "MergeParallelDevices", "isTrue": False, "propagate": True}
+    ]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
@@ -96,6 +102,6 @@ def test_parallel_stack():
         data = json.load(fp)
         modules = {m['name']: m for m in data['modules']}
         instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
-
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
-        modules_simple = dump_simplified_json(modules, filename)
+        _ = dump_simplified_json(modules, filename)
+        assert all([k in instances for k in ['MN01', 'MN02', 'MN03', 'MN04']]), 'Incorrect annotation'
