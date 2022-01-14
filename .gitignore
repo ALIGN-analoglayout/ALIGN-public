@@ -11,7 +11,7 @@
 #   `git ls-files -ci --exclude-standard`
 #
 
-# Exclude files built by Dockerfile or install.sh
+# Exclude files built by Dockerfile
 general/
 .venv/
 wheelhouse/
@@ -68,8 +68,6 @@ coverage-reports/
 !**/layers.json
 !**/generators.json
 !dev/**/*.json
-!align/config/models.sp
-!align/pdk/finfet/models.sp
 !dev/**/*.lef
 !PlaceRouteHierFlow/gold/*.json
 !PlaceRouteHierFlow/testcase_*/*.gds
