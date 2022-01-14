@@ -16,6 +16,7 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
     model_statements = pdk_dir / "models.sp"
 
     if not model_statements.exists():
+        logger.warning(f"Missing model file in PDK directory {model_statements}")
         model_statements = config_path / "models.sp"
 
     logger.info(f"Using model file from {model_statements}")
