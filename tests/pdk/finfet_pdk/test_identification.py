@@ -44,9 +44,7 @@ def test_collisions():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
-                   {"constraint": "MergeParallelDevices", "isTrue": False}
-                   ]
+    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
