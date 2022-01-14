@@ -182,8 +182,8 @@ def call_primitive_generator(
                     pdk_dir=pdk_dir
                 )
             else:
-                ele.add_abs_name(ele.generator)
-                logger.debug(
+                ele.add_abs_name(ele.model)
+                logger.info(
                     f"No physical information found for: {ele.name} of type : {ele.model}"
                 )
         logger.debug(
