@@ -27,6 +27,8 @@ class MOSGenerator(CanvasPDK):
         parameters = {k.lower(): v for k, v in parameters.items()}  # Revert all parameters to lower case
 
         #################################################################################################
+        assert pattern in {0, 1, 2}, f'This primitive cannot be generated with this PDK. Unknown pattern {pattern}'
+
         for key in ['m', 'real_inst_type']:
             assert key in parameters, f'Missing transistor parameter {key}'
         assert 'nf' or 'stack' in parameters, 'Missing transistor parameter nf or stack'
@@ -113,14 +115,14 @@ class MOSGenerator(CanvasPDK):
         if is_dual:
             track_pattern_2 = {}
 
-            if   self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['G']:
+            if self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['G']:
                 track_pattern_2['G'] = [6]
             elif self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['S']:
                 track_pattern_2['G'] = [4]
             else:
                 track_pattern_2['G'] = [5]
 
-            if   self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['S']:
+            if self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['S']:
                 track_pattern_2['S'] = [4]
             elif self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['D']:
                 track_pattern_2['S'] = [2]

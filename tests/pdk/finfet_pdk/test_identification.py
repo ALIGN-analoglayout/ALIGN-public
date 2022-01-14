@@ -1,5 +1,4 @@
 import json
-import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 
@@ -27,22 +26,21 @@ def find_instance(instances, pattern):
     return instances[inst[0]]
 
 
-# @pytest.mark.skip()
-def test_identification():
+def test_collisions():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt {name} cm vb ip1 ip2 in1 in2 on1 on2 op1 op2 vssx
-    mn01 cm   vb vssx vssx n w=360e-9 m=1 nf=2
-    mn02 cm   vb vssx vssx n w=360e-9 m=1 nf=2 dd=1
+    mn01 cm   vb vssx vssx npv w=360e-9 m=1 nf=2
+    mn02 cm   vb vssx vssx npv w=360e-9 m=1 nf=2 dv=1
     *** case 1: DP1 (dd=0 by default)
-    mn1 on1 ip1   cm vssx n w=360e-9 m=1 nf=2
-    mn2 op1 in1   cm vssx n w=360e-9 m=1 nf=2 dd=0
+    mn1 on1 ip1   cm vssx npv w=360e-9 m=1 nf=2
+    mn2 op1 in1   cm vssx npv w=360e-9 m=1 nf=2 dv=0
     *** case 2: Not a diffpair
-    mn3 on1 ip2   cm vssx n w=360e-9 m=1 nf=2
-    mn4 op1 in2   cm vssx n w=360e-9 m=1 nf=2 dd=1
+    mn3 on1 ip2   cm vssx npv w=360e-9 m=1 nf=2
+    mn4 op1 in2   cm vssx npv w=360e-9 m=1 nf=2 dv=1
     *** case 3: DP2
-    mn5 on2 ip2   cm vssx n w=360e-9 m=1 nf=2 dd=2
-    mn6 op2 in2   cm vssx n w=360e-9 m=1 nf=2 dd=2
+    mn5 on2 ip2   cm vssx npv w=360e-9 m=1 nf=2 dv=2
+    mn6 op2 in2   cm vssx npv w=360e-9 m=1 nf=2 dv=2
     .ends {name}
     .END
     """)
@@ -59,20 +57,20 @@ def test_identification():
         instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
 
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
-        modules_simple = dump_simplified_json(modules, filename)
+        _ = dump_simplified_json(modules, filename)
 
         atn = 'abstract_template_name'
 
-        mn01 = find_instance(instances, ['MN01'])
-        mn02 = find_instance(instances, ['MN02'])
-        assert mn01[atn] != mn02[atn], 'Collision'
-
         dp12 = find_instance(instances, ['MN1', 'MN2'])
         dp56 = find_instance(instances, ['MN5', 'MN6'])
-        assert dp12[atn] != dp56[atn], 'Collision'
+        assert dp12[atn] != dp56[atn], 'Collision of diff pairs'
 
-        inst = [key for key in instances.keys() if all([p in key for p in ['MN3', 'MN4']])]
+        inst = [key for key in instances.keys() if any([p in key for p in ['MN3', 'MN4']])]
         assert len(inst) == 2, 'MN3 and MN4 should be distinct primitives'
+
+        mn01 = find_instance(instances, ['MN01'])
+        mn02 = find_instance(instances, ['MN02'])
+        assert mn01[atn] != mn02[atn], 'Collision of mn01 and mn02'
 
 
 def test_disable_fix_merge():
