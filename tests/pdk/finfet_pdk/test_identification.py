@@ -1,4 +1,5 @@
 import json
+import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 
@@ -103,3 +104,22 @@ def test_disable_fix_merge():
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
         _ = dump_simplified_json(modules, filename)
         assert all([k in instances for k in ['MN01', 'MN02', 'MN03', 'MN04']]), 'Incorrect annotation'
+
+
+def test_illegal():
+    """ stacking parallel devices not allowed """
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} d g s vssx
+    mn01 d g i vssx n w=360e-9 m=1 nf=2
+    mn02 i g s vssx n w=360e-9 m=1 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+
+    with pytest.raises(AssertionError):
+        run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
