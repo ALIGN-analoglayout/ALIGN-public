@@ -426,6 +426,7 @@ class add_symmetry_const:
                 smb_1d.add(inst)
             else:
                 smb_1d.update(inst)
+
         if key in self.stop:
             logger.debug(f"skipping symmetry b/w {key, value} as they are present in stop points")
             return True
@@ -435,6 +436,13 @@ class add_symmetry_const:
         elif key not in self.G.nodes():
             logger.debug(f"skipping symmetry b/w {key, value} as {key} is not in graph")
             return True
+        else:
+            nbrs1, nbrs2 = self.G.all_neighbors([key, value])
+            if nbrs1 != nbrs2:
+                logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
+                return True
+            else:
+                logger.debug(f"all neigbors matched {key}:{nbrs1}, {value}:{nbrs2}")
 
     def filter_symblock_const(self, pairs: list):
         pairsj = list()
