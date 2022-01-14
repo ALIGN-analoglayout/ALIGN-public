@@ -239,7 +239,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         vt = None
         values = {}
         vt_types_temp = []
-        # TODO: Clean up this vt_type mess 
+        # TODO: Clean up this vt_type mess
         if isinstance(subckt, SubCircuit):
             for ele in subckt.elements:
                 values[ele.name] = ele.parameters
@@ -310,7 +310,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
-        
+
         # TODO: simplify this logic.. if - else - common finish
 
         if design_config["pdk_type"] == "FinFET":
