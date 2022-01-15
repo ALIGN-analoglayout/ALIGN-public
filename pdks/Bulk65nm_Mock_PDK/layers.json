@@ -612,14 +612,14 @@
         },
         {
             "Layer": "Nselect",
-            "GdsLayerNo": 7,
+            "GdsLayerNo": 54,
             "GdsDatatype": {
                 "Draw": 0
             }
         },
         {
             "Layer": "Pselect",
-            "GdsLayerNo": 8,
+            "GdsLayerNo": 55,
             "GdsDatatype": {
                 "Draw": 0
             }
