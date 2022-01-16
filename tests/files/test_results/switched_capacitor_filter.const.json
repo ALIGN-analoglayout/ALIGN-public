@@ -1,64 +1,174 @@
 [
-  {
-    "constraint": "group_caps",
-    "name": "c1_c3",
-    "instances": [],
-    "unit_cap": "Cap_12f",
-    "num_units": [
-      3,
-      5
-    ],
-    "dummy": false
-  },
-  {
-    "constraint": "group_caps",
-    "name": "c7_c6",
-    "instances": [],
-    "unit_cap": "Cap_12f",
-    "num_units": [
-      3,
-      5
-    ],
-    "dummy": false
-  },
-  {
-    "constraint": "symmetric_blocks",
-    "pairs": [
-      [
-        "C5",
-        "C2"
-      ],
-      [
-        "X_CMC_S_NMOS_B_I1_M6_M7",
-        "X_CMC_S_NMOS_B_I1_M12_M14"
-      ]
-    ],
-    "direction": "V"
-  },
-  {
-    "constraint": "symmetric_blocks",
-    "pairs": [
-      [
-        "C8",
-        "C9"
-      ]
-    ],
-    "direction": "V"
-  },
-  {
-    "constraint": "symmetric_nets",
-    "net1": "VINN",
-    "net2": "VINP",
-    "pins1": [
-      "C5/PLUS",
-      "X_CMC_S_NMOS_B_I1_M6_M7/SA",
-      "VINN"
-    ],
-    "pins2": [
-      "C2/PLUS",
-      "X_CMC_S_NMOS_B_I1_M12_M14/SA",
-      "VINP"
-    ],
-    "direction": "V"
-  }
+        {
+          "constraint": "power_ports",
+          "ports": [
+            "VDD"
+          ]
+        },
+        {
+          "constraint": "ground_ports",
+          "ports": [
+            "VSS"
+          ]
+        },
+        {
+          "constraint": "clock_ports",
+          "ports": [
+            "PHI1",
+            "PHI2"
+          ]
+        },
+        {
+          "constraint": "symmetric_blocks",
+          "pairs": [
+            [
+              "C0",
+              "C4"
+            ],
+            [
+              "C1",
+              "C7"
+            ],
+            [
+              "C5",
+              "C2"
+            ],
+            [
+              "C6",
+              "C3"
+            ],
+            [
+              "C9",
+              "C8"
+            ],
+            [
+              "M3",
+              "M11"
+            ],
+            [
+              "M5",
+              "M9"
+            ],
+            [
+              "XI0"
+            ],
+            [
+              "X_CMC_NMOS_B_M4_M8"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M0_M14"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M10_M7"
+            ],
+            [
+              "X_CMC_S_NMOS_B_I1_M12_M6"
+            ]
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "NET63",
+          "net2": "NET62",
+          "pins1": [
+            "M5/S",
+            "C1/PLUS",
+            "C0/MINUS",
+            "X_CMC_S_NMOS_B_I1_M10_M7/SB"
+          ],
+          "pins2": [
+            "M9/S",
+            "C7/PLUS",
+            "C4/MINUS",
+            "X_CMC_S_NMOS_B_I1_M10_M7/SA"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "NET64",
+          "net2": "NET66",
+          "pins1": [
+            "XI0/VINN",
+            "C6/PLUS",
+            "C5/MINUS",
+            "X_CMC_S_NMOS_B_I1_M10_M7/DA"
+          ],
+          "pins2": [
+            "XI0/VINP",
+            "C3/PLUS",
+            "C2/MINUS",
+            "X_CMC_S_NMOS_B_I1_M10_M7/DB"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "NET67",
+          "net2": "NET68",
+          "pins1": [
+            "M3/S",
+            "C1/MINUS",
+            "X_CMC_S_NMOS_B_I1_M0_M14/SA"
+          ],
+          "pins2": [
+            "M11/S",
+            "C7/MINUS",
+            "X_CMC_S_NMOS_B_I1_M0_M14/SB"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "NET72",
+          "net2": "NET60",
+          "pins1": [
+            "C0/PLUS",
+            "X_CMC_NMOS_B_M4_M8/DA",
+            "X_CMC_S_NMOS_B_I1_M12_M6/DB"
+          ],
+          "pins2": [
+            "C4/PLUS",
+            "X_CMC_NMOS_B_M4_M8/DB",
+            "X_CMC_S_NMOS_B_I1_M12_M6/DA"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VINN",
+          "net2": "VINP",
+          "pins1": [
+            "C5/PLUS",
+            "X_CMC_S_NMOS_B_I1_M12_M6/SB",
+            "VINN"
+          ],
+          "pins2": [
+            "C2/PLUS",
+            "X_CMC_S_NMOS_B_I1_M12_M6/SA",
+            "VINP"
+          ],
+          "direction": "V"
+        },
+        {
+          "constraint": "symmetric_nets",
+          "net1": "VOUTP",
+          "net2": "VOUTN",
+          "pins1": [
+            "XI0/VOUTP",
+            "C9/PLUS",
+            "C6/MINUS",
+            "X_CMC_S_NMOS_B_I1_M0_M14/DB",
+            "VOUTP"
+          ],
+          "pins2": [
+            "XI0/VOUTN",
+            "C8/PLUS",
+            "C3/MINUS",
+            "X_CMC_S_NMOS_B_I1_M0_M14/DA",
+            "VOUTN"
+          ],
+          "direction": "V"
+        }
 ]

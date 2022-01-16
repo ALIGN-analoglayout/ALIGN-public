@@ -135,12 +135,12 @@ class Graph(networkx.Graph):
                     assert nbrs1 == nbrs2, f"neighbors mismatch {nbrs1} {nbrs2}"
 
     def all_neighbors(self, pair):
-        logger.debug(f"checking all neighbors of {pair}")
         nbrs1 = networkx.shortest_path_length(self, source=pair[0])
         nbrs2 = networkx.shortest_path_length(self, source=pair[1])
-        nbrs1_type = [(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])]
-        nbrs2_type = [(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])]
-        return Counter(nbrs1_type), Counter(nbrs2_type)
+        nbrs1_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])])
+        nbrs2_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])])
+        logger.debug(f"All neighbors of {pair[0]}: {nbrs1_type} , {pair[1]}: {nbrs2_type}")
+        return nbrs1_type, nbrs2_type
 
     def _get_key(self, val, dicta):
         for key, value in dicta.items():

@@ -31,9 +31,13 @@
         {
             "pairs": [
                 {
+                    "type": "selfsym",
+                    "block": "X_CMC_PMOS_MP7_MP8"
+                },
+                {
                     "type": "sympair",
-                    "block1": "X_CMC_PMOS_MP10_MP7",
-                    "block2": "X_CMC_PMOS_MP8_MP9"
+                    "block1": "X_PMOS_S_MP10",
+                    "block2": "X_PMOS_S_MP9"
                 }
             ],
             "const_name": "SymmBlock",
