@@ -1,4 +1,4 @@
-from align.schema import instance, constraint, model
+from align.schema import constraint
 from .types import set_context
 from .subcircuit import SubCircuit, Circuit
 from .instance import Instance
@@ -137,6 +137,7 @@ class Graph(networkx.Graph):
     def all_neighbors(self, pair):
         nbrs1 = networkx.shortest_path_length(self, source=pair[0])
         nbrs2 = networkx.shortest_path_length(self, source=pair[1])
+        # TODO: Can be modified to flat-distances? gropblock1 != groupblock2
         nbrs1_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])])
         nbrs2_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])])
         logger.debug(f"All neighbors of {pair[0]}: {nbrs1_type} , {pair[1]}: {nbrs2_type}")
