@@ -23,7 +23,7 @@ def mock_circuit():
     for instance in [
         'MN0', 'MN1', 'MN2', 'MN3', 'MN4', 'X_CMC_S_NMOS_B_I1_M12_M14', 'M3', 'M11', 'M5', 'M9', 'XI0', 'X_CMC_NMOS_B_M4_M8',
         'MP5', 'MP6', 'MP7', 'MP8', 'MP9', 'C2', 'C3', 'C6', 'C5', 'C1', 'C0', 'C4', 'C7', 'X_CMC_S_NMOS_B_I1_M6_M7', 'C8', 'C9',
-        'X_CMC_S_NMOS_B_I1_M10_M7', 'X_CMC_S_NMOS_B_I1_M12_M6', 'X_CMC_S_NMOS_B_I1_M12_M6',
+        'X_CMC_S_NMOS_B_I1_M10_M7', 'X_CMC_S_NMOS_B_I1_M12_M6',
         'MP10', 'MP11', 'MN13', 'MP12', 'MN14', 'X_CMC_PMOS_MP7_MP8', 'X_CMC_PMOS_MP8_MP9', 'X_CMC_S_NMOS_B_I1_M0_M14',
             'X_DP_MN1_MN2', 'X_CCN_MN3_MN4', 'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13', 'X_INV_P_MP12_MN14']:
         with types.set_context(subckt.elements):
