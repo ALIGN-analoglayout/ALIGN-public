@@ -64,12 +64,19 @@ setup(name='align',
       cmake_args=cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
-          'bin/schematic2layout.py',
           'bin/pnr_compiler.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
           'bin/convert_lef_to_layout_json.py'
       ],
+      entry_points={
+          'console_scripts': [
+              # Deprecated starting v1.0.0
+              'schematic2layout.py=align.__main__:console_entry',
+              # New cmdline utility
+              'align=align.__main__:console_entry'
+          ]
+      },
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
@@ -82,6 +89,7 @@ setup(name='align',
           'plotly',
           'pandas',
           'dash',
+          'luigi',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler'
       ],
