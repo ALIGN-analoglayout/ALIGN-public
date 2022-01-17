@@ -11,21 +11,6 @@ else:
     os.environ["ALIGN_HOME"] = str(ALIGN_HOME)
 
 skip_dirs = [
-    "tb_single_SAR",
-    "TI_SAR",
-    "Sanitized_TX_8l12b",
-    "Sanitized_DLPF_RCFilter",
-    "Sanitized_TempSensor",
-    "SW_Cres_v3_5",
-    "Sanitized_5b_ADC",
-    "Sanitized_CDAC_SW_Coarse",
-    "Santized_12b_ADC_TOP",
-    "single_to_differential_converter",
-    "vco_dtype_12_hierarchical",
-    "vco_dtype_12_hierarchical_res",
-    "vco_dtype_12_hierarchical_res_constrained",
-    "ldo_error_amp_v2",
-    "VCO_type2_65",
 ]
 
 examples_dir = ALIGN_HOME / "examples"
