@@ -16,6 +16,7 @@ def test_dig_1():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
+    * @: Generator(pattern='CS')
     mp0 o a vccx vccx p w=45e-9 m=1 nf=1
     mn0 o a vssx vssx n w=45e-9 m=1 nf=1
     .ends

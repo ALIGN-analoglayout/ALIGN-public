@@ -77,12 +77,19 @@ class Annotate:
         traversed = []  # libray gets appended, so only traverse subckt once
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
-            if (
-                isinstance(ckt, SubCircuit) and
-                not self._is_digital(ckt) and
-                not [True for const in ckt.constraints if isinstance(const, constraint.Generator)] and
-                ckt.name not in traversed
-            ):
+            if not isinstance(ckt, SubCircuit):
+                logger.debug(f"skip annotation for model {ckt.name}")
+                continue
+            elif self._is_digital(ckt):
+                logger.debug(f"skip annotation for digital circuit {ckt.name}")
+                continue
+            elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
+                logger.debug(f"skip annotation for circuit {ckt.name} with available generators {ckt.constraints}")
+                continue
+            elif ckt.name in traversed:
+                logger.debug(f"Finished annotation for circuit circuit {ckt.name}")
+                continue
+            else:
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
                 logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
