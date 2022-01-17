@@ -316,7 +316,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             if block_args['primitive'] != 'generic':
-                if 'ckt_data' in globals():
+                if 'ckt_data' in globals() or 'ckt_data' in locals():
                     primitive_def = ckt_data.find(block_args['primitive'])
                 else:
                     # read in circuit from basic library

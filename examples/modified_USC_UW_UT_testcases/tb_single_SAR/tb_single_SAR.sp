@@ -212,8 +212,8 @@
 // Cell name: clk_doubler
 // View name: schematic
 .subckt clk_doubler_schematic VDD VIN VOUT VSS
-    C1 VOUT net5 capacitor c=2.5p m=3 ic=0
-    C0 VOUTb VIN capacitor c=2.5p m=3 ic=0
+    C1 VOUT net5 capacitor c=2.5p
+    C0 VOUTb VIN capacitor c=2.5p
     M0 VDD VOUTb VOUT VSS nmos w=600.0n l=45n m=10
     M18 VDD VOUT VOUTb VSS nmos w=600.0n l=45n m=10
     xI0 VDD VIN net5 VSS inverter_schematic
@@ -230,7 +230,7 @@
     M4 OUT net011 IN VSS nmos w=900.0n l=45n m=10
     M1q net01 clkb VSS VSS nmos w=900.0n l=45n m=50
     M0 VDD clkb_high net8 VSS nmos w=900.0n l=45n m=1
-    C0 net8 net01 capacitor c=20p ic=1.1
+    C0 net8 net01 capacitor c=20p
     M12 IN clkb net01 VDD pmos w=900n l=45n m=20
     M7 IN clkb net012 VDD pmos w=900.0n l=45n m=40
     M13 net012 clk VDD VDD pmos w=900.0n l=45n m=20
@@ -312,15 +312,15 @@ xI17\<6\> CLKS B\<6\> OUTCODE\<6\> net015\<6\> VDD VSS net017 \
         DFF_reset_schematic
 xI17\<7\> CLKS B\<7\> OUTCODE\<7\> net015\<7\> VDD VSS net017 \
         DFF_reset_schematic
-V5 VSS 0 vsource dc=0 type=dc
-V4 VDD 0 vsource dc=1.1 type=dc
-V0 net12 0 vsource dc=1 type=dc
-V3 INP 0 vsource dc=550m type=sine ampl=500m freq=fin
-V2 INN 0 vsource dc=550m type=sine ampl=500m sinephase=180 freq=fin
-V6 net017 0 vsource dc=0 type=pulse val0=1.1 val1=0 delay=1/fs rise=100p \
-        fall=100p
-V1 CLKS 0 vsource dc=550.00m type=pulse val0=0 val1=1.1 period=1/fs \
-        delay=1/fs rise=100p fall=100p width=0.2*1/fs
+* V5 VSS 0 vsource dc=0 type=dc
+* V4 VDD 0 vsource dc=1.1 type=dc
+* V0 net12 0 vsource dc=1 type=dc
+* V3 INP 0 vsource dc=550m type=sine ampl=500m freq=fin
+* V2 INN 0 vsource dc=550m type=sine ampl=500m sinephase=180 freq=fin
+* V6 net017 0 vsource dc=0 type=pulse val0=1.1 val1=0 delay=1/fs rise=100p \
+*         fall=100p
+* V1 CLKS 0 vsource dc=550.00m type=pulse val0=0 val1=1.1 period=1/fs \
+*         delay=1/fs rise=100p fall=100p width=0.2*1/fs
 xI0 B\<0\> B\<1\> B\<2\> B\<3\> B\<4\> B\<5\> B\<6\> B\<7\> Bbar\<0\> \
         Bbar\<1\> Bbar\<2\> Bbar\<3\> Bbar\<4\> Bbar\<5\> Bbar\<6\> \
         Bbar\<7\> CLKC CLKS RDY V2DAC_N\<0\> V2DAC_N\<1\> V2DAC_N\<2\> \

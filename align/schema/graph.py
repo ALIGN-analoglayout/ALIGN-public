@@ -1,10 +1,11 @@
-from align.schema import instance, constraint, model
+from align.schema import constraint
 from .types import set_context
 from .subcircuit import SubCircuit, Circuit
 from .instance import Instance
 from re import sub
 import networkx
 # from networkx.algorithms.structuralholes import constraint
+from collections import Counter
 from networkx.classes.function import subgraph
 import logging
 logger = logging.getLogger(__name__)
@@ -95,7 +96,14 @@ class Graph(networkx.Graph):
             self, graph, node_match=node_match, edge_match=edge_match)
         ret = []
         _temp = len(self.subckt.constraints)
-        for match in sorted(matcher.subgraph_isomorphisms_iter(), key=lambda i: '_'.join(sorted(i.keys()))):
+        # Three possible scenarios of non determinism (M1, M2, M3, M4, M5) (Ma, Mb, Mc)
+        # 1. Different keys [{M1:Ma, M2:Mb, M3:Mc}, {M4:Ma, M2:Mb, M3:Mc}]
+        # 2. keys in diff order: [{M1:Ma, M2:Mb, M3:Mc}, {M2:Mb, M1:Ma, M3:Mb}]
+        # 3. Different values: [{M1:Ma, M2:Mb, M3:Mc}, {M1:Ma, M2:Mc, M3:Mb}]
+        # Thus sorting based on key,value pair
+        matches = sorted(matcher.subgraph_isomorphisms_iter(), key=lambda k: [(x, y)for x, y in k.items()])
+        for match in matches:
+            # for match in sorted(matcher.subgraph_isomorphisms_iter(), key=lambda i: tuple(i.keys())):
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
                 try:
                     self.check_constraint_satisfiability(graph, match)
@@ -121,25 +129,19 @@ class Graph(networkx.Graph):
                     self.subckt.constraints.append(x)
                     assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
                     self.subckt.constraints.remove(x)
-                    for pair in const.pairs:
-                        if len(pair) == 2:
-                            self.match_pin_distance(pair, self.subckt.pins[0])
+                elif const.constraint == 'symmetric_nets':
+                    pair = [self._get_key(const.net1, match), self._get_key(const.net2, match)]
+                    nbrs1, nbrs2 = self.all_neighbors(pair)
+                    assert nbrs1 == nbrs2, f"neighbors mismatch {nbrs1} {nbrs2}"
 
-    def match_pin_distance(self, pair, pin):
-        # Symmetric nets should have same position w.r.t gnd and power
-        return True
-        logger.debug(f"checking port distance")
-        # TODO: focus on power pins
-        pin_dist2 = []
-        pin_dist1 = []
-        if networkx.has_path(self, source=pin, target=pair[0]):
-            pin_dist1.append(networkx.shortest_path_length(self, source=pin, target=pair[0]))
-            logger.debug(f"path exist: {pin} {pair[0]} {pin_dist1}")
-        if networkx.has_path(self, source=pin, target=pair[1]):
-            pin_dist2.append(networkx.shortest_path_length(self, source=pin, target=pair[1]))
-            logger.debug(f"path exist: {pin} {pair[1]} {pin_dist2}")
-        logger.debug(f"pin distance: {pin_dist1} {pin_dist2}")
-        assert sorted(pin_dist1) == sorted(pin_dist2), f"pin distance mismatch"
+    def all_neighbors(self, pair):
+        nbrs1 = networkx.shortest_path_length(self, source=pair[0])
+        nbrs2 = networkx.shortest_path_length(self, source=pair[1])
+        # TODO: Can be modified to flat-distances? gropblock1 != groupblock2
+        nbrs1_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])])
+        nbrs2_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])])
+        logger.debug(f"All neighbors of {pair[0]}: {nbrs1_type} , {pair[1]}: {nbrs2_type}")
+        return nbrs1_type, nbrs2_type
 
     def _get_key(self, val, dicta):
         for key, value in dicta.items():
