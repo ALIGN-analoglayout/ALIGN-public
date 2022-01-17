@@ -187,14 +187,18 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
             size = round(float(values["VALUE"]) * 1E15, 4)
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
-        logger.debug(f"Found cap with size: {size}")
+        logger.debug(f"Generating capacitor for: {element.name} {name} {size}")
         element.add_abs_name(block_name)
-        block_args = {
-            'primitive': name,
-            'value': int(size)
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
+
+        if block_name in primitives:
+            return block_name, primitives[block_name]
+        else:
+            block_args = {
+                'primitive': name,
+                'value': int(size)
+            }
+            add_primitive(primitives, block_name, block_args)
+            return True
 
     elif name == 'RES':
         assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {element.name}"
@@ -207,16 +211,18 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
             size = int(size)
         block_name = name + '_' + str(size).replace('.', 'p')
         height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
+        logger.debug(f'Generating resistor for: {element.name} {name} {size}')
+        element.add_abs_name(block_name)
+
         if block_name in primitives:
             return block_name, primitives[block_name]
-        logger.debug(f'Generating lef for: {name} {size}')
-        element.add_abs_name(block_name)
-        block_args = {
-            'primitive': name,
-            'value': (height, float(size))
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
+        else:
+            block_args = {
+                'primitive': name,
+                'value': (height, float(size))
+            }
+            add_primitive(primitives, block_name, block_args)
+            return True
 
     elif name == 'generic' or get_generator(name.lower(), pdk_dir):
         # TODO: how about hashing for unique names?
@@ -389,25 +395,25 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
             if block_name in primitives:
                 element.add_abs_name(block_name)
                 return block_name, primitives[block_name]
+            else:
+                logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+                block_args = {
+                    'primitive': name,
+                    'value': unit_size_mos,
+                    'x_cells': xval,
+                    'y_cells': yval,
+                    'parameters': values
+                }
+                if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
+                    block_args['stack'] = int(values[device_name]["STACK"])
+                    block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
+                if vt:
+                    block_args['vt_type'] = vt[0]
+                    block_name = block_name+'_'+vt[0]
 
-            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-            block_args = {
-                'primitive': name,
-                'value': unit_size_mos,
-                'x_cells': xval,
-                'y_cells': yval,
-                'parameters': values
-            }
-            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
-                block_args['stack'] = int(values[device_name]["STACK"])
-                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
-            if vt:
-                block_args['vt_type'] = vt[0]
-                block_name = block_name+'_'+vt[0]
-
-            element.add_abs_name(block_name)
-            add_primitive(primitives, block_name, block_args)
-            return True
+                element.add_abs_name(block_name)
+                add_primitive(primitives, block_name, block_args)
+                return True
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
