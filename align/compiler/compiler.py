@@ -160,16 +160,10 @@ def call_primitive_generator(
             # ele can be a model ele can be model defined in models.sp/base model
             # ele can be a subcircuit with a generator associated
             # ele can be a sucircuit with no generator, PnR will place and route this instance
-            if ckt_data.find(ele.generator) is None or isinstance(ckt_data.find(ele.generator), Model):
-                assert generate_primitive_lef(
-                    ele,
-                    primitives,
-                    design_config,
-                    uniform_height,
-                    pdk_dir
-                )
-            elif isinstance(ckt_data.find(ele.generator), SubCircuit):
-                if [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
+            generator = ckt_data.find(ele.generator)
+            if isinstance(generator, SubCircuit):
+                gen_const = [True for const in ckt.constraints if isinstance(const, constraint.Generator)]
+                if gen_const:
                     assert generate_primitive_lef(
                         ele,
                         primitives,
@@ -182,6 +176,14 @@ def call_primitive_generator(
                     logger.info(
                         f"No physical information found for: {ele.name} of type : {ele.model}"
                     )
+            elif generator is None or isinstance(generator, Model):
+                assert generate_primitive_lef(
+                    ele,
+                    primitives,
+                    design_config,
+                    uniform_height,
+                    pdk_dir
+                )
             else:
                 assert False, f"No definition found for instance {ele} in {ckt.name}"
         logger.debug(
