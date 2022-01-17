@@ -21,7 +21,7 @@ class Annotate:
     Boundries (clk,digital, etc) are defined from setup file
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator: set):
+    def __init__(self, ckt_data, primitive_library):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -31,7 +31,6 @@ class Annotate:
         """
         self.ckt_data = ckt_data
         self.lib = primitive_library
-        self.all_lef = existing_generator
         self.lib_names = [lib_ele.name for lib_ele in primitive_library]
 
     def _is_skip(self, ckt):
@@ -81,7 +80,7 @@ class Annotate:
             if (
                 isinstance(ckt, SubCircuit) and
                 not self._is_digital(ckt) and
-                ckt.name not in self.all_lef and
+                not constraint.Generator in ckt.constraints and
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)
@@ -104,8 +103,6 @@ class Annotate:
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes
                     )
-                    if subckt.name in self.all_lef:
-                        self.all_lef.update(new_subckts)
                     if subckt.name in temp_match_dict:
                         temp_match_dict[subckt.name].extend(new_subckts)
                     else:

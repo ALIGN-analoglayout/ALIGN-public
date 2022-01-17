@@ -162,13 +162,22 @@ def add_primitive(primitives, block_name, block_args):
         primitives[block_name] = block_args
 
 
-def generate_primitive_lef(element, model, all_lef, primitives, design_config: dict, uniform_height=False, pdk_dir=None):
+def generate_primitive_lef(element, primitives, design_config: dict, uniform_height=False, pdk_dir=None):
     """ Return commands to generate parameterized lef"""
     # TODO model parameter can be improved
-    name = model
+    db = element.parent.parent.parent
+    ele_def = db.find(element.generator)
+    if isinstance(ele_def, SubCircuit):
+        name = ele_def.name
+    elif isinstance(ele_def, Model):
+        # using base model name right now
+        # need seperate generator for each model?
+        name = db.find(ele_def.name).name
+    else:
+        # base model
+        name = element.generator
     values = element.parameters
-    available_block_lef = all_lef
-    logger.debug(f"checking lef for: {name}, {element}, {values}")
+    logger.debug(f"Getting generator parameters for: {name}, {element}, {values}")
 
     if name == 'CAP':
         assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
@@ -198,8 +207,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             size = int(size)
         block_name = name + '_' + str(size).replace('.', 'p')
         height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
-        if block_name in available_block_lef:
-            return block_name, available_block_lef[block_name]
+        if block_name in primitives:
+            return block_name, primitives[block_name]
         logger.debug(f'Generating lef for: {name} {size}')
         element.add_abs_name(block_name)
         block_args = {
@@ -322,8 +331,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                         f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
                     assert unit_size_mos >= int(values[key]["NFIN"]), \
                         f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
-                    size = int(values[key]["NFIN"])
-                name_arg = 'NFIN'+str(size)
+                    nfin = int(values[key]["NFIN"])
+                name_arg = 'NFIN'+str(nfin)
             elif design_config["pdk_type"] == "Bulk":
                 # Bulk design
                 for key in values:
@@ -331,9 +340,9 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                     assert (
                         values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
                         f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
-                    size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                    values[key]["NFIN"] = size
-                name_arg = 'NFIN'+str(size)
+                    nfin = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
+                    values[key]["NFIN"] = nfin
+                name_arg = 'NFIN'+str(nfin)
             else:
                 print(design_config["pdk_type"] + " pdk not supported")
                 exit()
@@ -353,7 +362,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
                 size = 0
 
-            logger.debug(f"Generating lef for {name} , with size {size}")
+            logger.debug(f"Generating lef for {name}")
             if isinstance(size, int):
                 for key in values:
                     assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name} {values}"
@@ -377,8 +386,9 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
+            if block_name in primitives:
+                element.add_abs_name(block_name)
+                return block_name, primitives[block_name]
 
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             block_args = {

@@ -221,6 +221,9 @@ class Graph(networkx.Graph):
                     generator=self.nodes[x].get('instance').generator,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
+        with set_context(subckt_instance.constraints):
+            for const in subckt.constraints:
+                subckt_instance.constraints.append(const)
         return subckt_instance
 
     def instance_counter(self, subckt, counter=0):

@@ -988,6 +988,28 @@ class MergeParallelDevices(SoftConstraint):
     propagate: Optional[bool]
 
 
+class Generator(SoftConstraint):
+    '''
+    Used to guide primitive generator.
+    Args:
+        pattern (str): common centroid (CS)/ Inter digitated (ID)/Non common centroid
+        parallel_wires (dict): {net_name:2}
+        body (bool): True/ False
+
+    Example: ::
+
+        {
+            "constraint": "Generator",
+            "pattern": "CS",
+            "parallel_wires": {"net1":2, "net2":2},
+            "body": True
+        }
+    '''
+    pattern: Optional[Literal['CS', 'ID', 'NCS']]
+    parallel_wires: Optional[dict]
+    body: Optional[bool]
+
+
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -1330,6 +1352,7 @@ ConstraintType = Union[
     # Legacy Align constraints
     # (SoftConstraints)
     CompactPlacement,
+    Generator,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
