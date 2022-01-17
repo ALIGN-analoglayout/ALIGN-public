@@ -161,8 +161,10 @@ def call_primitive_generator(
             # ele can be a subcircuit with a generator associated
             # ele can be a sucircuit with no generator, PnR will place and route this instance
             generator = ckt_data.find(ele.generator)
+            logger.debug(f"element {ele.name} generator {ele.generator} generator properties {generator}")
+
             if isinstance(generator, SubCircuit):
-                gen_const = [True for const in ckt.constraints if isinstance(const, constraint.Generator)]
+                gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
                 if gen_const:
                     assert generate_primitive_lef(
                         ele,

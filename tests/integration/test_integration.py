@@ -15,15 +15,10 @@ skip_dirs = {'Sanitized_model3x_MDLL_TOP',
              'Sanitized_Coarse_SAR_Logic',
              'ADC_CORE',
              'GF65_DLL_sanitized',
-             'Sanitized_5b_ADC',
              'Sanitized_CDAC_SW_Coarse',
-             'Sanitized_DLPF_RCFilter',
-             'Sanitized_TempSensor',
              'CTDTDSM_V3',
              'single_SAR',
              'Sanitized_civiR_DLDO_TOP',
-             'Sanitized_TX_8l12b',
-             'Santized_12b_ADC_TOP',
              'Sanitized_LevelCrossingDetector',
              'Sanitized_CK_Divider8',
              'mimo_bulk'}
@@ -52,8 +47,8 @@ def gen_examples():
         print(additional_skip_dirs)
 
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs and x not in additional_skip_dirs
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs and x not in additional_skip_dirs
                     for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'checkin':
         circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator"
@@ -66,8 +61,8 @@ def gen_examples():
 
         print(restricted_directories)
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
                     and any(x in restricted_directories for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'all':
         pass
