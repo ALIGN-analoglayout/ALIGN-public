@@ -80,7 +80,7 @@ class Annotate:
             if (
                 isinstance(ckt, SubCircuit) and
                 not self._is_digital(ckt) and
-                not constraint.Generator in ckt.constraints and
+                not [True for const in ckt.constraints if isinstance(const, constraint.Generator)] and
                 ckt.name not in traversed
             ):
                 netlist_graph = Graph(ckt)

@@ -50,7 +50,7 @@ def test_group_block_hsc(dir_name):
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
     result_path.mkdir(parents=True, exist_ok=False)
-    verilog_tbl = constraint_generator(updated_cktlib, dict())
+    verilog_tbl = constraint_generator(updated_cktlib)
     gen_const_path = result_path / "HIGH_SPEED_COMPARATOR.const.json"
     for module in verilog_tbl["modules"]:
         if module["name"] == "HIGH_SPEED_COMPARATOR":
@@ -104,7 +104,7 @@ def test_scf():
         test_path, "SWITCHED_CAPACITOR_FILTER", pdk_dir, config_path
     )
     assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
-    verilog_tbl = constraint_generator(updated_cktlib, dict())
+    verilog_tbl = constraint_generator(updated_cktlib)
 
     for module in verilog_tbl["modules"]:
         if module["name"] == "SWITCHED_CAPACITOR_FILTER":
