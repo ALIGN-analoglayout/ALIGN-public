@@ -145,6 +145,8 @@ def call_primitive_generator(
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
+        elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
+            continue
         logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
