@@ -1,31 +1,60 @@
 import json
+import shutil
+import pytest
 import textwrap
 from align.pdk.finfet import CanvasPDK
 from align.pnr.main import load_constraint_files, gen_constraint_files
 from align.schema.hacks import VerilogJsonTop
-
-try:
-    from .utils import get_test_id, build_example, run_example
-    from . import circuits
-except ImportError:
-    from utils import get_test_id, build_example, run_example
-    import circuits
+from .utils import get_test_id, build_example, run_example
+from . import circuits
 
 
 def test_aspect_ratio_low():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_min", "ratio_low": 3}]
+    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 3}]
     example = build_example(name, netlist, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1)
+    name = name.upper()
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.scaled_placement_verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        modules = {module['concrete_name']: module for module in verilog_json['modules']}
+        cn = f'{name}_0'
+        assert cn in modules, f'{cn} not found in *.scaled_placement_verilog.json'
+        x0, y0, x1, y1 = modules[cn]['bbox']
+        assert (x1-x0)/(y1-y0) >= 3
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
 def test_aspect_ratio_high():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "AspectRatio", "subcircuit": "example_aspect_ratio_max", "ratio_high": 1}]
+    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_high": 1}]
     example = build_example(name, netlist, constraints)
-    run_example(example)
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1)
+    name = name.upper()
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.scaled_placement_verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        modules = {module['concrete_name']: module for module in verilog_json['modules']}
+        cn = f'{name}_0'
+        assert cn in modules, f'{cn} not found in *.scaled_placement_verilog.json'
+        x0, y0, x1, y1 = modules[cn]['bbox']
+        assert (x1-x0)/(y1-y0) <= 1
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
+
+
+def test_aspect_ratio_failure():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.common_source(name)
+    constraints = [
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_high": 0.2},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1}
+    ]
+    example = build_example(name, netlist, constraints)
+    with pytest.raises(Exception):
+        run_example(example, n=1)
 
 
 def test_boundary_max_width():
