@@ -99,6 +99,7 @@ def compiler_input(
     # TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
     ckt_data = create_data.read_inputs(design_name)
+    create_data.add_generators(pdk_dir)
     logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_name.upper())
 

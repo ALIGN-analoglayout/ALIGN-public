@@ -136,7 +136,7 @@ def get_generator(name, pdkdir):
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-    return getattr(module, name, False)
+    return getattr(module, name, False) or getattr(module, name.lower(), False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
