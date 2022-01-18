@@ -111,9 +111,8 @@ class SubCircuit(Model):
             return False
 
         for x in subckt.elements:
-            element_match = (not self.get_element(x.name).model == x.model) or \
-                            (not self.get_element(x.name).pins == x.pins) or \
-                            (not self.get_element(x.name).parameters == x.parameters)
+            y = self.get_element(x.name)
+            element_match = (y.model == x.model) and (y.pins == x.pins) and (y.parameters == x.parameters)
             if not element_match:
                 return False
         return True

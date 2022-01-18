@@ -3,9 +3,7 @@ from .types import set_context
 from .subcircuit import SubCircuit, Circuit
 from .instance import Instance
 import networkx
-# from networkx.algorithms.structuralholes import constraint
 from collections import Counter
-from networkx.classes.function import subgraph
 import logging
 
 logger = logging.getLogger(__name__)
@@ -170,28 +168,24 @@ class Graph(networkx.Graph):
             if skip and (set(removal_candidates) & set(skip)):
                 continue
 
-            nodes = list()
-            for node in sorted(removal_candidates):
-                if node in self.nodes and self._is_element(self.nodes[node]):
-                    nodes.append(node)
-            nodes_str = '_'.join(nodes)
-            instance_name = f'X_{nodes_str}'
-            subcircuit_name = f'V_{nodes_str}'
-
+            subcircuit_name = subckt.name
             new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             subcircuit_name = self.instance_counter(new_subckt)
-            new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
+            if subcircuit_name != subckt.name:
+                assert not self.subckt.parent.find(subcircuit_name), f'{subcircuit_name} already exists in the hierarchy'
+                new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(subcircuit_name)
 
-            assert not self.subckt.parent.find(subcircuit_name), f'{subcircuit_name} already exists in the hierarchy'
-
+            nodes = list()
             for node in sorted(removal_candidates):
                 # Elements only
                 if node in self.nodes and self._is_element(self.nodes[node]):
                     # Takes care of nets attached to element too
+                    nodes.append(node)
                     self.remove(self.element(node))
-
-            assert new_subckt not in self.elements  # Is this redundant?
+            nodes_str = '_'.join(nodes)
+            instance_name = f'X_{nodes_str}'
+            assert instance_name not in self.elements
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
