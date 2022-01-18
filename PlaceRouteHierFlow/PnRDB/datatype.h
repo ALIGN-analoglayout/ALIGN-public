@@ -714,6 +714,7 @@ struct Drc_info {
   Boundary top_boundary;
   guardring_info Guardring_info;  // guardring info read from layers.json
   design_info Design_info;        // design ingo from layer.json
+  int ScaleFactor = 1;
 };
 
 struct routing_net {
