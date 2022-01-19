@@ -602,8 +602,12 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                 # create new verilog for each placement
                 hN = DB.CheckoutHierNode( idx, sel)
                 placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
+                scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
-                for leaf in placement_verilog_d['leaves']:
+                #print(scaled_placement_verilog_d.json(indent=2))
+
+
+                for leaf in scaled_placement_verilog_d['leaves']:
                     ctn = leaf['concrete_name']
                     primitive = primitives[ctn]
                     if 'metadata' in primitive and 'constraints' in primitive['metadata']:
@@ -614,8 +618,8 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
                 top_name = f'{hN.name}_{sel}'
                 print('Trying', top_name)
-                gen_constraints(placement_verilog_d, top_name)
-                modules = {module['concrete_name']: module for module in placement_verilog_d['modules']}
+                gen_constraints(scaled_placement_verilog_d, top_name)
+                modules = {module['concrete_name']: module for module in scaled_placement_verilog_d['modules']}
 
                 frontier[top_name] = [constraint.dict() for constraint in modules[top_name]['constraints'] if constraint.constraint == 'place_on_grid']
 
