@@ -395,6 +395,7 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
     scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
     (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
+    #Comment out the next two lines disable checking so you can use the GUI
     check_placement( scaled_placement_verilog_d, scale_factor)
     check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
@@ -620,6 +621,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
                 for constraint in frontier[top_name]:
                     assert constraint['constraint'] == 'place_on_grid'
+                    #Comment out next line to use GUI to debug illegal grid locations
                     assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
 
             grid_constraints.update(frontier)

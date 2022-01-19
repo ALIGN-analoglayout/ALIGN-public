@@ -53,7 +53,7 @@ def merge(*rs):
     res = PlaceOnGrid(direction=new_direction, pitch=new_pitch, ored_terms=list(simplify(pairs)))
 
     if not res.ored_terms:
-        logger.debug(f'No legal grid positions: {res}')
+       logger.debug(f'No legal grid positions: {res}')
 
     return res
 
@@ -66,14 +66,17 @@ def split_directions_and_merge(*rs):
 
 
 def gen_constraints_for_module(m, modules, leaves):
+    logger.info(f'gen_constraints_for_module: {m["concrete_name"]}')
     pog_constraints = []
     for instance in m['instances']:
+        iname = instance['instance_name']
         ctn = instance['concrete_template_name']
         constraints = None
         # I don't know why I have to do this: I can't check to see if 'constraints' is in leaves[ctn] (it never is.)
         if ctn in leaves:
             try:
                 constraints = leaves[ctn]['constraints']
+                
             except KeyError:
                 pass
         elif ctn in modules:
@@ -84,14 +87,14 @@ def gen_constraints_for_module(m, modules, leaves):
         else:
             assert False, f'{ctn} not found in leaves or modules.'
 
-        print(constraints)
-
         place_on_grid_constraints = []
         if constraints is not None:
             new_constraints = [constraint.dict() if type(constraint) != dict else constraint for constraint in constraints]
             place_on_grid_constraints = [constraint for constraint in new_constraints if constraint['constraint'] == 'place_on_grid']
 
         tr = instance['transformation']
+
+        logger.info(f'{iname} {ctn}: place_on_grid_constraints: {[constraint for constraint in place_on_grid_constraints]} tr: {tr}')
 
         for pog in place_on_grid_constraints:
             if pog['direction'] == 'H': 
