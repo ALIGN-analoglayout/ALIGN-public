@@ -69,6 +69,7 @@ def main():
         '-k', 'telescopic_ota_guard_ring',
         '-n', MAX_JOBS, # pytest-xdist options
         '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
+        '--cov-append', # append to existing run
         *argv
         ]),
         shell=True)
