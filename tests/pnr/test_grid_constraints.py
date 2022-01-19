@@ -97,7 +97,7 @@ def test_gen_constraints():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [0], "scalings": [1]}]
             }
@@ -112,7 +112,7 @@ def test_gen_constraints():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [10], "scalings": [1]}]
             }
@@ -162,7 +162,7 @@ def test_gen_constraints_flip():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [0,2], "scalings": [1]}]
             }
@@ -214,7 +214,7 @@ def test_gen_constraints_multiple():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 4,
                 "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
             }
@@ -229,7 +229,7 @@ def test_gen_constraints_multiple():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 6,
                 "ored_terms": [{"offsets": [0, 1, 2], "scalings": [1]}]
             }
@@ -276,7 +276,7 @@ def test_gen_constraints_internal():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 4,
                 "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
             }
@@ -291,7 +291,7 @@ def test_gen_constraints_internal():
         "constraints": [
             {
                 "constraint": "place_on_grid",
-                "direction": "V",
+                "direction": "H",
                 "pitch": 6,
                 "ored_terms": [{"offsets": [0, 1, 2], "scalings": [1]}]
             }

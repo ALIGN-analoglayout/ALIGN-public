@@ -39,6 +39,7 @@ def lcm(*xs):
 
 
 def merge(*rs):
+
     new_pitch = lcm(*(r.pitch for r in rs))
     new_direction = rs[0].direction
     assert all(new_direction == r.direction for r in rs)
@@ -94,13 +95,11 @@ def gen_constraints_for_module(m, modules, leaves):
 
         tr = instance['transformation']
 
-        logger.info(f'{iname} {ctn}: place_on_grid_constraints: {[constraint for constraint in place_on_grid_constraints]} tr: {tr}')
-
         for pog in place_on_grid_constraints:
             if pog['direction'] == 'H': 
-                s, o = tr['sX'], tr['oX']
-            elif pog['direction'] == 'V':
                 s, o = tr['sY'], tr['oY']
+            elif pog['direction'] == 'V':
+                s, o = tr['sX'], tr['oX']
             else:
                 assert False, pog['direction']
 

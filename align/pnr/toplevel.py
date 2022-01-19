@@ -390,17 +390,18 @@ def gen_leaf_bbox_and_hovertext( ctn, p):
     d = { 'width': p[0], 'height': p[1]}
     return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
-def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath, placement_verilog_alternatives):
+def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath, placement_verilog_alternatives, is_toplevel):
     (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
     scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
     (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     #Comment out the next two lines disable checking so you can use the GUI
-    check_placement( scaled_placement_verilog_d, scale_factor)
-    check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
+    #check_placement( scaled_placement_verilog_d, scale_factor)
+    if is_toplevel:
+        check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
-def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives):
+def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives, is_toplevel):
     concrete_names = { m['concrete_name'] for m in placement_verilog_d['modules'] if m['abstract_name'] == hN.name}
     assert len(concrete_names) == 1
 
@@ -410,7 +411,7 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, gui, opath, tagged_
     if not gui:
         logger.info( f'Working on {concrete_name}')
 
-    scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives)
+    scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
     
 
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
@@ -511,6 +512,8 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
     TraverseOrder = DB.TraverseHierTree()
 
     for idx in TraverseOrder:
+        is_toplevel = idx == TraverseOrder[-1]
+
         # Restrict verilog_d to include only sub-hierachies of the current name
         s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
 
@@ -518,7 +521,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
             # create new verilog for each placement
             hN = DB.CheckoutHierNode( idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
-            per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives)
+            per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
 
     # hack for a reference placement_verilog_d
 
@@ -532,7 +535,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
                 #scale to hN units
                 placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
 
-            per_placement( placement_verilog_d, hN=None, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives)
+            per_placement( placement_verilog_d, hN=None, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=True)
 
     placements_to_run = None
     if gui:
@@ -579,7 +582,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     for idx in DB.TraverseHierTree():
 
         json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
-        print(json_str)
 
         modules_d = modules[DB.hierTree[idx].name] if reference_placement_verilog_json else None
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
@@ -604,9 +606,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                 placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
 
-                #print(scaled_placement_verilog_d.json(indent=2))
-
-
                 for leaf in scaled_placement_verilog_d['leaves']:
                     ctn = leaf['concrete_name']
                     primitive = primitives[ctn]
@@ -617,7 +616,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                         leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
 
                 top_name = f'{hN.name}_{sel}'
-                print('Trying', top_name)
                 gen_constraints(scaled_placement_verilog_d, top_name)
                 modules = {module['concrete_name']: module for module in scaled_placement_verilog_d['modules']}
 
@@ -625,7 +623,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
                 for constraint in frontier[top_name]:
                     assert constraint['constraint'] == 'place_on_grid'
-                    #Comment out next line to use GUI to debug illegal grid locations
                     assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
 
             grid_constraints.update(frontier)
