@@ -118,12 +118,11 @@ class VerilogJsonModule(DictEmulator):
             self._checker.solve()
         except checker.SolutionNotFoundError as e:
             logger.debug(f'Checker raised error:\n {e}')
-            g = []
             core = [x.json() for x in itertools.chain(self.instances, self.constraints) if self._checker.label(x) in e.labels]
             logger.error(f'Solution not found due to conflict between:')
             for x in core:
                 logger.error(f'{x}')
-            raise checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+            raise # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
 class VerilogJsonTop(DictEmulator):
     modules: List[VerilogJsonModule]
