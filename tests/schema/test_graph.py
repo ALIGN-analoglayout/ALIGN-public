@@ -9,6 +9,7 @@ from align.schema.parser import SpiceParser
 from align.schema.graph import Graph
 from align.schema.types import set_context
 
+
 @pytest.fixture
 def library():
     library = Library(loadbuiltins=True)
@@ -17,35 +18,41 @@ def library():
         library.append(Model(name='ThreeTerminalDevice', pins=['A', 'B', 'C'], parameters={'MYPARAMETER': '1'}))
     return library
 
+
 @pytest.fixture
 def circuit(library):
     with set_context(library):
         ckt = Circuit()
     return ckt
 
+
 @pytest.fixture
 def simple_circuit(circuit):
     with set_context(circuit.parent):
-        circuit.parent.append(Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter':1}))
+        circuit.parent.append(Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter': 1}))
     with set_context(circuit.elements):
         circuit.elements.append(Instance(name='X1', model='CustomDevice', pins={'A': 'NET1', 'B': 'in1', 'C': 'net01'}, generator='Dummy'))
         circuit.elements.append(Instance(name='X2', model='CustomDevice', pins={'A': 'NET2', 'B': 'in2', 'C': 'net02'}, generator='Dummy'))
         circuit.elements.append(Instance(name='X3', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET1'}, generator='Dummy'))
         circuit.elements.append(Instance(name='X4', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET2'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X5', model='TwoTerminalDevice', pins={'A':'net01', 'B':'net00'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X6', model='TwoTerminalDevice', pins={'A':'net02', 'B':'net00'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X7', model='TwoTerminalDevice', pins={'A':'NET3', 'B':'net03'}, generator='Dummy'))
+        circuit.elements.append(Instance(name='X5', model='TwoTerminalDevice', pins={'A': 'net01', 'B': 'net00'}, generator='Dummy'))
+        circuit.elements.append(Instance(name='X6', model='TwoTerminalDevice', pins={'A': 'net02', 'B': 'net00'}, generator='Dummy'))
+        circuit.elements.append(Instance(name='X7', model='TwoTerminalDevice', pins={'A': 'NET3', 'B': 'net03'}, generator='Dummy'))
     return circuit
+
 
 @pytest.fixture
 def matching_subckt(library):
     with set_context(library):
-        subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER':1})
+        subckt = SubCircuit(name='TEST_SUBCKT', pins=['PIN1', 'PIN2', 'PIN3'], parameters={'MYPARAMETER': 1})
     library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='X1', model='ThreeTerminalDevice', pins={'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN1'}, parameters={'MYPARAMETER': 1}, generator='Dummy'))
-        subckt.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': 'MYPARAMETER'}, generator='Dummy'))
+        subckt.elements.append(Instance(name='X1', model='ThreeTerminalDevice', pins={
+                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN1'}, parameters={'MYPARAMETER': 1}, generator='Dummy'))
+        subckt.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
+                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': 'MYPARAMETER'}, generator='Dummy'))
     return subckt
+
 
 @pytest.fixture
 def heirarchical_ckt(matching_subckt):
@@ -80,6 +87,7 @@ def heirarchical_ckt(matching_subckt):
             generator='Dummy'))
     return ckt
 
+
 @pytest.fixture
 def ota():
     parser = SpiceParser()
@@ -87,6 +95,7 @@ def ota():
         parser.parse(fp.read())
     # Extract ckt
     return parser.library.find('OTA')
+
 
 @pytest.fixture
 def primitives():
@@ -96,10 +105,12 @@ def primitives():
         parser.parse(fp.read())
     return [v for v in parser.library if isinstance(v, SubCircuit)]
 
+
 def test_netlist(circuit):
     with set_context(circuit.elements):
         X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={'A': 'NET1', 'B': 'NET2', 'C': 'NET3'}, generator='Dummy'))
+        X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
+                                     'A': 'NET1', 'B': 'NET2', 'C': 'NET3'}, generator='Dummy'))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -108,19 +119,21 @@ def test_netlist(circuit):
              'NET1', 'NET2', 'NET3']
     assert all(x in netlist.nodes for x in nodes)
     assert all(x in nodes for x in netlist.nodes)
-    edges = [# X1, net, pin
-             ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
-             ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
-             # X2, net, pin
-             ('X2', 'NET1', {'A'}), ('X2', 'NET2', {'B'}), ('X2', 'NET3', {'C'}),
-             ('NET1', 'X2', {'A'}), ('NET2', 'X2', {'B'}), ('NET3', 'X2', {'C'})]
+    edges = [  # X1, net, pin
+        ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
+        ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
+        # X2, net, pin
+        ('X2', 'NET1', {'A'}), ('X2', 'NET2', {'B'}), ('X2', 'NET3', {'C'}),
+        ('NET1', 'X2', {'A'}), ('NET2', 'X2', {'B'}), ('NET3', 'X2', {'C'})]
     assert all(x in netlist.edges.data('pin') for x in edges), netlist.edges
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
+
 
 def test_netlist_shared_net(circuit):
     with set_context(circuit.elements):
         X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={'A': 'NET1', 'B': 'NET1', 'C': 'NET2'}, generator='Dummy'))
+        X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
+                                     'A': 'NET1', 'B': 'NET1', 'C': 'NET2'}, generator='Dummy'))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -129,14 +142,15 @@ def test_netlist_shared_net(circuit):
              'NET1', 'NET2']
     assert all(x in netlist.nodes for x in nodes)
     assert all(x in nodes for x in netlist.nodes)
-    edges = [# X1, net, pin
-             ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
-             ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
-             # X2, net, pin
-             ('X2', 'NET1', {'A', 'B'}), ('X2', 'NET2', {'C'}),
-             ('NET1', 'X2', {'A', 'B'}), ('NET2', 'X2', {'C'})]
+    edges = [  # X1, net, pin
+        ('X1', 'NET1', {'A'}), ('X1', 'NET2', {'B'}),
+        ('NET1', 'X1', {'A'}), ('NET2', 'X1', {'B'}),
+        # X2, net, pin
+        ('X2', 'NET1', {'A', 'B'}), ('X2', 'NET2', {'C'}),
+        ('NET1', 'X2', {'A', 'B'}), ('NET2', 'X2', {'C'})]
     assert all(x in netlist.edges.data('pin') for x in edges), netlist.edges
     assert all(x in edges for x in netlist.edges.data('pin')), netlist.edges
+
 
 def test_find_subgraph_matches(simple_circuit, matching_subckt):
     netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
@@ -158,14 +172,16 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt):
         subckt3.elements.append(Instance(name='X2', model='TwoTerminalDevice', pins={'A': 'PIN3', 'B': 'PIN4'}, generator='Dummy'))
     assert len(netlist.find_subgraph_matches(Graph(subckt3))) == 1
 
+
 def test_replace_matching_subgraph(simple_circuit, matching_subckt):
     netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
     netlist.replace_matching_subgraph(matching_netlist)
     assert all(x not in netlist.nodes for x in matches[0].keys() if x.startswith('X'))
-    assert 'X_TEST_SUBCKT_I1_X3_X4' in netlist.nodes
-    new_edges = [('X_TEST_SUBCKT_I1_X3_X4', 'NET3', {'PIN3'}), ('X_TEST_SUBCKT_I1_X3_X4', 'NET1', {'PIN1'}), ('X_TEST_SUBCKT_I1_X3_X4', 'NET2', {'PIN2'})]
+    assert 'X_X3_X4' in netlist.nodes
+    new_edges = [('X_X3_X4', 'NET3', {'PIN3'}), ('X_X3_X4', 'NET1', {'PIN1'}), ('X_X3_X4', 'NET2', {'PIN2'})]
     assert all(x in netlist.edges.data('pin') for x in new_edges), netlist.edges.data('pin')
+
 
 def test_replace_repeated_subckts(ota):
     # parse netlist
@@ -176,6 +192,7 @@ def test_replace_repeated_subckts(ota):
     assert len(subckts[0].elements) == 4
     elements = {x.name for x in subckts[0].elements}
     assert elements == {'M10', 'M7', 'M9', 'M1'} or elements == {'M2', 'M6', 'M8', 'M0'}
+
 
 def test_replace_matching_subckts(ota, primitives):
     ckt = ota
@@ -191,6 +208,7 @@ def test_replace_matching_subckts(ota, primitives):
         netlist.replace_matching_subgraph(Graph(subckt))
     assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
 
+
 def test_flatten(heirarchical_ckt):
     ckt = heirarchical_ckt
     netlist = Graph(ckt)
@@ -205,6 +223,7 @@ def test_flatten(heirarchical_ckt):
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
     assert set(ckt.nets) == {'NET1', 'NET2', 'NET3', 'XSUB1_NET1'}
     assert all(element.parameters['MYPARAMETER'] == myparametermap[element.name] for element in ckt.elements)
+
 
 def test_flatten_depth1(heirarchical_ckt):
     ckt = heirarchical_ckt

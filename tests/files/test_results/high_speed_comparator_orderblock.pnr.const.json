@@ -37,7 +37,7 @@
                 },
                 {
                     "type": "selfsym",
-                    "block": "X_CMC_PMOS_MP7_MP8"
+                    "block": "X_MP7_MP8"
                 }
             ],
             "const_name": "SymmBlock",

@@ -140,7 +140,6 @@ def get_generator(name, pdkdir):
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
-    pdk = Pdk().load(pdkdir / 'layers.json')
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
     uc = primitive1()
     uc.generate(
@@ -241,13 +240,14 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         if unit_size_mos is None:   # hack for align/pdk/finfet
 
             if isinstance(subckt, SubCircuit):
-                values = subckt.elements[0].parameters
                 vt = subckt.elements[0].model
+                values = subckt.elements[0].parameters
                 for e in subckt.elements:
                     assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
                     assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
             else:
                 vt = element.model
+                values = element.parameters
 
             assert 'M' in values,  f'm: Number of instances not specified {values}'
             assert 'NF' in values, f'nf: Number of fingers not specified {values}'
@@ -267,30 +267,43 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
             values['real_inst_type'] = vt
 
+            # TODO: Stacking parallel transistors is illegal. To be addressed in compiler
+            st = int(values.get('STACK', '1'))
+            pl = int(values.get('PARALLEL', '1'))
+            if st > 1 and (nf > 1 or pl > 1):
+                assert False, 'Stacking multi-leg transistors not supported. Turn off MergeSeriesDevices'
+            elif pl > 1 and nf != pl:
+                assert False, 'Number of legs do not match'
+
+            exclude_keys = ['M', 'real_inst_type']
+            if 'W' in values:
+                exclude_keys.append('NFIN')
+            if 'PARALLEL' in values:
+                exclude_keys.append('PARALLEL')
+            if st > 1:
+                exclude_keys.append('NF')
+            elif 'STACK' in values:
+                exclude_keys.append('STACK')
+
             sorted_keys = sorted(values.keys())
             block_name = f'{name}_{vt}_M{m}_'
-            block_name += '_'.join([k+':'+str(values[k]) for k in sorted_keys if k not in ['M', 'real_inst_type']])
+            block_name += '_'.join([k+':'+str(values[k]) for k in sorted_keys if k not in exclude_keys])
             block_name += f"_{str(int(hashlib.sha256(block_name.encode('utf-8')).hexdigest(), 16) % 10**8)}"
             block_name += f'_X{x}_Y{y}'
 
-            logger.info(block_name)
+            logger.debug(block_name)
             block_args = {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
-                'value': 1,  # hack. This is used as nfin later.
                 'parameters': values
             }
-
-            if 'STACK' in values and int(values['STACK']) > 1:
-                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['stack'] = int(values['STACK'])
 
             if block_name in primitives:
                 if block_args != primitives[block_name]:
                     assert False, f'Collision for {block_name}: new: {block_args} existing: {primitives[block_name]} '
                 else:
-                    logger.info(f'{block_name} exists')
+                    logger.debug(f'{block_name} exists')
             else:
                 add_primitive(primitives, block_name, block_args)
             element.add_abs_name(block_name)
@@ -370,7 +383,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 xval = int(no_units / square_y)
 
             if 'SCM' in name:
-                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
+                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != \
+                   int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
                     square_y = 1
                     yval = square_y
                     xval = int(no_units / square_y)
@@ -401,7 +415,9 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
+                       pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
+                       abstract_template_name=None, concrete_template_name=None):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or isinstance(primitive, Model)\

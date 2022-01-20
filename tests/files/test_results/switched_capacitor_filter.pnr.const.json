@@ -62,19 +62,19 @@
                 },
                 {
                     "type": "selfsym",
-                    "block": "X_CMC_NMOS_B_M4_M8"
+                    "block": "X_M0_M14"
                 },
                 {
                     "type": "selfsym",
-                    "block": "X_CMC_S_NMOS_B_I1_M0_M14"
+                    "block": "X_M10_M7"
                 },
                 {
                     "type": "selfsym",
-                    "block": "X_CMC_S_NMOS_B_I1_M10_M7"
+                    "block": "X_M12_M6"
                 },
                 {
                     "type": "selfsym",
-                    "block": "X_CMC_S_NMOS_B_I1_M12_M6"
+                    "block": "X_M4_M8"
                 }
             ],
             "const_name": "SymmBlock",
@@ -101,7 +101,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M10_M7",
+                        "name": "X_M10_M7",
                         "pin": "SB"
                     }
                 ]
@@ -126,7 +126,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M10_M7",
+                        "name": "X_M10_M7",
                         "pin": "SA"
                     }
                 ]
@@ -155,7 +155,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M10_M7",
+                        "name": "X_M10_M7",
                         "pin": "DA"
                     }
                 ]
@@ -180,7 +180,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M10_M7",
+                        "name": "X_M10_M7",
                         "pin": "DB"
                     }
                 ]
@@ -204,7 +204,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M0_M14",
+                        "name": "X_M0_M14",
                         "pin": "SA"
                     }
                 ]
@@ -224,7 +224,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M0_M14",
+                        "name": "X_M0_M14",
                         "pin": "SB"
                     }
                 ]
@@ -243,12 +243,12 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_NMOS_B_M4_M8",
+                        "name": "X_M4_M8",
                         "pin": "DA"
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M12_M6",
+                        "name": "X_M12_M6",
                         "pin": "DB"
                     }
                 ]
@@ -263,12 +263,12 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_NMOS_B_M4_M8",
+                        "name": "X_M4_M8",
                         "pin": "DB"
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M12_M6",
+                        "name": "X_M12_M6",
                         "pin": "DA"
                     }
                 ]
@@ -287,7 +287,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M12_M6",
+                        "name": "X_M12_M6",
                         "pin": "SB"
                     },
                     {
@@ -307,7 +307,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M12_M6",
+                        "name": "X_M12_M6",
                         "pin": "SA"
                     },
                     {
@@ -341,7 +341,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M0_M14",
+                        "name": "X_M0_M14",
                         "pin": "DB"
                     },
                     {
@@ -371,7 +371,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M0_M14",
+                        "name": "X_M0_M14",
                         "pin": "DA"
                     },
                     {
