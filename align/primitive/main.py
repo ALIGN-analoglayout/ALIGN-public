@@ -326,12 +326,12 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             elif design_config["pdk_type"] == "Bulk":
                 # Bulk design
                 for key in values:
-                    assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
-                    assert (
-                        values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
-                        f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
-                    size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                    values[key]["NFIN"] = size
+                   assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
+                   assert int(
+                       float(values[key]["W"])*1E+9) % design_config["Gate_pitch"] == 0, \
+                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}" 
+                   size = int(float(values[key]["W"])*1E+9/design_config["Gate_pitch"])
+                   values[key]["NFIN"] = size
                 name_arg = 'NFIN'+str(size)
             else:
                 print(design_config["pdk_type"] + " pdk not supported")
