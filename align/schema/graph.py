@@ -171,9 +171,8 @@ class Graph(networkx.Graph):
             subcircuit_name = subckt.name
             new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             subcircuit_name = self.instance_counter(new_subckt)
-            if subcircuit_name != subckt.name:
-                assert not self.subckt.parent.find(
-                    subcircuit_name), f'{subcircuit_name} already exists in the hierarchy {new_subckt} {self.subckt.parent.find(subcircuit_name)}'
+            if subcircuit_name != subckt.name and not self.subckt.parent.find(
+                    subcircuit_name):
                 new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(subcircuit_name)
 
@@ -235,9 +234,10 @@ class Graph(networkx.Graph):
         existing_ckt = self.subckt.parent.find(name)
         if existing_ckt:
             if subckt.is_identical(existing_ckt):
+                logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")
                 return name
             else:
-                return self.instance_counter(subckt, counter+1)
+                name = self.instance_counter(subckt, counter+1)
         return name
 
     def find_repeated_subckts(self, replace=False):
