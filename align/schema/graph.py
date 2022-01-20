@@ -172,7 +172,8 @@ class Graph(networkx.Graph):
             new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             subcircuit_name = self.instance_counter(new_subckt)
             if subcircuit_name != subckt.name:
-                assert not self.subckt.parent.find(subcircuit_name), f'{subcircuit_name} already exists in the hierarchy'
+                assert not self.subckt.parent.find(
+                    subcircuit_name), f'{subcircuit_name} already exists in the hierarchy {new_subckt} {self.subckt.parent.find(subcircuit_name)}'
                 new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(subcircuit_name)
 
