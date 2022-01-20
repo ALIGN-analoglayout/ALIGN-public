@@ -35,14 +35,14 @@ def test_array_gen_ro_fh():
     netlist = ring_oscillator_flat(name)
     constraints = [
         {"constraint": "DoNotUseLib", "libraries": ["STAGE2_INV"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     assert ckt, f"No ckt {name} found in library"
     array_cl = process_arrays(ckt, dict())
     array1 = array_cl.find_array('VCCX', ['VSSX'])
-    assert array1 == ['X_INV_MN0_MP0', 'X_INV_MN1_MP1', 'X_INV_MN2_MP2', 'X_INV_MN3_MP3', 'X_INV_MN4_MP4']
+    assert array1 == ['X_MN0_MP0', 'X_MN1_MP1', 'X_MN2_MP2', 'X_MN3_MP3', 'X_MN4_MP4']
     array_cl.add_align_block_const()
     with set_context(ckt.constraints):
         x = constraint.Align(line="h_center", instances=array1)
@@ -55,7 +55,7 @@ def test_array_gen_ro_f():
     netlist = ring_oscillator_flat(name)
     constraints = [
         {"constraint": "DoNotUseLib", "libraries": ["STAGE2_INV", "INV", "DP_PMOS", "DP_NMOS"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
@@ -89,5 +89,5 @@ def test_array_vga_equal():
     TEMPLATE = ckt_library.find("ARRAY_TEMPLATE")
     assert TEMPLATE, f"TEMPLATE not found in {all_arrays}"
     insts = [inst.name for inst in TEMPLATE.elements]
-    assert set(insts) == {'X_DP_NMOS_B_M00_M01', 'MSW0'}
+    assert set(insts) == {'X_M00_M01', 'MSW0'}
     clean_data(name)

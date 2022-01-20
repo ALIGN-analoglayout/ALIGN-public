@@ -9,7 +9,6 @@ from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
 import logging
 from ..schema import constraint
-from ..schema.types import set_context
 from align.schema.graph import Graph
 
 logger = logging.getLogger(__name__)
@@ -132,9 +131,9 @@ class Annotate:
                 is_append = True
             else:
                 logger.debug(f"invalid constraint {const}")
-            if is_append == False and const in const_list:
+            if not is_append and const in const_list:
                 const_list.remove(const)
-            if is_append == True and const not in const_list:
+            if is_append and const not in const_list:
                 logger.debug(f"constraint appended: {const}")
                 const_list.append(const)
 
@@ -168,9 +167,7 @@ class Annotate:
         self._remove_group_const(subckt, gb_const)
 
         for const in gb_const:
-            assert (
-                self.ckt_data.find(const.name.upper()) == None
-            ), f"Already existing subckt with this name, please provide different name to const"
+            assert self.ckt_data.find(const.name.upper()) is None, "Already existing subckt with this name, please provide different name to const"
             const_inst = [i.upper() for i in const.instances]
             ckt_ele = set([ele.name for ele in subckt.elements])
             assert set(const_inst).issubset(
@@ -188,7 +185,7 @@ class Annotate:
                 if any(
                     net in ele.pins.values()
                     for ele in subckt.elements
-                    if not ele.name in const_inst
+                    if ele.name not in const_inst
                 )
             ] + list(ac_nets & set(subckt.pins))
             ac_nets = list(set(ac_nets))
@@ -233,7 +230,6 @@ class Annotate:
     def _group_cap_const(self, name):
         # TODO: merge group cap and group block
         subckt = self.ckt_data.find(name)
-        const_list = subckt.constraints
         gc_const = [
             const
             for const in subckt.constraints

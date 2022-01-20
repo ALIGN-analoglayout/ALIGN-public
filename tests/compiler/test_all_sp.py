@@ -27,7 +27,6 @@ def get_parser():
     parser = SpiceParser()
     mydir = pathlib.Path(__file__).resolve().parent
     models = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'models.sp'
-
     with open(models) as f:
         lines = f.read()
     parser.parse(lines)
