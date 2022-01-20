@@ -382,7 +382,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             block_args = {
                 'primitive': name,
-                'value': unit_size_mos,
+                'value': values[device_name]["NFIN"],
                 'x_cells': xval,
                 'y_cells': yval,
                 'parameters': values
