@@ -1,3 +1,4 @@
+import os
 import json
 import textwrap
 from .utils import get_test_id, build_example, run_example
@@ -51,3 +52,19 @@ def test_scalings():
             "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
         }]
         assert primitive['metadata']['constraints'] == golden
+
+
+def test_hierarchy():
+    os.environ['PLACE_ON_GRID'] = 't'
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)

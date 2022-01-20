@@ -261,3 +261,7 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __eq__(self, other):
         return self.__root__ == other
+
+    def __contains__(self, v):
+        return self.__root__.__contains__(v)
+        #return v in self.__root__

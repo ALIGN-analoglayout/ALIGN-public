@@ -1,8 +1,10 @@
+import os
 import math
 from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
+from align.schema.constraint import PlaceOnGrid, OffsetsScalings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,6 +21,14 @@ class MOSGenerator(CanvasPDK):
 
     def addPMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
+        if os.getenv('PLACE_ON_GRID', False):
+            rh = 7*self.pdk['M2']['Pitch']
+            if parameters['real_inst_type'].lower().startswith('n'):
+                o = 0
+            else:
+                o = rh
+            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
+                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
