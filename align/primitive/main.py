@@ -233,10 +233,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
         subckt = element.parent.parent.parent.find(element.model)
 
-        if 'NMOS' in name:
-            unit_size_mos = design_config["unit_size_nmos"]
-        else:
-            unit_size_mos = design_config["unit_size_pmos"]
+        unit_size_mos = design_config["unit_size_mos"]
 
         if unit_size_mos is None:   # hack for align/pdk/finfet
 
@@ -328,9 +325,9 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 for key in values:
                    assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
                    assert int(
-                       float(values[key]["W"])*1E+9) % design_config["Gate_pitch"] == 0, \
-                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}" 
-                   size = int(float(values[key]["W"])*1E+9/design_config["Gate_pitch"])
+                       float(values[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
+                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Fin_pitch']}" 
+                   size = int(float(values[key]["W"])*1E+9/design_config["Fin_pitch"])
                    values[key]["NFIN"] = size
                 name_arg = 'NFIN'+str(size)
             else:
