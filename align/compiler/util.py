@@ -133,11 +133,8 @@ def get_ports_connection(G):
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        if len(leaf_conn) == 0:
-            logger.warning(f"floating port:{port} in subckt {subckt.name}")
-            ports_conn[port] = None
-        else:
-            ports_conn[port] = set(sorted(leaf_conn))
+        assert leaf_conn, f"floating port:{port} in subckt {subckt.name}"
+        ports_conn[port] = set(sorted(leaf_conn))
     return ports_conn
 
 
