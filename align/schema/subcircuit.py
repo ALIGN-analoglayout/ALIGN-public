@@ -97,32 +97,29 @@ class SubCircuit(Model):
         # Load constraints
         yield from self.constraints.translate(solver)
 
-    def verify(self, formulae=None):
-        if formulae is None:
+    def verify(self, constraint=None):
+        if constraint is None:
             self._checker = checker.Z3Checker()
             formulae = self.translate(self._checker)
         else:
             assert self._checker is not None, "Incremental verification is not possible as solver hasn't been instantiated yet"
+            formulae = self.constraints._translate_and_annotate(constraint, self._checker)
         for x in formulae:
             self._checker.append(x)
-        self._check()
+        try:
+            self._checker.solve()
+        except checker.SolutionNotFoundError as e:
+            logger.debug(f'Checker raised error:\n {e}')
+            core = [x.json() for x in itertools.chain(self.elements, self.constraints, [constraint]) if self._checker.label(x) in e.labels]
+            logger.error(f'Solution not found due to conflict between:')
+            for x in core:
+                logger.error(f'{x}')
+            raise # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
     #
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
-
-    def _check(self):
-        try:
-            self._checker.solve()
-        except checker.SolutionNotFoundError as e:
-            logger.debug(f'Checker raised error:\n {e}')
-            core = [x.json() for x in itertools.chain(self.elements, self.constraints) if self._checker.label(x) in e.labels]
-            logger.error(f'Solution not found due to conflict between:')
-            for x in core:
-                logger.error(f'{x}')
-            raise checker.SolutionNotFoundError(message=e.message, labels=e.labels)
-
 
 class Circuit(SubCircuit):
 
