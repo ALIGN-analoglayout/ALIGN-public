@@ -16,9 +16,8 @@
     "v_skip_factor":8,
     "Hspace": 0,
     "Vspace": 0,
-    "unit_size_nmos":null,
-    "unit_size_pmos":null,
-    "Gate_pitch":45
+    "unit_size_mos":null,
+    "Fin_pitch":450
   },
   "Abstraction": [
     {
