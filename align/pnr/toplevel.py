@@ -608,6 +608,9 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
                 for leaf in scaled_placement_verilog_d['leaves']:
                     ctn = leaf['concrete_name']
+                    if ctn not in primitives:
+                        continue # special case capacitors
+
                     primitive = primitives[ctn]
                     if 'metadata' in primitive and 'constraints' in primitive['metadata']:
                         if 'constraints' not in leaf:
