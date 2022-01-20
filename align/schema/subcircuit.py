@@ -103,7 +103,7 @@ class SubCircuit(Model):
             formulae = self.translate(self._checker)
         else:
             assert self._checker is not None, "Incremental verification is not possible as solver hasn't been instantiated yet"
-            formulae = self.constraints._translate_and_annotate(constraint, self._checker)
+            formulae = types.cast_to_solver(constraint, self._checker)
         for x in formulae:
             self._checker.append(x)
         try:
