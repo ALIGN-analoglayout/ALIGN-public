@@ -127,7 +127,9 @@ class VerilogJsonModule(DictEmulator):
             logger.error(f'Solution not found due to conflict between:')
             for x in core:
                 logger.error(f'{x}')
-            raise checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+            print('message:', e.message, 'labels:', e.labels)
+            new_ex = checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+            raise # new_ex
 
 class VerilogJsonTop(DictEmulator):
     modules: List[VerilogJsonModule]
