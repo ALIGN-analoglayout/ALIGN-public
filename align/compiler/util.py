@@ -59,16 +59,21 @@ def get_next_level(subckt, G, tree_l1):
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     cm = subckt.get_element(node).model
-    if not cm:
+    sub_subckt = subckt.parent.find(cm)
+    if not sub_subckt:
         # base model
         base_model = cm
-    else:
-        sub_subckt = subckt.parent.find(cm)
-        if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
-            base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
-        else:
-            assert isinstance(sub_subckt, Model), f"No model definition found for {cm}"
+    elif isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
+        base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
+    elif isinstance(sub_subckt, Model):
+        temp = subckt.parent.find(cm).base
+        if temp:
             base_model = subckt.parent.find(cm).base
+        else:
+            base_model = cm
+    else:
+        base_model = cm
+    assert base_model, f"base model for {node.name} is {base_model}"
     return base_model
 
 

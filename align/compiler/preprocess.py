@@ -91,7 +91,7 @@ def remove_dummies(library, dummy_hiers, top):
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
                             ele = other_ckt.get_element(x)
-                            assert ele
+                            assert ele, f"{ele} not found in {other_ckt.name}"
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
