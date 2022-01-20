@@ -11,7 +11,7 @@ from itertools import combinations, combinations_with_replacement
 import logging
 
 from .create_array_hierarchy import process_arrays
-from .util import compare_two_nodes, get_base_model, get_ports_weight, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection, get_ports_weight
+from .util import compare_two_nodes, get_base_model, get_ports_connection, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
 from align.schema.subcircuit import SubCircuit
@@ -19,12 +19,12 @@ from align.schema.subcircuit import SubCircuit
 logger = logging.getLogger(__name__)
 
 
-def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
+def find_unique_matching_branches(G, nbrs1, nbrs2, ports_conn):
     logger.debug(f"finding unique matches between {nbrs1},{nbrs2}")
     match = {}
     for node1 in nbrs1:
         for node2 in nbrs2:
-            if compare_two_nodes(G, node1, node2, ports_weight):
+            if compare_two_nodes(G, node1, node2, ports_conn):
                 if node1 in match:
                     return False
                 else:
@@ -34,7 +34,7 @@ def find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight):
     return match
 
 
-def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_weight):
+def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_conn):
     """
     Traversing single branch for symmetry
     condition 1, Single branch: both ports/ nets are same and connected to two or more ports
@@ -51,7 +51,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         stores list of matched pairs.
     traversed : list of nodes already traversed, to avoid retracing
     node1,node2 : start points to create trees for comparison
-    ports_weight :TYPE. dict
+    ports_conn :TYPE. dict
         dictionary of port weights
     Returns
     -------
@@ -70,7 +70,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
-        if compare_two_nodes(G, node1, node2, ports_weight):
+        if compare_two_nodes(G, node1, node2, ports_conn):
             match_pair[node1] = node2
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
@@ -105,7 +105,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 traversed,
                 SD_nbrs[0],
                 SD_nbrs[0],
-                ports_weight,
+                ports_conn,
             )
         else:
             logger.debug(f"multiple nodes diverging {SD_nbrs}")
@@ -124,7 +124,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                     traversed.copy(),
                     nbr1,
                     nbr2,
-                    ports_weight,
+                    ports_conn,
                 )
                 if new_pair:
                     # new_pair[nbr1]=nbr2
@@ -153,7 +153,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                             traversed.copy(),
                             nbr1,
                             nbr1,
-                            ports_weight,
+                            ports_conn,
                         )
                         # filtering multiple axis of symmetries with same block
                         # ideally they should be handled by array generation
@@ -172,19 +172,19 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         if len(nbrs1) == 1:
             nbr1 = nbr2 = nbrs1[0]
             logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
-            compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
+            compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_conn)
         else:
             for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
                 logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
                 if (nbr1, nbr2) not in match_pairs.keys():
                     new_pair = {}
-                    compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
+                    compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_conn)
                     # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
                     if new_pair:
                         match_pairs[(nbr1, nbr2)] = new_pair
                         logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
-    elif compare_two_nodes(G, node1, node2, ports_weight):
+    elif compare_two_nodes(G, node1, node2, ports_conn):
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
         nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
         match_pair[node1] = node2
@@ -193,19 +193,19 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         nbrs1_wt = [pin for nbr in nbrs1 for pin in G.get_edge_data(node1, nbr)["pin"]]
         nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)["pin"]]
         logger.debug(f"nbr1 conn: {nbrs1_wt}, nbr2 {nbrs2_wt}")
-        unique_match = find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight)
+        unique_match = find_unique_matching_branches(G, nbrs1, nbrs2, ports_conn)
         if len(nbrs1) == 0 or len(nbrs2) == 0:
             logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
         elif len(nbrs1) == 1 and len(nbrs2) == 1:
             logger.debug(f"traversing binary branch")
-            compare_nodes(G, match_pairs, match_pair, traversed, nbrs1.pop(), nbrs2.pop(), ports_weight)
+            compare_nodes(G, match_pairs, match_pair, traversed, nbrs1.pop(), nbrs2.pop(), ports_conn)
         elif unique_match:
             logger.debug(f"traversing unique matches {unique_match}")
             match_pair[node1] = node2
             traversed.update([node1, node2])
             for nbr1, nbr2 in unique_match.items():
                 logger.debug(f"recursive call from pair {node1}:{node2} to {nbr1}:{nbr2}")
-                compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
+                compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_conn)
         elif (
             len(nbrs1_wt) > len(set(nbrs1_wt)) > 1
             and len(nbrs2_wt) > len(set(nbrs2_wt)) > 1
@@ -224,11 +224,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         logger.debug(f"end of recursion branch, matches {match_pair}")
 
 
-def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight):
+def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_conn):
     logger.debug(f"Symmetry start point {node1} {node2}")
     pair = {}
     if node1 in G.nodes() and node2 in G.nodes():
-        compare_nodes(G, match_pairs, pair, traversed, node1, node2, ports_weight)
+        compare_nodes(G, match_pairs, pair, traversed, node1, node2, ports_conn)
     if not pair:
         logger.debug(f"No pair found from {node1} {node2}")
         return
@@ -258,13 +258,13 @@ def FindSymmetry(subckt, stop_points: set):
     non_power_ports = sorted(set(sorted(ports)) - stop_points)
     logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
 
-    ports_weight = get_ports_weight(graph)
+    ports_conn = get_ports_connection(graph)
     # TODO start from primitives
     for port1, port2 in combinations_with_replacement(non_power_ports, 2):
         traversed = stop_points.copy()
-        if ports_weight[port1] == ports_weight[port2] and ports_weight[port2]:
+        if ports_conn[port1] == ports_conn[port2] and ports_conn[port2]:
             traversed.update([port1, port2])
-            recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
+            recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_conn)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
             logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs

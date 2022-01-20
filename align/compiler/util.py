@@ -59,18 +59,16 @@ def get_next_level(subckt, G, tree_l1):
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     cm = subckt.get_element(node).model
-    if cm in ["NMOS", "PMOS", "RES", "CAP"]:
+    if not cm:
+        # base model
         base_model = cm
-    elif subckt.parent.find(cm):
+    else:
         sub_subckt = subckt.parent.find(cm)
         if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
             base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
-        elif isinstance(sub_subckt, Model):
-            base_model = subckt.parent.find(cm).base
         else:
-            base_model = sub_subckt.name + '_'.join([param+'_'+value for param, value in sub_subckt.parameters.items()])
-    else:
-        logger.warning(f"invalid device {node}")
+            assert isinstance(sub_subckt, Model), f"No model definition found for {cm}"
+            base_model = subckt.parent.find(cm).base
     return base_model
 
 
@@ -129,21 +127,21 @@ def reduced_SD_neighbors(G, node, nbr):
         return False
 
 
-def get_ports_weight(G):
-    ports_weight = dict()
+def get_ports_connection(G):
+    ports_conn = dict()
     subckt = G.subckt
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
         if len(leaf_conn) == 0:
             logger.warning(f"floating port:{port} in subckt {subckt.name}")
-            ports_weight[port] = None
+            ports_conn[port] = None
         else:
-            ports_weight[port] = set(sorted(leaf_conn))
-    return ports_weight
+            ports_conn[port] = set(sorted(leaf_conn))
+    return ports_conn
 
 
-def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
+def compare_two_nodes(G, node1: str, node2: str, ports_conn=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
 
@@ -153,7 +151,7 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. it consist of all subckt properties
     node1, node2 : TYPE  string
         DESCRIPTION. node name
-    ports_weight : TYPE list
+    ports_conn : TYPE list
         DESCRIPTION. port weights
 
     Returns
@@ -165,8 +163,8 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
     nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
     logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-    if not ports_weight:
-        ports_weight = get_ports_weight(G)
+    if not ports_conn:
+        ports_conn = get_ports_connection(G)
     if G.nodes[node1].get("instance"):
         logger.debug(f"checking match between {node1} {node2}")
         in1 = G.nodes[node1].get("instance")
@@ -189,12 +187,12 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
                 f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}"
             )
             return False
-        if node1 in ports_weight and node2 in ports_weight:
-            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
+        if node1 in ports_conn and node2 in ports_conn:
+            if sorted(ports_conn[node1]) == sorted(ports_conn[node2]):
                 logger.debug("True")
                 return True
             else:
-                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
+                logger.debug(f"external port weight mismatch {ports_conn[node1]},{ports_conn[node2]}")
                 return False
         else:
             weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])

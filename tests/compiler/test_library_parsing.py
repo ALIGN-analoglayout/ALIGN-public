@@ -3,6 +3,8 @@ import pathlib
 import pytest
 from align.schema.parser import SpiceParser
 from align.schema import constraint
+from align.compiler.read_library import read_lib, read_models, order_lib
+from tests.schema.test_graph import primitives
 
 
 @pytest.fixture
@@ -35,3 +37,22 @@ def test_constraint(library):
     assert x in dp_const
     assert dp_const[0].constraint == "symmetric_blocks"
     assert dp_const[0].pairs == [["M0", "M1"]]
+
+
+def test_default_models():
+    mydir = pathlib.Path(__file__).resolve().parent
+    pdk_dir = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+    ckt_parser = read_models(pdk_dir)
+    assert len(ckt_parser.library) == 35
+
+
+def test_default_template_lib():
+    mydir = pathlib.Path(__file__).resolve().parent
+    pdk_dir = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+    library = read_lib(pdk_dir)
+    assert len(library) == 104
+    primitives_list = order_lib(library)
+    assert len(primitives_list) == 69
+    assert primitives_list[56].name == "DCL_PMOS_S"
+    assert primitives_list[2].name == "SCM_PMOS_RC"
+    assert primitives_list[14].name == "DP_PAIR_PMOS"
