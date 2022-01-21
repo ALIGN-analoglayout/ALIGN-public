@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 def get_xcells_pattern(primitive, pattern, x_cells):
 
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
     elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
