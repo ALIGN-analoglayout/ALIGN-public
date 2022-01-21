@@ -388,6 +388,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     for (int bb = 0; bb < it->instNum; ++bb) {
       block tmpblock;
       tmpblock.name = (it->instance).at(bb).name;
+      tmpblock.master = (it->instance).at(bb).master;
       // cout<<tmpblock.name<<endl;
       /*
       for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {

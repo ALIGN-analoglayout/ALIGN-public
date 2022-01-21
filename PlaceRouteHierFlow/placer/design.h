@@ -52,6 +52,7 @@ class design {
   //    };
   struct block {
     string name = "";
+    string master = "";
     placerDB::bbox boundary;
     string type = "";
     int width = 0;

@@ -68,6 +68,7 @@ class ILP_solver {
     if (use_ilp_solver == SYMPHONY) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
     return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }
+  void FlipPlacement(const design& mydesign, const SeqPair& curr_sp);
   public:
   double cost = 0;
   double constraint_penalty = 0;

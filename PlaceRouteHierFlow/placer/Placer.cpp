@@ -1054,6 +1054,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     // it->second.PrintSeqPair();
     // std::cout<<"write design "<<idx<<std::endl;
     it->second.second.updateTerminalCenter(designData, it->second.first);
+    it->second.second.FlipPlacement(designData, it->second.first);
     it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
     it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
     it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);

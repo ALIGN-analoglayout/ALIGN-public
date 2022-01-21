@@ -3547,6 +3547,46 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
   fout.close();
 }
 
+void ILP_solver::FlipPlacement(const design& des, const SeqPair& curr_sp)
+{
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FlipPlacement");
+
+  vector<int> pdev, ndev;
+  for (const auto& n : des.Nets) {
+    auto vdd = (n.name == "VDD");
+    auto gnd = (n.name == "0" || n.name == "GND");
+    logger->info("net : {0}", n.name);
+    if (vdd || gnd) {
+      for (const auto& p : n.connected) {
+        if (p.type == placerDB::Block) {
+          const auto& pn = des.Blocks[p.iter2][0].blockPins[p.iter].name;
+          logger->info("net : {0} pin : {1}", n.name, pn);
+          if (pn == "B") {
+            if (vdd) pdev.push_back(p.iter2);
+            else ndev.push_back(p.iter2);
+          }
+        }
+      }
+    }
+  }
+  for (int i = 0; i < Blocks.size(); ++i) {
+    const auto& name = des.Blocks[i][curr_sp.selected[i]].master;
+    if (name.find("PMOS") != std::string::npos && name.find("NMOS") == std::string::npos) pdev.push_back(i);
+    if (name.find("NMOS") != std::string::npos && name.find("PMOS") == std::string::npos) ndev.push_back(i);
+  }
+  int pymin{INT_MAX}, nymin{INT_MAX};
+  for (const auto& p : pdev) pymin = std::min(pymin, Blocks[p].y);
+  for (const auto& n : ndev) nymin = std::min(nymin, Blocks[n].y);
+  logger->info("pymin : {0} nymin : {1}", pymin, nymin);
+  if (pymin < nymin) {
+    for (int i = 0; i < Blocks.size(); ++i) {
+      auto& b = Blocks[i];
+      b.y = (LL.y + UR.y - des.Blocks[i][curr_sp.selected[i]].height - b.y);
+      b.V_flip = (b.V_flip ? 0 : 1);
+    }
+  }
+}
+
 void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
