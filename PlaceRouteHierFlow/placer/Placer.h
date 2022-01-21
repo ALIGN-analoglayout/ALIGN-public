@@ -57,6 +57,7 @@ class Placer {
   void PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
+  void ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string& jsonStr);
   void setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo);
   PlacerHyperparameters hyper;
   std::uniform_real_distribution<double> _rnd{0., 1.};

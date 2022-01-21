@@ -19,16 +19,61 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
+  ReadPrimitiveOffsetPitch(nodeVec, drcInfo, hyper_in.place_on_grid_constraints_json);
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
     //logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
-  }else{
+  } else {
     if (hyper.use_analytical_placer)
       //#define analytical_placer
       PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
     else
       PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
+  }
+}
+
+void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string &jsonStr){
+  auto logger = spdlog::default_logger()->clone("placer.Placer.ReadPrimitiveOffsetPitch");
+  //auto &b = lefData[primitive.front().name].front();
+  json jedb = json::parse(jsonStr);
+  for(auto concrete:jedb){
+    string s = concrete["concrete_name"];
+    json constraint = concrete["constraints"][0];
+    if (constraint["constraint"] != "place_on_grid") continue;
+    unsigned int start = 0;
+    unsigned int slash = s.find_last_of('_');
+    if (slash != string::npos) {
+      start = slash + 1;
+    }
+    string concrete_name = s.substr(0, slash);
+    int instance_id =atoi(s.substr(start, s.size() - start).c_str());
+    for(auto &block:nodeVec.back().Blocks){
+      if(block.instance.front().master==concrete_name){
+        auto &b = block.instance[instance_id];
+        if (constraint["direction"] == "H") {  // horizontal metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.yoffset.push_back(offset);
+            b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
+          }
+          b.ypitch = constraint["pitch"];
+          b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.yflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        } else if (constraint["direction"] == "V") {  // vertical metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.xoffset.push_back(offset);
+            b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
+          }
+          b.xpitch = constraint["pitch"];
+          b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        }
+      }
+    }
   }
 }
 

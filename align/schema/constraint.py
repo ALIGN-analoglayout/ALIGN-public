@@ -1370,7 +1370,7 @@ class ConstraintDB(types.List[ConstraintType]):
         if hasattr(constraint, 'translate'):
             if self.parent._checker is None:
                 self.parent.verify()
-            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
+            self.parent.verify(constraint=constraint)
         super().append(constraint)
 
     @types.validate_arguments
