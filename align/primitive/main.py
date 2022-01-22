@@ -174,7 +174,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             size = round(float(values["C"]) * 1E15, 4)
         elif 'VALUE' in values:
             size = round(float(values["VALUE"]) * 1E15, 4)
-        assert size < design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
+        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
 
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
