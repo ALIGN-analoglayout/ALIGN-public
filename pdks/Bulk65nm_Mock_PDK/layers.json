@@ -1,5 +1,5 @@
 {
-    "_comment": "The rules defined in this file are discussed in Bulk_Mock_PDK.ppt",
+    "_comment": "The rules defined in this file are discussed in Bulk_Mock_PDK.ppt (add it)",
     "ScaleFactor": 1,
     "design_info": {
         "vt_type": [
@@ -30,6 +30,7 @@
         "max_nfin_mos": 48,
         "Gate_pitch": 100,
         "unit_height_res": 600,
+	"max_size_cap": 1000,
 	"pdk_type":"Bulk"
     },
     "Abstraction": [

@@ -31,7 +31,8 @@
         "max_nfin_mos": 48,
         "Gate_pitch": 45,
         "unit_height_res": 600,
-	"pdk_type":"FinFET"
+        "max_size_cap": 1000,
+        "pdk_type": "FinFET"
     },
     "Abstraction": [
         {
