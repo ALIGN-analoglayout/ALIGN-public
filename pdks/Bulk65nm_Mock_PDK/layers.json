@@ -22,14 +22,11 @@
         "Hspace": 0,
         "Vspace": 0,
         "U_width": 60,
-        "unit_size_nmos": 12,
-        "unit_size_pmos": 12,
-        "max_size_nmos": 60,
-        "max_size_pmos": 60,
+        "unit_size_mos": 12,
+        "max_size_mos": 48,
         "unit_size_cap": 12,
-        "max_nfin_mos": 48,
-        "Gate_pitch": 100,
         "unit_height_res": 600,
+	"Fin_pitch": 100,
 	"max_size_cap": 1000,
 	"pdk_type":"Bulk"
     },
@@ -613,14 +610,14 @@
         },
         {
             "Layer": "Nselect",
-            "GdsLayerNo": 7,
+            "GdsLayerNo": 54,
             "GdsDatatype": {
                 "Draw": 0
             }
         },
         {
             "Layer": "Pselect",
-            "GdsLayerNo": 8,
+            "GdsLayerNo": 55,
             "GdsDatatype": {
                 "Draw": 0
             }

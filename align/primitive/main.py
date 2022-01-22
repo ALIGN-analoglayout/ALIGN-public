@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 def get_xcells_pattern(primitive, pattern, x_cells):
 
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
     elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
@@ -55,7 +54,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     parameters = get_parameters(primitive.name, parameters, nfin)
 
     def gen(pattern, routing):
-        if 'NMOS' in primitive:
+        if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         else:
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
@@ -175,7 +174,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             size = round(float(values["C"]) * 1E15, 4)
         elif 'VALUE' in values:
             size = round(float(values["VALUE"]) * 1E15, 4)
-        assert size < design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
+        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
 
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
@@ -234,10 +233,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
         subckt = element.parent.parent.parent.find(element.model)
 
-        if 'NMOS' in name:
-            unit_size_mos = design_config["unit_size_nmos"]
-        else:
-            unit_size_mos = design_config["unit_size_pmos"]
+        unit_size_mos = design_config["unit_size_mos"]
 
         if unit_size_mos is None:   # hack for align/pdk/finfet
 
@@ -310,7 +306,6 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 add_primitive(primitives, block_name, block_args)
             element.add_abs_name(block_name)
             return True
-
         else:  # hacks for all other pdk's
             logger.debug(f"subckt definition found: {subckt}")
             vt = None
@@ -342,12 +337,12 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             elif design_config["pdk_type"] == "Bulk":
                 # Bulk design
                 for key in values:
-                    assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
-                    assert (
-                        values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
-                        f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
-                    size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                    values[key]["NFIN"] = size
+                   assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
+                   assert int(
+                       float(values[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
+                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Fin_pitch']}" 
+                   size = int(float(values[key]["W"])*1E+9/design_config["Fin_pitch"])
+                   values[key]["NFIN"] = size
                 name_arg = 'NFIN'+str(size)
             else:
                 print(design_config["pdk_type"] + " pdk not supported")
@@ -399,7 +394,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             block_args = {
                 'primitive': name,
-                'value': unit_size_mos,
+                'value': values[device_name]["NFIN"],
                 'x_cells': xval,
                 'y_cells': yval,
                 'parameters': values
