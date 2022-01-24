@@ -17,12 +17,13 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in) : hyper(hyper_in) {
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in)
+    : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   ReadPrimitiveOffsetPitch(nodeVec, drcInfo, hyper_in.place_on_grid_constraints_json);
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
-    //logger->info(hyper.placement_info_json);
+    // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
   } else {
     if (hyper.use_analytical_placer)
@@ -33,11 +34,11 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
   }
 }
 
-void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string &jsonStr){
+void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string& jsonStr) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.ReadPrimitiveOffsetPitch");
-  //auto &b = lefData[primitive.front().name].front();
+  // auto &b = lefData[primitive.front().name].front();
   json jedb = json::parse(jsonStr);
-  for(auto concrete:jedb){
+  for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
     json constraint = concrete["constraints"][0];
     if (constraint["constraint"] != "place_on_grid") continue;
@@ -47,28 +48,28 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
       start = slash + 1;
     }
     string concrete_name = s.substr(0, slash);
-    int instance_id =atoi(s.substr(start, s.size() - start).c_str());
-    for(auto &block:nodeVec.back().Blocks){
-      if(block.instance.front().master==concrete_name){
-        auto &b = block.instance[instance_id];
+    int instance_id = atoi(s.substr(start, s.size() - start).c_str());
+    for (auto& block : nodeVec.back().Blocks) {
+      if (block.instance.front().master == concrete_name) {
+        auto& b = block.instance[instance_id];
         if (constraint["direction"] == "H") {  // horizontal metal
-          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
             b.yoffset.push_back(offset);
             b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
           }
           b.ypitch = constraint["pitch"];
           b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
-          if(constraint["ored_terms"][0]["scalings"].size()<2){
+          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
             b.yflip = constraint["ored_terms"][0]["scalings"][0];
           }
         } else if (constraint["direction"] == "V") {  // vertical metal
-          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
             b.xoffset.push_back(offset);
             b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
           }
           b.xpitch = constraint["pitch"];
           b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
-          if(constraint["ored_terms"][0]["scalings"].size()<2){
+          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
             b.xflip = constraint["ored_terms"][0]["scalings"][0];
           }
         }
@@ -82,18 +83,18 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   logger->info("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
   int nodeSize = nodeVec.size();
-  int mode=0;
+  int mode = 0;
   // Read design netlist and constraints
   design designData(nodeVec.back());
-  //designData.PrintDesign();
+  // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN/hyper.T_INT)/log(hyper.ALPHA)));
-  //curr_sp.PrintSeqPair();
+  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
+  // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
-  int idx=0;
-  for(const auto& m:modules) {
-    if(m["abstract_name"]==designData.name){
+  int idx = 0;
+  for (const auto& m : modules) {
+    if (m["abstract_name"] == designData.name) {
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;
       auto& Blocks = sol.Blocks;
@@ -101,8 +102,8 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       for (const auto& instance : m["instances"]) {
         int block_id = nodeVec.back().Block_name_map[instance["instance_name"]];
         int sel = -1;
-        for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size());i++){
-          if(nodeVec.back().Blocks[block_id].instance[i].lefmaster==instance["concrete_template_name"]){
+        for (int i = 0; i < int(nodeVec.back().Blocks[block_id].instance.size()); i++) {
+          if (nodeVec.back().Blocks[block_id].instance[i].lefmaster == instance["concrete_template_name"]) {
             sel = i;
             break;
           }
@@ -111,11 +112,11 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
         sp.selected[block_id] = sel;
         Blocks[block_id].x = 2 * (int)instance["transformation"]["oX"];
         Blocks[block_id].y = 2 * (int)instance["transformation"]["oY"];
-        if(instance["transformation"]["sX"] == -1){
+        if (instance["transformation"]["sX"] == -1) {
           Blocks[block_id].H_flip = 1;
           Blocks[block_id].x -= nodeVec.back().Blocks[block_id].instance[sel].width;
         }
-        if(instance["transformation"]["sY"] == -1){
+        if (instance["transformation"]["sY"] == -1) {
           Blocks[block_id].V_flip = 1;
           Blocks[block_id].y -= nodeVec.back().Blocks[block_id].instance[sel].height;
         }
@@ -192,11 +193,11 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
     }
   }
   if ((int)spVec.size() < nodeSize) {
-    nodeSize=spVec.size();
+    nodeSize = spVec.size();
     nodeVec.resize(nodeSize);
   }
-  idx=0;
-  for(std::vector<std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
+  idx = 0;
+  for (std::vector<std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
     it->second.updateTerminalCenter(designData, it->first);
     it->second.WritePlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
     it->second.PlotPlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
@@ -1031,8 +1032,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // clock_t start, finish;
   // double   duration;
   // start = clock();
-  std::map<double, std::pair<SeqPair, ILP_solver>> spVec =
-      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  std::map<double, std::pair<SeqPair, ILP_solver>> spVec = PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
   // logger->info("lpsolve time: {0}", duration);
