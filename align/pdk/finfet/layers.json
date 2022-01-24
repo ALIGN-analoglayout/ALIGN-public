@@ -73,9 +73,9 @@
       "MaxL": null,
       "EndToEnd": 500,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "M2",
@@ -89,9 +89,9 @@
       "MaxL": null,
       "EndToEnd": 1480,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "M3",
@@ -105,9 +105,9 @@
       "MaxL": null,
       "EndToEnd": 900,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "M4",
@@ -121,9 +121,9 @@
       "MaxL": null,
       "EndToEnd": 1480,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "M5",
@@ -137,9 +137,9 @@
       "MaxL": null,
       "EndToEnd": 900,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "M6",
@@ -153,9 +153,9 @@
       "MaxL": null,
       "EndToEnd": 1480,
       "Offset": 0,
-      "UnitC":  {"Mean":0},
+      "UnitC":  {"Mean":0.001},
       "UnitCC": {"Mean":0},
-      "UnitR":  {"Mean":0}
+      "UnitR":  {"Mean":10}
     },
     {
       "Layer": "V1",
@@ -170,7 +170,7 @@
       "VencA_H": 0,
       "VencP_L": 0,
       "VencP_H": 0,
-      "R": {"Mean": 0}
+      "R": {"Mean": 10}
     },
     {
       "Layer": "V2",
@@ -185,7 +185,7 @@
       "VencA_H": 0,
       "VencP_L": 0,
       "VencP_H": 0,
-      "R": {"Mean": 0}
+      "R": {"Mean": 10}
     },
     {
       "Layer": "V3",
@@ -200,7 +200,7 @@
       "VencA_H": 0,
       "VencP_L": 0,
       "VencP_H": 0,
-      "R": {"Mean":0}
+      "R": {"Mean": 10}
     },
     {
       "Layer": "V4",
@@ -215,7 +215,7 @@
       "VencA_H": 0,
       "VencP_L": 0,
       "VencP_H": 0,
-      "R": {"Mean":0}
+      "R": {"Mean": 10}
     },
     {
       "Layer": "V5",
@@ -230,7 +230,7 @@
       "VencA_H": 0,
       "VencP_L": 0,
       "VencP_H": 0,
-      "R": {"Mean":0}
+      "R": {"Mean": 10}
     }
   ]
 }
