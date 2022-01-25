@@ -50,27 +50,6 @@ using std::vector;
 using namespace nlohmann;
 class PnRdatabase;
 
-class ReadVerilogHelper {
-  PnRDB::hierNode temp_node;
-  vector<tuple<string, string, string>> global_signals;
-  PnRdatabase &db;
-
-  public:
-  PnRdatabase &get_db() { return db; }
-
-  const vector<tuple<string, string, string>> &get_global_signals() const { return global_signals; }
-
-  ReadVerilogHelper(PnRdatabase &db_in) : db(db_in) {}
-
-  void parse_module(Lexer &l, bool celldefine_mode = false);
-
-  void parse_top(istream &fin);
-
-  void gen_terminal_map(unordered_map<string, int> &terminal_map);
-
-  int process_connection(int iter, const string &net_name, unordered_map<string, int> &net_map);
-};
-
 class PnRdatabase {
   private:
   int maxNode;

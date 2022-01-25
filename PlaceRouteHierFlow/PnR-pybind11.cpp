@@ -435,10 +435,6 @@ PYBIND11_MODULE(PnR, m) {
     .value("Backward",Backward)
     .export_values();
 
-  py::class_<ReadVerilogHelper>( m, "ReadVerilogHelper")
-    .def( py::init<PnRdatabase&>())
-    .def( "parse_top", &ReadVerilogHelper::parse_top);
-
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<>())
     .def( "semantic0", &PnRdatabase::semantic0)
