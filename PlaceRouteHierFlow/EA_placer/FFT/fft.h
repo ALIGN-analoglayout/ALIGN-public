@@ -40,7 +40,6 @@ namespace replace {
 
 class FFT {
   public:
-    FFT();
     FFT(int binCntX, int binCntY, float binSizeX, float binSizeY);
     ~FFT();
 
@@ -93,7 +92,6 @@ class FFT {
 //
 //
 /// 1D FFT ////////////////////////////////////////////////////////////////
-void cdft(int n, int isgn, float *a, int *ip, float *w);
 void ddct(int n, int isgn, float *a, int *ip, float *w);
 void ddst(int n, int isgn, float *a, int *ip, float *w);
 
