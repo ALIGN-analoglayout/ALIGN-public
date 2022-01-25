@@ -983,48 +983,4 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   //}
 }
 
-void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio");
-
-  int nodeSize = nodeVec.size();
-  logger->debug("Placer-Info: place {0} in aspect ratio mode", nodeVec.back().name);
-#ifdef RFLAG
-  logger->debug("Placer-Info: run in random mode...");
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  logger->debug("Placer-Info: run in normal mode...");
-  srand(0);
-#endif
-  int mode = 0;
-  // Read design netlist and constraints
-  design designData(nodeVec.back());
-  designData.PrintDesign();
-  // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  curr_sp.PrintSeqPair();
-  ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec = PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize, effort);
-  curr_sol.updateTerminalCenter(designData, curr_sp);
-  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
-  if ((int)spVec.size() < nodeSize) {
-    nodeSize = spVec.size();
-    nodeVec.resize(nodeSize);
-  }
-  int idx = 0;
-  for (std::map<double, SeqPair>::iterator it = spVec.begin(); it != spVec.end() && idx < nodeSize; ++it, ++idx) {
-    // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
-    ConstGraph vec_sol(designData, it->second, mode);
-    vec_sol.ConstraintGraph(designData, it->second);
-    vec_sol.FastInitialScan();
-    vec_sol.updateTerminalCenter(designData, it->second);
-    // std::cout<<"wbxu check design\n";
-    // designData.PrintDesign();
-    // it->second.PrintSeqPair();
-    // std::cout<<"write design "<<idx<<std::endl;
-    vec_sol.WritePlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-    vec_sol.PlotPlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt", false, false, false);
-    vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
-  }
-}
 
