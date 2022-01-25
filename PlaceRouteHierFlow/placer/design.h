@@ -34,7 +34,6 @@ class design {
   friend class SeqPairEnumerator;
   friend class Placer;
   friend class ILP_solver;
-  friend class Aplace;
   friend class ExtremeBlocksOfNet;
   //    enum NType {Block, Terminal};
   //    struct Node {

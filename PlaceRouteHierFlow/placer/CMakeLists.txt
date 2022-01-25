@@ -1,5 +1,4 @@
 set(headers
-     Aplace.h
      ILP_solver.h
      Placer.h
      PlacerHyperparameters.h
@@ -10,7 +9,6 @@ set(headers
      SeqPair.h)
 
 set(sources
-     Aplace.cpp
      ILP_solver.cpp
      PlacerIfc.cpp
      SeqPair.cpp
