@@ -452,7 +452,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
     .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
-    .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "getDrc_info", &PnRdatabase::getDrc_info)
     .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)

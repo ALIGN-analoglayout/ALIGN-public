@@ -172,12 +172,9 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
-    if vname.endswith(".verilog.json"):
-        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-        global_signals = ReadVerilogJson( DB, j)
-        semantic(DB, path, topcell, global_signals)
-    else:
-        global_signals = DB.ReadVerilog( path, vname, topcell)
-        semantic(DB, path, topcell, global_signals)
+    #if vname.endswith(".verilog.json"):
+    j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
+    global_signals = ReadVerilogJson( DB, j)
+    semantic(DB, path, topcell, global_signals)
 
     return DB, j

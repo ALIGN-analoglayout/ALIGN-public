@@ -157,8 +157,6 @@ class PnRdatabase {
   PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
   void ExtractPinsToPowerPins(PnRDB::hierNode &updatedNode);
 
-  vector<tuple<string, string, string>> ReadVerilog(const string &fpath, const string &vname, const string &topcell);
-
   void _ReadLEF(istream &fin, const string &leffile);  // read building block data from LEF stream
   bool ReadLEF(const string &leffile);                 // read building block data from LEF file
   bool ReadLEFFromString(const string &lefString);
