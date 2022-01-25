@@ -39,9 +39,7 @@ class Placer {
   // design designData;
   // PnRDB::hierNode node;
   bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
-  void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);  // do placement with simulated annealing
   void ThreadFunc(Thread_data* MT);
-  void PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort);
   // std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int
   // nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
@@ -64,7 +62,6 @@ class Placer {
   static double PHI;
   static double PI;
   static double PII;
-  Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   // Placer(PnRDB::hierNode& input_node); // Constructor
   // PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
