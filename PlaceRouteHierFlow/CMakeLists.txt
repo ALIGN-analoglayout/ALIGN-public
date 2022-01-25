@@ -2,7 +2,6 @@ add_subdirectory(PnRDB)
 add_subdirectory(placer)
 add_subdirectory(EA_placer)
 add_subdirectory(router)
-add_subdirectory(cap_placer)
 add_subdirectory(guard_ring)
 add_subdirectory(MNA)
 
@@ -19,7 +18,6 @@ target_link_libraries(
      placer
      EA_placer
      router
-     cap_placer
      guard_ring
      MNA
      # External Dependencies
@@ -39,7 +37,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           PnRDB/unit_tests.cpp
           placer/unit_tests.cpp
           router/unit_tests.cpp
-          cap_placer/unit_tests.cpp
           )
 
      target_link_libraries(
@@ -48,7 +45,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           PnRDB
           placer
           router
-          cap_placer
           guard_ring
           MNA
           # External Dependencies
