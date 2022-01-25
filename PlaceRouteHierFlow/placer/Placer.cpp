@@ -209,7 +209,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
-  curr_sp.PrintSeqPair();
+  //curr_sp.PrintSeqPair();
   double curr_cost = 0;
   int trial_count = 0;
   double mean_cache_miss{0};
@@ -232,8 +232,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
     curr_sp.cacheSeq(designData);
 
-    logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, hyper.T_INT, 0);
-
+    
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
       break;
@@ -270,7 +269,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
 
-  logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, curr_sp.getLexIndex(designData), curr_cost, T, T_index);
   logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, 0, curr_cost, T);
 
   while (T > hyper.T_MIN) {
@@ -304,7 +302,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
-      logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
@@ -336,10 +333,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         }
       } else {
         ++total_candidates_infeasible;
-        logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
+        // logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
       }
       ReshapeSeqPairMap(oData, nodeSize);
-      logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
+      // logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
       i++;
       update_index++;
       if (trial_sp.EnumExhausted()) {
@@ -355,7 +352,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
     if (exhausted) break;
     T *= hyper.ALPHA;
-    logger->debug("sa__reducing_temp T={0}", T);
+    // logger->debug("sa__reducing_temp T={0}", T);
   }
 
   if (num_perturb) mean_cache_miss /= num_perturb;
@@ -364,7 +361,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
   // Write out placement results
   // cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
-  curr_sp.PrintSeqPair();
+  // curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }
@@ -411,10 +408,10 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // Read design netlist and constraints
   design designData(nodeVec.back(), hyper.SEED);
   _rng.seed(hyper.SEED);
-  designData.PrintDesign();
+  //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
-  curr_sp.PrintSeqPair();
+  // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData, hyper.ilp_solver);
   // clock_t start, finish;
   // double   duration;

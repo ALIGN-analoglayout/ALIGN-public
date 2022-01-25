@@ -293,7 +293,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     }
   }
 
-  PrintDesign();
+  //PrintDesign();
   // std::cout<<"Leaving design2\n";
   hasAsymBlock = checkAsymmetricBlockExist();
   // std::cout<<"Leaving design\n";
@@ -345,6 +345,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
 
 int design::rand() {
   if (_rnd) return (*_rnd)(_rng);
+  return rand();
 }
 
 int design::GetSizeBlock4Move(int mode) {
@@ -770,7 +771,7 @@ void design::PrintDesign() {
   logger->debug("== Print Design ");
   logger->debug("bias_Vgraph: {0} mixFlag: {1}", bias_Vgraph, mixFlag);
   logger->debug("bias_Hgraph: {0} mixFlag: {1}", bias_Hgraph, mixFlag);
-  PrintBlocks();
+  //PrintBlocks();
   PrintTerminals();
   PrintNets();
   PrintConstraints();
@@ -1976,11 +1977,11 @@ design::~design() {
   delete _rnd;
   _rnd = nullptr;
   auto logger = spdlog::default_logger()->clone("placer.design.design");
-  logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
-  logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
-                _infeasPlBound, _totalNumCostCalc);
-  logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
-  logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
-  logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
+  // logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
+  // logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
+  //               _infeasPlBound, _totalNumCostCalc);
+  // logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
+  // logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
+  // logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
   //_debugofs.close();
 }

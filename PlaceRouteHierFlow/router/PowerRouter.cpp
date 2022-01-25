@@ -24,9 +24,9 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   if (power_grid == 1) {
     if (node.PowerNets.size() == 0) return;
 
-    logger->debug("Power router checkPoint 1");
+    // logger->debug("Power router checkPoint 1");
     CreatePowerGrid(node, drc_info, Lmetal, Hmetal, h_skip_factor, v_skip_factor);
-    logger->debug("Power router checkPoint 2");
+    // logger->debug("Power router checkPoint 2");
     Physical_metal_via_power_grid(Vdd_grid);
 
     Vdd_grid.name = "vdd";
@@ -36,7 +36,7 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
         break;
       }
     }
-    logger->debug("Power router checkPoint 3");
+    // logger->debug("Power router checkPoint 3");
     Physical_metal_via_power_grid(Gnd_grid);
 
     Gnd_grid.name = "vss";
@@ -47,19 +47,19 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
       }
     }
 
-    logger->debug("Power router checkPoint 4");
+    // logger->debug("Power router checkPoint 4");
     ReturnPowerGridData(node);
-    logger->debug("Power router checkPoint 5");
+    // logger->debug("Power router checkPoint 5");
   } else {
-    logger->debug("Power router checkPoint 6");
+    // logger->debug("Power router checkPoint 6");
     PowerNetRouter(node, drc_info, Lmetal, Hmetal);
-    logger->debug("Power router checkPoint 7");
+    // logger->debug("Power router checkPoint 7");
     Physical_metal_via();
-    logger->debug("Power router checkPoint 8");
+    // logger->debug("Power router checkPoint 8");
     ExtendMetal();  // need to change this part
-    logger->debug("Power router checkPoint 9");
+    // logger->debug("Power router checkPoint 9");
     ReturnPowerNetData(node);
-    logger->debug("Power router checkPoint 10");
+    // logger->debug("Power router checkPoint 10");
   }
 };
 
@@ -572,32 +572,32 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int h_skip_factor, int v_skip_factor) {
   auto logger = spdlog::default_logger()->clone("router.PowerRouter.CreatePowerGrid");
 
-  logger->debug("Create Power Grid Flag 1");
+  // logger->debug("Create Power Grid Flag 1");
   GetData(node, drc_info, Lmetal, Hmetal);
   CreatePowerGridDrc_info(h_skip_factor, v_skip_factor);
   this->cross_layer_drc_info = this->PowerGrid_Drc_info;
   UpdatePowerGridLLUR(Lmetal, Hmetal);
-  logger->debug("Create Power Grid Flag 2");
+  // logger->debug("Create Power Grid Flag 2");
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
-  logger->debug("Create Power Grid Flag 3");
+  // logger->debug("Create Power Grid Flag 3");
   CreatePlistBlocks(plist, this->Blocks);
-  logger->debug("Create Power Grid Flag 4");
+  // logger->debug("Create Power Grid Flag 4");
   CreatePlistNets(plist, this->Nets);
-  logger->debug("Create Power Grid Flag 5");
+  // logger->debug("Create Power Grid Flag 5");
   CreatePlistTerminals(plist, this->Terminals);
-  logger->debug("Create Power Grid Flag 6");
+  // logger->debug("Create Power Grid Flag 6");
   CreatePlistPowerNets(plist, this->PowerNets);
-  logger->debug("Create Power Grid Flag 7");
+  // logger->debug("Create Power Grid Flag 7");
   CreatePlistPowerGrid(plist, this->Vdd_grid);
-  logger->debug("Create Power Grid Flag 8");
+  // logger->debug("Create Power Grid Flag 8");
   CreatePlistPowerGrid(plist, this->Gnd_grid);
-  logger->debug("Create Power Grid Flag 9");
+  // logger->debug("Create Power Grid Flag 9");
   //this->drc_info = this->PowerGrid_Drc_info;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
   this->drc_info = this->PowerGrid_Drc_info;
-  logger->debug("Create Power Grid Flag 10");
+  // logger->debug("Create Power Grid Flag 10");
 
   // how to crate PowerGrid here????
   Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal,
@@ -721,16 +721,16 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
   // grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
-  logger->debug("Power Grid Info {0} {1}", grid.vertices_total.size(), grid.vertices_graph.size());
+  // logger->debug("Power Grid Info {0} {1}", grid.vertices_total.size(), grid.vertices_graph.size());
   // here return a power grid metal information
   bool power_grid = 1;
-  logger->debug("Create Power Grid Flag 11");
+  // logger->debug("Create Power Grid Flag 11");
   Graph graph(grid, power_grid);
-  logger->debug("Create Power Grid Flag 12");
+  // logger->debug("Create Power Grid Flag 12");
   Vdd_grid = graph.GetVdd_grid();
-  logger->debug("Create Power Grid Flag 13");
+  // logger->debug("Create Power Grid Flag 13");
   Gnd_grid = graph.GetGnd_grid();
-  logger->debug("Create Power Grid Flag 14");
+  // logger->debug("Create Power Grid Flag 14");
   // use this create a vdd_grid & gnd_grid;
 };
 
@@ -1213,15 +1213,15 @@ void PowerRouter::CreatePowerGridDrc_info_DC(string inputfile) {
   }
 
   for (unsigned int i = 0; i < PowerGrid_Drc_info.Metal_info.size(); i++) {
-    logger->debug("grid info {0} {1} ", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+    // logger->debug("grid info {0} {1} ", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
 
     PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x / utilization[i];
     PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y / utilization[i];
     PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
 
-    logger->debug("{0}", utilization[i]);
+    // logger->debug("{0}", utilization[i]);
 
-    logger->debug("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
+    // logger->debug("grid info {0} {1}", PowerGrid_Drc_info.Metal_info[i].grid_unit_x, PowerGrid_Drc_info.Metal_info[i].grid_unit_y);
   }
 
   // assert(0);
@@ -1788,7 +1788,7 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node) {
   }
   node.router_report.push_back(temp_report);
 
-  logger->debug("node UR x UR y {0} {1} {2} {3} ", node.LL.x, node.LL.y, node.UR.x, node.UR.y);
+  // logger->debug("node UR x UR y {0} {1} {2} {3} ", node.LL.x, node.LL.y, node.UR.x, node.UR.y);
   if (minX < node.LL.x) {
     node.LL.x = minX;
   }

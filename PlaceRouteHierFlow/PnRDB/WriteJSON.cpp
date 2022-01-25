@@ -52,7 +52,7 @@ void JSONExtractUit(string GDSData, double& unit) {
         json lib = *lit;
         json strAry = lib["units"];
         if (strAry.is_array()) {
-          logger->debug("Unit {0} ", to_string(strAry));
+          // logger->debug("Unit {0} ", to_string(strAry));
           json::iterator xyI = strAry.begin();
           double xyU = *xyI;
           unit = 0.5 * 0.000000001 / xyU;
@@ -70,7 +70,7 @@ void JSONReaderWrite_subcells(string GDSData, long int& rndnum, vector<string>& 
   rndnum++;
 
   std::string jsonFileName = GDSData + ".json";
-  logger->debug("GDS JSON FILE={0}", jsonFileName);
+  // logger->debug("GDS JSON FILE={0}", jsonFileName);
 
   int TJ_llx = INT_MAX;
   int TJ_lly = INT_MAX;
@@ -377,7 +377,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
                                    const std::string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath) {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteJSON");
 
-  logger->debug("JSON WRITE CELL {0} ", gdsName);
+  // logger->debug("JSON WRITE CELL {0} ", gdsName);
   node.gdsFile = opath + gdsName + ".gds";
   string TopCellName = gdsName;
   std::set<string> uniGDSset;
@@ -387,7 +387,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   for (std::set<string>::iterator it = uniGDSset.begin(); it != uniGDSset.end(); ++it) {
     JSONExtractUit(*it, unitScale);
   }
-  logger->debug("unitScale {0} ", unitScale);
+  // logger->debug("unitScale {0} ", unitScale);
   uniGDSset.clear();
 
   std::ofstream jsonStream;
@@ -439,12 +439,12 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   if (write_blockPins_name && node.isTop == 1) {
     for (unsigned int i = 0; i < node.blockPins.size(); i++) {
       int write = 0;
-      logger->debug("Write blockPins info {0}", node.blockPins[i].name);
-      logger->debug("blockPins contact size {0}", node.blockPins[i].pinContacts.size());
+      // logger->debug("Write blockPins info {0}", node.blockPins[i].name);
+      // logger->debug("blockPins contact size {0}", node.blockPins[i].pinContacts.size());
       for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
         if (write == 0) {
           PnRDB::contact con = node.blockPins[i].pinContacts[j];
-          logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
+          // logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
           con.placedBox = con.originBox;
           addContactBoundaries(jsonElements, con, drc_info, unitScale);
           assignBoxPoints(x, y, con.originBox, unitScale);
@@ -684,7 +684,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   jsonTop["bgnlib"] = jsonLibAry;
   jsonStream << std::setw(4) << jsonTop;
   jsonStream.close();
-  logger->debug(" JSON FINALIZE {0} ", gdsName);
+  // logger->debug(" JSON FINALIZE {0} ", gdsName);
   return node.gdsFile;
 }
 
