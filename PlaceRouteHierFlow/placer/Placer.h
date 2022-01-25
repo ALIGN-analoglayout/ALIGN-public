@@ -9,7 +9,6 @@
 #include <thread>
 
 #include "../PnRDB/datatype.h"
-#include "Aplace.h"
 #include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "PlacerHyperparameters.h"
@@ -41,7 +40,6 @@ class Placer {
   // PnRDB::hierNode node;
   bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
   void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);  // do placement with simulated annealing
-  void PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);    // do placement with mix-sized simulated annealing
   void ThreadFunc(Thread_data* MT);
   void PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort);
   std::map<double, SeqPair> PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort);
@@ -52,7 +50,6 @@ class Placer {
   void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
   void ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& spMap, int nodeSize);
   void PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
-  void PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string& jsonStr);
@@ -62,6 +59,13 @@ class Placer {
   static std::mt19937_64 _rng;
 
   public:
+  static double LAMBDA;
+  static double GAMAR;
+  static double BETA;
+  static double SIGMA;
+  static double PHI;
+  static double PI;
+  static double PII;
   Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   // Placer(PnRDB::hierNode& input_node); // Constructor

@@ -793,7 +793,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var + 1] = {0};
-    ConstGraph const_graph;
+    Placer const_graph;
     #ifndef min_displacement
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
@@ -1438,7 +1438,7 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   // set_add_rowmode(lp, FALSE);
   {
     std::vector<double> row(N_var + 1, 0);
-    ConstGraph const_graph;
+    Placer const_graph;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       set<pair<pair<int, int>, int>> block_pos_x_set;
@@ -1736,7 +1736,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     }
   }
 
-  ConstGraph const_graph;
+  Placer const_graph;
   std::vector<double> objective(N_var, 0);
   // add area in cost
   int URblock_pos_id = 0, URblock_neg_id = 0;
@@ -3120,7 +3120,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var + 1] = {0};
-    ConstGraph const_graph;
+    Placer const_graph;
 
     // add HPWL in cost
     for (int i = 0; i < mydesign.Nets.size(); i++) {
@@ -3465,7 +3465,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
 }
 
 double ILP_solver::CalculateCost(const design& mydesign) const {
-  ConstGraph const_graph;
+  Placer const_graph;
   double cost = 0;
   cost += area;
   cost += HPWL * const_graph.LAMBDA;
@@ -3486,7 +3486,7 @@ double ILP_solver::CalculateCost(const design& mydesign) const {
 double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
 
-  ConstGraph const_graph;
+  Placer const_graph;
   double cost = 0;
 
   if (false) {

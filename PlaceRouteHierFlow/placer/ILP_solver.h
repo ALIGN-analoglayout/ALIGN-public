@@ -16,8 +16,6 @@
 #include <vector>
 
 #include "../PnRDB/datatype.h"
-#include "Aplace.h"
-#include "ConstGraph.h"
 #include "Pdatatype.h"
 #include "SeqPair.h"
 #include "design.h"

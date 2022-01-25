@@ -5,16 +5,16 @@
 #include "../EA_placer/placement.h"
 #include <chrono>
 
-double ConstGraph::LAMBDA=1.;
-double ConstGraph::GAMAR=30;
-double ConstGraph::BETA=0.1;
-double ConstGraph::SIGMA=1000;
-double ConstGraph::PHI=0.05;
-double ConstGraph::PI=0.05;
-double ConstGraph::PII=1;
+double Placer::LAMBDA=1.;
+double Placer::GAMAR=30;
+double Placer::BETA=0.1;
+double Placer::SIGMA=1000;
+double Placer::PHI=0.05;
+double Placer::PI=0.05;
+double Placer::PII=1;
 
 PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper) : _nodeVec( numLayout, currentNode) {
-  ConstGraph::LAMBDA = hyper.LAMBDA;
+  Placer::LAMBDA = hyper.LAMBDA;
   if (hyper.use_analytical_placer) {
     /*
      * From PR text

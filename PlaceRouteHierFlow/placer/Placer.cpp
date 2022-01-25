@@ -12,7 +12,6 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   // this->designData=design(input_node);
   // cout<<"Complete construction"<<endl;
   // this->designData.PrintDesign();
-  // PlacementMixSA(node, opath, effort);
   PlacementRegular(node, opath, effort, drcInfo);
 }
 
@@ -307,51 +306,6 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, P
   curr_sol.UpdateHierNode(designData, curr_sp, node, drcInfo);
 }
 
-void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixSA");
-
-  logger->debug("Placer-Info: place {0}", node.name);
-#ifdef RFLAG
-  logger->debug("Placer-Info: run in random mode...");
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  logger->debug("Placer-Info: run in normal mode...");
-  srand(0);
-#endif
-  int mode = 0;
-  // Read design netlist and constraints
-  // design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
-  design designData_full(node);
-  designData_full.PrintDesign();
-
-  // Reduced design
-  design designData(designData_full, 1);
-  designData.PrintDesign();
-
-  // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  // curr_sp.PrintSeqPair();
-
-  ConstGraph curr_sol;
-  PlacementCore(designData, curr_sp, curr_sol, mode, effort);
-  curr_sol.WritePlacement(designData, curr_sp, opath + node.name + "_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath + node.name + "_reduced.plt", false, false, false);
-
-  // Full design
-  SeqPair curr_sp_full(designData_full, designData, curr_sp);
-  // curr_sp_full.PrintSeqPair();
-
-  ConstGraph curr_sol_full;
-  PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode, effort);
-  curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath + node.name + ".pl");
-  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath + node.name + ".plt", false, false, false);
-  // cout<<"Test: before update node"<<endl;
-  curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node, drcInfo);
-  // cout<<"Test:: after update node"<<endl;
-  // curr_sol.WritePlacement(designData, curr_sp, ofile.c_str());
-  // curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
-}
 
 void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCore");
@@ -1071,66 +1025,6 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     vec_sol.WritePlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
     vec_sol.PlotPlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt", false, false, false);
     vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
-  }
-}
-
-void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixSAAspectRatio");
-
-  int nodeSize = nodeVec.size();
-  logger->debug("Placer-Info: place {0} in aspect ratio mode", nodeVec.back().name);
-  logger->debug("Placer-Info: initial size {0}", nodeSize);
-#ifdef RFLAG
-  logger->debug("Placer-Info: run in random mode...");
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  logger->debug("Placer-Info: run in normal mode...");
-  srand(0);
-#endif
-  int bias_mode = 0;
-  // Read design netlist and constraints
-  // design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
-  design designData_full(nodeVec.back());
-  designData_full.PrintDesign();
-
-  // Reduced design
-  design designData(designData_full, 1);
-  designData_full.PrintDesign();
-  designData.PrintDesign();
-
-  // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  // curr_sp.PrintSeqPair();
-
-  ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec = PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize, effort);
-  curr_sol.updateTerminalCenter(designData, curr_sp);
-  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"_reduced.plt");
-
-  if ((int)spVec.size() < nodeSize) {
-    nodeSize = spVec.size();
-    nodeVec.resize(nodeSize);
-  }
-  logger->debug("Placer-Info: after 1st SA size {0}", spVec.size());
-  int idx = 0;
-  for (std::map<double, SeqPair>::iterator it = spVec.begin(); it != spVec.end() && idx < nodeSize; ++it, ++idx) {
-    logger->debug("Placer-Info: second round SA {0}", idx);
-    // Full design
-    designData_full.PrintDesign();
-    designData.PrintDesign();
-    it->second.PrintSeqPair();
-    SeqPair curr_sp_full(designData_full, designData, it->second);
-    logger->debug("Placer-Info: second round SA after sp {0}", idx);
-    // curr_sp_full.PrintSeqPair();
-
-    ConstGraph curr_sol_full;
-    PlacementCore(designData_full, curr_sp_full, curr_sol_full, bias_mode, effort);
-    curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-    curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt", false, false, false);
-    // cout<<"Test: before update node"<<endl;
-    curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, nodeVec.at(idx), drcInfo);
-    // cout<<"Test:: after update node"<<endl;
   }
 }
 
