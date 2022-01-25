@@ -9,6 +9,16 @@ using std::pair;
 using std::string;
 using std::vector;
 
+class Pdatatype {
+  public:
+  static double LAMBDA;
+  static double GAMAR;
+  static double BETA;
+  static double SIGMA;
+  static double PHI;
+  static double PI;
+  static double PII;
+};
 namespace placerDB {
 
 enum NType { Block, Terminal };

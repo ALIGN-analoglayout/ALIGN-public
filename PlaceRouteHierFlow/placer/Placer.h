@@ -43,13 +43,6 @@ class Placer {
   static std::mt19937_64 _rng;
 
   public:
-  static double LAMBDA;
-  static double GAMAR;
-  static double BETA;
-  static double SIGMA;
-  static double PHI;
-  static double PI;
-  static double PII;
   Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper_in);
   // Placer(PnRDB::hierNode& input_node); // Constructor
   // PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement

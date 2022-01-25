@@ -2,19 +2,20 @@
 #include "../PnRDB/datatype.h"
 #include "PlacerIfc.h"
 #include "Placer.h"
+#include "Pdatatype.h"
 #include "../EA_placer/placement.h"
 #include <chrono>
 
-double Placer::LAMBDA=1.;
-double Placer::GAMAR=30;
-double Placer::BETA=0.1;
-double Placer::SIGMA=1000;
-double Placer::PHI=0.05;
-double Placer::PI=0.05;
-double Placer::PII=1;
+double Pdatatype::LAMBDA=1.;
+double Pdatatype::GAMAR=30;
+double Pdatatype::BETA=0.1;
+double Pdatatype::SIGMA=1000;
+double Pdatatype::PHI=0.05;
+double Pdatatype::PI=0.05;
+double Pdatatype::PII=1;
 
 PlacerIfc::PlacerIfc(PnRDB::hierNode& currentNode, int numLayout, string opath, int effort, PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper) : _nodeVec( numLayout, currentNode) {
-  Placer::LAMBDA = hyper.LAMBDA;
+  Pdatatype::LAMBDA = hyper.LAMBDA;
   if (hyper.use_analytical_placer) {
     /*
      * From PR text
