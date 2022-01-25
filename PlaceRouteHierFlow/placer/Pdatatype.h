@@ -73,19 +73,6 @@ struct SymmBlock {
   Smark axis_dir = placerDB::V;
 };
 
-struct nodeStructComp {
-  bool operator()(const Node& lhs, const Node& rhs) const {
-    if (lhs.type == rhs.type) {
-      if (lhs.iter == rhs.iter) {
-        return lhs.iter2 < rhs.iter2;
-      } else {
-        return lhs.iter < rhs.iter;
-      }
-    } else {
-      return lhs.type < rhs.type;
-    }
-  }
-};
 
 }  // namespace placerDB
 #endif

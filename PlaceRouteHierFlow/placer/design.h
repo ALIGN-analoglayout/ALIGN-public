@@ -223,7 +223,6 @@ class design {
   design(string blockfile, string netfile, string cfile, string random_const_file, int write_out_flag);
 
   design(const design& other);
-  design(design& other, int mode);
   design& operator=(const design& other);
 
   // generate_random_const file by yg

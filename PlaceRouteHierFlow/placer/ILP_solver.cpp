@@ -1058,6 +1058,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 
   // calculate multi linear constraint
   multi_linear_const = 0;
+  /**
   for (const auto& constrainti : mydesign.ML_Constraints) {
     double temp_sum = 0;
     for (const auto& constraintj : constrainti.Multi_linearConst) {
@@ -1079,6 +1080,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     temp_sum = std::min(temp_sum, constrainti.upperBound);
     multi_linear_const += temp_sum;
   }
+  **/
 
   double cost = CalculateCost(mydesign);
   return cost;
@@ -1100,6 +1102,7 @@ class TimeMeasure {
     }
 };
 
+/**
 bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPLpsolve");
 
@@ -1569,37 +1572,37 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
-      /*static int fail_cnt{0};
-      static std::string block_name;
-      if (block_name != mydesign.name) {
-        fail_cnt = 0;
-        block_name = mydesign.name;
-      }
-      if (fail_cnt < 10) {
-        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
-        curr_sp.PrintSeqPair();
-        std::string tmpstrpos, tmpstrneg;
-        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
-        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
-        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
-        logger->info("ILP fail {0}", fail_cnt);
-        curr_sp.PrintSeqPair(mydesign);
-        ++fail_cnt;
-      }*/
+      // static int fail_cnt{0};
+      // static std::string block_name;
+      // if (block_name != mydesign.name) {
+      //   fail_cnt = 0;
+      //   block_name = mydesign.name;
+      // }
+      // if (fail_cnt < 10) {
+      //   write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+      //   curr_sp.PrintSeqPair();
+      //   std::string tmpstrpos, tmpstrneg;
+      //   for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+      //   for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+      //   logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+      //   logger->info("ILP fail {0}", fail_cnt);
+      //   curr_sp.PrintSeqPair(mydesign);
+      //   ++fail_cnt;
+      // }
       delete_lp(lp);
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
-    /*static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
-    }*/
+    // static int write_cnt{0};
+    // static std::string block_name;
+    // if (block_name != mydesign.name) {
+    //   write_cnt = 0;
+    //   block_name = mydesign.name;
+    // }
+    // if (write_cnt < 10) {
+    //   write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+    //   ++write_cnt;
+    // }
   }
 
   {
@@ -1629,7 +1632,7 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
     }
   }
   return true;
-}
+}**/
 
 bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
@@ -3547,6 +3550,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
   fout.close();
 }
 
+/**
 void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
@@ -3730,7 +3734,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
   }
   fout << endl << "pause -1 \'Press any key\'";
   fout.close();
-}
+}**/
 
 void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
   // cout << "Placer-Info: create gnuplot file" << endl;
