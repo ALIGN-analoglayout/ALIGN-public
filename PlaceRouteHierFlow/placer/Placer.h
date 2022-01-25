@@ -9,7 +9,6 @@
 #include <thread>
 
 #include "../PnRDB/datatype.h"
-#include "ConstGraph.h"
 #include "ILP_solver.h"
 #include "PlacerHyperparameters.h"
 #include "SeqPair.h"
@@ -27,19 +26,8 @@ using namespace nlohmann;
 
 class Placer {
   private:
-  struct Thread_data {
-    int thread_id;
-    design thread_designData;
-    SeqPair thread_trial_sp;
-    ConstGraph thread_trial_sol;
-    int thread_mode;
-    double thread_trial_cost = 0.0;
-    bool thread_succeed = false;
-  };
   // design designData;
   // PnRDB::hierNode node;
-  bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
-  void ThreadFunc(Thread_data* MT);
   // std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int
   // nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,

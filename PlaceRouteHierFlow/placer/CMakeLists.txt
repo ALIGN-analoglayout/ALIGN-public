@@ -5,7 +5,6 @@ set(headers
      PlacerHyperparameters.h
      Preadfile.h
      design.h
-     ConstGraph.h
      Pdatatype.h
      PlacerIfc.h
      SeqPair.h)
@@ -15,7 +14,6 @@ set(sources
      ILP_solver.cpp
      PlacerIfc.cpp
      SeqPair.cpp
-     ConstGraph.cpp
      Placer.cpp
      Preadfile.cpp
      design.cpp)

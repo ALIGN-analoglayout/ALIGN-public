@@ -39,7 +39,6 @@ typedef boost::numeric::ublas::vector<double> boost_vector;
 
 class Aplace {
   private:
-  // friend class ConstGraph;
   struct Ablock {
     placerDB::point center;
     placerDB::Omark orient;

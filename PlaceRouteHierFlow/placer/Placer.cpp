@@ -198,76 +198,6 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
 //  return this->node;
 //}
 
-bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode) {
-  // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
-  bool valid = false;
-  int extCount = 0;
-  while (!valid) {
-    // cout<<"extCount "<<extCount<<endl;
-    // 1. Check feasible sequence pair and perturbate seqeucen pair
-    int intCount = 0;
-    bool spCheck;
-    while ((spCheck = curr_sp.FastInitialScan(mydesign)) && intCount < hyper.COUNT_LIMIT) {
-      curr_sp.PerturbationNew(mydesign);
-      // cout<<"intCount "<<intCount<<endl;
-      intCount++;
-    }
-    // If no feasible sequence pair, break out
-    if (spCheck) {
-      // cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible sequence pair..."<<endl;
-      // cout<<"Placer-Warning: use one solution without constraints instead!"<<endl;
-      // infea_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
-      // curr_sol=infea_sol;
-      return false;
-    }
-    // curr_sp.PrintSeqPair();
-    // 2. Generate constraint graphs
-    ConstGraph try_sol(mydesign, curr_sp, mode);
-    valid = try_sol.ConstraintGraph(mydesign, curr_sp);
-    // cout<<"Valid ? "<<valid<<endl;
-    // try_sol.CalculateCost(mydesign, curr_sp);
-    // cout<<"Check "<<try_sol.FastInitialScan()<<endl;
-    if (valid) {
-      // If construct graphs sucessfully
-      if (try_sol.FastInitialScan()) {        // If violation found
-        if (extCount >= hyper.COUNT_LIMIT) {  // If too many iteratons
-          // cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible solution without violations..."<<endl;
-          // cout<<"Placer-Warning: use one solution with violations instead!"<<endl;
-          curr_sol = try_sol;
-          return false;
-        } else {
-          curr_sp.PerturbationNew(mydesign);
-          valid = false;
-        }
-      } else {  // If no violation
-        curr_sol = try_sol;
-        return true;
-      }
-    } else {
-      // If fail in construction
-      if (extCount >= hyper.COUNT_LIMIT) {  // If too many iteratons
-        // cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible constraint graphs..."<<endl;
-        // cout<<"Placer-Warning: use one solution with partial constraints instead!"<<endl;
-        try_sol.AddLargePenalty();  // ensure this infeasible soluton has huge cost
-        curr_sol = try_sol;
-        return false;
-      } else {
-        curr_sp.PerturbationNew(mydesign);
-        valid = false;
-      }
-    }
-    extCount++;
-  }
-  return false;
-}
-
-void Placer::ThreadFunc(Thread_data* MT) {
-  MT->thread_trial_sp.PerturbationNew(MT->thread_designData);
-  MT->thread_succeed = GenerateValidSolution(MT->thread_designData, MT->thread_trial_sp, MT->thread_trial_sol, MT->thread_mode);
-  if (MT->thread_succeed) {
-    MT->thread_trial_cost = MT->thread_trial_sol.CalculateCost(MT->thread_designData, MT->thread_trial_sp);
-  }
-};
 
 
 
@@ -352,66 +282,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       MAX_Iter = effort;
     }
     while (i <= MAX_Iter) {
-#ifdef MTMODE
-      double trial_cost;
-      int id;
-      int good_idx = -1;
-      Thread_data td[NUM_THREADS];
-      std::vector<std::thread> threads;
-      // Create threads
-      for (id = 0; id < NUM_THREADS; id++) {
-        // cout <<"Placer-Info: creating thread, " << id << endl;
-        td[id].thread_id = id;
-        td[id].thread_designData = designData;
-        td[id].thread_trial_sp = curr_sp;
-        td[id].thread_mode = mode;
-        threads.push_back(std::thread(&Placer::ThreadFunc, this, td + id));
-      }
-      // Join threads
-      for (id = 0; id < NUM_THREADS; id++) {
-        threads.at(id).join();
-        // cout<<"Placer-Info: joining thread, "<<id<<endl;
-      }
-
-      for (id = 0; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed) {
-          trial_cost = td[id].thread_trial_cost;
-          good_idx = id;
-          break;
-        }
-      }
-      for (; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
-          trial_cost = td[id].thread_trial_cost;
-          good_idx = id;
-        }
-      }
-      if (good_idx != -1) {
-        bool Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost < 0) {
-          Smark = true;
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
-            Smark = true;
-          }
-        }
-        if (Smark) {
-          std::cout << "cost: " << trial_cost << std::endl;
-          curr_cost = trial_cost;
-          curr_sp = td[good_idx].thread_trial_sp;
-          curr_sol = td[good_idx].thread_trial_sol;
-          if (update_index > updateThrd) {
-            // std::cout<<"Insert\n";
-            oData[curr_cost] = curr_sp;
-            ReshapeSeqPairMap(oData, nodeSize);
-          }
-        }
-      }
-#endif
-
-#ifndef MTMODE
       // cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
       SeqPair trial_sp(curr_sp);
@@ -469,8 +339,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         logger->debug("sa__infeasible_candidate i={1}/{2} T={0} ", T, i, MAX_Iter);
       }
       ReshapeSeqPairMap(oData, nodeSize);
-
-#endif
       logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
       i++;
       update_index++;
