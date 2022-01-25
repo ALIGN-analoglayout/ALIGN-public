@@ -225,7 +225,6 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     if (spCheck) {
       // cout<<"Placer-Warning: try "<<hyper.COUNT_LIMIT <<" perturbtions, but fail in generating feasible sequence pair..."<<endl;
       // cout<<"Placer-Warning: use one solution without constraints instead!"<<endl;
-      // ConstGraph infea_sol(mydesign, curr_sp, mode);
       // infea_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
       // curr_sol=infea_sol;
       return false;
@@ -446,186 +445,6 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   curr_sol.updateTerminalCenter(designData, curr_sp);
 }
 
-std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementCoreAspectRatio");
-#ifdef PERFORMANCE_DRIVEN
-  Py_Initialize();
-  if (!Py_IsInitialized()) std::cout << "Py_Initialize fails" << std::endl;
-  PyRun_SimpleString("import sys");
-  PyRun_SimpleString("sys.path.append('./')");
-  PyObject* pModule = PyImport_ImportModule("calfom");
-  PyObject* pFun_initialization = PyObject_GetAttrString(pModule, "initialization");
-  PyObject* pFun_cal_fom = PyObject_GetAttrString(pModule, "cal_fom");
-  PyObject* pArgs_initialization = PyTuple_New(1);
-  PyTuple_SetItem(pArgs_initialization, 0, PyUnicode_FromString(designData.name.c_str()));
-  PyObject* pyValue_initialization = PyEval_CallObject(pFun_initialization, pArgs_initialization);
-  PyObject *sess = NULL, *X = NULL, *pred_op = NULL;
-  PyArg_ParseTuple(pyValue_initialization, "O|O|O", &sess, &X, &pred_op);
-  if (!sess) std::cout << "empty sess" << std::endl;
-  if (!X) std::cout << "empty X" << std::endl;
-  if (!pred_op) std::cout << "empty pred_op" << std::endl;
-#endif
-  // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
-  // cout<<"PlacementCore\n";
-  std::map<double, SeqPair> oData;
-  curr_sp.PrintSeqPair();
-  GenerateValidSolution(designData, curr_sp, curr_sol, mode);
-  // curr_sol.PrintConstGraph();
-  double curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-#ifdef PERFORMANCE_DRIVEN
-  curr_cost = curr_sol.performance_fom(curr_cost, designData, curr_sp, pFun_cal_fom, sess, X, pred_op);
-#endif
-  logger->debug("Placer-Info: initial cost = ", curr_cost);
-  logger->debug("Placer-Info: status ");
-  // Aimulate annealing
-  double T = hyper.T_INT;
-  double delta_cost;
-  int update_index = 0;
-  int T_index = 0;
-  float per = 0.1;
-  int updateThrd = 100;
-  int fail_number = 0;
-  float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
-  while (T > hyper.T_MIN && fail_number < 10) {
-    int i = 1;
-    int MAX_Iter = 1;
-    if (effort == 0) {
-      MAX_Iter = 1;
-    } else if (effort == 1) {
-      MAX_Iter = 4;
-    } else {
-      MAX_Iter = 8;
-    }
-    while (i <= MAX_Iter) {
-#ifdef MTMODE
-      double trial_cost;
-      int id;
-      int good_idx = -1;
-      Thread_data td[NUM_THREADS];
-      std::vector<std::thread> threads;
-      // Create threads
-      for (id = 0; id < NUM_THREADS; id++) {
-        // cout <<"Placer-Info: creating thread, " << id << endl;
-        td[id].thread_id = id;
-        td[id].thread_designData = designData;
-        td[id].thread_trial_sp = curr_sp;
-        td[id].thread_mode = mode;
-        threads.push_back(std::thread(&Placer::ThreadFunc, this, td + id));
-      }
-      // Join threads
-      for (id = 0; id < NUM_THREADS; id++) {
-        threads.at(id).join();
-        // cout<<"Placer-Info: joining thread, "<<id<<endl;
-      }
-
-      for (id = 0; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed) {
-          trial_cost = td[id].thread_trial_cost;
-          good_idx = id;
-          break;
-        }
-      }
-      for (; id < NUM_THREADS; id++) {
-        if (td[id].thread_succeed && td[id].thread_trial_cost < trial_cost) {
-          trial_cost = td[id].thread_trial_cost;
-          good_idx = id;
-        }
-      }
-      if (good_idx != -1) {
-        bool Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost < 0) {
-          Smark = true;
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
-            Smark = true;
-          }
-        }
-        if (Smark) {
-          logger->debug("cost: {0}", trial_cost);
-          curr_cost = trial_cost;
-          curr_sp = td[good_idx].thread_trial_sp;
-          curr_sol = td[good_idx].thread_trial_sol;
-          if (update_index > updateThrd) {
-            // std::cout<<"Insert\n";
-            oData[curr_cost] = curr_sp;
-            ReshapeSeqPairMap(oData, nodeSize);
-          }
-        }
-      }
-#endif
-
-#ifndef MTMODE
-      // cout<<"T "<<T<<" i "<<i<<endl;
-      // Trival moves
-      SeqPair trial_sp(curr_sp);
-      // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
-      trial_sp.PerturbationNew(designData);
-      // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
-      ConstGraph trial_sol;
-      if (GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
-        fail_number = 0;
-        double trial_cost = trial_sol.CalculateCost(designData, trial_sp);
-#ifdef PERFORMANCE_DRIVEN
-        trial_cost = curr_sol.performance_fom(trial_cost, designData, trial_sp, pFun_cal_fom, sess, X, pred_op);
-#endif
-        bool Smark = false;
-        delta_cost = trial_cost - curr_cost;
-        if (delta_cost < 0) {
-          Smark = true;
-        } else {
-          double r = (double)rand() / RAND_MAX;
-          if (r < exp((-1.0 * delta_cost) / T)) {
-            Smark = true;
-          }
-        }
-        if (Smark) {
-          logger->debug("cost: {0}", trial_cost);
-          curr_cost = trial_cost;
-          curr_sp = trial_sp;
-          curr_sol = trial_sol;
-          if (update_index > updateThrd) {
-            oData[curr_cost] = curr_sp;
-            ReshapeSeqPairMap(oData, nodeSize);
-          }
-        }
-      } else {
-        fail_number++;
-      }
-#endif
-
-      i++;
-      update_index++;
-      // cout<<update_index<<endl;
-      if (update_index == updateThrd) {
-        curr_sol.Update_parameters(designData, curr_sp);
-        curr_cost = curr_sol.CalculateCost(designData, curr_sp);
-        oData[curr_cost] = curr_sp;
-        ReshapeSeqPairMap(oData, nodeSize);
-      }
-    }
-    T_index++;
-    if (total_update_number * per < T_index) {
-      logger->debug("...{0}%", per * 100);
-      per = per + 0.1;
-    }
-    T *= hyper.ALPHA;
-    // cout<<T<<endl;
-  }
-  // Write out placement results
-  logger->debug("Placer-Info: optimal cost = {0}", curr_cost);
-  oData[curr_cost] = curr_sp;
-  ReshapeSeqPairMap(oData, nodeSize);
-  // cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
-  // curr_sol.PrintConstGraph();
-  curr_sp.PrintSeqPair();
-#ifdef PERFORMANCE_DRIVEN
-  Py_Finalize();
-#endif
-  // curr_sol.updateTerminalCenter(designData, curr_sp);
-  return oData;
-}
 
 std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
                                                                                       int nodeSize, int effort, PnRDB::Drc_info& drcInfo) {
@@ -851,7 +670,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
   // Write out placement results
   // cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
-  // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
   // curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
@@ -920,7 +738,6 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   int idx = 0;
   for (std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
     // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
-    // ConstGraph vec_sol(designData, it->second, mode);
     // vec_sol.ConstraintGraph(designData, it->second);
     // vec_sol.FastInitialScan();
     // vec_sol.updateTerminalCenter(designData, it->second);
@@ -969,7 +786,6 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   // int idx=0;
   // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
   // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
-  // ConstGraph vec_sol(designData, it->second, mode);
   // vec_sol.ConstraintGraph(designData, it->second);
   // vec_sol.FastInitialScan();
   // vec_sol.updateTerminalCenter(designData, it->second);

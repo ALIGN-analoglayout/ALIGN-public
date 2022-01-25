@@ -42,7 +42,6 @@ class Placer {
   void PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo);  // do placement with simulated annealing
   void ThreadFunc(Thread_data* MT);
   void PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort);
-  std::map<double, SeqPair> PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort);
   // std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int
   // nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
