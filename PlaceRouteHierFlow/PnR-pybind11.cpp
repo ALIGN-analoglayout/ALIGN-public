@@ -446,7 +446,6 @@ PYBIND11_MODULE(PnR, m) {
     .def( "semantic2", &PnRdatabase::semantic2)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
-    .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
     .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)

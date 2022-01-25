@@ -46,14 +46,6 @@ TEST(PnRDBTest, get_number) {
 }
 
 
-// TEST( EndsWithTest, Test1)
-// {
-//     EXPECT_TRUE( EndsWith( "", ""));
-//     EXPECT_TRUE( EndsWith( "a", ""));
-//     EXPECT_FALSE( EndsWith( "", "a"));
-//     EXPECT_TRUE( EndsWith( "Steve Burns", "Burns"));
-//     EXPECT_FALSE( EndsWith( "Steve Burns", "Treefrog Steve Burns"));
-// }
 
 // TEST( hierNodeTest, TestA)
 // {
