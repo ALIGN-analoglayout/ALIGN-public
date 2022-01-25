@@ -1586,7 +1586,6 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
       //   for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
       //   logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
       //   logger->info("ILP fail {0}", fail_cnt);
-      //   curr_sp.PrintSeqPair(mydesign);
       //   ++fail_cnt;
       // }
       delete_lp(lp);

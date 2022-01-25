@@ -433,7 +433,6 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   for (std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
     // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     // vec_sol.ConstraintGraph(designData, it->second);
-    // vec_sol.FastInitialScan();
     // vec_sol.updateTerminalCenter(designData, it->second);
     // std::cout<<"wbxu check design\n";
     // designData.PrintDesign();
@@ -481,7 +480,6 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
   // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
   // vec_sol.ConstraintGraph(designData, it->second);
-  // vec_sol.FastInitialScan();
   // vec_sol.updateTerminalCenter(designData, it->second);
   // std::cout<<"wbxu check design\n";
   // designData.PrintDesign();
