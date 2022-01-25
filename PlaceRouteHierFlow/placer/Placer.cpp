@@ -467,7 +467,7 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   ILP_solver curr_sol(designData, nodeVec.back());
   curr_sol.GenerateValidSolutionAnalytical(designData, drcInfo, nodeVec.back());
   curr_sol.updateTerminalCenterAnalytical(designData);
-  curr_sol.PlotPlacementAnalytical(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
+  //curr_sol.PlotPlacementAnalytical(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
   curr_sol.UpdateHierNodeAnalytical(designData, nodeVec.back(), drcInfo);
   // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // curr_sol.updateTerminalCenter(designData, curr_sp);
