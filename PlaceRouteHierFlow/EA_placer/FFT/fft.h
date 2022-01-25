@@ -96,10 +96,7 @@ void ddct(int n, int isgn, float *a, int *ip, float *w);
 void ddst(int n, int isgn, float *a, int *ip, float *w);
 
 /// 2D FFT ////////////////////////////////////////////////////////////////
-void cdft2d(int, int, int, float **, float *, int *, float *);
-void rdft2d(int, int, int, float **, float *, int *, float *);
 void ddct2d(int, int, int, float **, float *, int *, float *);
-void ddst2d(int, int, int, float **, float *, int *, float *);
 void ddsct2d(int n1, int n2, int isgn, float **a, float *t, int *ip, float *w);
 void ddcst2d(int n1, int n2, int isgn, float **a, float *t, int *ip, float *w);
 
