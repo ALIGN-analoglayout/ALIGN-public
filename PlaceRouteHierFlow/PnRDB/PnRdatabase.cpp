@@ -686,7 +686,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   // In fact, the original node, do not need to be updated. Just update father node is fine.
   // update the original node
-  logger->debug("CheckinHierNode");
+  // logger->debug("CheckinHierNode");
   PnRDB::layoutAS tmpL;
   tmpL.gdsFile = updatedNode.gdsFile;
   tmpL.width = updatedNode.width;
@@ -711,7 +711,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   // update current node information
   for (unsigned int i = 0; i < hierTree[nodeID].Blocks.size(); i++) {
     int sel = updatedNode.Blocks[i].selectedInstance;
-    logger->debug("Block {0} select {1} ", i, sel);
+    // logger->debug("Block {0} select {1} ", i, sel);
     if (sel < 0 || sel >= updatedNode.Blocks[i].instNum) {
       logger->error("PnRDB-Error: unselected block {0}", i);
       continue;
@@ -800,10 +800,10 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
    }
   */
 
-  logger->debug("update power net");
+  // logger->debug("update power net");
   // update PowerNet information//////
-  logger->debug("hierTree power net size {0}", hierTree[nodeID].PowerNets.size());
-  logger->debug("updatedNode power net size {0}", updatedNode.PowerNets.size());
+  // logger->debug("hierTree power net size {0}", hierTree[nodeID].PowerNets.size());
+  // logger->debug("updatedNode power net size {0}", updatedNode.PowerNets.size());
   for (unsigned int i = 0; i < hierTree[nodeID].PowerNets.size(); i++) {
     for (unsigned int j = 0; j < updatedNode.PowerNets.size(); j++) {
       if (hierTree[nodeID].PowerNets[i].name == updatedNode.PowerNets[j].name) {
@@ -817,27 +817,27 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
     }
   }
   hierTree[nodeID].PnRAS.back().PowerNets = updatedNode.PowerNets;
-  logger->debug("node ID {0}", nodeID);
-  logger->debug("hierTree power net size {0}", hierTree[nodeID].PowerNets.size());
-  logger->debug("updatedNode power net size {0}", updatedNode.PowerNets.size());
+  // logger->debug("node ID {0}", nodeID);
+  // logger->debug("hierTree power net size {0}", hierTree[nodeID].PowerNets.size());
+  // logger->debug("updatedNode power net size {0}", updatedNode.PowerNets.size());
 
   hierTree[nodeID].blockPins = updatedNode.blockPins;
   hierTree[nodeID].interMetals = updatedNode.interMetals;
   hierTree[nodeID].interVias = updatedNode.interVias;
 
   // update father imformation//////
-  logger->debug("Update parent");
+  // logger->debug("Update parent");
   for (unsigned int i = 0; i < hierTree[nodeID].parent.size(); i++) {
-    logger->debug("Start update blocks in parent");
+    // logger->debug("Start update blocks in parent");
     // update father blocks information
     auto& parent_node = hierTree[hierTree[nodeID].parent[i]];
 
     // there will be a bug for multi-aspect ratio Yaguang 1/1/2020
-    logger->debug("Update router report for parent");
+    // logger->debug("Update router report for parent");
     for (unsigned int j = 0; j < updatedNode.router_report.size(); j++) {
       parent_node.router_report.push_back(updatedNode.router_report[j]);
     }
-    logger->debug("End Update router report for parent");
+    // logger->debug("End Update router report for parent");
 
     for (unsigned int j = 0; j < parent_node.Blocks.size(); j++) {
       auto& lhs = parent_node.Blocks[j];
@@ -944,7 +944,7 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
          std::cout<<"End update power pin in parent"<<std::endl;
     */
 
-    logger->debug("Start Update power pin in parent");
+    // logger->debug("Start Update power pin in parent");
     // update power pin information
 
     for (unsigned int j = 0; j < parent_node.Blocks.size(); j++) {
@@ -1000,7 +1000,7 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
       }
     }
 
-    logger->debug("Extract dummy power connection into parent");
+    // logger->debug("Extract dummy power connection into parent");
 
     for (unsigned int k = 0; k < parent_node.PowerNets.size(); k++) {
       parent_node.PowerNets[k].dummy_connected.clear();
@@ -1030,10 +1030,10 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
       }
     }
 
-    logger->debug("End update power pin in parent");
+    // logger->debug("End update power pin in parent");
   }
 
-  logger->debug("End update blocks in parent");
+  // logger->debug("End update blocks in parent");
 }
 
 void PnRdatabase::WriteLef(const PnRDB::hierNode& node, const string& file, const string& opath) const {
@@ -1088,11 +1088,11 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteGcellGlobalRouteFile");
 
   // do output tiles (first_tile_idx, ..., last_tile_idx)
-  logger->debug("output data ");
-  logger->debug("layer {0}", DRC_info.Metal_info.at(MetalIdx).name);
-  logger->debug(" net_name {0}", net_name);
-  logger->debug(" width {0}", width);
-  logger->debug(" rect ");
+  // logger->debug("output data ");
+  // logger->debug("layer {0}", DRC_info.Metal_info.at(MetalIdx).name);
+  // logger->debug(" net_name {0}", net_name);
+  // logger->debug(" width {0}", width);
+  // logger->debug(" rect ");
   json jsonWire;
   jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
   jsonWire["net_name"] = net_name;
@@ -1112,7 +1112,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
 	        << ", "   << l.y/m2_p << " " << l.y%m2_p << std::endl;
 #endif
 
-    logger->debug(" MetalDirection: {0}", MetalDirection);
+    // logger->debug(" MetalDirection: {0}", MetalDirection);
     json jsonRect = json::array();
     jsonRect.push_back(f.x);
     jsonRect.push_back(f.y);
@@ -1121,12 +1121,12 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
     jsonWire["rect"] = jsonRect;
   }
 
-  logger->debug("connected pins: ");
+  // logger->debug("connected pins: ");
   PnRDB::net net = node.Nets.at(net_id);
   json jsonConnectedPins = json::array();
-  logger->debug("tile_idx: ");
+  // logger->debug("tile_idx: ");
   for (vector<int>::const_iterator tile_idx = tile_idxs.begin(); tile_idx != tile_idxs.end(); ++tile_idx) {
-    logger->debug("{0}, ", *tile_idx);
+    // logger->debug("{0}, ", *tile_idx);
     // search all the tiles in the consecutive tiles
     for (vector<std::vector<int>>::const_iterator i = net.connectedTile.begin(); i != net.connectedTile.end(); ++i) {
       int pin_id = i - net.connectedTile.begin();
@@ -1137,7 +1137,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
         }
         // current tile index == pin_terminal
         json jsonConnectedPin;
-        logger->debug("pin_id {0}", pin_id);
+        // logger->debug("pin_id {0}", pin_id);
         if (net.connected.at(pin_id).type == PnRDB::Block) {
           int selectedInstance = node.Blocks.at(net.connected.at(pin_id).iter2).selectedInstance;
           vector<PnRDB::contact> pinContacts =
@@ -1145,23 +1145,23 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
           for (vector<PnRDB::contact>::const_iterator contact_it = pinContacts.begin(); contact_it != pinContacts.end(); ++contact_it) {
             string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.at(selectedInstance).name + "/" +
                                node.Blocks.at(net.connected.at(pin_id).iter2).instance.at(selectedInstance).blockPins.at(net.connected.at(pin_id).iter).name;
-            logger->debug("sink_name: {0} ", sink_name);
+            // logger->debug("sink_name: {0} ", sink_name);
             jsonConnectedPin["sink_name"] = sink_name;
 
             string layer = "";
             layer = contact_it->metal;
             jsonConnectedPin["layer"] = layer;
-            logger->debug(" layer: {0}", layer);
+            // logger->debug(" layer: {0}", layer);
 
             json jsonRect = json::array();
-            logger->debug("contacts size {0}", pinContacts.size());
+            // logger->debug("contacts size {0}", pinContacts.size());
             PnRDB::bbox rect = contact_it->placedBox;
             jsonRect.push_back(rect.LL.x);
             jsonRect.push_back(rect.LL.y);
             jsonRect.push_back(rect.UR.x);
             jsonRect.push_back(rect.UR.y);
-            logger->debug("placedBox: {0}, {1}, ", rect.LL.x, rect.LL.y);
-            logger->debug("{0}, {1} ", rect.UR.x, rect.UR.y);
+            // logger->debug("placedBox: {0}, {1}, ", rect.LL.x, rect.LL.y);
+            // logger->debug("{0}, {1} ", rect.UR.x, rect.UR.y);
             jsonConnectedPin["rect"] = jsonRect;
             jsonConnectedPins.push_back(jsonConnectedPin);
           }
@@ -1169,13 +1169,13 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
           vector<PnRDB::contact> termContacts = node.Terminals.at(net.connected.at(pin_id).iter).termContacts;
           for (vector<PnRDB::contact>::const_iterator contact_it = termContacts.begin(); contact_it != termContacts.end(); ++contact_it) {
             string sink_name = node.Terminals.at(net.connected.at(pin_id).iter).name;
-            logger->debug("sink_name: {0}", sink_name);
+            // logger->debug("sink_name: {0}", sink_name);
             jsonConnectedPin["sink_name"] = sink_name;
 
             string layer = "";
             layer = contact_it->metal;
             jsonConnectedPin["layer"] = layer;
-            logger->debug(" layer: {0}", layer);
+            // logger->debug(" layer: {0}", layer);
 
             json jsonRect = json::array();
             PnRDB::bbox rect = contact_it->placedBox;
@@ -1183,8 +1183,8 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             jsonRect.push_back(rect.LL.y);
             jsonRect.push_back(rect.UR.x);
             jsonRect.push_back(rect.UR.y);
-            logger->debug("#termcontact: {0}, {1} ", rect.LL.x, rect.LL.y);
-            logger->debug("{0}, {1} ", rect.UR.x, rect.UR.y);
+            // logger->debug("#termcontact: {0}, {1} ", rect.LL.x, rect.LL.y);
+            // logger->debug("{0}, {1} ", rect.UR.x, rect.UR.y);
             jsonConnectedPin["rect"] = jsonRect;
 
             jsonConnectedPins.push_back(jsonConnectedPin);
@@ -1205,7 +1205,7 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
   // this function write gcell global router result into json for detail route use
   // combine consecutive tiles into one
   json jsonWiresArray = json::array();
-  logger->debug("#Nets: {0}", node.Nets.size());
+  // logger->debug("#Nets: {0}", node.Nets.size());
   // std::cout << "#Pin_terminals:" << node.Pin_terminals.size() <<std::endl;
 
   for (vector<PnRDB::net>::const_iterator it = node.Nets.begin(); it != node.Nets.end(); ++it) {
@@ -1232,15 +1232,15 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
       int w2 = tile2.width, h2 = tile2.height;  // w/h of second tile
 
       if (int(tile1.metal.size()) != 1 || int(tile2.metal.size()) != 1) {
-        logger->error("ERROR: tile.metal.size != 1 !");
+        // logger->error("ERROR: tile.metal.size != 1 !");
       } else {
         MetalIdx1 = tile1.metal.front();
         MetalIdx2 = tile2.metal.front();
       }
-      logger->debug("tile indexs: {0} {1} ", tile_idx1, tile_idx2);
-      logger->debug("tile layers: {0} {1} ", MetalIdx1, MetalIdx2);
-      logger->debug("first tile x/y/width/height: {0} {1} {2} {3}", x1, y1, w1, h1);
-      logger->debug("second tile x/y/width/height: {0} {1} {2} {3} ", x2, y2, w2, h2);
+      // logger->debug("tile indexs: {0} {1} ", tile_idx1, tile_idx2);
+      // logger->debug("tile layers: {0} {1} ", MetalIdx1, MetalIdx2);
+      // logger->debug("first tile x/y/width/height: {0} {1} {2} {3}", x1, y1, w1, h1);
+      // logger->debug("second tile x/y/width/height: {0} {1} {2} {3} ", x2, y2, w2, h2);
 
       if (MetalIdx1 == MetalIdx2) {
         MetalDirection = DRC_info.Metal_info.at(MetalIdx1).direct;
@@ -1325,8 +1325,8 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
         }
       }
 
-      logger->debug("MetalDirection: {0}", MetalDirection);
-      logger->debug("can append: {0}", can_append);
+      // logger->debug("MetalDirection: {0}", MetalDirection);
+      // logger->debug("can append: {0}", can_append);
 
       if (can_append == false) {
         // do output tiles (first_tile_idx, ..., last_tile_idx)
@@ -1589,7 +1589,7 @@ void PnRdatabase::semantic0(const string& topcell) {
     }
   }
 
-  logger->debug("Middle");
+  // logger->debug("Middle");
   // mergeLEFandGDS
   for (unsigned int i = 0; i < hierTree.size(); i++) {
     // cout<<"hierTree node "<<i<<endl;
@@ -1606,7 +1606,7 @@ void PnRdatabase::semantic1(const vector<tuple<string, string, string>>& global_
 
   // wbxu: following lines need modifications to reflect changes of block instance vector
   // update powernets information
-  logger->debug("Middle");
+  // logger->debug("Middle");
 
   const std::string supply_node_name = "global_power";
 
@@ -1720,18 +1720,18 @@ void PnRdatabase::semantic2() {
         if (hierTree[i].Nets[k].name == temp_LinearConst.net_name) {
           hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
           for (unsigned int h = 0; h < hierTree[i].Nets[k].connected.size(); h++) {
-            logger->debug("Connected {0} {1} {2}", hierTree[i].Nets[k].connected[h].type, hierTree[i].Nets[k].connected[h].iter,
-                          hierTree[i].Nets[k].connected[h].iter2);
+            // logger->debug("Connected {0} {1} {2}", hierTree[i].Nets[k].connected[h].type, hierTree[i].Nets[k].connected[h].iter,
+                          // hierTree[i].Nets[k].connected[h].iter2);
             for (unsigned int l = 0; l < temp_LinearConst.pins.size(); l++) {
-              logger->debug("LinearConst cont {0} {1} {2}", temp_LinearConst.pins[l].first, temp_LinearConst.pins[l].second, temp_LinearConst.alpha[l]);
+              // logger->debug("LinearConst cont {0} {1} {2}", temp_LinearConst.pins[l].first, temp_LinearConst.pins[l].second, temp_LinearConst.alpha[l]);
               if (hierTree[i].Nets[k].connected[h].type == PnRDB::Block && hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first &&
                   hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second) {
-                logger->debug("LinearConst alpha {0}", temp_LinearConst.alpha[l]);
+                // logger->debug("LinearConst alpha {0}", temp_LinearConst.alpha[l]);
                 hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
               } else if (hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal && temp_LinearConst.pins[l].first == -1 &&
                          hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second) {
                 hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
-                logger->debug("LinearConst alpha {0}", temp_LinearConst.alpha[l]);
+                // logger->debug("LinearConst alpha {0}", temp_LinearConst.alpha[l]);
               }
             }
           }
@@ -1741,13 +1741,13 @@ void PnRdatabase::semantic2() {
 
     for (unsigned int j = 0; j < hierTree[i].L_Constraints.size(); j++) {
       for (unsigned int k = 0; k < hierTree[i].L_Constraints[j].alpha.size(); k++) {
-        logger->debug("LinearConst info {0} {1} ", hierTree[i].L_Constraints[j].net_name, hierTree[i].L_Constraints[j].alpha[k]);
+        // logger->debug("LinearConst info {0} {1} ", hierTree[i].L_Constraints[j].net_name, hierTree[i].L_Constraints[j].alpha[k]);
       }
     }
 
     for (unsigned int j = 0; j < hierTree[i].Nets.size(); j++) {
       for (unsigned int k = 0; k < hierTree[i].Nets[j].connected.size(); k++) {
-        logger->debug("Assign Linear {0} {1} ", hierTree[i].Nets[j].upperBound, hierTree[i].Nets[j].connected[k].alpha);
+        // logger->debug("Assign Linear {0} {1} ", hierTree[i].Nets[j].upperBound, hierTree[i].Nets[j].connected[k].alpha);
       }
     }
   }

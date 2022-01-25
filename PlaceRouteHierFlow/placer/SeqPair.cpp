@@ -74,7 +74,7 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   _seq.clear();
   _indegree.clear();
   _adj.clear();
-  logger->debug("num sequences {0} {1} {2}", _sequences.size(), constraints.size(), (_valid ? 1 : 0));
+  // logger->debug("num sequences {0} {1} {2}", _sequences.size(), constraints.size(), (_valid ? 1 : 0));
   /*string str;
   for (auto& it : _sequences) {
     str.clear();
