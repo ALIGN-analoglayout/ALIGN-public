@@ -12,7 +12,6 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info&
   // this->designData=design(input_node);
   // cout<<"Complete construction"<<endl;
   // this->designData.PrintDesign();
-  // PlacementMixAP(node, opath, effort);
   // PlacementMixSA(node, opath, effort);
   PlacementRegular(node, opath, effort, drcInfo);
 }
@@ -352,84 +351,6 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnR
   // cout<<"Test:: after update node"<<endl;
   // curr_sol.WritePlacement(designData, curr_sp, ofile.c_str());
   // curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
-}
-
-void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAP");
-
-  logger->debug("Placer-Info: place {0}", node.name);
-#ifdef RFLAG
-  logger->debug("Placer-Info: run in random mode...");
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  logger->debug("Placer-Info: run in normal mode...");
-  srand(0);
-#endif
-  // int mode=1;
-  logger->debug("Placer-Info: start mixed-size placement - phase I SA");
-  // Read design netlist and constraints
-  // design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
-  design designData_full(node);
-  designData_full.PrintDesign();
-
-  // Reduced design
-  design designData(designData_full, 1);
-  designData.PrintDesign();
-
-  // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  // curr_sp.PrintSeqPair();
-
-  ConstGraph curr_sol;
-  PlacementCore(designData, curr_sp, curr_sol, 1, effort);
-  curr_sol.WritePlacement(designData, curr_sp, opath + node.name + "_reduced.pl");
-  curr_sol.PlotPlacement(designData, curr_sp, opath + node.name + "_reduced.plt", false, false, false);
-  curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
-  logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
-  logger->debug("Placer-Info: start mixed-size placement - phase II AP");
-  // if(node.isTop) {return;}
-  Aplace AP(node, designData_full, opath);
-  ConstGraph new_sol(designData_full, AP, 0, 1);
-  logger->debug("Initial CG after AP");
-  new_sol.PrintConstGraph();
-  if (new_sol.ConstraintGraphAP(designData_full, AP)) {
-    logger->debug("Placer-Info: sucessfully construct constraint graph");
-  } else {
-    logger->debug("Placer-Error: fail to construct constraint graph");
-  }
-  if (!new_sol.FastInitialScan()) {
-    logger->debug("Placer-Info: no violation in constraint graph");
-  } else {
-    logger->debug("Placer-Error: violation found in constraint graph");
-  }
-  logger->debug("Updated CG after constraint");
-  new_sol.PrintConstGraph();
-  logger->debug("Placer-Info: complete mixed-size placement - phase II AP");
-
-  new_sol.updateTerminalCenterAP(designData_full, AP);
-  new_sol.WritePlacementAP(designData_full, AP, opath + node.name + ".pl");
-  new_sol.PlotPlacementAP(designData_full, AP, opath + node.name + ".plt");
-  new_sol.UpdateHierNodeAP(designData_full, AP, node, drcInfo);
-  // AP.PrintAplace();
-  /*
-  return;
-
-  mode=0;
-  // Full design
-  SeqPair curr_sp_full( designData_full, designData, curr_sp  );
-  //curr_sp_full.PrintSeqPair();
-
-  ConstGraph curr_sol_full;
-  PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode);
-  curr_sol_full.WritePlacement(designData_full, curr_sp_full, "./"+node.name+".pl");
-  curr_sol_full.PlotPlacement(designData_full, curr_sp_full, "./"+node.name+".plt");
-  //cout<<"Test: before update node"<<endl;
-  curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node);
-  //cout<<"Test:: after update node"<<endl;
-  //curr_sol.WritePlacement(designData, curr_sp, ofile.c_str());
-  //curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
-  */
 }
 
 void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort) {
@@ -1213,77 +1134,3 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   }
 }
 
-void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementMixAPAspectRatio");
-
-  int nodeSize = nodeVec.size();
-  logger->debug("Placer-Info: place {0}", nodeVec.back().name);
-#ifdef RFLAG
-  logger->debug("Placer-Info: run in random mode...");
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  logger->debug("Placer-Info: run in normal mode...");
-  srand(0);
-#endif
-  int bias_mode = 1;
-  logger->debug("Placer-Info: start mixed-size placement - phase I SA");
-  // Read design netlist and constraints
-  // design designData(bfile.c_str(), nfile.c_str(), cfile.c_str());
-  design designData_full(nodeVec.back());
-  designData_full.PrintDesign();
-
-  // Reduced design
-  design designData(designData_full, 1);
-  designData_full.PrintDesign();
-  designData.PrintDesign();
-
-  // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData);
-  // curr_sp.PrintSeqPair();
-
-  ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec = PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize, effort);
-
-  if ((int)spVec.size() < nodeSize) {
-    nodeSize = spVec.size();
-    nodeVec.resize(nodeSize);
-  }
-  // PlacementCore(designData, curr_sp, curr_sol, 1);
-  logger->debug("Placer-Info: complete mixed-size placement - phase I SA");
-  logger->debug("Placer-Info: start mixed-size placement - phase II AP");
-  int idx = 0;
-  for (std::map<double, SeqPair>::iterator it = spVec.begin(); it != spVec.end() && idx < nodeSize; ++it, ++idx) {
-    ConstGraph vec_sol(designData, it->second, bias_mode);
-    vec_sol.ConstraintGraph(designData, it->second);
-    vec_sol.FastInitialScan();
-    vec_sol.updateTerminalCenter(designData, it->second);
-    vec_sol.PrintConstGraph();
-    vec_sol.WritePlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + "_reduced.pl");
-    vec_sol.PlotPlacement(designData, it->second, opath + nodeVec.back().name + "_" + std::to_string(idx) + "_reduced.plt", false, false, false);
-    vec_sol.UpdateDesignHierNode4AP(designData_full, designData, it->second, nodeVec.at(idx));
-
-    Aplace AP(nodeVec.at(idx), designData_full, opath);
-    ConstGraph new_sol(designData_full, AP, 0, 1);
-    logger->debug("Initial CG after AP");
-    new_sol.PrintConstGraph();
-    if (new_sol.ConstraintGraphAP(designData_full, AP)) {
-      logger->debug("Placer-Info: sucessfully construct constraint graph");
-    } else {
-      logger->debug("Placer-Error: fail to construct constraint graph");
-    }
-    if (!new_sol.FastInitialScan()) {
-      logger->debug("Placer-Info: no violation in constraint graph");
-    } else {
-      logger->debug("Placer-Error: violation found in constraint graph");
-    }
-    logger->debug("Updated CG after constraint");
-    new_sol.PrintConstGraph();
-    logger->debug("Placer-Info: complete mixed-size placement - phase II AP");
-
-    new_sol.updateTerminalCenterAP(designData_full, AP);
-    new_sol.WritePlacementAP(designData_full, AP, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-    new_sol.PlotPlacementAP(designData_full, AP, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-    new_sol.UpdateHierNodeAP(designData_full, AP, nodeVec.at(idx), drcInfo);
-  }
-}
