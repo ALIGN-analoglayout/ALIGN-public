@@ -345,7 +345,6 @@ design::design(PnRDB::hierNode& node, const int seed) {
 
 int design::rand() {
   if (_rnd) return (*_rnd)(_rng);
-  return rand();
 }
 
 int design::GetSizeBlock4Move(int mode) {
@@ -382,39 +381,6 @@ int design::GetSizeAsymBlock4Move(int mode) {
   return ss;
 }
 
-int design::GetSizeSymGroup4PartMove(int mode) {
-  // mode-0: check mapIdx of blocks for original design
-  // mode-1: never check mapIdx for reduced design
-  int ss = 0;
-  if (mode == 0) {
-    for (unsigned int i = 0; i < this->SBlocks.size(); ++i) {
-      bool mark = false;
-      for (std::vector<std::pair<int, int>>::iterator it = this->SBlocks.at(i).sympair.begin(); it != this->SBlocks.at(i).sympair.end() && !mark; ++it) {
-        if (it->first < this->GetSizeofBlocks() && it->second < this->GetSizeofBlocks()) {
-          if (this->Blocks.at(it->first).back().mapIdx == -1 && this->Blocks.at(it->second).back().mapIdx == -1) {
-            mark = true;
-            break;
-          }
-        }
-      }
-      for (std::vector<std::pair<int, placerDB::Smark>>::iterator it = this->SBlocks.at(i).selfsym.begin(); it != this->SBlocks.at(i).selfsym.end() && !mark;
-           ++it) {
-        if (it->first < this->GetSizeofBlocks()) {
-          if (this->Blocks.at(it->first).back().mapIdx == -1) {
-            mark = true;
-            break;
-          }
-        }
-      }
-      if (mark) {
-        ss++;
-      }
-    }
-  } else {
-    ss = this->SBlocks.size();
-  }
-  return ss;
-}
 
 int design::GetSizeSymGroup4FullMove(int mode) {
   // mode-0: check mapIdx of groups for original design
@@ -435,8 +401,6 @@ int design::GetSizeSymGroup4FullMove(int mode) {
 int design::GetSizeofBlocks() { return Blocks.size(); }
 
 int design::GetSizeofTerminals() { return Terminals.size(); }
-
-int design::GetSizeofNets() { return Nets.size(); }
 
 int design::GetSizeofSBlocks() { return SBlocks.size(); }
 
@@ -470,7 +434,6 @@ design::design(string blockfile, string netfile, string cfile) {
 //  readNetFile(netfile);
 //  readConstFile(cfile);
 //  constructSymmGroup();
-//  readRandConstFile(cfile);
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
@@ -483,7 +446,6 @@ design::design(string blockfile, string netfile, string cfile) {
 //  readNetFile(netfile);
 //  readConstFile(cfile);
 //  constructSymmGroup();
-//  readRandConstFile(random_cfile);
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
@@ -495,239 +457,10 @@ design::design(string blockfile, string netfile, string cfile) {
 //  readBlockFile(blockfile);
 //  readNetFile(netfile);
 //  readConstFile(cfile);
-//  Generate_random_const(random_const_file);
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
 
-// add be yaguang
-void design::Generate_random_const(string random_constrain_file) {
-  int const_type_number = 4;
-
-  // Const_type = [pre-placer,alignment-v,abument-h,matchblocks]
-  /*
-  1. pre-placer: 200 distance to rr, v
-  1. alignment: 0 distance, v.
-  2. abument: 0 dsitance, v. w distance h.
-  */
-
-  srand(time(NULL));
-
-  int Const_size = (rand() % Blocks.size()) / 3;
-
-  vector<int> Const_type_list;
-  pair<int, int> const_pair;
-  vector<pair<int, int>> const_pair_vector;
-  // int Const_type;
-
-  for (int i = 0; i <= Const_size; ++i) {
-    // Const_type = rand()%const_type_number;
-    Const_type_list.push_back(rand() % const_type_number);
-  }
-
-  for (int i = 0; i <= Const_size; ++i) {
-    // generate const pairs
-    const_pair.first = rand() % Blocks.size();
-    const_pair.second = rand() % Blocks.size();
-    while (const_pair.first == const_pair.second) {
-      const_pair.second = rand() % Blocks.size();
-    }
-    // redundant?
-    const_pair_vector.push_back(const_pair);
-  }
-
-  ofstream fout;
-  fout.open(random_constrain_file.c_str());
-  fout << "#This is a random constrains file." << endl;
-  // fout<<"Current constrains include preplace, alignment and abutment."<<endl;
-  int distance = 0;
-  for (int i = 0; i <= Const_size; ++i) {
-    if (Const_type_list[i] == 0) {
-      int h_p = (rand() % 2);
-      while (distance < 100) {
-        distance = (rand() % 10) * 50;
-      }
-      fout << "Preplace ("
-           << " " << Blocks[const_pair_vector[i].first].back().name << " " << Blocks[const_pair_vector[i].second].back().name << " " << distance << " " << h_p
-           << " "
-           << ")" << endl;
-      distance = 0;
-    }
-    if (Const_type_list[i] == 1) {
-      int h_ali = (rand() % 2);
-      while (distance < 100) {
-        distance = (rand() % 10) * 50;
-      }
-      fout << "Alignment ("
-           << " " << Blocks[const_pair_vector[i].first].back().name << " " << Blocks[const_pair_vector[i].second].back().name << " " << 0 << " " << h_ali << " "
-           << ")" << endl;
-      distance = 0;
-    }
-    if (Const_type_list[i] == 2) {
-      int h_abu = (rand() % 2);
-      while (distance < 100) {
-        distance = (rand() % 10) * 50;
-      }
-      fout << "Abument ("
-           << " " << Blocks[const_pair_vector[i].first].back().name << " " << Blocks[const_pair_vector[i].second].back().name << " " << 0 << " " << h_abu << " "
-           << ")" << endl;
-      distance = 0;
-    }
-    if (Const_type_list[i] == 3) {
-      while (distance < 100) {
-        distance = (rand() % 10) * 50;
-      }
-      fout << "MatchBlock ("
-           << " " << Blocks[const_pair_vector[i].first].back().name << " " << Blocks[const_pair_vector[i].second].back().name << " "
-           << ")" << endl;
-      distance = 0;
-    }
-  }
-
-  int bias_Vgraph = 0;
-  int bias_Hgraph = 0;
-  while (bias_Vgraph < 200 && bias_Hgraph < 200) {
-    bias_Vgraph = (rand() % 10) * 50;
-    bias_Hgraph = (rand() % 10) * 50;
-  }
-
-  fout << "bias_Vgraph ("
-       << " " << bias_Vgraph << " "
-       << ")" << endl;
-  fout << "bias_Hgraph ("
-       << " " << bias_Hgraph << " "
-       << ")" << endl;
-
-  fout.close();
-}
-
-void design::readRandConstFile(string random_constrain_file) {
-  ifstream fin;
-  string def;
-  fin.open(random_constrain_file.c_str());
-
-  vector<string> temp, tempsec;
-
-  while (!fin.eof()) {
-    getline(fin, def);
-    temp = split_by_spaces(def);
-
-    if (temp[0].compare("Preplace") == 0) {
-      string block_first = temp[2];
-      string block_second = temp[3];
-      int distance = atoi(temp[4].c_str());
-      int horizon = atoi(temp[5].c_str());
-
-      Preplace preplace_const;
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_first) == 0) {
-          preplace_const.blockid1 = i;
-          break;
-        }
-      }
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_second) == 0) {
-          preplace_const.blockid2 = i;
-          break;
-        } else {
-          preplace_const.conner = block_second;
-        }
-      }
-      preplace_const.distance = distance;
-      preplace_const.horizon = horizon;
-      Preplace_blocks.push_back(preplace_const);
-    }
-
-    if (temp[0].compare("Alignment") == 0) {
-      string block_first = temp[2];
-      string block_second = temp[3];
-      int distance = atoi(temp[4].c_str());
-      int horizon = atoi(temp[5].c_str());
-
-      Alignment alignment_const;
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_first) == 0) {
-          alignment_const.blockid1 = i;
-          break;
-        }
-      }
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_second) == 0) {
-          alignment_const.blockid2 = i;
-          break;
-        }
-      }
-      alignment_const.distance = distance;
-      alignment_const.horizon = horizon;
-      Alignment_blocks.push_back(alignment_const);
-    }
-
-    if (temp[0].compare("Abument") == 0) {
-      string block_first = temp[2];
-      string block_second = temp[3];
-      int distance = atoi(temp[4].c_str());
-      int horizon = atoi(temp[5].c_str());
-
-      Abument abument_const;
-
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_first) == 0) {
-          abument_const.blockid1 = i;
-          break;
-        }
-      }
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_second) == 0) {
-          abument_const.blockid2 = i;
-          break;
-        }
-      }
-      abument_const.distance = distance;
-      abument_const.horizon = horizon;
-      Abument_blocks.push_back(abument_const);
-    }
-    if (temp[0].compare("MatchBlock") == 0) {
-      string block_first = temp[2];
-      string block_second = temp[3];
-      // int distance= atoi(temp[4].c_str());
-      // int horizon = atoi(temp[5].c_str());
-
-      MatchBlock match_const;
-
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_first) == 0) {
-          match_const.blockid1 = i;
-          break;
-        }
-      }
-      for (unsigned int i = 0; i < Blocks.size(); ++i) {
-        if (Blocks.at(i).back().name.compare(block_second) == 0) {
-          match_const.blockid2 = i;
-          break;
-        }
-      }
-      // match_const.distance = distance;
-      // match_const.horizon = horizon;
-      Match_blocks.push_back(match_const);
-    }
-    if (temp[0].compare("bias_graph") == 0) {
-      int distance = atoi(temp[2].c_str());
-      bias_Hgraph = distance;
-      bias_Vgraph = distance;
-      // Preplace_blocks.push_back(preplace_const);
-    }
-    if (temp[0].compare("bias_Vgraph") == 0) {
-      int distance = atoi(temp[2].c_str());
-      bias_Vgraph = distance;
-      // Preplace_blocks.push_back(preplace_const);
-    }
-    if (temp[0].compare("bias_Hgraph") == 0) {
-      int distance = atoi(temp[2].c_str());
-      bias_Hgraph = distance;
-      // Preplace_blocks.push_back(preplace_const);
-    }
-  }
-}
 
 //
 
@@ -1030,51 +763,6 @@ void design::readRandConstFile(string random_constrain_file) {
 //  }
 //}
 
-design::design(const design& other) : Port_Location(other.Port_Location) {
-  this->Blocks = other.Blocks;
-  this->Terminals = other.Terminals;
-  this->Nets = other.Nets;
-  this->SNets = other.SNets;
-  this->SBlocks = other.SBlocks;
-  this->Preplace_blocks = other.Preplace_blocks;
-  this->Alignment_blocks = other.Alignment_blocks;
-  this->Abument_blocks = other.Abument_blocks;
-  this->Match_blocks = other.Match_blocks;
-  this->bias_Vgraph = other.bias_Vgraph;
-  this->bias_Hgraph = other.bias_Hgraph;
-  this->hasAsymBlock = other.hasAsymBlock;
-  this->hasSymGroup = other.hasSymGroup;
-  this->mixFlag = other.mixFlag;
-  this->noBlock4Move = other.noBlock4Move;
-  this->noAsymBlock4Move = other.noAsymBlock4Move;
-  this->noSymGroup4PartMove = other.noSymGroup4PartMove;
-  this->noSymGroup4FullMove = other.noSymGroup4FullMove;
-  this->Abut_Constraints = other.Abut_Constraints;
-  // this->Port_Location=other.Port_Location;
-}
-
-design& design::operator=(const design& other) {
-  this->Blocks = other.Blocks;
-  this->Terminals = other.Terminals;
-  this->Nets = other.Nets;
-  this->SNets = other.SNets;
-  this->SBlocks = other.SBlocks;
-  this->Preplace_blocks = other.Preplace_blocks;
-  this->Alignment_blocks = other.Alignment_blocks;
-  this->Abument_blocks = other.Abument_blocks;
-  this->Match_blocks = other.Match_blocks;
-  this->bias_Hgraph = other.bias_Hgraph;
-  this->bias_Vgraph = other.bias_Vgraph;
-  this->hasAsymBlock = other.hasAsymBlock;
-  this->hasSymGroup = other.hasSymGroup;
-  this->mixFlag = other.mixFlag;
-  this->noBlock4Move = other.noBlock4Move;
-  this->noAsymBlock4Move = other.noAsymBlock4Move;
-  this->noSymGroup4PartMove = other.noSymGroup4PartMove;
-  this->noSymGroup4FullMove = other.noSymGroup4FullMove;
-  this->Port_Location = other.Port_Location;
-  return *this;
-}
 
 void design::PrintDesign() {
   auto logger = spdlog::default_logger()->clone("placer.design.PrintDesign");
@@ -1257,12 +945,6 @@ int design::GetBlockHeight(int blockid, placerDB::Omark ort, int sel) {
   }
 }
 
-placerDB::point design::GetBlockCenter(int blockid, placerDB::Omark ort, int sel) {
-  placerDB::point p;
-  p.x = GetBlockWidth(blockid, ort, sel) / 2;
-  p.y = GetBlockHeight(blockid, ort, sel) / 2;
-  return p;
-}
 
 placerDB::point design::GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL, int sel) {
   placerDB::point p;
@@ -1536,30 +1218,6 @@ vector<pair<int, int>> design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   return pp;
 }
 
-placerDB::point design::GetMultPolyCenterPoint(vector<placerDB::point>& pL) {
-  auto logger = spdlog::default_logger()->clone("placer.design.GetMultPolyCenterPoint");
-
-  if (pL.empty()) {
-    logger->debug("Placer-Error: empty input");
-  }
-  int x = pL.at(0).x, X = pL.at(0).x, y = pL.at(0).y, Y = pL.at(0).y;
-  for (vector<placerDB::point>::iterator it = pL.begin() + 1; it != pL.end(); ++it) {
-    if (it->x < x) {
-      x = it->x;
-    }
-    if (it->x > X) {
-      X = it->x;
-    }
-    if (it->y < y) {
-      y = it->y;
-    }
-    if (it->y > Y) {
-      Y = it->y;
-    }
-  }
-  placerDB::point newp = {(X - x) / 2, (Y - y) / 2};
-  return newp;
-}
 
 void design::checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark) {
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");
@@ -1669,8 +1327,6 @@ void design::constructSymmGroup() {
           // "<<sni->net1.connected.at(i).iter<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).back().blockPins.at(sni->net1.connected.at(i).iter).name<<endl;
           // vector<placerDB::point> p1V=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           // vector<placerDB::point> p2V=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          // placerDB::point p1=GetMultPolyCenterPoint(p1V);
-          // placerDB::point p2=GetMultPolyCenterPoint(p2V);
           // placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           // placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
           placerDB::Smark tsmark = axis_dir;
