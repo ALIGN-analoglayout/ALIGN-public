@@ -19,8 +19,8 @@ def main():
     try:
         from tests._cmake import CMAKE_BINARY_DIR, CMAKE_SOURCE_DIR
     except:
-        CMAKE_BINARY_DIR=None
-        CMAKE_SOURCE_DIR=None
+        CMAKE_BINARY_DIR = None
+        CMAKE_SOURCE_DIR = None
 
     # Detect whether to run LCOV
     GCOV_ENABLED = False
