@@ -77,12 +77,32 @@ Graph::Graph(Grid& grid, int pathNo) {
   }
 };
 
+void Graph::MergePowerMetal(std::vector<RouterDB::Metal> &VddPower_metal){
+  std::vector<RouterDB::Metal> tempPower_metal;
+  RouterDB::Metal temp_metal;
+  if(VddPower_metal.size()>0) temp_metal = VddPower_metal[0];
+  for(unsigned int i=1;i<VddPower_metal.size();++i){
+     if(VddPower_metal[i].MetalIdx == VddPower_metal[i-1].MetalIdx and VddPower_metal[i].LinePoint[0].x == VddPower_metal[i-1].LinePoint[1].x and VddPower_metal[i].LinePoint[0].y == VddPower_metal[i-1].LinePoint[1].y){
+        temp_metal.LinePoint[1].x = VddPower_metal[i].LinePoint[1].x;
+        temp_metal.LinePoint[1].y = VddPower_metal[i].LinePoint[1].y;
+       }else{
+        tempPower_metal.push_back(temp_metal);
+        temp_metal = VddPower_metal[i];
+       }
+  }
+  tempPower_metal.push_back(temp_metal);
+  VddPower_metal = tempPower_metal;
+};
+
 void Graph::CreatePower_Grid(Grid& grid) {  // grid function needs to be changed..... or
 
   std::set<RouterDB::Metal, RouterDB::MetalComp> VddPower_Set;
   std::set<RouterDB::Metal, RouterDB::MetalComp> GndPower_Set;
   std::set<RouterDB::Via, RouterDB::ViaComp> VddVia_Set;
   std::set<RouterDB::Via, RouterDB::ViaComp> GndVia_Set;
+
+  std::vector<RouterDB::Metal> VddPower_metal;
+  std::vector<RouterDB::Metal> GndPower_metal;
 
   std::set<RouterDB::Metal, RouterDB::MetalComp>::iterator metallowx, metalupx, metalx;
   std::set<RouterDB::Via, RouterDB::ViaComp>::iterator vialowx, viaupx, viax;
@@ -128,11 +148,13 @@ void Graph::CreatePower_Grid(Grid& grid) {  // grid function needs to be changed
         if (grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 1 && grid.vertices_graph[graph_index].power == 1) {
           adjust_line(graph_index);
           VddPower_Set.insert(temp_metal);
+          VddPower_metal.push_back(temp_metal);
         }
 
         if (grid.vertices_graph[graph_index].active == 1 && grid.vertices_graph[i].power == 0 && grid.vertices_graph[graph_index].power == 0) {
           adjust_line(graph_index);
           GndPower_Set.insert(temp_metal);
+          GndPower_metal.push_back(temp_metal);
         }
       }
     }
@@ -183,6 +205,11 @@ void Graph::CreatePower_Grid(Grid& grid) {  // grid function needs to be changed
       // graph.push_back(tempNode);
     }
   }
+
+  MergePowerMetal(VddPower_metal);
+  MergePowerMetal(GndPower_metal);
+  Vdd_grid.merged_metals = VddPower_metal;
+  Gnd_grid.merged_metals = GndPower_metal;
 
   metallowx = VddPower_Set.begin();
   metalupx = VddPower_Set.end();
