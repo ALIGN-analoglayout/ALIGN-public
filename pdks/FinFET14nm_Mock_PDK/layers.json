@@ -203,7 +203,7 @@
             "Layer": "M3",
             "GdsLayerNo": 19,
             "GdsDatatype": {
-                "Draw": 0,
+                "Draw": 20,
                 "c1": 1,
                 "c2": 2,
                 "Pin": 3,
@@ -241,7 +241,7 @@
             "Layer": "V2",
             "GdsLayerNo": 16,
             "GdsDatatype": {
-                "Draw": 0
+                "Draw": 20
             },
             "Stack": [
                 "M2",
