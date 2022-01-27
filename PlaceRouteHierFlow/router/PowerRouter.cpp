@@ -115,6 +115,7 @@ void PowerRouter::InsertRoutingContact(A_star& a_star, Grid& grid, std::set<std:
   GetPhsical_Metal_Via(net_num);
   ExtendMetals(net_num);
   // 2.insert routing contact
+
   for (std::vector<RouterDB::Metal>::const_iterator pit = PowerNets[net_num].path_metal.begin(); pit != PowerNets[net_num].path_metal.end(); ++pit) {
     RouterDB::SinkData contact;
     RouterDB::point LL, UR;
@@ -125,6 +126,7 @@ void PowerRouter::InsertRoutingContact(A_star& a_star, Grid& grid, std::set<std:
     contact.coord.push_back(UR);
     contacts.insert(contact);
   }
+  
   for (std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>::const_iterator vit = Pset_via.begin(); vit != Pset_via.end(); ++vit) {
     // do lower contact
     RouterDB::SinkData contact;
@@ -136,7 +138,7 @@ void PowerRouter::InsertRoutingContact(A_star& a_star, Grid& grid, std::set<std:
     UR.y = vit->second.y + drc_info.Via_model[vit->first].LowerRect[1].y;
     contact.coord.push_back(LL);
     contact.coord.push_back(UR);
-    if(!RedundantContact(contact, true))//power_flag = true
+    if(!RedundantContact(contact, true))//power_flag = true for vdd grid
        contacts.insert(contact);
     // do upper contact
     contact.metalIdx = vit->first + 1;
@@ -147,7 +149,7 @@ void PowerRouter::InsertRoutingContact(A_star& a_star, Grid& grid, std::set<std:
     contact.coord.clear();
     contact.coord.push_back(LL);
     contact.coord.push_back(UR);
-    if(!RedundantContact(contact, false))//power_flag = false
+    if(!RedundantContact(contact, false))//power_flag = false for gnd grid
         contacts.insert(contact);
   }
 };
@@ -157,8 +159,11 @@ bool PowerRouter::RedundantContact(RouterDB::SinkData contact, bool power_flag){
   if(power_flag==1){
     //std::cout<<"vdd merged metal size "<<Vdd_grid.merged_metals.size()<<std::endl;
     for(unsigned int i=0;i<Vdd_grid.merged_metals.size();i++){
-       //std::cout<<"vdd merged metal "<<Vdd_grid.merged_metals[i].MetalIdx<<" "<<Vdd_grid.merged_metals[i].LinePoint[0].x<<" "<<Vdd_grid.merged_metals[i].LinePoint[0].y<<" "<<Vdd_grid.merged_metals[i].LinePoint[1].x<<" "<<Vdd_grid.merged_metals[i].LinePoint[1].y<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedLL.x<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedLL.y<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedUR.x<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedUR.y<<std::endl;
-       if(Vdd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Vdd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Vdd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Vdd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Vdd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[0].y){
+       std::cout<<"vdd merged metal "<<Vdd_grid.merged_metals[i].MetalIdx<<" "<<Vdd_grid.merged_metals[i].LinePoint[0].x<<" "<<Vdd_grid.merged_metals[i].LinePoint[0].y<<" "<<Vdd_grid.merged_metals[i].LinePoint[1].x<<" "<<Vdd_grid.merged_metals[i].LinePoint[1].y<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedLL.x<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedLL.y<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedUR.x<<" "<<Vdd_grid.merged_metals[i].MetalRect.placedUR.y<<std::endl;
+       std::cout<<"via contact "<<contact.metalIdx<<" "<<contact.coord[0].x<<" "<<contact.coord[0].y<<" "<<contact.coord[1].x<<" "<<contact.coord[1].y<<std::endl;
+       bool inside = Vdd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Vdd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Vdd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Vdd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Vdd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[1].y;
+       std::cout<<inside<<std::endl;
+       if(Vdd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Vdd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Vdd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Vdd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Vdd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[1].y){
           return true;
        }
     }
@@ -166,8 +171,11 @@ bool PowerRouter::RedundantContact(RouterDB::SinkData contact, bool power_flag){
   }else{
     //std::cout<<"gnd merged metal size "<<Gnd_grid.merged_metals.size()<<std::endl;
     for(unsigned int i=0;i<Gnd_grid.merged_metals.size();i++){
-       //std::cout<<"gnd merged metal "<<Gnd_grid.merged_metals[i].MetalIdx<<" "<<Gnd_grid.merged_metals[i].LinePoint[0].x<<" "<<Gnd_grid.merged_metals[i].LinePoint[0].y<<" "<<Gnd_grid.merged_metals[i].LinePoint[1].x<<" "<<Gnd_grid.merged_metals[i].LinePoint[1].y<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedLL.x<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedLL.y<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedUR.x<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedUR.y<<std::endl;
-       if(Gnd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Gnd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Gnd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Gnd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Gnd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[0].y){
+       std::cout<<"gnd merged metal "<<Gnd_grid.merged_metals[i].MetalIdx<<" "<<Gnd_grid.merged_metals[i].LinePoint[0].x<<" "<<Gnd_grid.merged_metals[i].LinePoint[0].y<<" "<<Gnd_grid.merged_metals[i].LinePoint[1].x<<" "<<Gnd_grid.merged_metals[i].LinePoint[1].y<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedLL.x<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedLL.y<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedUR.x<<" "<<Gnd_grid.merged_metals[i].MetalRect.placedUR.y<<std::endl;
+       std::cout<<"via contact "<<contact.metalIdx<<" "<<contact.coord[0].x<<" "<<contact.coord[0].y<<" "<<contact.coord[1].x<<" "<<contact.coord[1].y<<std::endl;
+       bool inside = Gnd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Gnd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Gnd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Gnd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Gnd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[1].y;
+       std::cout<<inside<<std::endl;
+       if(Gnd_grid.merged_metals[i].MetalIdx==contact.metalIdx and Gnd_grid.merged_metals[i].MetalRect.placedLL.x <= contact.coord[0].x and Gnd_grid.merged_metals[i].MetalRect.placedLL.y <= contact.coord[0].y and Gnd_grid.merged_metals[i].MetalRect.placedUR.x >= contact.coord[1].x and Gnd_grid.merged_metals[i].MetalRect.placedUR.y >= contact.coord[1].y){
           return true;
        }
     }
@@ -586,7 +594,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
         } else {
           logger->warn("Router-Warning: feasible path might not be found. net name {0}", PowerNets[i].netName);
         }
-        UpdatePlistNets(physical_path, add_plist);
+        UpdatePlistNets(physical_path, add_plist,extend_labels);
         InsertPlistToSet_x(Set_net, add_plist);
         InsertContact2Contact(Set_current_net_contact, Set_net_contact);
       }

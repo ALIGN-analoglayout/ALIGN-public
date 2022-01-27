@@ -74,7 +74,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   // void CreatePlistNets(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
   void CreatePlistTerminals(std::vector<std::vector<RouterDB::point>> &plist, std::vector<RouterDB::terminal> &Terminals);
   // void CreatePlistNets_DetailRouter(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
-  void UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist);
+  void UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist,std::vector<std::vector<int>> extend_labels);
   void GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal>> &physical_path);
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment temp_seg);
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment &temp_seg);
