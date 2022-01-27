@@ -337,7 +337,8 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound0;
   bound0["type"] = "boundary";
   bound0["layer"] = via2int(drc_info, via.ViaRect.metal);
-  bound0["datatype"] = drc_info.Via_info.at(via2index(drc_info, via.ViaRect.metal)).gds_datatype.Draw;  
+  //bound0["datatype"] = drc_info.Via_info.at(via2index(drc_info, via.ViaRect.metal)).gds_datatype.Draw;
+  bound0["datatype"] = 0;  
   json xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -352,7 +353,8 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound1;
   bound1["type"] = "boundary";
   bound1["layer"] = metal2int(drc_info, via.LowerMetalRect.metal);
-  bound1["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.LowerMetalRect.metal)).gds_datatype.Draw;
+  //bound1["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.LowerMetalRect.metal)).gds_datatype.Draw;
+  bound1["datatype"] = 0;
   xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -367,7 +369,8 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound2;
   bound2["type"] = "boundary";
   bound2["layer"] = metal2int(drc_info, via.UpperMetalRect.metal);
-  bound2["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.UpperMetalRect.metal)).gds_datatype.Draw;
+  //bound2["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.UpperMetalRect.metal)).gds_datatype.Draw;
+  bound2["datatype"] = 0;
   xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
