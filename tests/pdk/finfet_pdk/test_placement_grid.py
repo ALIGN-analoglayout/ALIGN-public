@@ -1,9 +1,10 @@
 import os
 import json
-import shutil
+import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
+from align.pdk.finfet import MOSGenerator
 
 
 def test_place_on_grid():
@@ -71,26 +72,11 @@ def test_hierarchy():
     run_example(example, cleanup=False)
 
 
-def test_check_constraints():
+@pytest.mark.parametrize('vt', ['NMOS', 'PMOS'])
+def test_check_constraints(vt):
     os.environ['PLACE_ON_GRID'] = 't'
-    name = f'ckt_{get_test_id()}'
-    netlist = textwrap.dedent(f"""\
-        .subckt {name} vi vo vbp vccx vssx
-        mp0 vo vbp vccx vccx p w=720e-9 nf=4 m=4
-        mn0 vo vi vssx vssx n w=720e-9 nf=4 m=4
-        .ends {name}
-    """)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=1, cleanup=False, additional_args=['--flow_stop', '2_primitives'])
-    name = name.upper()
-    primitives_folder = run_dir / '2_primitives'
-    for dev in ['NMOS', 'PMOS']:
-        mos = [f for f in primitives_folder.glob(f'{dev}*[0-9].json')][0]
-        with (mos).open('rt') as fp:
-            data = json.load(fp)
-            assert "metadata" in data
-            assert "constraints" in data["metadata"]
-            assert data["metadata"]["constraints"][0]["constraint"] == "place_on_grid"
-    shutil.rmtree(run_dir)
-    shutil.rmtree(ckt_dir)
+    c = MOSGenerator()
+    ports = {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]}
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': vt, 'NF': 2}
+    c.addNMOSArray(1, 1, 0, None, ports, **parameters)
+    assert c.metadata["constraints"][0]["constraint"] == "place_on_grid"
