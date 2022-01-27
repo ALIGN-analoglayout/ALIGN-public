@@ -21,16 +21,20 @@ class MOSGenerator(CanvasPDK):
 
     def addPMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
-        if os.getenv('PLACE_ON_GRID', False):
-            rh = 7*self.pdk['M2']['Pitch']
-            if parameters['real_inst_type'].lower().startswith('n'):
-                o = 0
-            else:
-                o = rh
-            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
-                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
+
+        if os.getenv('PLACE_ON_GRID', False):
+            rh = 7*self.pdk['M2']['Pitch']
+            if False:
+                if parameters['real_inst_type'].lower().startswith('n'):
+                    o = 0
+                else:
+                    o = rh
+            else:
+                o = 0
+            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
+                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
