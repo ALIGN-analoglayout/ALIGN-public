@@ -1,10 +1,8 @@
 import os
 import json
-import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
-from align.pdk.finfet import MOSGenerator
 
 
 def test_place_on_grid():
@@ -70,13 +68,3 @@ def test_hierarchy():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
-
-
-@pytest.mark.parametrize('vt', ['NMOS', 'PMOS'])
-def test_check_constraints(vt):
-    os.environ['PLACE_ON_GRID'] = 't'
-    c = MOSGenerator()
-    ports = {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]}
-    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': vt, 'NF': 2}
-    c.addNMOSArray(1, 1, 0, None, ports, **parameters)
-    assert c.metadata["constraints"][0]["constraint"] == "place_on_grid"
