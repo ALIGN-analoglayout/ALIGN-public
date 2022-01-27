@@ -601,13 +601,15 @@ void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::v
 
 void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net) {
   if (sym_flag == 1) {
+    std::vector<vector<int> > extend_labels;
     std::vector<RouterDB::Metal> sym_path = CpSymPath(Nets[i].path_metal, Nets[i].sym_H, Nets[i].center);
+    extend_labels.push_back(vector<int>(sym_path.size(),0));
     Nets[Nets[i].symCounterpart].path_metal = sym_path;
     std::vector<std::vector<RouterDB::Metal>> Sym_path;
     std::vector<std::vector<RouterDB::point>> sym_add_plist;
     sym_add_plist.resize(this->layerNo);
     Sym_path.push_back(sym_path);
-    UpdatePlistNets(Sym_path, sym_add_plist);
+    UpdatePlistNets(Sym_path, sym_add_plist,extend_labels);
     InsertPlistToSet_x(Set_net, sym_add_plist);
   }
 };
@@ -747,7 +749,7 @@ void GcellDetailRouter::create_detailrouter() {
         logger->debug("Detail Router check point 8");
         // update physical path to
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
-        UpdatePlistNets(physical_path, add_plist);
+        UpdatePlistNets(physical_path, add_plist,extend_labels);
       }
       // Symmetry_Routing(sym_flag, i, Set_net);
       InsertPlistToSet_x(Set_net, add_plist);
@@ -832,7 +834,7 @@ void GcellDetailRouter::create_detailrouter_old() {
 
       // update physical path to
       Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
-      UpdatePlistNets(physical_path, add_plist);
+      UpdatePlistNets(physical_path, add_plist,extend_labels);
     }
     // Symmetry_Routing(sym_flag, i, Set_net);
 
@@ -2812,7 +2814,7 @@ void GcellDetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::p
   }
 };
 
-void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist) {
+void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist, std::vector<std::vector<int>> extend_labels) {
   // RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
 
@@ -2821,31 +2823,69 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
   // here intervia is not included
   for (unsigned int i = 0; i < physical_path.size(); i++) {
     for (unsigned int j = 0; j < physical_path[i].size(); j++) {
+
+        int current_metal = physical_path[i][j].MetalIdx;
+
+        int direction = drc_info.Metal_info[current_metal].direct;
+
+        int minL = drc_info.Metal_info[current_metal].minL;
+
+        int current_length = abs(physical_path[i][j].LinePoint[0].x - physical_path[i][j].LinePoint[1].x) +
+                             abs(physical_path[i][j].LinePoint[0].y - physical_path[i][j].LinePoint[1].y);
+
+
+        if (current_length < minL and extend_labels[i][j] == 1) {
+            int extend_dis = ceil(minL - current_length) / 2;
+
+            if (direction == 1) {  // h
+
+                ExtendX(physical_path[i][j], extend_dis);
+
+               } else {  // v
+
+                ExtendY(physical_path[i][j], extend_dis);
+            }
+
+        } else if (current_length < minL and extend_labels[i][j] == 2) {  // head
+  
+          int extend_dis = ceil(minL - current_length);
+
+          bool p = 1;
+
+          if (direction == 1) {  // h
+
+             ExtendX_PN(physical_path[i][j], extend_dis, p);
+
+          } else {  // v
+
+             ExtendY_PN(physical_path[i][j], extend_dis, p);
+          }
+        } else if (current_length < minL and extend_labels[i][j] == 3) {  // tail
+
+          int extend_dis = ceil(minL - current_length);
+
+          int p = 0;
+
+          if (direction == 1) {  // h
+
+             ExtendX_PN(physical_path[i][j], extend_dis, p);
+
+             } else {  // v
+
+             ExtendY_PN(physical_path[i][j], extend_dis, p);
+             }
+        } else if (current_length < minL and extend_labels[i][j] == 4) {  // bug
+
+           auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.ExtendMetal");
+
+           logger->debug("Extend Error for physical path");
+      }     
+
       mIdx = physical_path[i][j].MetalIdx;
       LLx = physical_path[i][j].MetalRect.placedLL.x;
       LLy = physical_path[i][j].MetalRect.placedLL.y;
       URx = physical_path[i][j].MetalRect.placedUR.x;
       URy = physical_path[i][j].MetalRect.placedUR.y;
-
-      int direction = drc_info.Metal_info[mIdx].direct;
-      int minL = drc_info.Metal_info[mIdx].minL;
-
-      if (direction == 1) {  // h
-
-        if ((URx - LLx) < minL) {
-          int extend_dis = ceil(minL - (URx - LLx)) / 2;
-          LLx = LLx - extend_dis;
-          URx = URx + extend_dis;
-        }
-
-      } else {  // v
-
-        if ((URy - LLy) < minL) {
-          int extend_dis = ceil(minL - (URy - LLy)) / 2;
-          LLy = LLy - extend_dis;
-          URy = URy + extend_dis;
-        }
-      }
 
       ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
     }

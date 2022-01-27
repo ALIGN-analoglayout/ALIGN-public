@@ -84,7 +84,8 @@ class PowerRouter : public GcellDetailRouter {
   void ExtendX(RouterDB::Metal& temp_metal, int extend_dis);
   void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x_contact, int net_num);
   void InsertRoutingContact(A_star& a_star, Grid& grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>& Pset_via,
-                            std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& contacts, int net_num);
+                            std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& contacts, int net_num, bool power_flag);
+  bool RedundantContact(RouterDB::SinkData contact, bool power_flag);
   void InsertInternalVia_PowerGrid(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>& Pset_via, RouterDB::PowerGrid& temp_grid);
   void InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>& Pset_via, std::vector<RouterDB::Net>& temp_Nets);
   void Initial_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i);
