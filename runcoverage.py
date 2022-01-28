@@ -65,7 +65,7 @@ def main():
     if not exit_status:
         exit_status = ret.returncode
 
-    # One integration test (to get guard_ring_coverage)
+    # two integration tests (to get guard_ring_coverage and common_centroid_cap)
     ret = subprocess.run(' '.join([
         'pytest', '-vv',  # Call pytest in verbose mode
         '--runnightly',
