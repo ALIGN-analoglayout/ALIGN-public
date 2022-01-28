@@ -338,7 +338,6 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   bound0["type"] = "boundary";
   bound0["layer"] = via2int(drc_info, via.ViaRect.metal);
   bound0["datatype"] = drc_info.Via_info.at(via2index(drc_info, via.ViaRect.metal)).gds_datatype.Draw; 
-  bound0["datatype"] = 0;
   json xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
