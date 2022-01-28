@@ -56,7 +56,7 @@ def gen_examples():
                     if all(x not in skip_dirs and x not in additional_skip_dirs
                     for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'checkin':
-        circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota_guard_ring"
+        circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator"
         include_strings = [nm for nm in circle_ci_dont_skip.split(' ') if nm not in ["or"]]
         restricted_directories = set()
         for p in examples:

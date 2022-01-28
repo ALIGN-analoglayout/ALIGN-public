@@ -44,6 +44,7 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
         with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
+
     return lib_parser.library
 
 
