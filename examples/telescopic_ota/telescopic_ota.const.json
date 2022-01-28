@@ -1,4 +1,5 @@
 [
         {"constraint": "PowerPorts", "ports": ["VDD"]},
-        {"constraint": "GroundPorts", "ports": ["0"]}
+        {"constraint": "GroundPorts", "ports": ["0"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CNC_NMOS", "CMC_PMOS", "CMC_S_NMOS_B","CMC_S_PMOS_B"], "propagate": false}
 ]
