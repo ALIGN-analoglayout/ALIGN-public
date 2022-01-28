@@ -52,11 +52,11 @@ def gen_examples():
         print(additional_skip_dirs)
 
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs and x not in additional_skip_dirs
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs and x not in additional_skip_dirs
                     for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'checkin':
-        circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator"
+        circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator or telescopic_ota_guard_ring"
         include_strings = [nm for nm in circle_ci_dont_skip.split(' ') if nm not in ["or"]]
         restricted_directories = set()
         for p in examples:
@@ -66,8 +66,8 @@ def gen_examples():
 
         print(restricted_directories)
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
                     and any(x in restricted_directories for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'all':
         pass
