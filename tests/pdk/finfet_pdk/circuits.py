@@ -79,91 +79,126 @@ def tia(name):
 
 def ldo_amp(name):
     netlist = textwrap.dedent(f"""\
-        .model nlplvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
-        .model plplvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
-        .subckt nlplvt_s_pcell_0 d g s b
+        .subckt n_s_pcell_0 d g s b
         .param m=1
-        mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
-        mi2 inet1 g inet2 b nlplvt w=180e-9 m=1 nf=1
-        mi3 inet2 g inet3 b nlplvt w=180e-9 m=1 nf=1
-        mi4 inet3 g s b nlplvt w=180e-9 m=1 nf=1
-        .ends nlplvt_s_pcell_0
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g inet2 b n w=180e-9 m=1 nf=1
+        mi3 inet2 g inet3 b n w=180e-9 m=1 nf=1
+        mi4 inet3 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_0
 
-        .subckt nlplvt_s_pcell_1 d g s b
+        .subckt n_s_pcell_1 d g s b
         .param m=1
-        mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
-        mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
-        .ends nlplvt_s_pcell_1
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_1
 
-        .subckt nlplvt_s_pcell_2 d g s b
+        .subckt n_s_pcell_2 d g s b
         .param m=1
-        mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
-        mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
-        .ends nlplvt_s_pcell_2
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_2
 
-        .subckt nlplvt_s_pcell_3 d g s b
+        .subckt n_s_pcell_3 d g s b
         .param m=1
-        mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
-        mi2 inet1 g s b nlplvt w=180e-9 m=1 nf=1
-        .ends nlplvt_s_pcell_3
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_3
 
-        .subckt nlplvt_s_pcell_4 d g s b
+        .subckt n_s_pcell_4 d g s b
         .param m=1
-        mi1 d g inet1 b nlplvt w=180e-9 m=1 nf=1
-        mi2 inet1 g inet2 b nlplvt w=180e-9 m=1 nf=1
-        mi3 inet2 g inet3 b nlplvt w=180e-9 m=1 nf=1
-        mi4 inet3 g s b nlplvt w=180e-9 m=1 nf=1
-        .ends nlplvt_s_pcell_4
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g inet2 b n w=180e-9 m=1 nf=1
+        mi3 inet2 g inet3 b n w=180e-9 m=1 nf=1
+        mi4 inet3 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_4
 
-        .subckt plplvt_s_pcell_5 d g s b
+        .subckt p_s_pcell_5 d g s b
         .param m=1
-        mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
-        mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
-        .ends plplvt_s_pcell_5
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_5
 
-        .subckt plplvt_s_pcell_6 d g s b
+        .subckt p_s_pcell_6 d g s b
         .param m=1
-        mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
-        mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
-        .ends plplvt_s_pcell_6
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_6
 
-        .subckt plplvt_s_pcell_7 d g s b
+        .subckt p_s_pcell_7 d g s b
         .param m=1
-        mi2 inet1 g s b plplvt w=180e-9 m=1 nf=1
-        mi1 d g inet1 b plplvt w=180e-9 m=1 nf=1
-        .ends plplvt_s_pcell_7
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_7
 
         .subckt {name} vbias_an vccx vfb vg v1 vref vssx vbias_bf en
-        xmn56 vbias6 vbias_bf vssx vssx nlplvt_s_pcell_0 m=4
-        xmn20 v5 v4 vssx vssx nlplvt_s_pcell_1 m=8
-        xmn40 vssx vbias_bf vssx vssx nlplvt_s_pcell_0 m=4
-        xmn41 vbias4 vbias_an vssx vssx nlplvt_s_pcell_0 m=4
-        xmn21 vbias2 vbias1 vbias3 vssx nlplvt_s_pcell_2 m=4
-        xmn37 v6 v4 vssx vssx nlplvt_s_pcell_1 m=8
-        xmn22 v1 vref vcom1 vssx nlplvt_s_pcell_3 m=20
-        xmn23 v2 vfb vcom1 vssx nlplvt_s_pcell_3 m=20
-        xmn38 v4 vbias3 v6 vssx nlplvt_s_pcell_1 m=8
-        xmn39 v3 vbias3 v5 vssx nlplvt_s_pcell_1 m=8
-        xmn55 v3_d vbias_bf vssx vssx nlplvt_s_pcell_4 m=8
-        xmn3 vssx vbias_an vssx vssx nlplvt_s_pcell_0 m=4
-        xmn2 vcom1 vbias_an vssx vssx nlplvt_s_pcell_4 m=8
-        mp23 vg en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp221 v3 en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp24 enb en vccx vccx plplvt w=360e-9 m=1 nf=2
-        mp5 vg vg vccx vccx plplvt w=720e-9 m=1 nf=4
-        mp29 v4 vbias2 v2 vccx plplvt w=2.16e-6 m=1 nf=12
-        mp30 v3 vbias2 v1 vccx plplvt w=2.16e-6 m=1 nf=12
-        mp33 vbias2 vbias2 vbias1 vccx plplvt w=1.44e-6 m=1 nf=8
-        mp1 v3_d v3 vg vccx plplvt w=1.44e-6 m=1 nf=8
-        xmp41 vbias6 vbias6 vccx vccx plplvt_s_pcell_5 m=4
-        xmp4 vg vbias6 vccx vccx plplvt_s_pcell_6 m=8
-        xmp22 v1 vbias1 vccx vccx plplvt_s_pcell_7 m=12
-        xmp34 vbias1 vbias1 vccx vccx plplvt_s_pcell_5 m=4
-        xmp28 v2 vbias1 vccx vccx plplvt_s_pcell_7 m=12
-        mn11 v3_d enb vssx vssx nlplvt w=360e-9 m=1 nf=2
-        mn12 enb en vssx vssx nlplvt w=360e-9 m=1 nf=2
-        mn322 vg v3_d vssx vssx nlplvt w=720e-9 m=1 nf=4
-        mn42 vbias3 vbias3 vbias4 vssx nlplvt w=1.44e-6 m=2 nf=8
+        xmn56 vbias6 vbias_bf vssx vssx n_s_pcell_0 m=4
+        xmn20 v5 v4 vssx vssx n_s_pcell_1 m=8
+        xmn40 vssx vbias_bf vssx vssx n_s_pcell_0 m=4
+        xmn41 vbias4 vbias_an vssx vssx n_s_pcell_0 m=4
+        xmn21 vbias2 vbias1 vbias3 vssx n_s_pcell_2 m=4
+        xmn37 v6 v4 vssx vssx n_s_pcell_1 m=8
+        xmn22 v1 vref vcom1 vssx n_s_pcell_3 m=20
+        xmn23 v2 vfb vcom1 vssx n_s_pcell_3 m=20
+        xmn38 v4 vbias3 v6 vssx n_s_pcell_1 m=8
+        xmn39 v3 vbias3 v5 vssx n_s_pcell_1 m=8
+        xmn55 v3_d vbias_bf vssx vssx n_s_pcell_4 m=8
+        xmn3 vssx vbias_an vssx vssx n_s_pcell_0 m=4
+        xmn2 vcom1 vbias_an vssx vssx n_s_pcell_4 m=8
+        mp23 vg en vccx vccx p w=360e-9 m=1 nf=2
+        mp221 v3 en vccx vccx p w=360e-9 m=1 nf=2
+        mp24 enb en vccx vccx p w=360e-9 m=1 nf=2
+        mp5 vg vg vccx vccx p w=720e-9 m=1 nf=4
+        mp29 v4 vbias2 v2 vccx p w=2.16e-6 m=1 nf=12
+        mp30 v3 vbias2 v1 vccx p w=2.16e-6 m=1 nf=12
+        mp33 vbias2 vbias2 vbias1 vccx p w=1.44e-6 m=1 nf=8
+        mp1 v3_d v3 vg vccx p w=1.44e-6 m=1 nf=8
+        xmp41 vbias6 vbias6 vccx vccx p_s_pcell_5 m=4
+        xmp4 vg vbias6 vccx vccx p_s_pcell_6 m=8
+        xmp22 v1 vbias1 vccx vccx p_s_pcell_7 m=12
+        xmp34 vbias1 vbias1 vccx vccx p_s_pcell_5 m=4
+        xmp28 v2 vbias1 vccx vccx p_s_pcell_7 m=12
+        mn11 v3_d enb vssx vssx n w=360e-9 m=1 nf=2
+        mn12 enb en vssx vssx n w=360e-9 m=1 nf=2
+        mn322 vg v3_d vssx vssx n w=720e-9 m=1 nf=4
+        mn42 vbias3 vbias3 vbias4 vssx n w=1.44e-6 m=2 nf=8
+        .ends {name}
+    """)
+    return netlist
+
+
+def ldo_amp_simple(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vbias_an vbias_bf vccx vfb vg vref vssx
+        * biasing
+        mp5 vbias1 vbias1 vccx vccx p w=360e-9 nf=2
+        mp4 vbias2 vbias2 vbias1 vccx p w=2880e-9 nf=16
+        mn3 vbias2 vbias1 vbias3 vssx n w=360e-9 nf=2
+        mn2 vbias3 vbias3 vbias4 vssx n w=1440e-9 nf=8
+        mn1 vbias4 vbias_an vssx vssx n w=360e-9 nf=2
+        mn0 vssx vbias_an vssx vssx n w=360e-9 nf=2
+        * folded input
+        mn13 v1 vref vcom1 vssx n w=1800e-9 nf=10
+        mn12 v2 vfb vcom1 vssx n w=1800e-9 nf=10
+        mn11 vcom1 vbias_an vssx vssx n w=720e-9 nf=4
+        * cascode
+        mp28 v2 vbias1 vccx vccx p w=1080e-9 nf=6
+        mp27 v1 vbias1 vccx vccx p w=1080e-9 nf=6
+        mp26 v4 vbias2 v2 vccx p w=1080e-9 nf=6
+        mp25 v3 vbias2 v1 vccx p w=1080e-9 nf=6
+        mn24 v4 vbias3 v6 vssx n w=720e-9 nf=4
+        mn23 v3 vbias3 v5 vssx n w=720e-9 nf=4
+        mn22 v6 v4 vssx vssx n w=720e-9 nf=4
+        mn21 v5 v4 vssx vssx n w=720e-9 nf=4
+        * second stage with biasing
+        mp38 vbias6 vbias6 vccx vccx p w=360e-9 nf=2
+        mp37 vg vbias6 vccx vccx p w=720e-9 nf=4
+        mp36 v3_d v3 vg vccx p w=720e-9 nf=4
+        mn35 vbias6 vbias_bf vssx vssx n w=360e-9 nf=2
+        mn34 v3_d vbias_bf vssx vssx n w=720e-9 nf=4
+        mn33 vssx vbias_bf vssx vssx n w=360e-9 nf=2
+        mp32 vg vg vccx vccx p w=360e-9 nf=2
+        mn31 vg v3_d vssx vssx n w=360e-9 nf=2
         .ends {name}
     """)
     return netlist

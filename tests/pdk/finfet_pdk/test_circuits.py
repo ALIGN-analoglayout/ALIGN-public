@@ -176,17 +176,42 @@ def test_tia():
     run_example(example, cleanup=cleanup)
 
 
-@pytest.mark.skip
-def test_ldo_amp():
+@pytest.mark.nightly
+def test_ldo_amp_simple():
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.ldo_amp(name)
+    netlist = circuits.ldo_amp_simple(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, log_level='DEBUG')
+
+
+@pytest.mark.nightly
+def test_ldo_amp_simple_noconst():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_amp_simple(name)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]},
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, log_level='DEBUG')
+
+# def test_ldo_amp_fp1():
+#     name = f'ckt_{get_test_id()}'
+#     netlist = circuits.ldo_amp(name)
+#     constraints = [
+#         {"constraint": "PowerPorts", "ports": ["vccx"]},
+#         {"constraint": "GroundPorts", "ports": ["vssx"]},
+#         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
+#     ]
+#     example = build_example(name, netlist, constraints)
+#     run_example(example, cleanup=cleanup, log_level='DEBUG')
 
 
 def test_ro_simple():
