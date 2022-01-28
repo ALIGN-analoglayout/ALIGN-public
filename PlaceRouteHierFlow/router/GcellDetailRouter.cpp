@@ -2359,13 +2359,13 @@ void GcellDetailRouter::ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, 
 
   } else {
     if (temp_metal.LinePoint[0].y < temp_metal.LinePoint[1].y) {
-      temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y;
-      temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+      temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+      temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
       // rewrite contact
 
     } else {
-      temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
-      temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y;
+      temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y ;
+      temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
     }
   }
 
@@ -2880,7 +2880,7 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
 
            logger->debug("Extend Error for physical path");
       }     
-
+      
       mIdx = physical_path[i][j].MetalIdx;
       LLx = physical_path[i][j].MetalRect.placedLL.x;
       LLy = physical_path[i][j].MetalRect.placedLL.y;
