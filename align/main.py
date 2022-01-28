@@ -321,7 +321,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 else:
                     # read in circuit from basic library
                     primitive_def = read_lib(pdk_dir).find(block_args['primitive'])
-                assert primitive_def is not None, f"unavailable primitive {block_args['primitive']}, in {[ele.name for ele in primitives]}"
+                assert primitive_def is not None, f"unavailable primitive {block_args['primitive']}, in {[ele for ele in primitives]}"
             else:
                 primitive_def = 'generic'
             block_args.pop("primitive", None)
