@@ -12,6 +12,7 @@ using namespace pybind11::literals;
 #include <mutex>
 
 #include "PnRDB/PnRdatabase.h"
+#include "cap_placer/CapPlacerIfc.h"
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
 #include "router/Router.h"
@@ -472,7 +473,10 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
     .def_readwrite("ScaleFactor", &PnRdatabase::ScaleFactor)
-  ;  
+  ;
+
+  py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
+    .def( py::init<string, string, hierNode&, Drc_info&, map<string, lefMacro>&, bool, int>());    
 
   py::class_<PlacerHyperparameters>( m, "PlacerHyperparameters")
     .def( py::init<>())

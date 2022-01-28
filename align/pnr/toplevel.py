@@ -303,6 +303,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     DB.AddingPowerPins(current_node)
 
+    PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
+
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
     hyper.T_INT = 0.5  # Increase for denormalized decision criteria
