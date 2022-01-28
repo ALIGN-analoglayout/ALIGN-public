@@ -47,22 +47,7 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
         with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
-    add_generators(lib_parser.library, pdk_dir)
     return lib_parser.library
-
-
-def add_generators(library, pdk_dir):
-    for subckt in library:
-        if isinstance(subckt, SubCircuit):
-            if main.get_generator(subckt.name, pdk_dir):
-                logger.debug(f"no availble generator for {subckt.name}")
-                if [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
-                    logger.debug(f"already available generator for {subckt.name}")
-                    continue
-                logger.debug(f"adding generator for {subckt.name}")
-                with set_context(subckt.constraints):
-                    subckt.constraints.append(constraint.Generator())
-                    logger.debug(f"generator available for {subckt.name}")
 
 
 def order_lib(library):
