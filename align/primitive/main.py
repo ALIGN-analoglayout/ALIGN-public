@@ -41,7 +41,7 @@ def get_parameters(primitive, parameters, nfin):
 
 
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
-
+    logger.debug(f"generating primitive {block_name}")
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
     # TODO: THIS SHOULD NOT BE NEEDED !!!

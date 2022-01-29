@@ -259,7 +259,7 @@ class Annotate:
                 # Ideally create a subckt initially but did not work at PnR needs Cap names startwith C
                 with set_context(self.ckt_data):
                     new_subckt = Model(
-                        name=const.name.upper(), pins=list(new_pins.keys())
+                        name=cc_name, pins=list(new_pins.keys())
                     )
                     self.ckt_data.append(new_subckt)
 
@@ -269,7 +269,7 @@ class Annotate:
                 logger.debug(f"pins {new_pins} {new_subckt.pins}")
                 X1 = Instance(
                     name=const.name.upper(),
-                    model=const.name.upper(),
+                    model=cc_name,
                     pins=new_pins,
                     generator=cc_name,
                 )

@@ -884,26 +884,6 @@ class IdentifyArray(SoftConstraint):
     propagate: Optional[bool]
 
 
-class AutoGroupCaps(SoftConstraint):
-    '''
-    Forbids/Allow creation of arrays for symmetric caps
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoGroupCaps",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
 class FixSourceDrain(SoftConstraint):
     '''
     Forbids auto checking of source/drain terminals of transistors.
@@ -1354,7 +1334,6 @@ ConstraintType = Union[
     DoNotUseLib,
     IsDigital,
     AutoConstraint,
-    AutoGroupCaps,
     FixSourceDrain,
     KeepDummyHierarchies,
     MergeSeriesDevices,
