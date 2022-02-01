@@ -1218,6 +1218,7 @@ class GroupCaps(SoftConstraint):
             "name" : "cap_group1",
             "instances" : ["C0", "C1", "C2"],
             "num_units" : [2, 4, 8],
+            "unit_cap" : "12f",
             "dummy" : True
         }
     '''

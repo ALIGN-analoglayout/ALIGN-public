@@ -152,11 +152,11 @@ def call_primitive_generator(
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
                 primitives["guard_ring"] = {"primitive": "guard_ring"}
-            if isinstance(const, constraint.GroupCaps):
-                primitives[const.unit_cap.upper()] = {
-                    "primitive": "cap",
-                    "value": int(const.unit_cap.split("_")[1].replace("f", "")),
-                }
+            # if isinstance(const, constraint.GroupCaps):
+            #     primitives[const.unit_cap.upper()] = {
+            #         "primitive": "cap",
+            #         "value": int(const.unit_cap.split("_")[1].replace("f", "")),
+            #     }
 
         for ele in ckt.elements:
             # Three types of elements can exist:

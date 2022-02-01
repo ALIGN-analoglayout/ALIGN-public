@@ -434,7 +434,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or isinstance(primitive, Model)\
-        or primitive == 'generic', f"{block_name} definition: {primitive}"
+        or primitive == 'generic' \
+        or 'ring' in primitive, f"{block_name} definition: {primitive}"
 
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
