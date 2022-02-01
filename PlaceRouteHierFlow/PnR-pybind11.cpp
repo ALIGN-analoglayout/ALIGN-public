@@ -435,10 +435,6 @@ PYBIND11_MODULE(PnR, m) {
     .value("Backward",Backward)
     .export_values();
 
-  py::class_<ReadVerilogHelper>( m, "ReadVerilogHelper")
-    .def( py::init<PnRdatabase&>())
-    .def( "parse_top", &ReadVerilogHelper::parse_top);
-
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<>())
     .def( "semantic0", &PnRdatabase::semantic0)
@@ -446,13 +442,11 @@ PYBIND11_MODULE(PnR, m) {
     .def( "semantic2", &PnRdatabase::semantic2)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
-    .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
     .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
     .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
-    .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "getDrc_info", &PnRdatabase::getDrc_info)
     .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
@@ -499,6 +493,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
     .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP)
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver)
+    .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

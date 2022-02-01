@@ -109,7 +109,7 @@ def _check_place_on_grid(leaf, constraints):
                     break
             if is_satisfied:
                 break
-        assert is_satisfied, f'{leaf["name"]} does not satisfy {const}'
+        assert is_satisfied, f'{leaf} does not satisfy {const}'
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):

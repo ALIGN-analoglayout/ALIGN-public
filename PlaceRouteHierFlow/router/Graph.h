@@ -69,6 +69,7 @@ class Graph {
   void Connection_Check_Power_Grid(Grid& grid, int power);
   void collect_nodes(Grid& grid, vector<int> temp_vector, vector<int>& adjacent_nodes, int power);
   void collect_node(Grid& grid, int temp_vector, vector<int>& adjacent_nodes, int power);
+  void MergePowerMetal(std::vector<RouterDB::Metal> &VddPower_metal);
 };
 
 #endif

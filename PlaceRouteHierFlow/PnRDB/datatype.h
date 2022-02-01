@@ -378,6 +378,7 @@ struct blockComplex {
 struct PowerGrid {
   std::string name;
   vector<Metal> metals;
+  vector<Metal> merged_metals;
   vector<Via> vias;
   bool power = 1;  // 1 is vdd, 0 is gnd
 };
@@ -714,6 +715,7 @@ struct Drc_info {
   Boundary top_boundary;
   guardring_info Guardring_info;  // guardring info read from layers.json
   design_info Design_info;        // design ingo from layer.json
+  int ScaleFactor = 1;
 };
 
 struct routing_net {

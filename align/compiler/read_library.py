@@ -43,7 +43,10 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
 
     lib_files = ["basic_template.sp", "user_template.sp"]
     for lib_file in lib_files:
-        with open(config_path / lib_file) as f:
+        lib_file_path = pdk_dir/lib_file
+        if not lib_file_path.exists():
+            lib_file_path = config_path / lib_file
+        with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
     for subckt in lib_parser.library:
