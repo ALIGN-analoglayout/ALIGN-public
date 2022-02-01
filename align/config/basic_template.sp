@@ -54,7 +54,7 @@ M1 D D S B NMOS w=w l=90n
 .ends DCL_NMOS
 
 .subckt DCL_PMOS D S B
-* @: Generator(pattern='cc')
+* @: Generator()
 M1 D D S B PMOS w=w l=90n
 .ends DCL_PMOS
 
@@ -123,7 +123,7 @@ M2 DB DA S S PMOS w=w l=90n
 .ends SCM_PMOS
 
 .subckt CMC_S_NMOS_B DA DB SA SB G B
-* @: Generator(pattern='ncc',parallel_wires={'DA':2, 'DB':2})
+* @: Generator(parameters={'pattern':'ncc' , 'parallel_wires':{'DA':1, 'DB':1}})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -132,7 +132,7 @@ M2 DB G SB B NMOS w=w l=90n
 .ends CMC_S_NMOS_B
 
 .subckt CMC_S_NMOS DA DB SA SB G
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -141,7 +141,7 @@ M2 DB G SB SB NMOS w=w l=90n
 .ends CMC_S_NMOS
 
 .subckt CMC_S_PMOS_B DA DB SA SB G B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -177,7 +177,7 @@ M2 DB G S B NMOS w=w l=90n
 .ends CMC_NMOS_B
 
 .subckt CMC_S_PMOS  DA DB G SA SB
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -222,7 +222,7 @@ M2 DB GB S S PMOS w=w l=90n
 .ends DP_PMOS
 
 .subckt CCP_S_NMOS_B DA DB SA SB B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -231,7 +231,7 @@ M2 DB DA SB B NMOS w=w l=90n
 .ends CCP_NMOS_B
 
 .subckt CCP_S_PMOS_B DA DB SA SB B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -240,7 +240,7 @@ M2 DB DA SB B PMOS w=w l=90n
 .ends CCP_PMOS_B
 
 .subckt CCP_NMOS DA DB S
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='S',net2='S',  direction='V')
@@ -249,7 +249,7 @@ M2 DB DA S S NMOS w=w l=90n
 .ends CCP_NMOS
 
 .subckt CCP_PMOS DA DB S
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='S',net2='S',  direction='V')
@@ -258,7 +258,7 @@ M2 DB DA S S PMOS w=w l=90n
 .ends CCP_PMOS
 
 .subckt CCP_NMOS_B DA DB S B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='S',net2='S',  direction='V')
@@ -267,7 +267,7 @@ M2 DB DA S B NMOS w=w l=90n
 .ends CCP_NMOS_B
 
 .subckt CCP_PMOS_B DA DB S B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='S',net2='S',  direction='V')
@@ -276,7 +276,7 @@ M2 DB DA S B PMOS w=w l=90n
 .ends CCP_PMOS_B
 
 .subckt LS_S_NMOS_B DA DB SA SB B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
@@ -285,7 +285,7 @@ M2 DB DA SB B NMOS w=w l=90n
 .ends LS_NMOS_B
 
 .subckt LS_S_PMOS_B DA DB SA SB B
-* @: Generator(pattern='ncc')
+* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
