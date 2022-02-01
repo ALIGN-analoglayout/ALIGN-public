@@ -5,7 +5,7 @@ from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 
-cleanup = False
+cleanup = True
 
 
 def test_cmp_vanilla():

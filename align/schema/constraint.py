@@ -992,9 +992,11 @@ class Generator(SoftConstraint):
     '''
     Used to guide primitive generator.
     Args:
-        pattern (str): common centroid (CS)/ Inter digitated (ID)/Non common centroid
-        parallel_wires (dict): {net_name:2}
-        body (bool): True/ False
+        parameters(dict): {
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
+                            parallel_wires (dict): {net_name:2}
+                            body (bool): True/ False
+                            }
 
     Example: ::
 
