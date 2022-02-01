@@ -9,14 +9,14 @@ from align.schema.types import set_context
 import logging
 import hashlib
 
-from align.schema import SubCircuit, Model
+from align.schema import SubCircuit, Model, Library
 
 logger = logging.getLogger(__name__)
 
 
 def gen_abstract_name(element, primitives):
     """ Return commands to generate parameterized lef"""
-    # TODO model parameter can be improved
+    self.library = Library(loadbuiltins=True)
     db = element.parent.parent.parent
     ele_def = db.find(element.generator)
     if isinstance(ele_def, SubCircuit):
