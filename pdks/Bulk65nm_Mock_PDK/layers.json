@@ -1,5 +1,5 @@
 {
-    "_comment": "The rules defined in this file are discussed in Bulk_Mock_PDK.ppt",
+    "_comment": "The rules defined in this file are discussed in Bulk_Mock_PDK.ppt (add it)",
     "ScaleFactor": 1,
     "design_info": {
         "vt_type": [
@@ -22,14 +22,12 @@
         "Hspace": 0,
         "Vspace": 0,
         "U_width": 60,
-        "unit_size_nmos": 12,
-        "unit_size_pmos": 12,
-        "max_size_nmos": 60,
-        "max_size_pmos": 60,
+        "unit_size_mos": 12,
+        "max_size_mos": 48,
         "unit_size_cap": 12,
-        "max_nfin_mos": 48,
-        "Gate_pitch": 100,
         "unit_height_res": 600,
+	"Fin_pitch": 100,
+	"max_size_cap": 1000,
 	"pdk_type":"Bulk"
     },
     "Abstraction": [
@@ -612,14 +610,14 @@
         },
         {
             "Layer": "Nselect",
-            "GdsLayerNo": 7,
+            "GdsLayerNo": 54,
             "GdsDatatype": {
                 "Draw": 0
             }
         },
         {
             "Layer": "Pselect",
-            "GdsLayerNo": 8,
+            "GdsLayerNo": 55,
             "GdsDatatype": {
                 "Draw": 0
             }

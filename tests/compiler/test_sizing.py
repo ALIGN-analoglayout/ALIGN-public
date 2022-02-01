@@ -48,15 +48,15 @@ def test_sizing2(ckt):
     assert ckt.get_element("XI2").parameters["STACK"] == "2"
     assert ckt.get_element("XI2").parameters["M"] == "4"
     assert ckt.get_element("XI2").model == "PSVT"
-    assert ckt.get_element("X_SCM_PMOS_B_XI3_XI4")
-    assert ckt.get_element("X_DP_NMOS_B_MN3_MN4")
+    assert ckt.get_element("X_XI3_XI4")
+    assert ckt.get_element("X_MN3_MN4")
 
 
 @pytest.mark.parametrize("cn", ["intel_circuit3"])
 def test_sizing3(ckt):
     assert ckt.elements[3]
     assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
-    assert ckt.get_element("X_DP_NMOS_B_MN2_MN3")
+    assert ckt.get_element("X_MN2_MN3")
     assert ckt.parent.find("DP_NMOS_B").elements[0].parameters["W"] == "3.6E-07"
     assert ckt.get_element("XI1").parameters["STACK"] == "3"
     assert ckt.get_element("XI1").model == "PSVT"
@@ -66,6 +66,6 @@ def test_sizing3(ckt):
 def test_sizing4(ckt):
     # assert False, f"{[ele.name for ele in ckt.elements]}"
     assert len(ckt.elements) == 5
-    assert ckt.get_element("X_CMB_PMOS_2_XMP11_XMP12_XMP13")
-    assert ckt.get_element("X_INV_B_I1_XMN0_XMP0")
+    eles = set([ele.name for ele in ckt.elements])
+    assert eles == {"X_XMP11_XMP12_XMP13", 'X_XMN0_XMP0', 'X_XMN1_XMP1', 'XMP3', 'XMN3'}
     assert len([v.name for v in ckt.parent if isinstance(v, SubCircuit)]) == 5

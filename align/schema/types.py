@@ -46,13 +46,17 @@ def set_context(obj):
     finally:
         _ctx.reset(token)
 
-
-def set_parent(item, parent):
-    if isinstance(item, (BaseModel, List, Dict)):
-        assert item._parent is None or item._parent == parent, f'Trying to reset parent for {item} from {item._parent} to {parent}'
-        item._parent = parent
-
-
+def cast_to_solver(item, solver):
+    if hasattr(item, 'translate'):
+        generator = item.translate(solver)
+        if generator is None:
+            raise NotImplementedError(f'{item}.translate() did not return a valid generator')
+        assert solver is not None
+        formulae = list(generator)
+        if len(formulae) == 0:
+            raise NotImplementedError(f'{item}.translate() yielded an empty list of expressions')
+        yield from solver.annotate(formulae, solver.label(item))
+    
 class BaseModel(pydantic.BaseModel):
 
     @property
@@ -199,20 +203,9 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
             self._revert()
             self.revert(name)
 
-    def _translate_and_annotate(self, item, solver):
-        generator = item.translate(solver)
-        if generator is None:
-            raise NotImplementedError(f'{item}.translate() did not return a valid generator')
-        assert solver is not None
-        formulae = list(generator)
-        if len(formulae) == 0:
-            raise NotImplementedError(f'{item}.translate() yielded an empty list of expressions')
-        yield from solver.annotate(formulae, solver.label(item))
-
     def translate(self, solver):
         for item in self:
-            if hasattr(item, 'translate'):
-                yield from self._translate_and_annotate(item, solver)
+            yield from cast_to_solver(item, solver)
 
 
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
@@ -261,3 +254,7 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __eq__(self, other):
         return self.__root__ == other
+
+    def __contains__(self, v):
+        return self.__root__.__contains__(v)
+        #return v in self.__root__

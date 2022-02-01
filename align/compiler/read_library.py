@@ -16,8 +16,13 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
     model_statements = pdk_dir / "models.sp"
 
     if not model_statements.exists():
+        if not pdk_dir.exists():
+            logger.warning(f"Missing pdk directory for reading model {pdk_dir} ")
+        else:
+            logger.warning(f"Missing models.sp file in PDK directory {model_statements}")
         model_statements = config_path / "models.sp"
 
+    logger.info(f"Using model file from {model_statements}")
     with open(model_statements, 'r') as f:
         lines = f.read()
     ckt_parser.parse(lines)
@@ -33,7 +38,10 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
 
     lib_files = ["basic_template.sp", "user_template.sp"]
     for lib_file in lib_files:
-        with open(config_path / lib_file) as f:
+        lib_file_path = pdk_dir/lib_file
+        if not lib_file_path.exists():
+            lib_file_path = config_path / lib_file
+        with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
 

@@ -20,6 +20,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
     json jedb = json::parse(jsonFile);
     json layerAry = jedb["Abstraction"];
     ScaleFactor = jedb["ScaleFactor"];
+    DRC_info.ScaleFactor = ScaleFactor;
     // times *= ScaleFactor;
     std::map<int, PnRDB::metal_info> metalSet;
     std::map<int, PnRDB::via_info> viaSet;
@@ -125,7 +126,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
     }
     for (std::map<int, PnRDB::metal_info>::iterator it = metalSet.begin(); it != metalSet.end(); ++it) {
       DRC_info.Metal_info.push_back(it->second);
-      // cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
+      //cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
       DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size() - 1;
     }
     DRC_info.MaxLayer = DRC_info.Metal_info.size() - 1;
@@ -237,6 +238,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 
     for (std::map<int, PnRDB::via_info>::iterator it = viaSet.begin(); it != viaSet.end(); ++it) {
       DRC_info.Via_info.push_back(it->second);
+      //cout << "Assign the Viamap[" << it->second.name << "] = " << DRC_info.Via_info.size()-1 << endl;
       DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size() - 1;
     }
 

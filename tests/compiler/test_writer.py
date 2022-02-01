@@ -26,8 +26,7 @@ def test_verilog_writer():
     ]
     design_config = {
         "vt_type": ["SLVT", "HVT", "LVT", "RVT"],
-        "unit_size_nmos": 12,
-        "unit_size_pmos": 12,
+        "unit_size_mos": 12,
         "unit_size_cap": 12,
         "unit_height_res": 600,
         "pdk_type": "FinFET"

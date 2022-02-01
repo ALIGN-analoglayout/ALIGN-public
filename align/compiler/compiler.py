@@ -182,8 +182,11 @@ def call_primitive_generator(
                     pdk_dir=pdk_dir
                 )
             else:
-                ele.add_abs_name(ele.generator)
-                logger.debug(
+                if isinstance(ckt_data.find(ele.model), SubCircuit):
+                    ele.add_abs_name(ele.model)
+                else:
+                    ele.add_abs_name(ele.generator)
+                logger.info(
                     f"No physical information found for: {ele.name} of type : {ele.model}"
                 )
         logger.debug(

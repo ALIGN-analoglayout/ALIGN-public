@@ -12,6 +12,7 @@ import json
 import importlib.util
 from copy import deepcopy
 from math import sqrt, ceil, floor
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
 def get_xcells_pattern(primitive, pattern, x_cells):
 
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
     elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
@@ -54,7 +54,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     parameters = get_parameters(primitive.name, parameters, nfin)
 
     def gen(pattern, routing):
-        if 'NMOS' in primitive:
+        if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         else:
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
@@ -139,7 +139,6 @@ def get_generator(name, pdkdir):
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
-    pdk = Pdk().load(pdkdir / 'layers.json')
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
     uc = primitive1()
     uc.generate(
@@ -153,8 +152,9 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
         if not primitives[block_name] == block_args:
-            logger.warning(f"Primitve {block_name} of size {primitives[block_name]}\
-            with args got approximated to size {block_args}")
+            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
+                             existing: {primitives[block_name]}\
+                             new: {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         primitives[block_name] = block_args
@@ -174,6 +174,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             size = round(float(values["C"]) * 1E15, 4)
         elif 'VALUE' in values:
             size = round(float(values["VALUE"]) * 1E15, 4)
+        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
+
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
         logger.debug(f"Found cap with size: {size}")
@@ -206,6 +208,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
         }
         add_primitive(primitives, block_name, block_args)
         return True
+
     elif name == 'generic' or get_generator(name.lower(), pdk_dir):
         # TODO: how about hashing for unique names?
         value_str = ''
@@ -228,39 +231,27 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
         assert 'NMOS' in name or 'PMOS' in name, f'{name} is not recognized'
 
-        if 'NMOS' in name:
-            unit_size_mos = design_config["unit_size_nmos"]
-        else:
-            unit_size_mos = design_config["unit_size_pmos"]
-
         subckt = element.parent.parent.parent.find(element.model)
-        logger.debug(f"subckt definition found: {subckt}")
-        vt = None
-        values = {}
-        vt_types_temp = []
-        if isinstance(subckt, SubCircuit):
-            for ele in subckt.elements:
-                values[ele.name] = ele.parameters
-                vt_types_temp.append(ele.model)
-            vt_types = vt_types_temp[0]
-            if "vt_type" in design_config:
-                vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in vt_types]
-        else:
-            values[element.name] = element.parameters
-            if "vt_type" in design_config:
-                vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in element.model]
-        device_name_all = [*values.keys()]
-        device_name = device_name_all[0]
-        if unit_size_mos is None:
-            """
-            Transistor parameters:
-                m:  number of instances
-                nf: number of fingers
-                w:  effective width of an instance (width of instance x number of fingers)
-            """
-            assert 'M' in values[device_name],  f'm: Number of instances not specified {values}'
-            assert 'NF' in values[device_name], f'nf: Number of fingers not specified {values}'
-            assert 'W' in values[device_name],  f'w: Width is not specified {values}'
+
+        unit_size_mos = design_config["unit_size_mos"]
+
+        if unit_size_mos is None:   # hack for align/pdk/finfet
+
+            if isinstance(subckt, SubCircuit):
+                vt = subckt.elements[0].model
+                values = subckt.elements[0].parameters
+                for e in subckt.elements:
+                    assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
+                    assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
+            else:
+                vt = element.model
+                values = element.parameters
+
+            assert 'M' in values,  f'm: Number of instances not specified {values}'
+            assert 'NF' in values, f'nf: Number of fingers not specified {values}'
+
+            m = int(values['M'])
+            nf = int(values['NF'])
 
             def x_by_y(m):
                 y_sqrt = floor(sqrt(m))
@@ -270,132 +261,160 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                     elif m % y == 0:
                         return m//y, y
 
-            m = int(values[device_name]['M'])
-            nf = int(values[device_name]['NF'])
-            w = int(float(values[device_name]['W'])*1e9)
-            if isinstance(subckt, SubCircuit):
-                for e in subckt.elements:
-                    vt = e.model
-                    break
-            else:
-                vt = element.model
-
             x, y = x_by_y(m)
 
-            block_name = f'{name}_{vt}_w{w}_m{m}'
+            values['real_inst_type'] = vt
 
-            values[device_name]['real_inst_type'] = vt
+            # TODO: Stacking parallel transistors is illegal. To be addressed in compiler
+            st = int(values.get('STACK', '1'))
+            pl = int(values.get('PARALLEL', '1'))
+            if st > 1 and (nf > 1 or pl > 1):
+                assert False, 'Stacking multi-leg transistors not supported. Turn off MergeSeriesDevices'
+            elif pl > 1 and nf != pl:
+                assert False, 'Number of legs do not match'
+
+            exclude_keys = ['M', 'real_inst_type']
+            if 'W' in values:
+                exclude_keys.append('NFIN')
+            if 'PARALLEL' in values:
+                exclude_keys.append('PARALLEL')
+            if st > 1:
+                exclude_keys.append('NF')
+            elif 'STACK' in values:
+                exclude_keys.append('STACK')
+
+            sorted_keys = sorted(values.keys())
+            block_name = f'{name}_{vt}_M{m}_'
+            block_name += '_'.join([k+':'+str(values[k]) for k in sorted_keys if k not in exclude_keys])
+            block_name += f"_{str(int(hashlib.sha256(block_name.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+            block_name += f'_X{x}_Y{y}'
+
+            logger.debug(block_name)
             block_args = {
                 'primitive': name,
                 'x_cells': x,
                 'y_cells': y,
-                'value': 1,  # hack. This is used as nfin later.
-                'parameters': values[device_name]
+                'parameters': values
             }
 
-            if 'STACK' in values and int(values[device_name]['STACK']) > 1:
-                assert nf == 1, f'Stacked transistor cannot have multiple fingers {nf}'
-                block_args['stack'] = int(values[device_name]['STACK'])
-                block_name += f'_st'+str(int(values[device_name]['STACK']))
+            if block_name in primitives:
+                if block_args != primitives[block_name]:
+                    assert False, f'Collision for {block_name}: new: {block_args} existing: {primitives[block_name]} '
+                else:
+                    logger.debug(f'{block_name} exists')
             else:
-                block_name += f'_nf{nf}'
+                add_primitive(primitives, block_name, block_args)
+            element.add_abs_name(block_name)
+            return True
+        else:  # hacks for all other pdk's
+            logger.debug(f"subckt definition found: {subckt}")
+            vt = None
+            values = {}
+            vt_types_temp = []
+            if isinstance(subckt, SubCircuit):
+                for ele in subckt.elements:
+                    values[ele.name] = ele.parameters
+                    vt_types_temp.append(ele.model)
+                vt_types = vt_types_temp[0]
+                if "vt_type" in design_config:
+                    vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in vt_types]
+            else:
+                values[element.name] = element.parameters
+                if "vt_type" in design_config:
+                    vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in element.model]
+            device_name_all = [*values.keys()]
+            device_name = device_name_all[0]
 
-            block_name += f'_X{x}_Y{y}'
+            if design_config["pdk_type"] == "FinFET":
+                # FinFET design
+                for key in values:
+                    assert int(values[key]["NFIN"]), \
+                        f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
+                    assert unit_size_mos >= int(values[key]["NFIN"]), \
+                        f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
+                    size = int(values[key]["NFIN"])
+                name_arg = 'NFIN'+str(size)
+            elif design_config["pdk_type"] == "Bulk":
+                # Bulk design
+                for key in values:
+                   assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
+                   assert int(
+                       float(values[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
+                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Fin_pitch']}" 
+                   size = int(float(values[key]["W"])*1E+9/design_config["Fin_pitch"])
+                   values[key]["NFIN"] = size
+                name_arg = 'NFIN'+str(size)
+            else:
+                print(design_config["pdk_type"] + " pdk not supported")
+                exit()
+
+            if 'NF' in values[device_name].keys():
+                for key in values:
+                    assert int(values[key]["NF"]), f"unrecognized NF of device {key}:{values[key]['NF']} in {name}"
+                    assert int(values[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{values[key]['NF']} in {name}"
+                name_arg = name_arg+'_NF'+str(int(values[device_name]["NF"]))
+
+            if 'M' in values[device_name].keys():
+                for key in values:
+                    assert int(values[key]["M"]), f"unrecognized M of device {key}:{values[key]['M']} in {name}"
+                    if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL']) > 1:
+                        values[key]["PARALLEL"] = int(values[key]['PARALLEL'])
+                        values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
+                name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
+                size = 0
+
+            logger.debug(f"Generating lef for {name} , with size {size}")
+            if isinstance(size, int):
+                for key in values:
+                    assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name} {values}"
+                    size_device = int(values[key]["NF"])*int(values[key]["M"])
+                    size = size + size_device
+                no_units = ceil(size / (2*len(values)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
+                if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
+                    square_y = floor(sqrt(no_units/3))
+                else:
+                    square_y = floor(sqrt(no_units))
+                while no_units % square_y != 0:
+                    square_y -= 1
+                yval = square_y
+                xval = int(no_units / square_y)
+
+            if 'SCM' in name:
+                if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != \
+                   int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
+                    square_y = 1
+                    yval = square_y
+                    xval = int(no_units / square_y)
+
+            block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:
-                if block_args != available_block_lef[block_name]:
-                    assert False, f'Two different transistors mapped to the same name {block_name}: {available_block_lef[block_name]} {block_args}'
+                return block_name, available_block_lef[block_name]
+
+            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
+            block_args = {
+                'primitive': name,
+                'value': values[device_name]["NFIN"],
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters': values
+            }
+            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
+                block_args['stack'] = int(values[device_name]["STACK"])
+                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
+            if vt:
+                block_args['vt_type'] = vt[0]
+                block_name = block_name+'_'+vt[0]
+
             element.add_abs_name(block_name)
             add_primitive(primitives, block_name, block_args)
             return True
 
-        if design_config["pdk_type"] == "FinFET":
-            # FinFET design
-            for key in values:
-                assert int(values[key]["NFIN"]), \
-                    f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
-                assert unit_size_mos >= int(values[key]["NFIN"]), \
-                    f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
-                size = int(values[key]["NFIN"])
-            name_arg = 'NFIN'+str(size)
-        elif design_config["pdk_type"] == "Bulk":
-            # Bulk design
-            for key in values:
-                assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
-                assert (
-                    values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
-                    f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
-                size = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                values[key]["NFIN"] = size
-            name_arg = 'NFIN'+str(size)
-        else:
-            print(design_config["pdk_type"] + " pdk not supported")
-            exit()
-
-        if 'NF' in values[device_name].keys():
-            for key in values:
-                assert int(values[key]["NF"]), f"unrecognized NF of device {key}:{values[key]['NF']} in {name}"
-                assert int(values[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{values[key]['NF']} in {name}"
-            name_arg = name_arg+'_NF'+str(int(values[device_name]["NF"]))
-
-        if 'M' in values[device_name].keys():
-            for key in values:
-                assert int(values[key]["M"]), f"unrecognized M of device {key}:{values[key]['M']} in {name}"
-                if "PARALLEL" in values[key].keys() and int(values[key]['PARALLEL']) > 1:
-                    values[key]["PARALLEL"] = int(values[key]['PARALLEL'])
-                    values[key]['M'] = int(values[key]['M'])*int(values[key]['PARALLEL'])
-            name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
-            size = 0
-
-        logger.debug(f"Generating lef for {name} , with size {size}")
-        if isinstance(size, int):
-            for key in values:
-                assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name} {values}"
-                size_device = int(values[key]["NF"])*int(values[key]["M"])
-                size = size + size_device
-            no_units = ceil(size / (2*len(values)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
-            if any(x in name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
-                square_y = floor(sqrt(no_units/3))
-            else:
-                square_y = floor(sqrt(no_units))
-            while no_units % square_y != 0:
-                square_y -= 1
-            yval = square_y
-            xval = int(no_units / square_y)
-
-        if 'SCM' in name:
-            if int(values[device_name_all[0]]["NFIN"])*int(values[device_name_all[0]]["NF"])*int(values[device_name_all[0]]["M"]) != int(values[device_name_all[1]]["NFIN"])*int(values[device_name_all[1]]["NF"])*int(values[device_name_all[1]]["M"]):
-                square_y = 1
-                yval = square_y
-                xval = int(no_units / square_y)
-
-        block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
-
-        if block_name in available_block_lef:
-            return block_name, available_block_lef[block_name]
-
-        logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-        block_args = {
-            'primitive': name,
-            'value': unit_size_mos,
-            'x_cells': xval,
-            'y_cells': yval,
-            'parameters': values
-        }
-        if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
-            block_args['stack'] = int(values[device_name]["STACK"])
-            block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
-        if vt:
-            block_args['vt_type'] = vt[0]
-            block_name = block_name+'_'+vt[0]
-
-        element.add_abs_name(block_name)
-        add_primitive(primitives, block_name, block_args)
-        return True
-
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(), abstract_template_name=None, concrete_template_name=None):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
+                       pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
+                       abstract_template_name=None, concrete_template_name=None):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or isinstance(primitive, Model)\
