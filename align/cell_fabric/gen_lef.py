@@ -18,7 +18,11 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
 
     fp.write("  SIZE %s BY %s ;\n" % (bbox[2], bbox[3]))
 
-    cell_pin = {term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin'}
+    NEW_PARTIAL_ROUTING_FEATURE = False
+    if NEW_PARTIAL_ROUTING_FEATURE:
+        cell_pin = {term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin'}
+    else:
+        cell_pin = list(cell_pin)
 
     for i in cell_pin:
         if i == 'B' and bodyswitch==0:continue

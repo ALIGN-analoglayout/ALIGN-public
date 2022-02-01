@@ -4,6 +4,7 @@ import shutil
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
+from align.pdk.finfet.transistor_array import NEW_PARTIAL_ROUTING_FEATURE
 
 cleanup = False
 
@@ -250,6 +251,7 @@ def test_two_stage_ota():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
+@pytest.mark.skipif(not NEW_PARTIAL_ROUTING_FEATURE, reason="Only used for testing Partial routing")
 def test_cs_1():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -263,6 +265,7 @@ def test_cs_1():
     run_example(example, cleanup=False)
 
 
+@pytest.mark.skipif(not NEW_PARTIAL_ROUTING_FEATURE, reason="Only used for testing Partial routing")
 def test_cs_2():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\

@@ -169,7 +169,9 @@ def gen_more_primitives(primitives, topology_dir, subckt):
             map_d[k].append(k)
 
     # SMB disable for testing partial routing
-    #primitives.update(more_primitives)
+    NEW_PARTIAL_ROUTING_FEATURE = False
+    if not NEW_PARTIAL_ROUTING_FEATURE:
+        primitives.update(more_primitives)
 
     #
     # This code should move to 1_topology, we also need two different the primitives.json files;
