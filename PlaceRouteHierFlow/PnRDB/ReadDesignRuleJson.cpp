@@ -35,8 +35,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         // metal layer
         metal_index = metal_index + 1;
 #ifdef FinFET_MOCK_PDK
-        logger->debug("Reading Json PDK on {0}", lname);
-        logger->debug("Reading Json PDK on GdsLayerNo");
+        // logger->debug("Reading Json PDK on {0}", lname);
+        // logger->debug("Reading Json PDK on GdsLayerNo");
         int lnum = layer["GdsLayerNo"];
         int Drawnum = layer["GdsDatatype"]["Draw"];
         int Pinnum = layer["GdsDatatype"]["Pin"];
@@ -47,7 +47,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 #endif
         std::string ldir = layer["Direction"];
         int lpitch = -1;
-        logger->debug("Reading Json PDK on Pitch");
+        // logger->debug("Reading Json PDK on Pitch");
         json pdata = layer["Pitch"];
         if (pdata.is_array()) {
           json::iterator pit = pdata.begin();
@@ -56,7 +56,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           lpitch = pdata;
         }
         int lwidth = -1;
-        logger->debug("Reading Json PDK on Width");
+        // logger->debug("Reading Json PDK on Width");
         json wdata = layer["Width"];
         if (wdata.is_array()) {
           json::iterator wit = wdata.begin();
@@ -64,16 +64,16 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         } else if (wdata.is_number()) {
           lwidth = wdata;
         }
-        logger->debug("Reading Json PDK on MinL");
+        // logger->debug("Reading Json PDK on MinL");
         int lminL = layer["MinL"];
         // int lmaxL=layer["MaxL"];
-        logger->debug("Reading Json PDK on EndToEnd");
+        // logger->debug("Reading Json PDK on EndToEnd");
         int le2e = layer["EndToEnd"];
 
         double unit_C = 0;
         double unit_CC = 0;
         double unit_R = 0;
-        logger->debug("Reading Json PDK on Units, C, CC, R");
+        // logger->debug("Reading Json PDK on Units, C, CC, R");
 #ifdef FinFET_MOCK_PDK
         if (layer["UnitC"]["Mean"].is_number()) {
           unit_C = layer["UnitC"]["Mean"];
@@ -157,9 +157,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         via_index = via_index + 1;
         // via layer
         via_index = via_index + 1;
-        logger->debug("Reading Json PDK on {0}", lname);
+        // logger->debug("Reading Json PDK on {0}", lname);
 #ifdef FinFET_MOCK_PDK
-        logger->debug("Reading Json PDK on GdsLayerNo");
+        // logger->debug("Reading Json PDK on GdsLayerNo");
         int lnum = layer["GdsLayerNo"];
         int Drawnum = layer["GdsDatatype"]["Draw"];
 #else
