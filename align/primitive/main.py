@@ -352,23 +352,13 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
             elif design_config["pdk_type"] == "Bulk":
                 # Bulk design
                 for key in values:
-<<<<<<< HEAD
-                    assert values[key]["w"] != str, f"unrecognized size of device {key}:{values[key]['w']} in {name}"
-                    assert (
-                        values[key]["w"]*1E+9) % design_config["Gate_pitch"] == 0, \
-                        f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Gate_pitch']}"
-                    nfin = int(values[key]["w"]*1E+9/design_config["Gate_pitch"])
-                    values[key]["NFIN"] = nfin
-                name_arg = 'NFIN'+str(nfin)
-=======
-                   assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
-                   assert int(
-                       float(values[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
-                       f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Fin_pitch']}" 
-                   size = int(float(values[key]["W"])*1E+9/design_config["Fin_pitch"])
-                   values[key]["NFIN"] = size
+                    assert values[key]["W"] != str, f"unrecognized size of device {key}:{values[key]['W']} in {name}"
+                    assert int(
+                        float(values[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
+                        f"Width of device {key} in {name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
+                    size = int(float(values[key]["W"])*1E+9/design_config["Fin_pitch"])
+                    values[key]["NFIN"] = size
                 name_arg = 'NFIN'+str(size)
->>>>>>> master
             else:
                 print(design_config["pdk_type"] + " pdk not supported")
                 exit()
