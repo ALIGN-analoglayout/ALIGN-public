@@ -115,7 +115,7 @@ def compiler_input(
             ), f"duplicate pins found in module {ckt.name}, {ckt.pins}"
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
-                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), f"incorrect subckt instantiation"
+                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), "incorrect subckt instantiation"
     return ckt_data
 
 

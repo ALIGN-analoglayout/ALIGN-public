@@ -1,12 +1,10 @@
-from align.schema.types import set_context
 import pathlib
-import pytest
+from align.schema.types import set_context
 from align.schema.parser import SpiceParser
 from align.schema import constraint
 
 
-@pytest.fixture
-def library():
+def test_basic_lib():
     parser = SpiceParser()
     align_home = pathlib.Path(__file__).resolve().parent.parent / "files"
     basic_lib_path = align_home / "basic_template.sp"
@@ -17,17 +15,13 @@ def library():
     with open(user_lib_path) as f:
         lines = f.read()
     parser.parse(lines)
-    return parser.library
+    library = parser.library
 
-
-def test_basic_lib(library):
     assert len(library.find("DP_PMOS_B").elements) == 2
     assert len(library.find("CASCODED_CMC_PMOS").elements) == 4
     assert len(library.find("INV_B").elements) == 2
     assert len(library) == 54
 
-
-def test_constraint(library):
     assert len(library.find("DP_PMOS_B").constraints) == 3
     dp_const = library.find("DP_PMOS_B").constraints
     with set_context(dp_const):

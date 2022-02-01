@@ -225,11 +225,10 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
             return True
 
     elif name == 'generic' or get_generator(name.lower(), pdk_dir):
-        # TODO: how about hashing for unique names?
         value_str = ''
         if values:
             for key in sorted(values):
-                val = values[key].replace('-', '')
+                val = str(values[key]).replace('-', '')
                 value_str += f'_{key}_{val}'
         attr = {'ports': list(element.pins.keys()),
                 'values': values if values else None,

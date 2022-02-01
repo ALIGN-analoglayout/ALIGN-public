@@ -7,13 +7,18 @@ from ..schema import constraint
 from ..primitive import main
 
 import logging
+from ..schema.library import Library
+from align.primitive.main import get_generator
 
 
 logger = logging.getLogger(__name__)
 
 
 def read_models(pdk_dir: pathlib.Path, config_path=None):
-    ckt_parser = SpiceParser()
+
+    pdk_models = get_generator('pdk_models', pdk_dir)
+    library = Library(loadbuiltins=True, pdk_models=pdk_models)
+    ckt_parser = SpiceParser(library=library)
     # Read model file to map devices
     if config_path is None:
         config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
