@@ -42,3 +42,11 @@ class tfr_prim(CanvasPDK):
             PlaceOnGrid(direction='V', pitch=5*poly_pitch, ored_terms=[OffsetsScalings(offsets=[1*poly_pitch], scalings=[1])]).dict()
         ]
         return {"bbox": bbox, "instance": {}, "terminals": self.terminals, "metadata": self.metadata}
+
+
+class tfr(tfr_prim):
+    pass
+
+
+class tfr_flat(tfr_prim):
+    pass

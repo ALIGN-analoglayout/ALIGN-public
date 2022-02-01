@@ -65,16 +65,32 @@ def main():
     if not exit_status:
         exit_status = ret.returncode
 
-    # two integration tests (to get guard_ring_coverage and common_centroid_cap)
+    # Standard checkin integration tests
+    os.environ['CI_LEVEL'] = 'checkin'
+
+    ret = subprocess.run(' '.join([
+        'pytest', '-vv', # Call pytest in verbose mode
+        '--runnightly',
+        '--maxerrors=0',
+        '-n', MAX_JOBS, # pytest-xdist options
+        '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
+        '--cov-append', # append to existing run
+        '--',
+        'tests/integration/'
+        ]),
+        shell=True)
+
+    del os.environ['CI_LEVEL']
+
+    # One integration test (to get guard_ring_coverage)
     ret = subprocess.run(' '.join([
         'pytest', '-vv',  # Call pytest in verbose mode
         '--runnightly',
         '-k', 'telescopic_ota_guard_ring or switched_capacitor_filter',
         '-n', MAX_JOBS,  # pytest-xdist options
         '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
-        '--cov-append',  # append to existing run
-        *argv
-    ]),
+        '--cov-append' # append to existing run
+        ]),
         shell=True)
     if not exit_status:
         pass

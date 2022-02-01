@@ -189,8 +189,8 @@ class SpiceParser:
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):
-            for constraint in self._constraints:
-                self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))
+            for const in self._constraints:
+                self._scope[-1].constraints.append(eval(const, {}, constraint_dict))
         self._constraints = None
 
     def _process_declaration(self, decl, args, kwargs):
@@ -216,6 +216,4 @@ class SpiceParser:
             assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
             assert self.library.find(base) is not None, f"Base model {base} not found for model {name}"
             with set_context(self.library):
-                self.library.append(
-                    Model(name=name, base=base, parameters=kwargs)
-                )
+                self.library.append(Model(name=name, base=base, parameters=kwargs))

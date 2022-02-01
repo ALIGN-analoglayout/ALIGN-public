@@ -136,7 +136,7 @@ def _attach_constraint_files( DB, fpath):
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
-    
+
     for name, instances in DB.lefData.items():
         fp = d / f"{name}.json"
         if fp.exists():
@@ -155,7 +155,7 @@ def _ReadLEF( DB, path, lefname):
             DB.ReadLEFFromString( s)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
-        
+
 def semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
@@ -172,12 +172,9 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
-    if vname.endswith(".verilog.json"):
-        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-        global_signals = ReadVerilogJson( DB, j)
-        semantic(DB, path, topcell, global_signals)
-    else:
-        global_signals = DB.ReadVerilog( path, vname, topcell)
-        semantic(DB, path, topcell, global_signals)
+    #if vname.endswith(".verilog.json"):
+    j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
+    global_signals = ReadVerilogJson( DB, j)
+    semantic(DB, path, topcell, global_signals)
 
     return DB, j

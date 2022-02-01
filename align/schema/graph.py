@@ -2,6 +2,7 @@ from align.schema import constraint
 from .types import set_context
 from .subcircuit import SubCircuit, Circuit
 from .instance import Instance
+from .translator import ConstraintTranslator
 import networkx
 from collections import Counter
 import logging
@@ -203,6 +204,9 @@ class Graph(networkx.Graph):
                 pins=pin2net_map,
                 generator=subckt.name
             )
+            if self.subckt.name:
+                tr = ConstraintTranslator(self.subckt.parent)
+                tr._update_const(self.subckt.name, removal_candidates, instance_name)
 
         return new_subckt_names
     # TODO: in future use paramaters from generator
@@ -224,6 +228,9 @@ class Graph(networkx.Graph):
                     generator=self.nodes[x].get('instance').generator,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
+        with set_context(subckt_instance.constraints):
+            for const in subckt.constraints:
+                subckt_instance.constraints.append(const)
         return subckt_instance
 
     def instance_counter(self, subckt, counter=0):

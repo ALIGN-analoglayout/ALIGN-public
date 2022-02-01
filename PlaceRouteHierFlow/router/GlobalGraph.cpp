@@ -5,9 +5,9 @@
 GlobalGraph::GlobalGraph(GlobalGrid &grid) : path_number(1) {
   auto logger = spdlog::default_logger()->clone("router.GlobalGraph.GlobalGraph");
 
-  logger->debug("Start Creating adjacent list (graph)");
+  // logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid);  // create adjacentList base gird.LL_graph and gird.UR_graph
-  logger->debug("End creating adjacent list (graph)");
+  // logger->debug("End creating adjacent list (graph)");
 };
 
 void GlobalGraph::clearPath() { Path.clear(); };
@@ -29,9 +29,9 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
     int weight;
 
     MST(weight, temp_path, grid);
-    logger->debug("End MTS1");
+    // logger->debug("End MTS1");
     UpdateEdgeWeight(temp_path);
-    logger->debug("End Update weight");
+    // logger->debug("End Update weight");
     // return the shortest path
     Path.push_back(temp_path);
   }
@@ -189,7 +189,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       }
     }
   }
-  logger->debug("ChangeSrcDest test1");
+  // logger->debug("ChangeSrcDest test1");
   temp_src.clear();
   temp_dest.clear();
 
@@ -207,7 +207,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       }
     }
   }
-  logger->debug("ChangeSrcDest test2");
+  // logger->debug("ChangeSrcDest test2");
   for (unsigned int i = 0; i < temp_single_path.size(); i++) {
     src_set.insert(temp_single_path[i]);
   }
@@ -227,7 +227,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
   for (xit = itlow; xit != itup; ++xit) {
     temp_dest.push_back(*xit);
   }
-  logger->debug("ChangeSrcDest test3");
+  // logger->debug("ChangeSrcDest test3");
 };
 
 void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, GlobalGrid &grid) {
@@ -237,9 +237,9 @@ void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, 
   std::vector<int> temp_src;
   std::vector<int> temp_dest;
   std::vector<int> pin_access;
-  logger->debug("Starting initialSrcDest");
+  // logger->debug("Starting initialSrcDest");
   InitialSrcDest(temp_src, temp_dest, pin_access);
-  logger->debug("End initialSrcDest");
+  // logger->debug("End initialSrcDest");
   // std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
 
   if (temp_dest.size() == 0) {

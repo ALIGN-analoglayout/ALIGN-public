@@ -1,3 +1,4 @@
+from marshal import load
 import pathlib
 import pytest
 import json
@@ -8,7 +9,7 @@ from align.schema import types, Instance, Library, SubCircuit, constraint, Spice
 
 @pytest.fixture
 def mock_circuit():
-    library = Library()
+    library = Library(loadbuiltins=True)
     n = library.find('nmos')
     assert n is not None
     with types.set_context(library):

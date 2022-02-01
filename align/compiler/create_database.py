@@ -8,6 +8,7 @@ Created on Fri Jan 15 10:38:14 2021
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
+from ..primitive import main
 
 import logging
 
@@ -40,7 +41,21 @@ class CreateDatabase:
         pwr, gnd, clk = self._get_pgc(subckt)
         self._propagate_power_ports(subckt, pwr, gnd, clk)
         self.propagate_const_top_to_bottom(name, {name})
+
         return self.lib
+
+    def add_generators(self, pdk_dir):
+        for subckt in self.lib:
+            if isinstance(subckt, SubCircuit):
+                if main.get_generator(subckt.name, pdk_dir):
+                    logger.debug(f"no availble generator for {subckt.name}")
+                    if [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
+                        logger.debug(f"already available generator for {subckt.name}")
+                        continue
+                    logger.debug(f"adding generator for {subckt.name}")
+                    with set_context(subckt.constraints):
+                        subckt.constraints.append(constraint.Generator())
+                        logger.debug(f"generator available for {subckt.name}")
 
     def add_user_const(self):
         for subckt in self.lib:

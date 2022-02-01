@@ -43,8 +43,6 @@ def test_verilog_writer():
             if ele.model in available_cell_generator:
                 assert generate_primitive_lef(
                     ele,
-                    str(ckt_data.find(ele.model)),
-                    available_cell_generator,
                     primitives,
                     design_config,
                 )

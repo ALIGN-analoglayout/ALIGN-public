@@ -793,7 +793,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var + 1] = {0};
-    ConstGraph const_graph;
+    Pdatatype hyper;
     #ifndef min_displacement
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
@@ -863,14 +863,14 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
       if(Lblock_id!=Rblock_id){
         {
-          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {hyper.LAMBDA, (Lblock_width - 2 * Lpin_x) * hyper.LAMBDA, -hyper.LAMBDA,
+                                -(Rblock_width - 2 * Rpin_x) * hyper.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
         }
         {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {-hyper.LAMBDA, -(Lblock_width - 2 * Lpin_x) * hyper.LAMBDA, hyper.LAMBDA,
+                                (Rblock_width - 2 * Rpin_x) * hyper.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 1};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
@@ -878,14 +878,14 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
       }
       if(Dblock_id!=Ublock_id){
         {
-          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {hyper.LAMBDA, (Dblock_height - 2 * Dpin_y) * hyper.LAMBDA, -hyper.LAMBDA,
+                                -(Ublock_height - 2 * Upin_y) * hyper.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
         }
         {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {-hyper.LAMBDA, -(Dblock_height - 2 * Dpin_y) * hyper.LAMBDA, hyper.LAMBDA,
+                                (Ublock_height - 2 * Upin_y) * hyper.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size()) * 4 + int(i) * 2 + 2};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
@@ -1058,6 +1058,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 
   // calculate multi linear constraint
   multi_linear_const = 0;
+  /**
   for (const auto& constrainti : mydesign.ML_Constraints) {
     double temp_sum = 0;
     for (const auto& constraintj : constrainti.Multi_linearConst) {
@@ -1079,6 +1080,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
     temp_sum = std::min(temp_sum, constrainti.upperBound);
     multi_linear_const += temp_sum;
   }
+  **/
 
   double cost = CalculateCost(mydesign);
   return cost;
@@ -1100,6 +1102,7 @@ class TimeMeasure {
     }
 };
 
+/**
 bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPLpsolve");
 
@@ -1438,7 +1441,7 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   // set_add_rowmode(lp, FALSE);
   {
     std::vector<double> row(N_var + 1, 0);
-    ConstGraph const_graph;
+    Pdatatype hyper;
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
       set<pair<pair<int, int>, int>> block_pos_x_set;
@@ -1501,14 +1504,14 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
       //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
       if (Lblock_id != Rblock_id) {
         {
-          double sparserow[5] = {const_graph.LAMBDA, (Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {hyper.LAMBDA, (Lblock_width - 2 * Lpin_x) * hyper.LAMBDA, -hyper.LAMBDA,
+                                 -(Rblock_width - 2 * Rpin_x) * hyper.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
           add_constraintex(lp, 5, sparserow, colno, LE, -Lpin_x + Rpin_x);
         }
         {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Lblock_width - 2 * Lpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Rblock_width - 2 * Rpin_x) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {-hyper.LAMBDA, -(Lblock_width - 2 * Lpin_x) * hyper.LAMBDA, hyper.LAMBDA,
+                                 (Rblock_width - 2 * Rpin_x) * hyper.LAMBDA, -1};
           int colno[5] = {Lblock_id * 4 + 1, Lblock_id * 4 + 3, Rblock_id * 4 + 1, Rblock_id * 4 + 3, int(mydesign.Blocks.size() * 4 + i * 2 + 1)};
           add_constraintex(lp, 5, sparserow, colno, LE, Lpin_x - Rpin_x);
         }
@@ -1516,14 +1519,14 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
       }
       if (Dblock_id != Ublock_id) {
         {
-          double sparserow[5] = {const_graph.LAMBDA, (Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, -const_graph.LAMBDA,
-                                 -(Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {hyper.LAMBDA, (Dblock_height - 2 * Dpin_y) * hyper.LAMBDA, -hyper.LAMBDA,
+                                 -(Ublock_height - 2 * Upin_y) * hyper.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
           add_constraintex(lp, 5, sparserow, colno, LE, -Dpin_y + Upin_y);
         }
         {
-          double sparserow[5] = {-const_graph.LAMBDA, -(Dblock_height - 2 * Dpin_y) * const_graph.LAMBDA, const_graph.LAMBDA,
-                                 (Ublock_height - 2 * Upin_y) * const_graph.LAMBDA, -1};
+          double sparserow[5] = {-hyper.LAMBDA, -(Dblock_height - 2 * Dpin_y) * hyper.LAMBDA, hyper.LAMBDA,
+                                 (Ublock_height - 2 * Upin_y) * hyper.LAMBDA, -1};
           int colno[5] = {Dblock_id * 4 + 2, Dblock_id * 4 + 4, Ublock_id * 4 + 2, Ublock_id * 4 + 4, int(mydesign.Blocks.size() * 4 + i * 2 + 2)};
           add_constraintex(lp, 5, sparserow, colno, LE, Dpin_y - Upin_y);
         }
@@ -1569,37 +1572,36 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
     set_timeout(lp, 1);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) {
-      /*static int fail_cnt{0};
-      static std::string block_name;
-      if (block_name != mydesign.name) {
-        fail_cnt = 0;
-        block_name = mydesign.name;
-      }
-      if (fail_cnt < 10) {
-        write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
-        curr_sp.PrintSeqPair();
-        std::string tmpstrpos, tmpstrneg;
-        for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
-        for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
-        logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
-        logger->info("ILP fail {0}", fail_cnt);
-        curr_sp.PrintSeqPair(mydesign);
-        ++fail_cnt;
-      }*/
+      // static int fail_cnt{0};
+      // static std::string block_name;
+      // if (block_name != mydesign.name) {
+      //   fail_cnt = 0;
+      //   block_name = mydesign.name;
+      // }
+      // if (fail_cnt < 10) {
+      //   write_lp(lp, const_cast<char*>((mydesign.name + "_fail_ilp_" + std::to_string(fail_cnt) + ".lp").c_str()));
+      //   curr_sp.PrintSeqPair();
+      //   std::string tmpstrpos, tmpstrneg;
+      //   for (auto& it : curr_sp.posPair) if (it < mydesign.Blocks.size()) tmpstrpos += (mydesign.Blocks[it][0].name + " ");
+      //   for (auto& it : curr_sp.negPair) if (it < mydesign.Blocks.size()) tmpstrneg += (mydesign.Blocks[it][0].name + " ");
+      //   logger->info("DEBUG fail ILP seq pair : pos=[{0}] neg=[{1}]", tmpstrpos, tmpstrneg);
+      //   logger->info("ILP fail {0}", fail_cnt);
+      //   ++fail_cnt;
+      // }
       delete_lp(lp);
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
-    /*static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
-    }*/
+    // static int write_cnt{0};
+    // static std::string block_name;
+    // if (block_name != mydesign.name) {
+    //   write_cnt = 0;
+    //   block_name = mydesign.name;
+    // }
+    // if (write_cnt < 10) {
+    //   write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+    //   ++write_cnt;
+    // }
   }
 
   {
@@ -1629,7 +1631,7 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
     }
   }
   return true;
-}
+}**/
 
 bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
@@ -1736,7 +1738,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     }
   }
 
-  ConstGraph const_graph;
+  Pdatatype hyper;
   std::vector<double> objective(N_var, 0);
   // add area in cost
   int URblock_pos_id = 0, URblock_neg_id = 0;
@@ -1773,10 +1775,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-    objective.at(ind)     = -const_graph.LAMBDA;
-    objective.at(ind + 1) = -const_graph.LAMBDA;
-    objective.at(ind + 2) = const_graph.LAMBDA;
-    objective.at(ind + 3) = const_graph.LAMBDA;
+    objective.at(ind)     = -hyper.LAMBDA;
+    objective.at(ind + 1) = -hyper.LAMBDA;
+    objective.at(ind + 2) = hyper.LAMBDA;
+    objective.at(ind + 3) = hyper.LAMBDA;
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -2618,8 +2620,8 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
   if (cost >= 0.) {
-    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    // logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    // logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
   }
   return calculated_cost;
 }
@@ -3120,7 +3122,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var + 1] = {0};
-    ConstGraph const_graph;
+    Pdatatype hyper;
 
     // add HPWL in cost
     for (int i = 0; i < mydesign.Nets.size(); i++) {
@@ -3249,7 +3251,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
                           int(mydesign.Blocks.size() * 6 + i * 2 + 2)};
           add_constraintex(lp, 7, sparserow, colno, LE, 0);
         }
-        row[mydesign.Blocks.size() * 6 + i * 2 + 2] = const_graph.LAMBDA;
+        row[mydesign.Blocks.size() * 6 + i * 2 + 2] = hyper.LAMBDA;
       }
     }
 
@@ -3465,37 +3467,37 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
 }
 
 double ILP_solver::CalculateCost(const design& mydesign) const {
-  ConstGraph const_graph;
+  Pdatatype hyper;
   double cost = 0;
   cost += area;
-  cost += HPWL * const_graph.LAMBDA;
+  cost += HPWL * hyper.LAMBDA;
   double match_cost = 0;
   for (const auto& mbi : mydesign.Match_blocks) {
     match_cost +=
         abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][0].width / 2 - Blocks[mbi.blockid2].x - mydesign.Blocks[mbi.blockid2][0].width / 2) +
         abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][0].height / 2 - Blocks[mbi.blockid2].y - mydesign.Blocks[mbi.blockid2][0].height / 2);
   }
-  cost += match_cost * const_graph.BETA;
+  cost += match_cost * hyper.BETA;
   cost += ratio * Aspect_Ratio_weight;
-  cost += 0.0 / area * const_graph.PHI; //dead_area
-  cost += linear_const * const_graph.PI;
-  cost += multi_linear_const * const_graph.PII;
+  cost += 0.0 / area * hyper.PHI; //dead_area
+  cost += linear_const * hyper.PI;
+  cost += multi_linear_const * hyper.PII;
   return cost;
 }
 
 double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.CalculateCost");
 
-  ConstGraph const_graph;
+  Pdatatype hyper;
   double cost = 0;
 
   if (false) {
     cost += area_norm;
-    cost += HPWL_norm * const_graph.LAMBDA;
+    cost += HPWL_norm * hyper.LAMBDA;
   } else {
     cost += log(area);
     if (HPWL_extend > 0) {
-      cost += log(HPWL_extend) * const_graph.LAMBDA;
+      cost += log(HPWL_extend) * hyper.LAMBDA;
     }
   }
 
@@ -3509,7 +3511,7 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
                   max_dim;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  constraint_penalty = match_cost * const_graph.BETA + linear_const * const_graph.PI + multi_linear_const * const_graph.PII;
+  constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
   cost += constraint_penalty;
   return cost;
 }
@@ -3547,6 +3549,7 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
   fout.close();
 }
 
+/**
 void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool plot_pin, bool plot_terminal, bool plot_net) {
   // cout << "Placer-Info: create gnuplot file" << endl;
   placerDB::point p, bp;
@@ -3730,7 +3733,7 @@ void ILP_solver::PlotPlacementAnalytical(design& mydesign, string outfile, bool 
   }
   fout << endl << "pause -1 \'Press any key\'";
   fout.close();
-}
+}**/
 
 void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile) {
   // cout << "Placer-Info: create gnuplot file" << endl;

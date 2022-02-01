@@ -2,10 +2,7 @@ import pathlib
 import pprint
 import json
 
-from align.schema import library
-
-from ..schema.subcircuit import SubCircuit
-from ..schema.parser import SpiceParser
+from ..schema.subcircuit import SubCircuit, Model
 from ..schema import constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
@@ -14,7 +11,6 @@ from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
-from ..schema import constraint
 from ..primitive import generate_primitive_lef
 import logging
 
@@ -38,14 +34,13 @@ def generate_hierarchy(
         config_path,
         flatten_heirarchy
     )
-    primitives, generators = call_primitive_generator(
+    primitives = call_primitive_generator(
         ckt_data,
         pdk_dir,
         uniform_height
     )
     verilog_tbl = constraint_generator(
-        ckt_data,
-        generators
+        ckt_data
     )
     compiler_output(
         ckt_data,
@@ -100,21 +95,17 @@ def compiler_input(
     library = read_lib(pdk_dir, config_path)
     primitives = order_lib(library)
 
-    # generator will be called for these elments
-    with open(pdk_dir / "generators.json") as fp:
-        generators = set(json.load(fp).keys())
-    logger.debug(f"Available generator for cells: {generators}")
-
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
     create_data = CreateDatabase(ckt_parser, const_parse)
     ckt_data = create_data.read_inputs(design_name)
+    create_data.add_generators(pdk_dir)
     logger.debug(f"START preprocessing from top {design_name.upper()}")
     preprocess_stack_parallel(ckt_data, design_name.upper())
 
     logger.debug("\n###### FINAL CIRCUIT AFTER preprocessing ###### \n")
     logger.debug(ckt_parser)
-    annotate = Annotate(ckt_data, primitives, generators)
+    annotate = Annotate(ckt_data, primitives)
     annotate.annotate()
     for ckt in ckt_data:
         if isinstance(ckt, SubCircuit):
@@ -124,7 +115,7 @@ def compiler_input(
             ), f"duplicate pins found in module {ckt.name}, {ckt.pins}"
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
-                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), f"incorrect subckt instantiation"
+                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), "incorrect subckt instantiation"
     return ckt_data
 
 
@@ -151,13 +142,11 @@ def call_primitive_generator(
         pdk_data = json.load(fp)
     design_config = pdk_data["design_info"]
     # read lef to not write those modules as macros
-    with open(pdk_dir / "generators.json") as fp:
-        generators = json.load(fp)
     primitives = {}
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
-        elif ckt.name in generators:
+        elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
             continue
         logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
         for const in ckt.constraints:
@@ -170,41 +159,52 @@ def call_primitive_generator(
                 }
 
         for ele in ckt.elements:
-            primitive_generator = ele.generator
-            if primitive_generator in generators:
+            # Three types of elements can exist:
+            # ele can be a model ele can be model defined in models.sp/base model
+            # ele can be a subcircuit with a generator associated
+            # ele can be a sucircuit with no generator, PnR will place and route this instance
+            generator = ckt_data.find(ele.generator)
+            logger.debug(f"element {ele.name} generator {ele.generator} generator properties {generator}")
+
+            if isinstance(generator, SubCircuit):
+                gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
+                if gen_const:
+                    assert generate_primitive_lef(
+                        ele,
+                        primitives,
+                        design_config,
+                        uniform_height,
+                        pdk_dir
+                    )
+                else:
+                    ele.add_abs_name(ele.model)
+                    logger.info(
+                        f"No physical information found for: {ele.name} of type : {ele.model}"
+                    )
+            elif generator is None or isinstance(generator, Model):
                 assert generate_primitive_lef(
                     ele,
-                    primitive_generator,
-                    generators,
                     primitives,
                     design_config,
                     uniform_height,
-                    pdk_dir=pdk_dir
+                    pdk_dir
                 )
             else:
-                if isinstance(ckt_data.find(ele.model), SubCircuit):
-                    ele.add_abs_name(ele.model)
-                else:
-                    ele.add_abs_name(ele.generator)
-                logger.info(
-                    f"No physical information found for: {ele.name} of type : {ele.model}"
-                )
+                assert False, f"No definition found for instance {ele} in {ckt.name}"
         logger.debug(
             f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}"
         )
 
-    logger.debug(f"Available library cells: {', '.join(generators.keys())}")
-    return primitives, generators
+    return primitives
 
 
-def constraint_generator(ckt_data, generators: dict):
+def constraint_generator(ckt_data):
     """
     search for constraints and
     Args:
         ckt_data : ckt library after annotation
         design_name : name of top level design
         result_dir : directoy path for writing results
-        generators: list of generated primitives
 
     """
 
@@ -213,7 +213,8 @@ def constraint_generator(ckt_data, generators: dict):
     for subckt in ckt_data:
         if not isinstance(subckt, SubCircuit):
             continue
-        if subckt.name not in generators:
+        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
+        if not gen_const:
             FindConst(subckt)
             # Create modified netlist & constraints as JSON
             logger.debug(f"call verilog writer for block: {subckt.name}")
