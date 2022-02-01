@@ -1000,14 +1000,14 @@ class Generator(SoftConstraint):
 
         {
             "constraint": "Generator",
-            "pattern": "CS",
-            "parallel_wires": {"net1":2, "net2":2},
-            "body": True
+            "parameters : {
+                            "pattern": "cc",
+                            "parallel_wires": {"net1":2, "net2":2},
+                            "body": True
+                            }
         }
     '''
-    pattern: Optional[Literal['CS', 'ID', 'NCS']]
-    parallel_wires: Optional[dict]
-    body: Optional[bool]
+    parameters: Optional[dict]
 
 
 class DoNotIdentify(SoftConstraint):

@@ -406,25 +406,25 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
 
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
-            if block_name in primitives:
-                element.add_abs_name(block_name)
-                return block_name, primitives[block_name]
-            else:
-                logger.debug(f"Generating parametric lef of:  {block_name} {name}")
-                block_args = {
-                    'primitive': name,
-                    'value': unit_size_mos,
-                    'x_cells': xval,
-                    'y_cells': yval,
-                    'parameters': values
-                }
-                if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
-                    block_args['stack'] = int(values[device_name]["STACK"])
-                    block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
-                if vt:
-                    block_args['vt_type'] = vt[0]
-                    block_name = block_name+'_'+vt[0]
+            block_args = {
+                'primitive': name,
+                'value': unit_size_mos,
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters': values
+            }
+            if 'STACK' in values[device_name].keys() and int(values[device_name]["STACK"]) > 1:
+                block_args['stack'] = int(values[device_name]["STACK"])
+                block_name = block_name+'_ST'+str(int(values[device_name]["STACK"]))
+            if vt:
+                block_args['vt_type'] = vt[0]
+                block_name = block_name+'_'+vt[0]
 
+            if block_name in primitives and block_args == primitives[block_name]:
+                logger.debug(f'{block_name} exists')
+            elif block_name in primitives and block_args != primitives[block_name]:
+                assert False, f'Collision for {block_name}: new: {block_args} existing: {primitives[block_name]} '
+            else:
                 element.add_abs_name(block_name)
                 add_primitive(primitives, block_name, block_args)
                 return True
