@@ -137,11 +137,10 @@ M2 DB G SB B NMOS w=w l=90n
 .ends CMC_S_NMOS_B
 
 .subckt CMC_S_NMOS DA DB SA SB G
-* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA G SA SB NMOS w=w l=90n
+M1 DA G SA SA NMOS w=w l=90n
 M2 DB G SB SB NMOS w=w l=90n
 .ends CMC_S_NMOS
 
@@ -182,7 +181,6 @@ M2 DB G S B NMOS w=w l=90n
 .ends CMC_NMOS_B
 
 .subckt CMC_S_PMOS  DA DB G SA SB
-* @: Generator(parameters={'pattern':'ncc'})
 * @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
 * @: SymmetricNets(net1='DA',net2='DB',  direction='V')
 * @: SymmetricNets(net1='SA',net2='SB',  direction='V')
