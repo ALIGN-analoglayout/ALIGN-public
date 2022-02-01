@@ -2,8 +2,7 @@ import pathlib
 import pprint
 import json
 
-from ..schema.subcircuit import SubCircuit, Model
-from ..schema import constraint
+from ..schema import SubCircuit, Model, Library, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
 from .read_library import read_lib, read_models, order_lib
@@ -142,7 +141,7 @@ def call_primitive_generator(
         pdk_data = json.load(fp)
     design_config = pdk_data["design_info"]
     # read lef to not write those modules as macros
-    primitives = {}
+    primitives = Library(loadbuiltins=True)
     for ckt in ckt_data:
         if not isinstance(ckt, SubCircuit):
             continue
