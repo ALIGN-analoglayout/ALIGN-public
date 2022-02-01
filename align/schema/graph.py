@@ -204,8 +204,9 @@ class Graph(networkx.Graph):
                 pins=pin2net_map,
                 generator=subckt.name
             )
-            tr = ConstraintTranslator(self.subckt.parent)
-            tr._update_const(self.subckt.name, removal_candidates, instance_name)
+            if self.subckt.name:
+                tr = ConstraintTranslator(self.subckt.parent)
+                tr._update_const(self.subckt.name, removal_candidates, instance_name)
 
         return new_subckt_names
     # TODO: in future use paramaters from generator
