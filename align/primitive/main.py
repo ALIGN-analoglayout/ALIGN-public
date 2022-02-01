@@ -419,8 +419,6 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
 
             if block_name in primitives and block_args == primitives[block_name]:
                 logger.debug(f'{block_name} exists')
-            elif block_name in primitives and block_args != primitives[block_name]:
-                assert False, f'Collision for {block_name}: new: {block_args} existing: {primitives[block_name]} '
             else:
                 element.add_abs_name(block_name)
                 add_primitive(primitives, block_name, block_args)
