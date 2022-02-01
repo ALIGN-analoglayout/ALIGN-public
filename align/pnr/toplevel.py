@@ -120,7 +120,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
             DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
             DB.WriteLef(current_node, f'{return_name}.lef', opath)
-            DB.PrintHierNode(current_node)
+            # DB.PrintHierNode(current_node)
         else:
             current_node_copy = PnR.hierNode(current_node)
             DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
@@ -128,7 +128,7 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
             current_node.gdsFile = current_node_copy.gdsFile
             DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
-            DB.PrintHierNode(current_node_copy)
+            # DB.PrintHierNode(current_node_copy)
     else:
         if current_node.isTop:
             return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
