@@ -419,6 +419,7 @@ def generate_primitive_lef(element, primitives, design_config: dict, uniform_hei
 
             if block_name in primitives and block_args == primitives[block_name]:
                 logger.debug(f'{block_name} exists')
+                return True
             else:
                 element.add_abs_name(block_name)
                 add_primitive(primitives, block_name, block_args)
