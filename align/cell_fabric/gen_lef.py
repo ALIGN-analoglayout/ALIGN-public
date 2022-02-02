@@ -2,7 +2,7 @@ import sys
 import json
 import collections
 
-def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, exclude_layers, Scale_factor, m1pitch, m2pitch):
+def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_layers, Scale_factor, m1pitch, m2pitch):
 
     bbox = layout_d['bbox']
 
@@ -18,11 +18,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
 
     fp.write("  SIZE %s BY %s ;\n" % (bbox[2], bbox[3]))
 
-    NEW_PARTIAL_ROUTING_FEATURE = False
-    if NEW_PARTIAL_ROUTING_FEATURE:
-        cell_pin = {term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin'}
-    else:
-        cell_pin = list(cell_pin)
+    cell_pin = [term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin']
 
     for i in cell_pin:
         if i == 'B' and bodyswitch==0:continue
@@ -46,6 +42,9 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
         fp.write("    END\n")
         fp.write("  END %s\n" % i)
     fp.write("  OBS\n")
+
+    cell_pin = set(cell_pin)
+
     cap_layers = ['M1', 'M2', 'M3']
     for obj in layout_d['terminals']:
         if (obj['netType'] != 'pin' or obj['netName'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
@@ -62,7 +61,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, *, ex
 
     fp.write("END %s\n" % out_lef)
 
-def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
+def json_lef(input_json, out_lef, bodyswitch, blockM, p):
 
     exclude_layers = p.get_lef_exclude()
 
@@ -79,4 +78,4 @@ def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
     macro_name = out_lef + '.lef'
 
     with (input_json.parents[0] / macro_name).open("wt") as fp:
-        lef_from_layout_d(layout_d, fp, out_lef, cell_pin, bodyswitch, blockM, exclude_layers=exclude_layers, Scale_factor=Scale_factor, m1pitch=m1pitch, m2pitch=m2pitch)
+        lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, exclude_layers=exclude_layers, Scale_factor=Scale_factor, m1pitch=m1pitch, m2pitch=m2pitch)
