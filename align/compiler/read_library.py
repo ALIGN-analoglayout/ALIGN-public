@@ -11,12 +11,8 @@ logger = logging.getLogger(__name__)
 
 def read_models(pdk_dir: pathlib.Path, config_path=None):
 
-    PDK_MODELS = get_generator('PDK_MODELS', pdk_dir)
-    if PDK_MODELS:
-        library = Library(loadbuiltins=False, pdk_models=PDK_MODELS)
-    else:
-        library = Library(loadbuiltins=True)
-
+    pdk_models = get_generator('pdk_models', pdk_dir)
+    library = Library(loadbuiltins=True, pdk_models=pdk_models)
     ckt_parser = SpiceParser(library=library)
     # Read model file to map devices
     if config_path is None:
