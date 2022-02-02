@@ -148,6 +148,7 @@ def call_primitive_generator(
         elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
             continue
         logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
+        group_cap_instances = []
         for const in ckt.constraints:
             if isinstance(const, constraint.GuardRing):
                 primitives["guard_ring"] = {"primitive": "guard_ring"}
@@ -156,6 +157,7 @@ def call_primitive_generator(
                     "primitive": "cap",
                     "value": int(const.unit_cap.split("_")[1].replace("f", "")),
                 }
+                group_cap_instances.append(const.name.upper())
 
         for ele in ckt.elements:
             # Three types of elements can exist:
@@ -164,8 +166,9 @@ def call_primitive_generator(
             # ele can be a sucircuit with no generator, PnR will place and route this instance
             generator = ckt_data.find(ele.generator)
             logger.debug(f"element {ele.name} generator {ele.generator} generator properties {generator}")
-
-            if isinstance(generator, SubCircuit):
+            if ele.name in group_cap_instances:
+                ele.add_abs_name(ele.model)
+            elif isinstance(generator, SubCircuit):
                 gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
                 if gen_const:
                     assert generate_primitive_lef(
