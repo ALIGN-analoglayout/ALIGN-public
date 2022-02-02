@@ -305,7 +305,7 @@ def add_parallel_devices(ckt, update=True):
             if len(pd) > 1:
                 pd0 = sorted(pd, key=lambda x: x.name)[0]
                 logger.info(f"removing parallel instances {[x.name for x in pd[1:]]} and updating {pd0.name} parameters")
-                pd0.parameters["PARALLEL"] = sum([getattr(x.parameters, "PARALLEL", 1) for x in pd])
+                pd0.parameters["PARALLEL"] = str(sum([int(getattr(x.parameters, "PARALLEL", "1")) for x in pd]))
                 for rn in pd[1:]:
                     G.remove(rn)
 
@@ -370,7 +370,7 @@ def add_series_devices(ckt, update=True):
                 set(["PLUS", "MINUS"]),
             ]:
                 logger.info(f"stacking {nbrs} {stack1 + stack2}")
-                nbr1.parameters["STACK"] = stack1 + stack2
+                nbr1.parameters["STACK"] = str(stack1 + stack2)
                 for p, n in nbr1.pins.items():
                     if net == n:
                         nbr1.pins[p] = nbr2.pins[p]

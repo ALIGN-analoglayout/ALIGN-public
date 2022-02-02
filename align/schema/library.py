@@ -68,7 +68,9 @@ def load_builtins(default):
                 name='CAP',
                 pins=['PLUS', 'MINUS'],
                 parameters={
-                    'VALUE': 0
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
                 },
                 prefix='C'
             )
@@ -78,7 +80,9 @@ def load_builtins(default):
                 name='RES',
                 pins=['PLUS', 'MINUS'],
                 parameters={
-                    'VALUE': 0
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
                 },
                 prefix='R'
             )
@@ -88,7 +92,9 @@ def load_builtins(default):
                 name='IND',
                 pins=['PLUS', 'MINUS'],
                 parameters={
-                    'VALUE': 0
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
                 },
                 prefix='L'
             )
