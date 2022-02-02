@@ -18,6 +18,8 @@ from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png
 from .utils import logmanager
 
+from .pdk.finfet.transistor_array import NEW_PARTIAL_ROUTING_FEATURE
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -168,8 +170,9 @@ def gen_more_primitives(primitives, topology_dir, subckt):
                 logger.debug(f'Didn\'t match primitive {k}')
             map_d[k].append(k)
 
-    # SMB disable for testing partial routing
-    NEW_PARTIAL_ROUTING_FEATURE = False
+    #
+    # Remove this when multi-variant partial routing works
+    #
     if not NEW_PARTIAL_ROUTING_FEATURE:
         primitives.update(more_primitives)
 

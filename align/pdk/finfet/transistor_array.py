@@ -10,16 +10,14 @@ import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
 
-
 NEW_PARTIAL_ROUTING_FEATURE = False
-
 
 class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
         if NEW_PARTIAL_ROUTING_FEATURE:
-            self.metadata = {'pins': {}}
+            self.metadata = {'partially_routed_pins': {}}
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
@@ -252,7 +250,7 @@ class MOSGenerator(CanvasPDK):
                         counters[net_name] = 0
                     counters[net_name] += 1
                     new_name = net_name + '__' + str(counters[net_name])
-                    self.metadata['pins'][new_name] = net_name
+                    self.metadata['partially_routed_pins'][new_name] = net_name
                     for term in open_group:
                         find_update_term(term[0], term[1], new_name)
 

@@ -320,19 +320,20 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         
+        primitives_with_atn = defaultdict(list)
+        for v in primitives.values():
+            primitives_with_atn[v['abstract_template_name']].append(v)
+
         # Update connectivity for partially routed primitives
-        NEW_PARTIAL_ROUTING_FEATURE = False
-        if NEW_PARTIAL_ROUTING_FEATURE:
-            for module in verilog_d['modules']:
-                for instance in module['instances']:
-                    for _, v in primitives.items():
-                        if instance['abstract_template_name'] == v['abstract_template_name']:
-                            if 'metadata' in v and 'pins' in v['metadata']:
-                                fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
-                                new_fa_map = List[FormalActualMap]()
-                                for f, a in v['metadata']['pins'].items():
-                                    new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
-                                instance['fa_map'] = copy.deepcopy(new_fa_map)
+        for module in verilog_d['modules']:
+            for instance in module['instances']:
+                for primitive in primitives_with_atn[instance['abstract_template_name']]:
+                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                        fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
+                        new_fa_map = List[FormalActualMap]()
+                        for f, a in primitive['metadata']['partially_routed_pins'].items():
+                            new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
+                        instance['fa_map'] = new_fa_map
 
         check_modules(verilog_d)
         pg_connections = {p["actual"]:p["actual"] for p in verilog_d['global_signals']}

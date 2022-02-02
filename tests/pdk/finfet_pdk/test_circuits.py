@@ -1,6 +1,7 @@
 import pytest
 import json
 import shutil
+import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
@@ -251,8 +252,9 @@ def test_two_stage_ota():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
-@pytest.mark.skipif(not NEW_PARTIAL_ROUTING_FEATURE, reason="Only used for testing Partial routing")
 def test_cs_1():
+    NEW_PARTIAL_ROUTING_FEATURE = True
+
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -264,9 +266,12 @@ def test_cs_1():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
+    NEW_PARTIAL_ROUTING_FEATURE = False
 
-@pytest.mark.skipif(not NEW_PARTIAL_ROUTING_FEATURE, reason="Only used for testing Partial routing")
+
 def test_cs_2():
+    NEW_PARTIAL_ROUTING_FEATURE = True
+
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -278,3 +283,4 @@ def test_cs_2():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
+    NEW_PARTIAL_ROUTING_FEATURE = False
