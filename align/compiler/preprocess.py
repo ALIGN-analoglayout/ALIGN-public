@@ -332,6 +332,8 @@ def add_series_devices(ckt, update=True):
         nbrs = sorted(list(G.neighbors(net)))
         if len(nbrs) == 2 and net not in remove_nodes:
             nbr1, nbr2 = [ckt.get_element(nbr) for nbr in nbrs]
+            if 'STACK' not in nbr1.parameters:
+                continue  # this element does not support stacking
             # Same instance type
             if nbr1.model != nbr2.model:
                 continue

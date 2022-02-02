@@ -12,9 +12,7 @@ PDK_MODELS.append(
             'L': 0,
             'NFIN': 1,
             'NF': 2,
-            'M': 1,
-            'PARALLEL': 1,  # Get rid of this hack
-            'STACK': 1  # Get rid of this hack
+            'M': 1
             }
     )
 )
@@ -29,9 +27,7 @@ PDK_MODELS.append(
             'L': 0,
             'NFIN': 1,
             'NF': 2,
-            'M': 1,
-            'PARALLEL': 1,  # Get rid of this hack
-            'STACK': 1  # Get rid of this hack
+            'M': 1
             }
     )
 )

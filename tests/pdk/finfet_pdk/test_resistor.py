@@ -26,8 +26,8 @@ def test_res_flat():
     .subckt {name} v1 v2 v3 vssx
     xr1 v1 vssx tfr_flat w=1 l=1
     xr2 v2 vssx tfr_flat w=1 l=2
-    xr3 v3 vssx tfr_flat w=1 l=3
-    xr4 v3 vssx tfr_flat w=1 l=3
+    xr3 v3   vm tfr_flat w=1 l=3
+    xr4 vm vssx tfr_flat w=1 l=3
     .ends {name}
     .END
     """)
