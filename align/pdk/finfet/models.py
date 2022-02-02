@@ -33,13 +33,15 @@ def pdk_models():
                 }
         )
     )
-
     models.append(
         Model(
             name='TFR',
             pins=['A', 'B'],
             prefix='',
-            parameters={'W': 0, 'L': 0},
+            parameters={
+                'W': 0,
+                'L': 0
+                }
         )
     )
     return models
