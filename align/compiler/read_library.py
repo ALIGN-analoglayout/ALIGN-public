@@ -2,13 +2,22 @@ import pathlib
 from ..schema.parser import SpiceParser
 from ..schema.subcircuit import SubCircuit
 import logging
+from ..schema.library import Library
+from align.primitive.main import get_generator
 
 
 logger = logging.getLogger(__name__)
 
 
 def read_models(pdk_dir: pathlib.Path, config_path=None):
-    ckt_parser = SpiceParser()
+
+    PDK_MODELS = get_generator('PDK_MODELS', pdk_dir)
+    if PDK_MODELS:
+        library = Library(loadbuiltins=False, pdk_models=PDK_MODELS)
+    else:
+        library = Library(loadbuiltins=True)
+
+    ckt_parser = SpiceParser(library=library)
     # Read model file to map devices
     if config_path is None:
         config_path = pathlib.Path(__file__).resolve().parent.parent / "config"

@@ -2,10 +2,8 @@ import pathlib
 import pprint
 import json
 
-from align.schema import library
-
+from align.primitive.main import get_generator
 from ..schema.subcircuit import SubCircuit
-from ..schema.parser import SpiceParser
 from ..schema import constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
@@ -14,7 +12,6 @@ from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
-from ..schema import constraint
 from ..primitive import generate_primitive_lef
 import logging
 
@@ -124,7 +121,7 @@ def compiler_input(
             ), f"duplicate pins found in module {ckt.name}, {ckt.pins}"
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
-                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), f"incorrect subckt instantiation"
+                    assert len(ele.pins) == len(ckt_data.find(ele.model).pins), "incorrect subckt instantiation"
     return ckt_data
 
 
@@ -171,7 +168,7 @@ def call_primitive_generator(
 
         for ele in ckt.elements:
             primitive_generator = ele.generator
-            if primitive_generator in generators:
+            if primitive_generator in generators or get_generator(primitive_generator.lower(), pdk_dir):
                 assert generate_primitive_lef(
                     ele,
                     primitive_generator,

@@ -292,6 +292,8 @@ def add_parallel_devices(ckt, update=True):
         G = Graph(ckt)
         for node in G.neighbors(net):
             ele = ckt.get_element(node)
+            if 'PARALLEL' not in ele.parameters:
+                continue  # this element does not support multiplicity
             p = {**ele.pins, **ele.parameters}
             p["model"] = ele.model
             if p in pp_list:
