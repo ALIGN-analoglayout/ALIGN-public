@@ -884,26 +884,6 @@ class IdentifyArray(SoftConstraint):
     propagate: Optional[bool]
 
 
-class AutoGroupCaps(SoftConstraint):
-    '''
-    Forbids/Allow creation of arrays for symmetric caps
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoGroupCaps",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
 class FixSourceDrain(SoftConstraint):
     '''
     Forbids auto checking of source/drain terminals of transistors.
@@ -986,6 +966,30 @@ class MergeParallelDevices(SoftConstraint):
     '''
     isTrue: bool
     propagate: Optional[bool]
+
+
+class Generator(SoftConstraint):
+    '''
+    Used to guide primitive generator.
+    Args:
+        parameters(dict): {
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
+                            parallel_wires (dict): {net_name:2}
+                            body (bool): True/ False
+                            }
+
+    Example: ::
+
+        {
+            "constraint": "Generator",
+            "parameters : {
+                            "pattern": "cc",
+                            "parallel_wires": {"net1":2, "net2":2},
+                            "body": True
+                            }
+        }
+    '''
+    parameters: Optional[dict]
 
 
 class DoNotIdentify(SoftConstraint):
@@ -1330,6 +1334,7 @@ ConstraintType = Union[
     # Legacy Align constraints
     # (SoftConstraints)
     CompactPlacement,
+    Generator,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
@@ -1354,7 +1359,6 @@ ConstraintType = Union[
     DoNotUseLib,
     IsDigital,
     AutoConstraint,
-    AutoGroupCaps,
     FixSourceDrain,
     KeepDummyHierarchies,
     MergeSeriesDevices,

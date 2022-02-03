@@ -110,12 +110,12 @@ class SubCircuit(Model):
             logger.error(f'Solution not found due to conflict between:')
             for x in core:
                 logger.error(f'{x}')
-            raise # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+            raise  # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
     def is_identical(self, subckt):
         subckt_match = subckt.pins == self.pins and \
-                       subckt.parameters == self.parameters and \
-                       subckt.constraints == self.constraints
+            subckt.parameters == self.parameters and \
+            subckt.constraints == self.constraints
         if not subckt_match:
             return False
 
@@ -130,6 +130,7 @@ class SubCircuit(Model):
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
+
 
 class Circuit(SubCircuit):
 

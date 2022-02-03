@@ -1,95 +1,91 @@
 from .model import Model
 from .subcircuit import SubCircuit
-import inspect
-import random
-import string
 from .types import List, Union, set_context
-
-libraries = {}
 
 
 class Library(List[Union[Model, SubCircuit]]):
 
-    def __init__(self, name=None, loadbuiltins=True):
-        if name:
-            assert name not in libraries
-            libraries.update({name: self})
+    def __init__(self, loadbuiltins=False, pdk_models=None):
         super().__init__()
-        if loadbuiltins:
-            self.extend(libraries['default'])
+        models = None
+        if pdk_models:
+            models = pdk_models()
+        elif loadbuiltins:
+            models = self.default_models()
+        if models:
+            with set_context(self):
+                for m in models:
+                    self.append(m)
 
     def find(self, name):
         return next((x for x in self if x.name == name.upper()), None)
 
-#
-# Create default library
-#
-
-
-default = Library('default')
-
-
-with set_context(default):
-    default.append(
-        Model(
-            name='NMOS',
-            pins=['D', 'G', 'S', 'B'],
-            parameters={
-                'W': 0,
-                'L': 0,
-                'NFIN': 1,
-                'NF': 2,
-                'M': 1,
-                'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
-                'STACK': 1},
-            prefix=''
+    def default_models(self):
+        models = list()
+        models.append(
+            Model(
+                name='NMOS',
+                pins=['D', 'G', 'S', 'B'],
+                parameters={
+                    'W': 0,
+                    'L': 0,
+                    'NFIN': 1,
+                    'NF': 2,
+                    'M': 1,
+                    'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
+                    'STACK': 1},
+                prefix=''
+            )
         )
-    )
-
-    default.append(
-        Model(
-            name='PMOS',
-            pins=['D', 'G', 'S', 'B'],
-            parameters={
-                'W': 0,
-                'L': 0,
-                'NFIN': 1,
-                'NF': 2,
-                'M': 1,
-                'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
-                'STACK': 1},
-            prefix=''
+        models.append(
+            Model(
+                name='PMOS',
+                pins=['D', 'G', 'S', 'B'],
+                parameters={
+                    'W': 0,
+                    'L': 0,
+                    'NFIN': 1,
+                    'NF': 2,
+                    'M': 1,
+                    'PARALLEL': 1,  # Internal attribute used for parallel and stacked devices
+                    'STACK': 1},
+                prefix=''
+            )
         )
-    )
-
-    default.append(
-        Model(
-            name='CAP',
-            pins=['PLUS', 'MINUS'],
-            parameters={
-                'VALUE': 0
-            },
-            prefix='C'
+        models.append(
+            Model(
+                name='CAP',
+                pins=['PLUS', 'MINUS'],
+                parameters={
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
+                },
+                prefix='C'
+            )
         )
-    )
-
-    default.append(
-        Model(
-            name='RES',
-            pins=['PLUS', 'MINUS'],
-            parameters={
-                'VALUE': 0
-            },
-            prefix='R'
+        models.append(
+            Model(
+                name='RES',
+                pins=['PLUS', 'MINUS'],
+                parameters={
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
+                },
+                prefix='R'
+            )
         )
-    )
-    default.append(
-        Model(
-            name='IND',
-            pins=['PLUS', 'MINUS'],
-            parameters={
-                'VALUE': 0
-            },
-            prefix='L'
+        models.append(
+            Model(
+                name='IND',
+                pins=['PLUS', 'MINUS'],
+                parameters={
+                    'VALUE': 0,
+                    'PARALLEL': 1,
+                    'STACK': 1
+                },
+                prefix='L'
+            )
         )
-    )
+        return models
