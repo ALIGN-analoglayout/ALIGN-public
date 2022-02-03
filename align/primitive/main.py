@@ -41,7 +41,7 @@ def get_parameters(primitive, parameters, nfin):
 
 
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
-
+    logger.debug(f"generating primitive {block_name}")
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
     # TODO: THIS SHOULD NOT BE NEEDED !!!
@@ -132,6 +132,7 @@ def get_generator(name, pdkdir):
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
         else:  # is pdk old school (backward compatibility)
+            print(f"check {pdkdir/'primitive.py'}")
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
@@ -433,10 +434,13 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or isinstance(primitive, Model)\
-        or primitive == 'generic', f"{block_name} definition: {primitive}"
+        or primitive == 'generic' \
+        or 'ring' in primitive, f"{block_name} definition: {primitive}"
 
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
+    elif 'ring' in primitive:
+        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' in primitive.name:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                               pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
@@ -446,9 +450,6 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'RES' in primitive.name:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'ring' in primitive.name.lower():
-        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-        # uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
     uc.computeBbox()

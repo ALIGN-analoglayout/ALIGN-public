@@ -19,7 +19,7 @@ def test_ota_six():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
@@ -37,7 +37,7 @@ def test_ota_swap():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', 'DP_NMOS_B'])
@@ -54,7 +54,7 @@ def test_ota_dont_swap():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "FixSourceDrain", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
@@ -70,7 +70,7 @@ def test_skip_digital():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "IsDigital", "isTrue": True}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name])
@@ -86,7 +86,7 @@ def test_dont_use_lib_cell():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     ckt_library = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
@@ -102,7 +102,7 @@ def test_dont_const():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "AutoConstraint", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     gen_const_path = out_path / f'{name}.verilog.json'
@@ -120,7 +120,7 @@ def test_dont_constrain_clk():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "ClockPorts", "ports": ["vin"]}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     clean_data(name)
@@ -135,22 +135,7 @@ def test_identify_array():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "IdentifyArray", "isTrue": False}
-        ]
-    example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
-    clean_data(name)
-    pass
-
-
-def test_merge_caps():
-    # TODO Do not identify array when setup set as false
-    name = f'ckt_{get_test_id()}'.upper()
-    netlist = ota_six(name)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["VCCX"]},
-        {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "AutoGroupCaps", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     clean_data(name)
@@ -165,7 +150,7 @@ def test_keep_duppy():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "KeepDummyHierarchies", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     clean_data(name)
@@ -180,7 +165,7 @@ def test_merge_series():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "MergeSeriesDevices", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     clean_data(name)
@@ -195,7 +180,7 @@ def test_merge_parallel():
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
         {"constraint": "MergeParallelDevices", "isTrue": False}
-        ]
+    ]
     example = build_example(name, netlist, constraints)
     generate_hierarchy(example, name, out_path, False, pdk_path, False)
     clean_data(name)
