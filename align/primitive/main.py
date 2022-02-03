@@ -135,7 +135,7 @@ def get_generator(name, pdkdir):
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-    return getattr(module, name, False)
+    return getattr(module, name, False) or getattr(module, name.lower(), False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
@@ -160,13 +160,22 @@ def add_primitive(primitives, block_name, block_args):
         primitives[block_name] = block_args
 
 
-def generate_primitive_lef(element, model, all_lef, primitives, design_config: dict, uniform_height=False, pdk_dir=None):
+def generate_primitive_lef(element, primitives, design_config: dict, uniform_height=False, pdk_dir=None):
     """ Return commands to generate parameterized lef"""
     # TODO model parameter can be improved
-    name = model
+    db = element.parent.parent.parent
+    ele_def = db.find(element.generator)
+    if isinstance(ele_def, SubCircuit):
+        name = ele_def.name
+    elif isinstance(ele_def, Model):
+        # using base model name right now
+        # need seperate generator for each model?
+        name = db.find(ele_def.name).name
+    else:
+        # base model
+        name = element.generator
     values = element.parameters
-    available_block_lef = all_lef
-    logger.debug(f"checking lef for: {name}, {element}, {values}")
+    logger.debug(f"Getting generator parameters for: {name}, {element}, {values}")
 
     if name == 'CAP':
         assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {element.name}"
@@ -178,14 +187,18 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
         # TODO: use float in name
         block_name = name + '_' + str(int(size)) + 'f'
-        logger.debug(f"Found cap with size: {size}")
+        logger.debug(f"Generating capacitor for: {element.name} {name} {size}")
         element.add_abs_name(block_name)
-        block_args = {
-            'primitive': name,
-            'value': int(size)
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
+
+        if block_name in primitives:
+            return block_name, primitives[block_name]
+        else:
+            block_args = {
+                'primitive': name,
+                'value': int(size)
+            }
+            add_primitive(primitives, block_name, block_args)
+            return True
 
     elif name == 'RES':
         assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {element.name}"
@@ -198,16 +211,18 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
             size = int(size)
         block_name = name + '_' + str(size).replace('.', 'p')
         height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
-        if block_name in available_block_lef:
-            return block_name, available_block_lef[block_name]
-        logger.debug(f'Generating lef for: {name} {size}')
+        logger.debug(f'Generating resistor for: {element.name} {name} {size}')
         element.add_abs_name(block_name)
-        block_args = {
-            'primitive': name,
-            'value': (height, float(size))
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
+
+        if block_name in primitives:
+            return block_name, primitives[block_name]
+        else:
+            block_args = {
+                'primitive': name,
+                'value': (height, float(size))
+            }
+            add_primitive(primitives, block_name, block_args)
+            return True
 
     elif name == 'generic' or get_generator(name.lower(), pdk_dir):
         value_str = ''
@@ -331,8 +346,8 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                         f"unrecognized NFIN of device {key}:{values[key]['NFIN']} in {name}"
                     assert unit_size_mos >= int(values[key]["NFIN"]), \
                         f"NFIN of device {key} in {name} should not be grater than {unit_size_mos}"
-                    size = int(values[key]["NFIN"])
-                name_arg = 'NFIN'+str(size)
+                    nfin = int(values[key]["NFIN"])
+                name_arg = 'NFIN'+str(nfin)
             elif design_config["pdk_type"] == "Bulk":
                 # Bulk design
                 for key in values:
@@ -362,7 +377,7 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 name_arg = name_arg+'_M'+str(int(values[device_name]["M"]))
                 size = 0
 
-            logger.debug(f"Generating lef for {name} , with size {size}")
+            logger.debug(f"Generating lef for {name}")
             if isinstance(size, int):
                 for key in values:
                     assert int(values[device_name]["NFIN"]) == int(values[key]["NFIN"]), f"NFIN should be same for all devices in {name} {values}"
@@ -387,10 +402,6 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
 
             block_name = f"{name}_{name_arg}_N{unit_size_mos}_X{xval}_Y{yval}"
 
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
-
-            logger.debug(f"Generating parametric lef of:  {block_name} {name}")
             block_args = {
                 'primitive': name,
                 'value': values[device_name]["NFIN"],
@@ -405,9 +416,14 @@ def generate_primitive_lef(element, model, all_lef, primitives, design_config: d
                 block_args['vt_type'] = vt[0]
                 block_name = block_name+'_'+vt[0]
 
-            element.add_abs_name(block_name)
-            add_primitive(primitives, block_name, block_args)
-            return True
+            if block_name in primitives and block_args == primitives[block_name]:
+                logger.debug(f'{block_name} exists')
+                element.add_abs_name(block_name)
+                return True
+            else:
+                element.add_abs_name(block_name)
+                add_primitive(primitives, block_name, block_args)
+                return True
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.

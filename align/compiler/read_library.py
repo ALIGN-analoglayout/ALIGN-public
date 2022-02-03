@@ -1,6 +1,11 @@
 import pathlib
+
+from align.schema.types import set_context
 from ..schema.parser import SpiceParser
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
+from ..primitive import main
+
 import logging
 from ..schema.library import Library
 from align.primitive.main import get_generator
@@ -49,6 +54,14 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
         with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
+    for subckt in lib_parser.library:
+        if isinstance(subckt, SubCircuit):
+            if main.get_generator(subckt.name, pdk_dir) and \
+                    not [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
+                # TODO: In future can we overwrite subcircuit based on user constraint
+
+                with set_context(subckt.constraints):
+                    subckt.constraints.append(constraint.Generator())
 
     return lib_parser.library
 
