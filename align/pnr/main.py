@@ -227,6 +227,42 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         
+        #
+        # Hacks for partial routing
+        #
+        primitives_with_atn = defaultdict(list)
+        for v in primitives.values():
+            primitives_with_atn[v['abstract_template_name']].append(v)
+
+        for k, v in primitives_with_atn.items():
+            first_md = None
+            first_primitive = None
+            for primitive in v:
+                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                    md = primitive['metadata']['partially_routed_pins']
+                    if first_md is None:
+                        first_md = md
+                        first_primitive = primitive
+                    else:
+                        if set(first_md.keys()) != set(md.keys()):
+                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'], first_md, md)
+                    
+
+
+        # Update connectivity for partially routed primitives
+        for module in verilog_d['modules']:
+            for instance in module['instances']:
+                for primitive in primitives_with_atn[instance['abstract_template_name']]:
+                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                        fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
+                        new_fa_map = List[FormalActualMap]()
+                        for f, a in primitive['metadata']['partially_routed_pins'].items():
+                            new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
+                        instance['fa_map'] = new_fa_map
+
+        manipulate_hierarchy(verilog_d, subckt)
+
+
 
         logger.debug(f"updated verilog: {verilog_d}")
         with (input_dir/verilog_file).open("wt") as fp:
@@ -295,40 +331,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
 
-        #
-        # Hacks for partial routing
-        #
-        primitives_with_atn = defaultdict(list)
-        for v in primitives.values():
-            primitives_with_atn[v['abstract_template_name']].append(v)
-
-        for k, v in primitives_with_atn.items():
-            first_md = None
-            first_primitive = None
-            for primitive in v:
-                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                    md = primitive['metadata']['partially_routed_pins']
-                    if first_md is None:
-                        first_md = md
-                        first_primitive = primitive
-                    else:
-                        if set(first_md.keys()) != set(md.keys()):
-                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'], first_md, md)
-                    
-
-
-        # Update connectivity for partially routed primitives
-        for module in verilog_d['modules']:
-            for instance in module['instances']:
-                for primitive in primitives_with_atn[instance['abstract_template_name']]:
-                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                        fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
-                        new_fa_map = List[FormalActualMap]()
-                        for f, a in primitive['metadata']['partially_routed_pins'].items():
-                            new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
-                        instance['fa_map'] = new_fa_map
-
-        manipulate_hierarchy(verilog_d, subckt)
 
 
 
