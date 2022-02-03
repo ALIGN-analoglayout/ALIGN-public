@@ -5,7 +5,7 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-from align.pdk.finfet.transistor_array import NEW_PARTIAL_ROUTING_FEATURE
+from align.pdk.finfet import transistor_array
 
 cleanup = False
 
@@ -253,8 +253,6 @@ def test_two_stage_ota():
     run_example(example, cleanup=cleanup)
 
 def test_cs_1():
-    NEW_PARTIAL_ROUTING_FEATURE = True
-
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -266,12 +264,7 @@ def test_cs_1():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
-    NEW_PARTIAL_ROUTING_FEATURE = False
-
-
 def test_cs_2():
-    NEW_PARTIAL_ROUTING_FEATURE = True
-
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -282,5 +275,3 @@ def test_cs_2():
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
-
-    NEW_PARTIAL_ROUTING_FEATURE = False

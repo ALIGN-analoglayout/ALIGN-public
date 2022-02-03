@@ -10,13 +10,15 @@ import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
 
-NEW_PARTIAL_ROUTING_FEATURE = False
+
 
 class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        if NEW_PARTIAL_ROUTING_FEATURE:
+        self.NEW_PARTIAL_ROUTING_FEATURE = True
+        if self.NEW_PARTIAL_ROUTING_FEATURE:
+            print('Adding partial routing metadata field')
             self.metadata = {'partially_routed_pins': {}}
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
@@ -127,7 +129,7 @@ class MOSGenerator(CanvasPDK):
         # Assign M2 tracks to prevent adjacent V2 violation
         track_pattern_1 = {'G': [6], 'S': [4], 'D': [2]}
         mg = MOS()
-        if NEW_PARTIAL_ROUTING_FEATURE:
+        if self.NEW_PARTIAL_ROUTING_FEATURE:
             tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=None)
         else:
             tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
@@ -154,7 +156,7 @@ class MOSGenerator(CanvasPDK):
             else:
                 track_pattern_2['D'] = [1]
 
-            if NEW_PARTIAL_ROUTING_FEATURE:
+            if self.NEW_PARTIAL_ROUTING_FEATURE:
                 track_pattern_1 = track_pattern_2 = None
 
             # Alternate m2 tracks for device A and device B for improved matching
@@ -231,7 +233,7 @@ class MOSGenerator(CanvasPDK):
         # Stamp the instances
         self.place(rows)
 
-        if not NEW_PARTIAL_ROUTING_FEATURE:
+        if not self.NEW_PARTIAL_ROUTING_FEATURE:
             self.route()
             self.terminals = self.removeDuplicates()
         else:
@@ -240,8 +242,8 @@ class MOSGenerator(CanvasPDK):
             def find_update_term(layer, rect, new_name):
                 for term in self.terminals:
                     if term['layer'] == layer and term['rect'] == rect:
-                        term['netName'] = term['pin'] = new_name
-
+                        term['netName'] = new_name
+                        term['netType'] = 'pin'
             counters = {}
             for net_opens in self.rd.opens:
                 net_name = net_opens[0]

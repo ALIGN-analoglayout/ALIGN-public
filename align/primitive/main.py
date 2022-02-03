@@ -445,7 +445,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
 
     with open(outputdir / (block_name + ".json"), "rt") as fp0, \
             open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:
