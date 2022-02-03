@@ -1,31 +1,36 @@
 {
     "constraints": [
         {
-            "const_name": "CC",
-            "cap_name": "C1_C3",
-            "unit_capacitor": "CAP_12F",
-            "size": [
-                3,
-                5
+            "ports": [
+                "VDD"
             ],
-            "nodummy": true,
-            "cap_r": -1,
-            "cap_s": -1
+            "const_name": "PowerPorts"
         },
         {
-            "const_name": "CC",
-            "cap_name": "C7_C6",
-            "unit_capacitor": "CAP_12F",
-            "size": [
-                3,
-                5
+            "ports": [
+                "VSS"
             ],
-            "nodummy": true,
-            "cap_r": -1,
-            "cap_s": -1
+            "const_name": "GroundPorts"
+        },
+        {
+            "ports": [
+                "PHI1",
+                "PHI2"
+            ],
+            "const_name": "ClockPorts"
         },
         {
             "pairs": [
+                {
+                    "type": "sympair",
+                    "block1": "C0",
+                    "block2": "C4"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "C1",
+                    "block2": "C7"
+                },
                 {
                     "type": "sympair",
                     "block1": "C5",
@@ -33,22 +38,242 @@
                 },
                 {
                     "type": "sympair",
-                    "block1": "X_CMC_S_NMOS_B_I1_M6_M7",
-                    "block2": "X_CMC_S_NMOS_B_I1_M12_M14"
+                    "block1": "C6",
+                    "block2": "C3"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "C9",
+                    "block2": "C8"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "M3",
+                    "block2": "M11"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "M5",
+                    "block2": "M9"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "XI0"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_M0_M14"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_M10_M7"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_M12_M6"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_M4_M8"
                 }
             ],
             "const_name": "SymmBlock",
             "axis_dir": "V"
         },
         {
-            "pairs": [
-                {
-                    "type": "sympair",
-                    "block1": "C8",
-                    "block2": "C9"
-                }
-            ],
-            "const_name": "SymmBlock",
+            "net1": {
+                "name": "NET63",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "M5",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C1",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C0",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M10_M7",
+                        "pin": "SB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "NET62",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "M9",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C7",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C4",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M10_M7",
+                        "pin": "SA"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "NET64",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "XI0",
+                        "pin": "VINN"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C6",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C5",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M10_M7",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "NET66",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "XI0",
+                        "pin": "VINP"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C3",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C2",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M10_M7",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "NET67",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "M3",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C1",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M0_M14",
+                        "pin": "SA"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "NET68",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "M11",
+                        "pin": "S"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C7",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M0_M14",
+                        "pin": "SB"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "NET72",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "C0",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M4_M8",
+                        "pin": "DA"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M12_M6",
+                        "pin": "DB"
+                    }
+                ]
+            },
+            "net2": {
+                "name": "NET60",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "C4",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M4_M8",
+                        "pin": "DB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M12_M6",
+                        "pin": "DA"
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
             "axis_dir": "V"
         },
         {
@@ -62,7 +287,7 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M6_M7",
+                        "name": "X_M12_M6",
                         "pin": "SB"
                     },
                     {
@@ -82,12 +307,76 @@
                     },
                     {
                         "type": "pin",
-                        "name": "X_CMC_S_NMOS_B_I1_M12_M14",
+                        "name": "X_M12_M6",
                         "pin": "SA"
                     },
                     {
                         "type": "terminal",
                         "name": "VINP",
+                        "pin": null
+                    }
+                ]
+            },
+            "const_name": "SymmNet",
+            "axis_dir": "V"
+        },
+        {
+            "net1": {
+                "name": "VOUTP",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "XI0",
+                        "pin": "VOUTP"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C9",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C6",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M0_M14",
+                        "pin": "DB"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VOUTP",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "VOUTN",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "XI0",
+                        "pin": "VOUTN"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C8",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "C3",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M0_M14",
+                        "pin": "DA"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VOUTN",
                         "pin": null
                     }
                 ]

@@ -150,7 +150,7 @@ class CmdlineParser():
         parser.add_argument('--ilp_solver',
                             type=str,
                             default='symphony',
-                            choices=['symphny', 'lpsolve'],
+                            choices=['symphony', 'lpsolve'],
                             help='ILP Solver used by placer ')
 
         self.parser = parser

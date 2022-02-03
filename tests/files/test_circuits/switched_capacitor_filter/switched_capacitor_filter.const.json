@@ -1,18 +1,21 @@
 [
     {
-        "constraint": "GroupCaps",
-        "name": "c1_c3",
-        "instances": ["c1", "c3"],
-        "unit_cap": "Cap_12f",
-        "num_units": [3, 5],
-        "dummy": false
+        "constraint": "PowerPorts",
+        "ports": [
+            "VDD"
+        ]
     },
     {
-        "constraint": "GroupCaps",
-        "name": "c7_c6",
-        "instances": ["c7","c6"],
-        "unit_cap": "Cap_12f",
-        "num_units": [3, 5],
-        "dummy": false
+        "constraint": "GroundPorts",
+        "ports": [
+            "VSS"
+        ]
+    },
+    {
+        "constraint": "ClockPorts",
+        "ports": [
+            "PHI1",
+            "PHI2"
+        ]
     }
 ]

@@ -1,17 +1,13 @@
 import itertools
 import logging
 from .types import Optional, List, Dict
-
 from . import types
-from pydantic import validator
-
 from .types import set_context
 from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 from . import checker
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -97,31 +93,43 @@ class SubCircuit(Model):
         # Load constraints
         yield from self.constraints.translate(solver)
 
-    def verify(self, formulae=None):
-        if formulae is None:
+    def verify(self, constraint=None):
+        if constraint is None:
             self._checker = checker.Z3Checker()
             formulae = self.translate(self._checker)
         else:
             assert self._checker is not None, "Incremental verification is not possible as solver hasn't been instantiated yet"
+            formulae = types.cast_to_solver(constraint, self._checker)
         for x in formulae:
             self._checker.append(x)
-        self._check()
+        try:
+            self._checker.solve()
+        except checker.SolutionNotFoundError as e:
+            logger.debug(f'Checker raised error:\n {e}')
+            core = [x.json() for x in itertools.chain(self.elements, self.constraints, [constraint]) if self._checker.label(x) in e.labels]
+            logger.error(f'Solution not found due to conflict between:')
+            for x in core:
+                logger.error(f'{x}')
+            raise  # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+
+    def is_identical(self, subckt):
+        subckt_match = subckt.pins == self.pins and \
+            subckt.parameters == self.parameters and \
+            subckt.constraints == self.constraints
+        if not subckt_match:
+            return False
+
+        for x in subckt.elements:
+            y = self.get_element(x.name)
+            element_match = (y.model == x.model) and (y.pins == x.pins) and (y.parameters == x.parameters)
+            if not element_match:
+                return False
+        return True
 
     #
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
-
-    def _check(self):
-        try:
-            self._checker.solve()
-        except checker.SolutionNotFoundError as e:
-            logger.debug(f'Checker raised error:\n {e}')
-            core = [x.json() for x in itertools.chain(self.elements, self.constraints) if self._checker.label(x) in e.labels]
-            logger.error(f'Solution not found due to conflict between:')
-            for x in core:
-                logger.error(f'{x}')
-            raise checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
 
 class Circuit(SubCircuit):

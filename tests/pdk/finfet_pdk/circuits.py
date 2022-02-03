@@ -184,3 +184,60 @@ def ro_simple(name):
         .ends {name}
     """)
     return netlist
+
+
+def two_stage_ota_differential(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt p_s_pcell_3 d g s b
+        .param m=1
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_3
+
+        .subckt p_s_pcell_4 d g s b
+        .param m=1
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_4
+
+        .subckt p_s_pcell_5 d g s b
+        .param m=1
+        mi2 inet1 g s b p w=180e-9 m=1 nf=1
+        mi1 d g inet1 b p w=180e-9 m=1 nf=1
+        .ends p_s_pcell_5
+
+        .subckt n_s_pcell_6 d g s b
+        .param m=1
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_6
+
+        .subckt n_s_pcell_7 d g s b
+        .param m=1
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_7
+
+        .subckt n_s_pcell_8 d g s b
+        .param m=1
+        mi1 d g inet1 b n w=180e-9 m=1 nf=1
+        mi2 inet1 g s b n w=180e-9 m=1 nf=1
+        .ends n_s_pcell_8
+
+        .subckt {name} id vccx vg vinn vinp voutn voutp vssx
+        xmp4 vpbias vpbias vccx vccx p_s_pcell_3 m=6
+        xmp3 voutn vx vccx vccx p_s_pcell_4 m=16
+        xmp0 vy vpbias vccx vccx p_s_pcell_5 m=3
+        xmp1 voutp vy vccx vccx p_s_pcell_4 m=16
+        xmp2 vx vpbias vccx vccx p_s_pcell_5 m=3
+        xmn6 vpbias id vssx vssx n_s_pcell_6 m=1
+        xmn5 voutn id vssx vssx n_s_pcell_7 m=4
+        xmn1 vx vinp net023 vssx n_s_pcell_8 m=10
+        xmn2 net023 vg vssx vssx n_s_pcell_6 m=1
+        xmn3 voutp id vssx vssx n_s_pcell_7 m=4
+        xmn4 id id vssx vssx n_s_pcell_6 m=1
+        xmn0 vy vinn net023 vssx n_s_pcell_8 m=10
+        .ends {name}
+        .END
+    """)
+    return netlist

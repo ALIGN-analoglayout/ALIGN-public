@@ -152,7 +152,8 @@ def test_place_cmp_2():
 
 @pytest.mark.skip
 @pytest.mark.parametrize("seed", [0, 7, 1453, 1981, 2021])
-def test_place_cmp_seed(seed):
+@pytest.mark.parametrize("analytical_placer", [True, False])
+def test_place_cmp_seed(seed, analytical_placer):
     """ original comparator. Run this test with -v and -s"""
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
@@ -171,20 +172,26 @@ def test_place_cmp_seed(seed):
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
     ]
-    example = build_example(name, netlist, setup, constraints)
+    example = build_example(name, netlist, constraints)
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG',
-                                   additional_args=['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)])
+    additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(seed)]
+    if analytical_placer:
+        additional_args.append('--use_analytical_placer')
+        placer = 'analytical'
+    else:
+        placer = 'annealing'
+
+    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
 
     cn = f'{name.upper()}_0'
 
     with (run_dir / '3_pnr' / 'Results' / f'{cn}.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
-
         assert standalone_overlap_checker(placement, cn)
         nets = gen_netlist(placement, cn)
         hpwl_new = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
@@ -194,7 +201,6 @@ def test_place_cmp_seed(seed):
     cn = 'CKT_PLACE_CMP_1_0'
     with (run_dir / '..' / f'_{cn}.placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
-
         assert standalone_overlap_checker(placement, cn)
         nets = gen_netlist(placement, cn)
         hpwl_best = calculate_HPWL_from_placement_verilog_d(placement, cn, nets)
@@ -205,11 +211,38 @@ def test_place_cmp_seed(seed):
     area_pct = round(100*((area_new/area_best)-1))
     pct = (area_new*hpwl_new)/(area_best*hpwl_best)
     pct = round(100*(pct-1))
-    print(f'seed={seed} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
+    print(f'seed={seed} placer={placer} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
 
-    plot_sa_cost(name.upper())
-    plot_sa_seq(name.upper())
+    # plot_sa_cost(name.upper())
+    # plot_sa_seq(name.upper())
 
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
+
+def test_cmp_analytical():
+    """ smoke test for analytical placer """
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+    ]
+    example = build_example(name, netlist, constraints)
+
+    additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
+
+    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)

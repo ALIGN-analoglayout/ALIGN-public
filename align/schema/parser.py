@@ -24,10 +24,12 @@ unit_multipliers = {
     'F': 1e-15
 }
 
+
 def str2float(val):
     unit = next((x for x in unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
     numstr = val if unit is None else val[:-1*len(unit)]
     return float(numstr) * unit_multipliers[unit] if unit is not None else float(numstr)
+
 
 # Token specification
 modifiers = '|'.join(unit_multipliers.keys())
@@ -55,7 +57,8 @@ spice_pat = re.compile('|'.join(fr'(?P<{x}>{y})' for x, y in token_re_map.items(
 constraint_dict = {x: getattr(constraint, x) for x in dir(constraint) if not x.startswith('_')}
 
 # Tokenizer
-Token = collections.namedtuple('Token', ['type','value'])
+Token = collections.namedtuple('Token', ['type', 'value'])
+
 
 class SpiceParser:
 
@@ -139,7 +142,7 @@ class SpiceParser:
             model = defaults[name[0]]
             if not kwargs:
                 kwargs['VALUE'] = args.pop()
-            else: #to allow cap/res parameters
+            else:  # to allow cap/res parameters
                 model = args.pop()
         elif any(name.startswith(x) for x in ('M', 'X')):
             assert args, f"empty arguments found {name} {args} {kwargs}"
@@ -151,39 +154,43 @@ class SpiceParser:
             model = self.library.find(model)
 
             if model.base:
-                generator= model.base
-            elif isinstance(model, SubCircuit) and name.startswith ('X'):
+                generator = model.base
+            elif isinstance(model, SubCircuit) and name.startswith('X'):
                 generator = model.name
             elif isinstance(model, Model) and model.prefix == 'XI':
                 generator = 'generic'
             else:
                 generator = model.name
-            #TODO assert generator is available in primitive generator
+            # TODO assert generator is available in primitive generator
         else:
-            #TODO generic model need to get pins from generator
+            # TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
             with set_context(self.library):
                 self.library.append(
                     Model(name=model, pins=args, parameters=kwargs, prefix='XI')
                 )
             model = self.library.find(model)
-            #TODO: get it from generator
+            # TODO: get it from generator
             generator = 'generic'
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \
-                f"Model {model.name} has {len(model.pins)} pins {model.pins}. " \
-                + f"{len(args)} nets {args} were passed when instantiating {name}."
-        pins = {pin:net for pin, net in zip(model.pins, args)}
+            f"Model {model.name} has {len(model.pins)} pins {model.pins}. " \
+            + f"{len(args)} nets {args} were passed when instantiating {name}."
+        pins = {pin: net for pin, net in zip(model.pins, args)}
         with set_context(self._scope[-1].elements):
-            self._scope[-1].elements.append(Instance(name=name, model=model.name, \
-                pins=pins, parameters=kwargs, generator=generator
-                ))
+            try:
+                self._scope[-1].elements.append(Instance(name=name, model=model.name,
+                                                         pins=pins, parameters=kwargs,
+                                                         generator=generator
+                                                         ))
+            except ValueError:
+                assert False, f"could not identify device parameters {name} {kwargs} allowed parameters are {model.name} {model.parameters}"
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):
-            for constraint in self._constraints:
-                self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))
+            for const in self._constraints:
+                self._scope[-1].constraints.append(eval(const, {}, constraint_dict))
         self._constraints = None
 
     def _process_declaration(self, decl, args, kwargs):
@@ -201,7 +208,7 @@ class SpiceParser:
         elif decl == '.PARAM':
             assert len(args) == 0, f"unsupported arguments {args}, probably missing default values"
             self._scope[-1].parameters.update({
-                k.upper() : str(v).upper() for k, v in kwargs.items()
+                k.upper(): str(v).upper() for k, v in kwargs.items()
             })
         elif decl == '.MODEL':
             assert len(args) == 2, args
@@ -209,7 +216,4 @@ class SpiceParser:
             assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
             assert self.library.find(base) is not None, f"Base model {base} not found for model {name}"
             with set_context(self.library):
-                self.library.append(
-                    Model(name=name, base=base, parameters=kwargs)
-                )
-
+                self.library.append(Model(name=name, base=base, parameters=kwargs))

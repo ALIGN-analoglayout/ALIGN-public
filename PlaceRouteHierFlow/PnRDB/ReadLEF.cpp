@@ -43,7 +43,7 @@ bool PnRdatabase::ReadLEFFromString(const string& lefStr) {
 void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
 
-  logger->debug("Reading LEF file {0}", leffile);
+  // logger->debug("Reading LEF file {0}", leffile);
   string def;
   size_t found;
   vector<string> temp;
@@ -70,7 +70,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
       // cout<<def<<endl;
       // [wbxu] This function needs to be updated to support internal metals, currently we're lack of data
       if (stage == 0) {  // idle mode
-        logger->debug("stage0.def: {0}", def);
+        // logger->debug("stage0.def: {0}", def);
         if ((found = def.find("MACRO")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroName = temp[1];
@@ -136,7 +136,6 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-        logger->debug("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);

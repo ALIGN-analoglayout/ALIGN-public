@@ -625,3 +625,38 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     }
   }
 }
+
+void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, const string &jsonStr){
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLeafOffsetPitch");
+  auto &b = lefData[primitive.front().name].front();
+  json jedb = json::parse(jsonStr);
+  if(jedb.contains("metadata")){
+    json constraints = jedb["metadata"]["constraints"];
+    for (auto constraint : constraints) {
+      if (constraint["constraint"] == "place_on_grid"){
+        string s = constraint["direction"];
+        if (constraint["direction"] == "H") {  // horizontal metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.yoffset.push_back(offset);
+            b.yoffset.back() = b.yoffset.back() * 2 / ScaleFactor;
+          }
+          b.ypitch = constraint["pitch"];
+          b.ypitch = b.ypitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.yflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        } else if (constraint["direction"] == "V") {  // vertical metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.xoffset.push_back(offset);
+            b.xoffset.back() = b.xoffset.back() * 2 / ScaleFactor;
+          }
+          b.xpitch = constraint["pitch"];
+          b.xpitch = b.xpitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        }
+      }
+    }
+  }
+}

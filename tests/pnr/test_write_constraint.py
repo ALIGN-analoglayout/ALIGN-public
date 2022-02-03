@@ -1,3 +1,4 @@
+from marshal import load
 import pathlib
 import pytest
 import json
@@ -5,25 +6,27 @@ import json
 from align.pnr.write_constraint import PnRConstraintWriter
 from align.schema import types, Instance, Library, SubCircuit, constraint, SpiceParser
 
+
 @pytest.fixture
 def mock_circuit():
-    library = Library()
+    library = Library(loadbuiltins=True)
     n = library.find('nmos')
     assert n is not None
     with types.set_context(library):
         subckt = SubCircuit(
-                name = 'high_speed_comparator',
-                pins = ['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss'])
+            name='high_speed_comparator',
+            pins=['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss'])
         dummy_sub = SubCircuit(
-                name = 'dummy',
-                pins = ['D', 'G', 'S', 'B'])
+            name='dummy',
+            pins=['D', 'G', 'S', 'B'])
     library.append(subckt)
     library.append(dummy_sub)
     for instance in [
-        'MN0', 'MN1', 'MN2', 'MN3', 'MN4', 'X_CMC_S_NMOS_B_I1_M12_M14',
-        'MP5', 'MP6', 'MP7', 'MP8', 'MP9', 'C2', 'C5', 'C1', 'X_CMC_S_NMOS_B_I1_M6_M7', 'C8', 'C9',
-        'MP10', 'MP11', 'MN13', 'MP12', 'MN14', 'X_CMC_PMOS_MP10_MP7', 'X_CMC_PMOS_MP8_MP9',
-        'X_DP_MN1_MN2', 'X_CCN_MN3_MN4', 'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13', 'X_INV_P_MP12_MN14']:
+        'MN0', 'MN1', 'MN2', 'MN3', 'MN4', 'X_M12_M14', 'M3', 'M11', 'M5', 'M9', 'XI0', 'X_M4_M8',
+        'MP5', 'MP6', 'MP7', 'MP8', 'MP9', 'C2', 'C3', 'C6', 'C5', 'C1', 'C0', 'C4', 'C7', 'X_M6_M7', 'C8', 'C9',
+        'X_M10_M7', 'X_M12_M6',
+        'MP10', 'MP11', 'MN13', 'MP12', 'MN14', 'X_MP7_MP8', 'X_MP8_MP9', 'X_M0_M14',
+            'X_DP_MN1_MN2', 'X_CCN_MN3_MN4', 'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13', 'X_INV_P_MP12_MN14']:
         with types.set_context(subckt.elements):
             if instance.startswith('M'):
                 subckt.elements.append(
@@ -52,9 +55,10 @@ def mock_circuit():
 
     return subckt
 
+
 @pytest.mark.parametrize('results_file',
-    (pathlib.Path(__file__).parent.parent / 'files' / 'test_results').glob('*.pnr.const.json'),
-    ids=lambda x: pathlib.Path(pathlib.Path(x.stem).stem).stem)
+                         (pathlib.Path(__file__).parent.parent / 'files' / 'test_results').glob('*.pnr.const.json'),
+                         ids=lambda x: pathlib.Path(pathlib.Path(x.stem).stem).stem)
 def test_group_block_hsc(results_file, mock_circuit):
     name = pathlib.Path(pathlib.Path(results_file.stem).stem).stem
     constraint_file = pathlib.Path(__file__).parent.parent / 'files' / 'test_results' / (name + '.const.json')
@@ -75,4 +79,3 @@ def test_group_block_hsc(results_file, mock_circuit):
         gold_const = json.load(const_fp)["constraints"]
         gold_const.sort(key=lambda item: item.get("const_name"))
     assert gold_const == gen_const
-

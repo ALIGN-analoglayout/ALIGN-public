@@ -104,11 +104,12 @@ def remove_dummies(library, dummy_hiers, top):
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
                             _prefix = library.find(y.model).prefix
-                            if not _prefix:
-                                _prefix = "M"  # default value, used in testing
+                            nm = ele.name
+                            if _prefix and not nm.startswith(_prefix):
+                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=ele.name.replace("X", _prefix),
+                                    name=nm,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters,
@@ -127,7 +128,7 @@ def remove_dummies(library, dummy_hiers, top):
             all_subckt_updated = [
                 module.name for module in library if isinstance(module, SubCircuit)
             ]
-            assert library.find(dh) == None, f"{all_subckt_updated}"
+            assert library.find(dh) is None, f"{all_subckt_updated}"
 
 
 def find_dummy_hier(library, ckt, dummy_hiers):
@@ -193,7 +194,7 @@ def define_SD(subckt, update=True):
         elif isinstance(const, constraint.GroundPorts):
             gnd = const.ports
     if not power or not gnd:
-        logger.warning(f"No power or gnd in this circuit {subckt.name}, please check setup file")
+        logger.debug(f"No power nor ground port specified for {subckt.name}")
         return
 
     G = Graph(subckt)
@@ -273,14 +274,13 @@ def add_parallel_devices(ckt, update=True):
     """add_parallel_devics
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
-        #TODO Optimize later
 
     Parameters:
-        ckt ([type]): [description]
-        update (bool, optional): [description]. Defaults to True.
+        ckt : subcircuit
+        update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
 
-    if update == False:
+    if update is False:
         return
     logger.debug(
         f"Checking parallel devices in {ckt.name}, initial ckt size: {len(ckt.elements)}"
@@ -292,35 +292,36 @@ def add_parallel_devices(ckt, update=True):
         G = Graph(ckt)
         for node in G.neighbors(net):
             ele = ckt.get_element(node)
+            if 'PARALLEL' not in ele.parameters:
+                continue  # this element does not support multiplicity
             p = {**ele.pins, **ele.parameters}
             p["model"] = ele.model
             if p in pp_list:
-                parallel_devices[pp_list.index(p)].append(node)
+                parallel_devices[pp_list.index(p)].append(ele)
             else:
                 pp_list.append(p)
-                parallel_devices[pp_list.index(p)] = [node]
+                parallel_devices[pp_list.index(p)] = [ele]
         for pd in parallel_devices.values():
             if len(pd) > 1:
-                logger.info(f"removing parallel nodes {pd}")
-                pd0 = sorted(pd)[0]
-                ckt.get_element(pd0).parameters["PARALLEL"] = len(set(pd))
+                pd0 = sorted(pd, key=lambda x: x.name)[0]
+                logger.info(f"removing parallel instances {[x.name for x in pd[1:]]} and updating {pd0.name} parameters")
+                pd0.parameters["PARALLEL"] = str(sum([int(getattr(x.parameters, "PARALLEL", "1")) for x in pd]))
                 for rn in pd[1:]:
-                    G.remove_node(rn)
+                    G.remove(rn)
 
 
 def add_series_devices(ckt, update=True):
-    """add_parallel_devics
-        merge devices in parallel as single unit
+    """add_series_devics
+        merge devices in series as single unit
         Keeps 1st device out of sorted list
-        #TODO Optimize later
 
     Parameters:
 
-        ckt ([type]): [description]
-        update (bool, optional): [description]. Defaults to True.
+        ckt : subcircuit
+        update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
 
-    if update == False:
+    if update is False:
         return
     logger.debug(
         f"Checking stacked/series devices, initial ckt size: {len(ckt.elements)}"
@@ -331,6 +332,8 @@ def add_series_devices(ckt, update=True):
         nbrs = sorted(list(G.neighbors(net)))
         if len(nbrs) == 2 and net not in remove_nodes:
             nbr1, nbr2 = [ckt.get_element(nbr) for nbr in nbrs]
+            if 'STACK' not in nbr1.parameters:
+                continue  # this element does not support stacking
             # Same instance type
             if nbr1.model != nbr2.model:
                 continue
@@ -367,7 +370,7 @@ def add_series_devices(ckt, update=True):
                 set(["PLUS", "MINUS"]),
             ]:
                 logger.info(f"stacking {nbrs} {stack1 + stack2}")
-                nbr1.parameters["STACK"] = stack1 + stack2
+                nbr1.parameters["STACK"] = str(stack1 + stack2)
                 for p, n in nbr1.pins.items():
                     if net == n:
                         nbr1.pins[p] = nbr2.pins[p]

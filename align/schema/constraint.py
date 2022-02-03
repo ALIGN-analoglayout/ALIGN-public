@@ -5,7 +5,9 @@ import logging
 
 
 from . import types
-from .types import Union, Optional, Literal, List, set_context
+from .types import BaseModel, Union, Optional, Literal, List, set_context
+
+from pydantic import Field
 
 
 logger = logging.getLogger(__name__)
@@ -402,12 +404,12 @@ class AssignBboxVariables(HardConstraint):
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
-        assert value > values['llx'], f'Reflection is not supported yet'
+        assert value > values['llx'], 'Reflection is not supported yet'
         return value
 
     @types.validator('ury', allow_reuse=True)
     def y_is_valid(cls, value, values):
-        assert value > values['lly'], f'Reflection is not supported yet'
+        assert value > values['lly'], 'Reflection is not supported yet'
         return value
 
     def translate(self, solver):
@@ -599,13 +601,13 @@ class AlignInOrder(UserConstraint):
                 v = 'horizontal'
             else:
                 assert v == 'horizontal', \
-                    f'direction is horizontal if line is bottom or top'
+                    'direction is horizontal if line is bottom or top'
         elif values['line'] in ['left', 'right']:
             if v is None:
                 v = 'vertical'
             else:
                 assert v == 'vertical', \
-                    f'direction is vertical if line is left or right'
+                    'direction is vertical if line is left or right'
         # Center needs both line & direction
         elif values['line'] == 'center':
             assert v, \
@@ -663,7 +665,7 @@ class PlaceSymmetric(SoftConstraint):
         '''
 
         assert len(value) >= 1, 'Must contain at least one instance'
-        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {self.instances}'
+        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {cls.instances}'
         return value
 
 
@@ -882,26 +884,6 @@ class IdentifyArray(SoftConstraint):
     propagate: Optional[bool]
 
 
-class AutoGroupCaps(SoftConstraint):
-    '''
-    Forbids/Allow creation of arrays for symmetric caps
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoGroupCaps",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
 class FixSourceDrain(SoftConstraint):
     '''
     Forbids auto checking of source/drain terminals of transistors.
@@ -986,6 +968,30 @@ class MergeParallelDevices(SoftConstraint):
     propagate: Optional[bool]
 
 
+class Generator(SoftConstraint):
+    '''
+    Used to guide primitive generator.
+    Args:
+        parameters(dict): {
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
+                            parallel_wires (dict): {net_name:2}
+                            body (bool): True/ False
+                            }
+
+    Example: ::
+
+        {
+            "constraint": "Generator",
+            "parameters : {
+                            "pattern": "cc",
+                            "parallel_wires": {"net1":2, "net2":2},
+                            "body": True
+                            }
+        }
+    '''
+    parameters: Optional[dict]
+
+
 class DoNotIdentify(SoftConstraint):
     '''
     TODO: Can be replicated by Enclose??
@@ -1052,6 +1058,25 @@ class SymmetricBlocks(SoftConstraint):
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
                     f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+        return value
+
+
+class OffsetsScalings(BaseModel):
+    offsets: List[int] = Field(default_factory=lambda: [0])
+    scalings: List[Literal[-1, 1]] = Field(default_factory=lambda: [1])
+
+
+class PlaceOnGrid(SoftConstraint):
+    direction: Literal['H', 'V']
+    pitch: int
+    ored_terms: List[OffsetsScalings] = Field(default_factory=lambda: [OffsetsScalings()])
+
+    @types.validator('ored_terms', allow_reuse=False)
+    def ored_terms_validator(cls, value, values):
+        pitch = values['pitch']
+        for term in value:
+            for offset in getattr(term, 'offsets'):
+                assert 0 <= offset < pitch, f'offset {offset} should be less than pitch {pitch}'
         return value
 
 
@@ -1309,11 +1334,13 @@ ConstraintType = Union[
     # Legacy Align constraints
     # (SoftConstraints)
     CompactPlacement,
+    Generator,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
     MatchBlocks,
     DoNotIdentify,
+    PlaceOnGrid,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
@@ -1332,7 +1359,6 @@ ConstraintType = Union[
     DoNotUseLib,
     IsDigital,
     AutoConstraint,
-    AutoGroupCaps,
     FixSourceDrain,
     KeepDummyHierarchies,
     MergeSeriesDevices,
@@ -1348,7 +1374,7 @@ class ConstraintDB(types.List[ConstraintType]):
         if hasattr(constraint, 'translate'):
             if self.parent._checker is None:
                 self.parent.verify()
-            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
+            self.parent.verify(constraint=constraint)
         super().append(constraint)
 
     @types.validate_arguments

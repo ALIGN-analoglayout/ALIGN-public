@@ -16,8 +16,8 @@ def test_cap():
 
     updated_ckt = compiler_input(test_path, "test_cap", pdk_path, config_path)
     assert updated_ckt.find("TEST_CAP")
-    primitives, generators = call_primitive_generator(updated_ckt, pdk_path, True)
-    verilog_tbl = constraint_generator(updated_ckt, generators)
+    primitives = call_primitive_generator(updated_ckt, pdk_path, True)
+    verilog_tbl = constraint_generator(updated_ckt)
     compiler_output(
         updated_ckt,
         "TEST_CAP",

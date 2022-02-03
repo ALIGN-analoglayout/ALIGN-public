@@ -353,6 +353,12 @@ struct block {
   vector<pin> dummy_power_pin;  // power pins below to this block, but needs updated hierachy
   vector<GuardRing> GuardRings;
   int HPWL_extend_wo_terminal = 0;
+  vector<int> xoffset;
+  int xpitch = 1;
+  int xflip = 0;
+  vector<int> yoffset;
+  int ypitch = 1;
+  int yflip = 0;
 };  // structure of block
 
 struct terminal {
@@ -372,6 +378,7 @@ struct blockComplex {
 struct PowerGrid {
   std::string name;
   vector<Metal> metals;
+  vector<Metal> merged_metals;
   vector<Via> vias;
   bool power = 1;  // 1 is vdd, 0 is gnd
 };
@@ -603,6 +610,12 @@ struct lefMacro {
   vector<contact> interMetals;
   vector<Via> interVias;
   string master = "";
+  vector<int> xoffset;
+  int xpitch = 1;
+  int xflip = 0;
+  vector<int> yoffset;
+  int ypitch = 1;
+  int yflip = 0;
 };
 
 /// PArt 5: declaration of structures for design rule data
@@ -702,6 +715,7 @@ struct Drc_info {
   Boundary top_boundary;
   guardring_info Guardring_info;  // guardring info read from layers.json
   design_info Design_info;        // design ingo from layer.json
+  int ScaleFactor = 1;
 };
 
 struct routing_net {

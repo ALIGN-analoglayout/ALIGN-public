@@ -13,6 +13,10 @@ static int via2int(const PnRDB::Drc_info& drc_info, const string& via) { return 
 
 static int metal2int(const PnRDB::Drc_info& drc_info, const string& metal) { return stoi(drc_info.MaskID_Metal.at(drc_info.Metalmap.at(metal))); }
 
+static int via2index(const PnRDB::Drc_info& drc_info, const string& via) { return drc_info.Viamap.at(via); }
+
+static int metal2index(const PnRDB::Drc_info& drc_info, const string& metal) { return drc_info.Metalmap.at(metal); }
+
 unsigned short JSON_Presentation(int font, int vp, int hp) {
   if (font < 0 || font > 3) font = 0;
   if (vp < 0 || vp > 2) vp = 0;
@@ -52,7 +56,7 @@ void JSONExtractUit(string GDSData, double& unit) {
         json lib = *lit;
         json strAry = lib["units"];
         if (strAry.is_array()) {
-          logger->debug("Unit {0} ", to_string(strAry));
+          // logger->debug("Unit {0} ", to_string(strAry));
           json::iterator xyI = strAry.begin();
           double xyU = *xyI;
           unit = 0.5 * 0.000000001 / xyU;
@@ -70,7 +74,7 @@ void JSONReaderWrite_subcells(string GDSData, long int& rndnum, vector<string>& 
   rndnum++;
 
   std::string jsonFileName = GDSData + ".json";
-  logger->debug("GDS JSON FILE={0}", jsonFileName);
+  // logger->debug("GDS JSON FILE={0}", jsonFileName);
 
   int TJ_llx = INT_MAX;
   int TJ_lly = INT_MAX;
@@ -240,7 +244,7 @@ static bool addMetalBoundaries(json& jsonElements, struct PnRDB::Metal& metal, c
     json bound0;
     bound0["type"] = "boundary";
     bound0["layer"] = metal2int(drc_info, metal.MetalRect.metal);
-    bound0["datatype"] = 0;
+    bound0["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, metal.MetalRect.metal)).gds_datatype.Draw;
     json xy = json::array();
     for (size_t i = 0; i < 5; i++) {
       xy.push_back(x[i]);
@@ -259,7 +263,7 @@ static void addContactBoundaries(json& jsonElements, struct PnRDB::contact& Cont
   json bound0;
   bound0["type"] = "boundary";
   bound0["layer"] = metal2int(drc_info, Contact.metal);
-  bound0["datatype"] = 0;
+  bound0["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, Contact.metal)).gds_datatype.Draw;
   json xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -333,7 +337,7 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound0;
   bound0["type"] = "boundary";
   bound0["layer"] = via2int(drc_info, via.ViaRect.metal);
-  bound0["datatype"] = 0;
+  bound0["datatype"] = drc_info.Via_info.at(via2index(drc_info, via.ViaRect.metal)).gds_datatype.Draw; 
   json xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -348,7 +352,7 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound1;
   bound1["type"] = "boundary";
   bound1["layer"] = metal2int(drc_info, via.LowerMetalRect.metal);
-  bound1["datatype"] = 0;
+  bound1["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.LowerMetalRect.metal)).gds_datatype.Draw;
   xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -363,7 +367,7 @@ static void addViaBoundaries(json& jsonElements, struct PnRDB::Via& via, const P
   json bound2;
   bound2["type"] = "boundary";
   bound2["layer"] = metal2int(drc_info, via.UpperMetalRect.metal);
-  bound2["datatype"] = 0;
+  bound2["datatype"] = drc_info.Metal_info.at(metal2index(drc_info, via.UpperMetalRect.metal)).gds_datatype.Draw;
   xy = json::array();
   for (size_t i = 0; i < 5; i++) {
     xy.push_back(x[i]);
@@ -377,7 +381,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
                                    const std::string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath) {
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteJSON");
 
-  logger->debug("JSON WRITE CELL {0} ", gdsName);
+  // logger->debug("JSON WRITE CELL {0} ", gdsName);
   node.gdsFile = opath + gdsName + ".gds";
   string TopCellName = gdsName;
   std::set<string> uniGDSset;
@@ -388,7 +392,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
     JSONExtractUit(*it, unitScale);
   }
   unitScale = 0.5;
-  logger->info("unitScale {0} ", unitScale);
+  // logger->debug("unitScale {0} ", unitScale);
   uniGDSset.clear();
 
   std::ofstream jsonStream;
@@ -440,12 +444,12 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   if (write_blockPins_name && node.isTop == 1) {
     for (unsigned int i = 0; i < node.blockPins.size(); i++) {
       int write = 0;
-      logger->debug("Write blockPins info {0}", node.blockPins[i].name);
-      logger->debug("blockPins contact size {0}", node.blockPins[i].pinContacts.size());
+      // logger->debug("Write blockPins info {0}", node.blockPins[i].name);
+      // logger->debug("blockPins contact size {0}", node.blockPins[i].pinContacts.size());
       for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
         if (write == 0) {
           PnRDB::contact con = node.blockPins[i].pinContacts[j];
-          logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
+          // logger->debug("contact info {0} {1} {2} {3}", con.originBox.LL.x, con.originBox.LL.y, con.originBox.UR.x, con.originBox.UR.y);
           con.placedBox = con.originBox;
           addContactBoundaries(jsonElements, con, drc_info, unitScale);
           assignBoxPoints(x, y, con.originBox, unitScale);
@@ -685,7 +689,7 @@ std::string PnRdatabase::WriteJSON(PnRDB::hierNode& node, bool includeBlock, boo
   jsonTop["bgnlib"] = jsonLibAry;
   jsonStream << std::setw(4) << jsonTop;
   jsonStream.close();
-  logger->debug(" JSON FINALIZE {0} ", gdsName);
+  // logger->debug(" JSON FINALIZE {0} ", gdsName);
   return node.gdsFile;
 }
 
@@ -719,174 +723,3 @@ PnRDB::Metal PnRdatabase::Find_Top_Middle_Metal(PnRDB::hierNode& node, const PnR
   
 }
 
-// added by yg 2019-10-26
-void AddContact(PnRDB::contact& temp_contact, json& temp_json_Contact, int unit) {
-  json temp_json_contact;
-  temp_json_contact["Physical Layer"] = temp_contact.metal;
-  temp_json_contact["LLx"] = temp_contact.placedBox.LL.x * unit;
-  temp_json_contact["LLy"] = temp_contact.placedBox.LL.y * unit;
-  temp_json_contact["URx"] = temp_contact.placedBox.UR.x * unit;
-  temp_json_contact["URy"] = temp_contact.placedBox.UR.y * unit;
-
-  temp_json_Contact.push_back(temp_json_contact);
-}
-
-void AddContacts(std::vector<PnRDB::contact>& temp_contact, json& temp_json_Contact, int unit) {
-  for (unsigned int i = 0; i < temp_contact.size(); i++) {
-    AddContact(temp_contact[i], temp_json_Contact, unit);
-  }
-}
-
-void AddContacts_Metal(std::vector<PnRDB::Metal>& temp_metal, json& temp_json_Contact, int unit) {
-  for (unsigned int i = 0; i < temp_metal.size(); i++) {
-    AddContact(temp_metal[i].MetalRect, temp_json_Contact, unit);
-  }
-}
-
-void AddVia(PnRDB::Via& temp_via, json& temp_json_Contact, json& temp_json_Via, int unit) {
-  AddContact(temp_via.ViaRect, temp_json_Via, unit);
-  AddContact(temp_via.LowerMetalRect, temp_json_Contact, unit);
-  AddContact(temp_via.UpperMetalRect, temp_json_Contact, unit);
-}
-
-void AddVias(std::vector<PnRDB::Via>& temp_via, json& temp_json_Contact, json& temp_json_Via, int unit) {
-  for (unsigned int i = 0; i < temp_via.size(); i++) {
-    AddVia(temp_via[i], temp_json_Contact, temp_json_Via, unit);
-  }
-}
-
-void PnRdatabase::WriteJSON_Routability_Analysis(PnRDB::hierNode& node, const string& opath, PnRDB::Drc_info& drc_info) {
-  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.WriteJSON_Routability_Analysis");
-
-  logger->debug("JSON WRITE Routability Analysis {0}", node.name);
-  std::ofstream jsonStream;
-  jsonStream.open(opath + node.name + ".json");
-  json jsonTop;
-  jsonTop["Cell Name"] = node.name;
-  jsonTop["Units"] = "0.5nm";
-  jsonTop["Istop"] = node.isTop;
-  int unit = 1;
-
-  json temp_box;
-  temp_box["Physical Layer"] = "null";
-  temp_box["LLx"] = 0 * unit;
-  temp_box["LLy"] = 0 * unit;
-  temp_box["URx"] = node.width * unit;
-  temp_box["URy"] = node.height * unit;
-  jsonTop["Cell box"] = temp_box;
-
-  if (drc_info.Metal_info[0].direct == 1) {  // H
-
-    jsonTop["x pitches"] = drc_info.Metal_info[1].grid_unit_x * unit;
-    jsonTop["y pitches"] = drc_info.Metal_info[0].grid_unit_y * unit;
-
-  } else {  // V
-
-    jsonTop["x pitches"] = drc_info.Metal_info[0].grid_unit_x * unit;
-    jsonTop["y pitches"] = drc_info.Metal_info[1].grid_unit_y * unit;
-  }
-
-  // Node terminals
-  json jsonTerminals = json::array();
-
-  for (unsigned int i = 0; i < node.Terminals.size(); i++) {
-    json tempjsonTerminal;
-    tempjsonTerminal["Name"] = node.Terminals[i].name;
-    json temp_Contact = json::array();
-    AddContacts(node.Terminals[i].termContacts, temp_Contact, unit);
-    tempjsonTerminal["Internal Metal"] = temp_Contact;
-    jsonTerminals.push_back(tempjsonTerminal);
-  }
-
-  jsonTop["Terminals"] = jsonTerminals;
-
-  // node Blocks
-  json jsonBlocks = json::array();
-  for (unsigned int i = 0; i < node.Blocks.size(); i++) {
-    int index = node.Blocks[i].selectedInstance;
-    json temp_block;
-    temp_block["Name"] = node.Blocks[i].instance.at(index).name;
-    temp_block["Height"] = node.Blocks[i].instance.at(index).height;
-    temp_block["Width"] = node.Blocks[i].instance.at(index).width;
-    json box;
-    box["Physical Layer"] = "null";
-    box["LLx"] = node.Blocks[i].instance.at(index).placedBox.LL.x * unit;
-    box["LLy"] = node.Blocks[i].instance.at(index).placedBox.LL.y * unit;
-    box["URx"] = node.Blocks[i].instance.at(index).placedBox.UR.x * unit;
-    box["URy"] = node.Blocks[i].instance.at(index).placedBox.UR.y * unit;
-    temp_block["Box"] = box;
-
-    // pins
-    json block_pins = json::array();
-    for (unsigned j = 0; j < node.Blocks[i].instance.at(index).blockPins.size(); j++) {
-      json temp_pin;
-      temp_pin["Name"] = node.Blocks[i].instance.at(index).blockPins[j].name;
-      json temp_Contacts = json::array();
-      json temp_Vias = json::array();
-      AddContacts(node.Blocks[i].instance.at(index).blockPins[j].pinContacts, temp_Contacts, unit);
-      AddVias(node.Blocks[i].instance.at(index).blockPins[j].pinVias, temp_Contacts, temp_Vias, unit);
-      temp_pin["Internal Metal"] = temp_Contacts;
-      temp_pin["Internal Via"] = temp_Vias;
-      block_pins.push_back(temp_pin);
-    }
-
-    temp_block["Pins"] = block_pins;
-
-    // internal metals
-    // internal vias
-    json internal_metal = json::array();
-    json internal_via = json::array();
-    AddContacts(node.Blocks[i].instance.at(index).interMetals, internal_metal, unit);
-    AddVias(node.Blocks[i].instance.at(index).interVias, internal_metal, internal_via, unit);
-    temp_block["Internal Metal"] = internal_metal;
-    temp_block["Internal Via"] = internal_via;
-    jsonBlocks.push_back(temp_block);
-  }
-
-  jsonTop["Blocks"] = jsonBlocks;
-
-  // Nets
-  json jsonNets = json::array();
-
-  for (unsigned int i = 0; i < node.Nets.size(); i++) {
-    json json_temp_net;
-    json_temp_net["Name"] = node.Nets[i].name;
-    // connected
-    json json_connected = json::array();
-
-    for (unsigned int j = 0; j < node.Nets[i].connected.size(); j++) {
-      json temp_connected;
-      if (node.Nets[i].connected[j].type == PnRDB::Block) {
-        temp_connected["Type"] = "Block";
-        int select_block_index = node.Blocks[node.Nets[i].connected[j].iter2].selectedInstance;
-        int block_index = node.Nets[i].connected[j].iter2;
-        int pin_index = node.Nets[i].connected[j].iter;
-        temp_connected["Block name"] = node.Blocks[block_index].instance.at(select_block_index).name;
-        temp_connected["Pin name"] = node.Blocks[block_index].instance.at(select_block_index).blockPins[pin_index].name;
-      } else {
-        temp_connected["Type"] = "Terminal";
-        temp_connected["Block name"] = "Null";
-        temp_connected["Pin name"] = node.Terminals[node.Nets[i].connected[j].iter].name;
-      }
-      json_connected.push_back(temp_connected);
-    }
-
-    json_temp_net["Connected"] = json_connected;
-    // internal metal
-    // internal via
-    json internal_metals = json::array();
-    json internal_vias = json::array();
-    AddContacts_Metal(node.Nets[i].path_metal, internal_metals, unit);
-    AddVias(node.Nets[i].path_via, internal_metals, internal_vias, unit);
-    json_temp_net["Internal Metal"] = internal_metals;
-    json_temp_net["Internal Via"] = internal_vias;
-
-    jsonNets.push_back(json_temp_net);
-  }
-
-  jsonTop["Nets"] = jsonNets;
-
-  jsonStream << std::setw(4) << jsonTop;
-  jsonStream.close();
-  logger->debug(" JSON FINALIZE {0}", node.name);
-}

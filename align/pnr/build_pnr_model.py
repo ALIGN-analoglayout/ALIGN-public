@@ -23,7 +23,6 @@ def ReadVerilogJson( DB, j, add_placement_info=False):
         temp_node.name = module['name'] if 'name' in module else module['abstract_name']
         temp_node.isCompleted = 0
 
-
         Terminals = []
         for parameter in module['parameters']:
             temp_terminal = PnR.terminal()
@@ -138,6 +137,16 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
 
+    for name, instances in DB.lefData.items():
+        fp = d / f"{name}.json"
+        if fp.exists():
+            with fp.open( "rt") as fp:
+                jsonStr = fp.read()
+            DB.ReadPrimitiveOffsetPitch(instances, jsonStr)
+            logger.debug(f"Finished reading primitive json file {name}.json")
+        else:
+            logger.warning(f"No primitive json file for primitive {name}")
+
 def _ReadLEF( DB, path, lefname):
     p = pathlib.Path(path) / lefname
     if p.exists():
@@ -146,7 +155,7 @@ def _ReadLEF( DB, path, lefname):
             DB.ReadLEFFromString( s)
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
-        
+
 def semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
@@ -163,12 +172,9 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     DB.gdsData2 = _ReadMap( path, mapname)
 
     j = None
-    if vname.endswith(".verilog.json"):
-        j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-        global_signals = ReadVerilogJson( DB, j)
-        semantic(DB, path, topcell, global_signals)
-    else:
-        global_signals = DB.ReadVerilog( path, vname, topcell)
-        semantic(DB, path, topcell, global_signals)
+    #if vname.endswith(".verilog.json"):
+    j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
+    global_signals = ReadVerilogJson( DB, j)
+    semantic(DB, path, topcell, global_signals)
 
     return DB, j

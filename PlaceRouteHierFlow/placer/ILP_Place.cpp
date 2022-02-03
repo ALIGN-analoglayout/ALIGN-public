@@ -374,7 +374,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
   colub[N_aspect_ratio_max - 1] = std::max(maxhierwidth, maxhierheight);
   colub[N_aspect_ratio_max - 2] = std::max(maxhierwidth, maxhierheight);
 
-  ConstGraph const_graph;
+  Pdatatype hyper;
   std::vector<double> objective(N_var_max, 0);
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -386,10 +386,10 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     }
     if (cnt <2) continue;
     int ind = int(N_block_vars_max + i * 4);
-    objective[ind]     = -const_graph.LAMBDA;
-    objective[ind + 1] = -const_graph.LAMBDA;
-    objective[ind + 2] = const_graph.LAMBDA;
-    objective[ind + 3] = const_graph.LAMBDA;
+    objective[ind]     = -hyper.LAMBDA;
+    objective[ind + 1] = -hyper.LAMBDA;
+    objective[ind + 2] = hyper.LAMBDA;
+    objective[ind + 3] = hyper.LAMBDA;
   }
   if (flushbl) {
     objective[N_area_max - 1] = 1. * mydesign.Nets.size();
@@ -432,6 +432,30 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     rowtype.push_back('a');
   }
 
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][0].xflip == 1) {
+      rowindofcol[i * 6 + 2].push_back(rhs.size());
+      constrvalues[i * 6 + 2].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    } else if (mydesign.Blocks[i][0].xflip == -1) {
+      rowindofcol[i * 6 + 2].push_back(rhs.size());
+      constrvalues[i * 6 + 2].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(1);
+    }
+    if (mydesign.Blocks[i][0].yflip == 1) {
+      rowindofcol[i * 6 + 3].push_back(rhs.size());
+      constrvalues[i * 6 + 3].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    } else if (mydesign.Blocks[i][0].yflip == -1) {
+      rowindofcol[i * 6 + 3].push_back(rhs.size());
+      constrvalues[i * 6 + 3].push_back(1);
+      sens.push_back('E');
+      rhs.push_back(1);
+    }
+  }
   const int maxxdim = maxhierwidth  * 5;
   const int maxydim = maxhierheight * 5;
   int maxdim = std::max(maxxdim, maxydim) * 2;
@@ -457,6 +481,47 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       align_constr_v.emplace_back(align.blocks.begin(), align.blocks.end());
       for (auto& it : align_constr_v.back()) {
         align_constr_map_v.emplace(it, align_constr_v.back());
+      }
+    }
+  }
+
+  std::map<int, unsigned> xoffsetvars, yoffsetvars;
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][0].xoffset.size()){
+      xoffsetvars[i] = N_var;
+      // 0 : offset value; 1 : integer num of pitches; 2-- : binary choice of offset
+      N_var += (mydesign.Blocks[i][0].xoffset.size() + 2);
+      // offset = \sum offset_i * choice_i
+      // \sum choice_i = 1; choice_i \in {0,1}
+      collb.push_back(0);
+      colub.push_back(infty);
+      intvars.push_back(FALSE);
+      // num pitches
+      collb.push_back(0);
+      colub.push_back(infty);
+      intvars.push_back(TRUE);
+      if (collb.size() < N_var) {
+        collb.resize(N_var, 0);
+        colub.resize(N_var, 1);
+        intvars.resize(N_var, TRUE);
+      }
+    }
+    if (mydesign.Blocks[i][0].yoffset.size()){
+      yoffsetvars[i] = N_var;
+      N_var += (mydesign.Blocks[i][0].yoffset.size() + 2);
+      // offset = \sum offset_i * choice_i
+      // \sum choice_i = 1; choice_i \in {0,1}
+      collb.push_back(0);
+      colub.push_back(infty);
+      intvars.push_back(FALSE);
+      // num pitches
+      collb.push_back(0);
+      colub.push_back(infty);
+      intvars.push_back(TRUE);
+      if (collb.size() < N_var) {
+        collb.resize(N_var, 0);
+        colub.resize(N_var, 1);
+        intvars.resize(N_var, TRUE);
       }
     }
   }
@@ -625,7 +690,7 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         colub.resize(N_var, 1);
         intvars.resize(N_var, 1);
       }
-      for (unsigned j = N_var - blk.size(); j < N_var; ++j) {
+      for (unsigned j = blk_select_idx[i]; j < N_var; ++j) {
         rowindofcol[j].push_back(rhs.size());
         constrvalues[j].push_back(1);
       }
@@ -634,8 +699,8 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       rowtype.push_back('s');
       for (unsigned v : {0, 1}) {
         for (unsigned j = 0; j < blk.size(); ++j) {
-          rowindofcol[N_var - blk.size() + j].push_back(rhs.size());
-          constrvalues[N_var - blk.size() + j].push_back((v ? blk[j].height : blk[j].width));
+          rowindofcol[blk_select_idx[i] + j].push_back(rhs.size());
+          constrvalues[blk_select_idx[i] + j].push_back((v ? blk[j].height : blk[j].width));
         }
         rowindofcol[6 * i + 4 + v].push_back(rhs.size());
         constrvalues[6 * i + 4 + v].push_back(-1);
@@ -1197,6 +1262,78 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     }
   }
 
+  // place_on_grid constraint
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) {
+      const auto& xoff = xoffsetvars[i];
+      rowindofcol[i * 6].push_back(rhs.size());
+      if (mydesign.Blocks[i][0].xflip == -1) {
+        rowindofcol[i * 6 + 5].push_back(rhs.size());
+      }
+      rowindofcol[xoff + 1].push_back(rhs.size()); // offset
+      rowindofcol[xoff + 2].push_back(rhs.size()); // integer num of pitches
+      constrvalues[i * 6].push_back(1);
+      if (mydesign.Blocks[i][0].xflip == -1) {
+        constrvalues[i * 6 + 5].push_back(1);
+      }
+      constrvalues[xoff].push_back(-1);
+      constrvalues[xoff + 1].push_back(-mydesign.Blocks[i][0].xpitch);
+      sens.push_back('E');
+      rhs.push_back(0);
+
+      // \sum offset_i = 1
+      for(unsigned j = 0; j< mydesign.Blocks[i][0].xoffset.size(); j++){
+        rowindofcol[xoff + 2 + j].push_back(rhs.size());
+        constrvalues[xoff + 2 + j].push_back(1);
+      }
+      sens.push_back('E');
+      rhs.push_back(1);
+      // xoffset = \sum xoffset_i
+      for(unsigned j = 0; j< mydesign.Blocks[i][0].xoffset.size(); j++){
+        rowindofcol[xoff + 2 + j].push_back(rhs.size());
+        constrvalues[xoff + 2 + j].push_back(mydesign.Blocks[i][0].xoffset[j]);
+      }
+      rowindofcol[xoff].push_back(rhs.size());
+      constrvalues[xoff].push_back(-1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    }
+    if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) {
+      const auto& yoff = yoffsetvars[i];
+      rowindofcol[i * 6].push_back(rhs.size());
+      if (mydesign.Blocks[i][0].yflip == -1) {
+        rowindofcol[i * 6 + 5].push_back(rhs.size());
+      }
+      rowindofcol[yoff + 1].push_back(rhs.size()); // offset
+      rowindofcol[yoff + 2].push_back(rhs.size()); // integer num of pitches
+      constrvalues[i * 6].push_back(1);
+      if (mydesign.Blocks[i][0].yflip == -1) {
+        constrvalues[i * 6 + 5].push_back(1);
+      }
+      constrvalues[yoff].push_back(-1);
+      constrvalues[yoff + 1].push_back(-mydesign.Blocks[i][0].xpitch);
+      sens.push_back('E');
+      rhs.push_back(0);
+
+      // \sum offset_i = 1
+      for(unsigned j = 0; j< mydesign.Blocks[i][0].yoffset.size(); j++){
+        rowindofcol[yoff + 2 + j].push_back(rhs.size());
+        constrvalues[yoff + 2 + j].push_back(1);
+      }
+      sens.push_back('E');
+      rhs.push_back(1);
+      // yoffset = \sum yoffset_i
+      for(unsigned j = 0; j< mydesign.Blocks[i][0].yoffset.size(); j++){
+        rowindofcol[yoff + 2 + j].push_back(rhs.size());
+        constrvalues[yoff + 2 + j].push_back(mydesign.Blocks[i][0].yoffset[j]);
+      }
+      rowindofcol[yoff].push_back(rhs.size());
+      constrvalues[yoff].push_back(-1);
+      sens.push_back('E');
+      rhs.push_back(0);
+    }
+  }
+
   // add HPWL in cost
   // hpwl_xmin_i <= pin_j_xmin, hpwl_ymin_i <= pin_j_ymin
   // hpwl_xmax_i >= pin_j_xmax, hpwl_ymax_u >= pin_j_ymax
@@ -1366,6 +1503,30 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         names[ind + 4] = &(namesvec[ind + 4][0]);
         namesvec[ind + 5] = (mydesign.Blocks[i][0].name + "_height\0");
         names[ind + 5] = &(namesvec[ind + 5][0]);
+      }
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        if (mydesign.Blocks[i][0].xoffset.size()) {
+          int ind = xoffsetvars[i];
+          namesvec[ind] = (mydesign.Blocks[i][0].name + "_xoffset\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_x_num_pitches\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          for (unsigned j = 0; j < mydesign.Blocks[i][0].xoffset.size(); ++i) {
+            namesvec[ind + 2 + j] = (mydesign.Blocks[i][0].name + "_xoffset_" + std::to_string(j) + "\0");
+            names[ind + 2 + j] = &(namesvec[ind + 2 + j][0]);
+          }
+        }
+        if (mydesign.Blocks[i][0].yoffset.size()) {
+          int ind = yoffsetvars[i];
+          namesvec[ind] = (mydesign.Blocks[i][0].name + "_yoffset\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y_num_pitches\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          for (unsigned j = 0; j < mydesign.Blocks[i][0].yoffset.size(); ++i) {
+            namesvec[ind + 2 + j] = (mydesign.Blocks[i][0].name + "_yoffset_" + std::to_string(j) + "\0");
+            names[ind + 2 + j] = &(namesvec[ind + 2 + j][0]);
+          }
+        }
       }
 
       for (int i = 0; i < mydesign.Nets.size(); ++i) {

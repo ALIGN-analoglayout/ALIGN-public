@@ -131,13 +131,21 @@ jobs:
       pdk:
         description: "Choose PDK (Can be substring as it gets fed to pytest -k argument)"
         type: string
-      design:
-        description: "Choose Design (Can be substring as it gets fed to pytest -k argument)"
+      ci-level:
+        description: "Choose CI level (can be 'checkin', 'merge', and 'all')"
         type: string
       timeout:
         description: "Integer representing pytest --timeout argument"
         type: string
         default: "1800"
+      nightly-dirs:
+        description: "Space separated list of test directories or files"
+        type: string
+        default: "tests/integration"
+      max-errors:
+        description: "Maximum allowable errors"
+        type: string
+        default: "20"
 
     docker:
       - image: <<parameters.platform>>
@@ -155,14 +163,12 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.design>>)"
+          name: "test-integration-<<parameters.platform>>-<<parameters.pdk>>(<<parameters.ci-level>>)"
           no_output_timeout: "<<parameters.timeout>>s"
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
-            filter="<<parameters.design>>"
-            filter="<<parameters.pdk>>${filter:+ and $filter}"
-            pytest -vv --runnightly --maxerrors=20 --timeout=<<parameters.timeout>> --durations=0 -k "$filter" -- tests/integration tests/pdks
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
@@ -216,8 +222,10 @@ workflows:
                 - "python:3.8"
               pdk:
                 - "Finfet"
-              design:
-                - "adder or switched_capacitor_filter or high_speed_comparator"
+              ci-level:
+                - "checkin"
+              max-errors:
+                - "0"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
@@ -233,8 +241,10 @@ workflows:
                 - "python:3.8"
               pdk:
                 - "Finfet"
-              design:
-                - "not SAR and not Sanitized_EdgeComparator and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not BUFFER_VREFP and not BUFFER_VREFP2 and not CTDSM_CORE_NEW and not BUFFER_VCM and not vco_dtype_12_hierarchical and not Sanitized_Coarse_Comp_CK and not COMP_GM_STAGE_0415 and not linear_equalizer and not test_vga and not Gm1_v5_Practice and not powertrain_binary and not SW_Cres_v3_5 and not ldo_error_amp and not telescopic_ota_guard_ring"
+              ci-level:
+                - "merge"
+              nightly-dirs:
+                - "tests/integration tests/pdks"
       - build-wheel:
           name: "build-wheel-<<matrix.python-tags>>-<<matrix.platform>>"
           requires:
@@ -277,3 +287,4 @@ workflows:
             branches:
               only:
                 - master
+

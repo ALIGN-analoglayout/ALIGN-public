@@ -16,26 +16,26 @@
 // Library name: CAD_modules
 // Cell name: VCO_type2_12
 // View name: schematic
-.subckt VCO_type2_65 VDD VSS o\<1\> o\<2\> o\<3\> o\<4\> o\<5\> o\<6\> \
-        o\<7\> o\<8\> op\<1\> VBIAS
+.subckt VCO_type2_65 VDD VSS o<1> o<2> o<3> o<4> o<5> o<6> \
+        o<7> o<8> op<1> VBIAS
 .param _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
 _ar2=fin_n_diff2sing _ar3=width_n_diff2sing _ar4=fppp \
 _ar5=wppn
-    xI1\<1\> VDD VSS VBIAS o\<1\> o\<2\> three_terminal_inv _ar0=_ar0 \
+    xI1<1> VDD VSS VBIAS o<1> o<2> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<2\> VDD VSS VBIAS o\<2\> o\<3\> three_terminal_inv _ar0=_ar0 \
+    xI1<2> VDD VSS VBIAS o<2> o<3> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<3\> VDD VSS VBIAS o\<3\> o\<4\> three_terminal_inv _ar0=_ar0 \
+    xI1<3> VDD VSS VBIAS o<3> o<4> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<4\> VDD VSS VBIAS o\<4\> o\<5\> three_terminal_inv _ar0=_ar0 \
+    xI1<4> VDD VSS VBIAS o<4> o<5> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<5\> VDD VSS VBIAS o\<5\> o\<6\> three_terminal_inv _ar0=_ar0 \
+    xI1<5> VDD VSS VBIAS o<5> o<6> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<6\> VDD VSS VBIAS o\<6\> o\<7\> three_terminal_inv _ar0=_ar0 \
+    xI1<6> VDD VSS VBIAS o<6> o<7> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<7\> VDD VSS VBIAS o\<7\> o\<8\> three_terminal_inv _ar0=_ar0 \
+    xI1<7> VDD VSS VBIAS o<7> o<8> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
-    xI1\<8\> VDD VSS VBIAS o\<8\> op\<1\> three_terminal_inv _ar0=_ar0 \
+    xI1<8> VDD VSS VBIAS o<8> op<1> three_terminal_inv _ar0=_ar0 \
         _ar1=_ar1 _ar2=_ar2 _ar3=_ar3 _ar4=_ar4 _ar5=_ar5
 .ends VCO_type2_65
 

@@ -7,102 +7,7 @@
 #include "assert.h"
 #include "slu_ddefs.h"
 
-std::string MNASimulation::Index_Postion(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, int index) {
-  std::string position_string;
-  for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-    if (it->index == index && it->metal_layer >= 0 && it->power != 0) {
-      position_string = std::to_string(it->metal_layer) + "_" + std::to_string(it->x) + "_" + std::to_string(it->y) + "_v";
-      break;
-    } else if (it->index == index && it->metal_layer >= 0 && it->power == 0) {
-      position_string = std::to_string(it->metal_layer) + "_" + std::to_string(it->x) + "_" + std::to_string(it->y) + "_g";
-      break;
-    } else if (it->index == index && it->metal_layer < 0 && it->power != 0) {
-      position_string = "n_" + std::to_string(abs(it->metal_layer)) + "_" + std::to_string(it->x) + "_" + std::to_string(it->y) + "_v";
-      break;
-    } else if (it->index == index && it->metal_layer < 0 && it->power == 0) {
-      position_string = "n_" + std::to_string(abs(it->metal_layer)) + "_" + std::to_string(it->x) + "_" + std::to_string(it->y) + "_g";
-      break;
-    }
-  }
-  return position_string;
-};
 
-std::string MNASimulation::Index_Postion_New(int index, bool start_end) {
-  std::string position_string;
-  MDB::metal_point temp_point;
-
-  if (start_end) {
-    temp_point = Power_Grid_devices[index].start_point;
-  } else {
-    temp_point = Power_Grid_devices[index].end_point;
-  }
-
-  if (temp_point.metal_layer >= 0 && temp_point.power == 0)
-    position_string = std::to_string(temp_point.metal_layer) + "_" + std::to_string(temp_point.x) + "_" + std::to_string(temp_point.y) + "_g";
-  if (temp_point.metal_layer >= 0 && temp_point.power != 0)
-    position_string = std::to_string(temp_point.metal_layer) + "_" + std::to_string(temp_point.x) + "_" + std::to_string(temp_point.y) + "_v";
-  if (temp_point.metal_layer < 0 && temp_point.power == 0)
-    position_string = "n_" + std::to_string(temp_point.metal_layer) + "_" + std::to_string(temp_point.x) + "_" + std::to_string(temp_point.y) + "_g";
-  if (temp_point.metal_layer < 0 && temp_point.power != 0)
-    position_string = "n_" + std::to_string(temp_point.metal_layer) + "_" + std::to_string(temp_point.x) + "_" + std::to_string(temp_point.y) + "_v";
-
-  return position_string;
-};
-
-void MNASimulation::WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set) {
-  // open file
-  std::string spice_file_name = "test.sp";
-  std::ofstream spicefile;
-  spicefile.open(spice_file_name);
-
-  // test seting
-  std::string setting1 = ".TEMP 25.0";
-  spicefile << setting1 << std::endl;
-  std::string setting2 = ".OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST";
-  spicefile << setting2 << std::endl;
-  std::string setting3 = ".TRAN 10e-12 30e-9 START=0";
-  spicefile << setting3 << std::endl;
-
-  // RIV element
-  // node: m2_x_y_power - 1_0_0_v/g
-  // dummy node: n?_x1_y1_power - n1_0_0_v/g or n2_0_0_v/g
-  for (unsigned int i = 0; i < Power_Grid_devices.size(); i++) {
-    if (Power_Grid_devices[i].device_type == MDB::R) {
-      std::string post_index_start = Index_Postion_New(i, 1);
-      std::string post_index_end = Index_Postion_New(i, 0);
-      spicefile << "R_" + std::to_string(Power_Grid_devices[i].start_point_index) + "_" + std::to_string(Power_Grid_devices[i].end_point_index) + " " +
-                       post_index_start + " " + post_index_end + " " + std::to_string(Power_Grid_devices[i].value)
-                << std::endl;
-    } else if (Power_Grid_devices[i].device_type == MDB::I) {
-      std::string post_index_start = Index_Postion_New(i, 1);
-      std::string post_index_end = Index_Postion_New(i, 0);
-      spicefile << "I_" + std::to_string(Power_Grid_devices[i].start_point_index) + "_" + std::to_string(Power_Grid_devices[i].end_point_index) + " " +
-                       post_index_start + " " + post_index_end + " " + std::to_string(Power_Grid_devices[i].value)
-                << std::endl;
-    } else if (Power_Grid_devices[i].device_type == MDB::V) {
-      std::string post_index_start = Index_Postion_New(i, 1);
-      std::string post_index_end = "0";
-      spicefile << "V_" + std::to_string(Power_Grid_devices[i].start_point_index) + "_" + std::to_string(0) + " " + post_index_start + " " + post_index_end +
-                       " " + std::to_string(Power_Grid_devices[i].value)
-                << std::endl;
-    }
-  }
-
-  // print out testresults
-  // node: m2_x1_y1_x2_y2 - 1_0_0
-  // dummy node: n?_x1_y1_x2_y2 - n1_0_0 or n2_0_0
-  // only print m2?
-  spicefile << ".PRINT ";
-  for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-    std::string post_index = Index_Postion(point_set, it->index);
-    spicefile << "v(" + post_index + ") ";
-  }
-
-  spicefile << std::endl;
-  spicefile << ".END";
-  // close file
-  spicefile.close();
-};
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem) {
   auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.MNASimulation");
@@ -119,7 +24,6 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
 
   // std::cout<<"Start Writing spice file"<<std::endl;
-  // WriteOut_Spice(point_set);
   // std::cout<<"End Writing spice file"<<std::endl;
 
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
@@ -374,7 +278,6 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   }
 
   Print_Result(point_set, dp, outputfile);
-  // Print_Grid(point_set,Power_Grid_devices);
   Print_EM(point_set, Power_Grid_devices, B.nrow, dp, outputem);
   /*
   for (int j = 0; j < n; j++){
@@ -429,23 +332,6 @@ void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_p
   pythonfile.close();
 };
 
-void MNASimulation::Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices) {
-  std::ofstream pythonfile;
-  pythonfile.open("gridresult.txt");
-  for (unsigned int i = 0; i < temp_devices.size(); i++) {
-    if (temp_devices[i].device_type == 0) {
-      int first = temp_devices[i].start_point_index;
-      int second = temp_devices[i].end_point_index;
-      for (auto it = point_set.begin(); it != point_set.end(); it++) {
-        if (it->index == first) pythonfile << it->x << " " << it->y << " " << it->metal_layer << " " << it->power << " ";
-      }
-      for (auto it = point_set.begin(); it != point_set.end(); it++) {
-        if (it->index == second) pythonfile << it->x << " " << it->y << " " << it->metal_layer << " " << it->power << std::endl;
-      }
-    }
-  }
-  pythonfile.close();
-};
 
 void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double *dp,
                              std::string outputem) {
@@ -531,114 +417,6 @@ int MNASimulation::nodenum(std::vector<MDB::device> &temp_devices) {
   }
   return num;
 }
-
-int MNASimulation::MapX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int match) {
-  int x;
-  for (auto it = temp_set.begin(); it != temp_set.end(); ++it) {
-    // std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-    // std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-    if (it->index == match) {
-      x = it->x;
-      // y = it->y;
-    }
-  }
-  return x;
-}
-
-int MNASimulation::MaxX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer) {
-  int max = 0;
-  for (auto it = temp_set.begin(); it != temp_set.end(); ++it) {
-    if (it->metal_layer == layer) {
-      // std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-      // std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-      if (it->x > max) {
-        max = it->x;
-      }
-    }
-  }
-  return max;
-}
-
-int MNASimulation::MapY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int match) {
-  int y;
-  for (auto it = temp_set.begin(); it != temp_set.end(); ++it) {
-    // std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-    // std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-    if (it->index == match) {
-      // x = it->x;
-      y = it->y;
-    }
-  }
-  return y;
-}
-
-int MNASimulation::MaxY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer) {
-  int max = 0;
-  for (auto it = temp_set.begin(); it != temp_set.end(); ++it) {
-    if (it->metal_layer == layer) {
-      // std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-      // std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-      if (it->y > max) {
-        max = it->y;
-      }
-    }
-  }
-  return max;
-}
-
-int MNASimulation::MapPoint(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set1,
-                            int x, int y, int layer) {
-  // return a index, which match x, y, layer best
-  int match;
-  int diffx = INT_MAX, diffy = INT_MAX;
-  int bestx = 0, besty = 0;
-
-  for (auto it = temp_set1.begin(); it != temp_set1.end(); ++it) {
-    if (it->metal_layer == layer) {
-      int tempx, tempy;
-      tempx = it->x - x;
-      if (tempx < 0) tempx = -1 * tempx;
-      tempy = it->y - y;
-      if (tempy < 0) tempy = -1 * tempy;
-      if (tempx < diffx) {
-        diffx = tempx;
-        bestx = it->x;
-      }
-      if (tempy < diffy) {
-        diffy = tempy;
-        besty = it->y;
-      }
-    }
-  }
-
-  for (auto it = temp_set1.begin(); it != temp_set1.end(); ++it) {
-    if (it->x == bestx && it->y == besty && it->metal_layer == layer) {
-      // Q: need it->metal_layer==layer?
-      match = it->index;
-    }
-  }
-  return match;
-};
-
-void MNASimulation::AddingI(std::vector<MDB::metal_point> &I_point_v, std::vector<MDB::metal_point> &I_point_g,
-                            std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double current) {
-  auto logger = spdlog::default_logger()->clone("MNA.MNASimulation.AddingI");
-
-  for (unsigned int i = 0; i < I_point_v.size(); ++i) {
-    MDB::device temp_device;
-    auto first_point = temp_set.find(I_point_v[i]);
-    int start_index = first_point->index;
-    logger->debug("First Point (x,y) index metal {0} {1} {2} {3}", first_point->x, first_point->y, start_index, first_point->metal_layer);
-    auto second_point = temp_set.find(I_point_g[i]);
-    int end_index = second_point->index;
-    logger->debug("Second Point (x,y) index metal {0} {1} {2} {3} ", second_point->x, second_point->y, end_index, second_point->metal_layer);
-    temp_device.device_type = MDB::I;
-    temp_device.start_point_index = start_index;
-    temp_device.end_point_index = end_index;
-    temp_device.value = current;
-    Power_Grid_devices.push_back(temp_device);
-  }
-};
 
 void MNASimulation::AddingPower(std::vector<MDB::metal_point> &power_points, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set,
                                 std::vector<MDB::device> &Power_Grid_devices, double power) {
@@ -833,88 +611,6 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
   // std::cout<<"in find power point size = " << power_points.size()<<std::endl;
 };
 
-void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number,
-                                        std::vector<MDB::metal_point> &power_points) {
-  // need to change this code, this code is meaningless
-  std::set<MDB::metal_point, MDB::Compare_metal_point> power_point_set;
-  std::vector<MDB::metal_point> prime_power_points;
-  std::set<int> x_set;
-  std::set<int> y_set;
-  std::vector<int> x_v;
-  std::vector<int> y_v;
-  MDB::metal_point temp_point;
-  temp_point.metal_layer = metal_layer;
-  temp_point.power = power;
-  // std::cout<<"size of point set"<< point_set.size() <<std::endl;
-  for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-    // std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
-    if (it->metal_layer == metal_layer && it->power == power) {
-      power_point_set.insert(*it);
-      x_set.insert(it->x);
-      y_set.insert(it->y);
-    }
-  }
-  // std::cout <<"size of x_set= " << x_set.size()<<std::endl;
-  // std::cout <<"size of y_set= " << y_set.size()<<std::endl;
-  for (auto it = x_set.begin(); it != x_set.end(); ++it) {
-    x_v.push_back(*it);
-  }
-  // std::cout <<"size of x_v= " << x_v.size()<<std::endl;
-  for (auto it = y_set.begin(); it != y_set.end(); ++it) {
-    y_v.push_back(*it);
-  }
-  // std::cout <<"size of y_v= " << y_v.size()<<std::endl;
-  // need revise
-  int x_number = sqrt(power_number);
-  int y_number = power_number / x_number;
-
-  int xsize, ysize;
-  xsize = int(x_v.size());
-  ysize = int(y_v.size());
-
-  double range_x = (double)(x_v[xsize - 1] - x_v[0]) / (x_number + 1);
-  double range_y = (double)(y_v[ysize - 1] - y_v[0]) / (y_number + 1);
-
-  vector<double> candidate_x;
-  vector<double> candidate_y;
-
-  // std::cout<<"x_number "<<x_number<<" "<<y_number<<std::endl;
-  // std::cout<<"power mesh range "<<range_x<<" "<<range_y<<std::endl;
-
-  for (int i = 1; i <= x_number; i++) {
-    candidate_x.push_back((double)x_v[0] + i * range_x);
-    // std::cout<<"candidate_x "<<(double)x_v[0]+i*range_x<<" ";
-  }
-  // std::cout<<std::endl;
-
-  for (int i = 1; i <= y_number; i++) {
-    candidate_y.push_back((double)y_v[0] + i * range_y);
-    // std::cout<<"candidate_y "<<(double) y_v[0]+i*range_y<<" ";
-  }
-  // std::cout<<std::endl;
-
-  for (unsigned int i = 0; i < candidate_x.size(); i++) {
-    for (unsigned int j = 0; j < candidate_y.size(); j++) {
-      temp_point.x = find_nearest(candidate_x[i], x_v);
-      temp_point.y = find_nearest(candidate_y[j], y_v);
-      power_points.push_back(temp_point);
-      // std::cout<<"power points "<<temp_point.x<<" "<<temp_point.y<<std::endl;
-    }
-  }
-};
-
-int MNASimulation::find_nearest(double x, vector<int> &x_v) {
-  int index = 0;
-  double error = INT_MAX;
-  for (unsigned int i = 0; i < x_v.size(); i++) {
-    if (abs((double)x_v[i] - x) < error) {
-      error = abs((double)x_v[i] - x);
-      index = i;
-    }
-  }
-  return x_v[index];
-}
-
 void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,
                                      std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::string inputfile) {
   unsigned seed;
@@ -982,9 +678,6 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
   // what if I_points_v!=I_points_g
   // what if I_points_g.size()<4?
   // need revise this part
-  // FindPowerPoints_New(point_set, VDD, lowest_metal, current_number, I_points_v);
-  // FindPowerPoints_New(point_set, 0.0, lowest_metal, current_number, I_points_g);
-
   // here some function to calculate vdd_points, gnd_points, I_points_v and I_points_g;
   // std::cout<< "vdd points "<< vdd_points.size()<<" gnd points "<< gnd_points.size() << " I point v "<< I_points_v.size() << " I point g"<<
   // I_points_g.size()<< std::endl;
@@ -1010,187 +703,6 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore, 
       v.push_back(stod(tmp));  // stod: string->double
     }
     currentstore.push_back(v);
-  }
-};
-
-void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,
-                        std::vector<MDB::device> &Power_Grid_devices, int metal_layer) {
-  // it is adding some current devices
-  for (unsigned int i = 0; i < currentstore.size(); ++i) {
-    double startx, starty, endx, endy, value;
-    MDB::metal_point start_metal_point;
-    MDB::metal_point end_metal_point;
-    double initial_x, initial_y;
-
-    initial_x = currentstore[i][0];
-    initial_y = currentstore[i][1];
-
-    startx = currentstore[i][0];
-    starty = currentstore[i][1];
-    endx = currentstore[i][2];
-    endy = currentstore[i][3];
-    value = currentstore[i][4];
-    int start_index, end_index;
-    double vdd_maxx, vdd_maxy, gnd_maxx, gnd_maxy;
-
-    for (auto it = point_set.end(); it != point_set.begin(); it--) {
-      if (it->metal_layer == metal_layer && it->power != 0) {
-        vdd_maxx = it->x;
-        vdd_maxy = it->y;
-        break;
-      }
-    }
-    for (auto it = point_set.end(); it != point_set.begin(); it--) {
-      if (it->metal_layer == metal_layer && it->power == 0) {
-        gnd_maxx = it->x;
-        gnd_maxy = it->y;
-        break;
-      }
-    }
-
-    // maxx = flag->x;
-    // maxy = flag->y;
-    if (startx > vdd_maxx) startx = vdd_maxx;
-    if (starty > vdd_maxy) starty = vdd_maxy;
-    if (endx > gnd_maxx) endx = gnd_maxx;
-    if (endy > gnd_maxy) endy = gnd_maxy;
-
-    for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-      if (it->x >= startx && it->y >= starty && it->metal_layer == metal_layer && it->power != 0) {
-        start_index = it->index;
-        start_metal_point.x = it->x;
-        start_metal_point.y = it->y;
-        start_metal_point.metal_layer = it->metal_layer;
-        start_metal_point.power = it->power;
-        break;
-      }
-    }
-    for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-      if (it->x >= endx && it->y >= endy && it->metal_layer == metal_layer && it->power == 0) {
-        end_index = it->index;
-        end_metal_point.x = it->x;
-        end_metal_point.y = it->y;
-        end_metal_point.metal_layer = it->metal_layer;
-        end_metal_point.power = it->power;
-        break;
-      }
-    }
-
-    int max_index = 0;
-
-    for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-      if (it->index > max_index) {
-        max_index = it->index;
-      }
-    }
-
-    // add new nodes
-    int multi_connection = 3;
-    MDB::metal_point source_temp_point;
-    source_temp_point.x = initial_x;
-    source_temp_point.y = initial_y;
-    source_temp_point.power = 0.8;
-    source_temp_point.metal_layer = -1;
-    source_temp_point.index = max_index + 1;
-
-    if (point_set.find(source_temp_point) != point_set.end()) {
-      continue;
-    }
-
-    MDB::device temp_device;
-    temp_device.start_point = start_metal_point;
-    temp_device.end_point = source_temp_point;
-    temp_device.device_type = MDB::R;
-    temp_device.start_point_index = start_index;
-    temp_device.end_point_index = max_index + 1;
-    double unit_r = this->Drc_info.Metal_info[metal_layer].unit_R;
-    temp_device.value = (abs(initial_x - startx) + abs(initial_y - starty)) / multi_connection * unit_r;
-    // std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<startx<<" "<<starty<<" "<<multi_connection<<" "<<unit_r<<"
-    // "<<temp_device.value<<std::endl;
-    Power_Grid_devices.push_back(temp_device);
-
-    MDB::metal_point end_temp_point;
-    end_temp_point.x = initial_x;
-    end_temp_point.y = initial_y;
-    end_temp_point.power = 0.0;
-    end_temp_point.metal_layer = -2;
-    end_temp_point.index = max_index + 2;
-
-    point_set.insert(source_temp_point);
-    point_set.insert(end_temp_point);
-
-    temp_device.start_point = end_temp_point;
-    temp_device.end_point = end_metal_point;
-    temp_device.device_type = MDB::R;
-    temp_device.start_point_index = max_index + 2;
-    temp_device.end_point_index = end_index;
-    temp_device.value = (abs(initial_x - endx) + abs(initial_y - endy)) / multi_connection * unit_r;
-    // std::cout<<"power mesh multi-connection "<<initial_x<<" "<<initial_y<<" "<<endx<<" "<<endy<<" "<<multi_connection<<" "<<unit_r<<"
-    // "<<temp_device.value<<std::endl;
-    Power_Grid_devices.push_back(temp_device);
-
-    temp_device.device_type = MDB::I;
-    temp_device.start_point = source_temp_point;
-    temp_device.end_point = end_temp_point;
-    temp_device.start_point_index = max_index + 1;
-    temp_device.end_point_index = max_index + 2;
-    temp_device.value = value;
-    Power_Grid_devices.push_back(temp_device);
-  }
-};
-
-void MNASimulation::Map_old(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,
-                            std::vector<MDB::device> &Power_Grid_devices, int metal_layer) {
-  // it is adding some current devices
-  for (unsigned int i = 0; i < currentstore.size(); ++i) {
-    double startx, starty, endx, endy, value;
-
-    startx = currentstore[i][0];
-    starty = currentstore[i][1];
-    endx = currentstore[i][2];
-    endy = currentstore[i][3];
-    value = currentstore[i][4];
-    int start_index, end_index;
-    double vdd_maxx, vdd_maxy, gnd_maxx, gnd_maxy;
-    for (auto it = point_set.end(); it != point_set.begin(); it--) {
-      if (it->metal_layer == metal_layer && it->power != 0) {
-        vdd_maxx = it->x;
-        vdd_maxy = it->y;
-        break;
-      }
-    }
-    for (auto it = point_set.end(); it != point_set.begin(); it--) {
-      if (it->metal_layer == metal_layer && it->power == 0) {
-        gnd_maxx = it->x;
-        gnd_maxy = it->y;
-        break;
-      }
-    }
-    // maxx = flag->x;
-    // maxy = flag->y;
-    if (startx > vdd_maxx) startx = vdd_maxx;
-    if (starty > vdd_maxy) starty = vdd_maxy;
-    if (endx > gnd_maxx) endx = gnd_maxx;
-    if (endy > gnd_maxy) endy = gnd_maxy;
-
-    for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-      if (it->x >= startx && it->y >= starty && it->metal_layer == metal_layer && it->power != 0) {
-        start_index = it->index;
-        break;
-      }
-    }
-    for (auto it = point_set.begin(); it != point_set.end(); ++it) {
-      if (it->x >= endx && it->y >= endy && it->metal_layer == metal_layer && it->power == 0) {
-        end_index = it->index;
-        break;
-      }
-    }
-    MDB::device temp_device;
-    temp_device.device_type = MDB::I;
-    temp_device.start_point_index = start_index;
-    temp_device.end_point_index = end_index;
-    temp_device.value = value;
-    Power_Grid_devices.push_back(temp_device);
   }
 };
 

@@ -1,8 +1,10 @@
+import os
 import math
 from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
+from align.schema.constraint import PlaceOnGrid, OffsetsScalings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -22,11 +24,25 @@ class MOSGenerator(CanvasPDK):
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
+        if os.getenv('PLACE_ON_GRID', False):
+            rh = 7*self.pdk['M2']['Pitch']
+            if False:
+                if parameters['real_inst_type'].lower().startswith('n'):
+                    o = 0
+                else:
+                    o = rh
+            else:
+                o = 0
+            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
+                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
+
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
         parameters = {k.lower(): v for k, v in parameters.items()}  # Revert all parameters to lower case
 
         #################################################################################################
+        assert pattern in {0, 1, 2}, f'This primitive cannot be generated with this PDK. Unknown pattern {pattern}'
+
         for key in ['m', 'real_inst_type']:
             assert key in parameters, f'Missing transistor parameter {key}'
         assert 'nf' or 'stack' in parameters, 'Missing transistor parameter nf or stack'
@@ -113,21 +129,21 @@ class MOSGenerator(CanvasPDK):
         if is_dual:
             track_pattern_2 = {}
 
-            if   self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['G']:
+            if self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['G']:
                 track_pattern_2['G'] = [6]
             elif self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['S']:
                 track_pattern_2['G'] = [4]
             else:
                 track_pattern_2['G'] = [5]
 
-            if   self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['S']:
+            if self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['S']:
                 track_pattern_2['S'] = [4]
             elif self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['D']:
                 track_pattern_2['S'] = [2]
             else:
                 track_pattern_2['S'] = [3]
 
-            if   self.transistor_array.ports[2]['D'] == self.transistor_array.ports[1]['D']:
+            if self.transistor_array.ports[2]['D'] == self.transistor_array.ports[1]['D']:
                 track_pattern_2['D'] = [2]
             else:
                 track_pattern_2['D'] = [1]
@@ -316,10 +332,27 @@ class MOSGenerator(CanvasPDK):
                 _stretch_m2_wires()
                 self.drop_via(self.v2)
 
-        # Expose pins
+        if True:
+            # Expose pins
+            for term in self.terminals:
+                if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
+                    term['netType'] = 'pin'
+        else:
+            self._expose_pins()
+
+    def _expose_pins(self):
+        net_layers = dict()
         for term in self.terminals:
-            if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
-                term['netType'] = 'pin'
+            if term['netName'] is not None and term['layer'].startswith('M'):
+                name = term['netName']
+                if name not in net_layers:
+                    net_layers[name] = set()
+                net_layers[name].add(term['layer'])
+        for name, layers in net_layers.items():
+            layer = sorted(layers)[-1]
+            for term in self.terminals:
+                if term['netName'] is not None and term['netName'] == name and term['layer'] == layer:
+                    term['netType'] = 'pin'
 
     @staticmethod
     def validate_array(m, n_row, n_col):

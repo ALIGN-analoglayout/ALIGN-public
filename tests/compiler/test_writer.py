@@ -26,10 +26,10 @@ def test_verilog_writer():
     ]
     design_config = {
         "vt_type": ["SLVT", "HVT", "LVT", "RVT"],
-        "unit_size_nmos": 12,
-        "unit_size_pmos": 12,
+        "unit_size_mos": 12,
         "unit_size_cap": 12,
         "unit_height_res": 600,
+        "pdk_type": "FinFET"
     }
 
     verilog_tbl = {"modules": [], "global_signals": []}
@@ -43,8 +43,6 @@ def test_verilog_writer():
             if ele.model in available_cell_generator:
                 assert generate_primitive_lef(
                     ele,
-                    str(ckt_data.find(ele.model)),
-                    available_cell_generator,
                     primitives,
                     design_config,
                 )
