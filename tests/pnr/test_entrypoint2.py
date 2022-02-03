@@ -172,6 +172,9 @@ def gen_primitives(run_dir):
             gen_gds_json.translate(ctn, '', 0, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), p)
 
         gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
+                         bodyswitch=1, blockM=0, p=p, mode='placement')
+
+        gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
                          bodyswitch=1, blockM=0, p=p)
 
 

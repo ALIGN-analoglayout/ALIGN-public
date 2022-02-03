@@ -184,7 +184,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
             continue
         leaf = v['concrete_template_name']
         files = {}
-        for suffix in ['.lef', '.json', '.gds.json']:
+        for suffix in ['.placement_lef', '.lef', '.json', '.gds.json']:
             fn = primitive_dir / f'{leaf}{suffix}'
             if fn.is_file():
                 files[suffix] = str(fn)
@@ -212,6 +212,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
+    placement_lef_file = f'{subckt}.placement_lef'
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
 
@@ -226,37 +227,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         verilog_d = VerilogJsonTop.parse_file(topology_dir / f'{subckt}.verilog.json')
         
-        primitives_with_atn = defaultdict(list)
-        for v in primitives.values():
-            primitives_with_atn[v['abstract_template_name']].append(v)
-
-        for k, v in primitives_with_atn.items():
-            first_md = None
-            first_primitive = None
-            for primitive in v:
-                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                    md = primitive['metadata']['partially_routed_pins']
-                    if first_md is None:
-                        first_md = md
-                        first_primitive = primitive
-                    else:
-                        if set(first_md.keys()) != set(md.keys()):
-                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'], first_md, md)
-                    
-
-
-        # Update connectivity for partially routed primitives
-        for module in verilog_d['modules']:
-            for instance in module['instances']:
-                for primitive in primitives_with_atn[instance['abstract_template_name']]:
-                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                        fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
-                        new_fa_map = List[FormalActualMap]()
-                        for f, a in primitive['metadata']['partially_routed_pins'].items():
-                            new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
-                        instance['fa_map'] = new_fa_map
-
-        manipulate_hierarchy(verilog_d, subckt)
 
         logger.debug(f"updated verilog: {verilog_d}")
         with (input_dir/verilog_file).open("wt") as fp:
@@ -294,6 +264,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             for k,v in leaf_collateral.items():
                 lp.write(pathlib.Path(v['.lef']).read_text())
 
+        with (input_dir / placement_lef_file).open(mode='wt') as lp:
+            logger.debug(f"placement lef files: {[pathlib.Path(v['.placement_lef']) for k,v in leaf_collateral.items()]}")
+            for k,v in leaf_collateral.items():
+                lp.write(pathlib.Path(v['.placement_lef']).read_text())
+
         #
         # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
         #
@@ -319,6 +294,43 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         logger.debug(f'Loaded constraint files: {constraint_files}')
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
+
+        #
+        # Hacks for partial routing
+        #
+        primitives_with_atn = defaultdict(list)
+        for v in primitives.values():
+            primitives_with_atn[v['abstract_template_name']].append(v)
+
+        for k, v in primitives_with_atn.items():
+            first_md = None
+            first_primitive = None
+            for primitive in v:
+                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                    md = primitive['metadata']['partially_routed_pins']
+                    if first_md is None:
+                        first_md = md
+                        first_primitive = primitive
+                    else:
+                        if set(first_md.keys()) != set(md.keys()):
+                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'], first_md, md)
+                    
+
+
+        # Update connectivity for partially routed primitives
+        for module in verilog_d['modules']:
+            for instance in module['instances']:
+                for primitive in primitives_with_atn[instance['abstract_template_name']]:
+                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                        fa_map = {fa['formal']: fa['actual'] for fa in instance['fa_map']}
+                        new_fa_map = List[FormalActualMap]()
+                        for f, a in primitive['metadata']['partially_routed_pins'].items():
+                            new_fa_map.append(FormalActualMap(formal=f, actual=fa_map[a]))
+                        instance['fa_map'] = new_fa_map
+
+        manipulate_hierarchy(verilog_d, subckt)
+
+
 
         with (pdk_dir / pdk_file).open( 'rt') as fp:
             scale_factor = json.load(fp)["ScaleFactor"]
