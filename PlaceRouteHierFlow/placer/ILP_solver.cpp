@@ -535,99 +535,108 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   }
   // offset is ORed, only one is chosen, the select vars are 0 or 1, with sum 1
   int temp_pointer = place_on_grid_var_start;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (mydesign.Blocks[i][0].xoffset.size()){
-      for (unsigned int j = 0;j<mydesign.Blocks[i][0].xoffset.size();j++){
-        set_binary(lp, temp_pointer + j, TRUE);
+  if(!node.isFirstILP){
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      if (mydesign.Blocks[i][0].xoffset.size()){
+        for (unsigned int j = 0;j<mydesign.Blocks[i][0].xoffset.size();j++){
+          set_binary(lp, temp_pointer + j, TRUE);
+        }
+        set_int(lp, temp_pointer + int(mydesign.Blocks[i][0].xoffset.size()), TRUE);
+        temp_pointer += int(mydesign.Blocks[i][0].xoffset.size()) + 1;
       }
-      set_int(lp, temp_pointer + int(mydesign.Blocks[i][0].xoffset.size()), TRUE);
-      temp_pointer += int(mydesign.Blocks[i][0].xoffset.size()) + 1;
-    }
-    if (mydesign.Blocks[i][0].yoffset.size()){
-      for (unsigned int j = 0;j<mydesign.Blocks[i][0].yoffset.size();j++){
-        set_binary(lp, temp_pointer + j, TRUE);
+      if (mydesign.Blocks[i][0].yoffset.size()){
+        for (unsigned int j = 0;j<mydesign.Blocks[i][0].yoffset.size();j++){
+          set_binary(lp, temp_pointer + j, TRUE);
+        }
+        set_int(lp, temp_pointer + int(mydesign.Blocks[i][0].yoffset.size()), TRUE);
+        temp_pointer += int(mydesign.Blocks[i][0].yoffset.size()) + 1;
       }
-      set_int(lp, temp_pointer + int(mydesign.Blocks[i][0].yoffset.size()), TRUE);
-      temp_pointer += int(mydesign.Blocks[i][0].yoffset.size()) + 1;
     }
   }
+  
 
   //place on grid flipping constraint
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (mydesign.Blocks[i][0].xflip == 1) {
-      double sparserow[1] = {1};
-      int colno[1] = {int(i) * 4 + 2};
-      if (!add_constraintex(lp, 1, sparserow, colno, EQ, 0)) logger->error("error");
-    } else if (mydesign.Blocks[i][0].xflip == -1) {
-      double sparserow[1] = {1};
-      int colno[1] = {int(i) * 4 + 2};
-      if (!add_constraintex(lp, 1, sparserow, colno, EQ, 1)) logger->error("error");
-    }
-    if (mydesign.Blocks[i][0].yflip == 1) {
-      double sparserow[1] = {1};
-      int colno[1] = {int(i) * 4 + 3};
-      if (!add_constraintex(lp, 1, sparserow, colno, EQ, 0)) logger->error("error");
-    } else if (mydesign.Blocks[i][0].yflip == -1) {
-      double sparserow[1] = {1};
-      int colno[1] = {int(i) * 4 + 3};
-      if (!add_constraintex(lp, 1, sparserow, colno, EQ, 1)) logger->error("error");
+  if(!node.isFirstILP){
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      if (mydesign.Blocks[i][0].xflip == 1) {
+        double sparserow[1] = {1};
+        int colno[1] = {int(i) * 4 + 2};
+        if (!add_constraintex(lp, 1, sparserow, colno, EQ, 0)) logger->error("error");
+      } else if (mydesign.Blocks[i][0].xflip == -1) {
+        double sparserow[1] = {1};
+        int colno[1] = {int(i) * 4 + 2};
+        if (!add_constraintex(lp, 1, sparserow, colno, EQ, 1)) logger->error("error");
+      }
+      if (mydesign.Blocks[i][0].yflip == 1) {
+        double sparserow[1] = {1};
+        int colno[1] = {int(i) * 4 + 3};
+        if (!add_constraintex(lp, 1, sparserow, colno, EQ, 0)) logger->error("error");
+      } else if (mydesign.Blocks[i][0].yflip == -1) {
+        double sparserow[1] = {1};
+        int colno[1] = {int(i) * 4 + 3};
+        if (!add_constraintex(lp, 1, sparserow, colno, EQ, 1)) logger->error("error");
+      }
     }
   }
+  
 
   //place on grid constraint
-  temp_pointer = place_on_grid_var_start;
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (mydesign.Blocks[i][0].xoffset.size()) {
-      // x + is_filp *width - pitch * n_p - sum(offset_i * is_ith_offset) = 0
-      {
-        double sparserow[3 + mydesign.Blocks[i][0].xoffset.size()];
-        sparserow[0] = 1;
-        sparserow[1] = double(mydesign.Blocks[i][0].width);
-        sparserow[2] = double(-mydesign.Blocks[i][0].xpitch);
-        for (unsigned int j = 0; j < mydesign.Blocks[i][0].xoffset.size(); j++) sparserow[3 + j] = double(-mydesign.Blocks[i][0].xoffset[j]);
-        int colno[3 + mydesign.Blocks[i][0].xoffset.size()];
-        colno[0] = int(i) * 4;
-        colno[1] = int(i) * 4 + 2;
-        colno[2] = int(temp_pointer + mydesign.Blocks[i][0].xoffset.size());
-        for (unsigned int j = 0; j < mydesign.Blocks[i][0].xoffset.size(); j++) colno[3 + j] = int(temp_pointer + j);
-        if (!add_constraintex(lp, 3 + mydesign.Blocks[i][0].xoffset.size(), sparserow, colno, EQ, 0)) logger->error("error");
+  if(!node.isFirstILP){
+    temp_pointer = place_on_grid_var_start;
+    for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+      if (mydesign.Blocks[i][0].xoffset.size()) {
+        // x + is_filp *width - pitch * n_p - sum(offset_i * is_ith_offset) = 0
+        {
+          double sparserow[3 + mydesign.Blocks[i][0].xoffset.size()];
+          sparserow[0] = 1;
+          sparserow[1] = double(mydesign.Blocks[i][0].width);
+          sparserow[2] = double(-mydesign.Blocks[i][0].xpitch);
+          for (unsigned int j = 0; j < mydesign.Blocks[i][0].xoffset.size(); j++) sparserow[3 + j] = double(-mydesign.Blocks[i][0].xoffset[j]);
+          int colno[3 + mydesign.Blocks[i][0].xoffset.size()];
+          colno[0] = int(i) * 4;
+          colno[1] = int(i) * 4 + 2;
+          colno[2] = int(temp_pointer + mydesign.Blocks[i][0].xoffset.size());
+          for (unsigned int j = 0; j < mydesign.Blocks[i][0].xoffset.size(); j++) colno[3 + j] = int(temp_pointer + j);
+          if (!add_constraintex(lp, 3 + mydesign.Blocks[i][0].xoffset.size(), sparserow, colno, EQ, 0)) logger->error("error");
+        }
+        // sum(is_ith_offset) = 1
+        double sparserow[mydesign.Blocks[i][0].xoffset.size()];
+        int colno[mydesign.Blocks[i][0].xoffset.size()];
+        for(unsigned int j=0;j<mydesign.Blocks[i][0].xoffset.size();j++){
+          colno[j] = int(temp_pointer + j);
+          sparserow[j] = 1;
+        }
+        if (!add_constraintex(lp, mydesign.Blocks[i][0].xoffset.size(), sparserow, colno, EQ, 1)) logger->error("error");
+        temp_pointer += int(mydesign.Blocks[i][0].xoffset.size()) + 1;
       }
-      // sum(is_ith_offset) = 1
-      double sparserow[mydesign.Blocks[i][0].xoffset.size()];
-      int colno[mydesign.Blocks[i][0].xoffset.size()];
-      for(unsigned int j=0;j<mydesign.Blocks[i][0].xoffset.size();j++){
-        colno[j] = int(temp_pointer + j);
-        sparserow[j] = 1;
+      if (mydesign.Blocks[i][0].yoffset.size()) {
+        // y + is_flip * height - pitch * n_p - offset_i * is_ith_offset = 0
+        {
+          double sparserow[3 + mydesign.Blocks[i][0].yoffset.size()];
+          sparserow[0] = 1;
+          sparserow[1] = double(mydesign.Blocks[i][0].height);
+          sparserow[2] = double(-mydesign.Blocks[i][0].ypitch);
+          for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) sparserow[3 + j] = double(-mydesign.Blocks[i][0].yoffset[j]);
+          int colno[3 + mydesign.Blocks[i][0].yoffset.size()];
+          colno[0] = int(i) * 4 + 1;
+          colno[1] = int(i) * 4 + 3;
+          colno[2] = int(temp_pointer + mydesign.Blocks[i][0].yoffset.size());
+          for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) colno[3 + j] = int(temp_pointer + j);
+          if (!add_constraintex(lp, 3 + mydesign.Blocks[i][0].yoffset.size(), sparserow, colno, EQ, 0)) logger->error("error");
+        }
+        // sum(is_ith_offset) = 1
+        double sparserow[mydesign.Blocks[i][0].yoffset.size()];
+        int colno[mydesign.Blocks[i][0].yoffset.size()];
+        for(unsigned int j=0;j<mydesign.Blocks[i][0].yoffset.size();j++){
+          colno[j] = int(temp_pointer + j);
+          sparserow[j] = 1;
+        }
+        if (!add_constraintex(lp, mydesign.Blocks[i][0].yoffset.size(), sparserow, colno, EQ, 1)) logger->error("error");
+        temp_pointer += int(mydesign.Blocks[i][0].yoffset.size()) + 1;
       }
-      if (!add_constraintex(lp, mydesign.Blocks[i][0].xoffset.size(), sparserow, colno, EQ, 1)) logger->error("error");
-      temp_pointer += int(mydesign.Blocks[i][0].xoffset.size()) + 1;
-    }
-    if (mydesign.Blocks[i][0].yoffset.size()) {
-      // y + is_flip * height - pitch * n_p - offset_i * is_ith_offset = 0
-      {
-        double sparserow[3 + mydesign.Blocks[i][0].yoffset.size()];
-        sparserow[0] = 1;
-        sparserow[1] = double(mydesign.Blocks[i][0].height);
-        sparserow[2] = double(-mydesign.Blocks[i][0].ypitch);
-        for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) sparserow[3 + j] = double(-mydesign.Blocks[i][0].yoffset[j]);
-        int colno[3 + mydesign.Blocks[i][0].yoffset.size()];
-        colno[0] = int(i) * 4;
-        colno[1] = int(i) * 4 + 2;
-        colno[2] = int(temp_pointer + mydesign.Blocks[i][0].yoffset.size());
-        for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) colno[3 + j] = int(temp_pointer + j);
-        if (!add_constraintex(lp, 4, sparserow, colno, EQ, 0)) logger->error("error");
-      }
-      // sum(is_ith_offset) = 1
-      double sparserow[mydesign.Blocks[i][0].yoffset.size()];
-      int colno[mydesign.Blocks[i][0].yoffset.size()];
-      for(unsigned int j=0;j<mydesign.Blocks[i][0].yoffset.size();j++){
-        colno[j] = int(temp_pointer + j);
-        sparserow[j] = 1;
-      }
-      if (!add_constraintex(lp, mydesign.Blocks[i][0].yoffset.size(), sparserow, colno, EQ, 1)) logger->error("error");
-      temp_pointer += int(mydesign.Blocks[i][0].yoffset.size()) + 1;
     }
   }
+  
 
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
