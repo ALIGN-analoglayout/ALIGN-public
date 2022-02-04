@@ -611,11 +611,11 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         sparserow[2] = double(-mydesign.Blocks[i][0].ypitch);
         for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) sparserow[3 + j] = double(-mydesign.Blocks[i][0].yoffset[j]);
         int colno[3 + mydesign.Blocks[i][0].yoffset.size()];
-        colno[0] = int(i) * 4;
-        colno[1] = int(i) * 4 + 2;
+        colno[0] = int(i) * 4 + 1;
+        colno[1] = int(i) * 4 + 3;
         colno[2] = int(temp_pointer + mydesign.Blocks[i][0].yoffset.size());
         for (unsigned int j = 0; j < mydesign.Blocks[i][0].yoffset.size(); j++) colno[3 + j] = int(temp_pointer + j);
-        if (!add_constraintex(lp, 4, sparserow, colno, EQ, 0)) logger->error("error");
+        if (!add_constraintex(lp, 3 + mydesign.Blocks[i][0].yoffset.size(), sparserow, colno, EQ, 0)) logger->error("error");
       }
       // sum(is_ith_offset) = 1
       double sparserow[mydesign.Blocks[i][0].yoffset.size()];
