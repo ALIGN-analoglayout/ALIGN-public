@@ -26,15 +26,13 @@ class MOSGenerator(CanvasPDK):
 
         if os.getenv('PLACE_ON_GRID', False):
             rh = 7*self.pdk['M2']['Pitch']
-            if False:
-                if parameters['real_inst_type'].lower().startswith('n'):
-                    o = 0
-                else:
-                    o = rh
-            else:
-                o = 0
-            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
-                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
+            # self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
+            #                                              ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
+            ored_terms = [
+                            OffsetsScalings(offsets=[0*rh], scalings=[1, -1]),
+                            OffsetsScalings(offsets=[2*rh], scalings=[1, -1])
+                        ]
+            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()]}
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 

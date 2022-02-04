@@ -1,16 +1,9 @@
 import os
 import json
+import shutil
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
-
-
-def test_place_on_grid():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.tia(name)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=True, n=8)
 
 
 def test_scalings():
@@ -35,7 +28,7 @@ def test_scalings():
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]}
     ]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=8)
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=8)
 
     # Check if the PlaceOnGrid constraint is written to primitive.json
     filename = run_dir / '3_pnr' / 'inputs' / 'DIG22INV.json'
@@ -44,7 +37,6 @@ def test_scalings():
         primitive = json.load(fp)
         assert 'metadata' in primitive
         assert 'constraints' in primitive['metadata']
-
         golden = [{
             "constraint": "place_on_grid",
             "direction": "H",
@@ -52,25 +44,37 @@ def test_scalings():
             "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
         }]
         assert primitive['metadata']['constraints'] == golden
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
-def test_hierarchy():
+def test_tia_on_grid():
+    os.environ['PLACE_ON_GRID'] = 't'
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.tia(name)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False, n=8)
+
+
+def test_ota_on_grid():
     os.environ['PLACE_ON_GRID'] = 't'
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
 
-def test_cmp_fp2_w_grid():
+def test_cmp_on_grid():
     os.environ['PLACE_ON_GRID'] = 't'
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
