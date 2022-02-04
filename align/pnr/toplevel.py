@@ -626,7 +626,10 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
                 for constraint in frontier[top_name]:
                     assert constraint['constraint'] == 'place_on_grid'
-                    assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
+                    # assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
+                    # Warn now and fail at the end for human-readable error message
+                    if not constraint['ored_terms']:
+                        logger.warning(f'No legal grid locations for {top_name} {constraint}')
 
             grid_constraints.update(frontier)
 

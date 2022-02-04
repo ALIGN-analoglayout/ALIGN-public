@@ -4,11 +4,21 @@ import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
+from align.pdk.finfet import MOSGenerator
 
 
 @pytest.fixture(autouse=True)
 def place_on_grid(monkeypatch):
     monkeypatch.setenv('PLACE_ON_GRID', 't')
+
+
+@pytest.mark.parametrize('vt', ['NMOS', 'PMOS'])
+def test_check_constraints(vt):
+    c = MOSGenerator()
+    ports = {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]}
+    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': vt, 'NF': 2}
+    c.addNMOSArray(1, 1, 0, None, ports, **parameters)
+    assert c.metadata["constraints"][0]["constraint"] == "place_on_grid"
 
 
 def test_scalings():
@@ -77,9 +87,7 @@ def test_ota_on_grid():
     run_example(example, cleanup=True)
 
 
-def test_cmp_on_grid():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
+def cmp_constraints(name):
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
@@ -99,5 +107,20 @@ def test_cmp_on_grid():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
+    return constraints
+
+
+def test_cmp_on_grid():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=True, area=5e9)
+
+
+def test_cmp_on_grid_analytical():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = cmp_constraints(name)
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=True, area=5e9, additional_args=['--use_analytical_placer'])

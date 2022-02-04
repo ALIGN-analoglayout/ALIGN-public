@@ -100,15 +100,6 @@ def test_duo_one():
         assert False, f'{get_test_id()}'
 
 
-@pytest.mark.parametrize('vt', ['NMOS', 'PMOS'])
-def test_check_constraints(vt):
-    c = MOSGenerator()
-    ports = {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]}
-    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': vt, 'NF': 2}
-    c.addNMOSArray(1, 1, 0, None, ports, **parameters)
-    assert c.metadata["constraints"][0]["constraint"] == "place_on_grid"
-
-
 # Unit tests ###
 
 def test_unit_interleave_pattern():
