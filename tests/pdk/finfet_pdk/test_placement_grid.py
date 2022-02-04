@@ -87,9 +87,7 @@ def test_ota_on_grid():
     run_example(example, cleanup=True)
 
 
-def test_cmp_on_grid():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
+def cmp_constraints(name):
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
@@ -109,5 +107,20 @@ def test_cmp_on_grid():
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
+    return constraints
+
+
+def test_cmp_on_grid():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=True, area=5e9)
+
+
+def test_cmp_on_grid_analytical():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = cmp_constraints(name)
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=True, area=5e9, additional_args=['--use_analytical_placer'])
