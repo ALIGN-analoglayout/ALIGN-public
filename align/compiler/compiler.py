@@ -10,7 +10,7 @@ from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import FindConst
 from .user_const import ConstraintParser
-from ..primitive import generate_primitive_lef
+from .gen_abstract_name import gen_primitive_def, create_subckt
 import logging
 
 
@@ -150,8 +150,9 @@ def call_primitive_generator(
         logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
         group_cap_instances = []
         for const in ckt.constraints:
-            if isinstance(const, constraint.GuardRing):
-                primitives["guard_ring"] = {"primitive": "guard_ring"}
+            # if isinstance(const, constraint.GuardRing):
+            #     create_subckt(element, guard_ring, lib, pins)
+            #     primitives["guard_ring"] = {"primitive": "guard_ring"}
             if isinstance(const, constraint.GroupCaps):
                 primitives[const.unit_cap.upper()] = {
                     "primitive": "cap",
@@ -160,42 +161,10 @@ def call_primitive_generator(
                 group_cap_instances.append(const.name.upper())
 
         for ele in ckt.elements:
-            # Three types of elements can exist:
-            # ele can be a model ele can be model defined in models.sp/base model
-            # ele can be a subcircuit with a generator associated
-            # ele can be a sucircuit with no generator, PnR will place and route this instance
-            generator = ckt_data.find(ele.generator)
-            logger.debug(f"element {ele.name} generator {ele.generator} generator properties {generator}")
             if ele.name in group_cap_instances:
                 ele.add_abs_name(ele.model)
-            elif isinstance(generator, SubCircuit):
-                gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
-                if gen_const:
-                    assert generate_primitive_lef(
-                        ele,
-                        primitives,
-                        design_config,
-                        uniform_height,
-                        pdk_dir
-                    )
-                else:
-                    ele.add_abs_name(ele.model)
-                    logger.info(
-                        f"No physical information found for: {ele.name} of type : {ele.model}"
-                    )
-            elif generator is None or isinstance(generator, Model):
-                assert generate_primitive_lef(
-                    ele,
-                    primitives,
-                    design_config,
-                    uniform_height,
-                    pdk_dir
-                )
             else:
-                assert False, f"No definition found for instance {ele} in {ckt.name}"
-        logger.debug(
-            f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}"
-        )
+                gen_primitive_def(ele, primitives)
 
     return primitives
 
