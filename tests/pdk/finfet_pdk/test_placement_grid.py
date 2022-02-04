@@ -1,9 +1,14 @@
-import os
 import json
 import shutil
+import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
+
+
+@pytest.fixture(autouse=True)
+def place_on_grid(monkeypatch):
+    monkeypatch.setenv('PLACE_ON_GRID', 't')
 
 
 def test_scalings():
@@ -49,16 +54,14 @@ def test_scalings():
 
 
 def test_tia_on_grid():
-    os.environ['PLACE_ON_GRID'] = 't'
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, n=8)
+    run_example(example, cleanup=True, n=8)
 
 
 def test_ota_on_grid():
-    os.environ['PLACE_ON_GRID'] = 't'
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
@@ -71,11 +74,10 @@ def test_ota_on_grid():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=True)
 
 
 def test_cmp_on_grid():
-    os.environ['PLACE_ON_GRID'] = 't'
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
@@ -98,4 +100,4 @@ def test_cmp_on_grid():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, area=5e9)
+    run_example(example, cleanup=True, area=5e9)
