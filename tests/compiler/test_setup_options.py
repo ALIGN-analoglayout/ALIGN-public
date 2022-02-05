@@ -104,7 +104,7 @@ def test_dont_const():
         {"constraint": "AutoConstraint", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
         gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
@@ -122,7 +122,7 @@ def test_dont_constrain_clk():
         {"constraint": "ClockPorts", "ports": ["vin"]}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     clean_data(name)
     pass
 
@@ -137,7 +137,7 @@ def test_identify_array():
         {"constraint": "IdentifyArray", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     clean_data(name)
     pass
 
@@ -152,7 +152,7 @@ def test_keep_duppy():
         {"constraint": "KeepDummyHierarchies", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     clean_data(name)
     pass
 
@@ -167,7 +167,7 @@ def test_merge_series():
         {"constraint": "MergeSeriesDevices", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     clean_data(name)
     pass
 
@@ -182,6 +182,6 @@ def test_merge_parallel():
         {"constraint": "MergeParallelDevices", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path, False)
+    generate_hierarchy(example, name, out_path, False, pdk_path)
     clean_data(name)
     pass
