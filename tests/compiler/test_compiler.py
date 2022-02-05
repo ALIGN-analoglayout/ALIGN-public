@@ -21,12 +21,8 @@ def test_compiler():
 
 def test_compiler_output():
     updated_ckt = test_compiler()
-    # Every example should contain a setup file
-    verilog_tbl = constraint_generator(
-        updated_ckt)
     compiler_output(
         updated_ckt,
         "ota",
-        verilog_tbl,
         pathlib.Path(__file__).parent / "Results",
     )

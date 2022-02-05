@@ -11,8 +11,10 @@ import http.server
 import socketserver
 import functools
 
+from align.schema.subcircuit import SubCircuit
+
 from .compiler import generate_hierarchy, read_lib
-from .primitive import generate_primitive
+from .primitive import generate_primitive, generate_primitive_param
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png
@@ -297,10 +299,12 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
-        primitives, ckt_data = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
-
+        primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
+        primitives = {}
+        for primitive in primitive_lib:
+            if isinstance(primitive, SubCircuit):
+                generate_primitive_param(primitive, primitives, pdk_dir)
         gen_more_primitives(primitives, topology_dir, subckt)
-
         with (topology_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
     else:
@@ -316,16 +320,16 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
-                if 'ckt_data' in globals() or 'ckt_data' in locals():
-                    primitive_def = ckt_data.find(block_args['primitive'])
+                if 'primitive_lib' in globals() or 'primitive_lib' in locals():
+                    primitive_def = primitive_lib.find(block_name)
                 else:
                     # read in circuit from basic library
-                    primitive_def = read_lib(pdk_dir).find(block_args['primitive'])
+                    primitive_def = read_lib(pdk_dir).find(block_name)
                 assert primitive_def is not None, f"unavailable primitive definition {block_args['primitive']}"
             else:
                 primitive_def = block_args['primitive']
             block_args.pop("primitive", None)
-            uc = generate_primitive(block_name, primitive_def, ** block_args,
+            uc = generate_primitive(block_name, primitive_def,  ** block_args,
                                     pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
             if hasattr(uc, 'metadata'):
                 primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
