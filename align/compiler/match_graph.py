@@ -17,16 +17,14 @@ logger = logging.getLogger(__name__)
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
-    Boundries (clk,digital, etc) are defined from setup file
+    Boundries (clk,digital, etc) are defined from constraints
     """
 
     def __init__(self, ckt_data, primitive_library):
         """
         Args:
-            ckt_data (dict): all subckt graph, names and port
-            design_setup (dict): information from setup file
-            library (list): list of library elements in dict format
-            existing_generator (list): list of names of existing generators
+            ckt_data (dict): all subckt information
+            library (list): template library to match
         """
         self.ckt_data = ckt_data
         self.lib = primitive_library

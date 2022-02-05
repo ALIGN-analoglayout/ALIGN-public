@@ -8,7 +8,7 @@ from align.schema.types import set_context
 import logging
 import hashlib
 
-from align.schema import SubCircuit, Model, constraint, Library
+from align.schema import SubCircuit, Model, constraint, Library, Instance
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +20,21 @@ def gen_key(param):
     return block_arg
 
 
-def create_subckt(element, name, lib, pins):
-    with set_context(lib):
-        new_subckt = SubCircuit(name=name, pins=pins)
+def create_subckt(element, name, plib):
+    with set_context(plib):
+        new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()))
     with set_context(new_subckt.elements):
-        new_subckt.elements.append(element)
-    check = lib.find(name)
+        new_ele = Instance(name = element.name,
+                        model = element.model,
+                        pins = {x: x for x in element.pins.keys()},
+                        generator = element.generator,
+                        parameters=element.parameters
+                        )
+        new_subckt.elements.append(new_ele)
+    check = plib.find(name)
 
     if not check:  # add subckt in primitive library if not already existing
-        lib.append(new_subckt)
+        plib.append(new_subckt)
 
 
 def gen_primitive_def(element, primitive_library):
@@ -36,7 +42,7 @@ def gen_primitive_def(element, primitive_library):
     plib = primitive_library
     model = element.model
 
-    generator = lib.find(element.generator)
+    generator = lib.find(model)
     if isinstance(generator, SubCircuit):
         gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
         unique_name = model
@@ -47,7 +53,10 @@ def gen_primitive_def(element, primitive_library):
         # just using parameters as pins are unique corresponding to a model
         block_arg = gen_key(element.parameters)
         unique_name = f'{model}{block_arg}'
-        create_subckt(element, unique_name, plib, list(element.pins.keys()))
+        if not plib.find(model):
+            with set_context(plib):
+                plib.append(lib.find(model))
+        create_subckt(element, unique_name, plib )
         assert plib.find(unique_name)
     else:
         assert False, f"No definition found for instance {element} in {element.name}"

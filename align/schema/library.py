@@ -88,12 +88,4 @@ class Library(List[Union[Model, SubCircuit]]):
                 prefix='L'
             )
         )
-        # models.append(
-        #     Model(
-        #         name='GUARD_RING',
-        #         pins=['PIN'],
-        #         parameters={},
-        #         prefix=''
-        #     )
-        # )
         return models
