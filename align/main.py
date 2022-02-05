@@ -299,7 +299,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
-        primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
+        primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)
         primitives = {}
         for primitive in primitive_lib:
             if isinstance(primitive, SubCircuit):

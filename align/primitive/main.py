@@ -212,12 +212,12 @@ def intel_pdk(subckt, primitives):
 # def finfet_pdk(subck, primitives):
 
 
-def generate_primitive_param(subckt, primitives, pdk_dir=None, uniform_height=False):
+def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
     """ Return commands to generate parameterized lef"""
     # TODO model parameter can be improved
     block_name = subckt.name
     logger.info(f"Getting generator parameters for: {subckt}")
-    generator_name = subckt.parent.find(subckt.elements[0].model).base
+    generator_name = subckt.elements[0].generator
     layers_json = pdk_dir / "layers.json"
     with open(layers_json, "rt") as fp:
         pdk_data = json.load(fp)
@@ -370,14 +370,15 @@ def generate_primitive_param(subckt, primitives, pdk_dir=None, uniform_height=Fa
             return True
 
 
-
-
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
                        pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
                        abstract_template_name=None, concrete_template_name=None):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
-    assert isinstance(primitive, SubCircuit), f"primitive {primitive}"
+    assert isinstance(primitive, SubCircuit) \
+        or isinstance(primitive, Model)\
+        or primitive == 'generic' \
+        or 'ring' in primitive, f"{block_name} definition: {primitive}"
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:

@@ -21,8 +21,7 @@ def generate_hierarchy(
     design_name: str,
     output_dir: pathlib.Path,
     flatten_heirarchy: bool,
-    pdk_dir: pathlib.Path,
-    uniform_height: bool
+    pdk_dir: pathlib.Path
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
     ckt_data = compiler_input(
