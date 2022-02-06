@@ -135,6 +135,7 @@ def get_generator(name, pdkdir):
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
+    logger.info(parameters)
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
     uc = primitive1()
     uc.generate(

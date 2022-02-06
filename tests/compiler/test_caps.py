@@ -2,7 +2,7 @@ import pathlib
 import json
 
 from align.compiler.compiler import compiler_input, constraint_generator, compiler_output
-from align.compiler.gen_abstract_name import gen_primitive_collateral
+from align.compiler.gen_abstract_name import PrimitiveLibrary
 from align.schema.subcircuit import SubCircuit
 
 
@@ -11,14 +11,13 @@ def test_cap():
     pdk_path = mydir.parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
     config_path = mydir.parent.parent / "files"
     test_path = mydir.parent.parent / "files" / "test_circuits" / "test_cap.sp"
-    gen_const_path = mydir.parent / "Results" / "TEST_CAP.verilog.json"
     gold_const_path = (
         mydir.parent.parent / "files" / "test_results" / "test_cap.const.json"
     )
 
     updated_ckt = compiler_input(test_path, "test_cap", pdk_path, config_path)
     assert updated_ckt.find("TEST_CAP")
-    primitives = gen_primitive_collateral(updated_ckt)
+    primitives = PrimitiveLibrary(updated_ckt, pdk_path).gen_primitive_collateral()
     all_primitive_names = set([i.name for i in primitives if isinstance(i, SubCircuit)])
     assert all_primitive_names == {'CAP_87227899', 'CAP_34071065', 'NMOS_RVT_41101915'}
     assert primitives.find('CAP_87227899').elements[0].parameters == {'VALUE': '6E-14', 'PARALLEL': '1', 'STACK': '1'}
