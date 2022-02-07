@@ -20,15 +20,12 @@ def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_laye
 
     pins = [term['netName'] for term in layout_d['terminals'] if term['netType'] == 'pin']
 
-    print('lef_from_layout_d', pins)
     pin_map = {}
-
     if mode == 'placement':
         if 'metadata' in layout_d and 'partially_routed_pins' in layout_d['metadata']:
             pin_map = layout_d['metadata']['partially_routed_pins']
-        pins = list(set(pin_map.get(p, p) for p in pins))
 
-    print('mode', mode, 'pin_map', pin_map, 'pins', pins)
+    pins = sorted(list(set(pin_map.get(p, p) for p in pins)))
 
     terminals_on_net = defaultdict(list)
     for obj in layout_d['terminals']:

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 NType = PnR.NType
 Omark = PnR.Omark
 
-def ReadVerilogJson( DB, j, add_placement_info=False):
+def _ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
 
     for module in j['modules']:
@@ -156,7 +156,7 @@ def _ReadLEF( DB, path, lefname):
     else:
         logger.warn(f"LEF file {p} doesn't exist.")
 
-def semantic(DB, path, topcell, global_signals):
+def _semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
     DB.semantic1( global_signals)
@@ -171,10 +171,8 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     _ReadLEF( DB, path, lefname)
     DB.gdsData2 = _ReadMap( path, mapname)
 
-    j = None
-    #if vname.endswith(".verilog.json"):
     j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-    global_signals = ReadVerilogJson( DB, j)
-    semantic(DB, path, topcell, global_signals)
+    global_signals = _ReadVerilogJson( DB, j)
+    _semantic(DB, path, topcell, global_signals)
 
     return DB, j

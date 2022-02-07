@@ -16,9 +16,8 @@ class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.NEW_PARTIAL_ROUTING_FEATURE = False
+        self.NEW_PARTIAL_ROUTING_FEATURE = True
         if self.NEW_PARTIAL_ROUTING_FEATURE:
-            print('Adding partial routing metadata field')
             self.metadata = {'partially_routed_pins': {}}
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
