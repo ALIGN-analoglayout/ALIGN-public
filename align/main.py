@@ -73,14 +73,11 @@ def gen_more_primitives(primitives, topology_dir, subckt):
     """primitives dictionary updated in place"""
 
     #
-    # This code should be improved and moved to 2_primitives
+    #TODO: This code should be improved and moved to 2_primitives
     #
     map_d = defaultdict(list)
 
-    # As a hack, add more primitives if it matches this pattern
-    p = re.compile(r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
-
-    p_2 = re.compile(r'^(\S+)_X(\d+)_Y(\d+)$')
+    # As a hack, add more primitives if x and y are define
 
     more_primitives = {}
 
@@ -100,50 +97,10 @@ def gen_more_primitives(primitives, topology_dir, subckt):
         else:
             return pairs
 
-    def gen_pairs(n, nfin):
-        clusters = (nfin+n-1) // n
-
-        pairs = set()
-        for newx in range(1, clusters+1):
-            newy = (nfin+newx*n-1)//(newx*n)
-            assert newx*newy*n >= nfin
-            pairs.add((newx, newy))
-
-        by_y = defaultdict(list)
-        for x, y in pairs:
-            by_y[y].append(x)
-
-        pairs = set()
-        for y, xs in by_y.items():
-            pairs.add((min(xs), y))
-
-        return limit_pairs(pairs.difference({(X, Y)}))
-
     for k, v in primitives.items():
-        m = p.match(k)
-        mm = p_2.match(k)
-
-        if m:
-            nfin, n, X, Y = tuple(int(x) for x in m.groups()[1:-1])
-            prefix = f'{m.groups()[0]}_nfin{nfin}'
-            suffix = m.groups()[-1]
-            pairs = gen_pairs(n, nfin)
-
-            abstract_name = f'{prefix}{suffix}'
-            map_d[abstract_name].append(k)
-            for newx, newy in pairs:
-                concrete_name = f'{prefix}_N{n}_X{newx}_Y{newy}{suffix}'
-                map_d[abstract_name].append(concrete_name)
-                if concrete_name not in primitives and \
-                        concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-
-        elif mm:
-            prefix = mm.groups()[0]
-            x, y = tuple(int(x) for x in mm.groups()[1:])
-            prefix = mm.groups()[0]
+        if 'x_cells' in v and 'y_cells' in v:
+            prefix = k
+            x, y = v['x_cells'], v['y_cells']
             pairs = set()
             m = x*y
             y_sqrt = math.floor(math.sqrt(x*y))
@@ -153,8 +110,8 @@ def gen_more_primitives(primitives, topology_dir, subckt):
                     pairs.add((m//y, y))
                 if y == 1:
                     break
-
-            pairs = limit_pairs(pairs)
+            pairs.remove((v['x_cells'], v['y_cells']))
+            pairs = limit_pairs((pairs))
 
             abstract_name = f'{prefix}'
             map_d[abstract_name].append(k)
@@ -321,10 +278,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
                 if 'primitive_lib' in globals() or 'primitive_lib' in locals():
-                    primitive_def = primitive_lib.find(block_name)
+                    primitive_def = primitive_lib.find(block_args["primitive"])
                 else:
                     # read in circuit from basic library
-                    primitive_def = read_lib(pdk_dir).find(block_name)
+                    primitive_def = read_lib(pdk_dir).find(block_args["primitive"])
                 assert primitive_def is not None, f"unavailable primitive definition {block_args['primitive']}"
             else:
                 primitive_def = block_args['primitive']

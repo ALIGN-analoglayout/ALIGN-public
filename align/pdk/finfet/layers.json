@@ -2,6 +2,7 @@
   "_comment": "FinFET 22nm Mock PDK",
   "ScaleFactor":10,
   "design_info": {
+    "pdk_type": "finfet_22fl",
     "top_signal_routing_layer": "M5",
     "bottom_signal_routing_layer": "M1",
     "top_power_routing_layer": "M5",
