@@ -73,6 +73,7 @@ class PrimitiveLibrary():
             name (str): unique name for this instance based on parameters
         """
         if not self.plib.find(name):
+            logger.info("creating subcircuit for {element}")
             with set_context(self.plib):
                 new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()))
             with set_context(new_subckt.elements):

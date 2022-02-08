@@ -3,7 +3,8 @@ import argparse
 import pathlib
 
 from align.primitive import generate_primitive
-
+from align.schema import SpiceParser, Model, SubCircuit, Instance
+from align.schema.types import set_context
 
 def gen_parser():
     parser = argparse.ArgumentParser(description="Inputs for Cell Generation")
@@ -26,14 +27,24 @@ def read_primitive_spice(args):
         lines = f.read()
 
     primitive_spice_parser.parse(lines)
-    primitive_def = primitive_spice_parser.library.find('RES')
-    assert primitive_def, f"No such primitive definition found {args.primitive}"
-    return primitive_def
+    res_model = primitive_spice_parser.library.find('RES')
+    assert res_model, f"No such primitive definition found {args.primitive}"
+    if isinstance(res_model, Model):
+        with set_context(primitive_spice_parser.library):
+            res_subckt = SubCircuit(name=args.block_name, pins=list(res_model.pins))
+            with set_context(res_subckt.elements):
+                new_ele = Instance(name='R0',
+                                   model='RES',
+                                   pins={x: x for x in res_model.pins},
+                                   generator='RES'
+                                   )
+            res_subckt.elements.append(new_ele)
+    return res_subckt
 
 
 def main(args):
-    primitive_def = read_primitive_spice(args)
-    return generate_primitive(args.block_name, primitive_def, value=(args.height, args.res), pdkdir=args.pdkdir, outputdir=args.outputdir)
+    res_subckt = read_primitive_spice(args)
+    return generate_primitive(args.block_name, res_subckt, value=(args.height, args.res), pdkdir=args.pdkdir, outputdir=args.outputdir)
 
 
 if __name__ == "__main__":
