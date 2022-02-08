@@ -206,7 +206,6 @@ def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
         }
         add_primitive(primitives, block_name, block_args)
         return True
-
     else:
         if design_config["pdk_type"] == "finfet_22fl":
             from .gen_22fl_param import gen_param
