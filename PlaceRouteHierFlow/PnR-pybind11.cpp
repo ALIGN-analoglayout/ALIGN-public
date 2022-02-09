@@ -492,6 +492,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("max_init_trial_count", &PlacerHyperparameters::max_init_trial_count)
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
     .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP)
+    .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver)
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     ;
