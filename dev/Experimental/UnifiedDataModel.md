@@ -3,23 +3,24 @@ __models.sp__ (Model library can be defined in a Python script and serialized to
 ```
 .model n nmos nfin=1 w=1 nf=1 l=1 m=1
 .model p nmos nfin=1 w=1 nf=1 l=1 m=1
+.model tfr res w=1 l=1
 ```
-
-__templates.sp__ (Template library can be defined in a Python script and serialized to the file below for human readability)
+__templates.sp__ library can be defined in a Python script and serialized to the file below for human readability)
 ```
 .subckt nmos d g s b
-* [{"constraint": "Generator", "_generator": "mos"}]
+* @: Generator(name="mos")
 m0 d g s b nmos
 .ends
 
 .subckt dp_n da db ga gb s b
-* [{"constraint": "Generator", "_generator": "mos", "_matched_params": True}]
+* @: Generator(name="mos")
+* @: SymmetricBlocks(pairs=[['m0','m1']], direction='V')
 m0 da ga s b nmos
 m1 db gb s b nmos
 .ends
 
 .subckt scm_p da db s
-* [{"constraint": "Generator", "_generator": "mos", "_matched_params": True}]
+* @: Generator(name="mos")
 m0 da da s s pmos
 m1 db da s s pmos
 .ends
@@ -34,13 +35,25 @@ m2 dc da s s nmos
 m0 o i vcc vcc pmos
 m1 o i vss vss nmos
 .ends
+
+.subckt ota_five <pins> 
+* @: Generator(name="ota")
+< instances >
+.ends
+
 ```
 
+__init.py__  generators that are exposed to ALIGN
+```python
+from module_one import mos  # mos keyword is specified in Generator directive
+from module_two import res  # res is the base model for tfr
+from module_ota import ota  # ota keyword is specified in Generator directive
+```
 ## ALIGN Input ##
 __netlist.sp__
 ```
 .subckt ota_five vccx vssx von vin vip vb
-mn0 vxx vx vssx vssx n nf=2 m=8    // this is an additional device just for demonstration
+mn0 vxx vx vssx vssx n nf=2 m=8
 mn1 vcm vb vssx vssx n nf=2 m=8
 mn2 von vip vcm vssx n nf=2 m=16
 mn3 vop vin vcm vssx n nf=2 m=16
@@ -48,16 +61,28 @@ mp4 vop vop vccx vccx p nf=2 m=4
 mp5 von vop vccx vccx p nf=2 m=4
 .ends ota_five
 ```
+__netlist.const.json__
+```python
+[
+    {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+    {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+]
+```
 
 ## ALIGN Execution ##
-__phase=0__ (parse netlist)
+__phase=0__ (Just after netlist parsing)
 ```python
 # Hierarchy
 [
-    {"name": "ota_five", "pins": ["vccx", "vssx", "von", "vin", "vip", "vb"],
-        "constraints": [...],
-        "elements": [
-            {"name": "mn0", "model": "n", "fa_map":{"d": "vxx", "g": "vx", "s": "vssx", "b": "vssx"}, "parameters": {...} 
+    {
+        "name": "ota_five",
+        "pins": ["vccx", "vssx", "von", "vin", "vip", "vb"],
+        "constraints": [
+            {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+            {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+        ],
+        "instances": [
+            {"name": "mn0", "model": "n", "fa_map":{...}, "parameters": {...}},
             {"name": "mn1", "model": "n", ...},
             {"name": "mn2", "model": "n", ...},
             {"name": "mn3", "model": "n", ...},
@@ -67,147 +92,235 @@ __phase=0__ (parse netlist)
     }
 ]
 ```
-
-__phase=1__ (after compiler transformations, template and generator identification. note that both mn0 and mn1 mapped to nmos_1)
+__phase=1__ (After compiler transformations: e.g., template and generator identification. Just before primitive generation.)
 ```python
 # Hierarchy
 [
-    {"name": "ota_five", "pins": [...],
-        "constraints": [],
-        "elements": [
-            {"name": "mn0", "model":"nmos_1", "fa_map":{"d": "vxx", "g": "vx", "s": "vssx", "b": "vssx"},
-                "constraints": [{"constraint": "Generator", "_generator": "mos"}, {"<additional constraints per mn0>"}]},
-            {"name": "mn1", "model":"nmos_1", "fa_map":{...},
-                "constraints": [{"constraint": "Generator", "_generator": "mos"}, {"<additional constraints per mn1>"}]},
-            {"name": "dp_n_1_i1", "model":"dp_n_1", "fa_map":{...},
-                "constraints": [{"constraint": "Generator", "_generator": "mos"}, {"<additional constraints per instance>"}]},
-            {"name": "scm_p_1_i1", "model":"scm_p_1", "fa_map":{...},
-                "constraints": [{"constraint": "Generator", "_generator": "mos", "_matched_params": True}, {"<additional constraints per instance>"}]}
+    {
+        "name": "ota_five",
+        "pins": [...],
+        "constraints": [
+            {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+            {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+        ],
+        "instances": [
+            {"name": "mn0", "model": "<guid1>", "fa_map": {...}},
+            {"name": "mn1", "model": "<guid2>", "fa_map": {...}},
+            {"name": "mn2_mn3", "model": "<guid3>", "fa_map": {...}}},
+            {"name": "mp4_mp5", "model": "<guid4>", "fa_map": {...}}},
         ]
     },
-    {"name": "nmos_1", "pins": ["d", "g", "s", "b"],
-        "elements": [
-            {"name": "mn0", "model":"n", "fa_map":{"d": "d", "g": "g", "s": "s", "b": "b"}, "parameters": {<ota_five.mn1==ota_five.mn0>} },
+    {
+        "name": "<guid1>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param1>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn0>}}]
+    },
+    {
+        "name": "<guid2>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param2>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn1>}}]
+    },
+    {
+        "name": "<guid3>",
+        "pins": ["da", "db", "ga", "gb", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"n", "fa_map":{"d": "da", "g": "ga", "s": "s", "b": "b"}, "parameters": {<params of mn2>} },
+            {"name": "m1", "model":"n", "fa_map":{"d": "db", "g": "gb", "s": "s", "b": "b"}, "parameters": {<params of mn3>} }
         ]
     },
-    {"name": "dp_n_1", "pins": ["da", "db", "ga", "gb", "s", "b"],
-        "elements": [
-            {"name": "mn0", "model":"n", "fa_map":{"d": "da", "g": "ga", "s": "s", "b": "b"}, "parameters": {<ota_five.mn2>} },
-            {"name": "mn1", "model":"n", "fa_map":{"d": "db", "g": "gb", "s": "s", "b": "b"}, "parameters": {<ota_five.mn3>} },
-        ]
-    },
-    {"name": "scm_p_1", "pins": ["da", "db", "s"],
-        "elements": [
-            {"name": "mp0", "model":"p", "fa_map":{...}, "parameters": {<ota_five.mp4>} },
-            {"name": "mp1", "model":"p", "fa_map":{...}, "parameters": {<ota_five.mp5>} },
+    {
+        "name": "<guid4>",
+        "pins": ["da", "db", "s"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"p", "fa_map":{...}, "parameters": {<params of mp4>} },
+            {"name": "m1", "model":"p", "fa_map":{...}, "parameters": {<params of mp5>} }
         ]
     }
 ]
 ```
 
-Call mos with the subcircuit object (e.g. nmos_1) and constraints per instance. mos returns an abstract name and dictionary of concrete name for each one.
+ALIGN calls the annotated generators from PDK to create primitives (no hard coded model names).
 
-__phase=2__ (after primitive generation, before placement)
+__phase=2__ (After primitive generation, before placement)
 ```python
 # Hierarchy
 [
-    {"name": "ota_five", "pins": ["vccx", "vssx", "von", "vin", "vip", "vb"],
-        "constraints": [],
-        "elements": [
-            {"name": "mn0", "model":"nmos_1", "fa_map":{"d": "vxx", "g": "vx", "s": "vssx", "b": "vssx"},
-                "constraints": [...],
-                "abstract_name": "<guid1>"},
-            {"name": "mn1", "model":"nmos_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid1 if constraints match, else guid2>",
-            {"name": "i_dp_n_1", "model":"dp_n_1", "fa_map":{"da": "von", "db": "vop", "ga": "vip", "gb": "vin", "s": "vcm"},
-                "constraints": [...],
-                "abstract_name": "<guid3>"},
-            {"name": "i_scm_p_1", "model":"scm_p_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid4>"}
+    {
+        "name": "ota_five",
+        "pins": [...],
+        "constraints": [
+            {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+            {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+        ],
+        "instances": [
+            {"name": "mn0", "model": "<guid1>", "fa_map": {...}},
+            {"name": "mn1", "model": "<guid2>", "fa_map": {...}},
+            {"name": "mn2_mn3", "model": "<guid3>", "fa_map": {...}}},
+            {"name": "mp4_mp5", "model": "<guid4>", "fa_map": {...}}},
+        ]
+    },
+    {
+        "name": "<guid1>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param1>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn0>}}]
+    },
+    {
+        "name": "<guid2>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param2>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn1>}}]
+    },
+    {
+        "name": "<guid3>",
+        "pins": ["da", "db", "ga", "gb", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"n", "fa_map":{"d": "da", "g": "ga", "s": "s", "b": "b"}, "parameters": {<params of mn2>} },
+            {"name": "m1", "model":"n", "fa_map":{"d": "db", "g": "gb", "s": "s", "b": "b"}, "parameters": {<params of mn3>} }
+        ]
+    },
+    {
+        "name": "<guid4>",
+        "pins": ["da", "db", "s"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"p", "fa_map":{...}, "parameters": {<params of mp4>} },
+            {"name": "m1", "model":"p", "fa_map":{...}, "parameters": {<params of mp5>} }
         ]
     }
 ]
-# A separate data structure to store rectangles w/o duplication 
+# A separate data structure to store generated primitive variants 
 {
-    "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
-    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":[]}},
-    "guid1": {"guid1_2": {"bbox":[], "terminals":[], "metadata":[]}},
-    ...
+    # "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
+    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":["instances":[], "constraints":[<PlaceOnGrid>], "partial_pins":[]]}, ... },
+    "guid2": {"guid2_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid3": {"guid3_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid4": {"guid4_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...}
 }
 ```
 
-__phase=3__ (a variant after placement, before routing)
+__phase=3__ (A variant after placement, before routing)
 ```python
 # Hierarchy
 [
-    {"name": "ota_five", "pins": [...], 
-        "constraints": [],
+    {
+        "name": "ota_five",
+        "pins": [...],
+        "constraints": [
+            {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+            {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+        ],
+        "instances": [
+            {"name": "mn0", "model": "<guid1>", "fa_map": {...}, "transformation":[...], "concrete_name": "guid1_1"},
+            {"name": "mn1", "model": "<guid2>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+            {"name": "mn2_mn3", "model": "<guid3>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+            {"name": "mp4_mp5", "model": "<guid4>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+        ],
         "concrete_name": "ota_five_0",
-        "elements": [
-            {"name": "mn0", "model":"nmos_1", "fa_map":{"<might differ w/ partial routing>"},
-                "constraints": [...],
-                "abstract_name": "<guid1>", 
-                "concrete_name": "<guid11>"},
-            {"name": "mn1", "model":"nmos_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid1/guid2>",
-                "concrete_name": "<guid11/guid12>"},
-            {"name": "i_dp_n_1", "model":"dp_n_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid3>",
-                "concrete_name": "<guid31>"},
-            {"name": "i_scm_p_1", "model":"scm_p_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid4>",
-                "concrete_name": "<guid41>"
-            }
+    },
+    {
+        "name": "<guid1>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param1>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn0>}}]
+    },
+    {
+        "name": "<guid2>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param2>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn1>}}]
+    },
+    {
+        "name": "<guid3>",
+        "pins": ["da", "db", "ga", "gb", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"n", "fa_map":{"d": "da", "g": "ga", "s": "s", "b": "b"}, "parameters": {<params of mn2>} },
+            {"name": "m1", "model":"n", "fa_map":{"d": "db", "g": "gb", "s": "s", "b": "b"}, "parameters": {<params of mn3>} }
+        ]
+    },
+    {
+        "name": "<guid4>",
+        "pins": ["da", "db", "s"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"p", "fa_map":{...}, "parameters": {<params of mp4>} },
+            {"name": "m1", "model":"p", "fa_map":{...}, "parameters": {<params of mp5>} }
         ]
     }
 ]
 # A separate data structure to store rectangles w/o duplication 
 {
-    "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
-    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":[]}},
-    "guid1": {"guid1_2": {"bbox":[], "terminals":[], "metadata":[]}}, ...
+    # "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
+    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":["instances":[], "constraints":[], "partial_pins":[]]}, ... },
+    "guid2": {"guid2_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid3": {"guid3_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid4": {"guid4_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...}
 }
 ```
 
-__phase=4__ (a variant after routing)
+__phase=4__ (A variant after routing)
 ```python
+# Hierarchy
 [
-    {"name": "ota_five", "pins": [...], 
+    {
+        "name": "ota_five",
+        "pins": [...],
+        "constraints": [
+            {"constraint": "Generator", "instances": "mn0", "parameters":{<param1>}},
+            {"constraint": "Generator", "instances": "mn1", "parameters":{<param2>}}
+        ],
+        "instances":  # TBD: should fa_map's be altered for partial routing?
+            {"name": "mn0", "model": "<guid1>", "fa_map": {...}, "transformation":[...], "concrete_name": "guid1_1"},
+            {"name": "mn1", "model": "<guid2>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+            {"name": "mn2_mn3", "model": "<guid3>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+            {"name": "mp4_mp5", "model": "<guid4>", "fa_map": {...}, "transformation":[...], "concrete_name": "..."},
+        ],
         "concrete_name": "ota_five_0",
-        "elements": [
-            {"name": "mn0", "model":"nmos_1", "fa_map":{"<might differ w/ partial routing>"},
-                "constraints": [...],
-                "abstract_name": "<guid1>", 
-                "concrete_name": "<guid11>",
-                "transformation": {}},
-            {"name": "mn1", "model":"nmos_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid1/guid2>", 
-                "concrete_name": "<guid11/guid21>",
-                "transformation": {}},
-            {"name": "i_dp_n_1", "model":"dp_n_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid3>", 
-                "concrete_name": "<guid31>",
-                "transformation": {}},
-            {"name": "i_scm_p_1", "model":"scm_p_1", "fa_map":{...},
-                "constraints": [...],
-                "abstract_name": "<guid4>", 
-                "concrete_name": "<guid41>",
-                "transformation": {}}
+    },
+    {
+        "name": "<guid1>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param1>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn0>}}]
+    },
+    {
+        "name": "<guid2>",
+        "pins": ["d", "g", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos", "instances": "m0", "parameters":{<param2>}}],
+        "instances": [{"name": "m0", "model":"n", "fa_map": {...}, "parameters": {<params of mn1>}}]
+    },
+    {
+        "name": "<guid3>",
+        "pins": ["da", "db", "ga", "gb", "s", "b"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"n", "fa_map":{"d": "da", "g": "ga", "s": "s", "b": "b"}, "parameters": {<params of mn2>} },
+            {"name": "m1", "model":"n", "fa_map":{"d": "db", "g": "gb", "s": "s", "b": "b"}, "parameters": {<params of mn3>} }
+        ]
+    },
+    {
+        "name": "<guid4>",
+        "pins": ["da", "db", "s"],
+        "constraints": [{"constraint": "Generator", "name": "mos",...}],
+        "instances": [
+            {"name": "m0", "model":"p", "fa_map":{...}, "parameters": {<params of mp4>} },
+            {"name": "m1", "model":"p", "fa_map":{...}, "parameters": {<params of mp5>} }
         ]
     }
 ]
 # A separate data structure to store rectangles w/o duplication 
 {
-    "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
-    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":[]}},
-    "guid1": {"guid1_2": {"bbox":[], "terminals":[], "metadata":[]}},
-    "ota_five": {"ota_five_0": {"bbox":[], "terminals":["<new terminals from router>"], "metadata":[]}}, ...
+    # "<abstract_name>": {"<concrete_name>": {"bbox":[], "terminals":[], "metadata":[]}}
+    "guid1": {"guid1_1": {"bbox":[], "terminals":[], "metadata":["instances":[], "constraints":[], "partial_pins":[]]}, ... },
+    "guid2": {"guid2_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid3": {"guid3_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "guid4": {"guid4_1": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
+    "ota_five": {"ota_five_0": {"bbox":[], "terminals":[], "metadata":[...]}, ...},
 }
 ```
