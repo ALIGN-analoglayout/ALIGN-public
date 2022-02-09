@@ -6,6 +6,8 @@ from align.pnr.hpwl import gen_netlist, calculate_HPWL_from_placement_verilog_d
 from align.pnr.render_placement import standalone_overlap_checker
 from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
 from . import circuits
+import time
+
 
 cleanup = False
 
@@ -246,3 +248,48 @@ def test_cmp_analytical():
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
     run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+
+
+def comparator_constraints(name):
+    constraints = [
+        {"constraint": "FixSourceDrain", "isTrue": False, "propagate": True},
+        {"constraint": "MergeSeriesDevices", "isTrue": False, "propagate": True},
+        {"constraint": "MergeParallelDevices", "isTrue": False, "propagate": True},
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"], "abut": True}
+    ]
+    return constraints
+
+
+def test_cmp_fast():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = comparator_constraints(name)
+    example = build_example(name, netlist, constraints)
+    s = time.time()
+    run_example(example, cleanup=cleanup, area=5e9)
+    e = time.time()
+    print('Elapsed time:', e-s)
+
+
+def test_cmp_slow():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = comparator_constraints(name)
+    constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
