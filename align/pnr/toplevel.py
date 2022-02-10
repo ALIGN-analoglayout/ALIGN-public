@@ -347,6 +347,9 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
+
+        print('concrete_name', lidx, node.concrete_name)
+
         if node.Guardring_Consts:
             logger.info( f'Running guardring flow')
             PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
@@ -640,7 +643,6 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
         
-
         # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
         # convert the restrictions into the form needed for the subsequent placements
 
