@@ -852,6 +852,7 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
 
         lhs.instNum++;
         b.gdsFile = updatedNode.gdsFile;
+        b.lefmaster = b.master + "_" + std::to_string(lhs.instNum - 1);
         // update terminal to pin information
 
         b.HPWL_extend_wo_terminal = updatedNode.HPWL_extend_wo_terminal;
