@@ -292,4 +292,8 @@ def test_cmp_slow():
     constraints = comparator_constraints(name)
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
+    s = time.time()
     run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    e = time.time()
+    print('Elapsed time:', e-s)
+
