@@ -4,24 +4,39 @@ import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
-from align.pdk.finfet import MOSGenerator
+from align.schema.constraint import OffsetsScalings, PlaceOnGrid
+
+"""
+monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
+"""
 
 
-@pytest.fixture(autouse=True)
-def place_on_grid(monkeypatch):
-    monkeypatch.setenv('PLACE_ON_GRID', 't')
+@pytest.fixture
+def place_on_grid_h(monkeypatch):
+    rh = 6300
+    ored_terms = [
+        OffsetsScalings(offsets=[0*rh], scalings=[1, -1]),
+        OffsetsScalings(offsets=[2*rh], scalings=[1, -1])
+    ]
+    place_on_grid = {'constraints': [
+        PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()
+    ]}
+    monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
 
 
-@pytest.mark.parametrize('vt', ['NMOS', 'PMOS'])
-def test_check_constraints(vt):
-    c = MOSGenerator()
-    ports = {'S': [('M1', 'S')], 'D': [('M1', 'D')], 'G': [('M1', 'G')]}
-    parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': vt, 'NF': 2}
-    c.addNMOSArray(1, 1, 0, None, ports, **parameters)
-    assert c.metadata["constraints"][0]["constraint"] == "place_on_grid"
+@pytest.fixture
+def place_on_grid_v(monkeypatch):
+    pp = 1080
+    ored_terms = [
+        OffsetsScalings(offsets=[pp], scalings=[1, -1]),
+    ]
+    place_on_grid = {'constraints': [
+        PlaceOnGrid(direction='V', pitch=2*pp, ored_terms=ored_terms).dict()
+    ]}
+    monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
 
 
-def test_scalings():
+def test_scalings(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
@@ -63,15 +78,25 @@ def test_scalings():
     shutil.rmtree(ckt_dir)
 
 
-def test_tia_on_grid():
+def test_check_metadata(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.tia(name)
+    netlist = circuits.common_source(name)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=True, n=8)
+    ckt_dir, run_dir = run_example(example, cleanup=False,  additional_args=['--flow_stop', '2_primitives'])
+    prim_dir = run_dir/'2_primitives'
+    for filename in prim_dir.glob('*.json'):
+        if str(filename).endswith('.gds.json') or str(filename.stem).startswith('__primitives'):
+            continue
+        with (filename).open('rt') as fp:
+            primitive = json.load(fp)
+            assert primitive['metadata']['constraints'][0]['constraint'] == 'place_on_grid', filename.stem
+            assert primitive['metadata']['constraints'][0]['direction'] == 'H', filename.stem
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
-def test_ota_on_grid():
+def test_ota_on_grid_h(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
@@ -84,7 +109,23 @@ def test_ota_on_grid():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=True)
+    run_example(example, cleanup=False)
+
+
+def test_ota_on_grid_v(place_on_grid_v):
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
 
 
 def cmp_constraints(name):
@@ -110,18 +151,9 @@ def cmp_constraints(name):
     return constraints
 
 
-def test_cmp_on_grid():
+def test_cmp_on_grid(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=True, area=5e9)
-
-
-@pytest.mark.skip(reason="Analytical placer fails with PlaceOnGrid constraints")
-def test_cmp_on_grid_analytical():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
-    constraints = cmp_constraints(name)
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=True, area=5e9, additional_args=['--use_analytical_placer'])
+    run_example(example, cleanup=False, area=5e9)
