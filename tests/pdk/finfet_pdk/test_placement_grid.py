@@ -31,7 +31,7 @@ def place_on_grid_v(monkeypatch):
         OffsetsScalings(offsets=[pp], scalings=[1, -1]),
     ]
     place_on_grid = {'constraints': [
-        PlaceOnGrid(direction='H', pitch=2*pp, ored_terms=ored_terms).dict()
+        PlaceOnGrid(direction='V', pitch=2*pp, ored_terms=ored_terms).dict()
     ]}
     monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
 
@@ -96,15 +96,23 @@ def test_check_metadata(place_on_grid_h):
     shutil.rmtree(ckt_dir)
 
 
-def test_tia_on_grid(place_on_grid_h):
+def test_ota_on_grid_h(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.tia(name)
-    constraints = []
+    netlist = circuits.ota_six(name)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
+    ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
 
-def test_ota_on_grid(place_on_grid_h):
+def test_ota_on_grid_v(place_on_grid_v):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
