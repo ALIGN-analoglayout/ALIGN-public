@@ -5,14 +5,6 @@ MACRO foo_cand
   ORIGIN 0 0 ;
   FOREIGN foo_cand 0 0 ;
   SIZE 800 BY 4704 ;
-  PIN S
-    DIRECTION INOUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER M3 ;
-        RECT 60 48 100 2472 ;
-    END
-  END S
   PIN DA
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -45,6 +37,14 @@ MACRO foo_cand
         RECT 380 972 420 3396 ;
     END
   END GB
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M3 ;
+        RECT 60 48 100 2472 ;
+    END
+  END S
   OBS
     LAYER M1 ;
       RECT 304 48 336 792 ;

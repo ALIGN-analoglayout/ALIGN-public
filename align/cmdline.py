@@ -125,6 +125,11 @@ class CmdlineParser():
                             default=None,
                             help='JSON file for adding a reference placement to GUI.')
 
+        parser.add_argument('--concrete_top_name',
+                            type=str,
+                            default=None,
+                            help='Top name of concrete module in reference_placement_verilog_json file.')
+
         parser.add_argument('--nroutings',
                             type=int,
                             default=1,

@@ -204,7 +204,7 @@ def write_verilog_json(verilog_d):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
-                 reference_placement_verilog_json, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
+                 reference_placement_verilog_json, concrete_top_name, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     subckt = subckt.upper()
 
@@ -312,11 +312,13 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         cmd = [str(x) for x in ('align.PnR', input_dir, placement_lef_file,
                                 verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
 
-        DB, results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                        lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                                        reference_placement_verilog_json=reference_placement_verilog_json, nroutings=nroutings,
-                                        select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                        primitives=primitives)
+        results_name_map = toplevel(cmd, PDN_mode=PDN_mode, results_dir=None, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
+                                    lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                    reference_placement_verilog_json=reference_placement_verilog_json,
+                                    concrete_top_name=concrete_top_name,
+                                    nroutings=nroutings,
+                                    select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
+                                    primitives=primitives)
 
         os.chdir(current_working_dir)
 
@@ -331,7 +333,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     variants = collections.defaultdict(collections.defaultdict)
 
     if '3_pnr:check' in steps_to_run:
-        for variant, ( path_name, layout_idx) in results_name_map.items():
+        for variant, (path_name, layout_idx, DB) in results_name_map.items():
 
             hN = DB.hierTree[layout_idx]
             result = _generate_json(hN=hN,
@@ -353,9 +355,5 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                         path = results_dir / (variant + suffix)
                         assert path.exists()
                         variants[variant][tag] = path
-
-    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
-        logger.debug('Explicitly deleting DB...')
-        del DB
 
     return variants
