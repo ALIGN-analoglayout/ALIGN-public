@@ -1,11 +1,10 @@
 import os
 import math
+import json
 from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
-from align.schema.constraint import PlaceOnGrid, OffsetsScalings
-
 import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
@@ -28,15 +27,12 @@ class MOSGenerator(CanvasPDK):
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
-        if os.getenv('PLACE_ON_GRID', False):
-            rh = 7*self.pdk['M2']['Pitch']
-            # self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
-            #                                              ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
-            ored_terms = [
-                            OffsetsScalings(offsets=[0*rh], scalings=[1, -1]),
-                            OffsetsScalings(offsets=[2*rh], scalings=[1, -1])
-                        ]
-            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()]}
+        # Inject constraints for testing purposes
+        place_on_grid = os.getenv('PLACE_ON_GRID', False)
+        if place_on_grid:
+            place_on_grid = json.loads(place_on_grid)
+            self.metadata = dict()
+            self.metadata['constraints'] = place_on_grid['constraints']
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
