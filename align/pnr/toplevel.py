@@ -347,9 +347,6 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     for lidx in range(actualNumLayout):
         node = curr_plc.getNode(lidx)
-
-        print('concrete_name', lidx, node.concrete_name)
-
         if node.Guardring_Consts:
             logger.info( f'Running guardring flow')
             PnR.GuardRingIfc( node, DB.checkoutSingleLEF(), DB.getDrc_info(), fpath)
@@ -643,11 +640,11 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
         
+
         # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
         # convert the restrictions into the form needed for the subsequent placements
 
-        # SMB Turn this off until we get the standard flow working
-        if False and primitives is not None:
+        if primitives is not None:
             # Restrict verilog_d to include only sub-hierachies of the current name
             s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
 
@@ -776,7 +773,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                     first_primitive = primitive
                 else:
                     if set(first_prp.keys()) != set(prp.keys()):
-                        print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'], first_prp, prp)
+                        print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'])
 
     # Hack verilog_ds in place
     for concrete_top_name, verilog_d in verilog_ds_to_run:
@@ -784,19 +781,20 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         for module in verilog_d['modules']:
             for instance in module['instances']:
                 for primitive in primitives_with_atn[instance['abstract_template_name']]:
-                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                        prp = primitive['metadata']['partially_routed_pins']
-                        by_net = defaultdict(list)
-                        for enity_name, net_name in prp.items():
-                            by_net[net_name].append(enity_name)
+                    if primitive['concrete_template_name'] == instance['concrete_template_name']:
+                        if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                            prp = primitive['metadata']['partially_routed_pins']
+                            by_net = defaultdict(list)
+                            for enity_name, net_name in prp.items():
+                                by_net[net_name].append(enity_name)
 
-                        new_fa_map = List[FormalActualMap]()
-                        for fa in instance['fa_map']:
-                            f, a = fa['formal'], fa['actual'] 
-                            for enity_name in by_net.get(f, [f]):
-                                new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
+                            new_fa_map = List[FormalActualMap]()
+                            for fa in instance['fa_map']:
+                                f, a = fa['formal'], fa['actual'] 
+                                for enity_name in by_net.get(f, [f]):
+                                    new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
 
-                        instance['fa_map'] = new_fa_map
+                            instance['fa_map'] = new_fa_map
 
         
     res_dict = {}

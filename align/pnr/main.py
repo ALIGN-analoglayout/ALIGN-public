@@ -246,7 +246,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
         logger.debug(f'primitives: {primitives}')
-        print('leaf collateral', leaf_collateral)
         logger.debug( f'leaf_collateral: {leaf_collateral}')
         logger.debug( f'capacitors: {dict(capacitors)}')
 

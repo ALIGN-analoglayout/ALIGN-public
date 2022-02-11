@@ -249,6 +249,7 @@ class MOSGenerator(CanvasPDK):
                         counters[net_name] = 0
                     counters[net_name] += 1
                     new_name = net_name + '__' + str(counters[net_name])
+                    assert 'partially_routed_pins' in self.metadata
                     self.metadata['partially_routed_pins'][new_name] = net_name
                     for term in open_group:
                         find_update_term(term[0], term[1], new_name)
