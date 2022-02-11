@@ -560,7 +560,6 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
         for sel in range(DB.hierTree[idx].numPlacement):
             # create new verilog for each placement
             hN = DB.CheckoutHierNode( idx, sel)
-            print( 'sel, hN.name', sel, hN.name)
             placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
             per_placement( placement_verilog_d, hN=hN, concrete_top_name=concrete_top_name, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
 
@@ -670,9 +669,9 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
                 top_name = f'{hN.name}_{sel}'
                 gen_constraints(scaled_placement_verilog_d, top_name)
-                modules = {module['concrete_name']: module for module in scaled_placement_verilog_d['modules']}
+                modules0 = {module['concrete_name']: module for module in scaled_placement_verilog_d['modules']}
 
-                frontier[top_name] = [constraint.dict() for constraint in modules[top_name]['constraints'] if constraint.constraint == 'place_on_grid']
+                frontier[top_name] = [constraint.dict() for constraint in modules0[top_name]['constraints'] if constraint.constraint == 'place_on_grid']
 
                 for constraint in frontier[top_name]:
                     assert constraint['constraint'] == 'place_on_grid'
