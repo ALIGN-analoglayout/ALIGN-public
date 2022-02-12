@@ -162,7 +162,7 @@ def _semantic(DB, path, topcell, global_signals):
     DB.semantic1( global_signals)
     DB.semantic2()
 
-def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
@@ -171,8 +171,13 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
     _ReadLEF( DB, path, lefname)
     DB.gdsData2 = _ReadMap( path, mapname)
 
-    j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-    global_signals = _ReadVerilogJson( DB, j)
+    if verilog_d_in is None:
+        with (pathlib.Path(path) / vname).open("rt") as fp:
+            verilog_d = VerilogJsonTop.parse_obj(json.load(fp=fp))
+    else:
+        verilog_d = verilog_d_in
+
+    global_signals = _ReadVerilogJson( DB, verilog_d)
     _semantic(DB, path, topcell, global_signals)
 
-    return DB, j
+    return DB, verilog_d
