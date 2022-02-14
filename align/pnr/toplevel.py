@@ -468,6 +468,7 @@ def per_placement( placement_verilog_d, *, hN, concrete_top_name, scale_factor, 
         def r2wh( r):
             return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
 
+        # placement_verilog_d is in hN units
         gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
 
         modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
@@ -567,10 +568,12 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
     if reference_placement_verilog_d is not None:
         scaled_placement_verilog_d = VerilogJsonTop.parse_obj(reference_placement_verilog_d)
-        #scale to hN units
+        # from layers.json units to hN units (loss of precision can happen here)
         placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
 
         per_placement( placement_verilog_d, hN=None, concrete_top_name=concrete_top_name, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=True)
+
+        # placement_verilog_alternatives is in layers.json units
 
     placements_to_run = None
     if gui:
@@ -604,8 +607,14 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     logger.info(f'Calling hierarchical_place with {"existing placement" if reference_placement_verilog_d is not None else "no placement"}')
 
     if reference_placement_verilog_d:
+        #
+        # Need to do this until we fix the PnR set placement code
+        #    scales by 1 if scale_factor is 1, by 10 if scale_factor is 10 (2* compenstates for the automatic divide by 2 in scale_placement_verilog)
+        #
+        hack_placement_verilog_d = scale_placement_verilog( reference_placement_verilog_d, 2*scale_factor, invert=True)        
+
         modules = collections.defaultdict(list)
-        for m in reference_placement_verilog_d['modules']:
+        for m in hack_placement_verilog_d['modules']:
             modules[m['abstract_name']].append(m)
 
         print(f'hierarchical_place (placement from json): {[(k, [m["concrete_name"] for m in ms]) for k, ms in modules.items()]}')
@@ -644,7 +653,9 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                 # create new verilog for each placement
                 hN = DB.CheckoutHierNode( idx, sel)
                 placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
+                # hN units
                 scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
+                # layers.json units (*5 if in anstroms)
 
                 for leaf in scaled_placement_verilog_d['leaves']:
                     ctn = leaf['concrete_name']
@@ -793,13 +804,13 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
         
     res_dict = {}
-    for concrete_top_name, verilog_d in verilog_ds_to_run:
+    for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
 
-        abstract_verilog_d = gen_abstract_verilog_d(verilog_d)
+        abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
 
         if False:
             # don't need to send this to disk
-            logger.debug(f"updated verilog: {verilog_d}")
+            logger.debug(f"updated verilog: {abstract_verilog_d}")
             verilog_file = toplevel_args[3]
             with (pathlib.Path(fpath)/verilog_file).open("wt") as fp:
                 json.dump(abstract_verilog_d.dict(), fp=fp, indent=2, default=str)
@@ -808,7 +819,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             print(f'placement_verilog_file: {placement_verilog_file}')
 
             with (pathlib.Path(fpath)/placement_verilog_file).open("wt") as fp:
-                json.dump(verilog_d.dict(), fp=fp, indent=2, default=str)
+                json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
 
         # create a fresh DB and populate it with a placement verilog d    
 
@@ -834,7 +845,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         placements_to_run, _ = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
                                                   verilog_d=abstract_verilog_d, gui=False, lambda_coeff=lambda_coeff,
                                                   scale_factor=scale_factor,
-                                                  reference_placement_verilog_d=verilog_d.dict(),
+                                                  reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
                                                   concrete_top_name=concrete_top_name,
                                                   select_in_ILP=select_in_ILP, seed=seed,
                                                   use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
