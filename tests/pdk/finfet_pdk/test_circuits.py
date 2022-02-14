@@ -7,7 +7,7 @@ from . import circuits
 
 from align.pdk.finfet import transistor_array
 
-cleanup = True
+cleanup = False
 
 
 def test_cmp_vanilla():

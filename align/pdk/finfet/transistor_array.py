@@ -231,6 +231,7 @@ class MOSGenerator(CanvasPDK):
             self.terminals = self.removeDuplicates()
         else:
             self.terminals = self.removeDuplicates(silence_errors=True)
+
             # Find connected entities and generate a unique pin name
             def find_update_term(layer, rect, new_name):
                 for term in self.terminals:
@@ -249,6 +250,9 @@ class MOSGenerator(CanvasPDK):
                     self.metadata['partially_routed_pins'][new_name] = net_name
                     for term in open_group:
                         find_update_term(term[0], term[1], new_name)
+
+            # Expose pins
+            self._expose_pins()
 
     def stamp_cell(self, template, instance_name, pin_map, x_offset, y_offset, flip_x):
 
