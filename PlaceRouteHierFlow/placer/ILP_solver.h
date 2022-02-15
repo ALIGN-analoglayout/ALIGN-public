@@ -61,7 +61,7 @@ class ILP_solver {
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
   bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const vector<placerDB::point>* prev);
-  bool PlaceILPSymphony_select(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const vector<placerDB::point>* prev = nullptr);
+  bool PlaceILPSymphony_select(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const int idx, const vector<placerDB::point>* prev = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
     return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, num_threads, flushlb, prev);
@@ -77,7 +77,7 @@ class ILP_solver {
   ILP_solver& operator=(const ILP_solver& solver);
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
-  double PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads);
+  double PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1, const int idx = 0);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double CalculateCost(const design& mydesign) const;
   double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;

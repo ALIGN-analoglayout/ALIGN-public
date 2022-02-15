@@ -214,6 +214,24 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double mean_cache_miss{0};
   int num_perturb{0};
 
+  bool ilpplacerdone{false};
+  if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
+    curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    if (curr_cost > 0) {
+      oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+      ilpplacerdone = true;
+    }
+    const int ns{nodeSize - 1};
+    for (int i = 0; i < ns; ++i) {
+      curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, ns, i);
+      if (curr_cost > 0) {
+        oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+      }
+    }
+  }
+  if (ilpplacerdone) return oData;
+  else oData.clear();
+
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
     seed = hyper.SEED;

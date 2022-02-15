@@ -9,6 +9,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
 
+#define EPS 1e-4
+
 std::vector<std::set<int>> ILP_solver::GetCC(const design& mydesign) const
 {
   using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>;
@@ -31,7 +33,7 @@ std::vector<std::set<int>> ILP_solver::GetCC(const design& mydesign) const
   return ret;
 }
 
-double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
+double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol, const int idx) {
 
   if (mydesign.Blocks.empty()) return -1;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceUsingILP");
@@ -43,15 +45,15 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
+      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true, numsol, idx))  return -1;
     } else if (mydesign.rightAlign()) {
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
+      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false, numsol, idx)) return -1;
     } else {
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
+      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true, numsol, idx))  return -1;
       std::vector<Block> blockslocal{Blocks};
       auto selectedlocal = curr_sp.selected;
       // frame and solve ILP to flush top/right
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false) 
+      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false, numsol, idx) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -86,10 +88,11 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
-  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
-    ++const_cast<design&>(mydesign)._infeasAspRatio;
-    return -1;
-  }
+  logger->info("ratio : {0}", ratio);
+  //if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
+  //  ++const_cast<design&>(mydesign)._infeasAspRatio;
+  //  return -1;
+  //}
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
     ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
@@ -219,7 +222,7 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   return calculated_cost;
 }
 
-bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const int idx, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPSymphony_select");
 
@@ -307,10 +310,17 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     intvars[i * 6 + 3] = 1;
   }
 
-  double aspectratio = (Aspect_Ratio[0] + Aspect_Ratio[1])/2.;
-  if (aspectratio > 20) {
-    aspectratio = 1.;
+  double aspectratio = sqrt(Aspect_Ratio[0] * Aspect_Ratio[1]);
+  if (numsol > 1) {
+    double asl = (Aspect_Ratio[0] <= EPS) ? 1. : Aspect_Ratio[0];
+    if (asl < Aspect_Ratio[1]) {
+      double r = exp(log(Aspect_Ratio[1]/asl) / (numsol * 1.));
+      aspectratio = asl * pow(r, idx);
+    } else {
+      return -1;
+    }
   }
+  logger->info("aspect ratio : {0} {1} {2}", aspectratio, Aspect_Ratio[0], Aspect_Ratio[1]);
   int maxhierwidth{0}, maxhierheight{0};
   for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
     maxhierwidth += mydesign.Blocks[i][curr_sp.selected[i]].width;
@@ -398,14 +408,20 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     objective[N_area_max - 1] = -1. * mydesign.Nets.size();
     objective[N_area_max - 2] = -1. * mydesign.Nets.size();
   }
-  objective[N_aspect_ratio_max - 1] = 0.1 * mydesign.Nets.size();
-  objective[N_aspect_ratio_max - 2] = 0.1 * mydesign.Nets.size();
+  if (aspectratio < EPS) {
+    aspectratio = 1.;
+    objective[N_aspect_ratio_max - 1] = .1 * mydesign.Nets.size();
+    objective[N_aspect_ratio_max - 2] = .1 * mydesign.Nets.size();
+  } else {
+    objective[N_aspect_ratio_max - 1] = 100 * mydesign.Nets.size();
+    objective[N_aspect_ratio_max - 2] = 100 * mydesign.Nets.size();
+  }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
   roundup(bias_Hgraph, x_pitch);
   roundup(bias_Vgraph, y_pitch);
 
-  // constraint for |W - Aspect_ratio * H|
+  // constraint for |W - Aspect_Ratio * H|
   if (flushbl) {
     rowindofcol[N_aspect_ratio_max - 1].push_back(rhs.size());
     rowindofcol[N_aspect_ratio_max - 2].push_back(rhs.size());
@@ -468,19 +484,19 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     }
   }
 
-  std::map<int, const std::set<int>&> align_constr_map_h, align_constr_map_v;
+  std::map<int, std::set<int>> align_constr_map_h, align_constr_map_v;
   std::vector<std::set<int>> align_constr_h, align_constr_v;
   for (unsigned i = 0; i < mydesign.Align_blocks.size(); ++i) {
     const auto& align = mydesign.Align_blocks[i];
     if (align.horizon) {
       align_constr_h.emplace_back(align.blocks.begin(), align.blocks.end());
       for (auto& it : align_constr_h.back()) {
-        align_constr_map_h.emplace(it, align_constr_h.back());
+        align_constr_map_h[it] = align_constr_h.back();
       }
     } else {
       align_constr_v.emplace_back(align.blocks.begin(), align.blocks.end());
       for (auto& it : align_constr_v.back()) {
-        align_constr_map_v.emplace(it, align_constr_v.back());
+        align_constr_map_v[it] = align_constr_v.back();
       }
     }
   }
@@ -1477,7 +1493,6 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         osiclp.setInteger(i);
       }
     }
-    //sym_set_int_param(env, "gap_limit", (getenv("SYM_GAP_LIMIT") ? std::atoi(getenv("SYM_GAP_LIMIT")) : -1));
 
     static int write_cnt{0};
     static std::string block_name;
