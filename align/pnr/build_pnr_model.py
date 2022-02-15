@@ -106,18 +106,21 @@ def _ReadVerilogJson( DB, j, add_placement_info=False):
 
     return global_signals
 
-def _ReadMap( path, mapname):
+def _ReadMap(path, mapname):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
-    tbl2 = defaultdict(list)
     with (d / mapname).open( "rt") as fp:
         for line in fp:
             line = line.rstrip('\n')
             m = p.match(line)
             assert m
             k, v = m.groups()
-            tbl2[k].append( str(d / v))
-    logger.debug( f'expanded table: {tbl2}')
+            yield k, str(d/v)
+
+def _ConstructMap(pairs):
+    tbl2 = defaultdict(list)
+    for k, v in pairs:
+        tbl2[k].append(v)
     return tbl2
 
 def _attach_constraint_files( DB, fpath):
@@ -162,14 +165,18 @@ def _semantic(DB, path, topcell, global_signals):
     DB.semantic1( global_signals)
     DB.semantic2()
 
-def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None):
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None, map_d_in=None):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
     _ReadLEF( DB, path, lefname)
-    DB.gdsData2 = _ReadMap( path, mapname)
+
+    if map_d_in is None:
+        DB.gdsData2 = _ConstructMap(_ReadMap(path, mapname))
+    else:
+        DB.gdsData2 = _ConstructMap(map_d_in)
 
     if verilog_d_in is None:
         with (pathlib.Path(path) / vname).open("rt") as fp:

@@ -251,7 +251,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         # Generate .map file for PnR
         with (input_dir / map_file).open(mode='wt') as mp:
-            for _,v in primitives.items():
+            for _,v in sorted(primitives.items()):
                 a = v['abstract_template_name']
                 c = v['concrete_template_name']
                 if c in leaf_collateral:

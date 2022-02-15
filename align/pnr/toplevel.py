@@ -368,8 +368,11 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)
 
+    leaf_ctns = set()
     if 'leaves' in new_verilog_d:
+        leaf_ctns = {leaf['concrete_name'] for leaf in new_verilog_d['leaves']}
         new_verilog_d['leaves'] = None
+
 
     for module in new_verilog_d['modules']:
         assert 'concrete_name' in module
@@ -384,9 +387,15 @@ def gen_abstract_verilog_d( verilog_d):
 
         for instance in module['instances']:
             assert 'concrete_template_name' in instance
+            ctn = instance['concrete_template_name']
             del instance['concrete_template_name']
+
+            if ctn in leaf_ctns: # change leaf template names to the concrete name
+                instance['abstract_template_name'] = ctn
+
             assert 'transformation' in instance
             del instance['transformation']
+
 
     return new_verilog_d
 
@@ -760,34 +769,38 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     print(f'verilog_d cases to run: {[p[0] for p in verilog_ds_to_run]}')
 
     #
-    # Hacks for partial routing
+    # Optional: printout differences in pins
     #
-
-    primitives_with_atn = defaultdict(list)
     if primitives is not None:
+        primitives_with_atn = defaultdict(list)
         for v in primitives.values():
             primitives_with_atn[v['abstract_template_name']].append(v)
 
-    for k, v in primitives_with_atn.items():
-        first_prp = None
-        first_primitive = None
-        for primitive in v:
-            if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                prp = primitive['metadata']['partially_routed_pins']
-                if first_prp is None:
-                    first_prp = prp
-                    first_primitive = primitive
-                else:
-                    if set(first_prp.keys()) != set(prp.keys()):
-                        print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'])
+        for k, v in primitives_with_atn.items():
+            first_prp = None
+            first_primitive = None
+            for primitive in v:
+                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                    prp = primitive['metadata']['partially_routed_pins']
+                    if first_prp is None:
+                        first_prp = prp
+                        first_primitive = primitive
+                    else:
+                        if set(first_prp.keys()) != set(prp.keys()):
+                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'])
 
-    # Hack verilog_ds in place
-    for concrete_top_name, verilog_d in verilog_ds_to_run:
-        # Update connectivity for partially routed primitives
-        for module in verilog_d['modules']:
-            for instance in module['instances']:
-                for primitive in primitives_with_atn[instance['abstract_template_name']]:
-                    if primitive['concrete_template_name'] == instance['concrete_template_name']:
+    #
+    # Hacks for partial routing
+    #
+    if primitives is not None:
+        # Hack verilog_ds in place
+        for concrete_top_name, verilog_d in verilog_ds_to_run:
+            # Update connectivity for partially routed primitives
+            for module in verilog_d['modules']:
+                for instance in module['instances']:
+                    ctn = instance['concrete_template_name']
+                    if ctn in primitives:
+                        primitive = primitives[ctn]
                         if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
                             prp = primitive['metadata']['partially_routed_pins']
                             by_net = defaultdict(list)
@@ -808,17 +821,29 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
 
-        if False:
+        leaf_ctns = [leaf['concrete_name'] for leaf in scaled_placement_verilog_d['leaves']]
+
+        for module in scaled_placement_verilog_d['modules']:
+            for instance in module['instances']:
+                ctn = instance['concrete_template_name']
+                if ctn in leaf_ctns:
+                    instance['abstract_template_name'] = ctn
+
+        if True:
             # don't need to send this to disk
             logger.debug(f"updated verilog: {abstract_verilog_d}")
             verilog_file = toplevel_args[3]
-            with (pathlib.Path(fpath)/verilog_file).open("wt") as fp:
+
+            abstract_verilog_file = verilog_file.replace(".verilog.json", ".abstract_verilog.json")
+            print(f'abstract_verilog_file: {abstract_verilog_file}')
+
+            with (pathlib.Path(fpath)/abstract_verilog_file).open("wt") as fp:
                 json.dump(abstract_verilog_d.dict(), fp=fp, indent=2, default=str)
                 
-            placement_verilog_file = verilog_file.replace(".verilog.json", ".placement_verilog.json")
-            print(f'placement_verilog_file: {placement_verilog_file}')
+            scaled_placement_verilog_file = verilog_file.replace(".verilog.json", ".scaled_placement_verilog.json")
+            print(f'scaled_placement_verilog_file: {scaled_placement_verilog_file}')
 
-            with (pathlib.Path(fpath)/placement_verilog_file).open("wt") as fp:
+            with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("wt") as fp:
                 json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
 
         # create a fresh DB and populate it with a placement verilog d    
@@ -829,7 +854,15 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
         print(f'toplevel_args: {toplevel_args}')
 
-        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d)
+        # Build up a new map file
+        map_d_in = []
+        d = pathlib.Path(fpath)
+        for leaf in scaled_placement_verilog_d['leaves']:
+            ctn = leaf['concrete_name']
+            map_d_in.append((ctn,str(d/f'{ctn}.gds')))
+        print(map_d_in)
+
+        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in)
         
         assert new_verilog_d == abstract_verilog_d
 
@@ -866,7 +899,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     return res_dict
 
 
-def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None):
+def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None):
     assert len(args) == 9
 
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
@@ -874,7 +907,7 @@ def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None):
 
     if fpath[-1] == '/': fpath = fpath[:-1]
 
-    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in)
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in)
 
     assert verilog_d is not None
 
