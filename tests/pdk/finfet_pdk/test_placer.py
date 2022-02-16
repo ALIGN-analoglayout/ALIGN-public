@@ -292,4 +292,47 @@ def test_cmp_slow():
     constraints = comparator_constraints(name)
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
+    s = time.time()
     run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    e = time.time()
+    print('Elapsed time:', e-s)
+
+
+def test_hang_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} o a vccx vssx
+    mn0 o a vssx vssx n w=180e-9 m=1 nf=2
+    mn1 o a vssx vssx n w=180e-9 m=1 nf=2
+    mp0 o a vccx vccx p w=180e-9 m=1 nf=2
+    mp1 o a vccx vccx p w=180e-9 m=1 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "AlignInOrder", "line": "left", "instances": ["mn0", "mp0"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, log_level="DEBUG")
+
+
+def test_hang_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} o a vccx vssx
+    mn0 o a vssx vssx n w=180e-9 m=1 nf=2
+    mn1 o a vssx vssx n w=180e-9 m=1 nf=2
+    mp0 o a vccx vccx p w=180e-9 m=1 nf=2
+    mp1 o a vccx vccx p w=180e-9 m=1 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "mp0"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, log_level="DEBUG")

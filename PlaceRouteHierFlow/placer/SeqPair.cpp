@@ -609,6 +609,18 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   return true;
 }
 
+bool SeqPair::ValidateSelect(design & caseNL){
+  //two sym pair blocks have conflict with place on grid
+  // for(auto sympairblock:caseNL.SPBlocks){
+  //   for(auto sympair:sympairblock.sympair){
+  //     if(caseNL.Blocks[sympair.first][selected[sympair.first]].ypitch>1 && caseNL.Blocks[sympair.second][selected[sympair.second]].ypitch>1){
+  //       if(caseNL.Blocks[sympair.first][selected[sympair.first]].ypitch>1 && caseNL.Blocks[sympair.second][selected[sympair.second]].ypitch>1)
+  //     }
+  //   }
+  // }
+  return true;
+}
+
 void SeqPair::KeepOrdering(design& caseNL) {
   // ids of blocks which have order constraints
   // set<int> block_id_with_order;
@@ -697,14 +709,14 @@ void SeqPair::KeepOrdering(design& caseNL) {
         int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
         auto it = negPair.begin();
         if (first_counterpart == -1) {
-          // move first to before second
-          negPair.erase(it + first_it);
-          it = negPair.insert(it + second_it, order.first.first);
-        } else if (second_couterpart == -1) {
           // mvoe second to after first
           it = negPair.insert(it + first_it + 1, order.first.second);
           it = negPair.begin();
           negPair.erase(it + second_it);
+        } else if (second_couterpart == -1) {
+          // move first to before second
+          negPair.erase(it + first_it);
+          it = negPair.insert(it + second_it, order.first.first);
         } else {
           swap(negPair.at(first_it), negPair.at(second_it));
         }
