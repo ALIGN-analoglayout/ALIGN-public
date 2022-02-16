@@ -365,14 +365,43 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
+def change_concrete_names_for_routing(scaled_placement_verilog_d):
+    leaf_ctns = [leaf['concrete_name'] for leaf in scaled_placement_verilog_d['leaves']]
+
+    p = re.compile(r'^(.+)_(\d+)$')
+    cn_tbl = defaultdict(list)
+    for module in scaled_placement_verilog_d['modules']:
+        an = module['abstract_name']
+        cn = module['concrete_name']
+        m = p.match(cn)
+        assert m
+        stem, suffix = m.groups()
+        assert stem == an
+        cn_tbl[an].append(int(suffix))
+
+    tr_tbl = {}
+    for an, cn_indices in cn_tbl.items():
+        for new_idx, old_idx in enumerate(sorted(cn_indices)):
+            tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
+
+    for module in scaled_placement_verilog_d['modules']:
+        module['concrete_name'] = tr_tbl[module['concrete_name']]
+        for instance in module['instances']:
+            ctn = instance['concrete_template_name']
+            if ctn in leaf_ctns:
+                assert ctn not in tr_tbl
+                instance['abstract_template_name'] = ctn
+            else:
+                assert ctn in tr_tbl
+                instance['concrete_template_name'] = tr_tbl[ctn]                   
+
+
+
 def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)
 
-    leaf_ctns = set()
     if 'leaves' in new_verilog_d:
-        leaf_ctns = {leaf['concrete_name'] for leaf in new_verilog_d['leaves']}
         new_verilog_d['leaves'] = None
-
 
     for module in new_verilog_d['modules']:
         assert 'concrete_name' in module
@@ -387,15 +416,9 @@ def gen_abstract_verilog_d( verilog_d):
 
         for instance in module['instances']:
             assert 'concrete_template_name' in instance
-            ctn = instance['concrete_template_name']
             del instance['concrete_template_name']
-
-            if ctn in leaf_ctns: # change leaf template names to the concrete name
-                instance['abstract_template_name'] = ctn
-
             assert 'transformation' in instance
             del instance['transformation']
-
 
     return new_verilog_d
 
@@ -818,18 +841,11 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     res_dict = {}
     for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
 
+        change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
 
-        leaf_ctns = [leaf['concrete_name'] for leaf in scaled_placement_verilog_d['leaves']]
-
-        for module in scaled_placement_verilog_d['modules']:
-            for instance in module['instances']:
-                ctn = instance['concrete_template_name']
-                if ctn in leaf_ctns:
-                    instance['abstract_template_name'] = ctn
-
+        # don't need to send this to disk; for debug only
         if True:
-            # don't need to send this to disk
             logger.debug(f"updated verilog: {abstract_verilog_d}")
             verilog_file = toplevel_args[3]
 
