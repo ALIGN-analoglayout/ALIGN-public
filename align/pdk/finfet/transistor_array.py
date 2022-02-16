@@ -17,7 +17,9 @@ class MOSGenerator(CanvasPDK):
         super().__init__()
         self.NEW_PARTIAL_ROUTING_FEATURE = True
         if self.NEW_PARTIAL_ROUTING_FEATURE:
-            self.metadata = {'partially_routed_pins': {}}
+            if not hasattr(self, 'metadata'):
+                self.metadata = dict()
+            self.metadata['partially_routed_pins'] = {}
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
