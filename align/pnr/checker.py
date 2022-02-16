@@ -3,6 +3,7 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
 import pathlib
+from z3.z3types import Z3Exception
 logger = logging.getLogger(__name__)
 
 
@@ -39,8 +40,14 @@ def check_placement(placement_verilog_d, scale_factor):
                     urx=bbox.urx/scale_factor,
                     ury=bbox.ury/scale_factor
                 )
-            print(newconstraint)
-            #constraints.append(newconstraint)
+            try:
+                constraints.append(newconstraint)
+            except Z3Exception as ex:
+                msg, = ex.args
+                if msg == b'named assertion defined twice':
+                    pass
+                else:
+                    raise
 
         for inst in module['instances']:
             t = inst['transformation']
@@ -60,10 +67,15 @@ def check_placement(placement_verilog_d, scale_factor):
                         urx=bbox.urx/scale_factor,
                         ury=bbox.ury/scale_factor
                     )
-                print(newconstraint)
-                #constraints.append(newconstraint)
 
-
+                try:
+                    constraints.append(newconstraint)
+                except Z3Exception as ex:
+                    msg, = ex.args
+                    if msg == b'named assertion defined twice':
+                        pass
+                    else:
+                        raise
 
 def _transform_leaf(module, instance, leaf):
     if 'transformation' in leaf:
