@@ -10,15 +10,16 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
     : hyper(hyper_in) {
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   ReadPrimitiveOffsetPitch(nodeVec, drcInfo, hyper_in.place_on_grid_constraints_json);
-  if (hyper.use_analytical_placer)
-      //#define analytical_placer
-      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
-    else
-      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
   if (hyper.use_external_placement_info) {
     logger->info("Requesting placement from JSON");
     // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
+  }else{
+    if (hyper.use_analytical_placer)
+      //#define analytical_placer
+      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
+    else
+      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
   }
 }
 
