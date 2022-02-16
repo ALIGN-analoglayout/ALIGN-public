@@ -31,7 +31,8 @@ class MOSGenerator(CanvasPDK):
         place_on_grid = os.getenv('PLACE_ON_GRID', False)
         if place_on_grid:
             place_on_grid = json.loads(place_on_grid)
-            self.metadata = dict()
+            if not hasattr(self, 'metadata'):
+                self.metadata = dict()
             self.metadata['constraints'] = place_on_grid['constraints']
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
