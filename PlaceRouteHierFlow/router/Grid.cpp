@@ -254,6 +254,38 @@ void Grid::CreateGridData() {
   }
 
   matlabfile.close();
+
+
+  std::ofstream matlabfile_via;
+  matlabfile_via.open("Grid_via.txt");
+
+  auto write_out_matlab_file_via = [&](const auto& p, const int& via_index) {
+    matlabfile_via << vertices_total[p].x;
+    matlabfile_via << " ";
+    matlabfile_via << vertices_total[p].y;
+    matlabfile_via << " ";
+    matlabfile_via << vertices_total[p].metal;
+    matlabfile_via << " ";
+    matlabfile_via << via_index;
+
+    matlabfile_via << std::endl;
+  };
+
+  for (unsigned int i = 0; i < vertices_total.size(); i++) {
+
+     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 1);
+     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 2);
+     if(vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 3);
+
+  }
+
+  matlabfile_via.close();
+
+
+
 }
 
 int Grid::gcd(int a, int b)  // get greatest common divider of two integers
