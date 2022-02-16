@@ -15,9 +15,9 @@ def check_placement(placement_verilog_d, scale_factor):
     non_leaves = {module['concrete_name'] for module in placement_verilog_d['modules']}
 
     for module in placement_verilog_d['modules']:
-        if len(module['constraints']) == 0:
-            continue  # No constraints
         constraints = module['constraints']
+        if len(constraints) == 0:
+            continue
 
         constraints.checkpoint()
 
