@@ -19,6 +19,8 @@ def check_placement(placement_verilog_d, scale_factor):
             continue  # No constraints
         constraints = module['constraints']
 
+        constraints.checkpoint()
+
         # The check below is at the mercy of constraint translation
         do_not_identify = []
         for const in constraints:
@@ -32,7 +34,7 @@ def check_placement(placement_verilog_d, scale_factor):
         # Set module (i.e. subcircuit) bounding box parameters
         bbox = transformation.Rect(*module['bbox'])
         with types.set_context(constraints):
-            newconstraint = \
+            constraints.append(
                 constraint.AssignBboxVariables(
                     bbox_name='subcircuit',
                     llx=bbox.llx/scale_factor,
@@ -40,14 +42,7 @@ def check_placement(placement_verilog_d, scale_factor):
                     urx=bbox.urx/scale_factor,
                     ury=bbox.ury/scale_factor
                 )
-            try:
-                constraints.append(newconstraint)
-            except Z3Exception as ex:
-                msg, = ex.args
-                if msg == b'named assertion defined twice':
-                    pass
-                else:
-                    raise
+            )
 
         for inst in module['instances']:
             t = inst['transformation']
@@ -59,7 +54,7 @@ def check_placement(placement_verilog_d, scale_factor):
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
             with types.set_context(constraints):
-                newconstraint = \
+                constraints.append(
                     constraint.AssignBboxVariables(
                         bbox_name=inst['instance_name'],
                         llx=bbox.llx/scale_factor,
@@ -67,15 +62,9 @@ def check_placement(placement_verilog_d, scale_factor):
                         urx=bbox.urx/scale_factor,
                         ury=bbox.ury/scale_factor
                     )
+                )
 
-                try:
-                    constraints.append(newconstraint)
-                except Z3Exception as ex:
-                    msg, = ex.args
-                    if msg == b'named assertion defined twice':
-                        pass
-                    else:
-                        raise
+        constraints.revert()
 
 def _transform_leaf(module, instance, leaf):
     if 'transformation' in leaf:
