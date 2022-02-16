@@ -609,6 +609,7 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   return true;
 }
 
+/**
 bool SeqPair::ValidateSelect(design & caseNL){
   //two sym pair blocks have conflict with place on grid
   // for(auto sympairblock:caseNL.SPBlocks){
@@ -619,7 +620,7 @@ bool SeqPair::ValidateSelect(design & caseNL){
   //   }
   // }
   return true;
-}
+}**/
 
 void SeqPair::KeepOrdering(design& caseNL) {
   // ids of blocks which have order constraints
