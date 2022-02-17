@@ -51,7 +51,7 @@ def gen_param(subckt, primitives, pdk_dir):
     values = subckt.elements[0].parameters
     generator_name = subckt.elements[0].generator
     logger.info(f"generating primitive structure {subckt}")
-    if generator_name == 'generic' or get_generator(block_name.lower(), pdk_dir):
+    if generator_name == 'generic' or get_generator(generator_name.lower(), pdk_dir):
         attr = {'ports': list(subckt.pins),
                 'values': values if values else None,
                 'real_inst_type': subckt.elements[0].model.lower()

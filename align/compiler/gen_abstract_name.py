@@ -25,7 +25,6 @@ class PrimitiveLibrary():
     def gen_primitive_collateral(self):
         """
         create a unique name for each instance and
-        create a subcircuit wrapper for all instance for feeding to primitive generator
         Args:
             ckt_data ([type]): ckt library after annotation
         Returns:
@@ -49,42 +48,39 @@ class PrimitiveLibrary():
                     self.gen_primitive_def(ele)
         return self.plib
 
-    # def _gen_key(self, param):
-    #     """_gen_key
+    def _gen_key(self, param):
+        """_gen_key
+        Creates a hex key for combined transistor params
+        Args:
+            param (dict): dictionary of parameters
+        Returns:
+            str: unique hex key
+        """
+        skeys = sorted(param.keys())
+        arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
 
-    #     Creates a hex key for combined transistor params
-
-    #     Args:
-    #         param (dict): dictionary of parameters
-    #     Returns:
-    #         str: unique hex key
-    #     """
-    #     skeys = sorted(param.keys())
-    #     arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
-    #     key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
-    #     return key
-
-
-    # def create_subckt(self, element, name):
-    #     """create_subckt
-    #     Adds a subckt in primitive library for a single device instance if not already existing
-    #     Args:
-    #         element (instance): instance in a subcircuit
-    #         name (str): unique name for this instance based on parameters
-    #     """
-    #     if not self.plib.find(name):
-    #         logger.info("creating subcircuit for {element}")
-    #         with set_context(self.plib):
-    #             new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()))
-    #         with set_context(new_subckt.elements):
-    #             new_ele = Instance(name = element.name,
-    #                             model = element.model,
-    #                             pins = {x: x for x in element.pins.keys()},
-    #                             generator = element.generator,
-    #                             parameters=element.parameters
-    #                             )
-    #             new_subckt.elements.append(new_ele)
-    #         self.plib.append(new_subckt)
+    def create_subckt(self, element, name):
+        """create_subckt
+        Adds a subckt in primitive library for a generic device instance if not already existing
+        Args:
+            element (instance): instance in a subcircuit
+            name (str): unique name for this instance based on parameters
+        """
+        if not self.plib.find(name):
+            logger.info("creating subcircuit for {element}")
+            with set_context(self.plib):
+                new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()))
+            with set_context(new_subckt.elements):
+                new_ele = Instance(name=element.name,
+                                   model=element.model,
+                                   pins={x: x for x in element.pins.keys()},
+                                   generator=element.generator,
+                                   parameters=element.parameters
+                                   )
+                new_subckt.elements.append(new_ele)
+            self.plib.append(new_subckt)
 
     def gen_primitive_def(self, element):
         """gen_primitive_def
@@ -95,26 +91,23 @@ class PrimitiveLibrary():
             element (instance): instance properties
         """
         model = element.model
-        generator = self.ckt_lib.find(model)
-        element.add_abs_name(model)
-        if isinstance(generator, SubCircuit):
+        generator= next((x for x in self.ckt_lib if x.name == model.upper() and isinstance(x, SubCircuit)), None)
+        if generator:
+            element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
-
             if gen_const:
                 with set_context(self.plib):
                     self.plib.append(generator)
-        # elif generator is None or isinstance(generator, Model): #base model or model
-        #     # Only using parameters as pins are unique corresponding to a model
-        #     block_arg = self._gen_key(element.parameters)
-        #     unique_name = f'{model}{block_arg}'
-        #     if not self.plib.find(model):
-        #         with set_context(self.plib):
-        #             self.plib.append(generator)
-        #     self.create_subckt(element, unique_name)
+        elif element.generator == 'generic':
+            block_arg = self._gen_key(element.parameters)
+            unique_name = f'{model}{block_arg}'
+            element.add_abs_name(unique_name)
+            if not self.plib.find(model):
+                with set_context(self.plib):
+                    self.plib.append(self.ckt_lib.find(model))
+            self.create_subckt(element, unique_name)
         else:
-            assert False, f"No definition found for instance {element} in {element.name}"
-        # if unique_name:
-        #     element.add_abs_name(unique_name)
+            assert False, f"No definition found for instance {element} in {element.name} generator: {generator}"
 
 
 

@@ -8,6 +8,11 @@ M0 D G S B NMOS
 M0 D G S B PMOS
 .ends PMOS
 
+.subckt TFR  A B
+* @: Generator()
+XR1 A B TFR
+.ends TFR
+
 .subckt NMOS_S  D G S
 * @: Generator()
 M1 D G S S NMOS w=w1 l=l1

@@ -185,7 +185,10 @@ class Graph(networkx.Graph):
                     nodes.append(node)
                     self.remove(self.element(node))
             nodes_str = '_'.join(nodes)
-            instance_name = f'X_{nodes_str}'
+            if nodes_str.startswith('X'):
+                instance_name = nodes_str  # Added due to PNR failure for test_res_flat
+            else:
+                instance_name = f'X_{nodes_str}'
             assert instance_name not in self.elements
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
