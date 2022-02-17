@@ -1402,6 +1402,9 @@ class ConstraintDB(types.List[ConstraintType]):
                 super().append(x)
 
     def checkpoint(self):
+        if self.parent._checker is None:
+            self.parent.verify()
+
         self.parent._checker.checkpoint()
         return super().checkpoint()
 

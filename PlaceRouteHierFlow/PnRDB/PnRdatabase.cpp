@@ -852,6 +852,7 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
 
         lhs.instNum++;
         b.gdsFile = updatedNode.gdsFile;
+        b.lefmaster = b.master + "_" + std::to_string(lhs.instNum - 1);
         // update terminal to pin information
 
         b.HPWL_extend_wo_terminal = updatedNode.HPWL_extend_wo_terminal;
@@ -1784,8 +1785,9 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node) {
 
     if (gdsData2.find(abstract_template_name) == gdsData2.end()) {
       if (abstract_template_name.find("Cap") != std::string::npos || abstract_template_name.find("CAP") != std::string::npos ||
-          abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf)
+          abstract_template_name.find("cap") != std::string::npos || !node.Blocks[i].instance.back().isLeaf) {
         continue;
+      }
       logger->error("The key does not exist in map: {0}", abstract_template_name);
     }
 
@@ -1798,7 +1800,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node) {
       b.gdsFile = gdsData2[abstract_template_name][j];
       string a_concrete_template_name = stem(b.gdsFile);
       if (lefData.find(a_concrete_template_name) == lefData.end()) {
-        logger->error("No LEF file for a_concrete_template_name {0}", a_concrete_template_name);
+        logger->error("No LEF file for {0}", a_concrete_template_name);
         missing_lef_file = 1;
         continue;
       }

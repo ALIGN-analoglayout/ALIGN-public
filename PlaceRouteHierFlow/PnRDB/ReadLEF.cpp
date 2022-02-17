@@ -74,7 +74,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
         if ((found = def.find("MACRO")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroName = temp[1];
-          macroEnd = "END " + temp[1];
+          macroEnd = "END " + macroName;
           // cout<<"Stage "<<stage<<" @ "<<macroName<<" ~~ "<<macroEnd<<endl;
           width = 0;
           height = 0;
@@ -117,13 +117,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
-          string key = "_AspectRatio";
-          std::size_t found = macroIns.name.find(key);
-          if (found != std::string::npos) {  // different aspect ratio exists
-            macroIns.master = macroIns.name.substr(0, found);
-          } else {  // different aspect ratio does not exist
-            macroIns.master = macroIns.name;
-          }
+	  macroIns.master = macroIns.name;
           if (lefData.find(macroIns.master) == lefData.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
