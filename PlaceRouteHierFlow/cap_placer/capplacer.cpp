@@ -2039,6 +2039,26 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile) {
   fout.close();
 }
 
+static string stem(const string& s) {
+  unsigned int start = 0;
+  unsigned int slash = s.find_last_of('/');
+  if (slash != string::npos) {
+    start = slash + 1;
+  }
+
+  unsigned int end = s.size();
+  unsigned int dot = s.find_last_of('.');
+  if (dot != string::npos) {
+    end = dot;
+  }
+
+  // xx/y.d
+  //   ^ ^
+  // 012345
+
+  return s.substr(start, end - start);
+}
+
 void Placer_Router_Cap::WriteLef(const PnRDB::block& temp_block, const string& file, const string& opath) {
   auto logger = spdlog::default_logger()->clone("cap_placer.Placer_Router_Cap.WriteLef");
 
@@ -2055,7 +2075,10 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block& temp_block, const string& f
     leffile << "        RECT " << s(b.LL.x) << " " << s(b.LL.y) << " " << s(b.UR.x) << " " << s(b.UR.y) << " ;" << std::endl;
   };
 
-  leffile << "MACRO " << temp_block.master << std::endl;
+  string concrete_name = stem(temp_block.gdsFile);
+
+
+  leffile << "MACRO " << concrete_name << std::endl;
   leffile << "  UNITS" << std::endl;
   leffile << "    DATABASE MICRONS UNITS 1 ;" << std::endl;
   leffile << "  END UNITS" << std::endl;
@@ -2112,7 +2135,7 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block& temp_block, const string& f
   }
   leffile << "  END " << std::endl;
 
-  leffile << "END " << temp_block.master << std::endl;
+  leffile << "END " << concrete_name << std::endl;
 
   leffile.close();
 }

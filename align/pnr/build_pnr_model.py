@@ -163,13 +163,13 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
     DB.ReadPDKJSON( path + '/' + drname)
 
     if lef_s_in is not None:
+        logger.error(f'Reading LEF from string')
         DB.ReadLEFFromString(lef_s_in)
     else:
         p = pathlib.Path(path) / lefname
         if p.exists():
             with p.open( "rt") as fp:
-                s = fp.read()
-                DB.ReadLEFFromString( s)
+                DB.ReadLEFFromString(fp.read())
         else:
             logger.warn(f"LEF file {p} doesn't exist.")
 

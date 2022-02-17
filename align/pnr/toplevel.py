@@ -384,6 +384,8 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
         for new_idx, old_idx in enumerate(sorted(cn_indices)):
             tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
 
+    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+
     for module in scaled_placement_verilog_d['modules']:
         module['concrete_name'] = tr_tbl[module['concrete_name']]
         for instance in module['instances']:
@@ -395,7 +397,10 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
                 assert ctn in tr_tbl
                 instance['concrete_template_name'] = tr_tbl[ctn]                   
 
+    for leaf in scaled_placement_verilog_d['leaves']:
+        leaf['abstract_name'] =leaf['concrete_name']
 
+    return tr_tbl
 
 def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)
@@ -782,6 +787,9 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
     print(f'Computed topname: {topname}')
 
+    assert nroutings == 1, f"nroutings other than 1 is currently not working"
+
+
     if placements_to_run is None:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
     else:
@@ -790,26 +798,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
     print(f'verilog_d cases to run: {[p[0] for p in verilog_ds_to_run]}')
 
-    #
-    # Optional: printout differences in pins
-    #
-    if primitives is not None:
-        primitives_with_atn = defaultdict(list)
-        for v in primitives.values():
-            primitives_with_atn[v['abstract_template_name']].append(v)
-
-        for k, v in primitives_with_atn.items():
-            first_prp = None
-            first_primitive = None
-            for primitive in v:
-                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                    prp = primitive['metadata']['partially_routed_pins']
-                    if first_prp is None:
-                        first_prp = prp
-                        first_primitive = primitive
-                    else:
-                        if set(first_prp.keys()) != set(prp.keys()):
-                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'])
 
     #
     # Hacks for partial routing
@@ -841,8 +829,9 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     res_dict = {}
     for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
 
-        change_concrete_names_for_routing(scaled_placement_verilog_d)
+        tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
+        concrete_top_name0 = tr_tbl[concrete_top_name]
 
         # don't need to send this to disk; for debug only
         if True:
@@ -896,11 +885,13 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             for cc_cap in cc_caps:
                 with (odir/f'{cc_cap}.lef').open("rt") as fp:
                     s = fp.read()
-                    print(s)
                     lef_s_in += s
 
         DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
+        print('lefData.keys()', list(DB.lefData.keys()))
+
+
         assert new_verilog_d == abstract_verilog_d
 
         assert new_fpath == fpath
@@ -916,7 +907,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                   verilog_d=abstract_verilog_d, gui=False, lambda_coeff=lambda_coeff,
                                                   scale_factor=scale_factor,
                                                   reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
-                                                  concrete_top_name=concrete_top_name,
+                                                  concrete_top_name=concrete_top_name0,
                                                   select_in_ILP=select_in_ILP, seed=seed,
                                                   use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                   primitives=primitives)
