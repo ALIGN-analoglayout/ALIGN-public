@@ -168,12 +168,7 @@ def gen_more_primitives(primitives, topology_dir, subckt):
                 logger.debug(f'Didn\'t match primitive {k}')
             map_d[k].append(k)
 
-    #
-    # Remove this when multi-variant partial routing works
-    #
-    NEW_PARTIAL_ROUTING_FEATURE = False
-    if not NEW_PARTIAL_ROUTING_FEATURE:
-        primitives.update(more_primitives)
+    primitives.update(more_primitives)
 
     #
     # This code should move to 1_topology, we also need two different the primitives.json files;
