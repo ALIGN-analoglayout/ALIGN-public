@@ -214,22 +214,14 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double mean_cache_miss{0};
   int num_perturb{0};
 
-  bool ilpplacerdone{false};
   if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
-    curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
-    if (curr_cost > 0) {
-      oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-      ilpplacerdone = true;
-    }
-    const int ns{nodeSize - 1};
-    for (int i = 0; i < ns; ++i) {
-      curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, ns, i);
-      if (curr_cost > 0) {
-        oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-      }
-    }
+    oData = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
+    logger->info("num sol : {0}", oData.size());
   }
-  if (ilpplacerdone) return oData;
+  if (!oData.empty()) {
+    ReshapeSeqPairMap(oData, nodeSize);
+    return oData;
+  }
   else oData.clear();
 
   unsigned int seed = 0;
@@ -242,8 +234,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
-      curr_cost = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
     } else {
       curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
     }
@@ -321,8 +313,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
-        trial_cost = trial_sol.PlaceUsingILP(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       } else {
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       }
@@ -406,8 +398,8 @@ void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
 
 void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& Map, int nodeSize) {
   int idx = 0;
-  std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it;
-  for (it = Map.begin(); it != Map.end(); ++it, ++idx) {
+  auto it = Map.begin();
+  for (; it != Map.end(); ++it, ++idx) {
     if (idx == nodeSize) {
       break;
     }
@@ -441,8 +433,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // clock_t start, finish;
   // double   duration;
   // start = clock();
-  std::map<double, std::pair<SeqPair, ILP_solver>> spVec =
-      PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  auto spVec = PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
   // logger->info("lpsolve time: {0}", duration);
@@ -453,7 +444,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     nodeVec.resize(nodeSize);
   }
   int idx = 0;
-  for (std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
+  for (auto it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
     // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     // vec_sol.ConstraintGraph(designData, it->second);
     // vec_sol.updateTerminalCenter(designData, it->second);

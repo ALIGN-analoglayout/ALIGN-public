@@ -5,6 +5,7 @@
 #include "spdlog/spdlog.h"
 #include "CbcModel.hpp"
 #include "OsiClpSolverInterface.hpp"
+//#include "Cbc_C_Interface.h"
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
@@ -33,41 +34,10 @@ std::vector<std::set<int>> ILP_solver::GetCC(const design& mydesign) const
   return ret;
 }
 
-double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol, const int idx) {
 
-  if (mydesign.Blocks.empty()) return -1;
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceUsingILP");
-  ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  if (mydesign.Blocks.size() == 1) {
-    Blocks[0].x = 0; Blocks[0].y = 0;
-    Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
-    area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
-  } else {
-    if (mydesign.leftAlign()) {
-      // frame and solve ILP to flush bottom/left
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true, numsol, idx))  return -1;
-    } else if (mydesign.rightAlign()) {
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false, numsol, idx)) return -1;
-    } else {
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, true, numsol, idx))  return -1;
-      std::vector<Block> blockslocal{Blocks};
-      auto selectedlocal = curr_sp.selected;
-      // frame and solve ILP to flush top/right
-      if (!PlaceILPSymphony_select(mydesign, curr_sp, drcInfo, num_threads, false, numsol, idx) 
-          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
-        // if unable to solve flush top/right or if the solution changed significantly,
-        // use the bottom/left flush solution
-        Blocks = blockslocal;
-        const_cast<SeqPair&>(curr_sp).selected = selectedlocal;
-      }
-    }
-    // snap up coordinates to grid
-    //for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-    //  roundup(Blocks[i].x, x_pitch);
-    //  roundup(Blocks[i].y, y_pitch);
-    //}
-  }
-
+double ILP_solver::UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp)
+{
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateAreaHPWLCost");
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // calculate LL and UR
   LL.x = INT_MAX, LL.y = INT_MAX;
@@ -75,9 +45,9 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     LL.x = std::min(LL.x, Blocks[i].x);
     LL.y = std::min(LL.y, Blocks[i].y);
-    logger->info("{0} {1} {2} {3} {4}", mydesign.Blocks[i][0].name,
-        mydesign.Blocks[i][curr_sp.selected[i]].width, mydesign.Blocks[i][curr_sp.selected[i]].height, 
-        Blocks[i].x, Blocks[i].y);
+    //logger->info("{0} {1} {2} {3} {4}", mydesign.Blocks[i][0].name,
+    //    mydesign.Blocks[i][curr_sp.selected[i]].width, mydesign.Blocks[i][curr_sp.selected[i]].height, 
+    //    Blocks[i].x, Blocks[i].y);
     UR.x = std::max(UR.x, Blocks[i].x + mydesign.Blocks[i][curr_sp.selected[i]].width);
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
@@ -88,7 +58,7 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
-  logger->info("ratio : {0}", ratio);
+  //logger->info("ratio : {0}", ratio);
   //if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
   //  ++const_cast<design&>(mydesign)._infeasAspRatio;
   //  return -1;
@@ -213,16 +183,56 @@ double ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp,
     multi_linear_const += temp_sum;
   }
 
-  double calculated_cost = CalculateCost(mydesign, curr_sp);
-  cost = calculated_cost;
+  cost = CalculateCost(mydesign, curr_sp);
+  //logger->info("cost : {0}", cost);
   if (cost >= 0.) {
     logger->debug("ILP__HPWL_compare block {0} : HPWL_extend={1} HPWL_ILP={2}", mydesign.name, HPWL_extend, HPWL_ILP);
     logger->debug("ILP__Area_compare block {0} : area={1} area_ilp={2}", mydesign.name, area, area_ilp);
   }
-  return calculated_cost;
+  return cost;
 }
 
-bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const int idx, const vector<placerDB::point>* prev) {
+SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol) {
+
+  SolutionMap sol;
+  if (mydesign.Blocks.empty()) return sol;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceUsingILP");
+  ++const_cast<design&>(mydesign)._totalNumCostCalc;
+  if (mydesign.Blocks.size() == 1) {
+    Blocks[0].x = 0; Blocks[0].y = 0;
+    Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
+    area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
+  } else {
+    if (mydesign.leftAlign()) {
+      // frame and solve ILP to flush bottom/left
+      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+    } else if (mydesign.rightAlign()) {
+      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
+    } else {
+      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      std::vector<Block> blockslocal{Blocks};
+      auto selectedlocal = curr_sp.selected;
+      // frame and solve ILP to flush top/right
+      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
+          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
+        // if unable to solve flush top/right or if the solution changed significantly,
+        // use the bottom/left flush solution
+        Blocks = blockslocal;
+        const_cast<SeqPair&>(curr_sp).selected = selectedlocal;
+      }
+      cost = UpdateAreaHPWLCost(mydesign, curr_sp);
+    }
+    // snap up coordinates to grid
+    //for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+    //  roundup(Blocks[i].x, x_pitch);
+    //  roundup(Blocks[i].y, y_pitch);
+    //}
+  }
+
+  return sol;
+}
+
+bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPSymphony_select");
 
@@ -248,6 +258,8 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
   const unsigned N_net_vars_max   = N_block_vars_max + mydesign.Nets.size() * 4;
   const unsigned N_aspect_ratio_max = N_net_vars_max + 2;
   const unsigned N_area_max         = N_aspect_ratio_max + 2;
+  //const unsigned N_area_max         = N_net_vars_max + 2;
+  //const unsigned N_slack_vars_max   = N_area_max + (numsol > 1 ? mydesign.Blocks.size() : 0);
   unsigned N_var{N_area_max};
 
   unsigned count_blocks{0};
@@ -311,34 +323,30 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
   }
 
   double aspectratio = sqrt(Aspect_Ratio[0] * Aspect_Ratio[1]);
-  if (numsol > 1) {
-    double asl = (Aspect_Ratio[0] <= EPS) ? 1. : Aspect_Ratio[0];
-    if (asl < Aspect_Ratio[1]) {
-      double r = exp(log(Aspect_Ratio[1]/asl) / (numsol * 1.));
-      aspectratio = asl * pow(r, idx);
-    } else {
-      return -1;
-    }
-  }
-  logger->info("aspect ratio : {0} {1} {2}", aspectratio, Aspect_Ratio[0], Aspect_Ratio[1]);
+  if (aspectratio < EPS) aspectratio = 1.;
   int maxhierwidth{0}, maxhierheight{0};
   for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
-    maxhierwidth += mydesign.Blocks[i][curr_sp.selected[i]].width;
-    maxhierheight += mydesign.Blocks[i][curr_sp.selected[i]].height;
+    int maxblkwidth{0}, maxblkheight{0};
+    for (auto& it : mydesign.Blocks[i]) {
+      maxblkwidth  = std::max(maxblkwidth,  it.width);
+      maxblkheight = std::max(maxblkheight, it.height);
+    }
+    maxhierwidth  += maxblkwidth;
+    maxhierheight += maxblkheight;
   }
 
   if (flushbl) {
     for (int i = 0; i < Blocks.size(); ++i) {
-      int minwidth{INT_MAX}, minheight{INT_MAX};
-      int maxwidth{0}, maxheight{0};
+      int minblkwidth{INT_MAX}, minblkheight{INT_MAX};
+      int maxblkwidth{0}, maxblkheight{0};
       for (auto& it : mydesign.Blocks[i]) {
-        minwidth = std::min(minwidth, it.width);
-        minheight = std::min(minheight, it.height);
-        maxwidth = std::max(maxwidth, it.width);
-        maxheight = std::max(maxheight, it.height);
+        minblkwidth  = std::min(minblkwidth,  it.width);
+        minblkheight = std::min(minblkheight, it.height);
+        maxblkwidth  = std::max(maxblkwidth,  it.width);
+        maxblkheight = std::max(maxblkheight, it.height);
       }
-      collb[i * 6 + 4] = minwidth;  colub[i * 6 + 4] = maxwidth;
-      collb[i * 6 + 5] = minheight; colub[i * 6 + 5] = maxheight;
+      collb[i * 6 + 4] = minblkwidth;  colub[i * 6 + 4] = maxblkwidth;
+      collb[i * 6 + 5] = minblkheight; colub[i * 6 + 5] = maxblkheight;
       if (prev) {
         collb[i * 6]     = (*prev)[i].x;
         collb[i * 6 + 1] = (*prev)[i].y;
@@ -358,18 +366,18 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     colub[N_area_max - 2] = maxhierwidth;
   } else {
     for (int i = 0; i < Blocks.size(); ++i) {
-      int minwidth{INT_MAX}, minheight{INT_MAX};
-      int maxwidth{0}, maxheight{0};
+      int minblkwidth{INT_MAX}, minblkheight{INT_MAX};
+      int maxblkwidth{0}, maxblkheight{0};
       for (auto& it : mydesign.Blocks[i]) {
-        minwidth = std::min(minwidth, it.width);
-        minheight = std::min(minheight, it.height);
-        maxwidth = std::max(maxwidth, it.width);
-        maxheight = std::max(maxheight, it.height);
+        minblkwidth  = std::min(minblkwidth,  it.width);
+        minblkheight = std::min(minblkheight, it.height);
+        maxblkwidth  = std::max(maxblkwidth,  it.width);
+        maxblkheight = std::max(maxblkheight, it.height);
       }
-      collb[i * 6]     = -maxhierwidth;  colub[i * 6]     = -minwidth;
-      collb[i * 6 + 1] = -maxhierheight; colub[i * 6 + 1] = -minheight;
-      collb[i * 6 + 4] = minwidth;  colub[i * 6 + 4] = maxwidth;
-      collb[i * 6 + 5] = minheight; colub[i * 6 + 5] = maxheight;
+      collb[i * 6]     = -maxhierwidth;  colub[i * 6]     = -minblkwidth;
+      collb[i * 6 + 1] = -maxhierheight; colub[i * 6 + 1] = -minblkheight;
+      collb[i * 6 + 4] = minblkwidth;  colub[i * 6 + 4] = maxblkwidth;
+      collb[i * 6 + 5] = minblkheight; colub[i * 6 + 5] = maxblkheight;
     }
     for (unsigned i = 0; i < mydesign.Nets.size(); ++i) {
       auto ind = N_block_vars_max + i * 4;
@@ -408,14 +416,8 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     objective[N_area_max - 1] = -1. * mydesign.Nets.size();
     objective[N_area_max - 2] = -1. * mydesign.Nets.size();
   }
-  if (aspectratio < EPS) {
-    aspectratio = 1.;
-    objective[N_aspect_ratio_max - 1] = .1 * mydesign.Nets.size();
-    objective[N_aspect_ratio_max - 2] = .1 * mydesign.Nets.size();
-  } else {
-    objective[N_aspect_ratio_max - 1] = 100 * mydesign.Nets.size();
-    objective[N_aspect_ratio_max - 2] = 100 * mydesign.Nets.size();
-  }
+  objective[N_aspect_ratio_max - 1] = .1 * mydesign.Nets.size();
+  objective[N_aspect_ratio_max - 2] = .1 * mydesign.Nets.size();
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
   roundup(bias_Hgraph, x_pitch);
@@ -446,6 +448,66 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     sens.push_back('E');
     rhs.push_back(0.);
     rowtype.push_back('a');
+  }
+
+  if (flushbl) {
+    rowindofcol[N_area_max - 2].push_back(rhs.size());
+    rowindofcol[N_area_max - 1].push_back(rhs.size());
+    constrvalues[N_area_max - 2].push_back(1);
+    constrvalues[N_area_max - 1].push_back(-Aspect_Ratio[0]);
+    sens.push_back('G');
+    rhs.push_back(0.);
+    rowtype.push_back('a');
+    rowindofcol[N_area_max - 2].push_back(rhs.size());
+    rowindofcol[N_area_max - 1].push_back(rhs.size());
+    constrvalues[N_area_max - 2].push_back(1);
+    constrvalues[N_area_max - 1].push_back(-Aspect_Ratio[1]);
+    sens.push_back('L');
+    rhs.push_back(0.);
+    rowtype.push_back('a');
+    if (placement_box[0] > 0) {
+      rowindofcol[N_area_max - 2].push_back(rhs.size());
+      constrvalues[N_area_max - 2].push_back(1);
+      sens.push_back('L');
+      rhs.push_back(placement_box[0]);
+      rowtype.push_back('p');
+    }
+    if (placement_box[1] > 0) {
+      rowindofcol[N_area_max - 1].push_back(rhs.size());
+      constrvalues[N_area_max - 1].push_back(1);
+      sens.push_back('L');
+      rhs.push_back(placement_box[1]);
+      rowtype.push_back('p');
+    }
+  } else {
+    rowindofcol[N_area_max - 2].push_back(rhs.size());
+    rowindofcol[N_area_max - 1].push_back(rhs.size());
+    constrvalues[N_area_max - 2].push_back(1);
+    constrvalues[N_area_max - 1].push_back(-Aspect_Ratio[0]);
+    sens.push_back('L');
+    rhs.push_back(0.);
+    rowtype.push_back('a');
+    rowindofcol[N_area_max - 2].push_back(rhs.size());
+    rowindofcol[N_area_max - 1].push_back(rhs.size());
+    constrvalues[N_area_max - 2].push_back(1);
+    constrvalues[N_area_max - 1].push_back(-Aspect_Ratio[1]);
+    sens.push_back('G');
+    rhs.push_back(0.);
+    rowtype.push_back('a');
+    if (placement_box[0] > 0) {
+      rowindofcol[N_area_max - 2].push_back(rhs.size());
+      constrvalues[N_area_max - 2].push_back(-1);
+      sens.push_back('L');
+      rhs.push_back(placement_box[0]);
+      rowtype.push_back('p');
+    }
+    if (placement_box[1] > 0) {
+      rowindofcol[N_area_max - 1].push_back(rhs.size());
+      constrvalues[N_area_max - 1].push_back(-1);
+      sens.push_back('L');
+      rhs.push_back(placement_box[1]);
+      rowtype.push_back('p');
+    }
   }
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -1378,7 +1440,6 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
         if (it == pin_idx_map.end()) continue;
         int llx = std::get<0>(it->second),     lly = std::get<0>(it->second) + 1;
         int urx = std::get<0>(it->second) + 2, ury = std::get<0>(it->second) + 3;
-        const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
         {
           rowindofcol[block_id * 6].push_back(rhs.size());
           rowindofcol[llx].push_back(rhs.size());
@@ -1454,9 +1515,30 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
       }
     }
   }
-  area_ilp = 0.;
-  HPWL_ILP = 0.;
-  {
+  double ydimsaved{0.};
+  for (unsigned iterilp = 0; iterilp < numsol; ++iterilp) {
+    area_ilp = 0.;
+    HPWL_ILP = 0.;
+    if (iterilp == 1) {
+      objective[N_area_max - 1] = 0.;
+    } else if (iterilp == 2) {
+      ydimsaved = ydim();
+      //objective[N_area_max - 2] = 0.;
+      rowindofcol[N_area_max - 1].push_back(rhs.size());
+      if (flushbl) {
+        objective[N_area_max - 1] = 1. * mydesign.Nets.size();
+        constrvalues[N_area_max - 1].push_back(1);
+        sens.push_back('L');
+      } else {
+        objective[N_area_max - 1] = -1. * mydesign.Nets.size();
+        constrvalues[N_area_max - 1].push_back(-1);
+      }
+      auto ydim = ydimsaved - ydimsaved * 0.5 * (iterilp - 1) / (numsol - 1);
+      rhs.push_back(ydim);
+      rowtype.push_back('h');
+    } else if (iterilp > 2) {
+      rhs.back() = ydimsaved - ydimsaved * 0.5 * (iterilp - 1) / (numsol - 1);
+    }
     std::vector<int> starts, indices;
     std::vector<double> values;
     starts.push_back(0);
@@ -1484,7 +1566,6 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
           break;
       }
     }
-
     osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub);
@@ -1596,11 +1677,14 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
 
       for (unsigned i = 0; i < N_var; ++i) {
         osiclp.setColName(i, names[i]);
+        //Cbc_setColName(model, i, names[i]);
       }
       for (unsigned i = 0; i < rhs.size(); ++i) {
         osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
+        //Cbc_setRowName(model, i, (rowtype[i] + std::to_string(i)).c_str());
       }
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      //Cbc_writeLp(model, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }
     //solve the integer program
@@ -1608,60 +1692,83 @@ bool ILP_solver::PlaceILPSymphony_select(const design& mydesign, const SeqPair& 
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
+      //Cbc_setLogLevel(model, 0);
+      //Cbc_setMaximumSolutions(model, numsol);
+      //Cbc_setMaximumSeconds(model, 500);
+      CbcMain0(model);
       model.setLogLevel(0);
+      model.setMaximumSolutions(1000);
+      model.setMaximumSavedSolutions(1000);
       model.setMaximumSeconds(500);
+      //model.setNumberHeuristics(0);
       if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
         model.setNumberThreads(num_threads);
         model.setMaximumSeconds(500 * num_threads);
-        const char* argv[] = {"", "-threads", std::to_string(num_threads).c_str(), "-solve"};
-        status = CbcMain1(4, argv, model);
+        const char* argv[] = {"", "-log", "0", "-threads", std::to_string(num_threads).c_str(), "-solve"};
+        status = CbcMain1(6, argv, model);
       } else {
-        const char* argv[] = {"", "-solve"};
-        status = CbcMain1(2, argv, model);
+        const char* argv[] = {"", "-log", "0", "-solve"};
+        status = CbcMain1(4, argv, model);
       }
-      logger->info("status : {0} {1}" , CbcModel::haveMultiThreadSupport(), num_threads);
       //model.branchAndBound();
+      //status = Cbc_solve(model);
+      logger->info("status : {0} {1} {2} {3} {4}", status, model.secondaryStatus(), model.getSolutionCount(), model.numberSavedSolutions(), (model.savedSolution(1) != nullptr));
     }
     //int status = model.secondaryStatus();
-    const double* var = model.bestSolution();
-    logger->info("status : {0}", status);
-    if (status != 0 || !var) {
+    //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
+    //const double* var = Cbc_bestSolution(model);
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
-    int minx(INT_MAX), miny(INT_MAX);
-    area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = roundupint(var[i * 6]);
-      Blocks[i].y = roundupint(var[i * 6 + 1]);
-      minx = std::min(minx, Blocks[i].x);
-      miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
-      Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
-      if (mydesign.Blocks[i].size() > 1) {
-        int select{-1};
-        for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
-          if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
-            select = j;
-            break;
+    const int numsaved = model.numberSavedSolutions();
+    for (int i = 0;  i < 1; ++i) {
+      //logger->info("obj : {0}", model.savedSolutionObjective(i));
+      const double* var = model.savedSolution(i);
+      if (!var) break;
+      int minx(INT_MAX), miny(INT_MAX);
+      area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
+      logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        Blocks[i].x = roundupint(var[i * 6]);
+        Blocks[i].y = roundupint(var[i * 6 + 1]);
+        minx = std::min(minx, Blocks[i].x);
+        miny = std::min(miny, Blocks[i].y);
+        Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
+        Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
+        if (mydesign.Blocks[i].size() > 1) {
+          int select{-1};
+          for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
+            if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
+              select = j;
+              break;
+            }
+          }
+          if (select >= 0) {
+            const_cast<SeqPair&>(curr_sp).selected[i] = select;
           }
         }
-        if (select >= 0) {
-          const_cast<SeqPair&>(curr_sp).selected[i] = select;
+      }
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        Blocks[i].x -= minx;
+        Blocks[i].y -= miny;
+      }
+      // calculate HPWL from ILP solution
+      for (int i = 0; i < mydesign.Nets.size(); ++i) {
+        int ind = int(N_block_vars_max + i * 4);
+        HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+      }
+      //Cbc_deleteModel(model);
+
+      cost = UpdateAreaHPWLCost(mydesign, curr_sp);
+      if (cost >= 0) {
+        if (sol.find(cost) == sol.end()) {
+          sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
         }
+        logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
       }
     }
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x -= minx;
-      Blocks[i].y -= miny;
-    }
-    // calculate HPWL from ILP solution
-    for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = int(N_block_vars_max + i * 4);
-      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
-    }
   }
-
-  return true;
+  return !sol.empty();
 }
 
