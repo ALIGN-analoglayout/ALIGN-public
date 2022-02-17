@@ -653,8 +653,6 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         for m in hack_placement_verilog_d['modules']:
             modules[m['abstract_name']].append(m)
 
-        print(f'hierarchical_place (placement from json): {[(k, [m["concrete_name"] for m in ms]) for k, ms in modules.items()]}')
-    
     grid_constraints = {}
 
     frontier = {}
@@ -667,9 +665,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
         modules_d = None
         if reference_placement_verilog_d is not None:
-            print('current block name', DB.hierTree[idx].name, list(modules.keys()))
             modules_d = modules[DB.hierTree[idx].name]
-            print('Current modules_d:', [m['concrete_name'] for m in modules_d])
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
@@ -775,17 +771,11 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                                            use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                            primitives=primitives)
 
-    print('Number of placements_to_run:', None if placements_to_run is None else len(placements_to_run), placements_to_run)
-
-    print(f'Alternative placement keys: {list(placement_verilog_alternatives.keys())}')
-
     pattern = re.compile(r'^(\S+)_(\d+)$')
     last_key = list(placement_verilog_alternatives.keys())[-1]
     m = pattern.match(last_key)
     assert m
     topname = m.groups()[0]
-
-    print(f'Computed topname: {topname}')
 
     assert nroutings == 1, f"nroutings other than 1 is currently not working"
 
@@ -794,9 +784,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
     else:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
-
-
-    print(f'verilog_d cases to run: {[p[0] for p in verilog_ds_to_run]}')
 
 
     #
@@ -839,13 +826,11 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             verilog_file = toplevel_args[3]
 
             abstract_verilog_file = verilog_file.replace(".verilog.json", ".abstract_verilog.json")
-            print(f'abstract_verilog_file: {abstract_verilog_file}')
 
             with (pathlib.Path(fpath)/abstract_verilog_file).open("wt") as fp:
                 json.dump(abstract_verilog_d.dict(), fp=fp, indent=2, default=str)
                 
             scaled_placement_verilog_file = verilog_file.replace(".verilog.json", ".scaled_placement_verilog.json")
-            print(f'scaled_placement_verilog_file: {scaled_placement_verilog_file}')
 
             with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("wt") as fp:
                 json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
@@ -855,8 +840,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         lef_file = toplevel_args[2]
         new_lef_file = lef_file.replace(".placement_lef", ".lef")
         toplevel_args[2] = new_lef_file
-
-        print(f'toplevel_args: {toplevel_args}')
 
         # Build up a new map file
         map_d_in = []
@@ -875,8 +858,6 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             else:
                 logger.error(f'Missing .lef file for {ctn}')
 
-        print(map_d_in)
-
         lef_s_in = None
         if cc_caps:
             with (idir/new_lef_file).open("rt") as fp:
@@ -889,17 +870,10 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
         DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
-        print('lefData.keys()', list(DB.lefData.keys()))
-
-
         assert new_verilog_d == abstract_verilog_d
 
         assert new_fpath == fpath
         assert new_opath == opath
-
-        print('placements_to_run, topo order (indices):', placements_to_run, DB.TraverseHierTree())
-
-        print('topo order in names:', [DB.hierTree[idx].name for idx in DB.TraverseHierTree()])
 
         # need to populate the placement data
 
@@ -912,15 +886,10 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                   use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                   primitives=primitives)
 
-        print('after second hierarchical_place', placements_to_run)
-
-
         # populate new DB with placements to run
 
         res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                      router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
-
-        print('route results:', res)
 
         res_dict.update(res)
     
