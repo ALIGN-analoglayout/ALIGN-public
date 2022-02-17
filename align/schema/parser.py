@@ -197,7 +197,7 @@ class SpiceParser:
         if decl == '.SUBCKT':
             self._constraints = []
             name = args.pop(0)
-            assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
+            assert not isinstance(self.library.find(name), SubCircuit), f"User is attempting to redeclare subcircuit {name}"
             with set_context(self.library):
                 subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
             self.library.append(subckt)
