@@ -117,6 +117,7 @@ class SeqPair {
   int GetBlockSelected(int blockNo);
   bool ChangeSelectedBlock(design& caseNL);
   void KeepOrdering(design& caseNL);
+  //bool ValidateSelect(design& caseNL);
   void CompactSeq();
 
   std::string getLexIndex(design& des) const;
