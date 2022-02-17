@@ -1722,7 +1722,7 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       return false;
     }
     const int numsaved = model.numberSavedSolutions();
-    for (int i = 0;  i < 1; ++i) {
+    for (int i = 0;  i < numsaved; ++i) {
       //logger->info("obj : {0}", model.savedSolutionObjective(i));
       const double* var = model.savedSolution(i);
       if (!var) break;
