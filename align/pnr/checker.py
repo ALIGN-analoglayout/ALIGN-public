@@ -16,9 +16,6 @@ def check_placement(placement_verilog_d, scale_factor):
 
     for module in placement_verilog_d['modules']:
         constraints = module['constraints']
-        if len(constraints) == 0:
-            continue
-
         constraints.checkpoint()
 
         # The check below is at the mercy of constraint translation

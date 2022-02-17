@@ -2056,6 +2056,11 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block& temp_block, const string& f
   };
 
   leffile << "MACRO " << temp_block.master << std::endl;
+  leffile << "  UNITS" << std::endl;
+  leffile << "    DATABASE MICRONS UNITS 1 ;" << std::endl;
+  leffile << "  END UNITS" << std::endl;
+
+
   leffile << "  ORIGIN 0 0 ;" << std::endl;
   leffile << "  FOREIGN " << temp_block.master << " 0 0 ;" << std::endl;
   leffile << "  SIZE " << s(temp_block.width) << " BY " << s(temp_block.height) << " ;" << std::endl;

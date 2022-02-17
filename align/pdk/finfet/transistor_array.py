@@ -15,7 +15,10 @@ class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.NEW_PARTIAL_ROUTING_FEATURE = True
+
+        partial_routing = os.getenv('PARTIAL_ROUTING', None)
+
+        self.NEW_PARTIAL_ROUTING_FEATURE = partial_routing is not None
         if self.NEW_PARTIAL_ROUTING_FEATURE:
             if not hasattr(self, 'metadata'):
                 self.metadata = dict()

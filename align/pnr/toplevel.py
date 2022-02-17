@@ -871,13 +871,35 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
         # Build up a new map file
         map_d_in = []
-        d = pathlib.Path(fpath)
+        idir = pathlib.Path(fpath)
+        odir = pathlib.Path(opath)
+        
+        cc_caps = []
+
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
-            map_d_in.append((ctn,str(d/f'{ctn}.gds')))
+            if   (idir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
+            elif (odir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(odir/f'{ctn}.gds')))
+                cc_caps.append(ctn)
+            else:
+                logger.error(f'Missing .lef file for {ctn}')
+
         print(map_d_in)
 
-        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in)
+        lef_s_in = None
+        if cc_caps:
+            with (idir/new_lef_file).open("rt") as fp:
+                lef_s_in = fp.read()
+                
+            for cc_cap in cc_caps:
+                with (odir/f'{cc_cap}.lef').open("rt") as fp:
+                    s = fp.read()
+                    print(s)
+                    lef_s_in += s
+
+        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
         assert new_verilog_d == abstract_verilog_d
 
@@ -914,7 +936,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     return res_dict
 
 
-def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None):
+def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
     assert len(args) == 9
 
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
@@ -922,7 +944,7 @@ def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None):
 
     if fpath[-1] == '/': fpath = fpath[:-1]
 
-    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in)
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
     assert verilog_d is not None
 
