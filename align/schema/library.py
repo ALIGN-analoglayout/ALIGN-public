@@ -20,6 +20,9 @@ class Library(List[Union[Model, SubCircuit]]):
     def find(self, name):
         return next((x for x in self if x.name == name.upper()), None)
 
+    def find_subcircuit(self, name):
+        return next((x for x in self if x.name == name.upper() and isinstance(x, SubCircuit)), None)
+
     def default_models(self):
         models = list()
         models.append(

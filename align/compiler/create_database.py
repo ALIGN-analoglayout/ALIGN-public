@@ -180,11 +180,11 @@ class CreateDatabase:
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 for inst in subckt.elements:
-                    logger.debug(
-                        f"Updating leaf instance parameters of module \
-                    {subckt.name} as {subckt.parameters}, \
-                    global {self.circuit.parameters}, inst param {inst.parameters}"
-                    )
+                    # logger.debug(
+                    #     f"Updating leaf instance parameters of module \
+                    # {subckt.name} as {subckt.parameters}, \
+                    # global {self.circuit.parameters}, inst param {inst.parameters}"
+                    # )
                     for p, v in inst.parameters.items():
                         if v in self.circuit.parameters.keys():
                             inst.parameters[p] = self.circuit.parameters[v]

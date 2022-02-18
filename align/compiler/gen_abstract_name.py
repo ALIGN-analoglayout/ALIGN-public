@@ -91,7 +91,13 @@ class PrimitiveLibrary():
             element (instance): instance properties
         """
         model = element.model
-        generator= next((x for x in self.ckt_lib if x.name == model.upper() and isinstance(x, SubCircuit)), None)
+        generator = self.ckt_lib.find_subcircuit(model)
+        if not generator:
+            # Find generator for base model
+            base_model = self.ckt_lib.find(model).base
+            generator = self.ckt_lib.find_subcircuit(base_model)
+            logger.info(f"check base model generator for {element} {model} {base_model}, {generator}, {[x.name for x in self.ckt_lib]}")
+
         if generator:
             element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
@@ -107,7 +113,7 @@ class PrimitiveLibrary():
                     self.plib.append(self.ckt_lib.find(model))
             self.create_subckt(element, unique_name)
         else:
-            assert False, f"No definition found for instance {element} in {element.name} generator: {generator}"
+            assert False, f"No generator definition found for instance {element} in {element.name} generator: {generator}"
 
 
 

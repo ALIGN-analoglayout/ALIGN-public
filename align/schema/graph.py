@@ -150,29 +150,33 @@ class Graph(networkx.Graph):
 
     def replace_matching_subgraph(self, subgraph, skip=None, node_match=None, edge_match=None):
         matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
+        logger.debug(f"found matches {matches}")
         return self._replace_matches_with_subckt(matches, subgraph.subckt, skip)
 
     def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
         new_subckt_names = []
         for match in matches:
+
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"
             removal_candidates = [
                 x for x, y in match.items()
                 if y not in subckt.pins]
+
             # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            if skip and (set(removal_candidates) & set(skip)):
+
+            if skip and len(set(removal_candidates) & set(skip))>1:
                 continue
 
             subcircuit_name = subckt.name
             new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             subcircuit_name = self.instance_counter(new_subckt)
-            if subcircuit_name != subckt.name and not self.subckt.parent.find(
+            if subcircuit_name != subckt.name and not self.subckt.parent.find_subcircuit(
                     subcircuit_name):
                 new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(subcircuit_name)
@@ -196,7 +200,7 @@ class Graph(networkx.Graph):
 
             # Model may need to be copied to current library
             if new_subckt not in self.subckt.parent:
-                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find('ARRAY_TEMPLATE')}")
+                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find_subcircuit('ARRAY_TEMPLATE')}")
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
@@ -241,7 +245,7 @@ class Graph(networkx.Graph):
             name = subckt.name
         else:
             name = f'{subckt.name}_I{counter}'
-        existing_ckt = self.subckt.parent.find(name)
+        existing_ckt = self.subckt.parent.find_subcircuit(name)
         if existing_ckt:
             if subckt.is_identical(existing_ckt):
                 logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")
