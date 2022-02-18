@@ -384,6 +384,8 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
         for new_idx, old_idx in enumerate(sorted(cn_indices)):
             tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
 
+    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+
     for module in scaled_placement_verilog_d['modules']:
         module['concrete_name'] = tr_tbl[module['concrete_name']]
         for instance in module['instances']:
@@ -395,7 +397,10 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
                 assert ctn in tr_tbl
                 instance['concrete_template_name'] = tr_tbl[ctn]                   
 
+    for leaf in scaled_placement_verilog_d['leaves']:
+        leaf['abstract_name'] =leaf['concrete_name']
 
+    return tr_tbl
 
 def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)
@@ -648,8 +653,6 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         for m in hack_placement_verilog_d['modules']:
             modules[m['abstract_name']].append(m)
 
-        print(f'hierarchical_place (placement from json): {[(k, [m["concrete_name"] for m in ms]) for k, ms in modules.items()]}')
-    
     grid_constraints = {}
 
     frontier = {}
@@ -662,9 +665,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
         modules_d = None
         if reference_placement_verilog_d is not None:
-            print('current block name', DB.hierTree[idx].name, list(modules.keys()))
             modules_d = modules[DB.hierTree[idx].name]
-            print('Current modules_d:', [m['concrete_name'] for m in modules_d])
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
@@ -770,46 +771,20 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                                            use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                            primitives=primitives)
 
-    print('Number of placements_to_run:', None if placements_to_run is None else len(placements_to_run), placements_to_run)
-
-    print(f'Alternative placement keys: {list(placement_verilog_alternatives.keys())}')
-
     pattern = re.compile(r'^(\S+)_(\d+)$')
     last_key = list(placement_verilog_alternatives.keys())[-1]
     m = pattern.match(last_key)
     assert m
     topname = m.groups()[0]
 
-    print(f'Computed topname: {topname}')
+    assert nroutings == 1, f"nroutings other than 1 is currently not working"
+
 
     if placements_to_run is None:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
     else:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
 
-
-    print(f'verilog_d cases to run: {[p[0] for p in verilog_ds_to_run]}')
-
-    #
-    # Optional: printout differences in pins
-    #
-    if primitives is not None:
-        primitives_with_atn = defaultdict(list)
-        for v in primitives.values():
-            primitives_with_atn[v['abstract_template_name']].append(v)
-
-        for k, v in primitives_with_atn.items():
-            first_prp = None
-            first_primitive = None
-            for primitive in v:
-                if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                    prp = primitive['metadata']['partially_routed_pins']
-                    if first_prp is None:
-                        first_prp = prp
-                        first_primitive = primitive
-                    else:
-                        if set(first_prp.keys()) != set(prp.keys()):
-                            print('Pins differs between', first_primitive['concrete_template_name'], 'and', primitive['concrete_template_name'])
 
     #
     # Hacks for partial routing
@@ -841,8 +816,9 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
     res_dict = {}
     for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
 
-        change_concrete_names_for_routing(scaled_placement_verilog_d)
+        tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
+        concrete_top_name0 = tr_tbl[concrete_top_name]
 
         # don't need to send this to disk; for debug only
         if True:
@@ -850,13 +826,11 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
             verilog_file = toplevel_args[3]
 
             abstract_verilog_file = verilog_file.replace(".verilog.json", ".abstract_verilog.json")
-            print(f'abstract_verilog_file: {abstract_verilog_file}')
 
             with (pathlib.Path(fpath)/abstract_verilog_file).open("wt") as fp:
                 json.dump(abstract_verilog_d.dict(), fp=fp, indent=2, default=str)
                 
             scaled_placement_verilog_file = verilog_file.replace(".verilog.json", ".scaled_placement_verilog.json")
-            print(f'scaled_placement_verilog_file: {scaled_placement_verilog_file}')
 
             with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("wt") as fp:
                 json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
@@ -867,26 +841,39 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         new_lef_file = lef_file.replace(".placement_lef", ".lef")
         toplevel_args[2] = new_lef_file
 
-        print(f'toplevel_args: {toplevel_args}')
-
         # Build up a new map file
         map_d_in = []
-        d = pathlib.Path(fpath)
+        idir = pathlib.Path(fpath)
+        odir = pathlib.Path(opath)
+        
+        cc_caps = []
+
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
-            map_d_in.append((ctn,str(d/f'{ctn}.gds')))
-        print(map_d_in)
+            if   (idir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
+            elif (odir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(odir/f'{ctn}.gds')))
+                cc_caps.append(ctn)
+            else:
+                logger.error(f'Missing .lef file for {ctn}')
 
-        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in)
+        lef_s_in = None
+        if cc_caps:
+            with (idir/new_lef_file).open("rt") as fp:
+                lef_s_in = fp.read()
+                
+            for cc_cap in cc_caps:
+                with (odir/f'{cc_cap}.lef').open("rt") as fp:
+                    s = fp.read()
+                    lef_s_in += s
+
+        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
         assert new_verilog_d == abstract_verilog_d
 
         assert new_fpath == fpath
         assert new_opath == opath
-
-        print('placements_to_run, topo order (indices):', placements_to_run, DB.TraverseHierTree())
-
-        print('topo order in names:', [DB.hierTree[idx].name for idx in DB.TraverseHierTree()])
 
         # need to populate the placement data
 
@@ -894,27 +881,22 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                   verilog_d=abstract_verilog_d, gui=False, lambda_coeff=lambda_coeff,
                                                   scale_factor=scale_factor,
                                                   reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
-                                                  concrete_top_name=concrete_top_name,
+                                                  concrete_top_name=concrete_top_name0,
                                                   select_in_ILP=select_in_ILP, seed=seed,
                                                   use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                   primitives=primitives)
-
-        print('after second hierarchical_place', placements_to_run)
-
 
         # populate new DB with placements to run
 
         res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                      router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-        print('route results:', res)
-
         res_dict.update(res)
     
     return res_dict
 
 
-def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None):
+def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
     assert len(args) == 9
 
     fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
@@ -922,7 +904,7 @@ def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None):
 
     if fpath[-1] == '/': fpath = fpath[:-1]
 
-    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in)
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
     assert verilog_d is not None
 

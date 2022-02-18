@@ -150,28 +150,29 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warning(f"No primitive json file for primitive {name}")
 
-def _ReadLEF( DB, path, lefname):
-    p = pathlib.Path(path) / lefname
-    if p.exists():
-        with p.open( "rt") as fp:
-            s = fp.read()
-            DB.ReadLEFFromString( s)
-    else:
-        logger.warn(f"LEF file {p} doesn't exist.")
-
 def _semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
     DB.semantic1( global_signals)
     DB.semantic2()
 
-def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None, map_d_in=None):
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    _ReadLEF( DB, path, lefname)
+    if lef_s_in is not None:
+        logger.error(f'Reading LEF from string')
+        DB.ReadLEFFromString(lef_s_in)
+    else:
+        p = pathlib.Path(path) / lefname
+        if p.exists():
+            with p.open( "rt") as fp:
+                DB.ReadLEFFromString(fp.read())
+        else:
+            logger.warn(f"LEF file {p} doesn't exist.")
+
 
     if map_d_in is None:
         DB.gdsData2 = _ConstructMap(_ReadMap(path, mapname))
