@@ -112,6 +112,14 @@ class PrimitiveLibrary():
                 with set_context(self.plib):
                     self.plib.append(self.ckt_lib.find(model))
             self.create_subckt(element, unique_name)
+        elif generator is None: # base model with new connection topology
+            block_arg = self._gen_key(element.parameters)
+            unique_name = f'{model}{block_arg}'
+            element.add_abs_name(unique_name)
+            if not self.plib.find(model):
+                with set_context(self.plib):
+                    self.plib.append(self.ckt_lib.find(model))
+            self.create_subckt(element, unique_name)
         else:
             assert False, f"No generator definition found for instance {element} in {element.name} generator: {generator}"
 
