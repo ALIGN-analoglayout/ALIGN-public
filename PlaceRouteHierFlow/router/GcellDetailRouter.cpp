@@ -1089,7 +1089,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
     matlabfile << mit;
     matlabfile << std::endl;
   };
-  *?
+  */
 
 
   RouterDB::box box;
