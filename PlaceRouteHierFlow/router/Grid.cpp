@@ -292,7 +292,7 @@ void Grid::print_source_dest(){
 
   for (unsigned int i = 0; i < Source.size(); i++) {
     int p = Source[i];
-    //std::cout<<"source "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
+    std::cout<<"source "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
   }
 
 for (unsigned int i = 0; i < Dest.size(); i++) {
