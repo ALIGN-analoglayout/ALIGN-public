@@ -169,8 +169,7 @@ class Graph(networkx.Graph):
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-
-            if skip and len(set(removal_candidates) & set(skip))>1:
+            if skip and set(removal_candidates) & set(skip) and len(removal_candidates) > 1:
                 continue
 
             subcircuit_name = subckt.name
@@ -189,10 +188,7 @@ class Graph(networkx.Graph):
                     nodes.append(node)
                     self.remove(self.element(node))
             nodes_str = '_'.join(nodes)
-            if nodes_str.startswith('X'):
-                instance_name = nodes_str  # Added due to PNR failure for test_res_flat
-            else:
-                instance_name = f'X_{nodes_str}'
+            instance_name = f'X_{nodes_str}'
             assert instance_name not in self.elements
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}

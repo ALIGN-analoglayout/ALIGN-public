@@ -92,9 +92,9 @@ class PrimitiveLibrary():
         """
         model = element.model
         generator = self.ckt_lib.find_subcircuit(model)
-        if not generator:
+        base_model = self.ckt_lib.find(model).base
+        if not generator and base_model:
             # Find generator for base model
-            base_model = self.ckt_lib.find(model).base
             generator = self.ckt_lib.find_subcircuit(base_model)
             logger.info(f"check base model generator for {element} {model} {base_model}, {generator}, {[x.name for x in self.ckt_lib]}")
 
