@@ -146,7 +146,7 @@ def test_cmp_order():
         modules = {module['name']: module for module in verilog_json['modules']}
         assert name in modules, f'Module {name} not found in verilog.json'
         instances = set([k['instance_name'] for k in modules[name]['instances']])
-        assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found in {instances}'
+        assert 'X_MP7' in instances and 'X_MP8' in instances, f'MP7 or MP8 not found in {instances}'
 
     if cleanup:
         shutil.rmtree(run_dir)

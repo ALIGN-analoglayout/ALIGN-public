@@ -1,3 +1,23 @@
+.subckt NMOS  D G S B
+* @: Generator()
+M0 D G S B NMOS
+.ends NMOS
+
+.subckt PMOS  D G S B
+* @: Generator()
+M0 D G S B PMOS
+.ends PMOS
+
+.subckt CAP  PLUS MINUS
+* @: Generator()
+C0  PLUS MINUS 1f
+.ends CAP
+
+.subckt RES  PLUS MINUS
+* @: Generator()
+R0  PLUS MINUS 10k
+.ends RES
+
 .subckt NMOS_S  D G S
 * @: Generator()
 M1 D G S S NMOS w=w1 l=l1

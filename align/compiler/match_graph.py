@@ -100,9 +100,13 @@ class Annotate:
                         do_not_use_lib.update(const.libraries)
                 traversed.append(ckt.name)
                 for subckt in self.lib:
+                    logger.debug(f"matching circuit {subckt.name}")
+
                     if subckt.name == ckt.name or \
                        subckt.name in do_not_use_lib or \
                        (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):  # to stop searching INVB in INVB_1
+                        logger.debug(f"skipped {subckt.name}")
+
                         continue
                     new_subckts = netlist_graph.replace_matching_subgraph(
                         Graph(subckt), skip_nodes

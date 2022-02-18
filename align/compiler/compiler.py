@@ -9,7 +9,7 @@ from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
 from .find_constraint import constraint_generator
 from .user_const import ConstraintParser
-from .gen_abstract_name import gen_primitive_collateral
+from .gen_abstract_name import PrimitiveLibrary
 import logging
 
 
@@ -31,7 +31,7 @@ def generate_hierarchy(
         config_path,
         flatten_heirarchy
     )
-    primitives = gen_primitive_collateral(ckt_data)
+    primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
     constraint_generator(ckt_data)
     compiler_output(ckt_data, design_name, output_dir)
     return primitives

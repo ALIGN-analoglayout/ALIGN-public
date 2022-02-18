@@ -3,6 +3,8 @@ import pathlib
 
 from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
+from align.schema import Model, SubCircuit, Instance
+from align.schema.types import set_context
 
 
 def gen_parser():
@@ -25,12 +27,22 @@ def read_primitive_spice(args):
     primitive_spice_parser.parse(lines)
     primitive_def = primitive_spice_parser.library.find('CAP')
     assert primitive_def, f"No such primitive definition found {args.primitive}"
-    return primitive_def
+    if isinstance(primitive_def, Model):
+        with set_context(primitive_spice_parser.library):
+            cap_subckt = SubCircuit(name=args.block_name, pins=list(primitive_def.pins))
+            with set_context(cap_subckt.elements):
+                new_ele = Instance(name='C0',
+                                   model='CAP',
+                                   pins={x: x for x in primitive_def.pins},
+                                   generator='CAP'
+                                   )
+            cap_subckt.elements.append(new_ele)
+    return cap_subckt
 
 
 def main(args):
-    primitive_def = read_primitive_spice(args)
-    return generate_primitive(args.block_name, primitive_def, value=args.unit_cap, pdkdir=args.pdkdir, outputdir=args.outputdir)
+    cap_subckt = read_primitive_spice(args)
+    return generate_primitive(args.block_name, cap_subckt, value=args.unit_cap, pdkdir=args.pdkdir, outputdir=args.outputdir)
 
 
 if __name__ == "__main__":

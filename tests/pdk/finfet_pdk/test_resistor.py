@@ -48,7 +48,7 @@ def test_res_flat():
             modules = {e['name']: e for e in hierarchy['modules']}
             instances = {i['instance_name']: i for i in modules[name]['instances']}
 
-            assert instances['XR3']['abstract_template_name'] == instances['XR4']['abstract_template_name']
+            assert instances['X_XR3']['abstract_template_name'] == instances['X_XR4']['abstract_template_name']
 
             for k, v in instances.items():
                 assert v['abstract_template_name'] in atn, f"Abstract not found: {v['abstract_template_name']}"
