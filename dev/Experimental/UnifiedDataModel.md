@@ -1,4 +1,4 @@
-## PDK Abstraction ##
+## PDK Module ##
 __models.sp__ (Model library can be defined in a Python script and serialized to the file below for human readability. nmos/pmos/res are universal base models that can be customized per technology)
 ```
 .model n nmos nfin=1 w=1 nf=1 l=1 m=1
