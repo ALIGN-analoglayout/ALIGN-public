@@ -112,7 +112,7 @@ class PrimitiveLibrary():
                 with set_context(self.plib):
                     self.plib.append(self.ckt_lib.find(model))
             self.create_subckt(element, unique_name)
-        elif generator is None: # base model with new connection topology
+        elif generator is None: # base model with new connection topology (Hack for buffer testcase MP1)
             block_arg = self._gen_key(element.parameters)
             unique_name = f'{model}{block_arg}'
             element.add_abs_name(unique_name)
