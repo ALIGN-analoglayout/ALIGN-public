@@ -1,6 +1,5 @@
 from . import types
 from .types import Union, Dict, Optional, List, set_context
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -35,6 +34,11 @@ class Instance(types.BaseModel):
 
     @staticmethod
     def _get_model(library, name):
+        # model = next((x for x in library if x.name == name and "generator" in x.dict().keys()), None)
+        # if model:
+        #     return model
+        # else:
+        #
         return next((x for x in library if x.name == name), None)
 
     def add_abs_name(self,abn):
@@ -61,9 +65,9 @@ class Instance(types.BaseModel):
         assert 'model' in values, 'Cannot run check without model definition'
         model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
         name = name.upper()
-        if model.prefix and not name.startswith(model.prefix):
-            logger.error(f"{name} does not start with {model.prefix}")
-            raise AssertionError(f"{name} does not start with {model.prefix}")
+        # if model.prefix and not name.startswith(model.prefix):
+        #     logger.error(f"{name} does not start with {model.prefix}")
+        #     raise AssertionError(f"{name} does not start with {model.prefix}")
         return name
 
     @types.validator('pins', allow_reuse=True)

@@ -112,8 +112,7 @@ def remove_dummies(library, dummy_hiers, top):
                                     name=nm,
                                     model=y.model,
                                     pins=pins,
-                                    parameters=y.parameters,
-                                    generator=y.generator,
+                                    parameters=y.parameters
                                 )
                             )
                             logger.info(

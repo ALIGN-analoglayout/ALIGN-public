@@ -49,7 +49,7 @@ def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
-    generator_name = subckt.elements[0].generator
+    generator_name = subckt.generator["name"]
     logger.info(f"generating primitive structure {subckt}")
     if generator_name == 'generic':
         #generic/tfr_prim
@@ -69,15 +69,15 @@ def gen_param(subckt, primitives, pdk_dir):
         block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
         logger.debug(f"creating generic primitive {block_name} {block_args}")
         primitives[block_name] = block_args
-    elif get_generator(generator_name.lower(), pdk_dir):
-        #TFR primitive
-        attr = {'ports': list(subckt.pins),
-                'values': values if values else None,
-                'real_inst_type': subckt.elements[0].model.lower()
-                }
-        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
-        primitives[block_name] = block_args
+    # elif get_generator(generator_name.lower(), pdk_dir):
+    #     #TFR primitive
+    #     attr = {'ports': list(subckt.pins),
+    #             'values': values if values else None,
+    #             'real_inst_type': subckt.elements[0].model.lower()
+    #             }
+    #     block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
+    #     logger.debug(f"creating generic primitive {block_name} {block_args}")
+    #     primitives[block_name] = block_args
     else:
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'

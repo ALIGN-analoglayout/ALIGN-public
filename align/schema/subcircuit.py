@@ -37,8 +37,7 @@ class SubCircuit(Model):
             new_inst = Instance(name=name,
                                 model=(kwargs['model'] if 'model' in kwargs else inst.model),
                                 pins=(kwargs['pins'] if 'pins' in kwargs else inst.pins),
-                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters),
-                                generator=(kwargs['generator'] if 'generator' in kwargs else inst.generator)
+                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters)
                                 )
             self.elements[i] = new_inst
 

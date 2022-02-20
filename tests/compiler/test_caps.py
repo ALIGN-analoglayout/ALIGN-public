@@ -1,7 +1,7 @@
 import pathlib
 import json
 
-from align.compiler.compiler import compiler_input, constraint_generator, compiler_output
+from align.compiler.compiler import compiler_input, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
 from align.schema.subcircuit import SubCircuit
 
@@ -19,11 +19,11 @@ def test_cap():
     assert updated_ckt.find("TEST_CAP")
     primitives = PrimitiveLibrary(updated_ckt, pdk_path).gen_primitive_collateral()
     all_primitive_names = set([i.name for i in primitives if isinstance(i, SubCircuit)])
-    assert all_primitive_names == {'CAP_87227899', 'CAP_34071065', 'NMOS_RVT_41101915'}
-    assert primitives.find('CAP_87227899').elements[0].parameters == {'VALUE': '6E-14', 'PARALLEL': '1', 'STACK': '1'}
-    assert primitives.find('CAP_34071065').elements[0].parameters == {'VALUE': '3E-14', 'PARALLEL': '1', 'STACK': '1'}
+    assert all_primitive_names == {'CAP_I1', 'CAP', 'NMOS'}
+    assert primitives.find('CAP_I1').elements[0].parameters == {'VALUE': '3E-14', 'PARALLEL': '1', 'STACK': '1'}
+    assert primitives.find('CAP').elements[0].parameters == {'VALUE': '6E-14', 'PARALLEL': '1', 'STACK': '1'}
     mos_param = {'W': '2.7E-07', 'L': '2E-08', 'NFIN': '6', 'PARALLEL': '1', 'M': '1', 'NF': '2', 'STACK': '1'}
-    assert primitives.find('NMOS_RVT_41101915').elements[0].parameters == mos_param
+    assert primitives.find('NMOS').elements[0].parameters == mos_param
     all_uniq_inst = set([e.name for i in primitives if isinstance(i, SubCircuit) for e in i.elements])
     assert all_uniq_inst == {'M0', 'C2', 'C0'}
     constraint_generator(updated_ckt)

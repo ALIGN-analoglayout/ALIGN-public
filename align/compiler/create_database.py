@@ -5,6 +5,8 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
+from email import generator
+from operator import sub
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -47,16 +49,14 @@ class CreateDatabase:
     def add_generators(self, pdk_dir):
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
-                if main.get_generator(subckt.name, pdk_dir):
-                    logger.debug(f"no availble generator for {subckt.name}")
+                if main.get_generator(subckt.name, pdk_dir) and not subckt.generator:
+                    logger.debug(f"available generator for this subcircuit {subckt.name} in PDK ")
+                    subckt.add_generator(subckt.name)
                     if [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
                         logger.debug(f"already available generator for {subckt.name}")
                         continue
                     logger.debug(f"adding generator for {subckt.name}")
-                    subckt.add_generator(subckt.name)
-                    with set_context(subckt.constraints):
-                        subckt.constraints.append(constraint.Generator())
-                        logger.debug(f"generator available for {subckt.name}")
+
 
     def add_user_const(self):
         for subckt in self.lib:
@@ -133,6 +133,7 @@ class CreateDatabase:
                         pins=subckt.pins,
                         parameters=updated_param,
                         constraints=subckt.constraints,
+                        generator = subckt.generator
                     )
                 assert (
                     self.lib.find(new_name) is None
@@ -205,13 +206,13 @@ class CreateDatabase:
                 subckt.pins == _ckt.pins
                 and new_param == _ckt.parameters
                 and subckt.constraints == _ckt.constraints
+                and subckt.generator == _ckt.generator
             ):
                 logger.debug(f"Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
                     if (
                         (_ckt.get_element(x.name).model == x.model)
                         and (_ckt.get_element(x.name).parameters == x.parameters)
-                        and (_ckt.get_element(x.name).generator == x.generator)
                         and (_ckt.get_element(x.name).pins == x.pins)
                     ):
                         continue
