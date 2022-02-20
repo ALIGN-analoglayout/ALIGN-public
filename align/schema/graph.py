@@ -150,7 +150,6 @@ class Graph(networkx.Graph):
 
     def replace_matching_subgraph(self, subgraph, skip=None, node_match=None, edge_match=None):
         matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
-        logger.debug(f"found matches {matches}")
         return self._replace_matches_with_subckt(matches, subgraph.subckt, skip)
 
     def _replace_matches_with_subckt(self, matches, subckt, skip=None):
@@ -200,7 +199,7 @@ class Graph(networkx.Graph):
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
-            # logger.debug(f"adding instance {merged_inst_name} of type {inst_name} in subckt {self.name}")
+            logger.debug(f"adding instance {instance_name} of type {subcircuit_name} in subckt {self.name}")
             self.add_instance(
                 name=instance_name,
                 model=subcircuit_name,
