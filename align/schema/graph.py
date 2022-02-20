@@ -203,8 +203,7 @@ class Graph(networkx.Graph):
             self.add_instance(
                 name=instance_name,
                 model=subcircuit_name,
-                pins=pin2net_map,
-                generator=subckt.name
+                pins=pin2net_map
             )
             if self.subckt.name:
                 tr = ConstraintTranslator(self.subckt.parent)
@@ -218,7 +217,8 @@ class Graph(networkx.Graph):
         with set_context(self.subckt.parent):
             subckt_instance = SubCircuit(name=instance_name,
                                          pins=subckt.pins,
-                                         parameters=subckt.parameters)
+                                         parameters=subckt.parameters,
+                                         generator=subckt.generator)
         with set_context(subckt_instance.elements):
             for x, y in match.items():
                 element = subckt.get_element(y)
@@ -227,7 +227,6 @@ class Graph(networkx.Graph):
                 subckt_instance.elements.append(Instance(
                     name=element.name,
                     model=self.nodes[x].get('instance').model,
-                    generator=self.nodes[x].get('instance').generator,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
         with set_context(subckt_instance.constraints):
@@ -285,8 +284,7 @@ class Graph(networkx.Graph):
                                 pins={
                                     pin: net2pin_map[net]
                                     if net in net2pin_map else net
-                                    for pin, net in element.pins.items()},
-                                generator=element.generator
+                                    for pin, net in element.pins.items()}
                             )
                         )
                 subckts.append(subckt)
@@ -334,6 +332,5 @@ class Graph(networkx.Graph):
                 pins={
                     pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
                 parameters={key: eval(val, {}, subcktinst.parameters)
-                            for key, val in element.parameters.items()},
-                generator=element.generator
+                            for key, val in element.parameters.items()}
             )

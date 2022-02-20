@@ -16,6 +16,8 @@ class SubCircuit(Model):
     pins: Optional[List[str]]  # List of pin names (derived from base if base exists)
     parameters: Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
+    generator: Optional[Dict[str, str]]  # generator name from pdk, e.g., mos, cap, res, digg2inv
+    #pdk generators are mapped during database creation, some are mapped after annotation from constraints)
     constraints: ConstraintDB
     prefix: str = 'X'         # Instance name prefix, optional
 
@@ -40,12 +42,18 @@ class SubCircuit(Model):
                                 )
             self.elements[i] = new_inst
 
+    def add_generator(self, gen):
+        with set_context(self.parent):
+            self.generator["name"]=gen
+
     def __init__(self, *args, **kwargs):
         # make elements optional in __init__
         # TODO: Replace with default factory
         if 'elements' not in kwargs:
             kwargs['elements'] = []
         # defer constraint processing for now
+        if 'generator' not in kwargs:
+            kwargs['generator']={}
         constraints = []
         if 'constraints' in kwargs:
             constraints = kwargs['constraints']

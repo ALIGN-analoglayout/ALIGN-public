@@ -53,6 +53,7 @@ class CreateDatabase:
                         logger.debug(f"already available generator for {subckt.name}")
                         continue
                     logger.debug(f"adding generator for {subckt.name}")
+                    subckt.add_generator(subckt.name)
                     with set_context(subckt.constraints):
                         subckt.constraints.append(constraint.Generator())
                         logger.debug(f"generator available for {subckt.name}")
