@@ -306,7 +306,7 @@ def route_top_down( *, DB, idx, opath, adr_mode, PDN_mode, skipGDS, placements_t
         new_topnode_indices.append(new_topnode_idx)
     return results_name_map
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, run_cap_placer):
 
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
@@ -314,7 +314,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     DB.AddingPowerPins(current_node)
 
-    PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
+    if run_cap_placer:
+        PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
@@ -638,7 +639,8 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        gui, lambda_coeff, scale_factor,
-                       reference_placement_verilog_d, concrete_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
+                       reference_placement_verilog_d, concrete_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives,
+                       run_cap_placer):
 
     logger.info(f'Calling hierarchical_place with {"existing placement" if reference_placement_verilog_d is not None else "no placement"}')
 
@@ -670,7 +672,8 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
-              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
+              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
+              run_cap_placer=run_cap_placer)
 
         # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
         # convert the restrictions into the form needed for the subsequent placements
@@ -769,7 +772,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                                            concrete_top_name=concrete_top_name,
                                                                            select_in_ILP=select_in_ILP, seed=seed,
                                                                            use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                                                           primitives=primitives)
+                                                                           primitives=primitives, run_cap_placer=True)
 
     pattern = re.compile(r'^(\S+)_(\d+)$')
     last_key = list(placement_verilog_alternatives.keys())[-1]
@@ -884,7 +887,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                   concrete_top_name=concrete_top_name0,
                                                   select_in_ILP=select_in_ILP, seed=seed,
                                                   use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                                  primitives=primitives)
+                                                  primitives=primitives, run_cap_placer=False)
 
         # populate new DB with placements to run
 
