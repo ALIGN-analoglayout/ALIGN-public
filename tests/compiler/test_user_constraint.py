@@ -3,7 +3,7 @@ import pytest
 import json
 import shutil
 
-from align.compiler.compiler import compiler_input
+from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import  constraint_generator
 from align.schema.checker import SolutionNotFoundError
 
@@ -37,7 +37,8 @@ def test_group_block_hsc(dir_name):
         / dir_name
         / (circuit_name + ".sp")
     )
-    updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+    updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+    annotate_library(updated_cktlib, prim_lib)
     assert updated_cktlib.find("DP")
     assert updated_cktlib.find("CCN")
     assert updated_cktlib.find("CCP")
@@ -96,9 +97,11 @@ def test_scf():
         / "switched_capacitor_filter.const.json"
     )
 
-    updated_cktlib = compiler_input(
+    updated_cktlib, prim_lib = compiler_input(
         test_path, "SWITCHED_CAPACITOR_FILTER", pdk_dir, config_path
     )
+    annotate_library(updated_cktlib, prim_lib)
+
     assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
     constraint_generator(updated_cktlib)
     gen_const = updated_cktlib.find("SWITCHED_CAPACITOR_FILTER").constraints.dict()["__root__"]

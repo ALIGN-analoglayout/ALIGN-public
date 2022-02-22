@@ -13,7 +13,7 @@
             "const_name": "Ordering",
             "abut": false,
             "blocks": [
-                "MN0",
+                "X_MN0",
                 "X_DP_MN1_MN2",
                 "X_CCN_MN3_MN4",
                 "X_CCP_MP5_MP6"
@@ -25,15 +25,15 @@
                 "X_CCN_MN3_MN4",
                 "X_CCP_MP5_MP6",
                 "X_DP_MN1_MN2",
-                "MN0"
+                "X_MN0"
             ]
         },
         {
             "pairs": [
                 {
                     "type": "sympair",
-                    "block1": "MP10",
-                    "block2": "MP9"
+                    "block1": "X_MP10",
+                    "block2": "X_MP9"
                 },
                 {
                     "type": "selfsym",

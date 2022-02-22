@@ -1,7 +1,7 @@
 import pathlib
 import json
 from align.schema import SubCircuit
-from align.compiler.compiler import compiler_input, generate_hierarchy
+from align.compiler.compiler import compiler_input, generate_hierarchy, annotate_library
 from utils import ota_six, ota_six_flip, clean_data, build_example, get_test_id
 
 pdk_path = (
@@ -21,10 +21,11 @@ def test_ota_six():
         {"constraint": "GroundPorts", "ports": ["VSSX"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
     all_modules = set([name, "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
     available_modules = set(
-        [module.name for module in ckt_library if isinstance(module, SubCircuit)]
+        [module.name for module in ckt_lib if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
@@ -39,9 +40,10 @@ def test_ota_swap():
         {"constraint": "GroundPorts", "ports": ["VSSX"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
     all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', 'DP_NMOS_B'])
-    available_modules = set([module.name for module in ckt_library if isinstance(module, SubCircuit)])
+    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
@@ -56,9 +58,10 @@ def test_ota_dont_swap():
         {"constraint": "FixSourceDrain", "isTrue": False}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
-    available_modules = set([module.name for module in ckt_library if isinstance(module, SubCircuit)])
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', "NMOS"])
+    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
@@ -72,9 +75,10 @@ def test_skip_digital():
         {"constraint": "IsDigital", "isTrue": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
     all_modules = set([name])
-    available_modules = set([module.name for module in ckt_library if isinstance(module, SubCircuit)])
+    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
@@ -88,9 +92,10 @@ def test_dont_use_lib_cell():
         {"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
-    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS'])
-    available_modules = set([module.name for module in ckt_library if isinstance(module, SubCircuit)])
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', "NMOS"])
+    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 

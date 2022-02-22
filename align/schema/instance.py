@@ -1,3 +1,4 @@
+from sys import prefix
 from . import types
 from .types import Union, Dict, Optional, List, set_context
 import logging
@@ -33,13 +34,8 @@ class Instance(types.BaseModel):
     #
 
     @staticmethod
-    def _get_model(library, name):
-        # model = next((x for x in library if x.name == name and "generator" in x.dict().keys()), None)
-        # if model:
-        #     return model
-        # else:
-        #
-        return next((x for x in library if x.name == name), None)
+    def _get_model(library, model_name, inst_name=None):
+        return next((x for x in library if x.name == model_name and (not inst_name or not x.prefix or inst_name.startswith(x.prefix))), None)
 
     def add_abs_name(self,abn):
         with set_context(self.parent):
@@ -47,12 +43,12 @@ class Instance(types.BaseModel):
 
     @property
     def mclass(self):
-        model = self._get_model(self.parent.parent.parent, self.model)
+        model = self._get_model(self.parent.parent.parent, self.model, self.name)
         assert model is not None, self.parent.parent.parent
         return model
 
     @types.validator('model', allow_reuse=True)
-    def model_exists_in_library(cls, model):
+    def model_exists_in_library(cls, model, values):
         model = model.upper()
         assert isinstance(cls._validator_ctx().parent, List[Instance]), 'Instance can only be instanitated within List[Instance]'
         assert cls._validator_ctx().parent.parent is not None, 'List[Instance] can only be instantiated within a SubCircuit / Circuit'
@@ -63,17 +59,18 @@ class Instance(types.BaseModel):
     @types.validator('name', allow_reuse=True)
     def name_complies_with_model(cls, name, values):
         assert 'model' in values, 'Cannot run check without model definition'
-        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
+        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'], name.upper())
         name = name.upper()
-        # if model.prefix and not name.startswith(model.prefix):
-        #     logger.error(f"{name} does not start with {model.prefix}")
-        #     raise AssertionError(f"{name} does not start with {model.prefix}")
+        if model.prefix and not name.startswith(model.prefix):
+            logger.error(f"{name} does not start with {model.prefix}")
+            raise AssertionError(f"{name} does not start with {model.prefix}")
         return name
 
     @types.validator('pins', allow_reuse=True)
     def pins_comply_with_model(cls, pins, values):
         assert 'model' in values, 'Cannot run check without model definition'
-        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
+        assert 'name' in values, 'Require right name'
+        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'], values['name'])
         pins = {k.upper(): v.upper() for k, v in pins.items()}
         assert set(pins.keys()) == set(model.pins)
         return pins
@@ -81,7 +78,8 @@ class Instance(types.BaseModel):
     @types.validator('parameters', allow_reuse=True, always=True)
     def parameters_comply_with_model(cls, parameters, values):
         assert 'model' in values, 'Cannot run check without model definition'
-        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
+        assert 'name' in values, 'Require right name'
+        model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'], values['name'])
         if parameters:
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \

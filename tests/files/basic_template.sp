@@ -1,21 +1,21 @@
 .subckt NMOS  D G S B
 * @: Generator(name='mos')
-M0 D G S B NMOS
+M1 D G S B NMOS
 .ends NMOS
 
 .subckt PMOS  D G S B
 * @: Generator(name='mos')
-M0 D G S B PMOS
+M1 D G S B PMOS
 .ends PMOS
 
 .subckt CAP  PLUS MINUS
 * @: Generator(name='cap')
-C0  PLUS MINUS 1f
+C1  PLUS MINUS 1f
 .ends CAP
 
 .subckt RES  PLUS MINUS
 * @: Generator(name='res')
-R0  PLUS MINUS 10k
+R1  PLUS MINUS 10k
 .ends RES
 
 .subckt NMOS_S  D G S
