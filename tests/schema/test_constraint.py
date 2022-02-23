@@ -20,12 +20,12 @@ def db():
             parameters={'PARAM1': 1, 'PARAM2': '1E-3'})
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='M1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M3', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
+        subckt.elements.append(Instance(name='M1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M3', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
     return subckt.constraints
 
 
@@ -154,7 +154,7 @@ def test_ConstraintDB_nonincremental_revert(db):
     checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
-    
+
     with set_context(db):
         constraint1 = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
         db.append(constraint1)
