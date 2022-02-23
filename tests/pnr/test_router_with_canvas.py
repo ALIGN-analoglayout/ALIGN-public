@@ -62,7 +62,7 @@ def setup():
 
 
 
-def run_common(nm, pins, setup, max_errors):
+def run_common(nm, pins, setup, max_errors, extra_y=0):
 
     run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
 
@@ -109,7 +109,7 @@ def run_common(nm, pins, setup, max_errors):
     (c, m1, v1, m2, v2, m3, xpitch, ypitch) = setup
 
     nx, ny = 20, 4
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
+    bbox = [0, 0, nx * xpitch, (ny+extra_y) * ypitch]
 
     # We want this picture to make the following code
     """
@@ -124,7 +124,7 @@ def run_common(nm, pins, setup, max_errors):
         for j, off in enumerate( [1, nx-len(pins)]):
             net = actual + str(j)
             x = i + off
-            c.addWire(m1, net, x, (0,1), (4,-1), netType='pin')            
+            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
 
     print(c.terminals)
 
@@ -186,3 +186,6 @@ def test_three_horizontal_wires_canvas(setup):
 
 def test_four_horizontal_wires_canvas(setup):
     run_common('four_horizontal_wires_canvas', ["A", "B", "C", "D"], setup, max_errors=1)
+
+def test_four_horizontal_wires_extend_canvas(setup):
+    run_common('four_horizontal_wires_extend_canvas', ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1)
