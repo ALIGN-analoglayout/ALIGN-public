@@ -75,10 +75,9 @@ def run_preamble(nm):
 
     return run_dir
 
-def run_mid(run_dir, nm, verilog_d, ctn):
-    ...
-
 def run_postamble(run_dir, nm, ctn, verilog_d, bbox, terminals, max_errors):
+    run_dir = run_preamble(nm)
+
     with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
         json.dump(verilog_d, fp=fp, indent=2)
 
@@ -138,7 +137,7 @@ def run_postamble(run_dir, nm, ctn, verilog_d, bbox, terminals, max_errors):
 """
 
 def run_common(nm, pins, setup, max_errors, extra_y=0):
-    run_dir = run_preamble(nm)
+
 
     #==== Generate leaf cell =====
     (c, m1, v1, m2, v2, m3, xpitch, ypitch) = setup
