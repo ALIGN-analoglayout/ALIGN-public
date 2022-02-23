@@ -74,4 +74,4 @@ def test_sizing4(ckt):
     assert {v.name for v in ckt.parent if isinstance(v, SubCircuit)} == {'INTEL_CIRCUIT4', 'CMB_PMOS_2',
                                                                          'INV_B', 'INV_B_I1', 'DCL_NMOS_S',
                                                                          'DCL_PMOS', 'SCM_PMOS', 'PMOS_S',
-                                                                         'NMOS_S', 'PMOS', 'NMOS_S_I1'}
+                                                                         'NMOS_S', 'PMOS_4T', 'NMOS_S_I1'}

@@ -72,16 +72,16 @@
           "net1": "NET63",
           "net2": "NET62",
           "pins1": [
-            "X_M5/S",
-            "X_C1/PLUS",
+            "X_M10_M7/SB",
             "X_C0/MINUS",
-            "X_M10_M7/SB"
+            "X_C1/PLUS",
+            "X_M5/S"
           ],
           "pins2": [
-            "X_M9/S",
-            "X_C7/PLUS",
+            "X_M10_M7/SA",
             "X_C4/MINUS",
-            "X_M10_M7/SA"
+            "X_C7/PLUS",
+            "X_M9/S"
           ],
           "direction": "V"
         },
@@ -91,15 +91,15 @@
           "net2": "NET66",
           "pins1": [
             "XI0/VINN",
-            "X_C6/PLUS",
+            "X_M10_M7/DA",
             "X_C5/MINUS",
-            "X_M10_M7/DA"
+            "X_C6/PLUS"
           ],
           "pins2": [
             "XI0/VINP",
-            "X_C3/PLUS",
+            "X_M10_M7/DB",
             "X_C2/MINUS",
-            "X_M10_M7/DB"
+            "X_C3/PLUS"
           ],
           "direction": "V"
         },
@@ -108,14 +108,14 @@
           "net1": "NET67",
           "net2": "NET68",
           "pins1": [
-            "X_M3/S",
+            "X_M0_M14/SA",
             "X_C1/MINUS",
-            "X_M0_M14/SA"
+            "X_M3/S"
           ],
           "pins2": [
-            "X_M11/S",
+            "X_M0_M14/SB",
             "X_C7/MINUS",
-            "X_M0_M14/SB"
+            "X_M11/S"
           ],
           "direction": "V"
         },
@@ -124,14 +124,14 @@
           "net1": "NET72",
           "net2": "NET60",
           "pins1": [
-            "X_C0/PLUS",
             "X_M4_M8/DA",
-            "X_M12_M6/DB"
+            "X_M12_M6/DB",
+            "X_C0/PLUS"
           ],
           "pins2": [
-            "X_C4/PLUS",
             "X_M4_M8/DB",
-            "X_M12_M6/DA"
+            "X_M12_M6/DA",
+            "X_C4/PLUS"
           ],
           "direction": "V"
         },
@@ -140,34 +140,34 @@
           "net1": "VINN",
           "net2": "VINP",
           "pins1": [
-            "X_C5/PLUS",
             "X_M12_M6/SB",
+            "X_C5/PLUS",
             "VINN"
           ],
           "pins2": [
-            "X_C2/PLUS",
             "X_M12_M6/SA",
+            "X_C2/PLUS",
             "VINP"
           ],
           "direction": "V"
         },
         {
           "constraint": "symmetric_nets",
-          "net1": "VOUTP",
-          "net2": "VOUTN",
+          "net1": "VOUTN",
+          "net2": "VOUTP",
           "pins1": [
-            "XI0/VOUTP",
-            "X_C9/PLUS",
-            "X_C6/MINUS",
-            "X_M0_M14/DB",
-            "VOUTP"
+            "XI0/VOUTN",
+            "X_M0_M14/DA",
+            "X_C3/MINUS",
+            "X_C8/PLUS",
+            "VOUTN"
           ],
           "pins2": [
-            "XI0/VOUTN",
-            "X_C8/PLUS",
-            "X_C3/MINUS",
-            "X_M0_M14/DA",
-            "VOUTN"
+            "XI0/VOUTP",
+            "X_M0_M14/DB",
+            "X_C6/MINUS",
+            "X_C9/PLUS",
+            "VOUTP"
           ],
           "direction": "V"
         }
