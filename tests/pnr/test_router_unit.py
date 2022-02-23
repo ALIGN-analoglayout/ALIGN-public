@@ -61,9 +61,7 @@ def setup():
     return (c, m1, v1, m2, v2, m3, xpitch, ypitch)
 
 
-
-def run_common(nm, pins, setup, max_errors, extra_y=0):
-
+def run_preamble(nm):
     run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
 
     if run_dir.exists():
@@ -75,62 +73,22 @@ def run_common(nm, pins, setup, max_errors, extra_y=0):
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
 
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
-        }
-    ]
+    return run_dir
 
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
+def run_mid(run_dir, nm, verilog_d, ctn):
+    ...
 
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
+def run_postamble(run_dir, nm, ctn, verilog_d, bbox, terminals, max_errors):
     with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
         json.dump(verilog_d, fp=fp, indent=2)
 
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
+    primitives_d = { ctn : {'abstract_template_name': ctn, 'concrete_template_name': ctn}}
 
     with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
         json.dump(primitives_d, fp=fp, indent=2)
 
     with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
         json.dump(primitives_d, fp=fp, indent=2)
-
-
-    (c, m1, v1, m2, v2, m3, xpitch, ypitch) = setup
-
-    nx, ny = 20, 4
-    bbox = [0, 0, nx * xpitch, (ny+extra_y) * ypitch]
-
-    # We want this picture to make the following code
-    """
-    |   |   |   |               |   |   |   |
-    A   B   C   D               A   B   C   D
-    |   |   |   |               |   |   |   |
-    |   |   |   |               |   |   |   |
-"""
-
-
-    for i, actual in enumerate(pins):
-        for j, off in enumerate( [1, nx-len(pins)]):
-            net = actual + str(j)
-            x = i + off
-            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
-
-    print(c.terminals)
-
-    #c.computeBbox()
-    c.bbox = transformation.Rect( *bbox)
-    terminals = c.removeDuplicates()
 
     terminals.append(
         {
@@ -141,16 +99,12 @@ def run_common(nm, pins, setup, max_errors, extra_y=0):
         }
     )
 
-
     layout_d = {
-        'bbox' : c.bbox.toList(),
+        'bbox' : bbox,
         'globalRoutes' : [],
         'globalRouteGrid' : [],
         'terminals' : terminals
     }
-
-
-    ctn = 'leaf'
 
     with (run_dir / '2_primitives' / f'{ctn}.json').open('wt') as fp:
         json.dump(layout_d, fp=fp, indent=2)
@@ -173,6 +127,55 @@ def run_common(nm, pins, setup, max_errors, extra_y=0):
         for (k, v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {nm} ({k})"
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
+
+
+# We want this picture to make the following code
+"""
+    |   |   |   |               |   |   |   |
+    A   B   C   D               A   B   C   D
+    |   |   |   |               |   |   |   |
+    |   |   |   |               |   |   |   |
+"""
+
+def run_common(nm, pins, setup, max_errors, extra_y=0):
+    run_dir = run_preamble(nm)
+
+    #==== Generate leaf cell =====
+    (c, m1, v1, m2, v2, m3, xpitch, ypitch) = setup
+
+    nx, ny = 20, 4
+    bbox = [0, 0, nx * xpitch, (ny+extra_y) * ypitch]
+
+    for i, actual in enumerate(pins):
+        for j, off in enumerate( [1, nx-len(pins)]):
+            net = actual + str(j)
+            x = i + off
+            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
+
+    c.bbox = transformation.Rect( *bbox)
+    terminals = c.removeDuplicates()
+    #==============================
+
+    #==== Generate top-level netlist ====
+    ctn = 'leaf'
+
+    instance = {
+        'instance_name': f'U0',
+        'abstract_template_name': ctn,
+        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
+    }
+
+    topmodule = {
+        'name': nm.upper(),
+        'parameters': [],
+        'instances': [instance],
+        'constraints': []
+    }
+
+    verilog_d = {'modules': [topmodule], 'global_signals': []}
+    #====================================
+
+    run_postamble(run_dir, nm, ctn, verilog_d, bbox, terminals, max_errors)
 
 
 def test_one_horizontal_wire(setup):
