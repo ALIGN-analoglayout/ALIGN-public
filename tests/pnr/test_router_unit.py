@@ -341,5 +341,5 @@ def run_diagonal_wire(nm, pins, setup, max_errors):
 def test_four_diagonal_wires(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0)
 
-def xtest_ten_diagonal_wires(setup):
+def test_ten_diagonal_wires(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0)
