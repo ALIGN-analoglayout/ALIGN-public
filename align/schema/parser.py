@@ -153,7 +153,6 @@ class SpiceParser:
         if self.library.find(model):
             model = self.library.find(model)
         else:
-            # TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
             with set_context(self.library):
                 self.library.append(
