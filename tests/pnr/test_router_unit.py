@@ -1,3 +1,4 @@
+import pytest
 import json
 import pathlib
 import os
@@ -5,6 +6,8 @@ import shutil
 import datetime
 
 from align.cell_fabric import pdk, gen_gds_json, gen_lef
+from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+from align.cell_fabric import transformation
 
 import align
 
@@ -26,8 +29,128 @@ pdkdir = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock
 p = pdk.Pdk().load(pdkdir / 'layers.json')
 
 
+@pytest.fixture
+def setup():
+    xpitch, ypitch = 80, 84
 
-def gen_it(run_dir, ctn, layout_d):
+    m1_halfwidth = 16
+    m1_minlength = 180
+    m1_halfendtoend = 24
+
+    m2_halfwidth = 16
+    m2_minlength = 200
+    m2_halfendtoend = 24
+
+    c = Canvas()
+
+    m1 = c.addGen( Wire( nm='m1', layer='M1', direction='v',
+                         clg=UncoloredCenterLineGrid( width=2*m1_halfwidth, pitch=xpitch),
+                         spg=EnclosureGrid( pitch=ypitch, stoppoint=ypitch//2)))
+
+    m2 = c.addGen( Wire( nm='m2', layer='M2', direction='h',
+                         clg=UncoloredCenterLineGrid( width=2*m2_halfwidth, pitch=ypitch),
+                         spg=EnclosureGrid( pitch=xpitch, stoppoint=xpitch//2)))
+
+    m3 = c.addGen( Wire( nm='m3', layer='M3', direction='v',
+                         clg=UncoloredCenterLineGrid( width=2*m1_halfwidth, pitch=xpitch),
+                         spg=EnclosureGrid( pitch=ypitch, stoppoint=ypitch//2)))
+
+    v1 = c.addGen( Via( nm='v1', layer='via1', h_clg=m2.clg, v_clg=m1.clg))
+    v2 = c.addGen( Via( nm='v2', layer='via2', h_clg=m2.clg, v_clg=m3.clg))
+
+    return (c, m1, v1, m2, v2, m3, xpitch, ypitch)
+
+
+
+def run_common(nm, pins, setup, max_errors, extra_y=0):
+
+    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
+
+    if run_dir.exists():
+        assert run_dir.is_dir()
+        shutil.rmtree(run_dir)
+
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
+    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
+
+    instances = [
+        {
+            'instance_name': f'U0',
+            'abstract_template_name': 'leaf',
+            'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
+        }
+    ]
+
+    topmodule = {
+        'name': nm.upper(),
+        'parameters': [],
+        'instances': instances,
+        'constraints': []
+    }
+
+    verilog_d = {'modules': [topmodule], 'global_signals': []}
+
+    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
+        json.dump(verilog_d, fp=fp, indent=2)
+
+    # ==========================
+
+    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
+
+    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
+        json.dump(primitives_d, fp=fp, indent=2)
+
+    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
+        json.dump(primitives_d, fp=fp, indent=2)
+
+
+    (c, m1, v1, m2, v2, m3, xpitch, ypitch) = setup
+
+    nx, ny = 20, 4
+    bbox = [0, 0, nx * xpitch, (ny+extra_y) * ypitch]
+
+    # We want this picture to make the following code
+    """
+    |   |   |   |               |   |   |   |
+    A   B   C   D               A   B   C   D
+    |   |   |   |               |   |   |   |
+    |   |   |   |               |   |   |   |
+"""
+
+
+    for i, actual in enumerate(pins):
+        for j, off in enumerate( [1, nx-len(pins)]):
+            net = actual + str(j)
+            x = i + off
+            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
+
+    print(c.terminals)
+
+    #c.computeBbox()
+    c.bbox = transformation.Rect( *bbox)
+    terminals = c.removeDuplicates()
+
+    terminals.append(
+        {
+            "layer": "Nwell",
+            "netName": None,
+            "rect": bbox,
+            "netType": "drawing"
+        }
+    )
+
+
+    layout_d = {
+        'bbox' : c.bbox.toList(),
+        'globalRoutes' : [],
+        'globalRouteGrid' : [],
+        'terminals' : terminals
+    }
+
+
+    ctn = 'leaf'
 
     with (run_dir / '2_primitives' / f'{ctn}.json').open('wt') as fp:
         json.dump(layout_d, fp=fp, indent=2)
@@ -38,8 +161,6 @@ def gen_it(run_dir, ctn, layout_d):
     gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
                      bodyswitch=1, blockM=0, p=p)
 
-
-def run_it(run_dir, nm, max_errors = 0):
     os.chdir(run_dir)
 
     args = ['dummy_input_directory_can_be_anything', '-s', nm, '--flow_start', '3_pnr', '--skipGDS']
@@ -54,454 +175,17 @@ def run_it(run_dir, nm, max_errors = 0):
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
 
 
-def test_horizontal_wire():
-    nm = 'horizontal_wire'
+def test_one_horizontal_wire(setup):
+    run_common('one_horizontal_wire', ["A"], setup, max_errors=0)
 
-    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
+def test_two_horizontal_wires(setup):
+    run_common('two_horizontal_wires', ["A", "B"], setup, max_errors=0)
 
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
+def test_three_horizontal_wires(setup):
+    run_common('three_horizontal_wires', ["A", "B", "C"], setup, max_errors=0)
 
-    run_dir.mkdir(parents=True, exist_ok=False)
+def test_four_horizontal_wires(setup):
+    run_common('four_horizontal_wires', ["A", "B", "C", "D"], setup, max_errors=1)
 
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [{'formal': 'A0', 'actual': 'A'},
-                       {'formal': 'A1', 'actual': 'A'}]
-        }
-    ]
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_d, fp=fp, indent=2)
-
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
-
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    xpitch = 80
-    ypitch = 84
-    xhalfwidth = 16
-    minlength = 180
-    yhalfendtoend = 24
-
-    nx, ny = 20, 4
-
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
-
-    lly, ury = yhalfendtoend, ny*ypitch - yhalfendtoend
-
-    terminals = [
-        {
-            "layer": "Nwell",
-            "netName": None,
-            "rect": bbox,
-            "netType": "drawing"
-        }
-    ]
-    for x, net in [(1,"A0"), (nx-1,"A1")]:
-        terminals.append( 
-            {
-                "layer": "M1",
-                "netName": net,
-                "rect": [x * xpitch - xhalfwidth, lly,
-                         x * xpitch + xhalfwidth, ury],
-                "netType": "pin"
-            }
-        )
-
-    layout_d = {'bbox': bbox,
-                'globalRoutes': [],
-                'globalRouteGrid': [],
-                'terminals': terminals
-                }
-
-    gen_it(run_dir, 'leaf', layout_d)
-    run_it(run_dir, nm)
-
-def test_two_horizontal_wires():
-    nm = 'two_horizontal_wires'
-
-    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
-
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
-
-    run_dir.mkdir(parents=True, exist_ok=False)
-
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [{'formal': 'A0', 'actual': 'A'},
-                       {'formal': 'A1', 'actual': 'A'},
-                       {'formal': 'B0', 'actual': 'B'},
-                       {'formal': 'B1', 'actual': 'B'}
-            ]
-        }
-    ]
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_d, fp=fp, indent=2)
-
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
-
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    xpitch = 80
-    ypitch = 84
-    xhalfwidth = 16
-    minlength = 180
-    yhalfendtoend = 24
-
-    nx, ny = 20, 4
-
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
-
-    lly, ury = yhalfendtoend, ny*ypitch - yhalfendtoend
-    assert ury-lly >= minlength
-
-    terminals = [
-        {
-            "layer": "Nwell",
-            "netName": None,
-            "rect": bbox,
-            "netType": "drawing"
-        }
-    ]
-    for x, net in [(1,"A0"), (nx-2,"A1"), (2, "B0"), (nx-1, "B1")]:
-        terminals.append( 
-            {
-                "layer": "M1",
-                "netName": net,
-                "rect": [x * xpitch - xhalfwidth, lly,
-                         x * xpitch + xhalfwidth, ury],
-                "netType": "pin"
-            }
-        )
-
-    layout_d = {'bbox': bbox,
-                'globalRoutes': [],
-                'globalRouteGrid': [],
-                'terminals': terminals
-                }
-
-    gen_it(run_dir, 'leaf', layout_d)
-    run_it(run_dir, nm)
-
-def test_three_horizontal_wires():
-    nm = 'three_horizontal_wires'
-
-    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
-
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
-
-    run_dir.mkdir(parents=True, exist_ok=False)
-
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [{'formal': 'A0', 'actual': 'A'},
-                       {'formal': 'A1', 'actual': 'A'},
-                       {'formal': 'B0', 'actual': 'B'},
-                       {'formal': 'B1', 'actual': 'B'},
-                       {'formal': 'C0', 'actual': 'C'},
-                       {'formal': 'C1', 'actual': 'C'}
-            ]
-        }
-    ]
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_d, fp=fp, indent=2)
-
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
-
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    xpitch = 80
-    ypitch = 84
-    xhalfwidth = 16
-    minlength = 180
-    yhalfendtoend = 24
-
-    nx, ny = 20, 4
-
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
-
-    lly, ury = yhalfendtoend, ny*ypitch - yhalfendtoend
-    assert ury-lly >= minlength
-
-    terminals = [
-        {
-            "layer": "Nwell",
-            "netName": None,
-            "rect": bbox,
-            "netType": "drawing"
-        }
-    ]
-    for x, net in [(1,"A0"), (nx-3,"A1"), (2, "B0"), (nx-2, "B1"), (3, "C0"), (nx-1, "C1")]:
-        terminals.append( 
-            {
-                "layer": "M1",
-                "netName": net,
-                "rect": [x * xpitch - xhalfwidth, lly,
-                         x * xpitch + xhalfwidth, ury],
-                "netType": "pin"
-            }
-        )
-
-    layout_d = {'bbox': bbox,
-                'globalRoutes': [],
-                'globalRouteGrid': [],
-                'terminals': terminals
-                }
-
-    gen_it(run_dir, 'leaf', layout_d)
-    run_it(run_dir, nm)
-
-
-def test_four_horizontal_wires():
-    nm = 'four_horizontal_wires'
-
-    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
-
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
-
-    run_dir.mkdir(parents=True, exist_ok=False)
-
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [{'formal': 'A0', 'actual': 'A'},
-                       {'formal': 'A1', 'actual': 'A'},
-                       {'formal': 'B0', 'actual': 'B'},
-                       {'formal': 'B1', 'actual': 'B'},
-                       {'formal': 'C0', 'actual': 'C'},
-                       {'formal': 'C1', 'actual': 'C'},
-                       {'formal': 'D0', 'actual': 'D'},
-                       {'formal': 'D1', 'actual': 'D'}
-            ]
-        }
-    ]
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_d, fp=fp, indent=2)
-
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
-
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    xpitch = 80
-    ypitch = 84
-    xhalfwidth = 16
-    minlength = 180
-    yhalfendtoend = 24
-
-    nx, ny = 20, 4
-
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
-
-    lly, ury = yhalfendtoend, ny*ypitch - yhalfendtoend
-    assert ury-lly >= minlength
-
-    terminals = [
-        {
-            "layer": "Nwell",
-            "netName": None,
-            "rect": bbox,
-            "netType": "drawing"
-        }
-    ]
-    for x, net in [(1,"A0"), (nx-4,"A1"), (2, "B0"), (nx-3, "B1"), (3, "C0"), (nx-2, "C1"), (4, "D0"), (nx-1, "D1")]:
-        terminals.append( 
-            {
-                "layer": "M1",
-                "netName": net,
-                "rect": [x * xpitch - xhalfwidth, lly,
-                         x * xpitch + xhalfwidth, ury],
-                "netType": "pin"
-            }
-        )
-
-    layout_d = {'bbox': bbox,
-                'globalRoutes': [],
-                'globalRouteGrid': [],
-                'terminals': terminals
-                }
-
-    gen_it(run_dir, 'leaf', layout_d)
-    run_it(run_dir, nm, max_errors=1)
-
-def test_four_horizontal_wires_extend():
-    nm = 'four_horizontal_wires_extend'
-
-    run_dir = ALIGN_WORK_DIR / f'{nm}_routing_unit_tests'
-
-    if run_dir.exists():
-        assert run_dir.is_dir()
-        shutil.rmtree(run_dir)
-
-    run_dir.mkdir(parents=True, exist_ok=False)
-
-    (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
-    (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
-    instances = [
-        {
-            'instance_name': f'U0',
-            'abstract_template_name': 'leaf',
-            'fa_map': [{'formal': 'A0', 'actual': 'A'},
-                       {'formal': 'A1', 'actual': 'A'},
-                       {'formal': 'B0', 'actual': 'B'},
-                       {'formal': 'B1', 'actual': 'B'},
-                       {'formal': 'C0', 'actual': 'C'},
-                       {'formal': 'C1', 'actual': 'C'},
-                       {'formal': 'D0', 'actual': 'D'},
-                       {'formal': 'D1', 'actual': 'D'}
-            ]
-        }
-    ]
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': instances,
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-
-    with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_d, fp=fp, indent=2)
-
-    # ==========================
-
-    primitives_d = { 'leaf' : {'abstract_template_name': 'leaf', 'concrete_template_name': 'leaf'}}
-
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
-
-    xpitch = 80
-    ypitch = 84
-    xhalfwidth = 16
-    minlength = 180
-    yhalfendtoend = 24
-
-    nx, ny = 20, 4
-
-    bbox = [0, 0, nx * xpitch, (ny + 1) * ypitch]
-
-    lly, ury = yhalfendtoend, ny*ypitch - yhalfendtoend
-    assert ury-lly >= minlength
-
-    terminals = [
-        {
-            "layer": "Nwell",
-            "netName": None,
-            "rect": bbox,
-            "netType": "drawing"
-        }
-    ]
-    for x, net in [(1,"A0"), (nx-4,"A1"), (2, "B0"), (nx-3, "B1"), (3, "C0"), (nx-2, "C1"), (4, "D0"), (nx-1, "D1")]:
-        terminals.append( 
-            {
-                "layer": "M1",
-                "netName": net,
-                "rect": [x * xpitch - xhalfwidth, lly,
-                         x * xpitch + xhalfwidth, ury],
-                "netType": "pin"
-            }
-        )
-
-    layout_d = {'bbox': bbox,
-                'globalRoutes': [],
-                'globalRouteGrid': [],
-                'terminals': terminals
-                }
-
-    gen_it(run_dir, 'leaf', layout_d)
-    run_it(run_dir, nm, max_errors=0)
+def test_four_horizontal_wires_extend(setup):
+    run_common('four_horizontal_wires_extend', ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1)
