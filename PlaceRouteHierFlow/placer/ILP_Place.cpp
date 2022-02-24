@@ -608,11 +608,19 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
   // overlap constraint
   unsigned buf_var_index{0};
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    auto itoverlap = overlap_constr_map.find(i);
+    //auto itoverlap = overlap_constr_map.find(i);
     auto italignh  = align_constr_map_h.find(i);
     auto italignv  = align_constr_map_v.find(i);
     for (unsigned int j = i + 1; j < mydesign.Blocks.size(); j++) {
-      if (itoverlap != overlap_constr_map.end() && itoverlap->second.find(j) != itoverlap->second.end()) continue;
+      //if (itoverlap != overlap_constr_map.end() && itoverlap->second.find(j) != itoverlap->second.end()) continue;
+      bool cont{false};
+      for (auto& itord : mydesign.Ordering_Constraints) {
+        if ((itord.first.first == i && itord.first.second == j) || (itord.first.first == j && itord.first.second == i)) {
+          cont = true;
+          break;
+        }
+      }
+      if (cont) continue;
       if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
               mydesign.Abut_Constraints.end()) continue;
       if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
