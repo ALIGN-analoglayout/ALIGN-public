@@ -9,15 +9,18 @@ from align.pdk.finfet import transistor_array
 
 cleanup = False
 
+@pytest.fixture
+def partial_routing(monkeypatch):
+    monkeypatch.setenv('PARTIAL_ROUTING', '1')
 
-def test_cmp_vanilla():
+def test_cmp_vanilla_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
+    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, max_errors=3)
 
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
@@ -32,7 +35,7 @@ def test_cmp_vanilla():
         shutil.rmtree(ckt_dir)
 
 
-def test_cmp_vanilla_pg():
+def test_cmp_vanilla_pg_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
@@ -41,46 +44,10 @@ def test_cmp_vanilla_pg():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, max_errors=4)
 
 
-@pytest.mark.skip(reason='This test is failing. Enable in a future PR after refactoring')
-def test_cmp_noconst():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
-    constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True}
-    ]
-    example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
-
-    name = name.upper()
-    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
-        verilog_json = json.load(fp)
-        modules = {module['name']: module for module in verilog_json['modules']}
-        assert name in modules, f'Module {name} not found in verilog.json'
-        for module in modules.values():
-            assert len(module['constraints']) == 1, "Constraints generated despise AutoConstraint"
-
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
-
-
-@pytest.mark.skip(reason='This test is failing. Enable in a future PR after refactoring')
-def test_cmp_noconst_pg():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
-    constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=4.5e9)
-
-
-def test_cmp_fp1():
+def test_cmp_fp1_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
@@ -103,12 +70,12 @@ def test_cmp_fp1():
     ]
     example = build_example(name, netlist, constraints)
     # Stop flow early for memory profiling
-    run_example(example, cleanup=cleanup, area=4e10)
+    run_example(example, cleanup=cleanup, area=4e10, max_errors=4)
     # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '2_primitives'])
     # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
 
 
-def test_cmp_fp2():
+def test_cmp_fp2_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
@@ -130,39 +97,10 @@ def test_cmp_fp2():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=cleanup, area=5e9, max_errors=5)
 
 
-def test_cmp_order():
-    """ mp7 and mp8 should not be identified as a primitive """
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
-    constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
-    name = f'ckt_{get_test_id()}'
-    example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=['--flow_stop', '3_pnr:prep'])
-
-    name = name.upper()
-    with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
-        verilog_json = json.load(fp)
-        modules = {module['name']: module for module in verilog_json['modules']}
-        assert name in modules, f'Module {name} not found in verilog.json'
-        instances = set([k['instance_name'] for k in modules[name]['instances']])
-        assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found in {instances}'
-
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
-
-
-def test_ota_six_noconst():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.ota_six(name)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
-
-def test_ota_six():
+def test_ota_six_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
@@ -174,54 +112,11 @@ def test_ota_six():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=cleanup, max_errors=1)
 
 
-def test_tia():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.tia(name)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
 
-
-@pytest.mark.skip
-def test_ldo_amp():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.ldo_amp(name)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
-
-
-def test_ro_simple():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.ro_simple(name)
-    constraints = {
-        'ro_stage': [
-            {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mp0", "mn0"]},
-        ],
-        name: [
-            {"constraint": "Order", "direction": "left_to_right", "instances": [f'xi{k}' for k in range(5)]},
-        ]
-    }
-    example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
-
-    with (run_dir / '3_pnr' / 'inputs' / 'RO_STAGE.pnr.const.json').open('rt') as fp:
-        d = json.load(fp)
-        assert len(d['constraints']) > 0, 'Where is the order constraint???'
-
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
-
-
-def test_common_source():
+def test_common_source_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.common_source_mini(name)
     constraints = [
@@ -232,27 +127,7 @@ def test_common_source():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
-
-def test_two_stage_ota():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.two_stage_ota_differential(name)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2.0},
-        # {"constraint": "AutoConstraint", "isTrue": false, "propagate": false},
-        {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "name": "scn"},
-        {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "name": "scp"},
-        {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp1"], "name": "dp2"},
-        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "name": "sc2"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["sc2", "dp2", "scp", "dp", "scn"], "abut": True},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["sc2"], ["dp2"], ["scp"], ["dp"], ["scn"]]}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
-
-def test_cs_1():
+def test_cs_1_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx
@@ -264,7 +139,7 @@ def test_cs_1():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
 
-def test_cs_2():
+def test_cs_2_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vccx vssx

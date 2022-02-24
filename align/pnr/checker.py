@@ -3,6 +3,7 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
 import pathlib
+from z3.z3types import Z3Exception
 logger = logging.getLogger(__name__)
 
 
@@ -14,9 +15,8 @@ def check_placement(placement_verilog_d, scale_factor):
     non_leaves = {module['concrete_name'] for module in placement_verilog_d['modules']}
 
     for module in placement_verilog_d['modules']:
-        if len(module['constraints']) == 0:
-            continue  # No constraints
         constraints = module['constraints']
+        constraints.checkpoint()
 
         # The check below is at the mercy of constraint translation
         do_not_identify = []
@@ -40,6 +40,7 @@ def check_placement(placement_verilog_d, scale_factor):
                     ury=bbox.ury/scale_factor
                 )
             )
+
         for inst in module['instances']:
             t = inst['transformation']
             ctn = inst['concrete_template_name']
@@ -60,6 +61,7 @@ def check_placement(placement_verilog_d, scale_factor):
                     )
                 )
 
+        constraints.revert()
 
 def _transform_leaf(module, instance, leaf):
     if 'transformation' in leaf:

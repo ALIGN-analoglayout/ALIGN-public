@@ -438,27 +438,21 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
 
     if primitive == 'generic':
-        uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
+        uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
-        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
+        uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' in primitive.name:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
-                                              pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+        uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
+                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'CAP' in primitive.name:
-        uc, cell_pin = generate_Cap(pdkdir, block_name, value)
+        uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
     elif 'RES' in primitive.name:
-        uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
+        uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
     uc.computeBbox()
-    if False:
-        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-            json.dump({'bbox': uc.bbox.toList(),
-                       'globalRoutes': [],
-                       'globalRouteGrid': [],
-                       'terminals': uc.terminals}, fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON(fp)
@@ -467,7 +461,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
 
     with open(outputdir / (block_name + ".json"), "rt") as fp0, \
             open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:

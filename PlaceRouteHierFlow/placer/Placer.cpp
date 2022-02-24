@@ -13,7 +13,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
     logger->info("Requesting placement from JSON");
     // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
-  } else {
+  }else{
     if (hyper.use_analytical_placer)
       //#define analytical_placer
       PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
@@ -70,19 +70,38 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
   logger->info("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
+  design designData(nodeVec.back());
+  int idx = 0;
+  //pad nodeVec to match the number of concretes in JSON file
+  for (const auto& m : modules) {
+    if (m["abstract_name"] == designData.name) {
+      string concrete_template_name = m["concrete_name"];
+      unsigned int start = 0;
+      unsigned int slash = concrete_template_name.find_last_of('_');
+      if (slash != string::npos) start = slash + 1;
+      unsigned int end = concrete_template_name.size();
+      idx = atoi(concrete_template_name.substr(start, end - start).c_str());
+      if (idx >= nodeVec.size()) nodeVec.insert(nodeVec.end(), idx + 1 - nodeVec.size(), nodeVec.back());
+    }
+  }
   int nodeSize = nodeVec.size();
   int mode = 0;
   // Read design netlist and constraints
-  design designData(nodeVec.back());
   // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
-  int idx = 0;
   for (const auto& m : modules) {
     if (m["abstract_name"] == designData.name) {
+      string concrete_template_name = m["concrete_name"];
+      unsigned int start = 0;
+      unsigned int slash = concrete_template_name.find_last_of('_');
+      if (slash != string::npos) start = slash + 1;
+      unsigned int end = concrete_template_name.size();
+      idx = atoi(concrete_template_name.substr(start, end - start).c_str());
+      if (idx >= nodeSize) continue;
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;
       auto& Blocks = sol.Blocks;
@@ -177,19 +196,11 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       }
       if (!designData.Nets.empty()) sol.HPWL_norm = sol.HPWL_extend / designData.GetMaxBlockHPWLSum() / double(designData.Nets.size());
       sol.cost = sol.CalculateCost(designData, sp);
-      idx++;
+      spVec[idx].second.updateTerminalCenter(designData, spVec[idx].first);
+      spVec[idx].second.WritePlacement(designData, spVec[idx].first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
+      spVec[idx].second.PlotPlacement(designData, spVec[idx].first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
+      spVec[idx].second.UpdateHierNode(designData, spVec[idx].first, nodeVec[idx], drcInfo);
     }
-  }
-  if ((int)spVec.size() < nodeSize) {
-    nodeSize = spVec.size();
-    nodeVec.resize(nodeSize);
-  }
-  idx = 0;
-  for (std::vector<std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
-    it->second.updateTerminalCenter(designData, it->first);
-    it->second.WritePlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-    it->second.PlotPlacement(designData, it->first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-    it->second.UpdateHierNode(designData, it->first, nodeVec[idx], drcInfo);
   }
 }
 

@@ -5328,20 +5328,24 @@ void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, 
                   mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].width / 2;
     } else {
       // sym pair x axis coordinate
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].width / 4 +
-                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 +
-                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].width / 4;
+      if (mydesign.SBlocks[SBidx].sympair[0].first < Blocks.size() && mydesign.SBlocks[SBidx].sympair[0].second < Blocks.size()){
+        axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 +
+                    mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].width / 4 +
+                    Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 +
+                    mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].width / 4;
+      }
     }
   } else if (axis_dir == placerDB::H) {
     if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
       axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].y +
                   mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].height / 2;
     } else {
-      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 +
+      if (mydesign.SBlocks[SBidx].sympair[0].first < Blocks.size() && mydesign.SBlocks[SBidx].sympair[0].second < Blocks.size()){
+        axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 +
                   mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].height / 4 +
                   Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 +
                   mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].height / 4;
+      }
     }
   } else {
     logger->error("Placer-Error: incorrect symmetry axis direction");
