@@ -1,16 +1,22 @@
 import time
 import pytest
 import shutil
-from .utils import get_test_id, build_example, run_example
+from .utils import build_example, run_example
 from . import circuits
 
 
 cleanup = True
 
 
-@pytest.mark.parametrize('params', [None, "--select_in_ILP"])
-def test_bench_1(params):
-    name = f'ckt_{get_test_id()}'
+@pytest.mark.parametrize(
+    ("name", "params"),
+    [
+        ("tamu_sp", [""]),
+        ("umn_ilp", ["--select_in_ILP"])
+    ]
+    )
+def test_b1(name, params):
+    name = f'ckt_b1_{name}'
     netlist = circuits.ota_six(name)
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
@@ -22,7 +28,7 @@ def test_bench_1(params):
     ]
     example = build_example(name, netlist, constraints)
     s = time.time()
-    ckt_dir, run_dir = run_example(example, log_level='DEBUG', additional_args=params)
+    ckt_dir, run_dir = run_example(example, additional_args=params, cleanup=False)
     e = time.time()
     print('Elapsed time:', e-s)
     if cleanup:
