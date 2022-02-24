@@ -127,13 +127,6 @@ def run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors):
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
 
 
-# We want this picture to make the following code
-"""
-    |   |   |   |               |   |   |   |
-    A   B   C   D               A   B   C   D
-    |   |   |   |               |   |   |   |
-    |   |   |   |               |   |   |   |
-"""
 
 def run_horizontal_wire(nm, pins, setup, max_errors, extra_y=0):
     #==== Generate leaf cell =====
@@ -343,3 +336,76 @@ def test_four_diagonal_wires(setup):
 
 def test_ten_diagonal_wires(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0)
+
+
+# We want this picture to make the following code
+"""
+    |   |   |   |               |   |   |   |
+    A   B   C   D               A   B   C   D
+    |   |   |   |               |   |   |   |
+    |   |   |   |               |   |   |   |
+"""
+
+# We want this picture to make the following code
+"""
+                                |   |   |   |
+                                A   B   C   D
+                                |   |   |   |
+    |   |   |   |               |   |   |   |                                                                |
+
+    |   |   |   |               |   |   |   |
+    A   B   C   D
+    |   |   |   |
+    |   |   |   |
+"""
+
+def run_diagonal_wire_with_obstacles(nm, pins, setup, max_errors):
+    #==== Generate leaf cell =====
+    (c, m1, v1, m2, xpitch, ypitch) = setup
+
+    nx, ny = 20, 20
+    bbox = [0, 0, nx * xpitch, ny * ypitch]
+
+    for i, actual in enumerate(pins):
+        for j, xoff in enumerate( [1, nx-len(pins)]):
+            net = actual + str(j)
+            x = i + xoff
+            yoff = 0 if j == 0 else ny-4
+            c.addWire(m1, net, x, (yoff+0,1), (yoff+4,-1), netType='pin')            
+
+            c.addWire(m1, None, x, (ny//2-2,1), (ny//2+2,-1), netType='blockage')
+
+
+
+
+    c.bbox = transformation.Rect( *bbox)
+    terminals = c.removeDuplicates()
+    #==============================
+
+    #==== Generate top-level netlist ====
+    ctn = 'leaf'
+
+    instance = {
+        'instance_name': f'U0',
+        'abstract_template_name': ctn,
+        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
+    }
+
+    topmodule = {
+        'name': nm.upper(),
+        'parameters': [],
+        'instances': [instance],
+        'constraints': []
+    }
+
+    verilog_d = {'modules': [topmodule], 'global_signals': []}
+    #====================================
+
+    run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
+
+
+def test_four_diagonal_wires_with_obstacles(setup):
+    run_diagonal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0)
+
+def test_ten_diagonal_wires_with_obstacles(setup):
+    run_diagonal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0)
