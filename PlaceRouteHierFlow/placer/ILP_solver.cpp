@@ -2721,8 +2721,8 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
   if (cost >= 0.) {
-    logger->debug("ILP__HPWL_compare block {0} : HPWL_extend={1} HPWL_ILP={2}", mydesign.name, HPWL_extend, HPWL_ILP);
-    logger->debug("ILP__Area_compare block {0} : area={1} area_ilp={2}", mydesign.name, area, area_ilp);
+    // logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    // logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
   }
   return calculated_cost;
 }
@@ -2802,7 +2802,6 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       int colno[mydesign.Blocks[i].size()];
       for (unsigned int j = 0; j < mydesign.Blocks[i].size(); j++) colno[j] = select_begin_id[i] + j;
       if (!add_constraintex(lp, mydesign.Blocks[i].size(), sparserow, colno, EQ, 1)) logger->error("error");
-      //if (!add_SOS(lp, mydesign.Blocks[i][0].name().c_str(), 1, 1, (int)mydesign.Blocks[i].size(), colno, NULL)) logger->error("error");
     }
     {
       double sparserow[mydesign.Blocks[i].size() + 1];

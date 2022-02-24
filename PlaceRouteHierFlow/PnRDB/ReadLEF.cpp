@@ -56,7 +56,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
   string pinEnd;
   string macroEnd;
   string unitsEnd;
-  double units = 2000.0;
+  double units = 2.0;
   int width = -1, height = -1;
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
