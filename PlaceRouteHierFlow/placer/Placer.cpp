@@ -244,10 +244,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP)
-      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    else
-      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    //if (hyper.select_in_ILP)
+    //  curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+    //else
+    curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
 
     curr_sp.cacheSeq(designData);
 
@@ -317,10 +317,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP)
-        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      else
-        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      //if (hyper.select_in_ILP)
+      //  trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+      //else
+      trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
