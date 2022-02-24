@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 NType = PnR.NType
 Omark = PnR.Omark
 
-def ReadVerilogJson( DB, j, add_placement_info=False):
+def _ReadVerilogJson( DB, j, add_placement_info=False):
     hierTree = []
 
     for module in j['modules']:
@@ -106,18 +106,21 @@ def ReadVerilogJson( DB, j, add_placement_info=False):
 
     return global_signals
 
-def _ReadMap( path, mapname):
+def _ReadMap(path, mapname):
     d = pathlib.Path(path)
     p = re.compile( r'^(\S+)\s+(\S+)\s*$')
-    tbl2 = defaultdict(list)
     with (d / mapname).open( "rt") as fp:
         for line in fp:
             line = line.rstrip('\n')
             m = p.match(line)
             assert m
             k, v = m.groups()
-            tbl2[k].append( str(d / v))
-    logger.debug( f'expanded table: {tbl2}')
+            yield k, str(d/v)
+
+def _ConstructMap(pairs):
+    tbl2 = defaultdict(list)
+    for k, v in pairs:
+        tbl2[k].append(v)
     return tbl2
 
 def _attach_constraint_files( DB, fpath):
@@ -147,34 +150,42 @@ def _attach_constraint_files( DB, fpath):
         else:
             logger.warning(f"No primitive json file for primitive {name}")
 
-def _ReadLEF( DB, path, lefname):
-    p = pathlib.Path(path) / lefname
-    if p.exists():
-        with p.open( "rt") as fp:
-            s = fp.read()
-            DB.ReadLEFFromString( s)
-    else:
-        logger.warn(f"LEF file {p} doesn't exist.")
-
-def semantic(DB, path, topcell, global_signals):
+def _semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
     DB.semantic0( topcell)
     DB.semantic1( global_signals)
     DB.semantic2()
 
-def PnRdatabase( path, topcell, vname, lefname, mapname, drname):
+def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
     DB = PnR.PnRdatabase()
 
     assert drname.endswith('.json'), drname
     DB.ReadPDKJSON( path + '/' + drname)
 
-    _ReadLEF( DB, path, lefname)
-    DB.gdsData2 = _ReadMap( path, mapname)
+    if lef_s_in is not None:
+        logger.error(f'Reading LEF from string')
+        DB.ReadLEFFromString(lef_s_in)
+    else:
+        p = pathlib.Path(path) / lefname
+        if p.exists():
+            with p.open( "rt") as fp:
+                DB.ReadLEFFromString(fp.read())
+        else:
+            logger.warn(f"LEF file {p} doesn't exist.")
 
-    j = None
-    #if vname.endswith(".verilog.json"):
-    j = VerilogJsonTop.parse_file(pathlib.Path(path) / vname)
-    global_signals = ReadVerilogJson( DB, j)
-    semantic(DB, path, topcell, global_signals)
 
-    return DB, j
+    if map_d_in is None:
+        DB.gdsData2 = _ConstructMap(_ReadMap(path, mapname))
+    else:
+        DB.gdsData2 = _ConstructMap(map_d_in)
+
+    if verilog_d_in is None:
+        with (pathlib.Path(path) / vname).open("rt") as fp:
+            verilog_d = VerilogJsonTop.parse_obj(json.load(fp=fp))
+    else:
+        verilog_d = verilog_d_in
+
+    global_signals = _ReadVerilogJson( DB, verilog_d)
+    _semantic(DB, path, topcell, global_signals)
+
+    return DB, verilog_d

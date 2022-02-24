@@ -40,7 +40,6 @@ def get_parameters(primitive, parameters, nfin):
 
 
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
-    logger.info(f"generating primitive {block_name} {primitive}")
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
     # TODO: THIS SHOULD NOT BE NEEDED !!!
@@ -143,160 +142,20 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
-
-def add_primitive(primitives, block_name, block_args):
-    if block_name in primitives:
-        if not primitives[block_name] == block_args:
-            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
-                             existing: {primitives[block_name]}\
-                             new: {block_args}")
-    else:
-        logger.debug(f"Found primitive {block_name} with {block_args}")
-        primitives[block_name] = block_args
-
 def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
     """ Return commands to generate parameterized lef"""
-    # TODO model parameter can be improved
-    block_name = subckt.name
-    logger.info(f"Getting generator parameters for: {subckt}")
-    generator_name = subckt.generator["name"]
     layers_json = pdk_dir / "layers.json"
     with open(layers_json, "rt") as fp:
         pdk_data = json.load(fp)
     design_config = pdk_data["design_info"]
-
-    if len(subckt.elements)==1:
-        values = subckt.elements[0].parameters
-    else:
-        mvalues = {}
-        for ele in subckt.elements:
-            mvalues[ele.name] = ele.parameters
-
-    if generator_name == 'CAP':
-        assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {block_name}"
-        if "C" in values:
-            size = round(float(values["C"]) * 1E15, 4)
-        elif 'VALUE' in values:
-            size = round(float(values["VALUE"]) * 1E15, 4)
-        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
-
-        # TODO: use float in name
-        logger.debug(f"Generating capacitor for:{block_name}, {size}")
-        block_args = {
-            'primitive': generator_name,
-            'value':  float(size)
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
-
-    elif generator_name == 'RES':
-        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {name}"
-        if "R" in values:
-            size = round(float(values["R"]), 2)
-        elif 'VALUE' in values:
-            size = round(float(values["VALUE"]), 2)
-        # TODO: use float in name
-        if size.is_integer():
-            size = int(size)
-        height = ceil(sqrt(float(size) / design_config["unit_height_res"]))
-        logger.debug(f'Generating resistor for: {block_name} {size}')
-        block_args = {
-            'primitive': generator_name,
-            'value': (height, float(size))
-        }
-        add_primitive(primitives, block_name, block_args)
-        return True
-    else:
-        if design_config["pdk_type"] == "finfet_22fl":
-            from .gen_22fl_param import gen_param
-            assert gen_param(subckt, primitives, pdk_dir)
-            return True
-
-        assert 'MOS' == generator_name, f'{generator_name} is not recognized'
-        unit_size_mos = design_config["unit_size_mos"]
-
-        if "vt_type" in design_config:
-            vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in subckt.elements[0].model]
-        mvalues = {}
-        for ele in subckt.elements:
-            mvalues[ele.name] = ele.parameters
-        device_name_all = [*mvalues.keys()]
-        device_name = next(iter(mvalues))
-
-        if design_config["pdk_type"] == "FinFET":
-            # FinFET design
-            for key in mvalues:
-                assert int(mvalues[key]["NFIN"]), \
-                    f"unrecognized NFIN of device {key}:{mvalues[key]['NFIN']} in {block_name}"
-                assert unit_size_mos >= int(mvalues[key]["NFIN"]), \
-                    f"NFIN of device {key} in {block_name} should not be grater than {unit_size_mos}"
-                nfin = int(mvalues[key]["NFIN"])
-            name_arg = 'NFIN'+str(nfin)
-        elif design_config["pdk_type"] == "Bulk":
-            # Bulk design
-            for key in mvalues:
-                assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}"
-                assert int(
-                    float(mvalues[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
-                    f"Width of device {key} in {block_name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
-                size = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
-                mvalues[key]["NFIN"] = size
-            name_arg = 'NFIN'+str(size)
-        else:
-            print(design_config["pdk_type"] + " pdk not supported")
-            exit()
-
-        if 'NF' in mvalues[device_name].keys():
-            for key in mvalues:
-                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {name}"
-                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {name}"
-            name_arg = name_arg+'_NF'+str(int(mvalues[device_name]["NF"]))
-
-        if 'M' in mvalues[device_name].keys():
-            for key in mvalues:
-                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {name}"
-                if "PARALLEL" in mvalues[key].keys() and int(mvalues[key]['PARALLEL']) > 1:
-                    mvalues[key]["PARALLEL"] = int(mvalues[key]['PARALLEL'])
-                    mvalues[key]['M'] = int(mvalues[key]['M'])*int(mvalues[key]['PARALLEL'])
-            name_arg = name_arg+'_M'+str(int(mvalues[device_name]["M"]))
-            size = 0
-
-        logger.debug(f"Generating lef for {block_name}")
-        if isinstance(size, int):
-            for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {name} {mvalues}"
-                size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
-                size = size + size_device
-            no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
-            if any(x in block_name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
-                square_y = floor(sqrt(no_units/3))
-            else:
-                square_y = floor(sqrt(no_units))
-            while no_units % square_y != 0:
-                square_y -= 1
-            yval = square_y
-            xval = int(no_units / square_y)
-
-        if 'SCM' in block_name:
-            if int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != \
-                int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
-                square_y = 1
-                yval = square_y
-                xval = int(no_units / square_y)
-
-        block_args = {
-            'primitive': generator_name,
-            'value': mvalues[device_name]["NFIN"],
-            'x_cells': xval,
-            'y_cells': yval,
-            'parameters': mvalues
-        }
-        if 'STACK' in mvalues[device_name].keys() and int(mvalues[device_name]["STACK"]) > 1:
-            block_args['stack'] = int(mvalues[device_name]["STACK"])
-        if vt:
-            block_args['vt_type'] = vt[0]
-        add_primitive(primitives, block_name, block_args)
-        return True
+    if design_config["pdk_type"] == "finfet_22fl":
+        from .gen_22fl_param import gen_param
+    elif design_config["pdk_type"] == "FinFET":
+        from .gen_finfet import gen_param
+    elif design_config["pdk_type"] == "Bulk":
+        from .gen_bulk import gen_param
+    assert gen_param(subckt, primitives, pdk_dir)
+    return True
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
@@ -307,29 +166,22 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
-    logger.info(f"primitive def for {block_name} is {primitive}")
     if primitive == 'generic':
-        uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
+        uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
-        uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' in primitive.generator["name"]:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
-                                              pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'CAP' in primitive.generator["name"]:
-        uc, cell_pin = generate_Cap(pdkdir, block_name, value)
+        uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
+    elif 'MOS' in primitive.name:
+        uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
+                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+    elif 'CAP' in primitive.name:
+        uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
-    elif 'RES' in primitive.generator["name"]:
-        uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
+    elif 'RES' in primitive.name:
+        uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
     uc.computeBbox()
-    if False:
-        with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
-            json.dump({'bbox': uc.bbox.toList(),
-                       'globalRoutes': [],
-                       'globalRouteGrid': [],
-                       'terminals': uc.terminals}, fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON(fp)
@@ -338,7 +190,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     else:
         blockM = 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
 
     with open(outputdir / (block_name + ".json"), "rt") as fp0, \
             open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:

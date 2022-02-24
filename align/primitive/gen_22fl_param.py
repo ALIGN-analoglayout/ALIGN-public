@@ -5,8 +5,6 @@ import importlib.util
 from copy import deepcopy
 from math import sqrt, floor
 
-from align import primitive
-
 logger = logging.getLogger(__name__)
 
 

@@ -13,7 +13,8 @@ import functools
 
 from align.schema.subcircuit import SubCircuit
 
-from .compiler import generate_hierarchy, read_lib
+from .compiler import generate_hierarchy
+from align.schema.library import read_lib_json
 from .primitive import generate_primitive, generate_primitive_param
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
@@ -219,6 +220,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
                      flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None,
+                     concrete_top_name=None,
                      nroutings=1, viewer=False, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     steps_to_run = build_steps(flow_start, flow_stop)
@@ -270,23 +272,19 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         with (topology_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
+        primitive_lib = read_lib_json(topology_dir / '__primitive_library__.json')
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
+            logger.debug(f"Generating primitive {block_name}")
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
-                logger.info(f"non generic {block_name} {block_args}")
-                if 'primitive_lib' in globals() or 'primitive_lib' in locals():
-                    primitive_def = primitive_lib.find_subcircuit(block_args['abstract_template_name'])
-                else:
-                    # TODO save primitive library and reload
-                    primitive_def = read_lib(pdk_dir).find_subcircuit(block_args["primitive"])
+                primitive_def = primitive_lib.find_subcircuit(block_args['abstract_template_name'])
                 assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
             else:
                 primitive_def = block_args['primitive']
-            logger.info(f"primitives {primitive_def}")
             block_args.pop("primitive", None)
             uc = generate_primitive(block_name, primitive_def,  ** block_args,
                                     pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
@@ -307,12 +305,13 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
+                                concrete_top_name=concrete_top_name,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(
-            variants) > 0, f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
+        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, \
+            f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():

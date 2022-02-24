@@ -1,3 +1,4 @@
+import json
 from .model import Model
 from .subcircuit import SubCircuit
 from .types import List, Union, set_context
@@ -92,3 +93,16 @@ class Library(List[Union[Model, SubCircuit]]):
             )
         )
         return models
+
+
+def read_lib_json(json_file_path):
+    with open(json_file_path, "r") as f:
+        data = json.load(f)
+    library = Library(loadbuiltins=False)
+    with set_context(library):
+        for x in data:
+            if 'generator' in x:
+                library.append(SubCircuit(**{k: v for k, v in x.items() if v}))
+            else:
+                library.append(Model(**{k:v for k,v in x.items() if v}))
+    return library
