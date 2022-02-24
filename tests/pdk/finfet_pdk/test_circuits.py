@@ -5,7 +5,6 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-from align.pdk.finfet import transistor_array
 
 cleanup = False
 
@@ -162,6 +161,7 @@ def test_ota_six_noconst():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
+
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
@@ -252,6 +252,7 @@ def test_two_stage_ota():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
 
+
 def test_cs_1():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -263,6 +264,7 @@ def test_cs_1():
     constraints = []
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
+
 
 def test_cs_2():
     name = f'ckt_{get_test_id()}'
