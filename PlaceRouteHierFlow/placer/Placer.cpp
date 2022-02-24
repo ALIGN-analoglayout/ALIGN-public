@@ -228,12 +228,11 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
     oData = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
     logger->info("num sol : {0}", oData.size());
+    if (!oData.empty()) {
+      ReshapeSeqPairMap(oData, nodeSize);
+      return oData;
+    }
   }
-  if (!oData.empty()) {
-    ReshapeSeqPairMap(oData, nodeSize);
-    return oData;
-  }
-  else oData.clear();
 
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
@@ -245,11 +244,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+    if (hyper.select_in_ILP)
       curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    } else {
+    else
       curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
-    }
 
     curr_sp.cacheSeq(designData);
 
@@ -273,11 +271,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (curr_cost < 0) {
     logger->error("Couldn't generate a feasible solution even after {0} perturbations.", hyper.max_init_trial_count);
     curr_cost = __DBL_MAX__;
-  } else if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
-    curr_sol.cost = curr_cost;
-    oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-    ReshapeSeqPairMap(oData, nodeSize);
-    return oData;
   }
 
   curr_sol.cost = curr_cost;
@@ -324,12 +317,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP && !curr_sp.Enumerate()) {
+      if (hyper.select_in_ILP)
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      } else {
+      else
         trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
-      }
-      logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/

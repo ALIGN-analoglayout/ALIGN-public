@@ -2516,7 +2516,7 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
     blockpts[i].x = (Blocks[i].x - slackxy[i].x/2);
     blockpts[i].y = (Blocks[i].y - slackxy[i].y/2);
   }
-  return FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, &blockpts);
+  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, &blockpts)) return false;
   return true;
 }
 
