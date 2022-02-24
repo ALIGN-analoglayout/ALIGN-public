@@ -128,7 +128,7 @@ def run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors):
 
 
 
-def run_horizontal_wire(nm, pins, setup, max_errors, extra_y=0):
+def run_horizontal_wire(nm, pins, setup, max_errors, extra_y=0, add_blockage=False):
     #==== Generate leaf cell =====
     (c, m1, v1, m2, xpitch, ypitch) = setup
 
@@ -141,44 +141,9 @@ def run_horizontal_wire(nm, pins, setup, max_errors, extra_y=0):
             x = i + off
             c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
 
-    c.bbox = transformation.Rect( *bbox)
-    terminals = c.removeDuplicates()
-    #==============================
-
-    #==== Generate top-level netlist ====
-    ctn = 'leaf'
-
-    instance = {
-        'instance_name': f'U0',
-        'abstract_template_name': ctn,
-        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
-    }
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': [instance],
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-    #====================================
-
-    run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
-
-
-def run_vertical_wire(nm, pins, setup, max_errors, extra_x=0):
-    #==== Generate leaf cell =====
-    (c, m1, v1, m2, xpitch, ypitch) = setup
-
-    nx, ny = 4, 30
-    bbox = [0, 0, (nx+extra_x) * xpitch, ny * ypitch]
-
-    for i, actual in enumerate(pins):
-        for j, off in enumerate( [1, ny-len(pins)]):
-            net = actual + str(j)
-            y = i + off
-            c.addWire(m2, net, y, (0,1), (nx,-1), netType='pin')            
+    if add_blockage:
+        for i in range(1,ny):
+            c.addWire(m2, None, i, (nx//2-2,1), (nx//2+2,-1), netType='blockage')
 
     c.bbox = transformation.Rect( *bbox)
     terminals = c.removeDuplicates()
@@ -204,6 +169,8 @@ def run_vertical_wire(nm, pins, setup, max_errors, extra_x=0):
     #====================================
 
     run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
+
+
 
 
 def test_one_horizontal_wire(setup):
@@ -221,6 +188,64 @@ def test_four_horizontal_wires(setup):
 def test_four_horizontal_wires_extend(setup):
     run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1)
 
+def test_one_horizontal_wire_with_obstacles(setup):
+    run_horizontal_wire(get_test_id(), ["A"], setup, max_errors=0, add_blockage=True)
+
+def test_two_horizontal_wires_with_obstacles(setup):
+    run_horizontal_wire(get_test_id(), ["A", "B"], setup, max_errors=0, add_blockage=True)
+
+def test_three_horizontal_wires_with_obstacles(setup):
+    run_horizontal_wire(get_test_id(), ["A", "B", "C"], setup, max_errors=0, add_blockage=True)
+
+def test_four_horizontal_wires_with_obstacles(setup):
+    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1, add_blockage=True)
+
+def test_four_horizontal_wires_with_obstacles_extend(setup):
+    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1, add_blockage=True)
+
+def run_vertical_wire(nm, pins, setup, max_errors, extra_x=0, add_blockage=False):
+    #==== Generate leaf cell =====
+    (c, m1, v1, m2, xpitch, ypitch) = setup
+
+    nx, ny = 4, 20
+    bbox = [0, 0, (nx+extra_x) * xpitch, ny * ypitch]
+
+    for i, actual in enumerate(pins):
+        for j, off in enumerate( [1, ny-len(pins)]):
+            net = actual + str(j)
+            y = i + off
+            c.addWire(m2, net, y, (0,1), (nx,-1), netType='pin')            
+
+    if add_blockage:
+        for i in range(1,nx):
+            c.addWire(m1, None, i, (ny//2-2,1), (ny//2+2,-1), netType='blockage')
+
+    c.bbox = transformation.Rect( *bbox)
+    terminals = c.removeDuplicates()
+    #==============================
+
+    #==== Generate top-level netlist ====
+    ctn = 'leaf'
+
+    instance = {
+        'instance_name': f'U0',
+        'abstract_template_name': ctn,
+        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
+    }
+
+    topmodule = {
+        'name': nm.upper(),
+        'parameters': [],
+        'instances': [instance],
+        'constraints': []
+    }
+
+    verilog_d = {'modules': [topmodule], 'global_signals': []}
+    #====================================
+
+    run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
+
+
 def test_one_vertical_wire(setup):
     run_vertical_wire(get_test_id(), ["A"], setup, max_errors=0)
 
@@ -234,69 +259,23 @@ def test_four_vertical_wires(setup):
     run_vertical_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0)
 
 
+def test_one_vertical_wire_with_obstacles(setup):
+    run_vertical_wire(get_test_id(), ["A"], setup, max_errors=0, add_blockage=True)
 
-def run_horizontal_wire_with_obstacles(nm, pins, setup, max_errors, extra_y=0):
+def test_two_vertical_wires_with_obstacles(setup):
+    run_vertical_wire(get_test_id(), ["A", "B"], setup, max_errors=0, add_blockage=True)
+
+def test_three_vertical_wires_with_obstacles(setup):
+    run_vertical_wire(get_test_id(), ["A", "B", "C"], setup, max_errors=0, add_blockage=True)
+
+def test_four_vertical_wires_with_obstacles(setup):
+    run_vertical_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, add_blockage=True)
+
+
+def run_diagonal_wire(nm, pins, setup, max_errors, nx=20, ny=20, add_blockage=False):
     #==== Generate leaf cell =====
     (c, m1, v1, m2, xpitch, ypitch) = setup
 
-    nx, ny = 20, 4
-    bbox = [0, 0, nx * xpitch, (ny+extra_y) * ypitch]
-
-    for i, actual in enumerate(pins):
-        for j, off in enumerate( [1, nx-len(pins)]):
-            net = actual + str(j)
-            x = i + off
-            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
-
-    for i in range(1,ny):
-        c.addWire(m2, f'obs_{i}', i, (nx//2-2,1), (nx//2+2,-1), netType='blockage')
-
-    c.bbox = transformation.Rect( *bbox)
-    terminals = c.removeDuplicates()
-    #==============================
-
-    #==== Generate top-level netlist ====
-    ctn = 'leaf'
-
-    instance = {
-        'instance_name': f'U0',
-        'abstract_template_name': ctn,
-        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
-    }
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': [instance],
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-    #====================================
-
-    run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
-
-
-def test_one_horizontal_wire_with_obstacles(setup):
-    run_horizontal_wire_with_obstacles(get_test_id(), ["A"], setup, max_errors=0)
-
-def test_two_horizontal_wires_with_obstacles(setup):
-    run_horizontal_wire_with_obstacles(get_test_id(), ["A", "B"], setup, max_errors=0)
-
-def test_three_horizontal_wires_with_obstacles(setup):
-    run_horizontal_wire_with_obstacles(get_test_id(), ["A", "B", "C"], setup, max_errors=0)
-
-def test_four_horizontal_wires_with_obstacles(setup):
-    run_horizontal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1)
-
-def test_four_horizontal_wires_with_obstacles_extend(setup):
-    run_horizontal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1)
-
-def run_diagonal_wire(nm, pins, setup, max_errors):
-    #==== Generate leaf cell =====
-    (c, m1, v1, m2, xpitch, ypitch) = setup
-
-    nx, ny = 20, 20
     bbox = [0, 0, nx * xpitch, ny * ypitch]
 
     for i, actual in enumerate(pins):
@@ -305,6 +284,8 @@ def run_diagonal_wire(nm, pins, setup, max_errors):
             x = i + xoff
             yoff = 0 if j == 0 else ny-4
             c.addWire(m1, net, x, (yoff+0,1), (yoff+4,-1), netType='pin')            
+            if add_blockage:
+                c.addWire(m1, None, x, (ny//2-2,1), (ny//2+2,-1), netType='blockage')
 
     c.bbox = transformation.Rect( *bbox)
     terminals = c.removeDuplicates()
@@ -331,11 +312,21 @@ def run_diagonal_wire(nm, pins, setup, max_errors):
 
     run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
 
-def test_four_diagonal_wires(setup):
+def test_four_diagonal_wires_20x20(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0)
+
+def test_four_diagonal_wires_20x5(setup):
+    run_diagonal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, nx=20, ny=5)
 
 def test_ten_diagonal_wires(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0)
+
+def test_four_diagonal_wires_with_obstacles(setup):
+    run_diagonal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, add_blockage=True)
+
+def test_ten_diagonal_wires_with_obstacles(setup):
+    run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0, add_blockage=True)
+
 
 
 # We want this picture to make the following code
@@ -359,53 +350,3 @@ def test_ten_diagonal_wires(setup):
     |   |   |   |
 """
 
-def run_diagonal_wire_with_obstacles(nm, pins, setup, max_errors):
-    #==== Generate leaf cell =====
-    (c, m1, v1, m2, xpitch, ypitch) = setup
-
-    nx, ny = 20, 20
-    bbox = [0, 0, nx * xpitch, ny * ypitch]
-
-    for i, actual in enumerate(pins):
-        for j, xoff in enumerate( [1, nx-len(pins)]):
-            net = actual + str(j)
-            x = i + xoff
-            yoff = 0 if j == 0 else ny-4
-            c.addWire(m1, net, x, (yoff+0,1), (yoff+4,-1), netType='pin')            
-
-            c.addWire(m1, None, x, (ny//2-2,1), (ny//2+2,-1), netType='blockage')
-
-
-
-
-    c.bbox = transformation.Rect( *bbox)
-    terminals = c.removeDuplicates()
-    #==============================
-
-    #==== Generate top-level netlist ====
-    ctn = 'leaf'
-
-    instance = {
-        'instance_name': f'U0',
-        'abstract_template_name': ctn,
-        'fa_map': [ {'formal': actual + str(i), 'actual': actual} for actual in pins for i in range(2)]
-    }
-
-    topmodule = {
-        'name': nm.upper(),
-        'parameters': [],
-        'instances': [instance],
-        'constraints': []
-    }
-
-    verilog_d = {'modules': [topmodule], 'global_signals': []}
-    #====================================
-
-    run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors)
-
-
-def test_four_diagonal_wires_with_obstacles(setup):
-    run_diagonal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0)
-
-def test_ten_diagonal_wires_with_obstacles(setup):
-    run_diagonal_wire_with_obstacles(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=0)
