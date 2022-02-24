@@ -194,7 +194,6 @@ class Annotate:
                     name=inst_name,
                     model=const.name.upper(),
                     pins={x: x for x in ac_nets},
-                    generator=const.name.upper(),
                 )
                 subckt.elements.append(X1)
             # Translate any constraints defined on the groupblock elements to subckt
@@ -251,8 +250,7 @@ class Annotate:
                 X1 = Instance(
                     name=const.name.upper(),
                     model=cc_name,
-                    pins=new_pins,
-                    generator=cc_name,
+                    pins=new_pins
                 )
                 subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock

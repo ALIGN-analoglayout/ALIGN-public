@@ -5,8 +5,6 @@ Created on Wed July 08 13:12:15 2020
 @author: kunal
 """
 
-from networkx.generators import line
-from align.schema import graph, instance
 from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
@@ -346,7 +344,6 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             name=inst_name,
             model=child_name,
             pins=pins_map,
-            generator=child_name,
             abstract_name = child_name
         )
         parent.elements.append(X1)

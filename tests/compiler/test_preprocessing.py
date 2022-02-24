@@ -34,7 +34,6 @@ def db():
                 model="CAP",
                 pins={"PLUS": "PLUS", "MINUS": "MINUS"},
                 parameters={"VALUE": "2", "PARALLEL": "1"},
-                generator="CAP",
             )
         )
         subckt.elements.append(
@@ -43,7 +42,6 @@ def db():
                 model="CAP",
                 pins={"PLUS": "PLUS", "MINUS": "MINUS"},
                 parameters={"VALUE": "2", "PARALLEL": 1},
-                generator="CAP",
             )
         )
         subckt.elements.append(
@@ -52,7 +50,6 @@ def db():
                 model="RES",
                 pins={"PLUS": "PLUS", "MINUS": "MINUS"},
                 parameters={"VALUE": "10", "PARALLEL": "1"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -61,7 +58,6 @@ def db():
                 model="RES",
                 pins={"PLUS": "PLUS", "MINUS": "MINUS"},
                 parameters={"VALUE": "10", "PARALLEL": "1"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -70,7 +66,6 @@ def db():
                 model="RES",
                 pins={"PLUS": "PLUS", "MINUS": "MINUS"},
                 parameters={"VALUE": "10"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -78,7 +73,6 @@ def db():
                 name="M1",
                 model="TESTMOS",
                 pins={"D": "D", "G": "G", "S": "S", "B": "B"},
-                generator="TESTMOS",
                 parameters={"PARAM1": "1.0", "M": 1, "PARAM2": "2"}
             )
         )
@@ -87,7 +81,6 @@ def db():
                 name="M2",
                 model="TESTMOS",
                 pins={"D": "D", "G": "G", "S": "S", "B": "B"},
-                generator="TESTMOS",
                 parameters={"PARAM1": "1.0", "M": 1, "PARAM2": "2"}
             )
         )
@@ -140,7 +133,6 @@ def dbs():
                 model="CAP",
                 pins={"PLUS": "PLUS", "MINUS": "netc1"},
                 parameters={"VALUE": "2", "STACK": "1"},
-                generator="CAP",
             )
         )
         subckt.elements.append(
@@ -149,7 +141,6 @@ def dbs():
                 model="CAP",
                 pins={"PLUS": "netc1", "MINUS": "MINUS"},
                 parameters={"VALUE": "2", "STACK": "1"},
-                generator="CAP",
             )
         )
         subckt.elements.append(
@@ -158,7 +149,6 @@ def dbs():
                 model="RES",
                 pins={"PLUS": "PLUS", "MINUS": "netr1"},
                 parameters={"VALUE": "10", "STACK": "1"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -167,7 +157,6 @@ def dbs():
                 model="RES",
                 pins={"PLUS": "netr1", "MINUS": "netr2"},
                 parameters={"VALUE": "10", "STACK": "1"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -176,7 +165,6 @@ def dbs():
                 model="RES",
                 pins={"PLUS": "netr2", "MINUS": "MINUS"},
                 parameters={"VALUE": "10", "STACK": "1"},
-                generator="RES",
             )
         )
         subckt.elements.append(
@@ -184,7 +172,6 @@ def dbs():
                 name="M1",
                 model="TESTMOS",
                 pins={"D": "D", "G": "G", "S": "netm1", "B": "B"},
-                generator="TESTMOS",
             )
         )
         subckt.elements.append(
@@ -192,7 +179,6 @@ def dbs():
                 name="M2",
                 model="TESTMOS",
                 pins={"D": "netm1", "G": "G", "S": "S", "B": "B"},
-                generator="TESTMOS",
             )
         )
         subckt.elements.append(
@@ -200,7 +186,6 @@ def dbs():
                 name="M3",
                 model="TESTMOS",
                 pins={"D": "D", "G": "G1", "S": "netm2", "B": "B"},
-                generator="TESTMOS",
             )
         )
         subckt.elements.append(
@@ -208,7 +193,6 @@ def dbs():
                 name="M4",
                 model="TESTMOS",
                 pins={"D": "netm2", "G": "G1", "S": "netm3", "B": "B"},
-                generator="TESTMOS",
             )
         )
         subckt.elements.append(
@@ -216,7 +200,6 @@ def dbs():
                 name="M5",
                 model="TESTMOS",
                 pins={"D": "netm3", "G": "G1", "S": "S", "B": "B"},
-                generator="TESTMOS",
             )
         )
 
@@ -280,7 +263,6 @@ def dbr():
                 name="M1",
                 model="TESTMOS",
                 pins={"D": "LD", "G": "LG", "S": "LS", "B": "LB"},
-                generator="TESTMOS",
             )
         )
     with set_context(trunk_subckt.elements):
@@ -290,7 +272,6 @@ def dbr():
                 model="LEAF_CKT",
                 pins={"LD": "TD", "LG": "TG", "LS": "TS", "LB": "TB"},
                 parameters={"PARAM": 4},
-                generator="LEAF_CKT",
             )
         )
     with set_context(top_subckt.elements):
@@ -299,7 +280,6 @@ def dbr():
                 name="XTT1",
                 model="TRUNK_CKT",
                 pins={"TD": "D", "TG": "G", "TS": "S", "TB": "B"},
-                generator="TRUNK_CKT",
             )
         )
 

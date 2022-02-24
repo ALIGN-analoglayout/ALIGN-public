@@ -16,7 +16,7 @@
             "pairs": [
                 {
                     "type": "selfsym",
-                    "block": "MN0"
+                    "block": "X_MN0"
                 },
                 {
                     "type": "selfsym",
@@ -32,13 +32,13 @@
                 },
                 {
                     "type": "sympair",
-                    "block1": "MP7",
-                    "block2": "MP8"
+                    "block1": "X_MP7",
+                    "block2": "X_MP8"
                 },
                 {
                     "type": "sympair",
-                    "block1": "MP9",
-                    "block2": "MP10"
+                    "block1": "X_MP9",
+                    "block2": "X_MP10"
                 },
                 {
                     "type": "sympair",
@@ -57,11 +57,11 @@
                 "X_DP_MN1_MN2",
                 "X_INV_N_MP11_MN13",
                 "X_INV_P_MP12_MN14",
-                "MN0",
-                "MP10",
-                "MP7",
-                "MP8",
-                "MP9"
+                "X_MN0",
+                "X_MP10",
+                "X_MP7",
+                "X_MP8",
+                "X_MP9"
             ]
         }
     ]

@@ -159,7 +159,7 @@ def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
     # TODO model parameter can be improved
     block_name = subckt.name
     logger.info(f"Getting generator parameters for: {subckt}")
-    generator_name = subckt.elements[0].generator
+    generator_name = subckt.generator["name"]
     layers_json = pdk_dir / "layers.json"
     with open(layers_json, "rt") as fp:
         pdk_data = json.load(fp)
@@ -212,7 +212,7 @@ def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
             assert gen_param(subckt, primitives, pdk_dir)
             return True
 
-        assert 'NMOS' in generator_name or 'PMOS' in generator_name, f'{generator_name} is not recognized'
+        assert 'MOS' == generator_name, f'{generator_name} is not recognized'
         unit_size_mos = design_config["unit_size_mos"]
 
         if "vt_type" in design_config:
@@ -308,19 +308,17 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         or primitive == 'generic' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
     logger.info(f"primitive def for {block_name} is {primitive}")
-    if isinstance(primitive, SubCircuit):
-        generator_type = primitive.elements[0].generator
     if primitive == 'generic':
         uc, cell_pin = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, cell_pin = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' in generator_type:
+    elif 'MOS' in primitive.generator["name"]:
         uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                               pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-    elif 'CAP' in generator_type:
+    elif 'CAP' in primitive.generator["name"]:
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
-    elif 'RES' in generator_type:
+    elif 'RES' in primitive.generator["name"]:
         uc, cell_pin = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:

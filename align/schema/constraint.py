@@ -972,6 +972,7 @@ class Generator(SoftConstraint):
     '''
     Used to guide primitive generator.
     Args:
+        name(str): name of genrator e.g., mos/cap/res/ring
         parameters(dict): {
                             pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
                             parallel_wires (dict): {net_name:2}
@@ -982,6 +983,7 @@ class Generator(SoftConstraint):
 
         {
             "constraint": "Generator",
+            "name": "mos",
             "parameters : {
                             "pattern": "cc",
                             "parallel_wires": {"net1":2, "net2":2},
@@ -989,6 +991,7 @@ class Generator(SoftConstraint):
                             }
         }
     '''
+    name: Optional[str]
     parameters: Optional[dict]
 
 

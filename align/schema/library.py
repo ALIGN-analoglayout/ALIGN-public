@@ -64,7 +64,7 @@ class Library(List[Union[Model, SubCircuit]]):
                     'PARALLEL': 1,
                     'STACK': 1
                 },
-                prefix=''
+                prefix='C'
             )
         )
         models.append(
@@ -76,7 +76,7 @@ class Library(List[Union[Model, SubCircuit]]):
                     'PARALLEL': 1,
                     'STACK': 1
                 },
-                prefix=''
+                prefix='R'
             )
         )
         models.append(
@@ -88,7 +88,7 @@ class Library(List[Union[Model, SubCircuit]]):
                     'PARALLEL': 1,
                     'STACK': 1
                 },
-                prefix=''
+                prefix='L'
             )
         )
         return models

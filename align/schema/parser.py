@@ -152,18 +152,7 @@ class SpiceParser:
 
         if self.library.find(model):
             model = self.library.find(model)
-
-            if model.base:
-                generator = model.base
-            elif isinstance(model, SubCircuit) and name.startswith('X'):
-                generator = model.name
-            elif isinstance(model, Model) and model.prefix == 'XI':
-                generator = 'generic'
-            else:
-                generator = model.name
-            # TODO assert generator is available in primitive generator
         else:
-            # TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
             with set_context(self.library):
                 self.library.append(
@@ -171,7 +160,6 @@ class SpiceParser:
                 )
             model = self.library.find(model)
             # TODO: get it from generator
-            generator = 'generic'
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \
@@ -181,8 +169,7 @@ class SpiceParser:
         with set_context(self._scope[-1].elements):
             try:
                 self._scope[-1].elements.append(Instance(name=name, model=model.name,
-                                                         pins=pins, parameters=kwargs,
-                                                         generator=generator
+                                                         pins=pins, parameters=kwargs
                                                          ))
             except ValueError:
                 assert False, f"could not identify device parameters {name} {kwargs} allowed parameters are {model.name} {model.parameters}"

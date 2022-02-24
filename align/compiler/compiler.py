@@ -1,6 +1,8 @@
 import pathlib
 import json
 
+from align import primitive
+
 from ..schema import SubCircuit, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
@@ -24,13 +26,14 @@ def generate_hierarchy(
     pdk_dir: pathlib.Path
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
-    ckt_data = compiler_input(
+    ckt_data, primitive_library = compiler_input(
         netlist_path,
         design_name,
         pdk_dir,
         config_path,
         flatten_heirarchy
     )
+    annotate_library(ckt_data, primitive_library)
     primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
     constraint_generator(ckt_data)
     compiler_output(ckt_data, design_name, output_dir)
@@ -78,7 +81,7 @@ def compiler_input(
     ckt_parser.parse(lines)
 
     library = read_lib(pdk_dir, config_path)
-    primitives = order_lib(library)
+    primitive_library = order_lib(library)
 
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
@@ -90,8 +93,12 @@ def compiler_input(
 
     logger.debug("\n###### FINAL CIRCUIT AFTER preprocessing ###### \n")
     logger.debug(ckt_parser)
-    annotate = Annotate(ckt_data, primitives)
-    annotate.annotate()
+    return ckt_data, primitive_library
+
+
+def annotate_library(ckt_data, primitive_library):
+    at = Annotate(ckt_data, primitive_library)
+    at.annotate()
     for ckt in ckt_data:
         if isinstance(ckt, SubCircuit):
             assert ckt.pins, f"floating module found {ckt.name}"
@@ -101,7 +108,6 @@ def compiler_input(
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
                     assert len(ele.pins) == len(ckt_data.find(ele.model).pins), "incorrect subckt instantiation"
-    return ckt_data
 
 
 def compiler_output(

@@ -49,19 +49,10 @@ def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
-    generator_name = subckt.elements[0].generator
+    generator_name = subckt.generator["name"]
     logger.info(f"generating primitive structure {subckt}")
-    if generator_name == 'generic':
-        #generic/tfr_prim
-        attr = {'ports': list(subckt.pins),
-                'values': values if values else None,
-                'real_inst_type': subckt.elements[0].model.lower()
-                }
-        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
-        primitives[block_name] = block_args
-    elif get_generator(block_name.lower(), pdk_dir):
-        #DIG22INV  primitive
+    if get_generator(block_name.lower(), pdk_dir):
+        #Subcircuit defined in netlist DIG22INV  primitive
         attr = {'ports': list(subckt.pins),
                 'values': values if values else None,
                 'real_inst_type': block_name.lower()
@@ -70,7 +61,7 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"creating generic primitive {block_name} {block_args}")
         primitives[block_name] = block_args
     elif get_generator(generator_name.lower(), pdk_dir):
-        #TFR primitive
+        #TFR primitives, existing generators without subcircuit definition in netlist
         attr = {'ports': list(subckt.pins),
                 'values': values if values else None,
                 'real_inst_type': subckt.elements[0].model.lower()
