@@ -59,10 +59,10 @@ double ILP_solver::UpdateAreaHPWLCost(const design& mydesign, const SeqPair& cur
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
   //logger->info("ratio : {0}", ratio);
-  //if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
-  //  ++const_cast<design&>(mydesign)._infeasAspRatio;
-  //  return -1;
-  //}
+  if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
+    ++const_cast<design&>(mydesign)._infeasAspRatio;
+    return -1;
+  }
   if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
     ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
