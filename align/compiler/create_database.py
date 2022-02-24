@@ -43,7 +43,6 @@ class CreateDatabase:
         pwr, gnd, clk = self._get_pgc(subckt)
         self._propagate_power_ports(subckt, pwr, gnd, clk)
         self.propagate_const_top_to_bottom(name, {name})
-
         return self.lib
 
     def add_generators(self, pdk_dir):
@@ -54,8 +53,10 @@ class CreateDatabase:
                     subckt.add_generator(subckt.name)
                     if [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
                         logger.debug(f"already available generator for {subckt.name}")
-                        continue
-                    logger.debug(f"adding generator for {subckt.name}")
+                    else:
+                        with set_context(subckt.constraints):
+                            subckt.constraints.append(constraint.Generator(name=subckt.name))
+                        logger.debug(f"adding generator for {subckt.name}")
 
 
     def add_user_const(self):
