@@ -46,7 +46,7 @@ def test_mos_smoke(pdk):
 @pytest.mark.parametrize("nfins", [12], ids=lambda x: f'n{x}')
 @pytest.mark.parametrize("typ", ["NMOS", "PMOS"])
 @pytest.mark.parametrize("pstr", [
-    "{}",
+    "{}_4T",
     "DCL_{}",
     "SCM_{}",
     "CMC_{}",
