@@ -1,9 +1,22 @@
 import json
 import logging
-from math import sqrt, floor, ceil
-
+from math import sqrt, floor, ceil, log10
+from copy import deepcopy
 logger = logging.getLogger(__name__)
 
+
+def limit_pairs(pairs):
+    # Hack to limit aspect ratios when there are a lot of choices
+    if len(pairs) > 12:
+        new_pairs = []
+        log10_aspect_ratios = [-0.3, 0, 0.3]
+        for l in log10_aspect_ratios:
+            best_pair = min((abs(log10(newy) - log10(newx) - l), (newx, newy))
+                            for newx, newy in pairs)[1]
+            new_pairs.append(best_pair)
+        return new_pairs
+    else:
+        return pairs
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
@@ -13,7 +26,31 @@ def add_primitive(primitives, block_name, block_args):
                              new: {block_args}")
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
-        primitives[block_name] = block_args
+        if 'x_cells' in block_args and 'y_cells' in block_args:
+                prefix = block_name
+                x, y = block_args['x_cells'], block_args['y_cells']
+                pairs = set()
+                m = x*y
+                y_sqrt = floor(sqrt(x*y))
+                for y in range(y_sqrt, 0, -1):
+                    if m % y == 0:
+                        pairs.add((y, m//y))
+                        pairs.add((m//y, y))
+                    if y == 1:
+                        break
+                pairs = limit_pairs((pairs))
+                for newx, newy in pairs:
+                    concrete_name = f'{prefix}_X{newx}_Y{newy}'
+                    if concrete_name not in primitives:
+                        primitives[concrete_name] = deepcopy(block_args)
+                        primitives[concrete_name]['x_cells'] = newx
+                        primitives[concrete_name]['y_cells'] = newy
+                        primitives[concrete_name]['abstract_template_name'] = block_name
+                        primitives[concrete_name]['concrete_template_name'] = concrete_name
+        else:
+            primitives[block_name] = block_args
+            primitives[block_name]['abstract_template_name'] = block_name
+            primitives[block_name]['concrete_template_name'] = block_name
 
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
@@ -21,7 +58,6 @@ def gen_param(subckt, primitives, pdk_dir):
     values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]
     block_name = subckt.name
-    logger.debug(f"Getting generator parameters for: {subckt.name}")
     generator_name = subckt.generator["name"]
     layers_json = pdk_dir / "layers.json"
     with open(layers_json, "rt") as fp:
@@ -70,8 +106,6 @@ def gen_param(subckt, primitives, pdk_dir):
 
     else:
         assert 'MOS' == generator_name, f'{generator_name} is not recognized'
-        unit_size_mos = design_config["unit_size_mos"]
-
         if "vt_type" in design_config:
             vt = [vt.upper() for vt in design_config["vt_type"] if vt.upper() in subckt.elements[0].model]
         mvalues = {}
@@ -81,12 +115,13 @@ def gen_param(subckt, primitives, pdk_dir):
         device_name = next(iter(mvalues))
 
         for key in mvalues:
-            assert int(mvalues[key]["NFIN"]), \
-                f"unrecognized NFIN of device {key}:{mvalues[key]['NFIN']} in {block_name}"
-            assert unit_size_mos >= int(mvalues[key]["NFIN"]), \
-                f"NFIN of device {key} in {block_name} should not be grater than {unit_size_mos}"
-            nfin = int(mvalues[key]["NFIN"])
-        name_arg = 'NFIN'+str(nfin)
+            assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}"
+            assert int(
+                float(mvalues[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
+                f"Width of device {key} in {block_name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
+            size = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
+            mvalues[key]["NFIN"] = size
+        name_arg = 'NFIN'+str(size)
 
         if 'NF' in mvalues[device_name].keys():
             for key in mvalues:

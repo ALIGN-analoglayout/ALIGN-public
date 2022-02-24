@@ -133,7 +133,7 @@ def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
     with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
         primitives = json.load(fp)
-        abstract_names = {v['abstract_template_name'] for v in primitives.values()}
+        abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
         verilog_json = json.load(fp)

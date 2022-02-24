@@ -2,10 +2,7 @@ import pathlib
 import shutil
 import os
 import json
-import re
 import copy
-import math
-from collections import defaultdict
 import sys
 import http.server
 import socketserver
@@ -68,97 +65,6 @@ def build_steps(flow_start, flow_stop):
     logger.info(f'Running flow steps {steps_to_run}')
 
     return steps_to_run
-
-
-def gen_more_primitives(primitives, topology_dir, subckt):
-    """primitives dictionary updated in place"""
-
-    #
-    #TODO: This code should be improved and moved to 2_primitives
-    #
-    map_d = defaultdict(list)
-
-    # As a hack, add more primitives if x and y are define
-
-    more_primitives = {}
-
-    #
-    # Hack to limit aspect ratios when there are a lot of choices
-    #
-    def limit_pairs(pairs):
-        if len(pairs) > 12:
-            new_pairs = []
-            #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-            log10_aspect_ratios = [-0.3, 0, 0.3]
-            for l in log10_aspect_ratios:
-                best_pair = min((abs(math.log10(newy) - math.log10(newx) - l), (newx, newy))
-                                for newx, newy in pairs)[1]
-                new_pairs.append(best_pair)
-            return new_pairs
-        else:
-            return pairs
-
-    for k, v in primitives.items():
-        if 'x_cells' in v and 'y_cells' in v:
-            prefix = k
-            x, y = v['x_cells'], v['y_cells']
-            pairs = set()
-            m = x*y
-            y_sqrt = math.floor(math.sqrt(x*y))
-            for y in range(y_sqrt, 0, -1):
-                if m % y == 0:
-                    pairs.add((y, m//y))
-                    pairs.add((m//y, y))
-                if y == 1:
-                    break
-            pairs.remove((v['x_cells'], v['y_cells']))
-            pairs = limit_pairs((pairs))
-
-            abstract_name = f'{prefix}'
-            map_d[abstract_name].append(k)
-            for newx, newy in pairs:
-                concrete_name = f'{prefix}_X{newx}_Y{newy}'
-                map_d[abstract_name].append(concrete_name)
-                if concrete_name not in primitives and concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-        else:
-            if not (k.startswith("Res") or k.startswith("Cap")):
-                logger.debug(f'Didn\'t match primitive {k}')
-            map_d[k].append(k)
-
-    primitives.update(more_primitives)
-
-    #
-    # This code should move to 1_topology, we also need two different the primitives.json files;
-    # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
-    # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
-    #
-    concrete2abstract = {vv: k for k, v in map_d.items() for vv in v}
-
-    for k, v in primitives.items():
-        v['abstract_template_name'] = concrete2abstract[k]
-        v['concrete_template_name'] = k
-
-    # now hack the netlist to replace the template names using the concrete2abstract mapping
-
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open('rt') as fp:
-        verilog_json_d = json.load(fp)
-
-    for module in verilog_json_d['modules']:
-        for instance in module['instances']:
-            t = instance['template_name']
-            if t in concrete2abstract:
-                del instance['template_name']
-                instance['abstract_template_name'] = concrete2abstract[t]
-            else:
-                # actually want all instances to use abstract_template_name, even the non-leaf ones
-                del instance['template_name']
-                instance['abstract_template_name'] = t
-
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_json_d, fp=fp, indent=2)
 
 
 def extract_netlist_files(netlist_dir, netlist_file):
@@ -259,25 +165,19 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         topology_dir.mkdir(exist_ok=True)
         primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)
-        primitives = {}
-        for primitive in primitive_lib:
-            if isinstance(primitive, SubCircuit):
-                generate_primitive_param(primitive, primitives, pdk_dir)
-        gen_more_primitives(primitives, topology_dir, subckt)
-        with (topology_dir / '__primitives__.json').open('wt') as fp:
-            json.dump(primitives, fp=fp, indent=2)
     else:
         if subckt is None:
             subckt = extract_netlist_files(netlist_dir, netlist_file).stem
-
-        with (topology_dir / '__primitives__.json').open('rt') as fp:
-            primitives = json.load(fp)
-        primitive_lib = read_lib_json(topology_dir / '__primitive_library__.json')
+        primitive_lib = read_lib_json(topology_dir / '__primitives__.json')
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
+        primitives = {}
+        for primitive in primitive_lib:
+            if isinstance(primitive, SubCircuit):
+                generate_primitive_param(primitive, primitives, pdk_dir)
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive {block_name}")
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':

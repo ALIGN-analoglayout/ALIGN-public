@@ -3,7 +3,7 @@ import pathlib
 import logging
 import importlib.util
 from copy import deepcopy
-from math import sqrt, floor
+from math import sqrt, floor, log10
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,6 @@ def get_generator(name, pdkdir):
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
         else:  # is pdk old school (backward compatibility)
-            print(f"check {pdkdir/'primitive.py'}")
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
@@ -43,6 +42,54 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     return uc, parameters["ports"]
 
 
+def limit_pairs(pairs):
+    # Hack to limit aspect ratios when there are a lot of choices
+    if len(pairs) > 12:
+        new_pairs = []
+        log10_aspect_ratios = [-0.3, 0, 0.3]
+        for l in log10_aspect_ratios:
+            best_pair = min((abs(log10(newy) - log10(newx) - l), (newx, newy))
+                            for newx, newy in pairs)[1]
+            new_pairs.append(best_pair)
+        return new_pairs
+    else:
+        return pairs
+
+
+def add_primitive(primitives, block_name, block_args):
+    if block_name in primitives:
+        if not primitives[block_name] == block_args:
+            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
+                             existing: {primitives[block_name]}\
+                             new: {block_args}")
+    else:
+        logger.debug(f"Found primitive {block_name} with {block_args}")
+        if 'x_cells' in block_args and 'y_cells' in block_args:
+            prefix = block_name
+            x, y = block_args['x_cells'], block_args['y_cells']
+            pairs = set()
+            m = x*y
+            y_sqrt = floor(sqrt(x*y))
+            for y in range(y_sqrt, 0, -1):
+                if m % y == 0:
+                    pairs.add((y, m//y))
+                    pairs.add((m//y, y))
+                if y == 1:
+                    break
+            pairs = limit_pairs((pairs))
+            for newx, newy in pairs:
+                concrete_name = f'{prefix}_X{newx}_Y{newy}'
+                if concrete_name not in primitives:
+                    primitives[concrete_name] = deepcopy(block_args)
+                    primitives[concrete_name]['x_cells'] = newx
+                    primitives[concrete_name]['y_cells'] = newy
+                    primitives[concrete_name]['abstract_template_name'] = block_name
+                    primitives[concrete_name]['concrete_template_name'] = concrete_name
+        else:
+            primitives[block_name] = block_args
+            primitives[block_name]['abstract_template_name'] = block_name
+            primitives[block_name]['concrete_template_name'] = block_name
+
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
     vt = subckt.elements[0].model
@@ -57,7 +104,7 @@ def gen_param(subckt, primitives, pdk_dir):
                 }
         block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
         logger.debug(f"creating generic primitive {block_name} {block_args}")
-        primitives[block_name] = block_args
+        add_primitive(primitives, block_name, block_args)
     elif get_generator(generator_name.lower(), pdk_dir):
         #TFR primitives, existing generators without subcircuit definition in netlist
         attr = {'ports': list(subckt.pins),
@@ -66,7 +113,7 @@ def gen_param(subckt, primitives, pdk_dir):
                 }
         block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
         logger.debug(f"creating generic primitive {block_name} {block_args}")
-        primitives[block_name] = block_args
+        add_primitive(primitives, block_name, block_args)
     else:
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
@@ -113,5 +160,5 @@ def gen_param(subckt, primitives, pdk_dir):
             'y_cells': y,
             'parameters': values
         }
-        primitives[block_name] = block_args
+        add_primitive(primitives, block_name, block_args)
     return True

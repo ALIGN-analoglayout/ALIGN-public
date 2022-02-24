@@ -8,10 +8,7 @@ import sys
 import datetime
 import pathlib
 import logging
-import json
 import importlib.util
-from copy import deepcopy
-from math import sqrt, ceil, floor
 
 logger = logging.getLogger(__name__)
 
@@ -142,21 +139,12 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
-def generate_primitive_param(subckt, primitives, pdk_dir, uniform_height=False):
+def generate_primitive_param(subckt:SubCircuit, primitives:list, pdk_dir:pathlib.Path, uniform_height=False):
     """ Return commands to generate parameterized lef"""
-    layers_json = pdk_dir / "layers.json"
-    with open(layers_json, "rt") as fp:
-        pdk_data = json.load(fp)
-    design_config = pdk_data["design_info"]
-    if design_config["pdk_type"] == "finfet_22fl":
-        from .gen_22fl_param import gen_param
-    elif design_config["pdk_type"] == "FinFET":
-        from .gen_finfet import gen_param
-    elif design_config["pdk_type"] == "Bulk":
-        from .gen_bulk import gen_param
-    assert gen_param(subckt, primitives, pdk_dir)
-    return True
-
+    spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
+    modules = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modules)
+    assert modules.gen_param(subckt, primitives, pdk_dir)
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
