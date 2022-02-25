@@ -21,9 +21,6 @@ class Library(List[Union[Model, SubCircuit]]):
     def find(self, name):
         return next((x for x in self if x.name == name.upper()), None)
 
-    def find_subcircuit(self, name):
-        return next((x for x in self if x.name == name.upper() and isinstance(x, SubCircuit)), None)
-
     def default_models(self):
         models = list()
         models.append(
@@ -104,5 +101,5 @@ def read_lib_json(json_file_path):
             if 'generator' in x:
                 library.append(SubCircuit(**{k: v for k, v in x.items() if v}))
             else:
-                library.append(Model(**{k:v for k,v in x.items() if v}))
+                library.append(Model(**{k: v for k, v in x.items() if v}))
     return library

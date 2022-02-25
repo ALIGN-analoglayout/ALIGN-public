@@ -174,7 +174,7 @@ class Graph(networkx.Graph):
             subcircuit_name = subckt.name
             new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             subcircuit_name = self.instance_counter(new_subckt)
-            if subcircuit_name != subckt.name and not self.subckt.parent.find_subcircuit(
+            if subcircuit_name != subckt.name and not self.subckt.parent.find(
                     subcircuit_name):
                 new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(subcircuit_name)
@@ -195,7 +195,7 @@ class Graph(networkx.Graph):
 
             # Model may need to be copied to current library
             if new_subckt not in self.subckt.parent:
-                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find_subcircuit('ARRAY_TEMPLATE')}")
+                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find('ARRAY_TEMPLATE')}")
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
@@ -239,7 +239,7 @@ class Graph(networkx.Graph):
             name = subckt.name
         else:
             name = f'{subckt.name}_I{counter}'
-        existing_ckt = self.subckt.parent.find_subcircuit(name)
+        existing_ckt = self.subckt.parent.find(name)
         if existing_ckt:
             if subckt.is_identical(existing_ckt):
                 logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")

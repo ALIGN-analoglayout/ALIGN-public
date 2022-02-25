@@ -21,10 +21,10 @@ def test_cap():
     primitives = PrimitiveLibrary(ckt_lib, pdk_path).gen_primitive_collateral()
     all_primitive_names = set([i.name for i in primitives if isinstance(i, SubCircuit)])
     assert all_primitive_names == {'CAP_2T_I1', 'CAP_2T', 'NMOS_4T'}
-    assert primitives.find_subcircuit('CAP_2T_I1').elements[0].parameters == {'VALUE': '3E-14', 'PARALLEL': '1', 'STACK': '1'}
-    assert primitives.find_subcircuit('CAP_2T').elements[0].parameters == {'VALUE': '6E-14', 'PARALLEL': '1', 'STACK': '1'}
+    assert primitives.find('CAP_2T_I1').elements[0].parameters == {'VALUE': '3E-14', 'PARALLEL': '1', 'STACK': '1'}
+    assert primitives.find('CAP_2T').elements[0].parameters == {'VALUE': '6E-14', 'PARALLEL': '1', 'STACK': '1'}
     mos_param = {'W': '2.7E-07', 'L': '2E-08', 'NFIN': '6', 'PARALLEL': '1', 'M': '1', 'NF': '2', 'STACK': '1'}
-    assert primitives.find_subcircuit('NMOS_4T').elements[0].parameters == mos_param
+    assert primitives.find('NMOS_4T').elements[0].parameters == mos_param
     all_uniq_inst = set([e.name for i in primitives if isinstance(i, SubCircuit) for e in i.elements])
     assert all_uniq_inst == {'M1', 'C1'}
     constraint_generator(ckt_lib)

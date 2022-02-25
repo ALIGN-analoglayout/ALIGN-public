@@ -91,11 +91,11 @@ class PrimitiveLibrary():
             element (instance): instance properties
         """
         model = element.model
-        generator = self.ckt_lib.find_subcircuit(model)
+        generator = self.ckt_lib.find(model)
         base_model = self.ckt_lib.find(model).base
         if not generator and base_model:
             # Find generator for base model
-            generator = self.ckt_lib.find_subcircuit(base_model)
+            generator = self.ckt_lib.find(base_model)
             logger.info(f"check base model generator for {element} {model} {base_model}, {generator}, {[x.name for x in self.ckt_lib]}")
 
         if generator:

@@ -226,7 +226,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         input_dir.mkdir(exist_ok=True)
 
         verilog_d = VerilogJsonTop.parse_file(topology_dir / verilog_file)
-
+        
         manipulate_hierarchy(verilog_d, subckt)
 
         logger.debug(f"updated verilog: {verilog_d}")

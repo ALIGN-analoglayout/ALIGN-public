@@ -16,7 +16,7 @@ def ckt(cn):
     return ckt_lib.find(cn)
 
 def ele(ckt, name):
-    return ckt.parent.find_subcircuit(ckt.get_element(name).model).elements[0]
+    return ckt.parent.find(ckt.get_element(name).model).elements[0]
 
 @pytest.fixture
 def path(cn):

@@ -182,7 +182,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive {block_name}")
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
-                primitive_def = primitive_lib.find_subcircuit(block_args['abstract_template_name'])
+                primitive_def = primitive_lib.find(block_args['abstract_template_name'])
                 assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
             else:
                 primitive_def = block_args['primitive']
