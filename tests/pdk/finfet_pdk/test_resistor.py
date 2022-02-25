@@ -36,7 +36,7 @@ def test_res_flat():
     _, run_dir = run_example(example, cleanup=False, n=1, log_level='DEBUG', additional_args=['--flow_stop', '3_pnr:prep'])
 
     name = name.upper()
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as f1:
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as f1:
         primitives = json.load(f1)
         with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as f2:
             hierarchy = json.load(f2)

@@ -129,8 +129,8 @@ def gen_primitives(run_dir):
     with (run_dir / '1_topology' / '__primitives_library__.json').open('wt') as fp:
         json.dump(primitives, fp=fp, indent=2)
 
-    # with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
-    #     json.dump(primitives_d, fp=fp, indent=2)
+    with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
+        json.dump(primitives_d, fp=fp, indent=2)
 
     xpitch = 80
     ypitch = 84

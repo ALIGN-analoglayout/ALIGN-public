@@ -178,6 +178,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for primitive in primitive_lib:
             if isinstance(primitive, SubCircuit):
                 generate_primitive_param(primitive, primitives, pdk_dir)
+        logger.info(primitives)
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive {block_name}")
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
@@ -194,12 +195,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
     else:
-        primitives = {}
-        for primitive in primitive_lib:
-            if isinstance(primitive, SubCircuit):
-                generate_primitive_param(primitive, primitives, pdk_dir)
-        with (primitive_dir / '__primitives__.json').open('wt') as fp:
-            json.dump(primitives, fp=fp, indent=2)
+        with (primitive_dir / '__primitives__.json').open('rt') as fp:
+            primitives = json.load(fp)
+
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'

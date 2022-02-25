@@ -65,7 +65,6 @@ def add_primitive(primitives, block_name, block_args):
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         if 'x_cells' in block_args and 'y_cells' in block_args:
-            prefix = block_name
             x, y = block_args['x_cells'], block_args['y_cells']
             pairs = set()
             m = x*y
@@ -78,7 +77,7 @@ def add_primitive(primitives, block_name, block_args):
                     break
             pairs = limit_pairs((pairs))
             for newx, newy in pairs:
-                concrete_name = f'{prefix}_X{newx}_Y{newy}'
+                concrete_name = f'{block_name}_X{newx}_Y{newy}'
                 if concrete_name not in primitives:
                     primitives[concrete_name] = deepcopy(block_args)
                     primitives[concrete_name]['x_cells'] = newx
