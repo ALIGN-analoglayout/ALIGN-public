@@ -516,22 +516,26 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       constrvalues[i * 6 + 2].push_back(1);
       sens.push_back('E');
       rhs.push_back(0);
+      rowtype.push_back('f');
     } else if (mydesign.Blocks[i][0].xflip == -1) {
       rowindofcol[i * 6 + 2].push_back(rhs.size());
       constrvalues[i * 6 + 2].push_back(1);
       sens.push_back('E');
       rhs.push_back(1);
+      rowtype.push_back('f');
     }
     if (mydesign.Blocks[i][0].yflip == 1) {
       rowindofcol[i * 6 + 3].push_back(rhs.size());
       constrvalues[i * 6 + 3].push_back(1);
       sens.push_back('E');
       rhs.push_back(0);
+      rowtype.push_back('f');
     } else if (mydesign.Blocks[i][0].yflip == -1) {
       rowindofcol[i * 6 + 3].push_back(rhs.size());
       constrvalues[i * 6 + 3].push_back(1);
       sens.push_back('E');
       rhs.push_back(1);
+      rowtype.push_back('f');
     }
   }
   const int maxxdim = maxhierwidth  * 5;
@@ -765,11 +769,11 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
   // \sigma (select_i,j) = 1 for all blocks i and variant j \in [0,N_i]
   // width_i = \sum select_i,j * width_i,j
   // height_i = \sum select_i,j * height_i,j
-  unsigned blk_select_idx[mydesign.Blocks.size()] = {};
+  std::vector<unsigned>blk_select_idx(mydesign.Blocks.size(), 0);
   for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
     const auto& blk = mydesign.Blocks[i];
-    blk_select_idx[i] = N_var;
     if (blk.size() > 1) {
+      blk_select_idx[i] = N_var;
       N_var += (unsigned)blk.size();
       if (collb.size() < N_var) {
         collb.resize(N_var, 0);
@@ -1007,11 +1011,16 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       const auto& i = it.first;
       const auto& j = it.second;
       rowindofcol[i * 6 + v].push_back(rhs.size());
-      rowindofcol[i * 6 + 4 + v].push_back(rhs.size());
       rowindofcol[j * 6 + v].push_back(rhs.size());
       constrvalues[i * 6 + v].push_back(1);
-      constrvalues[i * 6 + 4 + v].push_back(1);
       constrvalues[j * 6 + v].push_back(-1);
+      if (v) {
+        rowindofcol[j * 6 + 5].push_back(rhs.size());
+        constrvalues[j * 6 + 5].push_back(-1);
+      } else {
+        rowindofcol[i * 6 + 4].push_back(rhs.size());
+        constrvalues[i * 6 + 4].push_back(1);
+      }
       sens.push_back('E');
       rhs.push_back(0);
       rowtype.push_back('a');
@@ -1022,17 +1031,19 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
     auto it1 = group.begin();
     auto it2 = std::next(it1);
     while (it2 != group.end()) {
-      if (mydesign.Blocks[*it1].size() == mydesign.Blocks[*it2].size()) {
+      if (mydesign.Blocks[*it1].size() == mydesign.Blocks[*it2].size() && mydesign.Blocks[*it1].size() > 1) {
         for (unsigned idx1 = blk_select_idx[*it1], idx2 = blk_select_idx[*it2];
             idx1 < (blk_select_idx[*it1] + mydesign.Blocks[*it1].size());
             ++idx1, ++idx2) {
-          rowindofcol[idx1].push_back(rhs.size());
-          rowindofcol[idx2].push_back(rhs.size());
-          constrvalues[idx1].push_back(1);
-          constrvalues[idx2].push_back(-1);
-          sens.push_back('E');
-          rhs.push_back(0);
-          rowtype.push_back('e');
+          if (idx1 > 0 && idx2 > 0) {
+            rowindofcol[idx1].push_back(rhs.size());
+            rowindofcol[idx2].push_back(rhs.size());
+            constrvalues[idx1].push_back(1);
+            constrvalues[idx2].push_back(-1);
+            sens.push_back('E');
+            rhs.push_back(0);
+            rowtype.push_back('e');
+          }
         }
       }
       it1 = it2++;
@@ -1653,13 +1664,13 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
         namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf_xy\0");
         names[it.second] = &(namesvec[it.second][0]);
       }
-      unsigned idx = blk_select_idx[0];
-      for (const auto& blk : mydesign.Blocks) {
+      for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+        auto& blk = mydesign.Blocks[i];
         if (blk.size() <= 1) continue;
+        unsigned idx = blk_select_idx[i];
         for (unsigned j = 0; j < blk.size(); ++j) {
-          namesvec[idx] = (blk[j].name + "_select_" + std::to_string(j) + "\0");
-          names[idx]    = &(namesvec[idx][0]);
-          ++idx;
+          namesvec[idx + j] = (blk[j].name + "_select_" + std::to_string(j) + "\0");
+          names[idx + j]    = &(namesvec[idx + j][0]);
         }
       }
 
