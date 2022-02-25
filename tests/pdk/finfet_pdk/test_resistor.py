@@ -2,6 +2,7 @@ from align.pdk.finfet import tfr_prim
 from .utils import export_to_viewer
 import json
 import textwrap
+import shutil
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
@@ -17,7 +18,7 @@ def test_res_hier():
     netlist = circuits.tia(name)
     constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    _, run_dir = run_example(example, cleanup=True, n=1, additional_args=['--flow_stop', '2_primitives'])
 
 
 def test_res_flat():
@@ -53,3 +54,5 @@ def test_res_flat():
 
             for k, v in instances.items():
                 assert v['abstract_template_name'] in atn, f"Abstract not found: {v['abstract_template_name']}"
+    shutil.rmtree(run_dir)
+    shutil.rmtree(example)

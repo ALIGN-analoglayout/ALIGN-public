@@ -92,13 +92,8 @@ class PrimitiveLibrary():
         """
         model = element.model
         generator = self.ckt_lib.find(model)
-        base_model = self.ckt_lib.find(model).base
-        if not generator and base_model:
-            # Find generator for base model
-            generator = self.ckt_lib.find(base_model)
-            logger.info(f"check base model generator for {element} {model} {base_model}, {generator}, {[x.name for x in self.ckt_lib]}")
 
-        if generator:
+        if isinstance(generator, SubCircuit):
             element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
             if gen_const:

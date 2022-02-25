@@ -178,7 +178,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for primitive in primitive_lib:
             if isinstance(primitive, SubCircuit):
                 generate_primitive_param(primitive, primitives, pdk_dir)
-        logger.info(primitives)
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive {block_name}")
             if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
