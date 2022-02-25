@@ -18,7 +18,7 @@ def test_res_hier():
     netlist = circuits.tia(name)
     constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=True, n=1, additional_args=['--flow_stop', '2_primitives'])
+    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
 
 def test_res_flat():

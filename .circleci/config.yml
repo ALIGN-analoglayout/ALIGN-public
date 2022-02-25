@@ -225,7 +225,7 @@ workflows:
               ci-level:
                 - "checkin"
               max-errors:
-                - "5"
+                - "1"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
@@ -234,6 +234,7 @@ workflows:
             branches:
               only:
                 - master
+                - generate_abstract_name
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:

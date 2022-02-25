@@ -63,7 +63,7 @@ def test_cmp_fp1_pr(partial_routing):
     ]
     example = build_example(name, netlist, constraints)
     # Stop flow early for memory profiling
-    run_example(example, cleanup=False, area=4e10, max_errors=4)
+    run_example(example, cleanup=False, area=4e10, max_errors=5)
     # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '2_primitives'])
     # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
 
