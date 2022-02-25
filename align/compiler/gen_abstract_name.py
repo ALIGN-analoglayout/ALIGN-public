@@ -42,9 +42,14 @@ class PrimitiveLibrary():
             for const in ckt.constraints:
                 if isinstance(const, constraint.GroupCaps):
                     group_cap_instances.append(const.name.upper())
+                    self.group_cap_subcircuit(const.unit_cap.upper())
+            logger.info(f"found group cap instances {group_cap_instances}")
+
             for ele in ckt.elements:
                 if ele.name in group_cap_instances:
                     ele.add_abs_name(ele.model)
+
+                    logger.info(f"group cap instance {ele}")
                 else:
                     self.gen_primitive_def(ele)
         return self.plib
@@ -62,6 +67,28 @@ class PrimitiveLibrary():
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
         return key
 
+    def group_cap_subcircuit(self, unit_cap):
+        #TODO hack for group cap, need to be fixed
+        """create subckt corresponding to unit cap
+        Args:
+            name (str): unique cap name in constraint
+        """
+        if not self.plib.find(unit_cap):
+            logger.debug(f"creating subcircuit for {unit_cap}")
+            cmodel = self.plib.find('CAP')
+            assert cmodel, f"no cap model found for groupcap constraint {cmodel}"
+            unit_cap_value = float(unit_cap.split('_')[1].replace('F', ''))*10E-15
+
+            with set_context(self.plib):
+                new_subckt = SubCircuit(name=unit_cap, pins=list(cmodel.pins), generator={"name": 'CAP'})
+            with set_context(new_subckt.elements):
+                new_ele = Instance(name='C0', model='CAP',
+                                   pins={pin: pin for pin in cmodel.pins},
+                                   parameters={'VALUE': unit_cap_value}
+                                   )
+                new_subckt.elements.append(new_ele)
+            self.plib.append(new_subckt)
+
     def create_subckt(self, element, name):
         """create_subckt
         Adds a subckt in primitive library for a generic device instance if not already existing
@@ -70,7 +97,7 @@ class PrimitiveLibrary():
             name (str): unique name for this instance based on parameters
         """
         if not self.plib.find(name):
-            logger.info("creating subcircuit for {element}")
+            logger.debug(f"creating subcircuit for {element}")
             with set_context(self.plib):
                 new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()), generator={"name":element.model})
             with set_context(new_subckt.elements):
