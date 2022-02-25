@@ -172,4 +172,4 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         add_primitive(primitives, block_name, block_args)
-        return True
+    return True

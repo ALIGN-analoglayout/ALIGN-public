@@ -141,10 +141,11 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
 
 def generate_primitive_param(subckt:SubCircuit, primitives:list, pdk_dir:pathlib.Path, uniform_height=False):
     """ Return commands to generate parameterized lef"""
+    assert isinstance(subckt, SubCircuit), f"invalid input for primitive generator {subckt}"
     spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
     modules = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modules)
-    assert modules.gen_param(subckt, primitives, pdk_dir)
+    assert modules.gen_param(subckt, primitives, pdk_dir), f"unabble to generate primitive {subckt}"
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,

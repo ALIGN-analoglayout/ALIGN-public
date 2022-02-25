@@ -20,6 +20,8 @@ def limit_pairs(pairs):
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
+        block_args['abstract_template_name'] = block_name
+        block_args['concrete_template_name'] = block_name
         if not primitives[block_name] == block_args:
             logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
                              existing: {primitives[block_name]}\
@@ -175,7 +177,7 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         add_primitive(primitives, block_name, block_args)
-        return True
+    return True
 
 
 
