@@ -55,6 +55,9 @@ def add_primitive(primitives, block_name, block_args):
 
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
+    if not 'element' in subckt: #Hack for entry point two
+        add_primitive(primitives, block_name, {})
+        return True
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]

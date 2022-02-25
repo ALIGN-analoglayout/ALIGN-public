@@ -37,7 +37,7 @@ def generate_hierarchy(
     primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
     constraint_generator(ckt_data)
     compiler_output(ckt_data, design_name, output_dir)
-    with open(output_dir/"__primitives__.json", "w") as f:
+    with open(output_dir/"__primitives_library__.json", "w") as f:
         json.dump(primitives.dict()["__root__"], f, indent=2)
     return primitives
 

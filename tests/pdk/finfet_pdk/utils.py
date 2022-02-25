@@ -131,7 +131,7 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
 
 def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
         abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
@@ -142,7 +142,7 @@ def verify_abstract_names(name, run_dir):
             abstract_names_used += [i['abstract_template_name'] for i in module['instances']]
         abstract_names_used = set(abstract_names_used)
     assert abstract_names.issubset(abstract_names_used), (
-        f'__primitives__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
+        f'__primitives_library__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
     )
 
 

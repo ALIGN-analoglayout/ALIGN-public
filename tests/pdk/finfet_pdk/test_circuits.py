@@ -5,9 +5,7 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-from align.pdk.finfet import transistor_array
-
-cleanup = False
+cleanup = True
 
 
 def test_cmp_vanilla():
@@ -19,13 +17,8 @@ def test_cmp_vanilla():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
-        primitives = json.load(fp)
-        counter = 0
-        for m in primitives.keys():
-            if m.startswith('DP_NMOS'):
-                counter += 1
-        assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
+    counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
+    assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
 
     if cleanup:
         shutil.rmtree(run_dir)

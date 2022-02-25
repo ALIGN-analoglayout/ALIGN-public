@@ -56,3 +56,4 @@ def test_mos_smoke(pdk):
 def test_mos_full(pdk, pstr, typ, nfins, x, y):
     prim = pstr.format(typ)
     build_test(pdk, prim, n=nfins, X=x, Y=y)
+

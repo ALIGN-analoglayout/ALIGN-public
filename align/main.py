@@ -168,7 +168,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     else:
         if subckt is None:
             subckt = extract_netlist_files(netlist_dir, netlist_file).stem
-        primitive_lib = read_lib_json(topology_dir / '__primitives__.json')
+        primitive_lib = read_lib_json(topology_dir / '__primitives_library__.json')
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
@@ -194,8 +194,12 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
     else:
-        with (primitive_dir / '__primitives__.json').open('rt') as fp:
-            primitives = json.load(fp)
+        primitives = {}
+        for primitive in primitive_lib:
+            if isinstance(primitive, SubCircuit):
+                generate_primitive_param(primitive, primitives, pdk_dir)
+        with (primitive_dir / '__primitives__.json').open('wt') as fp:
+            json.dump(primitives, fp=fp, indent=2)
 
     # run PNR tool
     pnr_dir = working_dir / '3_pnr'

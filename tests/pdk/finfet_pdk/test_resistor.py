@@ -42,8 +42,9 @@ def test_res_flat():
             hierarchy = json.load(f2)
 
             atn = set()
-            for k, v in primitives.items():
-                atn.add(v['abstract_template_name'])
+            for primitive in primitives:
+                if 'generator' in primitive:
+                    atn.add(primitive['name'])
 
             modules = {e['name']: e for e in hierarchy['modules']}
             instances = {i['instance_name']: i for i in modules[name]['instances']}
