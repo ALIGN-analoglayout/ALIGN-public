@@ -7,7 +7,7 @@ import collections
 from collections import defaultdict
 from itertools import chain
 
-#from .. import PnR
+from .. import PnR
 
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .checker import check_placement, check_place_on_grid

@@ -8,7 +8,7 @@ from collections import defaultdict
 from itertools import chain
 
 from .. import PnR
-#from .placer import hierarchical_place
+from .placer import hierarchical_place
 
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .build_pnr_model import PnRdatabase, NType, Omark
@@ -20,9 +20,6 @@ from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 from .grid_constraints import gen_constraints
 
 import math
-
-
-
 
 logger = logging.getLogger(__name__)
 
