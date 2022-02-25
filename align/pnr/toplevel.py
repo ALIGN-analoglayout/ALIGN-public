@@ -16,6 +16,7 @@ from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonMod
 
 logger = logging.getLogger(__name__)
 
+# Doesn't seem to be used
 def write_verilog_json(verilog_d):
     return {"modules":[{"name":m.name,
                         "parameters": list(m.parameters),
@@ -88,10 +89,12 @@ def gen_abstract_verilog_d( verilog_d):
     return new_verilog_d
 
 
-def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, verilog_d,
-                    router_mode, gui, skipGDS, lambda_coeff, scale_factor,
-                    reference_placement_verilog_json, concrete_top_name, nroutings, select_in_ILP, seed,
-                    use_analytical_placer, ilp_solver, primitives, toplevel_args, results_dir):
+def placer_driver(*, DB, opath, fpath, numLayout, effort, verilog_d,
+                  gui, lambda_coeff, scale_factor,
+                  reference_placement_verilog_json, concrete_top_name, select_in_ILP, seed,
+                  use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args, results_dir):
+
+    logger.debug(f'Using {ilp_solver} to solve ILP in placer')
 
     reference_placement_verilog_d = None
     if reference_placement_verilog_json is not None:
@@ -115,11 +118,18 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
 
     assert nroutings == 1, f"nroutings other than 1 is currently not working"
 
-
     if placements_to_run is None:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
     else:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
+
+    return verilog_ds_to_run
+
+
+def router_driver(*, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
+                  router_mode, skipGDS, lambda_coeff, scale_factor,
+                  reference_placement_verilog_json, concrete_top_name, nroutings,
+                  primitives, toplevel_args, results_dir, verilog_ds_to_run):
 
 
     #
@@ -218,8 +228,8 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
                                                   scale_factor=scale_factor,
                                                   reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
                                                   concrete_top_name=concrete_top_name0,
-                                                  select_in_ILP=select_in_ILP, seed=seed,
-                                                  use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
+                                                  select_in_ILP=False, seed=0,
+                                                  use_analytical_placer=False, ilp_solver='symphony',
                                                   primitives=primitives, run_cap_placer=False)
 
         # populate new DB with placements to run
@@ -230,6 +240,7 @@ def place_and_route(*, DB, opath, fpath, numLayout, effort, adr_mode, PDN_mode, 
         res_dict.update(res)
     
     return res_dict
+
 
 
 def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
@@ -266,18 +277,20 @@ def toplevel(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_m
 
     DB, verilog_d, fpath, opath, numLayout, effort = gen_DB_verilog_d(args, results_dir)
 
-    logger.debug(f'Using {ilp_solver} to solve ILP in placer')
-    results_name_map = place_and_route(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
-                                       adr_mode=adr_mode, PDN_mode=PDN_mode,
-                                       verilog_d=verilog_d, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                       lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                                       reference_placement_verilog_json=reference_placement_verilog_json,
-                                       concrete_top_name=concrete_top_name,
-                                       nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                       seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                       primitives=primitives, toplevel_args=args, results_dir=results_dir)
+    verilog_ds_to_run = placer_driver(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, verilog_d=verilog_d,
+                                      gui=gui, lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                      reference_placement_verilog_json=reference_placement_verilog_json, concrete_top_name=concrete_top_name, select_in_ILP=select_in_ILP, seed=seed,
+                                      use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives, nroutings=nroutings,
+                                      toplevel_args=args, results_dir=results_dir)
 
-    return results_name_map
+    res_dict = router_driver(opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                             router_mode=router_mode, skipGDS=skipGDS, lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                             reference_placement_verilog_json=reference_placement_verilog_json, concrete_top_name=concrete_top_name, nroutings=nroutings,
+                             primitives=primitives, toplevel_args=args, results_dir=results_dir,
+                             verilog_ds_to_run=verilog_ds_to_run)
+
+
+    return res_dict
 
 def toplevel_route_only(args, *, PDN_mode=False, adr_mode=False, results_dir=None, router_mode='top_down',
                         gui=False, skipGDS=False,
