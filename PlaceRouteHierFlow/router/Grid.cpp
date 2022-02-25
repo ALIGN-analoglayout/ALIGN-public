@@ -272,7 +272,7 @@ void Grid::CreateGridData() {
   };
 
   for (unsigned int i = 0; i < vertices_total.size(); i++) {
-
+     //std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
      if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
          write_out_matlab_file_via(i, 1);
      if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
@@ -285,6 +285,21 @@ void Grid::CreateGridData() {
   matlabfile_via.close();
 
 
+
+}
+
+void Grid::print_source_dest(){
+
+  for (unsigned int i = 0; i < Source.size(); i++) {
+    int p = Source[i];
+    std::cout<<"source "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
+  }
+
+for (unsigned int i = 0; i < Dest.size(); i++) {
+    int p = Dest[i];
+    std::cout<<"dest "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
+  }
+    
 
 }
 
