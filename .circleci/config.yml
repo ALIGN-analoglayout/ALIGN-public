@@ -234,7 +234,6 @@ workflows:
             branches:
               only:
                 - master
-                - generate_abstract_name
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:
