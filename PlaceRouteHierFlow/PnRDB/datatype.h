@@ -280,6 +280,7 @@ struct net {
   double lowerBound = INT_MIN;
   int multi_connection = 1;
   float weight = 1.0;
+  float priority = 1.0;
 };  // structure of nets
 
 struct Metal {
