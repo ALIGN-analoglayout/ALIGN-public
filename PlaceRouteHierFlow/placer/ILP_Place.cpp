@@ -1718,7 +1718,7 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       model.setLogLevel(0);
       model.setMaximumSolutions(1000);
       model.setMaximumSavedSolutions(1000);
-      model.setMaximumSeconds(500);
+      model.setMaximumSeconds(300);
       //model.setNumberHeuristics(0);
       if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
         model.setNumberThreads(num_threads);
