@@ -3,16 +3,14 @@ import re
 import pathlib
 import json
 import copy
-import collections
 from collections import defaultdict
-from itertools import chain
 
 from .. import PnR
 
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .checker import check_placement, check_place_on_grid
 from ..gui.mockup import run_gui
-from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
+from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 
 from .grid_constraints import gen_constraints
@@ -293,7 +291,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         #
         hack_placement_verilog_d = scale_placement_verilog( reference_placement_verilog_d, 2*scale_factor, invert=True)        
 
-        modules = collections.defaultdict(list)
+        modules = defaultdict(list)
         for m in hack_placement_verilog_d['modules']:
             modules[m['abstract_name']].append(m)
 
