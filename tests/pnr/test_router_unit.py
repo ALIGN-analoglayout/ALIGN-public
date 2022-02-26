@@ -76,14 +76,18 @@ def run_postamble(nm, ctn, verilog_d, bbox, terminals, max_errors):
 
     (run_dir / '1_topology').mkdir(parents=False, exist_ok=False)
     (run_dir / '2_primitives').mkdir(parents=False, exist_ok=False)
-
+    primitives_library=[{
+        'name': ctn,
+        'pins': ['INP', 'OUT'],
+        'generator': {'name': ctn},
+    }]
     with (run_dir / '1_topology' / f'{nm.upper()}.verilog.json').open('wt') as fp:
         json.dump(verilog_d, fp=fp, indent=2)
 
     primitives_d = { ctn : {'abstract_template_name': ctn, 'concrete_template_name': ctn}}
 
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('wt') as fp:
+        json.dump(primitives_library, fp=fp, indent=2)
 
     with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
         json.dump(primitives_d, fp=fp, indent=2)
@@ -139,7 +143,7 @@ def run_horizontal_wire(nm, pins, setup, max_errors, extra_y=0, add_blockage=Fal
         for j, off in enumerate( [1, nx-len(pins)]):
             net = actual + str(j)
             x = i + off
-            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')            
+            c.addWire(m1, net, x, (0,1), (ny,-1), netType='pin')
 
     if add_blockage:
         for i in range(1,ny):
@@ -214,7 +218,7 @@ def run_vertical_wire(nm, pins, setup, max_errors, extra_x=0, add_blockage=False
         for j, off in enumerate( [1, ny-len(pins)]):
             net = actual + str(j)
             y = i + off
-            c.addWire(m2, net, y, (0,1), (nx,-1), netType='pin')            
+            c.addWire(m2, net, y, (0,1), (nx,-1), netType='pin')
 
     if add_blockage:
         for i in range(1,nx):
@@ -283,7 +287,7 @@ def run_diagonal_wire(nm, pins, setup, max_errors, nx=20, ny=20, add_blockage=Fa
             net = actual + str(j)
             x = i + xoff
             yoff = 0 if j == 0 else ny-4
-            c.addWire(m1, net, x, (yoff+0,1), (yoff+4,-1), netType='pin')            
+            c.addWire(m1, net, x, (yoff+0,1), (yoff+4,-1), netType='pin')
             if add_blockage:
                 c.addWire(m1, None, x, (ny//2-2,1), (ny//2+2,-1), netType='blockage')
 

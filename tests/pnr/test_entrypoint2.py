@@ -101,15 +101,8 @@ def gen_matrix_module(nm, row_nm, n=3):
 
 
 def gen_primitives(run_dir):
-    primitives = []
+    primitives_library = []
     primitives_d = {}
-
-    # sizes = [('_AN', (10, 10, 1)),
-    #          ('_BN', (5, 20, 1)),
-    #          ('_CN', (20, 5, 1)),
-    #          ('_AF', (10, 10, -1)),
-    #          ('_BF', (5, 20, -1)),
-    #          ('_CF', (20, 5, -1))]
 
     sizes = [('_A', (10, 10, 1)),
              ('_B', (5, 20, 1)),
@@ -118,7 +111,7 @@ def gen_primitives(run_dir):
     for suffix, _ in sizes:
         atn = 'SLICE'
         ctn = f'{atn}{suffix}'
-        primitives.append({
+        primitives_library.append({
                             'name': ctn,
                              'pins': ['INP', 'OUT'],
                              'generator': {'name':atn},
@@ -127,7 +120,7 @@ def gen_primitives(run_dir):
                              'concrete_template_name': ctn}
 
     with (run_dir / '1_topology' / '__primitives_library__.json').open('wt') as fp:
-        json.dump(primitives, fp=fp, indent=2)
+        json.dump(primitives_library, fp=fp, indent=2)
 
     with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
         json.dump(primitives_d, fp=fp, indent=2)
