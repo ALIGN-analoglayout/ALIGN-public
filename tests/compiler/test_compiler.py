@@ -12,7 +12,7 @@ def test_compiler():
     updated_ckt, prim_lib = compiler_input(test_path, "ota", pdk_dir, config_path)
     annotate_library(updated_ckt, prim_lib)
     plibs = {"CMC_PMOS", "SCM_NMOS", "CMC_S_NMOS_B", "DP_NMOS_B", "OTA"}
-    assert {plib for subckt in updated_ckt for plib in plibs if plib in subckt.name} == plibs
+    assert {plib for subckt in updated_ckt for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
     return updated_ckt
 
 
