@@ -237,12 +237,12 @@ class Annotate:
             if not self.ckt_data.find(const.name.upper()):
                 # Create a group cap model and add to library
                 # Ideally create a subckt initially but did not work at PnR needs Cap names startwith C
-                if self.ckt_data.find(cc_name):
-                    with set_context(self.ckt_data):
-                        new_subckt = Model(
-                            name=cc_name, pins=list(new_pins.keys())
-                        )
-                        self.ckt_data.append(new_subckt)
+                with set_context(self.ckt_data):
+                    new_subckt = Model(
+                        name=cc_name, pins=list(new_pins.keys())
+                    )
+                if not self.ckt_data.find(cc_name):
+                    self.ckt_data.append(new_subckt)
 
             with set_context(subckt.elements):
                 for e in const_inst:
