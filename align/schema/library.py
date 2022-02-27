@@ -21,6 +21,10 @@ class Library(List[Union[Model, SubCircuit]]):
     def find(self, name):
         return next((x for x in self if x.name == name.upper()), None)
 
+    def append(self, item):
+        assert not self.find(item.name), f'Duplicate model/subcircuit name {item.name}'
+        self.__root__.append(item)
+
     def default_models(self):
         models = list()
         models.append(
