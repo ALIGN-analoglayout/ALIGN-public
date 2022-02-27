@@ -112,7 +112,7 @@ class Order(HardConstraint):
             :obj:`'top_to_bottom'`, placement order is top to bottom.
 
             :obj:`None`: default (:obj:`'horizontal'` or :obj:`'vertical'`)
-        abut (bool, optional): If `abut` is `True` adjoining instances will touch
+        abut (bool, optional): If `abut` is `true` adjoining instances will touch
 
     .. image:: ../images/OrderBlocks.PNG
         :align: center
@@ -829,14 +829,14 @@ class IsDigital(SoftConstraint):
     array-identification or auto-constraint generation
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "IsDigital",
-            "isTrue": True,
+            "isTrue": true,
             "propagate": False
         }
     '''
@@ -849,15 +849,15 @@ class AutoConstraint(SoftConstraint):
     Forbids/Allow any auto-constraint generation
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "AutoConstraint",
-            "isTrue": True,
-            "propagate": False
+            "isTrue": true,
+            "propagate": false
         }
     '''
     isTrue: bool
@@ -869,15 +869,15 @@ class IdentifyArray(SoftConstraint):
     Forbids/Alow any array identification
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "IdentifyArray",
-            "isTrue": True,
-            "propagate": False
+            "isTrue": true,
+            "propagate": false
         }
     '''
     isTrue: bool
@@ -891,14 +891,14 @@ class FixSourceDrain(SoftConstraint):
     ensure (drain of NMOS/ source of PMOS) is at higher potential.
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "FixSourceDrain",
-            "isTrue": True,
+            "isTrue": true,
             "propagate": False
         }
     '''
@@ -911,15 +911,15 @@ class KeepDummyHierarchies(SoftConstraint):
     Removes any single instance hierarchies.
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "KeepDummyHierarchies",
-            "isTrue": True,
-            "propagate": False
+            "isTrue": true,
+            "propagate": false
         }
     '''
     isTrue: bool
@@ -932,14 +932,14 @@ class MergeSeriesDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES.
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "MergeSeriesDevices",
-            "isTrue": True,
+            "isTrue": true,
             "propagate": False
         }
     '''
@@ -953,15 +953,15 @@ class MergeParallelDevices(SoftConstraint):
     Only works on NMOS/PMOS/CAP/RES.
 
     Args:
-        isTrue (bool): True/False.
+        isTrue (bool): true/false.
         propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
         {
             "constraint": "MergeParallelDevices",
-            "isTrue": True,
-            "propagate": False
+            "isTrue": true,
+            "propagate": false
         }
     '''
     isTrue: bool
@@ -976,7 +976,7 @@ class Generator(SoftConstraint):
         parameters(dict): {
                             pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
                             parallel_wires (dict): {net_name:2}
-                            body (bool): True/ False
+                            body (bool): true/ false
                             }
 
     Example: ::
@@ -987,7 +987,7 @@ class Generator(SoftConstraint):
             "parameters : {
                             "pattern": "cc",
                             "parallel_wires": {"net1":2, "net2":2},
-                            "body": True
+                            "body": true
                             }
         }
     '''
@@ -1013,7 +1013,7 @@ class SymmetricBlocks(SoftConstraint):
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
         direction (str) : Direction for axis of symmetry.
-        mirrot (bool) : True/ False, Mirror instances along line of symmetry
+        mirrot (bool) : true/ false, Mirror instances along line of symmetry
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -1201,7 +1201,7 @@ class GroupCaps(SoftConstraint):
             "name" : "cap_group1",
             "instances" : ["C0", "C1", "C2"],
             "num_units" : [2, 4, 8],
-            "dummy" : True
+            "dummy" : true
         }
     '''
     name: str  # subcircuit name
