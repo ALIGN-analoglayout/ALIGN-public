@@ -60,6 +60,9 @@ class Instance(types.BaseModel):
     def name_complies_with_model(cls, name, values):
         assert 'model' in values, 'Cannot run check without model definition'
         model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
+        if 'elements' in cls._validator_ctx().parent.parent:
+            assert not cls._validator_ctx().parent.parent.get_element(
+                name), f"Duplicate instance name not allowed {name} in subckt {cls._validator_ctx().parent.parent.name}"
         name = name.upper()
         if model.prefix and not name.startswith(model.prefix):
             logger.error(f"{name} does not start with {model.prefix}")

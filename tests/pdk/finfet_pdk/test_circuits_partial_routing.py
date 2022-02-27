@@ -21,7 +21,7 @@ def test_cmp_vanilla_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, max_errors=2 if not bypass_errors else 0)
+    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, max_errors=3 if not bypass_errors else 0)
 
     counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
     assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
@@ -93,7 +93,7 @@ def test_cmp_fp2_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=5e9, max_errors=0)
+    run_example(example, cleanup=cleanup, area=5e9, max_errors=1)
 
 
 def test_ota_six_pr(partial_routing):
@@ -108,7 +108,7 @@ def test_ota_six_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, max_errors=0)
+    run_example(example, cleanup=cleanup, max_errors=1)
 
 
 
