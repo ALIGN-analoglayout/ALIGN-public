@@ -123,7 +123,7 @@ class PrimitiveLibrary():
         if isinstance(generator, SubCircuit):
             element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
-            if gen_const:
+            if gen_const and not self.plib.find(generator.name):
                 with set_context(self.plib):
                     self.plib.append(generator)
         elif get_generator(element.model, self.pdk_dir):
