@@ -136,8 +136,8 @@ def verify_abstract_names(name, run_dir):
     with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
         name_counts = Counter([v['name'] for v in primitives if 'generator' in v])
-        for name in name_counts:
-            assert name_counts[name] < 2, f'Multiple primitive definitions for {name}'
+        for pname in name_counts:
+            assert name_counts[pname] < 2, f'Multiple primitive definitions for {name}'
         abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
