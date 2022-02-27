@@ -194,8 +194,8 @@ class Graph(networkx.Graph):
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
 
             # Model may need to be copied to current library
-            if new_subckt not in self.subckt.parent:
-                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find('ARRAY_TEMPLATE')}")
+            if not self.subckt.parent.find(subcircuit_name):
+                logger.debug(f"adding subckt {new_subckt} in library")
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 

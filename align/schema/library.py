@@ -22,7 +22,7 @@ class Library(List[Union[Model, SubCircuit]]):
         return next((x for x in self if x.name == name.upper()), None)
 
     def append(self, item):
-        assert not self.find(item.name), f'Duplicate model/subcircuit name {item.name}'
+        assert not self.find(item.name), f'Duplicate model/subcircuit name {item.name} New: {item} existing: {self.find(item.name)}'
         self.__root__.append(item)
 
     def default_models(self):
