@@ -175,10 +175,6 @@ class Graph(networkx.Graph):
 
             # subcircuit_name = subckt.name
             new_subckt = self.create_subckt_instance(subckt, match)
-            # subcircuit_name = self.instance_counter(new_subckt)
-            # if subcircuit_name != subckt.name and not self.subckt.parent.find(
-            #         subcircuit_name):
-            #     new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
             new_subckt_names.append(new_subckt.name)
 
             nodes = list()
@@ -194,12 +190,6 @@ class Graph(networkx.Graph):
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
-
-            # # Model may need to be copied to current library
-            # if not self.subckt.parent.find(new_subckt.name):
-            #     logger.debug(f"adding subckt {new_subckt} in library")
-            #     with set_context(self.subckt.parent):
-            #         self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
             logger.debug(f"adding instance {instance_name} of type {new_subckt.name} in subckt {self.name}")
             self.add_instance(
@@ -244,20 +234,6 @@ class Graph(networkx.Graph):
             if not self.subckt.parent.find(new_subckt.name):
                 self.subckt.parent.append(new_subckt)
         return new_subckt
-
-    # def instance_counter(self, subckt, counter=0):
-    #     if counter == 0:
-    #         name = subckt.name
-    #     else:
-    #         name = f'{subckt.name}_I{counter}'
-    #     existing_ckt = self.subckt.parent.find(name)
-    #     if existing_ckt:
-    #         if subckt.is_identical(existing_ckt):
-    #             logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")
-    #             return name
-    #         else:
-    #             name = self.instance_counter(subckt, counter+1)
-    #     return name
 
     def find_repeated_subckts(self, replace=False):
         index = 0
