@@ -821,151 +821,35 @@ class DoNotUseLib(SoftConstraint):
     libraries: List[str]
     propagate: Optional[bool]
 
-
-class IsDigital(SoftConstraint):
+class CompilerFlags(SoftConstraint):
     '''
-    Place this hierarchy as a digital hierarchy
-    Forbids any preprocessing, auto-annotation,
-    array-identification or auto-constraint generation
-
+    Compiler default optimization flags
     Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
+        is_digital(bool): true/false
+        auto_constraint(bool): true/false
+        identify_array(bool): true/false
+        fix_source_drain(bool): true/false
+        keep_dummy_hierarchies(bool): true/false
+        merge_series_devices(bool): true/false
+        merge_parallel_devices(bool): true/false
 
     Example: ::
 
         {
-            "constraint": "IsDigital",
-            "isTrue": true,
-            "propagate": False
+            "constraint": "CompilerFlags",
+            "is_digital": true,
+            "keep_dummy_hierarchies": true,
+            "propagate": true
         }
     '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class AutoConstraint(SoftConstraint):
-    '''
-    Forbids/Allow any auto-constraint generation
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoConstraint",
-            "isTrue": true,
-            "propagate": false
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class IdentifyArray(SoftConstraint):
-    '''
-    Forbids/Alow any array identification
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "IdentifyArray",
-            "isTrue": true,
-            "propagate": false
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class FixSourceDrain(SoftConstraint):
-    '''
-    Forbids auto checking of source/drain terminals of transistors.
-    If `True`, Traverses from power to ground and vice-versa to
-    ensure (drain of NMOS/ source of PMOS) is at higher potential.
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "FixSourceDrain",
-            "isTrue": true,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class KeepDummyHierarchies(SoftConstraint):
-    '''
-    Removes any single instance hierarchies.
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "KeepDummyHierarchies",
-            "isTrue": true,
-            "propagate": false
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeSeriesDevices(SoftConstraint):
-    '''
-    Allow stacking of series devices
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeSeriesDevices",
-            "isTrue": true,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeParallelDevices(SoftConstraint):
-    '''
-    Allow merging of parallel devices.
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): true/false.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeParallelDevices",
-            "isTrue": true,
-            "propagate": false
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
+    is_digital: Optional[bool] # Annotation and auto-constraint generation
+    auto_constraint: Optional[bool]  # Auto-constraint generation
+    identify_array: Optional[bool]  # Forbids/Allow any array identification
+    fix_source_drain: Optional[bool]  # Auto correction of source/drain terminals of transistors.
+    keep_dummy_hierarchies: Optional[bool]  # Removes any single instance hierarchies.
+    merge_series_devices: Optional[bool]  # Merge series/stacked MOS/RES/CAP
+    merge_parallel_devices: Optional[bool]  # Merge parallel devices
+    propagate: Optional[bool] #propagate constraint to all lower hierarchies
 
 
 class Generator(SoftConstraint):
@@ -1360,13 +1244,7 @@ ConstraintType = Union[
     GroundPorts,
     ClockPorts,
     DoNotUseLib,
-    IsDigital,
-    AutoConstraint,
-    FixSourceDrain,
-    KeepDummyHierarchies,
-    MergeSeriesDevices,
-    MergeParallelDevices,
-    IdentifyArray
+    CompilerFlags
 ]
 
 
