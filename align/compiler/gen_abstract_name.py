@@ -119,6 +119,7 @@ class PrimitiveLibrary():
         """
         model = element.model
         generator = self.ckt_lib.find(model)
+
         if isinstance(generator, SubCircuit):
             element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]

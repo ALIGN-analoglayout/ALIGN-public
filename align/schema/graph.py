@@ -234,7 +234,7 @@ class Graph(networkx.Graph):
         with set_context(subckt_instance.constraints):
             for const in subckt.constraints:
                 subckt_instance.constraints.append(const)
-        param = FlatDict(subckt_instance.dict())
+        param = FlatDict(subckt_instance.dict(exclude_unset=True))
         arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
         new_subckt_dict = subckt_instance.dict(exclude_unset=True)

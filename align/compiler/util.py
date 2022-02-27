@@ -8,7 +8,6 @@ from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging
 import pathlib
-import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -210,4 +209,3 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
 
 def get_primitive_spice():
     return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
-
