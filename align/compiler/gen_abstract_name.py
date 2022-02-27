@@ -5,8 +5,8 @@ Created on Wed Feb 2 13:12:15 2022
 @author: kunal
 """
 from align.schema.types import set_context
-from util import gen_key
 import logging
+import hashlib
 import pathlib
 
 
@@ -53,6 +53,19 @@ class PrimitiveLibrary():
                 else:
                     self.gen_primitive_def(ele)
         return self.plib
+
+    def _gen_key(self, param):
+        """_gen_key
+        Creates a hex key for combined transistor params
+        Args:
+            param (dict): dictionary of parameters
+        Returns:
+            str: unique hex key
+        """
+        skeys = sorted(param.keys())
+        arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
 
     def group_cap_subcircuit(self, unit_cap):
         #TODO hack for group cap, need to be fixed
@@ -106,7 +119,6 @@ class PrimitiveLibrary():
         """
         model = element.model
         generator = self.ckt_lib.find(model)
-
         if isinstance(generator, SubCircuit):
             element.add_abs_name(model)
             gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
@@ -114,7 +126,7 @@ class PrimitiveLibrary():
                 with set_context(self.plib):
                     self.plib.append(generator)
         elif get_generator(element.model, self.pdk_dir):
-            block_arg = gen_key(element.parameters)
+            block_arg = self._gen_key(element.parameters)
             unique_name = f'{model}{block_arg}'
             element.add_abs_name(unique_name)
             if not self.plib.find(model):

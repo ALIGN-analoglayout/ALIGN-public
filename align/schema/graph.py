@@ -6,6 +6,8 @@ from .translator import ConstraintTranslator
 import networkx
 from collections import Counter
 import logging
+from flatdict import FlatDict
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -171,13 +173,13 @@ class Graph(networkx.Graph):
             if skip and set(removal_candidates) & set(skip) and len(removal_candidates) > 1:
                 continue
 
-            subcircuit_name = subckt.name
-            new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
-            subcircuit_name = self.instance_counter(new_subckt)
-            if subcircuit_name != subckt.name and not self.subckt.parent.find(
-                    subcircuit_name):
-                new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
-            new_subckt_names.append(subcircuit_name)
+            # subcircuit_name = subckt.name
+            new_subckt = self.create_subckt_instance(subckt, match)
+            # subcircuit_name = self.instance_counter(new_subckt)
+            # if subcircuit_name != subckt.name and not self.subckt.parent.find(
+            #         subcircuit_name):
+            #     new_subckt = self.create_subckt_instance(subckt, match, subcircuit_name)
+            new_subckt_names.append(new_subckt.name)
 
             nodes = list()
             for node in sorted(removal_candidates):
@@ -193,16 +195,16 @@ class Graph(networkx.Graph):
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
 
-            # Model may need to be copied to current library
-            if not self.subckt.parent.find(subcircuit_name):
-                logger.debug(f"adding subckt {new_subckt} in library")
-                with set_context(self.subckt.parent):
-                    self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
+            # # Model may need to be copied to current library
+            # if not self.subckt.parent.find(new_subckt.name):
+            #     logger.debug(f"adding subckt {new_subckt} in library")
+            #     with set_context(self.subckt.parent):
+            #         self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
-            logger.debug(f"adding instance {instance_name} of type {subcircuit_name} in subckt {self.name}")
+            logger.debug(f"adding instance {instance_name} of type {new_subckt.name} in subckt {self.name}")
             self.add_instance(
                 name=instance_name,
-                model=subcircuit_name,
+                model=new_subckt.name,
                 pins=pin2net_map
             )
             if self.subckt.name:
@@ -213,9 +215,9 @@ class Graph(networkx.Graph):
     # TODO: in future use paramaters from generator
     # HACK can also be moved to end of flow
 
-    def create_subckt_instance(self, subckt, match, instance_name):
+    def create_subckt_instance(self, subckt, match):
         with set_context(self.subckt.parent):
-            subckt_instance = SubCircuit(name=instance_name,
+            subckt_instance = SubCircuit(name=subckt.name,
                                          pins=subckt.pins,
                                          parameters=subckt.parameters,
                                          generator=subckt.generator)
@@ -232,21 +234,30 @@ class Graph(networkx.Graph):
         with set_context(subckt_instance.constraints):
             for const in subckt.constraints:
                 subckt_instance.constraints.append(const)
-        return subckt_instance
+        param = FlatDict(subckt_instance.dict())
+        arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        new_subckt_dict = subckt_instance.dict(exclude_unset=True)
+        new_subckt_dict["name"] = new_subckt_dict["name"]+key
+        with set_context(self.subckt.parent):
+            new_subckt = SubCircuit(**new_subckt_dict)
+            if not self.subckt.parent.find(new_subckt.name):
+                self.subckt.parent.append(new_subckt)
+        return new_subckt
 
-    def instance_counter(self, subckt, counter=0):
-        if counter == 0:
-            name = subckt.name
-        else:
-            name = f'{subckt.name}_I{counter}'
-        existing_ckt = self.subckt.parent.find(name)
-        if existing_ckt:
-            if subckt.is_identical(existing_ckt):
-                logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")
-                return name
-            else:
-                name = self.instance_counter(subckt, counter+1)
-        return name
+    # def instance_counter(self, subckt, counter=0):
+    #     if counter == 0:
+    #         name = subckt.name
+    #     else:
+    #         name = f'{subckt.name}_I{counter}'
+    #     existing_ckt = self.subckt.parent.find(name)
+    #     if existing_ckt:
+    #         if subckt.is_identical(existing_ckt):
+    #             logger.debug(f"{subckt.name} is identical to {existing_ckt.name}")
+    #             return name
+    #         else:
+    #             name = self.instance_counter(subckt, counter+1)
+    #     return name
 
     def find_repeated_subckts(self, replace=False):
         index = 0
