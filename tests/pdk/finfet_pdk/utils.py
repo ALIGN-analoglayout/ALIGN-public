@@ -6,6 +6,8 @@ import shutil
 import align.pdk.finfet
 import re
 import math
+from collections import Counter
+
 try:
     import matplotlib
     matplotlib.use('Agg')
@@ -133,6 +135,9 @@ def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
     with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
+        name_counts = Counter([v['name'] for v in primitives if 'generator' in v])
+        for name in name_counts:
+            assert name_counts[name] < 2, f'Multiple primitive definitions for {name}'
         abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
