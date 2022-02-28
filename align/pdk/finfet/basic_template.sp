@@ -1,5 +1,5 @@
 .subckt tfr_2t a b
-* @: Generator()
+* @: Generator(name='tfr')
 xr1 a b tfr
 .ends tfr_2t
 
