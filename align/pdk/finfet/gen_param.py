@@ -31,6 +31,7 @@ def get_generator(name, pdkdir):
             spec.loader.exec_module(module)
     return getattr(module, name, False) or getattr(module, name.lower(), False)
 
+
 def generate_generic(pdkdir, parameters, netlistdir=None):
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
     uc = primitive1()
@@ -47,8 +48,8 @@ def limit_pairs(pairs):
     if len(pairs) > 12:
         new_pairs = []
         log10_aspect_ratios = [-0.3, 0, 0.3]
-        for l in log10_aspect_ratios:
-            best_pair = min((abs(log10(newy) - log10(newx) - l), (newx, newy))
+        for val in log10_aspect_ratios:
+            best_pair = min((abs(log10(newy) - log10(newx) - val), (newx, newy))
                             for newx, newy in pairs)[1]
             new_pairs.append(best_pair)
         return new_pairs
@@ -89,6 +90,7 @@ def add_primitive(primitives, block_name, block_args):
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
 
+
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
     vt = subckt.elements[0].model
@@ -96,7 +98,7 @@ def gen_param(subckt, primitives, pdk_dir):
     generator_name = subckt.generator["name"]
     logger.info(f"Getting generator parameters for: {block_name}")
     if get_generator(block_name.lower(), pdk_dir):
-        #Subcircuit defined in netlist DIG22INV  primitive
+        # Subcircuit defined in netlist DIG22INV  primitive
         attr = {'ports': list(subckt.pins),
                 'values': values if values else None,
                 'real_inst_type': block_name.lower()
@@ -105,7 +107,7 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"creating generic primitive {block_name} {block_args}")
         add_primitive(primitives, block_name, block_args)
     elif get_generator(generator_name.lower(), pdk_dir):
-        #TFR primitives, existing generators without subcircuit definition in netlist
+        # TFR primitives, existing generators without subcircuit definition in netlist
         attr = {'ports': list(subckt.pins),
                 'values': values if values else None,
                 'real_inst_type': subckt.elements[0].model.lower()
