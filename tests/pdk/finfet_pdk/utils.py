@@ -135,9 +135,9 @@ def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
     with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
-        name_counts = Counter([v['name'] for v in primitives if 'generator' in v])
+        name_counts = Counter([v['name'] for v in primitives])
         for pname in name_counts:
-            assert name_counts[pname] < 2, f'Multiple primitive definitions for {name}'
+            assert name_counts[pname] < 2, f'Multiple primitive definitions for {pname}'
         abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
