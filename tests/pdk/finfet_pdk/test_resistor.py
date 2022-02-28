@@ -56,3 +56,22 @@ def test_res_flat():
                 assert v['abstract_template_name'] in atn, f"Abstract not found: {v['abstract_template_name']}"
     shutil.rmtree(run_dir)
     shutil.rmtree(example)
+
+
+def test_res_one():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} a b
+        xi0 a b tfr w=2e-6 l=1e-6
+        xi1 a b tfr_prim w=2e-6 l=1e-6
+        xi2 a b tfr_prim w=2e-6 l=2e-6
+        .ends {name}
+    """)
+    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as f1:
+        primitives = json.load(f1)
+
+    shutil.rmtree(run_dir)
+    shutil.rmtree(example)
