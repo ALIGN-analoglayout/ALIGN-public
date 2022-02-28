@@ -1,6 +1,7 @@
 import logging
 import pathlib
 import json
+import re
 
 from collections import defaultdict
 
@@ -300,7 +301,8 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def router_driver(*, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
+def router_driver(*, opath, fpath, cap_map, cap_lef_s, 
+                  numLayout, effort, adr_mode, PDN_mode,
                   router_mode, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args, results_dir, verilog_ds_to_run):
 
@@ -356,42 +358,42 @@ def router_driver(*, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
         # create a fresh DB and populate it with a placement verilog d    
 
         lef_file = toplevel_args[2]
+        map_file = toplevel_args[4]
         new_lef_file = lef_file.replace(".placement_lef", ".lef")
         toplevel_args[2] = new_lef_file
+
+        idir = pathlib.Path(fpath)
+        
+        p = re.compile(r'^(\S+)\s+(\S+)\s*$')
 
         # Build up a new map file
         map_d_in = []
         idir = pathlib.Path(fpath)
         odir = pathlib.Path(opath)
-        
-        cc_caps = []
-
+         
+        cap_ctns = { str(pathlib.Path(gdsFile).stem) for atn, gdsFile in cap_map }
+        print(cap_ctns)
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
-            if   (idir/f'{ctn}.json').exists():
-                map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
-            elif (odir/f'{ctn}.json').exists():
+            if ctn in cap_ctns:
                 map_d_in.append((ctn,str(odir/f'{ctn}.gds')))
-                cc_caps.append(ctn)
+            elif (idir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
             else:
                 logger.error(f'Missing .lef file for {ctn}')
 
         lef_s_in = None
-        if cc_caps:
+        if cap_ctns:
             with (idir/new_lef_file).open("rt") as fp:
                 lef_s_in = fp.read()
-                
-            for cc_cap in cc_caps:
-                with (odir/f'{cc_cap}.lef').open("rt") as fp:
-                    s = fp.read()
-                    lef_s_in += s
+            lef_s_in += cap_lef_s
 
-        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
+
+        DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
         assert new_verilog_d == abstract_verilog_d
 
         assert new_fpath == fpath
-        assert new_opath == opath
 
         # populate new DB with placements to run
 

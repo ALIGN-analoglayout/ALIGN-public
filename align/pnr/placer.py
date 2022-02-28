@@ -393,7 +393,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     return placements_to_run, placement_verilog_alternatives
 
 
-def placer_driver(*, opath, fpath,
+def placer_driver(*, fpath, cap_map, cap_lef_s,
                   gui, lambda_coeff, scale_factor,
                   reference_placement_verilog_json, concrete_top_name, select_in_ILP, seed,
                   use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args, results_dir):
@@ -401,13 +401,11 @@ def placer_driver(*, opath, fpath,
 
 
     idir = pathlib.Path(fpath)
-    odir = pathlib.Path(opath)
 
     lef_file = toplevel_args[2]
     map_file = toplevel_args[4]
 
     p = re.compile(r'^(\S+)\s+(\S+)\s*$')
-    p2 = re.compile(r'^(.*)_AspectRatio_(.*)$')
 
     map_d_in = []
     with (idir/map_file).open("rt") as fp:
@@ -417,35 +415,19 @@ def placer_driver(*, opath, fpath,
             assert m
             map_d_in.append(m.groups())
 
-    cc_caps = []
-
-    for fn in odir.glob('*.lef'):
-        if fn.is_file():
-            if fn.suffixes == ['.lef']:
-                ctn = fn.stem
-                m = p2.match(ctn)
-                assert m
-                atn = m.groups()[0]
-                print(fn, atn, ctn)
-                map_d_in.append((atn,str(odir/f'{ctn}.gds')))
-                cc_caps.append(ctn)
-
     lef_s_in = None
-    if cc_caps:
+    if cap_map:
+        map_d_in.extend(cap_map)
+
         with (idir/lef_file).open("rt") as fp:
             lef_s_in = fp.read()
 
-        for cc_cap in cc_caps:
-            with (odir/f'{cc_cap}.lef').open("rt") as fp:
-                s = fp.read()
-                lef_s_in += s
+        lef_s_in += cap_lef_s
 
 
-    DB, verilog_d, new_fpath, new_opath, numLayout, effort = gen_DB_verilog_d(toplevel_args, results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
+    DB, verilog_d, new_fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args, results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
     assert new_fpath == fpath
-    assert new_opath == opath
-
 
     logger.debug(f'Using {ilp_solver} to solve ILP in placer')
 
