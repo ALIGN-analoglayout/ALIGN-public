@@ -6,7 +6,7 @@ import importlib
 import sys
 import pathlib
 import re
-from .toplevel import NType
+from .router import NType
 
 from .render_placement import gen_transformation
 

@@ -1,12 +1,20 @@
 import logging
+import pathlib
+import json
 
 from collections import defaultdict
 
 from .. import PnR
+from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d
+
+from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
+
+from .build_pnr_model import gen_DB_verilog_d
+from .placer import hierarchical_place
 
 logger = logging.getLogger(__name__)
 
-Omark = PnR.Omark
+Omark, NType = PnR.Omark, PnR.NType
 TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None, noGDS=False, noExtra=False):
@@ -291,4 +299,116 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
                        }
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+
+def router_driver(*, opath, fpath, numLayout, effort, adr_mode, PDN_mode,
+                  router_mode, skipGDS, scale_factor,
+                  nroutings, primitives, toplevel_args, results_dir, verilog_ds_to_run):
+
+    #
+    # Hacks for partial routing
+    #
+    if primitives is not None:
+        # Hack verilog_ds in place
+        for concrete_top_name, verilog_d in verilog_ds_to_run:
+            # Update connectivity for partially routed primitives
+            for module in verilog_d['modules']:
+                for instance in module['instances']:
+                    ctn = instance['concrete_template_name']
+                    if ctn in primitives:
+                        primitive = primitives[ctn]
+                        if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                            prp = primitive['metadata']['partially_routed_pins']
+                            by_net = defaultdict(list)
+                            for enity_name, net_name in prp.items():
+                                by_net[net_name].append(enity_name)
+
+                            new_fa_map = List[FormalActualMap]()
+                            for fa in instance['fa_map']:
+                                f, a = fa['formal'], fa['actual'] 
+                                for enity_name in by_net.get(f, [f]):
+                                    new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
+
+                            instance['fa_map'] = new_fa_map
+
+        
+    res_dict = {}
+    for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
+
+        tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
+        abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
+        concrete_top_name0 = tr_tbl[concrete_top_name]
+
+        # don't need to send this to disk; for debug only
+        if True:
+            logger.debug(f"updated verilog: {abstract_verilog_d}")
+            verilog_file = toplevel_args[3]
+
+            abstract_verilog_file = verilog_file.replace(".verilog.json", ".abstract_verilog.json")
+
+            with (pathlib.Path(fpath)/abstract_verilog_file).open("wt") as fp:
+                json.dump(abstract_verilog_d.dict(), fp=fp, indent=2, default=str)
+                
+            scaled_placement_verilog_file = verilog_file.replace(".verilog.json", ".scaled_placement_verilog.json")
+
+            with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("wt") as fp:
+                json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
+
+        # create a fresh DB and populate it with a placement verilog d    
+
+        lef_file = toplevel_args[2]
+        new_lef_file = lef_file.replace(".placement_lef", ".lef")
+        toplevel_args[2] = new_lef_file
+
+        # Build up a new map file
+        map_d_in = []
+        idir = pathlib.Path(fpath)
+        odir = pathlib.Path(opath)
+        
+        cc_caps = []
+
+        for leaf in scaled_placement_verilog_d['leaves']:
+            ctn = leaf['concrete_name']
+            if   (idir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
+            elif (odir/f'{ctn}.json').exists():
+                map_d_in.append((ctn,str(odir/f'{ctn}.gds')))
+                cc_caps.append(ctn)
+            else:
+                logger.error(f'Missing .lef file for {ctn}')
+
+        lef_s_in = None
+        if cc_caps:
+            with (idir/new_lef_file).open("rt") as fp:
+                lef_s_in = fp.read()
+                
+            for cc_cap in cc_caps:
+                with (odir/f'{cc_cap}.lef').open("rt") as fp:
+                    s = fp.read()
+                    lef_s_in += s
+
+        DB, new_verilog_d, new_fpath, new_opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
+        
+        assert new_verilog_d == abstract_verilog_d
+
+        assert new_fpath == fpath
+        assert new_opath == opath
+
+        # populate new DB with placements to run
+
+        placements_to_run, _ = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
+                                                  verilog_d=abstract_verilog_d, gui=False, lambda_coeff=1,
+                                                  scale_factor=scale_factor,
+                                                  reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
+                                                  concrete_top_name=concrete_top_name0,
+                                                  select_in_ILP=False, seed=0,
+                                                  use_analytical_placer=False, ilp_solver='symphony',
+                                                  primitives=primitives)
+
+
+        res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                     router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+
+        res_dict.update(res)
+    
+    return res_dict
 

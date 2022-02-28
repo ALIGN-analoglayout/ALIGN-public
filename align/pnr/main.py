@@ -3,14 +3,13 @@ import os
 import io
 import sys
 import logging
-import collections
 import json
 import re
 import itertools
 
 import copy
 
-from collections import deque, defaultdict
+from collections import defaultdict
 
 from ..cell_fabric.pdk import Pdk
 
@@ -233,8 +232,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         with (input_dir/verilog_file).open("wt") as fp:
             json.dump(write_verilog_json(verilog_d), fp=fp, indent=2, default=str)
 
-
-
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
         logger.debug(f'Generated constraint files: {constraint_files}')
@@ -275,10 +272,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         # TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths
         #
 
-        # Copy verilog
-
-        # (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
-
         # Copy pdk file
         (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
 
@@ -296,14 +289,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         logger.debug(f'Loaded constraint files: {constraint_files}')
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
-
-
-
         with (pdk_dir / pdk_file).open( 'rt') as fp:
             scale_factor = json.load(fp)["ScaleFactor"]
-
-        # Run pnr_compiler
-        # print(cmd)
 
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
@@ -316,7 +303,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                     reference_placement_verilog_json=reference_placement_verilog_json,
                                     concrete_top_name=concrete_top_name,
                                     nroutings=nroutings,
-                                    select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
+                                    select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer,
+                                    ilp_solver=ilp_solver,
                                     primitives=primitives)
 
         os.chdir(current_working_dir)
@@ -329,7 +317,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
                 (working_dir / fn.name).write_text(fn.read_text())
 
-    variants = collections.defaultdict(collections.defaultdict)
+    variants = defaultdict(defaultdict)
 
     if '3_pnr:check' in steps_to_run:
         for variant, (path_name, layout_idx, DB) in results_name_map.items():

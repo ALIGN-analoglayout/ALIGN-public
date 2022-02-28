@@ -17,18 +17,19 @@ from .grid_constraints import gen_constraints
 
 import math
 
+from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d
+from .build_pnr_model import gen_DB_verilog_d
+
+
 logger = logging.getLogger(__name__)
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, run_cap_placer):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
     logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
     DB.AddingPowerPins(current_node)
-
-    if run_cap_placer:
-        PRC = PnR.Placer_Router_Cap_Ifc(opath,fpath,current_node,DB.getDrc_info(),DB.checkoutSingleLEF(),1,6)
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
@@ -279,8 +280,7 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        gui, lambda_coeff, scale_factor,
-                       reference_placement_verilog_d, concrete_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives,
-                       run_cap_placer):
+                       reference_placement_verilog_d, concrete_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
     logger.info(f'Calling hierarchical_place with {"existing placement" if reference_placement_verilog_d is not None else "no placement"}')
 
@@ -312,8 +312,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
-              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
-              run_cap_placer=run_cap_placer)
+              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
         # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
         # convert the restrictions into the form needed for the subsequent placements
@@ -394,3 +393,87 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     return placements_to_run, placement_verilog_alternatives
 
 
+def placer_driver(*, opath, fpath,
+                  gui, lambda_coeff, scale_factor,
+                  reference_placement_verilog_json, concrete_top_name, select_in_ILP, seed,
+                  use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args, results_dir):
+
+
+
+    idir = pathlib.Path(fpath)
+    odir = pathlib.Path(opath)
+
+    lef_file = toplevel_args[2]
+    map_file = toplevel_args[4]
+
+    p = re.compile(r'^(\S+)\s+(\S+)\s*$')
+    p2 = re.compile(r'^(.*)_AspectRatio_(.*)$')
+
+    map_d_in = []
+    with (idir/map_file).open("rt") as fp:
+        for line in fp:
+            line = line.rstrip('\n')
+            m = p.match(line)
+            assert m
+            map_d_in.append(m.groups())
+
+    cc_caps = []
+
+    for fn in odir.glob('*.lef'):
+        if fn.is_file():
+            if fn.suffixes == ['.lef']:
+                ctn = fn.stem
+                m = p2.match(ctn)
+                assert m
+                atn = m.groups()[0]
+                print(fn, atn, ctn)
+                map_d_in.append((atn,str(odir/f'{ctn}.gds')))
+                cc_caps.append(ctn)
+
+    lef_s_in = None
+    if cc_caps:
+        with (idir/lef_file).open("rt") as fp:
+            lef_s_in = fp.read()
+
+        for cc_cap in cc_caps:
+            with (odir/f'{cc_cap}.lef').open("rt") as fp:
+                s = fp.read()
+                lef_s_in += s
+
+
+    DB, verilog_d, new_fpath, new_opath, numLayout, effort = gen_DB_verilog_d(toplevel_args, results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
+
+    assert new_fpath == fpath
+    assert new_opath == opath
+
+
+    logger.debug(f'Using {ilp_solver} to solve ILP in placer')
+
+    reference_placement_verilog_d = None
+    if reference_placement_verilog_json is not None:
+        with open(reference_placement_verilog_json, "rt") as fp:
+            reference_placement_verilog_d = json.load(fp)
+
+    placements_to_run, placement_verilog_alternatives = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
+                                                                           verilog_d=verilog_d, gui=gui, lambda_coeff=lambda_coeff,
+                                                                           scale_factor=scale_factor,
+                                                                           reference_placement_verilog_d=reference_placement_verilog_d,
+                                                                           concrete_top_name=concrete_top_name,
+                                                                           select_in_ILP=select_in_ILP, seed=seed,
+                                                                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
+                                                                           primitives=primitives)
+
+    pattern = re.compile(r'^(\S+)_(\d+)$')
+    last_key = list(placement_verilog_alternatives.keys())[-1]
+    m = pattern.match(last_key)
+    assert m
+    topname = m.groups()[0]
+
+    assert nroutings == 1, f"nroutings other than 1 is currently not working"
+
+    if placements_to_run is None:
+        verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
+    else:
+        verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
+
+    return verilog_ds_to_run, fpath, opath, numLayout, effort

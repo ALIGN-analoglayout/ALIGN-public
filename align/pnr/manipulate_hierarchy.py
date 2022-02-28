@@ -1,5 +1,8 @@
 import copy
 import logging
+import re
+from collections import defaultdict
+
 
 logger = logging.getLogger(__name__)
 
@@ -108,3 +111,64 @@ def manipulate_hierarchy(verilog_d, subckt):
     clean_if_extra(verilog_d, subckt)
     check_modules(verilog_d)
 
+def change_concrete_names_for_routing(scaled_placement_verilog_d):
+    leaf_ctns = [leaf['concrete_name'] for leaf in scaled_placement_verilog_d['leaves']]
+
+    p = re.compile(r'^(.+)_(\d+)$')
+    cn_tbl = defaultdict(list)
+    for module in scaled_placement_verilog_d['modules']:
+        an = module['abstract_name']
+        cn = module['concrete_name']
+        m = p.match(cn)
+        assert m
+        stem, suffix = m.groups()
+        assert stem == an
+        cn_tbl[an].append(int(suffix))
+
+    tr_tbl = {}
+    for an, cn_indices in cn_tbl.items():
+        for new_idx, old_idx in enumerate(sorted(cn_indices)):
+            tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
+
+    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+
+    for module in scaled_placement_verilog_d['modules']:
+        module['concrete_name'] = tr_tbl[module['concrete_name']]
+        for instance in module['instances']:
+            ctn = instance['concrete_template_name']
+            if ctn in leaf_ctns:
+                assert ctn not in tr_tbl
+                instance['abstract_template_name'] = ctn
+            else:
+                assert ctn in tr_tbl
+                instance['concrete_template_name'] = tr_tbl[ctn]                   
+
+    for leaf in scaled_placement_verilog_d['leaves']:
+        leaf['abstract_name'] =leaf['concrete_name']
+
+    return tr_tbl
+
+def gen_abstract_verilog_d( verilog_d):
+    new_verilog_d = copy.deepcopy(verilog_d)
+
+    if 'leaves' in new_verilog_d:
+        new_verilog_d['leaves'] = None
+
+    for module in new_verilog_d['modules']:
+        assert 'concrete_name' in module
+        assert 'abstract_name' in module
+        assert 'name' not in module
+        module['name'] = module['abstract_name']
+        del module['abstract_name']        
+        del module['concrete_name']        
+
+        assert 'bbox' in module
+        del module['bbox']
+
+        for instance in module['instances']:
+            assert 'concrete_template_name' in instance
+            del instance['concrete_template_name']
+            assert 'transformation' in instance
+            del instance['transformation']
+
+    return new_verilog_d
