@@ -1,3 +1,4 @@
+import pytest
 from align.pdk.finfet import tfr_prim
 from .utils import export_to_viewer
 import json
@@ -58,6 +59,7 @@ def test_res_flat():
     shutil.rmtree(example)
 
 
+@pytest.mark.skip(reason="For a future PR")
 def test_res_one():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
