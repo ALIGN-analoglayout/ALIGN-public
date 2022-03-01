@@ -3,6 +3,7 @@ import logging
 import re
 from collections import defaultdict
 
+from ..schema.hacks import List, FormalActualMap
 
 logger = logging.getLogger(__name__)
 
@@ -172,3 +173,26 @@ def gen_abstract_verilog_d( verilog_d):
             del instance['transformation']
 
     return new_verilog_d
+
+def connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitives):
+    # Hack scaled_placement_verilog_d in place
+    # Update connectivity for partially routed primitives
+    if primitives is not None:
+        for module in scaled_placement_verilog_d['modules']:
+            for instance in module['instances']:
+                ctn = instance['concrete_template_name']
+                if ctn in primitives:
+                    primitive = primitives[ctn]
+                    if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
+                        prp = primitive['metadata']['partially_routed_pins']
+                        by_net = defaultdict(list)
+                        for enity_name, net_name in prp.items():
+                            by_net[net_name].append(enity_name)
+
+                        new_fa_map = List[FormalActualMap]()
+                        for fa in instance['fa_map']:
+                            f, a = fa['formal'], fa['actual'] 
+                            for enity_name in by_net.get(f, [f]):
+                                new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
+
+                        instance['fa_map'] = new_fa_map

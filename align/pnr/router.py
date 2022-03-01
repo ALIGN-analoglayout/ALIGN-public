@@ -6,9 +6,7 @@ import re
 from collections import defaultdict
 
 from .. import PnR
-from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d
-
-from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
+from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d, connectivity_change_for_partial_routing
 
 from .build_pnr_model import gen_DB_verilog_d
 from .placer import hierarchical_place
@@ -301,40 +299,17 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def router_driver(*, opath, fpath, cap_map, cap_lef_s, 
+def router_driver(*, fpath, cap_map, cap_lef_s, 
                   numLayout, effort, adr_mode, PDN_mode,
                   router_mode, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args, results_dir, verilog_ds_to_run):
 
-    #
-    # Hacks for partial routing
-    #
-    if primitives is not None:
-        # Hack verilog_ds in place
-        for concrete_top_name, verilog_d in verilog_ds_to_run:
-            # Update connectivity for partially routed primitives
-            for module in verilog_d['modules']:
-                for instance in module['instances']:
-                    ctn = instance['concrete_template_name']
-                    if ctn in primitives:
-                        primitive = primitives[ctn]
-                        if 'metadata' in primitive and 'partially_routed_pins' in primitive['metadata']:
-                            prp = primitive['metadata']['partially_routed_pins']
-                            by_net = defaultdict(list)
-                            for enity_name, net_name in prp.items():
-                                by_net[net_name].append(enity_name)
-
-                            new_fa_map = List[FormalActualMap]()
-                            for fa in instance['fa_map']:
-                                f, a = fa['formal'], fa['actual'] 
-                                for enity_name in by_net.get(f, [f]):
-                                    new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
-
-                            instance['fa_map'] = new_fa_map
 
         
     res_dict = {}
     for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
+
+        connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitives)
 
         tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
@@ -355,39 +330,36 @@ def router_driver(*, opath, fpath, cap_map, cap_lef_s,
             with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("wt") as fp:
                 json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
 
-        # create a fresh DB and populate it with a placement verilog d    
 
         lef_file = toplevel_args[2]
         map_file = toplevel_args[4]
         new_lef_file = lef_file.replace(".placement_lef", ".lef")
         toplevel_args[2] = new_lef_file
 
-        idir = pathlib.Path(fpath)
-        
-        p = re.compile(r'^(\S+)\s+(\S+)\s*$')
-
         # Build up a new map file
-        map_d_in = []
+
         idir = pathlib.Path(fpath)
-        odir = pathlib.Path(opath)
          
-        cap_ctns = { str(pathlib.Path(gdsFile).stem) for atn, gdsFile in cap_map }
+        cap_ctns = { str(pathlib.Path(gdsFile).stem) : gdsFile for atn, gdsFile in cap_map }
         print(cap_ctns)
+        map_d_in = []
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
             if ctn in cap_ctns:
-                map_d_in.append((ctn,str(odir/f'{ctn}.gds')))
+                map_d_in.append((ctn,cap_ctns[ctn]))
             elif (idir/f'{ctn}.json').exists():
                 map_d_in.append((ctn,str(idir/f'{ctn}.gds')))
             else:
                 logger.error(f'Missing .lef file for {ctn}')
 
         lef_s_in = None
-        if cap_ctns:
+        if cap_map:
             with (idir/new_lef_file).open("rt") as fp:
                 lef_s_in = fp.read()
             lef_s_in += cap_lef_s
 
+
+        # create a fresh DB and populate it with a placement verilog d    
 
         DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
