@@ -87,19 +87,13 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
 
 
 def gen_constraint_files(verilog_d, input_dir):
-    pnr_const_ds = {}
-    for module in verilog_d['modules']:
-        nm = module['name']
-        pnr_const_ds[nm] = PnRConstraintWriter().map_valid_const(module['constraints'])
+    pnr_const_ds = {module['name'] : PnRConstraintWriter().map_valid_const(module['constraints']) for module in verilog_d['modules']}
 
-    constraint_files = set()
-    for nm, constraints in pnr_const_ds.items():
-        if len(constraints) == 0:
-            continue
-        fn = input_dir / f'{nm}.pnr.const.json'
-        with open(fn, 'w') as outfile:
-            json.dump(constraints, outfile, indent=4)
-        constraint_files.add(fn)
+    constraint_files = { (input_dir / f'{nm}.pnr.const.json') : constraints for nm, constraints in pnr_const_ds.items() if len(constraints) > 0 }
+
+    for fn, constraints in constraint_files.items():
+        with open(fn, 'wt') as outfile:
+            json.dump(constraints, outfile, indent=2)
 
     return constraint_files, pnr_const_ds
 
@@ -109,7 +103,7 @@ def load_constraint_files(input_dir):
     constraint_files = set(input_dir.glob('*.pnr.const.json'))
     for fn in constraint_files:
         nm = fn.name.split('.pnr.const.json')[0]
-        with open(fn, 'r') as fp:
+        with open(fn, 'rt') as fp:
             pnr_const_ds[nm] = json.load(fp)
     return constraint_files, pnr_const_ds
 
@@ -121,8 +115,6 @@ def extract_capacitor_constraints(pnr_const_ds):
     logger.debug( f'cap_constraints: {cap_constraints}')
 
     return cap_constraints
-
-
 
 
 def gen_leaf_cell_info( verilog_d, pnr_const_ds):
@@ -193,7 +185,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
-def write_verilog_json(verilog_d):
+def write_verilog_d(verilog_d):
     return {"modules":[{"name":m.name,
                         "parameters": list(m.parameters),
                         "constraints": [mc.dict() for mc in m.constraints],
@@ -230,7 +222,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         logger.debug(f"updated verilog: {verilog_d}")
         with (input_dir/verilog_file).open("wt") as fp:
-            json.dump(write_verilog_json(verilog_d), fp=fp, indent=2, default=str)
+            json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
 
         # SMB: I want this to be in main (perhaps), or in the topology stage
         constraint_files, pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
