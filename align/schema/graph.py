@@ -156,17 +156,19 @@ class Graph(networkx.Graph):
         assert isinstance(subckt, SubCircuit)
         new_subckt_names = []
         for match in matches:
+
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"
             removal_candidates = [
                 x for x, y in match.items()
                 if y not in subckt.pins]
+
             # Cannot replace if internal node is used elsewhere in subckt (Boundary elements / nets)
             if not all(x in match for node in removal_candidates for x in self.neighbors(node)):
                 continue
             # Remove nodes not on subckt boundary
-            if skip and (set(removal_candidates) & set(skip)):
+            if skip and set(removal_candidates) & set(skip) and len(removal_candidates) > 1:
                 continue
 
             subcircuit_name = subckt.name
@@ -192,17 +194,16 @@ class Graph(networkx.Graph):
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
 
             # Model may need to be copied to current library
-            if new_subckt not in self.subckt.parent:
-                logger.debug(f"adding subckt {new_subckt} in library {self.subckt.parent.find('ARRAY_TEMPLATE')}")
+            if not self.subckt.parent.find(subcircuit_name):
+                logger.debug(f"adding subckt {new_subckt} in library")
                 with set_context(self.subckt.parent):
                     self.subckt.parent.append(SubCircuit(**new_subckt.dict(exclude_unset=True)))
 
-            # logger.debug(f"adding instance {merged_inst_name} of type {inst_name} in subckt {self.name}")
+            logger.debug(f"adding instance {instance_name} of type {subcircuit_name} in subckt {self.name}")
             self.add_instance(
                 name=instance_name,
                 model=subcircuit_name,
-                pins=pin2net_map,
-                generator=subckt.name
+                pins=pin2net_map
             )
             if self.subckt.name:
                 tr = ConstraintTranslator(self.subckt.parent)
@@ -216,7 +217,8 @@ class Graph(networkx.Graph):
         with set_context(self.subckt.parent):
             subckt_instance = SubCircuit(name=instance_name,
                                          pins=subckt.pins,
-                                         parameters=subckt.parameters)
+                                         parameters=subckt.parameters,
+                                         generator=subckt.generator)
         with set_context(subckt_instance.elements):
             for x, y in match.items():
                 element = subckt.get_element(y)
@@ -225,7 +227,6 @@ class Graph(networkx.Graph):
                 subckt_instance.elements.append(Instance(
                     name=element.name,
                     model=self.nodes[x].get('instance').model,
-                    generator=self.nodes[x].get('instance').generator,
                     pins=element.pins,
                     parameters=self.nodes[x].get('instance').parameters))
         with set_context(subckt_instance.constraints):
@@ -283,8 +284,7 @@ class Graph(networkx.Graph):
                                 pins={
                                     pin: net2pin_map[net]
                                     if net in net2pin_map else net
-                                    for pin, net in element.pins.items()},
-                                generator=element.generator
+                                    for pin, net in element.pins.items()}
                             )
                         )
                 subckts.append(subckt)
@@ -332,6 +332,5 @@ class Graph(networkx.Graph):
                 pins={
                     pin: subcktinst.pins[net] if net in subcktinst.pins else f'{subcktinst.name}_{net}' for pin, net in element.pins.items()},
                 parameters={key: eval(val, {}, subcktinst.parameters)
-                            for key, val in element.parameters.items()},
-                generator=element.generator
+                            for key, val in element.parameters.items()}
             )

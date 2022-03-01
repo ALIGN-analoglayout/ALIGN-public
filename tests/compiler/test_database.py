@@ -89,7 +89,7 @@ def test_top_param():
         {"constraint": "GroundPorts", "ports": ["S"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
@@ -109,7 +109,7 @@ def test_multi_param():
         {"constraint": "KeepDummyHierarchies", "isTrue": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
@@ -137,7 +137,7 @@ def test_multi_param_remove_dummy():
         {"constraint": "GroundPorts", "ports": ["S"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
@@ -165,7 +165,7 @@ def test_multi_param_skip():
         {"constraint": "KeepDummyHierarchies", "isTrue": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, "PARAM_MOS", "PARAM_MOS_1", "PARAM_MOS_2"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
@@ -189,7 +189,7 @@ def test_preprocessing_SD():
         {"constraint": "KeepDummyHierarchies", "isTrue": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     all_modules = set([name, "PARAM_MOS", "P_MOS"])
     available_modules = set(
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]

@@ -8,7 +8,7 @@ def test_simple_circuit():
     test_path = test_home / "files" / "test_circuits" / "test2.sp"
     pdk_dir = test_home.parent / "pdks" / "FinFET14nm_Mock_PDK"
     config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
-    lib = compiler_input(test_path, "test2", pdk_dir, config_path)
+    lib, _ = compiler_input(test_path, "test2", pdk_dir, config_path)
     circuit = lib.find("TEST2")
 
     assert len(circuit.elements) == 9

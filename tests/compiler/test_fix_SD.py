@@ -27,7 +27,6 @@ def db():
                 name="M1",
                 model="PMOS",
                 pins={"D": "VDD", "G": "G", "S": "GND", "B": "B"},
-                generator="PMOS",
             )
         )
         subckt.elements.append(
@@ -35,7 +34,6 @@ def db():
                 name="M2",
                 model="PMOS",
                 pins={"D": "NET1", "G": "G", "S": "VDD", "B": "B"},
-                generator="PMOS",
             )
         )
         subckt.elements.append(
@@ -43,7 +41,6 @@ def db():
                 name="M3",
                 model="PMOS",
                 pins={"D": "NET1", "G": "G", "S": "GND", "B": "B"},
-                generator="PMOS",
             )
         )
         subckt.elements.append(
@@ -51,7 +48,6 @@ def db():
                 name="M4",
                 model="NMOS",
                 pins={"D": "VDD", "G": "G", "S": "GND", "B": "B"},
-                generator="PMOS",
             )
         )
         subckt.elements.append(
@@ -59,7 +55,6 @@ def db():
                 name="M5",
                 model="NMOS",
                 pins={"D": "GND", "G": "G", "S": "VDD", "B": "B"},
-                generator="PMOS",
             )
         )
     return subckt

@@ -1,3 +1,4 @@
+import json
 from .model import Model
 from .subcircuit import SubCircuit
 from .types import List, Union, set_context
@@ -19,6 +20,10 @@ class Library(List[Union[Model, SubCircuit]]):
 
     def find(self, name):
         return next((x for x in self if x.name == name.upper()), None)
+
+    def append(self, item):
+        assert not self.find(item.name), f'Duplicate model/subcircuit name {item.name} New: {item}, Existing: {self.find(item.name)}'
+        self.__root__.append(item)
 
     def default_models(self):
         models = list()
@@ -89,3 +94,16 @@ class Library(List[Union[Model, SubCircuit]]):
             )
         )
         return models
+
+
+def read_lib_json(json_file_path):
+    with open(json_file_path, "r") as f:
+        data = json.load(f)
+    library = Library(loadbuiltins=False)
+    with set_context(library):
+        for x in data:
+            if 'generator' in x:
+                library.append(SubCircuit(**{k: v for k, v in x.items() if v}))
+            else:
+                library.append(Model(**{k: v for k, v in x.items() if v}))
+    return library

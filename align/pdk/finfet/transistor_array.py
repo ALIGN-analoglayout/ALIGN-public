@@ -85,15 +85,15 @@ class MOSGenerator(CanvasPDK):
                         d[t[1]] = k
             return d
 
-        p1 = find_ports(ports, 'M1')
+        element_names = sorted({c[0] for mc in ports.values() for c in mc})
+        p1 = find_ports(ports, element_names[0])
         port_arr = {1: p1}
         mult_arr = {1: m}
-
-        p2 = find_ports(ports, 'M2')
-        if len(p2) > 1:
-            port_arr[2] = p2
-            mult_arr[2] = m
-
+        if len(element_names)>1:
+            p2 = find_ports(ports, element_names[1])
+            if len(p2) > 1:
+                port_arr[2] = p2
+                mult_arr[2] = m
         self.transistor_array = TransistorArray(
             unit_transistor=unit_transistor,
             m=mult_arr,
