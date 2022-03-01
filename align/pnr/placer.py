@@ -107,9 +107,9 @@ def gen_leaf_bbox_and_hovertext( ctn, p):
     return d, [ ((0, 0)+p, f'{ctn}<br>{0} {0} {p[0]} {p[1]}', True, 0, False)], None
 
 def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_factor, opath, placement_verilog_alternatives, is_toplevel):
-    (pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
+    #(pathlib.Path(opath) / f'{concrete_name}.placement_verilog.json').write_text(placement_verilog_d.json(indent=2,sort_keys=True))
     scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
-    (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
+    #(pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     #Comment out the next two calls to disable checking (possibly to use the GUI to visualize the error.)
     check_placement( scaled_placement_verilog_d, scale_factor)
