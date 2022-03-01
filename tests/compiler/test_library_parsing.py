@@ -20,12 +20,12 @@ def test_basic_lib():
     assert len(library.find("DP_PMOS_B").elements) == 2
     assert len(library.find("CASCODED_CMC_PMOS").elements) == 4
     assert len(library.find("INV_B").elements) == 2
-    assert len(library) == 54
+    assert len(library) == 78
 
-    assert len(library.find("DP_PMOS_B").constraints) == 3
+    assert len(library.find("DP_PMOS_B").constraints) == 4
     dp_const = library.find("DP_PMOS_B").constraints
     with set_context(dp_const):
-        x = constraint.SymmetricBlocks(direction="V", pairs=[["M0", "M1"]])
+        x = constraint.SymmetricBlocks(direction="V", pairs=[["M1", "M2"]])
     assert x in dp_const
-    assert dp_const[0].constraint == "symmetric_blocks"
-    assert dp_const[0].pairs == [["M0", "M1"]]
+    assert dp_const[1].constraint == "symmetric_blocks"
+    assert dp_const[1].pairs == [["M1", "M2"]]

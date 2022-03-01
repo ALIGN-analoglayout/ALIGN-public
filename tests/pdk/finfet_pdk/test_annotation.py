@@ -18,10 +18,11 @@ def test_dcl():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
-        for key, _ in primitives.items():
-            assert key.startswith('PMOS') or key.startswith('DCL'), f"Incorrect subcircuit identification {key}"
+        for primitive in primitives:
+            if 'generator' in primitive:
+                assert primitive["name"].startswith('PMOS') or primitive["name"].startswith('DCL'), f"Incorrect subcircuit identification {primitive}"
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

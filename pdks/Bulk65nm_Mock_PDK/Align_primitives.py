@@ -70,6 +70,7 @@ def read_primitive_spice(args):
         lines = f.read()
     parser.parse(lines)
     primitive_def = parser.library.find(args.primitive.upper())
+    primitive_def.add_generator('MOS')
     assert primitive_def, f"No such primitive definition found {args.primitive}"
     return primitive_def
 

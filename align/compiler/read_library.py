@@ -1,3 +1,4 @@
+from operator import sub
 import pathlib
 
 from align.schema.types import set_context
@@ -56,13 +57,12 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
         lib_parser.parse(lines)
     for subckt in lib_parser.library:
         if isinstance(subckt, SubCircuit):
-            if main.get_generator(subckt.name, pdk_dir) and \
-                    not [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
-                # TODO: In future can we overwrite subcircuit based on user constraint
-
-                with set_context(subckt.constraints):
-                    subckt.constraints.append(constraint.Generator())
-
+            if main.get_generator(subckt.name, pdk_dir):
+                subckt.add_generator(subckt.name)
+            else:
+                for const in subckt.constraints:
+                    if isinstance(const, constraint.Generator) and const.name:
+                        subckt.add_generator(const.name.upper())
     return lib_parser.library
 
 

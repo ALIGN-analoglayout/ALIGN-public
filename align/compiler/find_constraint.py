@@ -261,6 +261,19 @@ def FindSymmetry(subckt, stop_points: set):
     return match_pairs
 
 
+def constraint_generator(ckt_data):
+    """
+    Search for symmetry constraints
+    Args:
+        ckt_data : ckt library after annotation
+    """
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
+            continue
+        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
+        if not gen_const:
+            FindConst(subckt)
+
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file

@@ -1,14 +1,14 @@
-.subckt INV i zn SN SP
-M0 zn i SN SN NMOS w=w0 l=l0
-M1 zn i SP SP PMOS w=w1 l=l0
-.ends INV
+.subckt inv i zn sn sp
+m0 zn i sn sn nmos w=w0 l=l0
+m1 zn i sp sp pmos w=w1 l=l0
+.ends inv
 
-.subckt INV_B i zn SN SP PB
-M0 zn i SN SN NMOS w=w0 l=l0
-M1 zn i SP PB PMOS w=w1 l=l0
-.ends INV_B
+.subckt inv_b i zn sn sp pb
+m0 zn i sn sn nmos w=w0 l=l0
+m1 zn i sp pb pmos w=w1 l=l0
+.ends inv_b
 
-.subckt tgate GA GB D S BN BP
-M0 D GA S BN NMOS w=w l=90n
-M1 D GB S BP PMOS w=w l=90n
+.subckt tgate ga gb d s bn bp
+m0 d ga s bn nmos w=w l=90n
+m1 d gb s bp pmos w=w l=90n
 .ends tgate

@@ -3,7 +3,8 @@ import pytest
 import json
 import shutil
 
-from align.compiler.compiler import compiler_input, constraint_generator
+from align.compiler.compiler import compiler_input, annotate_library
+from align.compiler.find_constraint import  constraint_generator
 from align.schema.checker import SolutionNotFoundError
 
 pdk_dir = (
@@ -36,7 +37,8 @@ def test_group_block_hsc(dir_name):
         / dir_name
         / (circuit_name + ".sp")
     )
-    updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+    updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+    annotate_library(updated_cktlib, prim_lib)
     assert updated_cktlib.find("DP")
     assert updated_cktlib.find("CCN")
     assert updated_cktlib.find("CCP")
@@ -50,14 +52,9 @@ def test_group_block_hsc(dir_name):
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
     result_path.mkdir(parents=True, exist_ok=False)
-    verilog_tbl = constraint_generator(updated_cktlib)
-    gen_const_path = result_path / "HIGH_SPEED_COMPARATOR.const.json"
-    for module in verilog_tbl["modules"]:
-        if module["name"] == "HIGH_SPEED_COMPARATOR":
-            gen_const = module["constraints"]
-            gen_const.sort(key=lambda item: item.get("constraint"))
-            with (gen_const_path).open("wt") as fp:
-                json.dump(gen_const, fp=fp, indent=2)
+    constraint_generator(updated_cktlib)
+    gen_const = updated_cktlib.find("HIGH_SPEED_COMPARATOR").constraints.dict()["__root__"]
+    gen_const.sort(key=lambda item: item.get("constraint"))
     gold_const_path = (
         pathlib.Path(__file__).resolve().parent.parent
         / "files"
@@ -81,7 +78,7 @@ def test_constraint_checking(dir_name):
         / (circuit_name + ".sp")
     )
     with pytest.raises(SolutionNotFoundError):
-        updated_cktlib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
+        compiler_input(test_path, circuit_name, pdk_dir, config_path)
 
 
 def test_scf():
@@ -100,16 +97,15 @@ def test_scf():
         / "switched_capacitor_filter.const.json"
     )
 
-    updated_cktlib = compiler_input(
+    updated_cktlib, prim_lib = compiler_input(
         test_path, "SWITCHED_CAPACITOR_FILTER", pdk_dir, config_path
     )
-    assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
-    verilog_tbl = constraint_generator(updated_cktlib)
+    annotate_library(updated_cktlib, prim_lib)
 
-    for module in verilog_tbl["modules"]:
-        if module["name"] == "SWITCHED_CAPACITOR_FILTER":
-            gen_const = module["constraints"]
-            gen_const.sort(key=lambda item: item.get("constraint"))
+    assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
+    constraint_generator(updated_cktlib)
+    gen_const = updated_cktlib.find("SWITCHED_CAPACITOR_FILTER").constraints.dict()["__root__"]
+    gen_const.sort(key=lambda item: item.get("constraint"))
 
     gold_const_path = (
         pathlib.Path(__file__).resolve().parent.parent

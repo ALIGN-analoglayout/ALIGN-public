@@ -6,6 +6,8 @@ import shutil
 import align.pdk.finfet
 import re
 import math
+from collections import Counter
+
 try:
     import matplotlib
     matplotlib.use('Agg')
@@ -131,9 +133,12 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
 
 def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
-        abstract_names = {v['abstract_template_name'] for v in primitives.values()}
+        name_counts = Counter([v['name'] for v in primitives])
+        for pname in name_counts:
+            assert name_counts[pname] < 2, f'Multiple primitive definitions for {pname}'
+        abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
         verilog_json = json.load(fp)
@@ -142,7 +147,7 @@ def verify_abstract_names(name, run_dir):
             abstract_names_used += [i['abstract_template_name'] for i in module['instances']]
         abstract_names_used = set(abstract_names_used)
     assert abstract_names.issubset(abstract_names_used), (
-        f'__primitives__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
+        f'__primitives_library__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
     )
 
 
