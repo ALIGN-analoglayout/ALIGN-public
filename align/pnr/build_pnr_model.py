@@ -148,7 +148,7 @@ def _attach_constraint_files( DB, fpath):
             DB.ReadPrimitiveOffsetPitch(instances, jsonStr)
             logger.debug(f"Finished reading primitive json file {name}.json")
         else:
-            logger.warning(f"No primitive json file for primitive {name}")
+            logger.warning(f"No primitive json file for primitive {name}. Okay if a CC capacitor.")
 
 def _semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
@@ -163,7 +163,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
     DB.ReadPDKJSON( path + '/' + drname)
 
     if lef_s_in is not None:
-        logger.error(f'Reading LEF from string')
+        logger.info(f'Reading LEF from string...')
         DB.ReadLEFFromString(lef_s_in)
     else:
         p = pathlib.Path(path) / lefname
@@ -189,3 +189,26 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
     _semantic(DB, path, topcell, global_signals)
 
     return DB, verilog_d
+
+def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
+    assert len(args) == 9
+
+    fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
+    numLayout,effort = [ int(x) for x in args[7:9]]
+
+    if fpath[-1] == '/': fpath = fpath[:-1]
+
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in, lef_s_in=lef_s_in)
+
+    assert verilog_d is not None
+
+    if results_dir is None:
+        opath = './Results/'
+    else:
+        opath = str(pathlib.Path(results_dir))
+        if opath[-1] != '/':
+            opath = opath + '/'
+
+    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
+
+    return DB, verilog_d, fpath, opath, numLayout, effort
