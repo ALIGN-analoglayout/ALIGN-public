@@ -95,7 +95,7 @@ def gen_constraint_files(verilog_d, input_dir):
         with open(fn, 'wt') as outfile:
             json.dump(constraints, outfile, indent=2)
 
-    return constraint_files, pnr_const_ds
+    return pnr_const_ds
 
 
 def load_constraint_files(input_dir):
@@ -105,7 +105,7 @@ def load_constraint_files(input_dir):
         nm = fn.name.split('.pnr.const.json')[0]
         with open(fn, 'rt') as fp:
             pnr_const_ds[nm] = json.load(fp)
-    return constraint_files, pnr_const_ds
+    return pnr_const_ds
 
 
 def extract_capacitor_constraints(pnr_const_ds):
@@ -225,8 +225,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
 
         # SMB: I want this to be in main (perhaps), or in the topology stage
-        constraint_files, pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
-        logger.debug(f'Generated constraint files: {constraint_files}')
+        pnr_const_ds = gen_constraint_files(verilog_d, input_dir)
 
         leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 
@@ -276,9 +275,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     else:
         with (working_dir / "__capacitors__.json").open("rt") as fp:
             capacitors = json.load(fp)
-
-        constraint_files, pnr_const_ds = load_constraint_files(input_dir)
-        logger.debug(f'Loaded constraint files: {constraint_files}')
+        pnr_const_ds = load_constraint_files(input_dir)
 
     if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
         with (pdk_dir / pdk_file).open( 'rt') as fp:
