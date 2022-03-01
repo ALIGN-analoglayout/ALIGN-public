@@ -5,10 +5,10 @@ from align.compiler.compiler import compiler_input
 
 def test_simple_circuit():
     test_home = pathlib.Path(__file__).resolve().parent.parent
-    test_path = test_home / "files"/ "test_circuits"/ "test2.sp"
-    pdk_dir = test_home.parent / "pdks"/ "FinFET14nm_Mock_PDK"
+    test_path = test_home / "files" / "test_circuits" / "test2.sp"
+    pdk_dir = test_home.parent / "pdks" / "FinFET14nm_Mock_PDK"
     config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
-    lib = compiler_input(test_path, "test2", pdk_dir, config_path)
+    lib, _ = compiler_input(test_path, "test2", pdk_dir, config_path)
     circuit = lib.find("TEST2")
 
     assert len(circuit.elements) == 9
@@ -91,10 +91,10 @@ def test_simple_circuit():
     model = lib.find(circuit.elements[3].model)
     assert model.base == None  # Using base model
     assert model.pins == ["PLUS", "MINUS"]
-    assert model.parameters == {"VALUE": "0"}
+    assert model.parameters == {"VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
     assert model.prefix == "R"
     assert circuit.elements[3].pins == {"PLUS": "VBIAS", "MINUS": "NET5"}
-    assert circuit.elements[3].parameters == {"VALUE": "5000"}
+    assert circuit.elements[3].parameters == {"VALUE": "5000", 'PARALLEL': '1', 'STACK': '1'}
 
     assert circuit.elements[4].name == "CC0"
     model = lib.find(circuit.elements[4].model)
@@ -102,7 +102,7 @@ def test_simple_circuit():
     assert model.base == None
     assert circuit.elements[4].pins == {"PLUS": "VIN", "MINUS": "NET5"}
     assert circuit.elements[4].parameters == {
-        "VALUE": "1.0000000000000002E-14"
+        "VALUE": "1.0000000000000002E-14", 'PARALLEL': '1', 'STACK': '1'
     }  # TBF: remove multiple zeros
 
     assert circuit.elements[5].name == "LL0"
@@ -111,7 +111,7 @@ def test_simple_circuit():
     assert model.base == None
     assert circuit.elements[5].pins == {"PLUS": "VDD!", "MINUS": "VOUT"}
     assert circuit.elements[5].parameters == {
-        "VALUE": "0.002"
+        "VALUE": "0.002", 'PARALLEL': '1', 'STACK': '1'
     }  # TBF: change to scientific nomenclature?
 
     assert circuit.elements[6].name == "RR1"
@@ -119,20 +119,20 @@ def test_simple_circuit():
     model = lib.find(circuit.elements[6].model)
     assert model.name == "RESISTOR"
     assert model.pins == ["PLUS", "MINUS"]
-    assert model.parameters == {"R": "1", "VALUE": "0"}
+    assert model.parameters == {"R": "1", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
     assert circuit.elements[6].pins == {"PLUS": "VBIAS", "MINUS": "NET6"}
-    assert circuit.elements[6].parameters == {"R": "5000", "VALUE": "0"}
+    assert circuit.elements[6].parameters == {"R": "5000", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
 
     assert circuit.elements[7].name == "CC1"
     assert circuit.elements[7].model == "CAPACITOR"
     model = lib.find(circuit.elements[7].model)
     assert model.name == "CAPACITOR"
     assert model.pins == ["PLUS", "MINUS"]
-    assert model.parameters == {"C": "1", "VALUE": "0"}
+    assert model.parameters == {"C": "1", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
     assert circuit.elements[7].pins == {"PLUS": "VIN", "MINUS": "NET6"}
     assert circuit.elements[7].parameters == {
         "C": "1.0000000000000002E-14",
-        "VALUE": "0",
+        "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'
     }
 
     assert circuit.elements[8].name == "LL1"
@@ -140,6 +140,6 @@ def test_simple_circuit():
     model = lib.find(circuit.elements[8].model)
     assert model.name == "INDUCTOR"
     assert model.pins == ["PLUS", "MINUS"]
-    assert model.parameters == {"IND": "1", "VALUE": "0"}
+    assert model.parameters == {"IND": "1", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
     assert circuit.elements[8].pins == {"PLUS": "VDD!", "MINUS": "NET6"}
-    assert circuit.elements[8].parameters == {"IND": "0.002", "VALUE": "0"}
+    assert circuit.elements[8].parameters == {"IND": "0.002", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}

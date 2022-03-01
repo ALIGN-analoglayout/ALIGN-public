@@ -22,43 +22,33 @@
         {
             "pairs": [
                 {
-                    "type": "sympair",
-                    "block1": "C0",
-                    "block2": "C4"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "C1",
-                    "block2": "C7"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "C5",
-                    "block2": "C2"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "C6",
-                    "block2": "C3"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "C9",
-                    "block2": "C8"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "M3",
-                    "block2": "M11"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "M5",
-                    "block2": "M9"
-                },
-                {
                     "type": "selfsym",
                     "block": "XI0"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_C0",
+                    "block2": "X_C4"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_C1",
+                    "block2": "X_C7"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_C5",
+                    "block2": "X_C2"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_C6",
+                    "block2": "X_C3"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_C9",
+                    "block2": "X_C8"
                 },
                 {
                     "type": "selfsym",
@@ -73,8 +63,18 @@
                     "block": "X_M12_M6"
                 },
                 {
+                    "type": "sympair",
+                    "block1": "X_M3",
+                    "block2": "X_M11"
+                },
+                {
                     "type": "selfsym",
                     "block": "X_M4_M8"
+                },
+                {
+                    "type": "sympair",
+                    "block1": "X_M5",
+                    "block2": "X_M9"
                 }
             ],
             "const_name": "SymmBlock",
@@ -86,23 +86,23 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "M5",
-                        "pin": "S"
+                        "name": "X_M10_M7",
+                        "pin": "SB"
                     },
                     {
                         "type": "pin",
-                        "name": "C1",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "C0",
+                        "name": "X_C0",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M10_M7",
-                        "pin": "SB"
+                        "name": "X_C1",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M5",
+                        "pin": "S"
                     }
                 ]
             },
@@ -111,23 +111,23 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "M9",
-                        "pin": "S"
+                        "name": "X_M10_M7",
+                        "pin": "SA"
                     },
                     {
                         "type": "pin",
-                        "name": "C7",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "C4",
+                        "name": "X_C4",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M10_M7",
-                        "pin": "SA"
+                        "name": "X_C7",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M9",
+                        "pin": "S"
                     }
                 ]
             },
@@ -145,18 +145,18 @@
                     },
                     {
                         "type": "pin",
-                        "name": "C6",
-                        "pin": "PLUS"
+                        "name": "X_M10_M7",
+                        "pin": "DA"
                     },
                     {
                         "type": "pin",
-                        "name": "C5",
+                        "name": "X_C5",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M10_M7",
-                        "pin": "DA"
+                        "name": "X_C6",
+                        "pin": "PLUS"
                     }
                 ]
             },
@@ -170,18 +170,18 @@
                     },
                     {
                         "type": "pin",
-                        "name": "C3",
-                        "pin": "PLUS"
+                        "name": "X_M10_M7",
+                        "pin": "DB"
                     },
                     {
                         "type": "pin",
-                        "name": "C2",
+                        "name": "X_C2",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M10_M7",
-                        "pin": "DB"
+                        "name": "X_C3",
+                        "pin": "PLUS"
                     }
                 ]
             },
@@ -194,18 +194,18 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "M3",
-                        "pin": "S"
+                        "name": "X_M0_M14",
+                        "pin": "SA"
                     },
                     {
                         "type": "pin",
-                        "name": "C1",
+                        "name": "X_C1",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M0_M14",
-                        "pin": "SA"
+                        "name": "X_M3",
+                        "pin": "S"
                     }
                 ]
             },
@@ -214,18 +214,18 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "M11",
-                        "pin": "S"
+                        "name": "X_M0_M14",
+                        "pin": "SB"
                     },
                     {
                         "type": "pin",
-                        "name": "C7",
+                        "name": "X_C7",
                         "pin": "MINUS"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M0_M14",
-                        "pin": "SB"
+                        "name": "X_M11",
+                        "pin": "S"
                     }
                 ]
             },
@@ -238,11 +238,6 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C0",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
                         "name": "X_M4_M8",
                         "pin": "DA"
                     },
@@ -250,6 +245,11 @@
                         "type": "pin",
                         "name": "X_M12_M6",
                         "pin": "DB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_C0",
+                        "pin": "PLUS"
                     }
                 ]
             },
@@ -258,11 +258,6 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C4",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
                         "name": "X_M4_M8",
                         "pin": "DB"
                     },
@@ -270,6 +265,11 @@
                         "type": "pin",
                         "name": "X_M12_M6",
                         "pin": "DA"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_C4",
+                        "pin": "PLUS"
                     }
                 ]
             },
@@ -282,13 +282,13 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C5",
-                        "pin": "PLUS"
+                        "name": "X_M12_M6",
+                        "pin": "SB"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M12_M6",
-                        "pin": "SB"
+                        "name": "X_C5",
+                        "pin": "PLUS"
                     },
                     {
                         "type": "terminal",
@@ -302,13 +302,13 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C2",
-                        "pin": "PLUS"
+                        "name": "X_M12_M6",
+                        "pin": "SA"
                     },
                     {
                         "type": "pin",
-                        "name": "X_M12_M6",
-                        "pin": "SA"
+                        "name": "X_C2",
+                        "pin": "PLUS"
                     },
                     {
                         "type": "terminal",
@@ -322,36 +322,6 @@
         },
         {
             "net1": {
-                "name": "VOUTP",
-                "blocks": [
-                    {
-                        "type": "pin",
-                        "name": "XI0",
-                        "pin": "VOUTP"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "C9",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "C6",
-                        "pin": "MINUS"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "X_M0_M14",
-                        "pin": "DB"
-                    },
-                    {
-                        "type": "terminal",
-                        "name": "VOUTP",
-                        "pin": null
-                    }
-                ]
-            },
-            "net2": {
                 "name": "VOUTN",
                 "blocks": [
                     {
@@ -361,22 +331,52 @@
                     },
                     {
                         "type": "pin",
-                        "name": "C8",
-                        "pin": "PLUS"
-                    },
-                    {
-                        "type": "pin",
-                        "name": "C3",
-                        "pin": "MINUS"
-                    },
-                    {
-                        "type": "pin",
                         "name": "X_M0_M14",
                         "pin": "DA"
                     },
                     {
+                        "type": "pin",
+                        "name": "X_C3",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_C8",
+                        "pin": "PLUS"
+                    },
+                    {
                         "type": "terminal",
                         "name": "VOUTN",
+                        "pin": null
+                    }
+                ]
+            },
+            "net2": {
+                "name": "VOUTP",
+                "blocks": [
+                    {
+                        "type": "pin",
+                        "name": "XI0",
+                        "pin": "VOUTP"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_M0_M14",
+                        "pin": "DB"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_C6",
+                        "pin": "MINUS"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_C9",
+                        "pin": "PLUS"
+                    },
+                    {
+                        "type": "terminal",
+                        "name": "VOUTP",
                         "pin": null
                     }
                 ]

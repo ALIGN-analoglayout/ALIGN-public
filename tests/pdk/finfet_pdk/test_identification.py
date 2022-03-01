@@ -103,7 +103,7 @@ def test_disable_fix_merge():
         instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
         _ = dump_simplified_json(modules, filename)
-        assert all([k in instances for k in ['MN01', 'MN02', 'MN03', 'MN04']]), 'Incorrect annotation'
+        assert all([k in instances for k in ['X_MN01', 'X_MN02', 'X_MN03', 'X_MN04']]), 'Incorrect annotation'
 
 
 def test_illegal():

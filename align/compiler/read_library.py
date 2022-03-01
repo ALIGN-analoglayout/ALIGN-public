@@ -1,14 +1,25 @@
+from operator import sub
 import pathlib
+
+from align.schema.types import set_context
 from ..schema.parser import SpiceParser
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
+from ..primitive import main
+
 import logging
+from ..schema.library import Library
+from align.primitive.main import get_generator
 
 
 logger = logging.getLogger(__name__)
 
 
 def read_models(pdk_dir: pathlib.Path, config_path=None):
-    ckt_parser = SpiceParser()
+
+    pdk_models = get_generator('pdk_models', pdk_dir)
+    library = Library(loadbuiltins=True, pdk_models=pdk_models)
+    ckt_parser = SpiceParser(library=library)
     # Read model file to map devices
     if config_path is None:
         config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
@@ -38,10 +49,20 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
 
     lib_files = ["basic_template.sp", "user_template.sp"]
     for lib_file in lib_files:
-        with open(config_path / lib_file) as f:
+        lib_file_path = pdk_dir/lib_file
+        if not lib_file_path.exists():
+            lib_file_path = config_path / lib_file
+        with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
-
+    for subckt in lib_parser.library:
+        if isinstance(subckt, SubCircuit):
+            if main.get_generator(subckt.name, pdk_dir):
+                subckt.add_generator(subckt.name)
+            else:
+                for const in subckt.constraints:
+                    if isinstance(const, constraint.Generator) and const.name:
+                        subckt.add_generator(const.name.upper())
     return lib_parser.library
 
 

@@ -10,7 +10,6 @@ set(sources
      PnRdatabase.cpp
      ReadDesignRuleJson.cpp
      WriteJSON.cpp
-     ReadVerilog.cpp
      ReadConstraint.cpp
      Print.cpp
      ReadLEF.cpp

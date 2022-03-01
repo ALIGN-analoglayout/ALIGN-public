@@ -171,7 +171,6 @@ def test_donotroute():
     # The generated and loaded files should be identical
     input_dir = run_dir / '3_pnr' / 'inputs'
     verilog_d = VerilogJsonTop.parse_file(input_dir / f'{name.upper()}.verilog.json')
-    constraint_files_l, pnr_const_ds_l = load_constraint_files(input_dir)
-    constraint_files_g, pnr_const_ds_g = gen_constraint_files(verilog_d, input_dir)
-    assert constraint_files_l == constraint_files_g
+    pnr_const_ds_l = load_constraint_files(input_dir)
+    pnr_const_ds_g = gen_constraint_files(verilog_d, input_dir)
     assert pnr_const_ds_l == pnr_const_ds_g

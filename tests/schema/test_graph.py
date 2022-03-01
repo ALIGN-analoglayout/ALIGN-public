@@ -31,13 +31,13 @@ def simple_circuit(circuit):
     with set_context(circuit.parent):
         circuit.parent.append(Model(name='CustomDevice', base='ThreeTerminalDevice', parameters={'myparameter': 1}))
     with set_context(circuit.elements):
-        circuit.elements.append(Instance(name='X1', model='CustomDevice', pins={'A': 'NET1', 'B': 'in1', 'C': 'net01'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X2', model='CustomDevice', pins={'A': 'NET2', 'B': 'in2', 'C': 'net02'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X3', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET1'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X4', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET2'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X5', model='TwoTerminalDevice', pins={'A': 'net01', 'B': 'net00'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X6', model='TwoTerminalDevice', pins={'A': 'net02', 'B': 'net00'}, generator='Dummy'))
-        circuit.elements.append(Instance(name='X7', model='TwoTerminalDevice', pins={'A': 'NET3', 'B': 'net03'}, generator='Dummy'))
+        circuit.elements.append(Instance(name='X1', model='CustomDevice', pins={'A': 'NET1', 'B': 'in1', 'C': 'net01'}))
+        circuit.elements.append(Instance(name='X2', model='CustomDevice', pins={'A': 'NET2', 'B': 'in2', 'C': 'net02'}))
+        circuit.elements.append(Instance(name='X3', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET1'}))
+        circuit.elements.append(Instance(name='X4', model='CustomDevice', pins={'A': 'NET3', 'B': 'NET1', 'C': 'NET2'}))
+        circuit.elements.append(Instance(name='X5', model='TwoTerminalDevice', pins={'A': 'net01', 'B': 'net00'}))
+        circuit.elements.append(Instance(name='X6', model='TwoTerminalDevice', pins={'A': 'net02', 'B': 'net00'}))
+        circuit.elements.append(Instance(name='X7', model='TwoTerminalDevice', pins={'A': 'NET3', 'B': 'net03'}))
     return circuit
 
 
@@ -48,9 +48,9 @@ def matching_subckt(library):
     library.append(subckt)
     with set_context(subckt.elements):
         subckt.elements.append(Instance(name='X1', model='ThreeTerminalDevice', pins={
-                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN1'}, parameters={'MYPARAMETER': 1}, generator='Dummy'))
+                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN1'}, parameters={'MYPARAMETER': 1}))
         subckt.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
-                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': 'MYPARAMETER'}, generator='Dummy'))
+                               'A': 'PIN3', 'B': 'PIN1', 'C': 'PIN2'}, parameters={'MYPARAMETER': 'MYPARAMETER'}))
     return subckt
 
 
@@ -65,26 +65,26 @@ def heirarchical_ckt(matching_subckt):
             name='X1',
             model='TEST_SUBCKT',
             pins={'PIN1': 'PIN1', 'PIN2': 'PIN2', 'PIN3': 'NET1'},
-            parameters={'MYPARAMETER': '2'},
-            generator='Dummy'))
+            parameters={'MYPARAMETER': '2'}
+            ))
         subckt.elements.append(Instance(
             name='X2',
             model='ThreeTerminalDevice',
             pins={'A': 'NET1', 'B': 'PIN1', 'C': 'PIN2'},
             parameters={'MYPARAMETER': '1'},
-            generator='Dummy'))
+            ))
     with set_context(ckt.elements):
         ckt.elements.append(Instance(
             name='XSUB1',
             model='PARENT_SUBCKT',
             pins={'PIN1': 'NET1', 'PIN2': 'NET2'},
-            generator='Dummy'))
+            ))
         ckt.elements.append(Instance(
             name='XSUB2',
             model='TEST_SUBCKT',
             pins={'PIN1': 'NET1', 'PIN2': 'NET2', 'PIN3': 'NET3'},
             parameters={'MYPARAMETER': '3'},
-            generator='Dummy'))
+            ))
     return ckt
 
 
@@ -108,9 +108,9 @@ def primitives():
 
 def test_netlist(circuit):
     with set_context(circuit.elements):
-        X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
+        X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
         X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
-                                     'A': 'NET1', 'B': 'NET2', 'C': 'NET3'}, generator='Dummy'))
+                                     'A': 'NET1', 'B': 'NET2', 'C': 'NET3'}))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -131,9 +131,9 @@ def test_netlist(circuit):
 
 def test_netlist_shared_net(circuit):
     with set_context(circuit.elements):
-        X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
+        X1 = circuit.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
         X2 = circuit.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={
-                                     'A': 'NET1', 'B': 'NET1', 'C': 'NET2'}, generator='Dummy'))
+                                     'A': 'NET1', 'B': 'NET1', 'C': 'NET2'}))
     netlist = Graph(circuit)
     assert netlist.elements == circuit.elements
     assert netlist.nets == circuit.nets
@@ -161,15 +161,15 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt):
     with set_context(simple_circuit.parent):
         subckt2 = SubCircuit(name='test_subckt2', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4', 'PIN5'])
     with set_context(subckt2.elements):
-        subckt2.elements.append(Instance(name='X1', model='ThreeTerminalDevice', pins={'A': 'PIN1', 'B': 'PIN3', 'C': 'PIN4'}, generator='Dummy'))
-        subckt2.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={'A': 'PIN2', 'B': 'PIN3', 'C': 'PIN5'}, generator='Dummy'))
+        subckt2.elements.append(Instance(name='X1', model='ThreeTerminalDevice', pins={'A': 'PIN1', 'B': 'PIN3', 'C': 'PIN4'}))
+        subckt2.elements.append(Instance(name='X2', model='ThreeTerminalDevice', pins={'A': 'PIN2', 'B': 'PIN3', 'C': 'PIN5'}))
     assert len(netlist.find_subgraph_matches(Graph(subckt2))) == 0
     # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     with set_context(simple_circuit.parent):
         subckt3 = SubCircuit(name='test_subckt3', pins=['PIN1', 'PIN2', 'PIN3', 'PIN4'])
     with set_context(subckt3.elements):
-        subckt3.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'PIN1', 'B': 'PIN2'}, generator='Dummy'))
-        subckt3.elements.append(Instance(name='X2', model='TwoTerminalDevice', pins={'A': 'PIN3', 'B': 'PIN4'}, generator='Dummy'))
+        subckt3.elements.append(Instance(name='X1', model='TwoTerminalDevice', pins={'A': 'PIN1', 'B': 'PIN2'}))
+        subckt3.elements.append(Instance(name='X2', model='TwoTerminalDevice', pins={'A': 'PIN3', 'B': 'PIN4'}))
     assert len(netlist.find_subgraph_matches(Graph(subckt3))) == 1
 
 

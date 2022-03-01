@@ -16,9 +16,8 @@
 #include <vector>
 
 #include "../PnRDB/datatype.h"
-#include "Aplace.h"
-#include "ConstGraph.h"
 #include "Pdatatype.h"
+#include "PlacerHyperparameters.h"
 #include "SeqPair.h"
 #include "design.h"
 #include "lp_lib.h"
@@ -61,12 +60,13 @@ class ILP_solver {
   };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
-  bool FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  //bool FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
   bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
-    if (use_ilp_solver == SYMPHONY) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
-    return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
+    //if (use_ilp_solver == SYMPHONY) 
+    return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }
   public:
   double cost = 0;
@@ -83,7 +83,7 @@ class ILP_solver {
   double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
-  void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
+  //void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point>>& temp_contact);
   void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
   void updateTerminalCenterAnalytical(design& mydesign);

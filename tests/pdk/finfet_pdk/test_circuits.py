@@ -1,11 +1,11 @@
 import pytest
 import json
 import shutil
+import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-
-cleanup = False
+cleanup = True
 
 
 def test_cmp_vanilla():
@@ -17,13 +17,8 @@ def test_cmp_vanilla():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
 
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
-        primitives = json.load(fp)
-        counter = 0
-        for m in primitives.keys():
-            if m.startswith('DP_NMOS'):
-                counter += 1
-        assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
+    counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
+    assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
 
     if cleanup:
         shutil.rmtree(run_dir)
@@ -146,12 +141,19 @@ def test_cmp_order():
         modules = {module['name']: module for module in verilog_json['modules']}
         assert name in modules, f'Module {name} not found in verilog.json'
         instances = set([k['instance_name'] for k in modules[name]['instances']])
-        assert 'MP7' in instances and 'MP8' in instances, f'MP7 or MP8 not found in {instances}'
+        assert 'X_MP7' in instances and 'X_MP8' in instances, f'MP7 or MP8 not found in {instances}'
 
     if cleanup:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+
+def test_ota_six_noconst():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ota_six(name)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)
 
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
@@ -242,3 +244,27 @@ def test_two_stage_ota():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)
+
+def test_cs_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=180e-9 nf=4 m=1
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=1
+        .ends {name}
+        """)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
+
+def test_cs_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vccx vssx
+        mp0 vop vop vccx vccx p w=180e-9 nf=4 m=2
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=2
+        .ends {name}
+        """)
+    constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)

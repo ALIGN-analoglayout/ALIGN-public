@@ -152,26 +152,14 @@ class SpiceParser:
 
         if self.library.find(model):
             model = self.library.find(model)
-
-            if model.base:
-                generator = model.base
-            elif isinstance(model, SubCircuit) and name.startswith('X'):
-                generator = model.name
-            elif isinstance(model, Model) and model.prefix == 'XI':
-                generator = 'generic'
-            else:
-                generator = model.name
-            # TODO assert generator is available in primitive generator
         else:
-            # TODO generic model need to get pins from generator
             logger.info(f"unknown device found {model}, creating a generic model for this")
             with set_context(self.library):
                 self.library.append(
-                    Model(name=model, pins=args, parameters=kwargs, prefix='XI')
+                    Model(name=model, pins=args, parameters={k:'1' for k in kwargs.keys()}, prefix='XI')
                 )
             model = self.library.find(model)
             # TODO: get it from generator
-            generator = 'generic'
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \
@@ -181,23 +169,22 @@ class SpiceParser:
         with set_context(self._scope[-1].elements):
             try:
                 self._scope[-1].elements.append(Instance(name=name, model=model.name,
-                                                         pins=pins, parameters=kwargs,
-                                                         generator=generator
+                                                         pins=pins, parameters=kwargs
                                                          ))
             except ValueError:
                 assert False, f"could not identify device parameters {name} {kwargs} allowed parameters are {model.name} {model.parameters}"
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):
-            for constraint in self._constraints:
-                self._scope[-1].constraints.append(eval(constraint, {}, constraint_dict))
+            for const in self._constraints:
+                self._scope[-1].constraints.append(eval(const, {}, constraint_dict))
         self._constraints = None
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
             self._constraints = []
             name = args.pop(0)
-            assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
+            assert not isinstance(self.library.find(name), SubCircuit), f"User is attempting to redeclare subcircuit {name}"
             with set_context(self.library):
                 subckt = SubCircuit(name=name, pins=args, parameters=kwargs)
             self.library.append(subckt)
@@ -216,6 +203,4 @@ class SpiceParser:
             assert self.library.find(name) is None, f"User is attempting to redeclare {name}"
             assert self.library.find(base) is not None, f"Base model {base} not found for model {name}"
             with set_context(self.library):
-                self.library.append(
-                    Model(name=name, base=base, parameters=kwargs)
-                )
+                self.library.append(Model(name=name, base=base, parameters=kwargs))

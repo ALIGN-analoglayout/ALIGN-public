@@ -16,6 +16,8 @@ class SubCircuit(Model):
     pins: Optional[List[str]]  # List of pin names (derived from base if base exists)
     parameters: Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
+    generator: Optional[Dict[str, str]]  # generator name from pdk, e.g., mos, cap, res, digg2inv
+    #pdk generators are mapped during database creation, some are mapped after annotation from constraints)
     constraints: ConstraintDB
     prefix: str = 'X'         # Instance name prefix, optional
 
@@ -35,10 +37,13 @@ class SubCircuit(Model):
             new_inst = Instance(name=name,
                                 model=(kwargs['model'] if 'model' in kwargs else inst.model),
                                 pins=(kwargs['pins'] if 'pins' in kwargs else inst.pins),
-                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters),
-                                generator=(kwargs['generator'] if 'generator' in kwargs else inst.generator)
+                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters)
                                 )
             self.elements[i] = new_inst
+
+    def add_generator(self, gen):
+        with set_context(self.parent):
+            self.generator["name"]=gen
 
     def __init__(self, *args, **kwargs):
         # make elements optional in __init__
@@ -46,6 +51,8 @@ class SubCircuit(Model):
         if 'elements' not in kwargs:
             kwargs['elements'] = []
         # defer constraint processing for now
+        if 'generator' not in kwargs:
+            kwargs['generator']={}
         constraints = []
         if 'constraints' in kwargs:
             constraints = kwargs['constraints']
@@ -110,12 +117,12 @@ class SubCircuit(Model):
             logger.error(f'Solution not found due to conflict between:')
             for x in core:
                 logger.error(f'{x}')
-            raise # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+            raise  # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
     def is_identical(self, subckt):
         subckt_match = subckt.pins == self.pins and \
-                       subckt.parameters == self.parameters and \
-                       subckt.constraints == self.constraints
+            subckt.parameters == self.parameters and \
+            subckt.constraints == self.constraints
         if not subckt_match:
             return False
 
@@ -130,6 +137,7 @@ class SubCircuit(Model):
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
+
 
 class Circuit(SubCircuit):
 

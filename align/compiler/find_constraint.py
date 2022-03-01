@@ -92,10 +92,10 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         # TBD: filter based on primitive constraints
         # Right now will try to figure out S/D paths
         if len(SD_nbrs) == 0:
-            logger.debug(f"No SD paths found to traverse")
+            # logger.debug(f"No SD paths found to traverse")
             match_pair[node1] = node1
         elif len(SD_nbrs) == 1:
-            logger.debug(f"traversing single S/D path {SD_nbrs}")
+            # logger.debug(f"traversing single S/D path {SD_nbrs}")
             match_pair[node1] = node1
             traversed.add(node1)
             compare_nodes(
@@ -108,14 +108,14 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 ports_weight,
             )
         else:
-            logger.debug(f"multiple nodes diverging {SD_nbrs}")
-            logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs]}")
+            # logger.debug(f"multiple nodes diverging {SD_nbrs}")
+            # logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['pin'] for nbr in SD_nbrs]}")
             match_pair[node1] = node1
             traversed.add(node1)
             new_sp = sorted(set(SD_nbrs) - traversed)
             all_match_pairs_local = {}
             for nbr1, nbr2 in combinations(new_sp, 2):
-                logger.debug(f"recursive pair call from single branch {nbr1} {nbr2}")
+                # logger.debug(f"recursive pair call from single branch {nbr1} {nbr2}")
                 new_pair = {}
                 compare_nodes(
                     G,
@@ -136,9 +136,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 match_pair.update(
                     all_match_pairs_local[list(all_match_pairs_local.keys())[0]]
                 )
-                logger.debug(
-                    f"found inline pair: {pprint.pformat(match_pair, indent=4)}"
-                )
+                # logger.debug(f"found inline pair: {pprint.pformat(match_pair, indent=4)}")
             else:
                 for nbr1 in new_sp:
                     if (nbr1, nbr1) not in match_pairs.keys():
@@ -159,30 +157,28 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                         # ideally they should be handled by array generation
                         if new_pair:
                             match_pairs[(nbr1, nbr1)] = new_pair
-                            logger.debug(
-                                f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}"
-                            )
+                            # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif node1 == node2 and nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
         match_pair[node1] = node2
         traversed.update([node1, node2])
         nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
-        logger.debug(f"all non traversed neighbours: {nbrs1}")
+        # logger.debug(f"all non traversed neighbours: {nbrs1}")
         if len(nbrs1) == 1:
             nbr1 = nbr2 = nbrs1[0]
-            logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
+            # logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
             compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
         else:
             for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
-                logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
+                # logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
                 if (nbr1, nbr2) not in match_pairs.keys():
                     new_pair = {}
                     compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
                     # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
                     if new_pair:
                         match_pairs[(nbr1, nbr2)] = new_pair
-                        logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
+                        # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif compare_two_nodes(G, node1, node2, ports_weight):
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
@@ -197,14 +193,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         if len(nbrs1) == 0 or len(nbrs2) == 0:
             logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
         elif len(nbrs1) == 1 and len(nbrs2) == 1:
-            logger.debug(f"traversing binary branch")
             compare_nodes(G, match_pairs, match_pair, traversed, nbrs1.pop(), nbrs2.pop(), ports_weight)
         elif unique_match:
-            logger.debug(f"traversing unique matches {unique_match}")
             match_pair[node1] = node2
             traversed.update([node1, node2])
             for nbr1, nbr2 in unique_match.items():
-                logger.debug(f"recursive call from pair {node1}:{node2} to {nbr1}:{nbr2}")
                 compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
         elif (
             len(nbrs1_wt) > len(set(nbrs1_wt)) > 1
@@ -256,8 +249,6 @@ def FindSymmetry(subckt, stop_points: set):
     if not stop_points:
         stop_points = set()
     non_power_ports = sorted(set(sorted(ports)) - stop_points)
-    logger.debug(f"subckt: {subckt.name} sorted signal ports: {non_power_ports}")
-
     ports_weight = get_ports_weight(graph)
     # TODO start from primitives
     for port1, port2 in combinations_with_replacement(non_power_ports, 2):
@@ -266,9 +257,22 @@ def FindSymmetry(subckt, stop_points: set):
             traversed.update([port1, port2])
             recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
-            logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
+            # logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
+
+def constraint_generator(ckt_data):
+    """
+    Search for symmetry constraints
+    Args:
+        ckt_data : ckt library after annotation
+    """
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
+            continue
+        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
+        if not gen_const:
+            FindConst(subckt)
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
@@ -399,9 +403,9 @@ class add_symmetry_const:
         else:
             self.stop = list()
         self.skip_const = skip_const
-        logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
-        logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
-        logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)}")
+        # logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
+        # logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
+        # logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)}")
 
     def loop_through_pairs(self):
         for pairs in self.all_pairs:
@@ -428,18 +432,18 @@ class add_symmetry_const:
                 smb_1d.update(inst)
 
         if key in self.stop:
-            logger.debug(f"skipping symmetry b/w {key, value} as they are present in stop points")
+            # logger.debug(f"skipping symmetry b/w {key, value} as they are present in stop points")
             return True
         elif {key, value} & smb_1d:
-            logger.debug(f"skipping symmetry b/w {key, value} as already written {self.written_symmblocks}")
+            # logger.debug(f"skipping symmetry b/w {key, value} as already written {self.written_symmblocks}")
             return True
         elif key not in self.G.nodes():
-            logger.debug(f"skipping symmetry b/w {key, value} as {key} is not in graph")
+            # logger.debug(f"skipping symmetry b/w {key, value} as {key} is not in graph")
             return True
         else:
             nbrs1, nbrs2 = self.G.all_neighbors([key, value])
             if nbrs1 != nbrs2:
-                logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
+                # logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
                 return True
             else:
                 logger.debug(f"all neigbors matched {key}:{nbrs1}, {value}:{nbrs2}")
@@ -587,7 +591,6 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                     conn_A[ele_A] == conn_B[ele_B]
                     and instA.model == instB.model
                 ):
-                    logger.debug(f"checking symmetric instances {ele_A}, {ele_B}")
                     if instB in pairs.values():
                         logger.debug(
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
@@ -617,7 +620,5 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
     if len(pairs.keys()) > 1:
         return pairs, pinsA, pinsB
     else:
-        logger.debug(
-            f"Skip symmnet: Non identical instances {conn_A} {conn_B} {smb}"
-        )
+        # logger.debug(f"Skip symmnet: Non identical instances {conn_A} {conn_B} {smb}")
         return [None, None, None]
