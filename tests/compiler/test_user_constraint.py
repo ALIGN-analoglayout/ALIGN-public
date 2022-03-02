@@ -39,15 +39,8 @@ def test_group_block_hsc(dir_name):
     )
     updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
     annotate_library(updated_cktlib, prim_lib)
-    assert updated_cktlib.find("DP")
-    assert updated_cktlib.find("CCN")
-    assert updated_cktlib.find("CCP")
-    assert updated_cktlib.find("INV_P")
-    assert updated_cktlib.find("INV_N")
-    assert updated_cktlib.find("DP_NMOS_B")
-    assert updated_cktlib.find("CCP_S_NMOS_B")
-    assert updated_cktlib.find("CCP_PMOS")
-    assert updated_cktlib.find("INV")
+    plibs = {"DP", "CCN", "CCP", "INV_P", "INV_N", "DP_NMOS_B", "CCP_S_NMOS_B"}
+    assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
     result_path = out_path / dir_name
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
