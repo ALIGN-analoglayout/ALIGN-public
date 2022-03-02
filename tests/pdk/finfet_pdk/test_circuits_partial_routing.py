@@ -7,7 +7,7 @@ from . import circuits
 
 cleanup = False
 
-bypass_errors = False
+bypass_errors = True
 
 
 @pytest.fixture
