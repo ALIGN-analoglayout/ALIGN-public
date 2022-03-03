@@ -156,7 +156,7 @@ class SpiceParser:
             logger.info(f"unknown device found {model}, creating a generic model for this")
             with set_context(self.library):
                 self.library.append(
-                    Model(name=model, pins=args, parameters={k:'1' for k in kwargs.keys()}, prefix='XI')
+                    Model(name=model, pins=args, parameters={k:'1' for k in kwargs.keys()}, prefix='X')
                 )
             model = self.library.find(model)
             # TODO: get it from generator
@@ -172,7 +172,8 @@ class SpiceParser:
                                                          pins=pins, parameters=kwargs
                                                          ))
             except ValueError:
-                assert False, f"could not identify device parameters {name} {kwargs} allowed parameters are {model.name} {model.parameters}"
+                assert False, f"could not identify device parameters {name} {kwargs} \
+                    allowed parameters of model {model.name} are {model.parameters}"
 
     def _process_constraints(self):
         with set_context(self._scope[-1].constraints):

@@ -83,7 +83,8 @@ setup(name='align',
           'pandas',
           'dash',
           'typing_extensions; python_version<"3.8"',
-          'memory_profiler'
+          'memory_profiler',
+          'flatdict'
       ],
       extras_require={
           'test': [

@@ -61,7 +61,8 @@ def test_sizing3(ckt):
     assert ckt.elements[3]
     assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
     assert ckt.get_element("X_MN2_MN3")
-    assert ckt.parent.find("DP_NMOS_B").elements[0].parameters["W"] == "3.6E-07"
+    assert ckt.parent.find("DP_NMOS_B_56389919") #Check hash is consistent
+    assert ckt.parent.find("DP_NMOS_B_56389919").elements[0].parameters["W"] == "3.6E-07"
     assert ele(ckt, "X_XI1").parameters["STACK"] == "3"
     assert ele(ckt, "X_XI1").model == "PSVT"
 
@@ -71,7 +72,5 @@ def test_sizing4(ckt):
     assert len(ckt.elements) == 5
     eles = set([ele.name for ele in ckt.elements])
     assert eles == {"X_XMP11_XMP12_XMP13", 'X_XMN0_XMP0', 'X_XMN1_XMP1', 'X_XMP3', 'X_XMN3'}
-    assert {v.name for v in ckt.parent if isinstance(v, SubCircuit)} == {'INTEL_CIRCUIT4', 'CMB_PMOS_2',
-                                                                         'INV_B', 'INV_B_I1', 'DCL_NMOS_S',
-                                                                         'DCL_PMOS', 'SCM_PMOS', 'PMOS_S',
-                                                                         'NMOS_S', 'PMOS_4T', 'NMOS_S_I1'}
+    assert len({v.name for v in ckt.parent if isinstance(v, SubCircuit) and 'INV_B' in v.name}) == 2
+    assert len({v.name for v in ckt.parent if isinstance(v, SubCircuit) and 'CMB_PMOS' in v.name}) == 1

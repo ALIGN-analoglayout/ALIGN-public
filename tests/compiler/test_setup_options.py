@@ -23,9 +23,9 @@ def test_ota_six():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set([name, "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
+    all_modules = set(['CKT_OTA', "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
     available_modules = set(
-        [module.name for module in ckt_lib if isinstance(module, SubCircuit)]
+        ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
@@ -42,8 +42,10 @@ def test_ota_swap():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', 'DP_NMOS_B'])
-    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
+    all_modules = set(['CKT_OTA', 'SCM_NMOS', 'SCM_PMOS', 'DP_NMOS_B'])
+    available_modules = set(
+        ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
+    )
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
@@ -60,8 +62,10 @@ def test_ota_dont_swap():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', "NMOS_4T"])
-    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
+    all_modules = set(['CKT_OTA_DONT', 'SCM_NMOS', 'SCM_PMOS', "NMOS_4T"])
+    available_modules = set(
+        ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
+    )
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 
@@ -94,8 +98,10 @@ def test_dont_use_lib_cell():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set([name, 'SCM_NMOS', 'SCM_PMOS', "NMOS_4T"])
-    available_modules = set([module.name for module in ckt_lib if isinstance(module, SubCircuit)])
+    all_modules = set(['CKT_DONT_USE_LIB', 'SCM_NMOS', 'SCM_PMOS', "NMOS_4T"])
+    available_modules = set(
+        ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
+    )
     assert available_modules == all_modules, f"{available_modules}"
     clean_data(name)
 

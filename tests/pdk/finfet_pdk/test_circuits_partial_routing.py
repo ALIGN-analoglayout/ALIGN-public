@@ -1,18 +1,16 @@
 import pytest
-import json
-import shutil
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-cleanup = False
-
-bypass_errors = True
+CLEANUP = False
+BYPASS_ERRORS = True
 
 
 @pytest.fixture
 def partial_routing(monkeypatch):
     monkeypatch.setenv('PARTIAL_ROUTING', '1')
+
 
 def test_cmp_vanilla_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
@@ -21,14 +19,7 @@ def test_cmp_vanilla_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, max_errors=3 if not bypass_errors else 0)
-
-    counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
-    assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
-
-    if cleanup:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
+    run_example(example, cleanup=CLEANUP, area=4.5e9, max_errors=3 if not BYPASS_ERRORS else 0)
 
 
 def test_cmp_vanilla_pg_pr(partial_routing):
@@ -40,7 +31,7 @@ def test_cmp_vanilla_pg_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, max_errors=6 if not bypass_errors else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=6 if not BYPASS_ERRORS else 0)
 
 
 def test_cmp_fp1_pr(partial_routing):
@@ -65,10 +56,7 @@ def test_cmp_fp1_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    # Stop flow early for memory profiling
-    run_example(example, cleanup=cleanup, area=4e10, max_errors=5 if not bypass_errors else 0)
-    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '2_primitives'])
-    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
+    run_example(example, cleanup=CLEANUP, area=4e10, max_errors=5 if not BYPASS_ERRORS else 0)
 
 
 def test_cmp_fp2_pr(partial_routing):
@@ -93,7 +81,7 @@ def test_cmp_fp2_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=5e9, max_errors=1)
+    run_example(example, cleanup=CLEANUP, area=5e9, max_errors=1 if not BYPASS_ERRORS else 0)
 
 
 def test_ota_six_pr(partial_routing):
@@ -105,23 +93,12 @@ def test_ota_six_pr(partial_routing):
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]},
+        {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, max_errors=1)
+    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
 
-
-
-def test_common_source_pr(partial_routing):
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.common_source_mini(name)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
 
 def test_cs_1_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
@@ -133,7 +110,8 @@ def test_cs_1_pr(partial_routing):
         """)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
+
 
 def test_cs_2_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
@@ -145,4 +123,4 @@ def test_cs_2_pr(partial_routing):
         """)
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
