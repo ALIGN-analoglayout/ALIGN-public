@@ -27,6 +27,7 @@ def run_postamble(nm, cv, max_errors=0):
         cv.computeBbox()
     bbox = cv.bbox.toList()
     terminals = cv.removeDuplicates(silence_errors=True)
+    terminals.insert(0, {"layer": "Boundary", "netName": None, "rect": bbox, "netType": "drawing"})
 
     # === Export problem to viewer
     data = {'bbox': bbox, 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': terminals}
@@ -81,8 +82,6 @@ def run_postamble(nm, cv, max_errors=0):
     with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
         primitives_d = {ctn: {'abstract_template_name': ctn, 'concrete_template_name': ctn}}
         json.dump(primitives_d, fp=fp, indent=2)
-
-    terminals.append({"layer": "Boundary", "netName": None, "rect": bbox, "netType": "drawing"})
 
     with (run_dir / '2_primitives' / f'{ctn}.json').open('wt') as fp:
         layout_d = {'bbox': bbox, 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': terminals}
