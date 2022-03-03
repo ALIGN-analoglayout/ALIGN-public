@@ -82,7 +82,7 @@ def run_postamble(nm, cv, max_errors=0):
         primitives_d = {ctn: {'abstract_template_name': ctn, 'concrete_template_name': ctn}}
         json.dump(primitives_d, fp=fp, indent=2)
 
-    terminals.append({"layer": "Nwell", "netName": None, "rect": bbox, "netType": "drawing"})
+    terminals.append({"layer": "Boundary", "netName": None, "rect": bbox, "netType": "drawing"})
 
     with (run_dir / '2_primitives' / f'{ctn}.json').open('wt') as fp:
         layout_d = {'bbox': bbox, 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': terminals}
