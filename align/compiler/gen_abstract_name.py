@@ -44,12 +44,12 @@ class PrimitiveLibrary():
                 if isinstance(const, constraint.GroupCaps):
                     group_cap_instances.append(const.name.upper())
                     self.group_cap_subcircuit(const.unit_cap.upper())
-            logger.info(f"found group cap instances {group_cap_instances}")
+            logger.debug(f"found group cap instances {group_cap_instances}")
 
             for ele in ckt.elements:
                 if ele.name in group_cap_instances:
                     ele.add_abs_name(ele.model)
-                    logger.info(f"group cap instance {ele}")
+                    logger.debug(f"group cap instance {ele}")
                 else:
                     self.gen_primitive_def(ele)
         return self.plib
@@ -75,8 +75,9 @@ class PrimitiveLibrary():
         """
         if not self.plib.find(unit_cap):
             logger.debug(f"creating subcircuit for {unit_cap}")
-            cmodel = self.plib.find('CAP')
+            cmodel = self.ckt_lib.find('CAP')
             assert cmodel, f"no cap model found for groupcap constraint {cmodel}"
+            self.add_primitve('CAP')
             unit_cap_value = float(unit_cap.split('_')[1].replace('F', ''))*10E-15
 
             with set_context(self.plib):
