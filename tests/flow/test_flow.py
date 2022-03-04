@@ -44,4 +44,37 @@ def test_flow_start_primitives():
 
     assert results is not None
 
+def test_flow_each_step():
+
+    nm = 'switched_capacitor_filter'
+    run_dir = ALIGN_WORK_DIR / f'{nm}_flow_each_step'
+
+    if run_dir.exists():
+        assert run_dir.is_dir()
+        shutil.rmtree(run_dir)
+
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    os.chdir(run_dir)
+
+    args = [f'../../examples/{nm}', '--flow_stop', '1_topology']
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
+
+    args = [f'../../examples/{nm}', '--flow_start', '2_primitives', '--flow_stop', '2_primitives']
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
+
+    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:prep', '--flow_stop', '3_pnr:prep']
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
+
+    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:place', '--flow_stop', '3_pnr:place']
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
+
     
