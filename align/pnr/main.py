@@ -175,12 +175,16 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
             continue
         leaf = v['concrete_template_name']
         files = {}
-        for suffix in ['.placement_lef', '.lef', '.json', '.gds.json']:
+        jsonfound = False
+        for suffix in ['.placement_lef', '.lef', '.json', '.gds']:
             fn = primitive_dir / f'{leaf}{suffix}'
             if fn.is_file():
                 files[suffix] = str(fn)
+                if suffix == '.json':
+                    jsonfound = True
             else:
-                logger.warning( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
+                if suffix != '.gds' or (suffix == '.gds' and not jsonfound):
+                    logger.warning( f'Collateral {suffix} for leaf {leaf} not found in {primitive_dir}')
         leaf_collateral[leaf] = files
 
     return leaf_collateral
@@ -268,7 +272,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         # Copy primitive json files
         for k,v in leaf_collateral.items():
-            for suffix in ['.gds.json', '.json']:
+            for suffix in ['.gds', '.json']:
                 if suffix in v:
                     (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
 
@@ -327,7 +331,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                 variants[variant].update(result)
 
                 if not skipGDS:
-                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                    for tag, suffix in [('lef', '.lef'), ('gds', '.gds')]:
                         path = results_dir / (variant + suffix)
                         assert path.exists()
                         variants[variant][tag] = path

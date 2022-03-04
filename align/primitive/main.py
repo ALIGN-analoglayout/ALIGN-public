@@ -182,8 +182,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
 
-    with open(outputdir / (block_name + ".json"), "rt") as fp0, \
-            open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:
-        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), uc.pdk)
+    #with open(outputdir / (block_name + ".json"), "rt") as fp0, \
+    #        open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:
+    #    gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), uc.pdk)
 
     return uc

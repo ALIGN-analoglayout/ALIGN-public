@@ -50,11 +50,11 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     if not noExtra:
         if current_node.isTop:
-            DB.WriteJSON(current_node, True, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
+            DB.WriteJSON(current_node, False, True, False, False, f'{current_node.name}_DR_{lidx}', drcInfo, opath)
         else:
             current_node_copy = PnR.hierNode(current_node)
             DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
-            DB.WriteJSON(current_node_copy, True, True, False, False,
+            DB.WriteJSON(current_node_copy, False, True, False, False,
                          f'{current_node_copy.name}_DR_{current_node_copy.n_copy}_{lidx}', drcInfo, opath)
             current_node.gdsFile = current_node_copy.gdsFile
 
@@ -98,28 +98,28 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
         RouteWork(2, current_node, metal_l=power_grid_metal_l, metal_u=power_grid_metal_u)
 
         if not noExtra:
-            DB.WriteJSON(current_node, True, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
+            DB.WriteJSON(current_node, False, True, False, True, f'{current_node.name}_PG_{lidx}', drcInfo, opath)
 
         logger.debug("Checkpoint : Starting Power Routing");
         
         RouteWork(3, current_node, metal_l=power_routing_metal_l, metal_u=power_routing_metal_u)
 
         if not noExtra:
-            DB.WriteJSON(current_node, True, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
+            DB.WriteJSON(current_node, False, False, True, True, f'{current_node.name}_PR_{lidx}', drcInfo, opath)
             DB.Write_Router_Report(current_node, opath)
 
     # transform current_node into current_node coordinate
     if not noGDS:
         if current_node.isTop:
             return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
-            DB.WriteJSON(current_node, True, True, True, True, return_name, drcInfo, opath)
+            DB.WriteJSON(current_node, False, True, True, True, return_name, drcInfo, opath)
             DB.WriteLef(current_node, f'{return_name}.lef', opath)
             # DB.PrintHierNode(current_node)
         else:
             current_node_copy = PnR.hierNode(current_node)
             DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, TransformType.Backward)
             return_name = f'{current_node_copy.name}_{current_node_copy.n_copy}_{lidx}' if return_name is None else return_name
-            DB.WriteJSON(current_node_copy, True, True, True, True, return_name, drcInfo, opath)
+            DB.WriteJSON(current_node_copy, False, True, True, True, return_name, drcInfo, opath)
             current_node.gdsFile = current_node_copy.gdsFile
             DB.WriteLef(current_node_copy, f'{return_name}.lef', opath)
             # DB.PrintHierNode(current_node_copy)
