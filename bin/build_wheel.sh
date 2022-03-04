@@ -17,7 +17,7 @@ case "$AUDITWHEEL_PLAT" in
     export CXXFLAGS=${CFLAGS}
     ;;
     "manylinux2010_x86_64"|"manylinux2014_x86_64")
-        yum -y install boost-devel lpsolve
+        #yum -y install boost-devel lpsolve
     ;;
     "manylinux_2_24_x86_64")
         apt update
