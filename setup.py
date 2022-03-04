@@ -68,11 +68,13 @@ setup(name='align',
           'bin/pnr_compiler.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
-          'bin/convert_lef_to_layout_json.py'
+          'bin/convert_lef_to_layout_json.py',
+          'bin/gen_gds_from_json.py'
       ],
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
+          'gdspy',
           'pyyaml',
           'pybind11',
           'pydantic>=1.8',
