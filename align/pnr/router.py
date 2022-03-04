@@ -374,6 +374,7 @@ def router_driver(*, fpath, cap_map, cap_lef_s,
                                                   scale_factor=scale_factor,
                                                   reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
                                                   concrete_top_name=concrete_top_name0,
+                                                  abstract_top_name=concrete_top_name0,
                                                   select_in_ILP=False, seed=0,
                                                   use_analytical_placer=False, ilp_solver='symphony',
                                                   primitives=primitives)
