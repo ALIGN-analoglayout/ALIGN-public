@@ -821,7 +821,7 @@ class DoNotUseLib(SoftConstraint):
     libraries: List[str]
     propagate: Optional[bool]
 
-class CompilerFlags(SoftConstraint):
+class CompilerOpt(SoftConstraint):
     '''
     Compiler default optimization flags
     Args:
@@ -1244,7 +1244,7 @@ ConstraintType = Union[
     GroundPorts,
     ClockPorts,
     DoNotUseLib,
-    CompilerFlags
+    CompilerOpt
 ]
 
 
