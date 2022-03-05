@@ -26,7 +26,7 @@ def generator_ckt(name):
     netlist = textwrap.dedent(
         f"""\
         .subckt {name} D G S B
-        * @: Generator(pattern='CS', body=True)
+        * @: Generator(name='mos')
         mn1 D G S B n nfin=12 nf=2
         mn2 S G D B n nfin=12 nf=2
         .ends {name}
@@ -174,7 +174,7 @@ def test_propogate_global_const():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = multi_param_ckt(name)
     constraints = [
-        {"constraint": "KeepDummyHierarchies", "isTrue": True, "propagate": True}
+        {"constraint": "ConfigureCompiler", "remove_dummy_hierarchies": False, "propagate": True}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
