@@ -45,7 +45,7 @@ def test_collisions():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
@@ -86,7 +86,7 @@ def test_disable_fix_merge():
     .END
     """)
     constraints = [
-        {"constraint": "CompilerOpt",
+        {"constraint": "ConfigureCompiler",
          "auto_constraint": False,
          'fix_source_drain': False,
          'merge_series_devices': False,
@@ -119,7 +119,7 @@ def test_illegal():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
 
     with pytest.raises(AssertionError):

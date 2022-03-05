@@ -44,7 +44,7 @@ class process_arrays:
                 isinstance(const, constraint.GroundPorts) or \
                 isinstance(const, constraint.ClockPorts):
                 self.stop_points.extend(const.ports)
-            elif isinstance(const, constraint.CompilerOpt):
+            elif isinstance(const, constraint.ConfigureCompiler):
                 self.condition = getattr(const, 'identify_array', False)
                 self.is_digital = getattr(const, 'is_digital', False)
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}

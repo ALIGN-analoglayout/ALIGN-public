@@ -71,7 +71,7 @@ class CreateDatabase:
         if not all_subckt:
             return
         for const in top.constraints:
-            global_const = [constraint.CompilerOpt,
+            global_const = [constraint.ConfigureCompiler,
                             constraint.DoNotUseLib,
                             ]
 

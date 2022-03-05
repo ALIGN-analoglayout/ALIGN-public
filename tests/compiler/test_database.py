@@ -106,7 +106,7 @@ def test_multi_param():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
         {"constraint": "GroundPorts", "ports": ["S"]},
-        {"constraint": "CompilerOpt", "keep_dummy_hierarchies": True}
+        {"constraint": "ConfigureCompiler", "remove_dummy_hierarchies": False}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
@@ -162,7 +162,7 @@ def test_multi_param_skip():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
         {"constraint": "GroundPorts", "ports": ["S"]},
-        {"constraint": "CompilerOpt", "keep_dummy_hierarchies": True}
+        {"constraint": "ConfigureCompiler", "remove_dummy_hierarchies": False}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
@@ -186,7 +186,7 @@ def test_preprocessing_SD():
     constraints = constraints = [
         {"constraint": "PowerPorts", "ports": ["D"]},
         {"constraint": "GroundPorts", "ports": ["S"]},
-        {"constraint": "CompilerOpt", "keep_dummy_hierarchies": True}
+        {"constraint": "ConfigureCompiler", "remove_dummy_hierarchies": False}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)

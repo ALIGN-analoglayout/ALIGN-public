@@ -26,11 +26,11 @@ def preprocess_stack_parallel(ckt_data, design_name):
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
-                if isinstance(const, constraint.CompilerOpt):
-                    IsDigital = getattr(const, 'is_digital', False)
-                    FixSourceDrain = getattr(const, 'fix_source_drain', True)
-                    MergeSeriesDevices = getattr(const, 'merge_series_devices', True)
-                    MergeParallelDevices = getattr(const, 'merge_parallel_devices', True)
+                if isinstance(const, constraint.ConfigureCompiler):
+                    IsDigital = getattr(const, 'is_digital')
+                    FixSourceDrain = getattr(const, 'fix_source_drain')
+                    MergeSeriesDevices = getattr(const, 'merge_series_devices')
+                    MergeParallelDevices = getattr(const, 'merge_parallel_devices')
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -50,12 +50,12 @@ def preprocess_stack_parallel(ckt_data, design_name):
     #Remove dummy hiearachies by design tree traversal from design top
     if isinstance(top, SubCircuit):
         IsDigital = False
-        KeepDummyHierarchies = False
+        RemoveDummyHierarchies = True
         for const in top.constraints:
-            if isinstance(const, constraint.CompilerOpt):
-                IsDigital = getattr(const, 'is_digital', False)
-                KeepDummyHierarchies = getattr(const, 'keep_dummy_hierarchies', False)
-        if not IsDigital and not KeepDummyHierarchies:
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = getattr(const, 'is_digital')
+                RemoveDummyHierarchies = getattr(const, 'remove_dummy_hierarchies')
+        if not IsDigital and RemoveDummyHierarchies:
             # remove single instance subcircuits
             dummy_hiers = list()
             find_dummy_hier(ckt_data, top, dummy_hiers)

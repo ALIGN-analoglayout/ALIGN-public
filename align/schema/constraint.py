@@ -816,7 +816,7 @@ class DoNotUseLib(SoftConstraint):
     libraries: List[str]
     propagate: Optional[bool]
 
-class CompilerOpt(SoftConstraint):
+class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
     Args:
@@ -824,27 +824,27 @@ class CompilerOpt(SoftConstraint):
         auto_constraint(bool): true/false
         identify_array(bool): true/false
         fix_source_drain(bool): true/false
-        keep_dummy_hierarchies(bool): true/false
+        remove_dummy_hierarchies(bool): true/false
         merge_series_devices(bool): true/false
         merge_parallel_devices(bool): true/false
 
     Example: ::
 
         {
-            "constraint": "CompilerFlags",
+            "constraint": "ConfigureCompiler",
             "is_digital": true,
-            "keep_dummy_hierarchies": true,
+            "remove_dummy_hierarchies": true,
             "propagate": true
         }
     '''
-    is_digital: Optional[bool] # Annotation and auto-constraint generation
-    auto_constraint: Optional[bool]  # Auto-constraint generation
-    identify_array: Optional[bool]  # Forbids/Allow any array identification
-    fix_source_drain: Optional[bool]  # Auto correction of source/drain terminals of transistors.
-    keep_dummy_hierarchies: Optional[bool]  # Removes any single instance hierarchies.
-    merge_series_devices: Optional[bool]  # Merge series/stacked MOS/RES/CAP
-    merge_parallel_devices: Optional[bool]  # Merge parallel devices
-    propagate: Optional[bool] #propagate constraint to all lower hierarchies
+    is_digital: bool = False # Annotation and auto-constraint generation
+    auto_constraint: bool = True  # Auto-constraint generation
+    identify_array: bool = True  # Forbids/Allow any array identification
+    fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
+    remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
+    merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
+    merge_parallel_devices: bool = True  # Merge parallel devices
+    propagate: bool = True #propagate constraint to all lower hierarchies
 
 
 class Generator(SoftConstraint):
@@ -1250,7 +1250,7 @@ ConstraintType = Union[
     GroundPorts,
     ClockPorts,
     DoNotUseLib,
-    CompilerOpt,
+    ConfigureCompiler,
     NetPriority
 ]
 
