@@ -28,9 +28,9 @@ def preprocess_stack_parallel(ckt_data, design_name):
             for const in subckt.constraints:
                 if isinstance(const, constraint.CompilerOpt):
                     IsDigital = getattr(const, 'is_digital', False)
-                    FixSourceDrain = getattr(const, 'fix_source_drain', False)
-                    MergeSeriesDevices = getattr(const, 'merge_series_devices', False)
-                    MergeParallelDevices = getattr(const, 'merge_parallel_devices', False)
+                    FixSourceDrain = getattr(const, 'fix_source_drain', True)
+                    MergeSeriesDevices = getattr(const, 'merge_series_devices', True)
+                    MergeParallelDevices = getattr(const, 'merge_parallel_devices', True)
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
