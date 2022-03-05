@@ -4,6 +4,7 @@ Created on Tue Dec 11 11:34:45 2018
 
 @author: kunal
 """
+from email.mime import base
 from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging
@@ -59,18 +60,19 @@ def get_next_level(subckt, G, tree_l1):
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     cm = subckt.get_element(node).model
-    if cm in ["NMOS", "PMOS", "RES", "CAP"]:
-        base_model = cm
-    elif subckt.parent.find(cm):
+    if subckt.parent.find(cm):
         sub_subckt = subckt.parent.find(cm)
         if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
             base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
         elif isinstance(sub_subckt, Model):
             base_model = subckt.parent.find(cm).base
+            if not base_model:
+                base_model = cm
         else:
+            #TODO use guid (parameterized subcircuit instantiated multiple times)
             base_model = sub_subckt.name + '_'.join([param+'_'+value for param, value in sub_subckt.parameters.items()])
     else:
-        logger.warning(f"invalid device {node}")
+        base_model = subckt.get_element(node).model
     return base_model
 
 
@@ -135,11 +137,8 @@ def get_ports_weight(G):
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
         logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        if len(leaf_conn) == 0:
-            logger.warning(f"floating port:{port} in subckt {subckt.name}")
-            ports_weight[port] = None
-        else:
-            ports_weight[port] = set(sorted(leaf_conn))
+        assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
+        ports_weight[port] = set(sorted(leaf_conn))
     return ports_weight
 
 

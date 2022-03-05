@@ -1,9 +1,11 @@
 import pathlib
 import json
+import textwrap
 
-from align.compiler.compiler import compiler_input, constraint_generator, annotate_library
-from align.compiler.gen_abstract_name import PrimitiveLibrary
+from align.compiler.compiler import compiler_input, constraint_generator, annotate_library, generate_hierarchy
 from align.schema.subcircuit import SubCircuit
+from utils import clean_data, build_example, get_test_id
+from align.compiler.gen_abstract_name import PrimitiveLibrary
 
 
 def test_cap():
@@ -37,3 +39,30 @@ def test_cap():
 
 
 # TODO: cap array testing
+def test_group_cap_1():
+    pdk_dir = pathlib.Path(__file__).resolve().parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} in1 in2 out1 out2
+        c2 in1 out1 30e-15
+        c1 in2 out2 30e-15
+        .ends {name}
+    """
+    )
+    constraints = [
+        {"constraint": "GroupCaps", "name": "cap_group1",
+         "instances": ["C1", "C2"],
+         "num_units": [2, 2],
+         "unit_cap": "Cap_12f",
+         "dummy": True
+         }
+    ]
+    example = build_example(name, netlist, constraints)
+    result_path = pathlib.Path(__file__).parent / ('run_'+name)
+
+    primitives = generate_hierarchy(example, name, result_path, False, pdk_dir)
+    modules = [subckt.name for subckt in primitives if isinstance(subckt, SubCircuit)]
+    assert modules == ['CAP_12F'], f"missing unit cap primitive"
+    clean_data('run_'+name)
+    clean_data(name)

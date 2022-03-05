@@ -1,9 +1,10 @@
+from operator import sub
 import pathlib
 from align.schema import SubCircuit, constraint
-from align.compiler.compiler import compiler_input
-from tests.schema.test_graph import primitives
+from align.compiler.compiler import compiler_input, generate_hierarchy
 from utils import clean_data, build_example, get_test_id
 import textwrap
+from pytest import raises
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -356,6 +357,60 @@ def test_subckt_generator():
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_dir, config_path)
     assert ckt_library.find('DIG22INV').generator['name'] == 'DIG22INV'
+
+
+def test_model_generator():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vi vo
+    xi0 vi vo tfr
+    .ends {name}
+    """)
+    constraints = []
+    import align.pdk.finfet
+    pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+    result_path = pathlib.Path(__file__).parent / ('run_'+name)
+    example = build_example(name, netlist, constraints)
+    primitives = generate_hierarchy(example, name, result_path,False, pdk_dir)
+    all_modules = [subckt.name for subckt in primitives if subckt.name.startswith('TFR_2T')]
+    assert all_modules
+    assert primitives.find(all_modules[0]).generator['name'] == 'TFR'
+    clean_data('run_'+name)
+    clean_data(name)
+
+def test_generic_generator():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vi vo
+    xi0 vi vo tfr_prim
+    .ends {name}
+    """)
+    constraints = []
+    import align.pdk.finfet
+    pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+    result_path = pathlib.Path(__file__).parent / ('run_'+name)
+    example = build_example(name, netlist, constraints)
+    primitives = generate_hierarchy(example, name, result_path, False, pdk_dir)
+    all_modules = [subckt.name for subckt in primitives if subckt.name.startswith('TFR_PRIM_')]
+    assert all_modules
+    assert primitives.find(all_modules[0]).generator['name'] == 'TFR_PRIM'
+    clean_data('run_'+name)
+    clean_data(name)
+
+
+def test_unimplemented_generator():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vi vo
+    xi0 vi vo unimplemented
+    .ends {name}
+    """)
+    constraints = []
+    result_path = pathlib.Path(__file__).parent / ('run_'+name)
+    example = build_example(name, netlist, constraints)
+    with raises(AssertionError):
+        generate_hierarchy(example, name, result_path, False, pdk_path)
+
 
 def test_global_param_2():
     name = f'ckt_{get_test_id()}'.upper()

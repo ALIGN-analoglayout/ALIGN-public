@@ -6,7 +6,7 @@ import textwrap
 from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import  constraint_generator
 from align.schema.checker import SolutionNotFoundError
-from align.schema import SubCircuit, constraint
+from align.schema import SubCircuit
 from utils import clean_data, build_example, get_test_id
 
 
@@ -180,6 +180,8 @@ def test_group_cap():
          }
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library, _ = compiler_input(example, name, pdk_dir, config_path)
-    assert ckt_library.find(name).constraints.dict()['__root__'] == mod_const
+    cktlib, _ = compiler_input(example, name, pdk_dir, config_path)
+    assert cktlib.find(name).constraints.dict()['__root__'] == mod_const
     clean_data(name)
+
+
