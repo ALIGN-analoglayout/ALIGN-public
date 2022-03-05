@@ -51,9 +51,7 @@ class CreateDatabase:
                 if main.get_generator(subckt.name, pdk_dir) and not subckt.generator:
                     logger.debug(f"available generator for this subcircuit {subckt.name} in PDK ")
                     subckt.add_generator(subckt.name)
-                    if [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
-                        logger.debug(f"already available generator for {subckt.name}")
-                    else:
+                    if not [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
                         with set_context(subckt.constraints):
                             subckt.constraints.append(constraint.Generator(name=subckt.name))
                         logger.debug(f"adding generator for {subckt.name}")
@@ -141,7 +139,7 @@ class CreateDatabase:
                 with set_context(subckt_new.elements):
                     for ele in subckt.elements:
                         subckt_new.elements.append(ele.copy())
-                self._update_instances(subckt_new)
+                self._update_intermediate_instances(subckt_new)
             return new_name
         else:
             self.multi_param_instantiation.append(name.upper())
@@ -151,16 +149,21 @@ class CreateDatabase:
             for p in subckt.parameters.keys():
                 if p in param:
                     subckt.parameters[p] = param[p]
-            self._update_instances(subckt)
+            self._update_intermediate_instances(subckt)
             return name.upper()
 
-    def _update_instances(self, subckt):
-        logger.debug(
+    def _update_intermediate_instances(self, subckt):
+        """_update_intermediate_instances _summary_
+        Updates instance parameter values from parameter definitions
+        This function is written seperately as we need to create new subcircuit definitions
+        in case subcircuit is instantiated mupltiple times with different parameters
+        """
+        logger.info(
             f"Updating instance parameters of subckt {subckt.name} as {subckt.parameters}"
         )
         for inst in subckt.elements:
             if isinstance(self.lib.find(inst.model.upper()), SubCircuit):
-                logger.debug(f"checking subckt inst {inst.name} {inst.parameters}")
+                logger.info(f"checking subckt inst {inst.name} {inst.parameters}")
                 for p, v in inst.parameters.items():
                     if v in self.circuit.parameters.keys():
                         inst.parameters[p] = self.circuit.parameters[v]
@@ -181,16 +184,14 @@ class CreateDatabase:
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 for inst in subckt.elements:
-                    # logger.debug(
-                    #     f"Updating leaf instance parameters of module \
-                    # {subckt.name} as {subckt.parameters}, \
-                    # global {self.circuit.parameters}, inst param {inst.parameters}"
-                    # )
                     for p, v in inst.parameters.items():
                         if v in self.circuit.parameters.keys():
                             inst.parameters[p] = self.circuit.parameters[v]
                         elif v in subckt.parameters.keys():
-                            inst.parameters[p] = subckt.parameters[v]
+                            if subckt.parameters[v] in self.circuit.parameters:
+                                inst.parameters[p] = self.circuit.parameters[subckt.parameters[v]]
+                            else:
+                                inst.parameters[p] = subckt.parameters[v]
 
     def _find_new_inst_name(self, subckt, param, counter=1):
         name = f"{subckt.name.upper()}_{counter}"
@@ -207,10 +208,11 @@ class CreateDatabase:
                 and subckt.constraints == _ckt.constraints
                 and subckt.generator == _ckt.generator
             ):
-                logger.debug(f"Existing ckt defnition found, checking all elements")
+                logger.info(f"Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
                     if (
-                        (_ckt.get_element(x.name).model == x.model)
+                        _ckt.get_element(x.name)
+                        and (_ckt.get_element(x.name).model == x.model)
                         and (_ckt.get_element(x.name).parameters == x.parameters)
                         and (_ckt.get_element(x.name).pins == x.pins)
                     ):

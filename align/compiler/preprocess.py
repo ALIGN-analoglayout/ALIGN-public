@@ -61,14 +61,14 @@ def preprocess_stack_parallel(ckt_data, design_name):
             dummy_hiers = list()
             find_dummy_hier(ckt_data, top, dummy_hiers)
             if len(dummy_hiers) > 0:
-                logger.info(f"Removing dummy hierarchies {dummy_hiers}")
+                logger.debug(f"Found dummy hierarchies {dummy_hiers}")
                 remove_dummies(ckt_data, dummy_hiers, top.name)
 
 
 def remove_dummies(library, dummy_hiers, top):
     for dh in dummy_hiers:
         if dh == top:
-            logger.debug("Cant delete top hierarchy {top}")
+            logger.debug(f"Cant delete top hierarchy {top}")
             return
         ckt = library.find(dh)
         assert ckt, f"No subckt with name {dh} found"
