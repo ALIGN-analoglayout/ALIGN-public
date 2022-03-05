@@ -27,10 +27,10 @@ def preprocess_stack_parallel(ckt_data, design_name):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
                 if isinstance(const, constraint.ConfigureCompiler):
-                    IsDigital = getattr(const, 'is_digital')
-                    FixSourceDrain = getattr(const, 'fix_source_drain')
-                    MergeSeriesDevices = getattr(const, 'merge_series_devices')
-                    MergeParallelDevices = getattr(const, 'merge_parallel_devices')
+                    IsDigital = const.is_digital
+                    FixSourceDrain = const.fix_source_drain
+                    MergeSeriesDevices = const.merge_series_devices
+                    MergeParallelDevices = const.merge_parallel_devices
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -53,8 +53,8 @@ def preprocess_stack_parallel(ckt_data, design_name):
         RemoveDummyHierarchies = True
         for const in top.constraints:
             if isinstance(const, constraint.ConfigureCompiler):
-                IsDigital = getattr(const, 'is_digital')
-                RemoveDummyHierarchies = getattr(const, 'remove_dummy_hierarchies')
+                IsDigital = const.is_digital
+                RemoveDummyHierarchies = const.remove_dummy_hierarchies
         if not IsDigital and RemoveDummyHierarchies:
             # remove single instance subcircuits
             dummy_hiers = list()
