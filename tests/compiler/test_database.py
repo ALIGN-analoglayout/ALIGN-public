@@ -165,7 +165,7 @@ def test_generator():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = generator_ckt(name)
     example = build_example(name, netlist, constraints=[])
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     assert len(ckt_library.find(name).constraints) == 1
     clean_data(name)
 
@@ -177,7 +177,7 @@ def test_propogate_global_const():
         {"constraint": "KeepDummyHierarchies", "isTrue": True, "propagate": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     assert len(ckt_library.find("PARAM_MOS").constraints) == 1
     clean_data(name)
 
@@ -191,7 +191,7 @@ def test_special_port_propagation():
         {"constraint": "ClockPorts", "ports": ["G"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     consts = ckt_library.find("TEST").constraints
     special_ports = {}
     for const in consts:
@@ -214,7 +214,7 @@ def test_multipower_domain_propagation():
         {"constraint": "ClockPorts", "ports": ["G"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     consts = ckt_library.find("TEST").constraints
     special_ports = {}
     for const in consts:
@@ -236,7 +236,7 @@ def test_power_and_signal_ckt():
         {"constraint": "ClockPorts", "ports": ["G"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     consts = ckt_library.find("TEST").constraints
     special_ports = {}
     for const in consts:

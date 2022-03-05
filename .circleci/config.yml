@@ -280,6 +280,7 @@ workflows:
             branches:
               only:
                 - master
+                - coverage/compiler
       - publish-wheel:
           requires:
             - build-wheel-all
