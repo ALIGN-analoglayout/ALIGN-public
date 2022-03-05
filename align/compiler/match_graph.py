@@ -45,7 +45,7 @@ class Annotate:
         IsDigital = False
         for const in ckt.constraints:
             if isinstance(const, constraint.ConfigureCompiler):
-                IsDigital = getattr(const, 'is_digital', False)
+                IsDigital = const.is_digital
         return IsDigital
 
     def annotate(self):
