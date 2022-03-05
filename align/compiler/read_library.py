@@ -25,10 +25,11 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
 
     if not model_statements.exists():
         logger.warning(f"Missing {model_statements}, only basic models will be used")
-    logger.info(f"Using model file from {model_statements}")
-    with open(model_statements, 'r') as f:
-        lines = f.read()
-    ckt_parser.parse(lines)
+    else:
+        logger.info(f"Using model file from {model_statements}")
+        with open(model_statements, 'r') as f:
+            lines = f.read()
+        ckt_parser.parse(lines)
     return ckt_parser
 
 
@@ -41,9 +42,10 @@ def read_lib(pdk_dir: pathlib.Path,  config_path=None):
 
     lib_files = ["basic_template.sp", "user_template.sp"]
     for lib_file in lib_files:
-        lib_file_path = pdk_dir/lib_file
+        lib_file_path = pdk_dir / lib_file
         if not lib_file_path.exists():
             lib_file_path = config_path / lib_file
+        assert lib_file_path.exists(), f"file not found {lib_file_path}"
         with open(lib_file_path) as f:
             lines = f.read()
         lib_parser.parse(lines)
