@@ -51,7 +51,7 @@ def test_scalings(place_on_grid_h):
     .END
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True},
         {"constraint": "AlignInOrder", "line": "left", "instances": ["xi0", "xi1", "xi2"]},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
@@ -100,7 +100,7 @@ def test_ota_on_grid_h(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
@@ -116,7 +116,7 @@ def test_ota_on_grid_v(place_on_grid_v):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
@@ -130,7 +130,7 @@ def test_ota_on_grid_v(place_on_grid_v):
 
 def cmp_constraints(name):
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},

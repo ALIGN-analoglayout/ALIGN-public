@@ -27,7 +27,7 @@ def test_dig_1():
     .END
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "CompilerOpt", "auto_constraint": False, "propagate": True},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]}
     ]
     example = build_example(name, netlist, constraints)
