@@ -190,13 +190,15 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
 
     return DB, verilog_d
 
-def gen_DB_verilog_d(args, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
-    assert len(args) == 9
-
-    fpath,lfile,vfile,mfile,dfile,topcell = args[1:7]
-    numLayout,effort = [ int(x) for x in args[7:9]]
-
-    if fpath[-1] == '/': fpath = fpath[:-1]
+def gen_DB_verilog_d(toplevel_args_d, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
+    fpath = toplevel_args_d['input_dir']
+    lfile = toplevel_args_d['lef_file']
+    vfile = toplevel_args_d['verilog_file']
+    mfile = toplevel_args_d['map_file']
+    dfile = toplevel_args_d['pdk_file']
+    topcell = toplevel_args_d['subckt']
+    numLayout = toplevel_args_d['nvariants']
+    effort = toplevel_args_d['effort']
 
     DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in, lef_s_in=lef_s_in)
 

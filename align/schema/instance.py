@@ -62,7 +62,6 @@ class Instance(types.BaseModel):
         model = cls._get_model(cls._validator_ctx().parent.parent.parent, values['model'])
         name = name.upper()
         if model.prefix and not name.startswith(model.prefix):
-            logger.error(f"{name} does not start with {model.prefix}")
             raise AssertionError(f"{name} does not start with {model.prefix}")
         return name
 

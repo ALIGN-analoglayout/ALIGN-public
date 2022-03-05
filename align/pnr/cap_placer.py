@@ -7,10 +7,10 @@ from .build_pnr_model import gen_DB_verilog_d
 
 logger = logging.getLogger(__name__)
 
-def cap_placer_driver(*, toplevel_args, results_dir):
+def cap_placer_driver(*, toplevel_args_d, results_dir):
 
     logger.info(f'Running cap_placer_driver...')
-    DB, verilog_d, fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args, results_dir)
+    DB, verilog_d, fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args_d, results_dir)
 
     for idx in DB.TraverseHierTree():
         logger.info(f'Starting bottom-up cap placement on {DB.hierTree[idx].name} {idx}')
@@ -53,4 +53,4 @@ def cap_placer_driver(*, toplevel_args, results_dir):
     assert required_caps == generated_caps, "Required capacitors {required_caps} different from generated_caps {generated_caps}."
 
 
-    return fpath, cap_map, cap_lef_s
+    return cap_map, cap_lef_s
