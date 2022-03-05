@@ -1,5 +1,5 @@
 import pathlib
-from align.schema import SubCircuit
+from align.schema import SubCircuit, constraint
 from align.compiler.compiler import compiler_input
 from utils import clean_data, build_example, get_test_id
 import textwrap
@@ -21,6 +21,67 @@ def mos_ckt(name):
     )
     return netlist
 
+
+def generator_ckt(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} D G S B
+        * @: Generator(pattern='CS', body=True)
+        mn1 D G S B n nfin=12 nf=2
+        mn2 S G D B n nfin=12 nf=2
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def power_ckt(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt test D G S B
+        mn1 D G S B n nfin=8 nf=2
+        mn2 D1 G2 S1 B n nfin=8 nf=4
+        .ends test
+        .subckt {name} D G S B
+        xi1 D G S B test
+        .ends {name}
+        """
+    )
+    return netlist
+
+
+def multi_domain_power_ckt(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt test D G S B S1
+        * @: PowerPorts(ports=['D1'])
+        * @: GroundPorts(ports=['S1'])
+        * @: ClockPorts(ports=['G1'])
+        mn1 D G S B n nfin=8 nf=2
+        mn2 D1 G2 S1 B n nfin=8 nf=4
+        .ends test
+        .subckt {name} D G S B
+        xi1 D G S B S1 test
+        .ends {name}
+        """
+    )
+    return netlist
+
+
+def power_and_signal_ckt(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt test D G S B S1
+        mn1 D G S B n nfin=8 nf=2
+        mn2 D1 G2 S1 B n nfin=8 nf=4
+        .ends test
+        .subckt {name} D G S B
+        xi1 D G S B S1 test
+        xi2 D G signal B S1 test
+        .ends {name}
+        """
+    )
+    return netlist
 
 def multi_param_ckt(name):
     netlist = textwrap.dedent(
@@ -99,6 +160,93 @@ def test_top_param():
     assert ckt_library.find(name).get_element("MN1").parameters["NFIN"] == "12"
     clean_data(name)
 
+
+def test_generator():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = generator_ckt(name)
+    example = build_example(name, netlist, constraints=[])
+    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    assert len(ckt_library.find(name).constraints) == 1
+    clean_data(name)
+
+
+def test_propogate_global_const():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = multi_param_ckt(name)
+    constraints = [
+        {"constraint": "KeepDummyHierarchies", "isTrue": True, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    assert len(ckt_library.find("PARAM_MOS").constraints) == 1
+    clean_data(name)
+
+
+def test_special_port_propagation():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = power_ckt(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "ClockPorts", "ports": ["G"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    consts = ckt_library.find("TEST").constraints
+    special_ports = {}
+    for const in consts:
+        if isinstance(const, constraint.PowerPorts):
+            special_ports["PWR"] = const.ports
+        elif isinstance(const, constraint.GroundPorts):
+            special_ports["GND"] = const.ports
+        elif isinstance(const, constraint.ClockPorts):
+            special_ports["CLK"] = const.ports
+    assert special_ports == {"PWR": ["D"], "GND": ["S"], "CLK": ["G"]}
+    clean_data(name)
+
+
+def test_multipower_domain_propagation():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = multi_domain_power_ckt(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "ClockPorts", "ports": ["G"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    consts = ckt_library.find("TEST").constraints
+    special_ports = {}
+    for const in consts:
+        if isinstance(const, constraint.PowerPorts):
+            special_ports["PWR"] = const.ports
+        elif isinstance(const, constraint.GroundPorts):
+            special_ports["GND"] = const.ports
+        elif isinstance(const, constraint.ClockPorts):
+            special_ports["CLK"] = const.ports
+    assert special_ports == {"PWR": ["D1", "D"], "GND": ["S1", "S"], "CLK": ["G1", "G"]}
+
+
+def test_power_and_signal_ckt():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = power_and_signal_ckt(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "ClockPorts", "ports": ["G"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    consts = ckt_library.find("TEST").constraints
+    special_ports = {}
+    for const in consts:
+        if isinstance(const, constraint.PowerPorts):
+            special_ports["PWR"] = const.ports
+        elif isinstance(const, constraint.GroundPorts):
+            special_ports["GND"] = const.ports
+        elif isinstance(const, constraint.ClockPorts):
+            special_ports["CLK"] = const.ports
+    assert special_ports == {"PWR": ["D"], "GND": ["S"], "CLK": ["G"]}
 
 def test_multi_param():
     name = f'ckt_{get_test_id()}'.upper()

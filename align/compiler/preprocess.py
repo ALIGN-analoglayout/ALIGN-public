@@ -1,3 +1,4 @@
+from operator import sub
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -91,7 +92,7 @@ def remove_dummies(library, dummy_hiers, top):
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
                             ele = other_ckt.get_element(x)
-                            assert ele
+                            assert ele, f"{ele} not found in {other_ckt.name}"
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
@@ -222,7 +223,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "D" in edge_type:
@@ -250,7 +251,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "S" in edge_type:
