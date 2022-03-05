@@ -195,6 +195,7 @@ class CreateDatabase:
                                 inst.parameters[p] = subckt.parameters[v]
 
     def _find_new_inst_name(self, subckt, param, counter=1):
+        #TODO use GUID
         name = f"{subckt.name.upper()}_{counter}"
         _ckt = self.lib.find(name)
         new_param = subckt.parameters.copy()
@@ -209,7 +210,7 @@ class CreateDatabase:
                 and subckt.constraints == _ckt.constraints
                 and subckt.generator == _ckt.generator
             ):
-                logger.info(f"Existing ckt defnition found, checking all elements")
+                logger.debug(f"Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
                     if (
                         _ckt.get_element(x.name)
