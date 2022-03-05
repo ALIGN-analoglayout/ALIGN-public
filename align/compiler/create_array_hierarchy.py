@@ -46,7 +46,6 @@ class process_arrays:
                 self.stop_points.extend(const.ports)
             elif isinstance(const, constraint.CompilerOpt):
                 self.condition = getattr(const, 'identify_array', False)
-            elif isinstance(const, constraint.IsDigital):
                 self.is_digital = getattr(const, 'is_digital', False)
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
         self.name = ckt.name

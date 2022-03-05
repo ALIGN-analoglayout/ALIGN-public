@@ -17,7 +17,7 @@ def test_symm_net():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
     constraints = [
-        {"constraint": "IsDigital", "isTrue": True}
+        {"constraint": "CompilerOpt", "is_digital": True}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
@@ -50,7 +50,7 @@ def test_add_symmetry_const():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
     constraints = [
-        {"constraint": "IsDigital", "isTrue": True}
+        {"constraint": "CompilerOpt", "is_digital": True}
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
