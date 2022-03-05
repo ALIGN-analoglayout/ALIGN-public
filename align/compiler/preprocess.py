@@ -100,12 +100,10 @@ def remove_dummies(library, dummy_hiers, top):
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
                             _prefix = library.find(y.model).prefix
-                            nm = ele.name
-                            if _prefix and not nm.startswith(_prefix):
-                                nm = _prefix + nm
+                            assert ele.name.startswith(_prefix),f"Instance {ele} name should start with {_prefix}"
                             other_ckt.elements.append(
                                 Instance(
-                                    name=nm,
+                                    name=ele.name,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters

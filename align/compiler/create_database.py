@@ -158,12 +158,12 @@ class CreateDatabase:
         This function is written seperately as we need to create new subcircuit definitions
         in case subcircuit is instantiated mupltiple times with different parameters
         """
-        logger.info(
+        logger.debug(
             f"Updating instance parameters of subckt {subckt.name} as {subckt.parameters}"
         )
         for inst in subckt.elements:
             if isinstance(self.lib.find(inst.model.upper()), SubCircuit):
-                logger.info(f"checking subckt inst {inst.name} {inst.parameters}")
+                logger.debug(f"checking subckt inst {inst.name} {inst.parameters}")
                 for p, v in inst.parameters.items():
                     if v in self.circuit.parameters.keys():
                         inst.parameters[p] = self.circuit.parameters[v]
