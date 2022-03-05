@@ -99,8 +99,6 @@ def remove_dummies(library, dummy_hiers, top):
                                 }
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
-                            _prefix = library.find(y.model).prefix
-                            assert ele.name.startswith(_prefix),f"Instance {ele} name should start with {_prefix}"
                             other_ckt.elements.append(
                                 Instance(
                                     name=ele.name,
