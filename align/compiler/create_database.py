@@ -114,6 +114,7 @@ class CreateDatabase:
                 logger.debug(f"Same parameters found {param} {subckt.parameters}")
                 return name.upper()
             # Second time instantiation of this circuit with different parameters
+            #TODO use GUID here
             new_name, updated_param = self._find_new_inst_name(subckt, param)
             if new_name == subckt.name or self.lib.find(new_name):
                 logger.debug(
@@ -153,7 +154,7 @@ class CreateDatabase:
             return name.upper()
 
     def _update_intermediate_instances(self, subckt):
-        """_update_intermediate_instances _summary_
+        """
         Updates instance parameter values from parameter definitions
         This function is written seperately as we need to create new subcircuit definitions
         in case subcircuit is instantiated mupltiple times with different parameters
