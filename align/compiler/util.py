@@ -60,19 +60,16 @@ def get_next_level(subckt, G, tree_l1):
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     cm = subckt.get_element(node).model
-    if subckt.parent.find(cm):
-        sub_subckt = subckt.parent.find(cm)
-        if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
-            base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
-        elif isinstance(sub_subckt, Model):
-            base_model = subckt.parent.find(cm).base
-            if not base_model:
-                base_model = cm
-        else:
-            #TODO use guid (parameterized subcircuit instantiated multiple times)
-            base_model = sub_subckt.name + '_'.join([param+'_'+value for param, value in sub_subckt.parameters.items()])
+    model_def = subckt.parent.find(cm)
+    assert model_def
+    if isinstance(model_def, SubCircuit) and len(model_def.elements) == 1:
+        base_model = get_base_model(model_def, model_def.elements[0].name)
+    elif isinstance(model_def, Model) and not isinstance(model_def, SubCircuit):
+        base_model = subckt.parent.find(cm).base
+        if not base_model:
+            base_model = cm
     else:
-        base_model = subckt.get_element(node).model
+        base_model = cm
     return base_model
 
 

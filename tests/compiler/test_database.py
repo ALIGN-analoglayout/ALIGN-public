@@ -439,4 +439,28 @@ def test_global_param_2():
     clean_data(name)
 
 
+def test_base_model():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt param_mos D G S B
+        m0 D G S B nmos nfin=12 nf=n m=8
+        m1 S G D B nmos nfin=12 nf=n m=8
+        .ends param_mos
+
+        .subckt {name} D G S B
+        xi1 D G S B param_mos
+        .ends {name}
+        """
+    )
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["D"]},
+        {"constraint": "GroundPorts", "ports": ["S"]},
+        {"constraint": "ConfigureCompiler", "merge_parallel_devices": False}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
+    assert ckt_library.find('PARAM_MOS').get_element('M0').pins == {"D": "D", "G": "G", "S": "S", "B": "B"}
+    assert ckt_library.find('PARAM_MOS').get_element('M1').pins == {"D": "D", "G": "G", "S": "S", "B": "B"}
+    clean_data(name)
 

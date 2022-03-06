@@ -283,7 +283,6 @@ def dbr():
                 pins={"TD": "D", "TG": "G", "TS": "S", "TB": "B"},
             )
         )
-
     return library
 
 
