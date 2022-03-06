@@ -246,7 +246,6 @@ class CreateDatabase:
 
     def _propagate_power_ports(self, subckt, pwr, gnd, clk):
         pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
-        logger.info(f"{subckt} {subckt.name}, {pwr_child}, {gnd_child}, {clk_child}, {pwr}, {gnd}, {clk}")
         if not pwr_child and pwr:
             pwr_child = pwr
             subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
