@@ -174,3 +174,50 @@ def test_donotroute():
     pnr_const_ds_l = load_constraint_files(input_dir)
     pnr_const_ds_g = gen_constraint_files(verilog_d, input_dir)
     assert pnr_const_ds_l == pnr_const_ds_g
+
+
+def test_netpriority():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt inv vi vo vccx vssx
+        mp0 vo vi vccx vccx p w=360e-9 m=1 nf=2
+        mn0 vo vi vssx vssx n w=360e-9 m=1 nf=2
+        .ends
+        .subckt buf vi vo1 vo2 vccx vssx
+        xi0 vo1 vi vccx vssx inv
+        xi1 vo2 vi vccx vssx inv
+        .ends
+        .subckt {name} vi vccx vssx
+        xi0 vi v1 v2 vccx vssx buf
+        xi1 vo1 v1 vccx vssx inv
+        xi2 vo2 v2 vccx vssx inv
+        .ends
+        """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "SameTemplate", "instances": ["xi1", "xi2"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["xi0", "xi1"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["xi0", "xi2"]},
+        {"constraint": "Align", "line": "h_bottom", "instances": ["xi0", "xi1", "xi2"]},
+        {"constraint": "NetPriority", "nets": ["v1"], "weight": 0}
+        ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    name = name.upper()
+    with (run_dir / '3_pnr' / 'Results' / f'{name}_0.scaled_placement_verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        modules = {module['concrete_name']: module for module in verilog_json['modules']}
+        cn = f'{name}_0'
+        assert cn in modules, f'{cn} not found in *.scaled_placement_verilog.json'
+        for inst in modules[cn]['instances']:
+            if 'xi1' in inst['instance_name'].lower():
+                xi1_ox = inst['transformation']['oX']
+            if 'xi2' in inst['instance_name'].lower():
+                xi2_ox = inst['transformation']['oX']
+        assert xi2_ox < xi1_ox, f'xi2 (oX={xi2_ox}) should be left of xi1 (oX={xi1_ox})'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
