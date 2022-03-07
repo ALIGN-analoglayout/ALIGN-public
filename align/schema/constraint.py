@@ -40,6 +40,10 @@ def upper_case(cls, value):
     return [v.upper() for v in value]
 
 
+def assert_non_negative(cls, value):
+    assert value >= 0, f'Value must be non-negative: {value}'
+
+
 class SoftConstraint(types.BaseModel):
 
     constraint: str
@@ -441,10 +445,7 @@ class AspectRatio(HardConstraint):
     ratio_high: float = 10
     weight: int = 1
 
-    @types.validator('ratio_low', allow_reuse=True)
-    def ratio_low_validator(cls, value):
-        assert value >= 0, f'AspectRatio:ratio_low should be greater than zero {value}'
-        return value
+    _ratio_low_validator = types.validator('ratio_low', allow_reuse=True)(assert_non_negative)
 
     @types.validator('ratio_high', allow_reuse=True)
     def ratio_high_validator(cls, value, values):
@@ -474,15 +475,8 @@ class Boundary(HardConstraint):
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
-    @types.validator('max_width', allow_reuse=True)
-    def max_width_validator(cls, value):
-        assert value >= 0, f'Boundary:max_width should be greater than zero {value}'
-        return value
-
-    @types.validator('max_height', allow_reuse=True)
-    def max_height_validator(cls, value):
-        assert value >= 0, f'Boundary:max_height should be greater than zero {value}'
-        return value
+    _max_width = types.validator('max_width', allow_reuse=True)(assert_non_negative)
+    _max_height = types.validator('max_height', allow_reuse=True)(assert_non_negative)
 
     def translate(self, solver):
         bvar = solver.bbox_vars('subcircuit')
@@ -1038,7 +1032,7 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
@@ -1211,6 +1205,16 @@ class GroupCaps(SoftConstraint):
     dummy: bool  # whether to fill in dummies
 
 
+class NetPriority(SoftConstraint):
+    """
+    Specify a non-negative priority for a list of nets for placement (default = 1).
+    Example: {"constraint": "NetPriority", "nets": ["en", "enb"], "priority": 0}
+    """
+    nets: List[str]
+    weight: int
+    _weight = types.validator('weight', allow_reuse=True)(assert_non_negative)
+
+
 class NetConst(SoftConstraint):
     """NetConst
 
@@ -1366,7 +1370,8 @@ ConstraintType = Union[
     KeepDummyHierarchies,
     MergeSeriesDevices,
     MergeParallelDevices,
-    IdentifyArray
+    IdentifyArray,
+    NetPriority
 ]
 
 
