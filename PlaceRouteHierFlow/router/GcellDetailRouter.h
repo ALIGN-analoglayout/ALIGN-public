@@ -212,6 +212,8 @@ class GcellDetailRouter : public GcellGlobalRouter {
                                                      std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag);
   void EraseSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
   void ExtendMetalsPhysicalPath(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<int>> &extend_labels);
+  void generate_set_data(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
+  void InsertSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
 
 };
 

@@ -113,6 +113,17 @@ void GcellDetailRouter::printNetsInfo() {
 void GcellDetailRouter::EraseSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact) {
 
   for (auto it: temp_source) {
+       Set_x_contact.erase(it);
+  }
+  for (auto it: temp_dest) {
+       Set_x_contact.erase(it);
+  }
+
+};
+
+void GcellDetailRouter::InsertSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact) {
+
+  for (auto it: temp_source) {
        Set_x_contact.insert(it);
   }
   for (auto it: temp_dest) {
@@ -270,6 +281,38 @@ void GcellDetailRouter::Detailed_router_set_src_dest_new(Grid &grid, std::vector
   grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y);  // on longer needed seems
 };
 
+void GcellDetailRouter::generate_set_data(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x){
+
+  std::ofstream matlabfile;
+  matlabfile.open("Set_x.txt");
+
+  auto writeout_matlabfile = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mit) {
+    matlabfile << llx;
+    matlabfile << " ";
+    matlabfile << lly;
+    matlabfile << " ";
+    matlabfile << urx;
+    matlabfile << " ";
+
+    matlabfile << ury;
+    matlabfile << " ";
+    matlabfile << mit;
+    matlabfile << std::endl;
+  };
+
+  std::cout<<"start write out set_x"<<std::endl;
+  for(auto it: Set_x){
+     std::cout<<it.metalIdx<<" "<<it.coord[0].x<<" "<<it.coord[0].y<<std::endl;
+     std::cout<<it.metalIdx<<" "<<it.coord[1].x<<" "<<it.coord[1].y<<std::endl;
+     writeout_matlabfile(it.coord[0].x,it.coord[0].y,it.coord[1].x,it.coord[1].y,it.metalIdx);
+  }
+  std::cout<<"end write out set_x"<<std::endl;
+  
+  matlabfile.close();
+
+
+};
+
 void GcellDetailRouter::create_detailrouter_new() {
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
 
@@ -367,6 +410,8 @@ void GcellDetailRouter::create_detailrouter_new() {
         std::cout<<"flag 6"<<std::endl;
         if(pathMark==0){
           grid.CreateGridData();
+          get_internal_metal_via();
+          generate_set_data(Set_x);
           assert(0);
          }
 
@@ -376,21 +421,27 @@ void GcellDetailRouter::create_detailrouter_new() {
         logger->debug("pathMark {0}", pathMark);
         // std::cout<<"performing detailed router on debug 2"<<std::endl;
         // assert(pathMark);
+        std::cout<<"flag 6.1"<<std::endl;
         if (pathMark) {
           // std::cout<<"performing detailed router on debug 2.5"<<std::endl;
+          std::cout<<"flag 6.2"<<std::endl;
           physical_path = a_star.ConvertPathintoPhysical(grid);
           // std::cout<<"performing detailed router on debug 2.6"<<std::endl;
+          std::cout<<"flag 6.3"<<std::endl;
           extend_labels = a_star.GetExtendLabel();
           // lastmile_source_new(physical_path, temp_source);
           // lastmile_dest_new(physical_path, temp_dest);
           // std::cout<<"performing detailed router on debug 2.7"<<std::endl;
+          std::cout<<"flag 6.4"<<std::endl;
           returnPath_new(physical_path, i, extend_labels);
           // std::cout<<"performing detailed router on debug 3"<<std::endl;
           // insert via center into Pset
+          std::cout<<"flag 6.5"<<std::endl;
           InsertRoutingVia(a_star, grid, Pset_current_net_via);
           InsertRoutingVia(a_star, grid, Pset_via);
           // add path metal to set_current_net_contact
           // add via conatct to set_current_net_contact
+          std::cout<<"flag 6.6"<<std::endl;
           InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
           // std::cout<<"performing detailed router on debug 4"<<std::endl;
         } else {
@@ -399,6 +450,7 @@ void GcellDetailRouter::create_detailrouter_new() {
 
         // logger->debug("Detail Router check point 8");
         // update physical path to
+        InsertSourceDestPinContact(temp_source, temp_dest, Set_x);
         Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
         std::cout<<"flag 7"<<std::endl;
         //??? insert physical_path or current_metal into sex_x
@@ -417,67 +469,60 @@ void GcellDetailRouter::create_detailrouter_new() {
 void GcellDetailRouter::returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels) {
 
   //insert first
+  std::cout<<"debug 1"<<std::endl;
   for (unsigned int i = 0; i < temp_path.size(); i++) {
     // std::cout<<"temp_path length "<<temp_path[i].size()<<" extend_label length "<<extend_labels[i].size()<<std::endl;
-
     for (unsigned int j = 0; j < temp_path[i].size(); j++) {
-      /*
-      if(j==0 || j==temp_path[i].size()-1){
-        temp_net.extend_label.push_back(0);
-      }else{
-        temp_net.extend_label.push_back(1);
-      }
-      */
-      Nets[net_index].path_metal.push_back(temp_path[i][j]);
-      //temp_net.extend_label.push_back(extend_labels[i][j]);
-    }
-  }    
-  //get physicalmetal_via
-  GetPhsical_Metal_Via(net_index);
-  Nets[net_index].path_metal.clear();
-  ExtendMetalsPhysicalPath(temp_path,extend_labels);
-
-  for (unsigned int i = 0; i < temp_path.size(); i++) {
-    // std::cout<<"temp_path length "<<temp_path[i].size()<<" extend_label length "<<extend_labels[i].size()<<std::endl;
-
-    for (unsigned int j = 0; j < temp_path[i].size(); j++) {
-      /*
-      if(j==0 || j==temp_path[i].size()-1){
-        temp_net.extend_label.push_back(0);
-      }else{
-        temp_net.extend_label.push_back(1);
-      }
-      */
       Nets[net_index].path_metal.push_back(temp_path[i][j]);
       Nets[net_index].extend_label.push_back(extend_labels[i][j]);
     }
   }
+  std::cout<<"debug 2"<<std::endl;
+  //get physicalmetal_via
+  GetPhsical_Metal_Via(net_index);
+  std::cout<<"debug 3"<<std::endl;
+  ExtendMetals(net_index);
+  std::cout<<"debug 4"<<std::endl;
+  //Nets[net_index].path_metal.clear();
+  ExtendMetalsPhysicalPath(temp_path,extend_labels);
+  std::cout<<"debug 5"<<std::endl;
 
 };
 
 void GcellDetailRouter::ExtendMetalsPhysicalPath(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<int>> &extend_labels) {
 
+  for(int i=0;i<physical_path.size();i++){
+
+     for(int j=0;j<physical_path[i].size();j++){
+        std::cout<<physical_path[i][j].MetalIdx<<" "<< physical_path[i][j].LinePoint[0].x<<" "<<physical_path[i][j].LinePoint[0].y<<" "<<physical_path[i][j].LinePoint[1].x<<" "<<physical_path[i][j].LinePoint[1].y<<std::endl; 
+     }
+  
+  }
+
   if(physical_path.size()!=extend_labels.size())
      assert(0);
 
+  std::cout<<"debug 4.1"<<std::endl;
   for(int i=0;i<physical_path.size();i++){
 
      if(physical_path[i].size() != extend_labels[i].size())
         assert(0);
 
-     for(int j=0;i<physical_path[i].size();j++){
+     for(int j=0;j<physical_path[i].size();j++){
         if(extend_labels[i][j]==0)
           continue;
-
+        std::cout<<physical_path[i][j].MetalIdx<<std::endl;
+        std::cout<<"debug 4.2"<<std::endl;
         int current_metal = physical_path[i][j].MetalIdx;
-
+        std::cout<<"debug 4.3"<<std::endl;
         int direction = drc_info.Metal_info[current_metal].direct;
-
+        std::cout<<"debug 4.4"<<std::endl;
         int minL = drc_info.Metal_info[current_metal].minL;
-
+        std::cout<<"debug 4.5"<<std::endl;
         int current_length = abs(physical_path[i][j].LinePoint[0].x - physical_path[i][j].LinePoint[1].x) +
                          abs(physical_path[i][j].LinePoint[0].y - physical_path[i][j].LinePoint[1].y);
-
+        
+        std::cout<<"debug 4.6"<<std::endl;
         if (current_length < minL and extend_labels[i][j] == 1) {
             int extend_dis = ceil(minL - current_length) / 2;
 
@@ -3682,7 +3727,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   int obs_h = this->layerNo - 1;
   // logger->debug("Enter converter");
   // logger->debug("rect info {0} {1} {2} {3} {4}", mIdx, LLx, LLy, URx, URy);
-
+  std::cout<<" ConvertRect "<<mIdx<<" "<<LLx<<" "<<LLy<<" "<<URx<<" "<<URy<<" "<<drc_info.Metal_info.at(mIdx).dist_ee<<std::endl;;
   int enclose_length = 0;
   /*
     if(mIdx>=0 && mIdx<drc_info.Metal_info.size()-1){
@@ -3754,6 +3799,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<" push "<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -3786,6 +3832,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<" push "<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -3829,6 +3876,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<" push "<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -3861,6 +3909,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<" push "<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
