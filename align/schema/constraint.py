@@ -42,6 +42,7 @@ def upper_case(cls, value):
 
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
+    return value
 
 
 class SoftConstraint(types.BaseModel):
@@ -1212,6 +1213,7 @@ class NetPriority(SoftConstraint):
     """
     nets: List[str]
     weight: int
+
     _weight = types.validator('weight', allow_reuse=True)(assert_non_negative)
 
 
