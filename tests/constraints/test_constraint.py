@@ -176,6 +176,7 @@ def test_donotroute():
     assert pnr_const_ds_l == pnr_const_ds_g
 
 
+@pytest.mark.skip(reason='Enable in the next PR')
 def test_netpriority():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
