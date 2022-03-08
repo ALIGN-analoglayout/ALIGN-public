@@ -275,15 +275,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                 if suffix in v:
                     (input_dir / f'{k}{suffix}').write_text(pathlib.Path(v[suffix]).read_text())
 
-    else:
-        with (working_dir / "__capacitors__.json").open("rt") as fp:
-            capacitors = json.load(fp)
-        pnr_const_ds = load_constraint_files(input_dir)
-
-    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
-        with (pdk_dir / pdk_file).open( 'rt') as fp:
-            scale_factor = json.load(fp)["ScaleFactor"]
-
+        
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
 
@@ -306,6 +298,44 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         for cap_template_name in capacitors.keys():
             for fn in results_dir.glob( f'{cap_template_name}_AspectRatio_*.json'):
                 (working_dir / fn.name).write_text(fn.read_text())
+
+        os.chdir(current_working_dir)
+
+        with (working_dir / "__cap_map__.json").open("wt") as fp:
+            json.dump(cap_map, fp, indent=2)
+
+        with (working_dir / "__cap_lef__").open("wt") as fp:
+            fp.write(cap_lef_s)
+
+    else:
+        with (working_dir / "__capacitors__.json").open("rt") as fp:
+            capacitors = json.load(fp)
+        pnr_const_ds = load_constraint_files(input_dir)
+
+        with (working_dir / "__cap_map__.json").open("rt") as fp:
+            cap_map = json.load(fp)
+
+        with (working_dir / "__cap_lef__").open("rt") as fp:
+            cap_lef_s = fp.read()
+
+
+    if '3_pnr:place' in steps_to_run or '3_pnr:route' in steps_to_run:
+
+
+        with (pdk_dir / pdk_file).open( 'rt') as fp:
+            scale_factor = json.load(fp)["ScaleFactor"]
+
+        current_working_dir = os.getcwd()
+        os.chdir(working_dir)
+
+        toplevel_args_d = {'input_dir': str(input_dir),
+                           'lef_file': str(placement_lef_file),
+                           'verilog_file': str(verilog_file),
+                           'map_file': str(map_file),
+                           'pdk_file': str(pdk_file),
+                           'subckt': subckt,
+                           'nvariants': nvariants,
+                           'effort': effort}
 
         verilog_ds_to_run, new_fpath, opath, numLayout, effort = \
             placer_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
