@@ -201,49 +201,40 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
         // vertical
         if (mIdx < this->layerNo - 1) {
           int vIdx = mIdx;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+          box.LL.x = mit->coord[0].x;
+          box.LL.y = mit->coord[0].y - drc_info.Metal_info[mIdx].dist_ee;
+          box.UR.x = mit->coord[1].x;
+          box.UR.y = mit->coord[1].y + drc_info.Metal_info[mIdx].dist_ee;
           // current metal cannot go up
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-          // upper metal cannot go down
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
         if (mIdx > 0) {
           int vIdx = mIdx - 1;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
-          // current metal cannot go down
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-          // lower metal cannot go up
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+          box.LL.x = mit->coord[0].x;
+          box.LL.y = mit->coord[0].y - drc_info.Metal_info[mIdx].dist_ee;
+          box.UR.x = mit->coord[1].x;
+          box.UR.y = mit->coord[1].y + drc_info.Metal_info[mIdx].dist_ee;
+          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
       } else {
         // horizontal
         if (mIdx < this->layerNo - 1) {
           int vIdx = mIdx;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y;
+          box.LL.x = mit->coord[0].x - drc_info.Metal_info[mIdx].dist_ee;
+          box.LL.y = mit->coord[0].y;
+          box.UR.x = mit->coord[1].x+ drc_info.Metal_info[mIdx].dist_ee;
+          box.UR.y = mit->coord[1].y;
           // current metal cannot go up
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-          // upper metal cannot go down
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
         if (mIdx > 0) {
           int vIdx = mIdx - 1;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y;
+          box.LL.x = mit->coord[0].x - drc_info.Metal_info[mIdx].dist_ee;
+          box.LL.y = mit->coord[0].y;
+          box.UR.x = mit->coord[1].x + drc_info.Metal_info[mIdx].dist_ee;
+          box.UR.y = mit->coord[1].y;
           // current metal cannot go down
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-          // lower metal cannot go up
-          ConvertRect2GridPoints_Via(plist, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
       }
   }
@@ -376,8 +367,10 @@ void GcellDetailRouter::create_detailrouter_new() {
       RouterDB::point sym_gridur;
       std::cout<<"flag 2.3"<<std::endl;
       Grid grid = Generate_Grid_Net(i);                     // create grid for this net
+      //grid.CreateGridData_new();
       int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
       Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
+      
       std::cout<<"flag 2.4"<<std::endl;
       int source_lock = 0;
       std::vector<RouterDB::SinkData> temp_source = Initial_source_pin(temp_pins, source_lock);  // initial source
@@ -394,10 +387,12 @@ void GcellDetailRouter::create_detailrouter_new() {
         //erase the contact of source and dest pin
         EraseSourceDestPinContact(temp_source, temp_dest, Set_x);
         std::cout<<"flag 4"<<std::endl;
-        Grid_Inactive_new(grid, Set_x, gridll, gridur);  // inactive grid on internal metals
 
+        Grid_Inactive_new(grid, Set_x, gridll, gridur);  // inactive grid on internal metals
+        grid.CreateGridData_new();
         std::cout<<"flag 5"<<std::endl;
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
+        //grid.CreateGridData_new();
         Detailed_router_set_src_dest_new(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
         AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
         AddViaSpacing(Pset_via, grid, gridll, gridur);
@@ -410,6 +405,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         std::cout<<"flag 6"<<std::endl;
         if(pathMark==0){
           grid.CreateGridData();
+          //grid.CreateGridData_new();
           get_internal_metal_via();
           generate_set_data(Set_x);
           assert(0);
@@ -3768,7 +3764,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     // int newURx=URx;
     int boundX = (newLLx % curlayer_unit == 0) ? (newLLx + curlayer_unit)
                                                : ((newLLx / curlayer_unit) * curlayer_unit < newLLx ? (newLLx / curlayer_unit + 1) * curlayer_unit
-                                                                                                    : (newLLx / curlayer_unit) * curlayer_unit);
+                                                                                             : (newLLx / curlayer_unit) * curlayer_unit);
+    std::cout<<"boundX"<<boundX<<"cal"<<newLLx % curlayer_unit<<" mIdx "<<mIdx<<" newLLy "<<newLLx<<" curlayer_unit "<<curlayer_unit<<" width "<<drc_info.Metal_info.at(mIdx).width<<std::endl;
     for (int x = boundX; x < newURx; x += curlayer_unit) {
       if (mIdx != obs_l) {
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_y;
@@ -3847,6 +3844,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     int boundY = (newLLy % curlayer_unit == 0) ? (newLLy + curlayer_unit)
                                                : ((newLLy / curlayer_unit) * curlayer_unit < newLLy ? (newLLy / curlayer_unit + 1) * curlayer_unit
                                                                                                     : (newLLy / curlayer_unit) * curlayer_unit);
+    std::cout<<"boundY"<<boundY<<"cal"<<newLLy % curlayer_unit<<" mIdx "<<mIdx<<" newLLy "<<newLLy<<" curlayer_unit "<<curlayer_unit<<" width "<<drc_info.Metal_info.at(mIdx).width<<std::endl;
     for (int y = boundY; y < newURy; y += curlayer_unit) {
       if (mIdx != obs_l) {
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_x;

@@ -288,6 +288,71 @@ void Grid::CreateGridData() {
 
 }
 
+void Grid::CreateGridData_new() {
+  std::ofstream matlabfile;
+  matlabfile.open("Grid_new.txt");
+
+  auto write_out_matlab_file = [&](const auto& p, auto index) { //index 0 grid, index 1 src/dest
+    matlabfile << vertices_total[p].x;
+    matlabfile << " ";
+    matlabfile << vertices_total[p].y;
+    matlabfile << " ";
+    matlabfile << vertices_total[p].metal;
+    matlabfile << " ";
+    matlabfile << index;
+    matlabfile << std::endl;
+  };
+
+  for (unsigned int i = 0; i < vertices_total.size(); i++) {
+      if (vertices_total[i].active) {
+        write_out_matlab_file(i, 0);
+    }
+  }
+
+  for (unsigned int i = 0; i < Source.size(); i++) {
+    write_out_matlab_file(Source[i], 1);
+  }
+
+  for (unsigned int i = 0; i < Dest.size(); i++) {
+    write_out_matlab_file(Dest[i], 1);
+  }
+
+  matlabfile.close();
+
+
+  std::ofstream matlabfile_via;
+  matlabfile_via.open("Grid_via_new.txt");
+
+  auto write_out_matlab_file_via = [&](const auto& p, const int& via_index) {
+    matlabfile_via << vertices_total[p].x;
+    matlabfile_via << " ";
+    matlabfile_via << vertices_total[p].y;
+    matlabfile_via << " ";
+    matlabfile_via << vertices_total[p].metal;
+    matlabfile_via << " ";
+    matlabfile_via << via_index;
+
+    matlabfile_via << std::endl;
+  };
+
+  for (unsigned int i = 0; i < vertices_total.size(); i++) {
+     //std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
+     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 1);
+     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 2);
+     if(vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+         write_out_matlab_file_via(i, 3);
+
+  }
+
+  matlabfile_via.close();
+
+
+
+}
+
+
 void Grid::print_source_dest(){
 
   for (unsigned int i = 0; i < Source.size(); i++) {
