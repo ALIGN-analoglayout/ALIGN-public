@@ -65,7 +65,6 @@ setup(name='align',
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
-          'bin/pnr_compiler.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
           'bin/convert_lef_to_layout_json.py',
