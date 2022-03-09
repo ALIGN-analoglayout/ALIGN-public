@@ -62,6 +62,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
   vector<PnRDB::Via> interVias;        // via within each MACRO
   bool Metal_Flag;
+  bool Via_Flag;
   {
     int stage = 0;
     bool skip_the_rest_of_stage_4 = false;
@@ -213,12 +214,18 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
             Metal_Flag = true;
             macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
             macroPins.back().pinContacts.back().metal = temp[1];
-          } else {
+          }else if(rect_type == 'V'){
+            Via_Flag = true;
+            macroPins.back().pinVias.resize(macroPins.back().pinVias.size() + 1);
+            macroPins.back().pinVias.back().model_index = DRC_info.Viamap[temp[1]]; 
+            std::cout<<"pin via model_index "<<DRC_info.Viamap[temp[1]]<<std::endl;
+          }else {
+            Via_Flag = false;
             Metal_Flag = false;
           }
           // cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
         } else if ((found = def.find("RECT")) != string::npos && Metal_Flag) {
-          // Metal_Flag = true;
+          Metal_Flag = false;
           temp = get_true_word(found, def, 0, ';', p);
           int LLx = parse_and_scale(temp[1], units);
           int LLy = parse_and_scale(temp[2], units);
@@ -241,8 +248,37 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           // {
           //  cout<<" {"<<it->x<<","<<it->y<<"}";
           //}
-          // cout<<endl<<"Stage "<<stage<<" @ center
-          // "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
+          cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
+        }else if((found = def.find("RECT")) != string::npos && Via_Flag){
+          Via_Flag = false;
+          temp = get_true_word(found, def, 0, ';', p);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
+          PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
+          std::cout<<"inserting via "<<center.x<<" "<<center.y<<" "<<macroPins.back().pinVias.back().model_index<<std::endl;
+          PnRDB::ViaModel via_model = DRC_info.Via_model[macroPins.back().pinVias.back().model_index];
+          macroPins.back().pinVias.back().originpos = center;
+          macroPins.back().pinVias.back().ViaRect.originCenter = center;
+          macroPins.back().pinVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
+          macroPins.back().pinVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
+          macroPins.back().pinVias.back().ViaRect.metal = via_model.name;
+          macroPins.back().pinVias.back().LowerMetalRect.originCenter = center;
+          macroPins.back().pinVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
+          macroPins.back().pinVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
+          macroPins.back().pinVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
+          macroPins.back().pinVias.back().UpperMetalRect.originCenter = center;
+          macroPins.back().pinVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
+          macroPins.back().pinVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
+          macroPins.back().pinVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+          // cout<<"Stage "<<stage<<" @ bbox ";
+          // for(vector<PnRDB::point>::iterator
+          // it=macroPins.back().pinContacts.back().originBox.polygon.begin();it!=macroPins.back().pinContacts.back().originBox.polygon.end();++it)
+          // {
+          //  cout<<" {"<<it->x<<","<<it->y<<"}";
+          //}
+          cout<<"Stage "<<stage<<" @ center"<<macroPins.back().pinVias.back().originpos.x<<","<<macroPins.back().pinVias.back().originpos.y<<endl;
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 || macroPins.back().pinContacts.back().metal == "") {

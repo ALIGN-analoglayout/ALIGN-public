@@ -19,6 +19,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode &HierNode, GcellGlobalRoute
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.GcellDetailRouter");
 
   logger->debug("start detail router");
+  this->HierName = HierNode.name;
   this->Nets = GR.Nets;
   this->Blocks = GR.Blocks;
   this->Terminals = GR.Terminals;
@@ -403,12 +404,18 @@ void GcellDetailRouter::create_detailrouter_new() {
         bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
         // std::cout<<"performing detailed router on debug 1"<<std::endl;
         std::cout<<"flag 6"<<std::endl;
+
+        grid.CreateGridData();
+        //grid.CreateGridData_new();
+        //get_internal_metal_via();
+        generate_set_data(Set_x);
+
         if(pathMark==0){
           grid.CreateGridData();
           //grid.CreateGridData_new();
           get_internal_metal_via();
           generate_set_data(Set_x);
-          assert(0);
+          //assert(0);
          }
 
         std::vector<std::vector<RouterDB::Metal>> physical_path;
@@ -460,6 +467,8 @@ void GcellDetailRouter::create_detailrouter_new() {
       // modify_tile_metals(Nets[i], 0);
     }
   }
+
+  get_internal_metal_via();
 };
 
 void GcellDetailRouter::returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels) {
@@ -1117,7 +1126,7 @@ void GcellDetailRouter::Mirror_Topology(std::vector<RouterDB::Metal> &sym_path, 
 void GcellDetailRouter::get_internal_metal_via() {
 
   std::ofstream datafile;
-  datafile.open("Metal_via.txt");
+  datafile.open(HierName+"_Metal_via.txt");
 
   auto write_out_metal = [&](const auto& p, const auto& index) {
     datafile << p.placedLL.x;
@@ -1777,6 +1786,35 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid, RouterDB::point LL,
                                       RouterDB::point UR) {
+
+
+  std::ofstream datafile;
+  datafile.open(HierName+"Metal_via_spacing.txt");
+
+  auto write_out_via = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mindex, const auto& index) {
+    datafile << llx;
+    datafile << " ";
+    datafile << lly;
+    datafile << " ";
+    datafile << urx;
+    datafile << " ";
+    datafile << ury;
+    datafile << " ";
+    datafile << mindex;
+    datafile << " ";
+    datafile << index;
+    datafile << std::endl;
+  };
+
+  //internal metal and via for nets
+  for (auto bit: Pset_via) {
+      int vIdx = bit.first;
+      write_out_via(bit.second.x - drc_info.Via_info[vIdx].width/2,bit.second.y- drc_info.Via_info[vIdx].width_y/2,bit.second.x + drc_info.Via_info[vIdx].width/2,bit.second.y + drc_info.Via_info[vIdx].width_y/2,vIdx,2);
+  }
+
+  datafile.close();
+
+
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point>> plist_via_lower_metal(this->layerNo);  // points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point>> plist_via_upper_metal(this->layerNo);  // points in this list cannot have a lower via

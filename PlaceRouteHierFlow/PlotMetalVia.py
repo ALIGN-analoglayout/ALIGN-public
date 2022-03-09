@@ -35,8 +35,8 @@ def plot_grid_metal_via(temp_matrix,layer):
     if(temp_matrix[i][5]==3):
       MetalOfVia.append(temp_matrix[i])
   plot_Box(internal_metal,'b')
-  plot_Box(via,'b')
-  plot_Box(MetalOfVia,'b')
+  plot_Box(via,'r')
+  #plot_Box(MetalOfVia,'b')
   plt.savefig(str(layer)+"_MetalVias.png")
   plt.show()
 
