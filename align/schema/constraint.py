@@ -1215,6 +1215,7 @@ class NetPriority(SoftConstraint):
     weight: int
 
     _weight = types.validator('weight', allow_reuse=True)(assert_non_negative)
+    _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
 
 
 class NetConst(SoftConstraint):
