@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'route', 'check']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'route']}
 
-    unimplemented_start_points = {'3_pnr:check'}
+    unimplemented_start_points = set()
     unimplemented_stop_points = set()
 
     if flow_start is None:
@@ -212,7 +212,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, \
+        assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
