@@ -53,4 +53,4 @@ def cap_placer_driver(*, toplevel_args_d, results_dir):
     assert required_caps == generated_caps, "Required capacitors {required_caps} different from generated_caps {generated_caps}."
 
 
-    return fpath, cap_map, cap_lef_s
+    return cap_map, cap_lef_s
