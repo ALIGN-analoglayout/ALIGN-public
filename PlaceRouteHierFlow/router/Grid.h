@@ -128,6 +128,7 @@ class Grid {
   int GetVerticesCount() { return vertices_total.size(); };
   void SetViaInactiveBox(std::vector<std::vector<int>> path, std::vector<std::pair<int, RouterDB::box>> &via_vec);
   void print_source_dest();
+  void CreateGridData_new();
   // void inactive_node_global();
   // void inacitve_node_detail();
   // active or inactive node?

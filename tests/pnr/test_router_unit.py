@@ -11,6 +11,8 @@ from align.cell_fabric import transformation
 
 import align
 
+bypass_errors = True
+
 ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent.parent
 
 if 'ALIGN_HOME' in os.environ:
@@ -190,7 +192,7 @@ def test_four_horizontal_wires(setup):
     run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1)
 
 def test_four_horizontal_wires_extend(setup):
-    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1, extra_y=1) # should route
+    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1)
 
 def test_one_horizontal_wire_with_obstacles(setup):
     run_horizontal_wire(get_test_id(), ["A"], setup, max_errors=0, add_blockage=True)
@@ -205,7 +207,7 @@ def test_four_horizontal_wires_with_obstacles(setup):
     run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1, add_blockage=True)
 
 def test_four_horizontal_wires_with_obstacles_extend(setup):
-    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=1, extra_y=1, add_blockage=True) # should route
+    run_horizontal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, extra_y=1, add_blockage=True)
 
 def run_vertical_wire(nm, pins, setup, max_errors, extra_x=0, add_blockage=False):
     #==== Generate leaf cell =====
@@ -329,7 +331,7 @@ def test_four_diagonal_wires_with_obstacles(setup):
     run_diagonal_wire(get_test_id(), ["A", "B", "C", "D"], setup, max_errors=0, add_blockage=True)
 
 def test_ten_diagonal_wires_with_obstacles(setup):
-    run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=3, add_blockage=True) # should route
+    run_diagonal_wire(get_test_id(), ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"], setup, max_errors=3 if bypass_errors else 0, add_blockage=True) # should route
 
 
 
