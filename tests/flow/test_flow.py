@@ -24,6 +24,7 @@ else:
 def test_flow_each_step():
 
     nm = 'five_transistor_ota'
+    #nm = 'switched_capacitor_filter'
     run_dir = ALIGN_WORK_DIR / f'{nm}_flow_each_step'
 
     if run_dir.exists():
