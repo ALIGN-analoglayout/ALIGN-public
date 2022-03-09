@@ -218,7 +218,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
             Via_Flag = true;
             macroPins.back().pinVias.resize(macroPins.back().pinVias.size() + 1);
             macroPins.back().pinVias.back().model_index = DRC_info.Viamap[temp[1]]; 
-            std::cout<<"pin via model_index "<<DRC_info.Viamap[temp[1]]<<std::endl;
+            //std::cout<<"pin via model_index "<<DRC_info.Viamap[temp[1]]<<std::endl;
           }else {
             Via_Flag = false;
             Metal_Flag = false;
@@ -248,7 +248,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           // {
           //  cout<<" {"<<it->x<<","<<it->y<<"}";
           //}
-          cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
+          //cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
         }else if((found = def.find("RECT")) != string::npos && Via_Flag){
           Via_Flag = false;
           temp = get_true_word(found, def, 0, ';', p);
@@ -257,7 +257,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           int URx = parse_and_scale(temp[3], units);
           int URy = parse_and_scale(temp[4], units);
           PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
-          std::cout<<"inserting via "<<center.x<<" "<<center.y<<" "<<macroPins.back().pinVias.back().model_index<<std::endl;
+          //std::cout<<"inserting via "<<center.x<<" "<<center.y<<" "<<macroPins.back().pinVias.back().model_index<<std::endl;
           PnRDB::ViaModel via_model = DRC_info.Via_model[macroPins.back().pinVias.back().model_index];
           macroPins.back().pinVias.back().originpos = center;
           macroPins.back().pinVias.back().ViaRect.originCenter = center;
@@ -278,7 +278,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           // {
           //  cout<<" {"<<it->x<<","<<it->y<<"}";
           //}
-          cout<<"Stage "<<stage<<" @ center"<<macroPins.back().pinVias.back().originpos.x<<","<<macroPins.back().pinVias.back().originpos.y<<endl;
+          //cout<<"Stage "<<stage<<" @ center"<<macroPins.back().pinVias.back().originpos.x<<","<<macroPins.back().pinVias.back().originpos.y<<endl;
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 || macroPins.back().pinContacts.back().metal == "") {
