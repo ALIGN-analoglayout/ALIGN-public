@@ -366,19 +366,19 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     return placements_to_run, placement_verilog_alternatives
 
 
-def placer_driver(*, fpath, cap_map, cap_lef_s,
+def placer_driver(*, cap_map, cap_lef_s,
                   gui, lambda_coeff, scale_factor,
                   reference_placement_verilog_json, concrete_top_name, select_in_ILP, seed,
-                  use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args, results_dir):
+                  use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args_d, results_dir):
 
-
+    fpath = toplevel_args_d['input_dir']
 
     idir = pathlib.Path(fpath)
 
-    lef_file = toplevel_args[2]
-    map_file = toplevel_args[4]
+    lef_file = toplevel_args_d['lef_file']
+    map_file = toplevel_args_d['map_file']
 
-    abstract_top_name = toplevel_args[6].upper()
+    abstract_top_name = toplevel_args_d['subckt'].upper()
 
     p = re.compile(r'^(\S+)\s+(\S+)\s*$')
 
@@ -400,7 +400,7 @@ def placer_driver(*, fpath, cap_map, cap_lef_s,
         lef_s_in += cap_lef_s
 
 
-    DB, verilog_d, new_fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args, results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
+    DB, verilog_d, new_fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args_d=toplevel_args_d, results_dir=results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
     assert new_fpath == fpath
 
@@ -434,4 +434,4 @@ def placer_driver(*, fpath, cap_map, cap_lef_s,
     else:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
 
-    return verilog_ds_to_run, fpath, opath, numLayout, effort
+    return verilog_ds_to_run
