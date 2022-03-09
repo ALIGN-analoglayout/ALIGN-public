@@ -232,9 +232,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         leaves, capacitors = gen_leaf_cell_info( verilog_d, pnr_const_ds)
 
-        with (working_dir / "__capacitors__.json").open("wt") as fp:
-            json.dump( capacitors, fp=fp, indent=2)
-
         leaf_collateral = gen_leaf_collateral( leaves, primitives, primitive_dir)
         logger.debug(f'primitives: {primitives}')
         logger.debug( f'leaf_collateral: {leaf_collateral}')
@@ -308,8 +305,6 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             fp.write(cap_lef_s)
 
     else:
-        with (working_dir / "__capacitors__.json").open("rt") as fp:
-            capacitors = json.load(fp)
         pnr_const_ds = load_constraint_files(input_dir)
 
         with (working_dir / "__cap_map__.json").open("rt") as fp:
@@ -335,7 +330,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'nvariants': nvariants,
                            'effort': effort}
 
-        verilog_ds_to_run, _, _, _, _ = \
+        verilog_ds_to_run = \
             placer_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                           gui=gui, lambda_coeff=lambda_coeff, scale_factor=scale_factor,
                           reference_placement_verilog_json=reference_placement_verilog_json, concrete_top_name=concrete_top_name, select_in_ILP=select_in_ILP, seed=seed,

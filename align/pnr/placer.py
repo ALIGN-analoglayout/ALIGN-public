@@ -434,4 +434,4 @@ def placer_driver(*, cap_map, cap_lef_s,
     else:
         verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
 
-    return verilog_ds_to_run, fpath, opath, numLayout, effort
+    return verilog_ds_to_run
