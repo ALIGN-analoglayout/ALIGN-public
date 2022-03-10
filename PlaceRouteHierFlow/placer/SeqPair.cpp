@@ -85,10 +85,6 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   }*/
 }
 
-void OrderedEnumerator::NextPermutation(vector<int>& seq) {
-  seq = _sequences[_cnt];
-  _cnt = (_cnt + 1) % _sequences.size();
-}
 
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter)
     : _enumIndex({0, 0}),
@@ -183,20 +179,20 @@ void SeqPairEnumerator::Permute() {
   // if (!EnumFlip())
   if (_exhausted) return;
   if (!IncrementSelected()) {
-    if (_enumIndex.second >= _maxEnum) {
+    if (_enumIndex.second >= _maxEnum - 1) {
+      std::sort(_negPair.begin(), _negPair.end());
       _enumIndex.second = 0;
       ++_enumIndex.first;
-      std::sort(_negPair.begin(), _negPair.end());
       if (_posEnumerator.valid())
-        _posEnumerator.NextPermutation(_posPair);
+        _posEnumerator.NextPermutation(_posPair, _enumIndex.first);
       else
         std::next_permutation(std::begin(_posPair), std::end(_posPair));
     } else {
+      ++_enumIndex.second;
       if (_negEnumerator.valid())
-        _negEnumerator.NextPermutation(_negPair);
+        _negEnumerator.NextPermutation(_negPair, _enumIndex.second);
       else
         std::next_permutation(std::begin(_negPair), std::end(_negPair));
-      ++_enumIndex.second;
     }
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
