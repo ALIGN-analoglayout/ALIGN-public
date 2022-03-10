@@ -318,7 +318,7 @@ def test_portlocation():
 
 
 def test_enumerate():
-    ''' Test SP enumerator in placement. Three devices can be permutated in 6 different ways on a row '''
+    ''' Test SP enumerator in placement. Three devices can be permutated in one row in 3! ways '''
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vi vo vccx vssx
@@ -340,6 +340,34 @@ def test_enumerate():
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
 
     variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.lef')]
-    assert len(variants) == 6, f'Six variants expected but only {len(variants)} variants generated'
+    assert len(variants) == 6, f'6 variants expected but only {len(variants)} variants generated'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
+
+
+def test_enumerate_2():
+    ''' Test SP enumerator in placement. Four devices can be permutated in two rows in 4! ways '''
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp1 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp2 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp3 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        .ends
+        """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2", "mp3"]},
+        {"constraint": "Boundary", "subcircuit": name, "max_height": 2.52, "max_width": 1.296}
+        ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=30, log_level='DEBUG')
+
+    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.lef')]
+    assert len(variants) == 24, f'24 variants expected but only {len(variants)} variants generated'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
