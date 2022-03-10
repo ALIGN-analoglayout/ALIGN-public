@@ -60,7 +60,7 @@ def test_aspect_ratio_failure():
 def test_boundary_max_width():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_width", "max_width": 3.5}]
+    constraints = [{"constraint": "Boundary", "subcircuit": name, "max_width": 3.5}]
     example = build_example(name, netlist, constraints)
     run_example(example)
 
@@ -68,7 +68,7 @@ def test_boundary_max_width():
 def test_boundary_max_height():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "Boundary", "subcircuit": "example_boundary_max_height", "max_height": 1.3}]
+    constraints = [{"constraint": "Boundary", "subcircuit": name, "max_height": 1.3}]
     example = build_example(name, netlist, constraints)
     run_example(example)
 
@@ -313,5 +313,32 @@ def test_portlocation():
                 xi2_ox = inst['transformation']['oX']
         assert (xi0_ox < xi1_ox and xi2_ox < xi1_ox),\
             f'xi1 {xi1_ox} should be far right of xi0 {xi0_ox} and xi2 {xi2_ox}'
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
+
+
+def test_enumerate():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp1 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp2 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        .ends
+        """)
+    constraints = [
+        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2"]},
+        {"constraint": "Align", "line": "h_bottom", "instances": ["mp0", "mp1", "mp2"]},
+        {"constraint": "Boundary", "subcircuit": name, "max_height": 2.52}
+        ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
+
+    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.lef')]
+    assert len(variants) == 6, f'Six variants expected but only {len(variants)} variants generated'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
