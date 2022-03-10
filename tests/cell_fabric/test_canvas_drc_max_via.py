@@ -46,10 +46,8 @@ def setup():
     return c
 
 
-def test_one(setup):
-
+def test_max_adjacent_y(setup):
     c = setup
-
     c.addWire(c.M1, 'a', 0, (0, -1), (3, 1))
     for i in range(4):
         c.addWire(c.M2, 'a', i, (0, -1), (3, 1))
@@ -58,7 +56,7 @@ def test_one(setup):
     # for viewing
     c.computeBbox()
     data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.terminals}
-    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'test_one.json', "wt") as fp:
+    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'max_adjacent_y.json', "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
     data = c.gen_data(run_pex=False)
@@ -68,3 +66,25 @@ def test_one(setup):
     data = c.gen_data(run_pex=False)
     assert c.drc.num_errors == 1
     print('MaxAdjacentY is expected:', c.drc.errors)
+
+
+def test_max_adjacent_x(setup):
+    c = setup
+    c.addWire(c.M2, 'a', 0, (0, -1), (3, 1))
+    for i in range(4):
+        c.addWire(c.M1, 'a', i, (0, -1), (3, 1))
+    c.drop_via(c.V1)
+
+    # for viewing
+    c.computeBbox()
+    data = {'bbox': c.bbox.toList(), 'globalRoutes': [], 'globalRouteGrid': [], 'terminals': c.terminals}
+    with open(pathlib.Path(os.getenv('ALIGN_HOME'))/'Viewer'/'INPUT'/'max_adjacent_x.json', "wt") as fp:
+        fp.write(json.dumps(data, indent=2) + '\n')
+
+    data = c.gen_data(run_pex=False)
+    assert c.drc.num_errors == 0
+
+    c.pdk['V1']['MaxAdjacentX'] = 3
+    data = c.gen_data(run_pex=False)
+    assert c.drc.num_errors == 1
+    print('MaxAdjacentX is expected:', c.drc.errors)

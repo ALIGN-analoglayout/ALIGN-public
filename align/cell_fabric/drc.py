@@ -99,10 +99,9 @@ class DesignRuleCheck():
         max_adjacent_y = self.canvas.pdk[layer].get('MaxAdjacentY', None)
         if max_adjacent_y is not None:
             via = getattr(self.canvas, layer)
-            for (_, sl0) in vv.items():
-                # iy = via.v_clg.inverseBound(cl//2)[0][0]
+            for (_, sl) in vv.items():
                 idx_prev = None
-                for _, slr in enumerate(sl0.rects):
+                for _, slr in enumerate(sl.rects):
                     idx = via.h_clg.inverseBounds((slr.rect[1]+slr.rect[3])//2)[0][0]
                     if idx_prev is None:
                         count = 1
@@ -114,6 +113,30 @@ class DesignRuleCheck():
                     if count > max_adjacent_y:
                         self.errors.append(f"Vertical max adjacent via violation on {layer}: {slr}")
 
+        max_adjacent_x = self.canvas.pdk[layer].get('MaxAdjacentX', None)
+        if max_adjacent_x is not None:
+            via = getattr(self.canvas, layer)
+
+            # Build horizontal scanlines
+            vv_h = defaultdict(list)
+            for (_, sl) in vv.items():
+                for slr in sl.rects:
+                    vv_h[slr.rect[1] + slr.rect[3]].append(slr.rect)
+
+            for (_, sl) in vv_h.items():
+                sl.sort(key=lambda slr: slr[0])
+                idy_prev = None
+                for _, r in enumerate(sl):
+                    idy = via.v_clg.inverseBounds((r[0]+r[2])//2)[0][0]
+                    if idy_prev is None:
+                        count = 1
+                    elif idy - idy_prev == 1:
+                        count += 1
+                    else:
+                        count = 0
+                    idy_prev = idy
+                    if count > max_adjacent_x:
+                        self.errors.append(f"Horizontal max adjacent via violation on {layer}: {slr}")
 
     def _check_via_enclosure_rules(self, layer, vv):
         '''Check via enclosures.'''
