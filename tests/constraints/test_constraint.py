@@ -322,9 +322,9 @@ def test_enumerate():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vi vo vccx vssx
-        mp0 vo vi vssx vccx p w=360e-9 m=1 nf=2
-        mp1 vo vi vssx vccx p w=360e-9 m=1 nf=2
-        mp2 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp0 vo v2 vssx vccx p w=360e-9 m=1 nf=2
+        mp1 v2 v1 vssx vccx p w=360e-9 m=1 nf=2
+        mp2 v1 vi vssx vccx p w=360e-9 m=1 nf=2
         .ends
         """)
     constraints = [
@@ -334,12 +334,17 @@ def test_enumerate():
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2"]},
         {"constraint": "Align", "line": "h_bottom", "instances": ["mp0", "mp1", "mp2"]},
+        {"constraint": "NetPriority", "nets": ["v2"], "weight": 8},
+        {"constraint": "NetPriority", "nets": ["v1"], "weight": 4},
+        {"constraint": "NetPriority", "nets": ["vo"], "weight": 2},
+        {"constraint": "NetPriority", "nets": ["vi"], "weight": 1},
+        {"constraint": "PortLocation", "ports": ["v1"], "location": "RC"},
         {"constraint": "Boundary", "subcircuit": name, "max_height": 1.26}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
 
-    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.lef')]
+    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
     assert len(variants) == 6, f'6 variants expected but only {len(variants)} variants generated'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
@@ -350,10 +355,10 @@ def test_enumerate_2():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vi vo vccx vssx
-        mp0 vo vi vssx vccx p w=360e-9 m=1 nf=2
-        mp1 vo vi vssx vccx p w=360e-9 m=1 nf=2
-        mp2 vo vi vssx vccx p w=360e-9 m=1 nf=2
-        mp3 vo vi vssx vccx p w=360e-9 m=1 nf=2
+        mp0 vo v1 vssx vccx p w=360e-9 m=1 nf=2
+        mp1 v1 v2 vssx vccx p w=360e-9 m=1 nf=2
+        mp2 v2 v3 vssx vccx p w=360e-9 m=1 nf=2
+        mp3 v3 vi vssx vccx p w=360e-9 m=1 nf=2
         .ends
         """)
     constraints = [
@@ -362,12 +367,18 @@ def test_enumerate_2():
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2", "mp3"]},
+        {"constraint": "NetPriority", "nets": ["v3"], "weight": 16},
+        {"constraint": "NetPriority", "nets": ["v2"], "weight": 8},
+        {"constraint": "NetPriority", "nets": ["v1"], "weight": 4},
+        {"constraint": "NetPriority", "nets": ["vo"], "weight": 2},
+        {"constraint": "NetPriority", "nets": ["vi"], "weight": 1},
+        {"constraint": "PortLocation", "ports": ["v1"], "location": "RC"},
         {"constraint": "Boundary", "subcircuit": name, "max_height": 2.52, "max_width": 1.296}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=30, log_level='DEBUG')
 
-    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.lef')]
+    variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
     assert len(variants) == 24, f'24 variants expected but only {len(variants)} variants generated'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
