@@ -318,6 +318,7 @@ def test_portlocation():
 
 
 def test_enumerate():
+    ''' Test SP enumerator in placement. Three devices can be permutated in 6 different ways on a row '''
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vi vo vccx vssx
@@ -333,7 +334,7 @@ def test_enumerate():
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2"]},
         {"constraint": "Align", "line": "h_bottom", "instances": ["mp0", "mp1", "mp2"]},
-        {"constraint": "Boundary", "subcircuit": name, "max_height": 2.52}
+        {"constraint": "Boundary", "subcircuit": name, "max_height": 1.26}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
