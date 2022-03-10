@@ -85,9 +85,9 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   }*/
 }
 
-bool OrderedEnumerator::NextPermutation(vector<int>& seq) {
-  if (++_cnt < _sequences.size()) seq = _sequences[_cnt];
-  return (_cnt < _sequences.size());
+void OrderedEnumerator::NextPermutation(vector<int>& seq) {
+  seq = _sequences[_cnt];
+  _cnt = (_cnt + 1) % _sequences.size();
 }
 
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter)
@@ -181,10 +181,10 @@ const bool SeqPairEnumerator::IncrementSelected() {
 void SeqPairEnumerator::Permute() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
   // if (!EnumFlip())
+  if (_exhausted) return;
   if (!IncrementSelected()) {
-    if (_enumIndex.second >= _maxEnum - 1) {
+    if (_enumIndex.second >= _maxEnum) {
       _enumIndex.second = 0;
-      _negEnumerator.ResetCnt();
       ++_enumIndex.first;
       std::sort(_negPair.begin(), _negPair.end());
       if (_posEnumerator.valid())
