@@ -101,7 +101,7 @@ class DesignRuleCheck():
             via = getattr(self.canvas, layer)
             for (_, sl) in vv.items():
                 idx_prev = None
-                for _, slr in enumerate(sl.rects):
+                for slr in sl.rects:
                     idx = via.h_clg.inverseBounds((slr.rect[1]+slr.rect[3])//2)[0][0]
                     if idx_prev is None:
                         count = 1
@@ -126,7 +126,7 @@ class DesignRuleCheck():
             for (_, sl) in vv_h.items():
                 sl.sort(key=lambda slr: slr[0])
                 idy_prev = None
-                for _, r in enumerate(sl):
+                for r in sl:
                     idy = via.v_clg.inverseBounds((r[0]+r[2])//2)[0][0]
                     if idy_prev is None:
                         count = 1
