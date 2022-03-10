@@ -4,7 +4,7 @@ import json
 import shutil
 from align.pnr.hpwl import gen_netlist, calculate_HPWL_from_placement_verilog_d
 from align.pnr.render_placement import standalone_overlap_checker
-from .utils import get_test_id, build_example, run_example, plot_sa_cost, plot_sa_seq
+from .utils import get_test_id, build_example, run_example
 from . import circuits
 import time
 
@@ -213,10 +213,12 @@ def test_place_cmp_seed(seed, analytical_placer):
     area_pct = round(100*((area_new/area_best)-1))
     pct = (area_new*hpwl_new)/(area_best*hpwl_best)
     pct = round(100*(pct-1))
-    print(f'seed={seed} placer={placer} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
+    print(f'seed={seed} placer={placer} hpwl={hpwl_new} area={area_new} area*hpwl={area_new*hpwl_new} This placement is {hpwl_pct}% in hpwl, \
+         {area_pct}% in area, {pct}% in area*hpwl worse than the best known solution')
 
     # plot_sa_cost(name.upper())
     # plot_sa_seq(name.upper())
+
 
 @pytest.mark.skip("Currently failing")
 def test_cmp_analytical():
@@ -336,3 +338,24 @@ def test_hang_2():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, log_level="DEBUG")
+
+
+def test_hang_3():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} o a vssx
+    mn0 o a vssx vssx n w=180e-9 m=4 nf=2
+    mn1 o a vssx vssx n w=180e-9 m=4 nf=2
+    mn2 o a vssx vssx n w=180e-9 m=4 nf=2
+    mn3 o a vssx vssx n w=180e-9 m=4 nf=2
+    mn4 o a vssx vssx n w=180e-9 m=4 nf=2
+    mn5 o a vssx vssx n w=180e-9 m=4 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1"], ["mn2"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])

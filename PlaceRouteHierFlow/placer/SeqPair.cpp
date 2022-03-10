@@ -690,7 +690,7 @@ void SeqPair::KeepOrdering(design& caseNL) {
           int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
           int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
           auto it = negPair.begin();
-          if (first_counterpart == -1) {
+          if (first_counterpart == -1 || first_counterpart == order.first.first) {
             // move first to after second
             it = negPair.insert(it + second_it + 1, order.first.first);
             it = negPair.begin();
