@@ -317,6 +317,7 @@ def test_portlocation():
     shutil.rmtree(ckt_dir)
 
 
+@pytest.mark.skip(reason="For next PR")
 def test_enumerate():
     '''
         Test SP enumerator in placement. Two stacked transistor can be placed in at least 3 ways
