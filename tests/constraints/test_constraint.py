@@ -318,38 +318,42 @@ def test_portlocation():
 
 
 def test_enumerate():
-    ''' Test SP enumerator in placement. Three devices can be permutated in one row in 3! ways '''
+    '''
+        Test SP enumerator in placement. Two stacked transistor can be placed in at least 3 ways
+        SS D1 | SS D2
+        SS D1 | D2 SS
+        D1 SS | SS D2
+    '''
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
-        .subckt {name} vi vo vccx vssx
-        mp0 vo v2 vssx vccx p w=360e-9 m=1 nf=2
-        mp1 v2 v1 vssx vccx p w=360e-9 m=1 nf=2
-        mp2 v1 vi vssx vccx p w=360e-9 m=1 nf=2
+        .subckt p_stack d g s b
+        .param m=1
+        mi2 i g s b p w=180e-9 m=1 nf=1
+        mi1 d g i b p w=180e-9 m=1 nf=1
+        .ends p_stack
+        .subckt {name} d1 d2 ss vccx
+        xmp1 d1 vg ss vccx p_stack m=1
+        xmp2 d2 vg ss vccx p_stack m=1
         .ends
         """)
     constraints = [
         {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "SameTemplate", "instances": ["mp0", "mp1", "mp2"]},
-        {"constraint": "Align", "line": "h_bottom", "instances": ["mp0", "mp1", "mp2"]},
-        {"constraint": "NetPriority", "nets": ["v2"], "weight": 8},
-        {"constraint": "NetPriority", "nets": ["v1"], "weight": 4},
-        {"constraint": "NetPriority", "nets": ["vo"], "weight": 2},
-        {"constraint": "NetPriority", "nets": ["vi"], "weight": 1},
-        {"constraint": "PortLocation", "ports": ["v1"], "location": "RC"},
+        {"constraint": "DoNotRoute", "nets": ["vccx"]},
+        {"constraint": "SameTemplate", "instances": ["xmp1", "xmp2"]},
+        {"constraint": "Align", "line": "h_bottom", "instances": ["xmp1", "xmp2"]},
         {"constraint": "Boundary", "subcircuit": name, "max_height": 1.26}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
 
     variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
-    assert len(variants) == 6, f'6 variants expected but only {len(variants)} variants generated'
+    assert len(variants) == 3, f'3 variants expected but only {len(variants)} variants generated'
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
 
 
+@pytest.mark.skip(reason="For next PR")
 def test_enumerate_2():
     ''' Test SP enumerator in placement. Four devices can be permutated in two rows in 4! ways '''
     name = f'ckt_{get_test_id()}'
