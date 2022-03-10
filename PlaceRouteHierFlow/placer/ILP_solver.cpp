@@ -1887,10 +1887,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-    objective.at(ind)     = -hyper.LAMBDA;
-    objective.at(ind + 1) = -hyper.LAMBDA;
-    objective.at(ind + 2) = hyper.LAMBDA;
-    objective.at(ind + 3) = hyper.LAMBDA;
+    objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind + 2) = hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight;
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -2597,6 +2597,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   HPWL = 0;
   HPWL_extend = 0;
   HPWL_extend_terminal = 0;
+
   for (const auto& neti : mydesign.Nets) {
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
     int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
@@ -2664,6 +2665,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     }
     HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
     HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+    HPWL_extend_net_priority += ((HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x)) * neti.weight;
     bool is_terminal_net = false;
     for (const auto& c : neti.connected) {
       if (c.type == placerDB::Terminal) {
