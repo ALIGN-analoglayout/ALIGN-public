@@ -3614,8 +3614,8 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
     cost += HPWL_norm * hyper.LAMBDA;
   } else {
     cost += log(area);
-    if (HPWL_extend > 0) {
-      cost += log(HPWL_extend) * hyper.LAMBDA;
+    if (HPWL_extend_net_priority > 0) {
+      cost += log(HPWL_extend_net_priority) * hyper.LAMBDA;
     }
   }
 
