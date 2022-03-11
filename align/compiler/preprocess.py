@@ -1,3 +1,4 @@
+from operator import sub
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -60,14 +61,14 @@ def preprocess_stack_parallel(ckt_data, design_name):
             dummy_hiers = list()
             find_dummy_hier(ckt_data, top, dummy_hiers)
             if len(dummy_hiers) > 0:
-                logger.info(f"Removing dummy hierarchies {dummy_hiers}")
+                logger.debug(f"Found dummy hierarchies {dummy_hiers}")
                 remove_dummies(ckt_data, dummy_hiers, top.name)
 
 
 def remove_dummies(library, dummy_hiers, top):
     for dh in dummy_hiers:
         if dh == top:
-            logger.debug("Cant delete top hierarchy {top}")
+            logger.debug(f"Cant delete top hierarchy {top}")
             return
         ckt = library.find(dh)
         assert ckt, f"No subckt with name {dh} found"
@@ -86,7 +87,7 @@ def remove_dummies(library, dummy_hiers, top):
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
                             ele = other_ckt.get_element(x)
-                            assert ele
+                            assert ele, f"{ele} not found in {other_ckt.name}"
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
@@ -98,13 +99,9 @@ def remove_dummies(library, dummy_hiers, top):
                                 }
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
-                            _prefix = library.find(y.model).prefix
-                            nm = ele.name
-                            if _prefix and not nm.startswith(_prefix):
-                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=nm,
+                                    name=ele.name,
                                     model=y.model,
                                     pins=pins,
                                     parameters=y.parameters
@@ -217,7 +214,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "D" in edge_type:
@@ -245,7 +242,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "S" in edge_type:
