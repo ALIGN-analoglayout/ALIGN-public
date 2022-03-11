@@ -1217,6 +1217,11 @@ bool SeqPair::PerturbationNew(design& caseNL) {
     KeepOrdering(caseNL);
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
+    std::string tmpstr, tmpstrn, tmpstrs;
+    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+    for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
+    for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
+    logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
   } while (retval && ++trial_cnt < max_trial_cnt);
   return !retval;
 }
