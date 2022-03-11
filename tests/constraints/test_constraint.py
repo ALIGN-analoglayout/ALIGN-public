@@ -151,7 +151,7 @@ def test_donotroute():
         .ends
         """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["v1", "vccx", "vssx"]}
@@ -195,7 +195,7 @@ def test_netpriority():
         .ends
         """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
@@ -243,7 +243,7 @@ def test_matchblocks():
         .ends
         """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
@@ -288,7 +288,7 @@ def test_portlocation():
         .ends
         """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},

@@ -41,9 +41,7 @@ def test_cmp_vanilla_pg():
 def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True}
-    ]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)
 
@@ -65,7 +63,7 @@ def test_cmp_noconst_pg():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
@@ -160,7 +158,7 @@ def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
@@ -234,7 +232,6 @@ def test_two_stage_ota():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2.0},
-        # {"constraint": "AutoConstraint", "isTrue": false, "propagate": false},
         {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "name": "scn"},
         {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "name": "scp"},

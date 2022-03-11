@@ -287,9 +287,8 @@ def FindConst(subckt):
                 isinstance(const, constraint.GroundPorts) or \
                 isinstance(const, constraint.ClockPorts):
             stop_points.update(const.ports)
-        elif isinstance(const, constraint.IsDigital) or \
-                isinstance(const, constraint.AutoConstraint):
-            auto_constraint = const.isTrue
+        elif isinstance(const, constraint.ConfigureCompiler):
+            auto_constraint = not const.is_digital and const.auto_constraint
     logger.debug(f"Stop_points : {stop_points}")
 
     pp = process_input_const(subckt)

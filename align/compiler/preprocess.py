@@ -26,14 +26,11 @@ def preprocess_stack_parallel(ckt_data, design_name):
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
-                if isinstance(const, constraint.IsDigital):
-                    IsDigital = const.isTrue
-                elif isinstance(const, constraint.FixSourceDrain):
-                    FixSourceDrain = const.isTrue
-                elif isinstance(const, constraint.MergeSeriesDevices):
-                    MergeSeriesDevices = const.isTrue
-                elif isinstance(const, constraint.MergeParallelDevices):
-                    MergeParallelDevices = const.isTrue
+                if isinstance(const, constraint.ConfigureCompiler):
+                    IsDigital = const.is_digital
+                    FixSourceDrain = const.fix_source_drain
+                    MergeSeriesDevices = const.merge_series_devices
+                    MergeParallelDevices = const.merge_parallel_devices
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -50,23 +47,21 @@ def preprocess_stack_parallel(ckt_data, design_name):
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
-
+    #Remove dummy hiearachies by design tree traversal from design top
     if isinstance(top, SubCircuit):
         IsDigital = False
-        KeepDummyHierarchies = False
+        RemoveDummyHierarchies = True
         for const in top.constraints:
-            if isinstance(const, constraint.IsDigital):
-                IsDigital = const.isTrue
-            elif isinstance(const, constraint.KeepDummyHierarchies):
-                KeepDummyHierarchies = const.isTrue
-        if not IsDigital:
-            if not KeepDummyHierarchies:
-                # remove single instance subcircuits
-                dummy_hiers = list()
-                find_dummy_hier(ckt_data, top, dummy_hiers)
-                if len(dummy_hiers) > 0:
-                    logger.info(f"Removing dummy hierarchies {dummy_hiers}")
-                    remove_dummies(ckt_data, dummy_hiers, top.name)
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = const.is_digital
+                RemoveDummyHierarchies = const.remove_dummy_hierarchies
+        if not IsDigital and RemoveDummyHierarchies:
+            # remove single instance subcircuits
+            dummy_hiers = list()
+            find_dummy_hier(ckt_data, top, dummy_hiers)
+            if len(dummy_hiers) > 0:
+                logger.info(f"Removing dummy hierarchies {dummy_hiers}")
+                remove_dummies(ckt_data, dummy_hiers, top.name)
 
 
 def remove_dummies(library, dummy_hiers, top):

@@ -88,7 +88,7 @@ def test_ota_six_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},

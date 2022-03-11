@@ -71,10 +71,8 @@ class CreateDatabase:
         if not all_subckt:
             return
         for const in top.constraints:
-            global_const = [constraint.IsDigital, constraint.AutoConstraint,
-                            constraint.FixSourceDrain, constraint.DoNotUseLib,
-                            constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
-                            constraint.MergeParallelDevices, constraint.IdentifyArray,
+            global_const = [constraint.ConfigureCompiler,
+                            constraint.DoNotUseLib,
                             ]
 
             if any(isinstance(const, x) for x in global_const):
