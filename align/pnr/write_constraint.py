@@ -8,6 +8,7 @@ Created on Wed Jan 13 14:50:24 2021
 import pprint
 import logging
 from ..schema import constraint
+import itertools
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -37,7 +38,7 @@ class PnRConstraintWriter:
                 del const['instances']
 
             # Exclude constraints that need to be to multiple constraints
-            if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection'):
+            if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection', 'PlaceCloser'):
                 pnr_const.append(const)
 
             # Constraint-specific field transformations
@@ -49,12 +50,6 @@ class PnRConstraintWriter:
                     const["direction"] = 'V'
                 else:
                     raise NotImplementedError(f'PnR does not support direction {const["direction"]} yet')
-
-            elif const["const_name"] == 'MatchBlocks':
-                const["const_name"] = 'MatchBlock'
-                const['block1'] = const['blocks'][0]
-                const['block2'] = const['blocks'][1]
-                del const['blocks']
 
             elif const["const_name"] == 'BlockDistance':
                 const["const_name"] = 'bias_graph'
@@ -143,6 +138,11 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'NetPriority':
                 for net in const["nets"]:
                     extra = {"const_name": 'CritNet', "net_name": net, "priority": const["weight"]}
+                    pnr_const.append(extra)
+
+            elif const["const_name"] == 'PlaceCloser':
+                for (b1, b2) in itertools.combinations(const['blocks'], 2):
+                    extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
 
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
