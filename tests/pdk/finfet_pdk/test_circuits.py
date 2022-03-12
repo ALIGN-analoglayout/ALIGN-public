@@ -140,11 +140,11 @@ def test_cmp_fp2_regions():
         {"constraint": "SymmetricBlocks", "direction": "V",
             "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["mn11", "mn12"], ["mp13", "mp14"], ["mp7", "mp8"], ["mp9", "mp10"]]},
         {"constraint": "Floorplan", "order": True, "regions": [
-            ["mn0"],
-            ["dp"],
-            ["mn11", "ccn", "mn12"],
+            ["mp7", "mp9", "mp10", "mp8"],
             ["mp13", "ccp", "mp14"],
-            ["mp7", "mp9", "mp10", "mp8"]
+            ["mn11", "ccn", "mn12"],
+            ["dp"],
+            ["mn0"]
         ]}
     ]
     example = build_example(name, netlist, constraints)

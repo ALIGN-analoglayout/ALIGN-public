@@ -632,11 +632,11 @@ class Floorplan(UserConstraint):
         {"constraint":"Floorplan", "regions": [["A", "B", "C"], ["D", "E"], ["G"], "order": true}
 
         -----
-        G
+        A B C
         -----
         D E
         -----
-        A B C
+        G
         -----
     '''
     regions: List[List[str]]
@@ -654,7 +654,7 @@ class Floorplan(UserConstraint):
             # Rows ordered bottom up
             logger.debug("===========================")
             for i in range(len(self.regions)-1):
-                for [above, below] in plain_itertools.product(self.regions[i+1], self.regions[i]):
+                for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
                     yield Order(instances=[above, below], direction='top_to_bottom')
             # Each row ordered left to right
             if self.order:
