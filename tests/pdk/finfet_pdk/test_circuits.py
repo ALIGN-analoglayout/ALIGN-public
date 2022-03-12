@@ -124,6 +124,33 @@ def test_cmp_fp2():
     run_example(example, cleanup=cleanup, area=5e9)
 
 
+def test_cmp_fp2_regions():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = [
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
+        {"constraint": "DoNotIdentify", "instances": ["mn11", "mn12", "mp13", "mp14"]},
+        {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
+        {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
+        {"constraint": "SymmetricBlocks", "direction": "V",
+            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["mn11", "mn12"], ["mp13", "mp14"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Floorplan", "order": True, "regions": [
+            ["mn0"],
+            ["dp"],
+            ["mn11", "ccn", "mn12"],
+            ["mp13", "ccp", "mp14"],
+            ["mp7", "mp9", "mp10", "mp8"]
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+
+
 def test_cmp_order():
     """ mp7 and mp8 should not be identified as a primitive """
     name = f'ckt_{get_test_id()}'

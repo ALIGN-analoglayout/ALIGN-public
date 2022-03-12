@@ -1,5 +1,6 @@
 import abc
 import more_itertools as itertools
+import itertools as plain_itertools
 import re
 import logging
 
@@ -622,12 +623,54 @@ class AlignInOrder(UserConstraint):
             )
 
 
+class Floorplan(UserConstraint):
+    '''
+    Row-based layout floorplan from top to bottom
+    Instances on each row are ordered from left to right.
+
+    Example: Define three regions and assign each instance to a region:
+        {"constraint":"Floorplan", "regions": [["A", "B", "C"], ["D", "E"], ["G"], "order": true}
+
+        -----
+        G
+        -----
+        D E
+        -----
+        A B C
+        -----
+    '''
+    regions: List[List[str]]
+    order: bool = False
+
+    @types.validator('regions', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        new_rows = list()
+        for row in value:
+            new_rows.append(validate_instances(cls, row))
+        return new_rows
+
+    def yield_constraints(self):
+        with set_context(self._parent):
+            # Rows ordered bottom up
+            logger.debug("===========================")
+            for i in range(len(self.regions)-1):
+                for [above, below] in plain_itertools.product(self.regions[i+1], self.regions[i]):
+                    yield Order(instances=[above, below], direction='top_to_bottom')
+            # Each row ordered left to right
+            if self.order:
+                logger.debug("===========================")
+                for region in self.regions:
+                    logger.debug(region)
+                    if len(region) > 1:
+                        yield Order(instances=region, direction='left_to_right')
+
 #
 # list of 'SoftConstraint'
 #
 # Below is a list of legacy constraints
 # that have not been hardened yet
 #
+
 
 class PlaceSymmetric(SoftConstraint):
     # TODO: Finish implementing this. Not registered to
@@ -816,6 +859,7 @@ class DoNotUseLib(SoftConstraint):
     libraries: List[str]
     propagate: Optional[bool]
 
+
 class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
@@ -837,14 +881,14 @@ class ConfigureCompiler(SoftConstraint):
             "propagate": true
         }
     '''
-    is_digital: bool = False # Annotation and auto-constraint generation
+    is_digital: bool = False  # Annotation and auto-constraint generation
     auto_constraint: bool = True  # Auto-constraint generation
     identify_array: bool = True  # Forbids/Allow any array identification
     fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
     remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
-    propagate: bool = True #propagate constraint to all lower hierarchies
+    propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
 class Generator(SoftConstraint):
@@ -1218,7 +1262,7 @@ class DoNotRoute(SoftConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align,
+    Order, Align, Floorplan,
     Enclose, Spread,
     AssignBboxVariables,
     AspectRatio,

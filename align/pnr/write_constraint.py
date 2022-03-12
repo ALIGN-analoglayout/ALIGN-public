@@ -36,6 +36,10 @@ class PnRConstraintWriter:
                 const['blocks'] = const['instances']
                 del const['instances']
 
+            # # Exclude constraints not to be exposed to PnR
+            # if const['const_name'] in ['DoNotIdentify']:
+            #     continue
+
             # Exclude constraints that need to be to multiple constraints
             if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection'):
                 pnr_const.append(const)
