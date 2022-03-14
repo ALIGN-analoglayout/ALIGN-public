@@ -6,15 +6,13 @@ from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 CLEANUP = True
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 
 def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    constraints = [
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
-    ]
+    constraints = []
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, log_level=LOG_LEVEL)
 
@@ -31,8 +29,7 @@ def test_cmp_vanilla_pg():
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
@@ -42,10 +39,11 @@ def test_cmp_vanilla_pg():
 def test_cmp_noconst():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
-
     name = name.upper()
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
         verilog_json = json.load(fp)
@@ -53,7 +51,6 @@ def test_cmp_noconst():
         assert name in modules, f'Module {name} not found in verilog.json'
         for module in modules.values():
             assert len(module['constraints']) == 1, "Constraints generated despise AutoConstraint"
-
     if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
