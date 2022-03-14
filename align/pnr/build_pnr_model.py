@@ -133,10 +133,10 @@ def _attach_constraint_files( DB, fpath):
 
         fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():
-            with fp.open( "rt") as fp:
+            with fp.open("rt") as fp:
                 jsonStr = fp.read()
-            logger.debug(f"Reading contraint json file {curr_node.name}.pnr.const.json")
-            DB.ReadConstraint_Json( curr_node, jsonStr)
+            logger.debug(f"Reading contraint json file {curr_node.name}.pnr.const.json:\n{jsonStr}")
+            DB.ReadConstraint_Json(curr_node, jsonStr)
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")

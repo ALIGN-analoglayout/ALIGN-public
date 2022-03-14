@@ -5,7 +5,8 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-cleanup = True
+CLEANUP = True
+LOG_LEVEL = 'DEBUG'
 
 
 def test_cmp_vanilla():
@@ -15,12 +16,12 @@ def test_cmp_vanilla():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9)
+    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, log_level=LOG_LEVEL)
 
     counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
     assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -34,7 +35,7 @@ def test_cmp_vanilla_pg():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 @pytest.mark.skip(reason='This test is failing. Enable in a future PR after refactoring')
@@ -43,7 +44,7 @@ def test_cmp_noconst():
     netlist = circuits.comparator(name)
     constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
 
     name = name.upper()
     with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
@@ -53,7 +54,7 @@ def test_cmp_noconst():
         for module in modules.values():
             assert len(module['constraints']) == 1, "Constraints generated despise AutoConstraint"
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -68,7 +69,7 @@ def test_cmp_noconst_pg():
         {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=4.5e9)
+    run_example(example, cleanup=CLEANUP, area=4.5e9, log_level=LOG_LEVEL)
 
 
 def test_cmp_fp1():
@@ -94,9 +95,9 @@ def test_cmp_fp1():
     ]
     example = build_example(name, netlist, constraints)
     # Stop flow early for memory profiling
-    run_example(example, cleanup=cleanup, area=4e10)
-    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '2_primitives'])
-    # run_example(example, cleanup=cleanup, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
+    run_example(example, cleanup=CLEANUP, area=4e10, log_level=LOG_LEVEL)
+    # run_example(example, cleanup=CLEANUP, area=4e10, additional_args=['--flow_stop', '2_primitives'])
+    # run_example(example, cleanup=CLEANUP, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
 
 
 def test_cmp_fp2():
@@ -121,7 +122,7 @@ def test_cmp_fp2():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL)
 
 
 def test_cmp_fp2_regions():
@@ -146,7 +147,7 @@ def test_cmp_fp2_regions():
         ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL)
 
 
 def test_cmp_order():
@@ -156,7 +157,7 @@ def test_cmp_order():
     constraints = [{"constraint": "Order", "direction": "left_to_right", "instances": ["mp7", "mp8"]}]
     name = f'ckt_{get_test_id()}'
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=['--flow_stop', '3_pnr:prep'])
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=['--flow_stop', '3_pnr:prep'], log_level=LOG_LEVEL)
 
     name = name.upper()
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
@@ -166,7 +167,7 @@ def test_cmp_order():
         instances = set([k['instance_name'] for k in modules[name]['instances']])
         assert 'X_MP7' in instances and 'X_MP8' in instances, f'MP7 or MP8 not found in {instances}'
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -176,7 +177,7 @@ def test_ota_six_noconst():
     netlist = circuits.ota_six(name)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP)
 
 
 def test_ota_six():
@@ -190,7 +191,7 @@ def test_ota_six():
         {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["load"], ["diffpair"], ["tail"]]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_tia():
@@ -198,7 +199,7 @@ def test_tia():
     netlist = circuits.tia(name)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP)
 
 
 @pytest.mark.skip
@@ -211,7 +212,7 @@ def test_ldo_amp():
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_ro_simple():
@@ -226,13 +227,13 @@ def test_ro_simple():
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
 
     with (run_dir / '3_pnr' / 'inputs' / 'RO_STAGE.pnr.const.json').open('rt') as fp:
         d = json.load(fp)
         assert len(d['constraints']) > 0, 'Where is the order constraint???'
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -246,7 +247,7 @@ def test_common_source():
         {"constraint": "AlignInOrder", "line": "left", "instances": ["mp0", "mn0"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_two_stage_ota():
@@ -265,7 +266,7 @@ def test_two_stage_ota():
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["sc2"], ["dp2"], ["scp"], ["dp"], ["scn"]]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_cs_1():
@@ -278,7 +279,7 @@ def test_cs_1():
         """)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=False, log_level=LOG_LEVEL)
 
 
 def test_cs_2():
@@ -291,4 +292,4 @@ def test_cs_2():
         """)
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=False, log_level=LOG_LEVEL)

@@ -658,14 +658,14 @@ class Floorplan(SoftConstraint):
             for i in range(len(self.regions)-1):
                 for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
                     logger.debug(f'Above:{above} Below:{below}')
-                    yield Order(instances=[above, below], direction='top_to_bottom')
+                    yield Order(instances=[above, below], direction='top_to_bottom', abut=False)
             # Order instances in each region from left to right
             if self.order:
                 logger.debug("===========================")
                 for region in self.regions:
                     logger.debug(f'Order left to right: {region}')
                     if len(region) > 1:
-                        yield Order(instances=region, direction='left_to_right')
+                        yield Order(instances=region, direction='left_to_right', abut=False)
             # Symmetrize instances along a single vertical line
             if self.symmetrize:
                 logger.debug("===========================")
