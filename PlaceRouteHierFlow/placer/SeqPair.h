@@ -41,7 +41,7 @@ class OrderedEnumerator {
 
   public:
   OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const int _maxSeq, const bool pos = true);
-  bool NextPermutation(vector<int>& seq);
+  void NextPermutation(vector<int>& seq, const int i) { seq = _sequences[i % _sequences.size()]; }
   void print();
   bool valid() const { return _valid; }
   size_t NumSequences() const { return _sequences.size(); }

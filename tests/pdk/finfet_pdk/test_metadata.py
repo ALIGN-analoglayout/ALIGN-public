@@ -15,7 +15,7 @@ def test_dependencies():
         primitives = json.load(fp)
         assert 'metadata' in primitives['TFR_PRIM_86791485'], 'Metadata not found'
 
-    with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.placement_verilog.json').open('rt') as fp:
+    with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
         assert 'modules' in placement, 'modules not in placement'
 

@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'route', 'check']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'route']}
 
-    unimplemented_start_points = {'3_pnr:route', '3_pnr:check'}
-    unimplemented_stop_points = {'3_pnr:place'}
+    unimplemented_start_points = set()
+    unimplemented_stop_points = set()
 
     if flow_start is None:
         flow_start = steps[0]
@@ -172,6 +172,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
         primitives = {}
@@ -193,15 +196,13 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
-    else:
+    elif sub_steps:
         with (primitive_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
-
     # run PNR tool
-    pnr_dir = working_dir / '3_pnr'
-    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
+        pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
@@ -211,7 +212,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, \
+        assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory

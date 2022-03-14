@@ -16,7 +16,7 @@ def test_pinless():
         .ends {name}
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]}
