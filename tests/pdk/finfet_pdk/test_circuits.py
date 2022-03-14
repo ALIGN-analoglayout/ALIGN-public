@@ -188,7 +188,8 @@ def test_ota_six():
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "tail"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "diffpair"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "load"},
-        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["load"], ["diffpair"], ["tail"]]}
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["load"], ["diffpair"], ["tail"]]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
