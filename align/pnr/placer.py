@@ -215,8 +215,10 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
             per_placement( placement_verilog_d, hN=hN, concrete_top_name=concrete_top_name, abstract_top_name=abstract_top_name, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
 
     # hack for a reference placement_verilog_d
+    # What is this for?
+    #   I guess to add an old placement into the fix to visualize it as well as the others.
 
-    if reference_placement_verilog_d is not None:
+    if False and reference_placement_verilog_d is not None:
         scaled_placement_verilog_d = VerilogJsonTop.parse_obj(reference_placement_verilog_d)
         # from layers.json units to hN units (loss of precision can happen here)
         placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
@@ -250,6 +252,54 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
     return placements_to_run, placement_verilog_alternatives
 
 
+def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor):
+    assert verilog_d is not None
+    assert primitives is not None
+
+    # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
+    # convert the restrictions into the form needed for the subsequent placements
+
+    # Restrict verilog_d to include only sub-hierachies of the current name
+    s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
+
+    frontier = {}
+
+    for sel in range(DB.hierTree[idx].numPlacement):
+        # create new verilog for each placement
+        hN = DB.CheckoutHierNode( idx, sel)
+        placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
+        # hN units
+        scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
+        # layers.json units (*5 if in anstroms)
+
+        for leaf in scaled_placement_verilog_d['leaves']:
+            ctn = leaf['concrete_name']
+            if ctn not in primitives:
+                continue # special case capacitors
+
+            primitive = primitives[ctn]
+            if 'metadata' in primitive and 'constraints' in primitive['metadata']:
+                if 'constraints' not in leaf:
+                    leaf['constraints'] = []
+
+                leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
+
+        top_name = f'{hN.name}_{sel}'
+        gen_constraints(scaled_placement_verilog_d, top_name)
+        top_module = next(iter([module for module in scaled_placement_verilog_d['modules'] if module['concrete_name'] == top_name]))
+
+        frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'place_on_grid']
+
+        for constraint in frontier[top_name]:
+            assert constraint['constraint'] == 'place_on_grid'
+            # assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
+            # Warn now and fail at the end for human-readable error message
+            if not constraint['ored_terms']:
+                logger.warning(f'No legal grid locations for {top_name} {constraint}')
+
+    grid_constraints.update(frontier)
+
+
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        gui, lambda_coeff, scale_factor,
                        reference_placement_verilog_d, concrete_top_name, abstract_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
@@ -269,10 +319,6 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
     grid_constraints = {}
 
-    frontier = {}
-
-    assert verilog_d is not None
-
     for idx in DB.TraverseHierTree():
 
         json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
@@ -286,49 +332,8 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
               seed=seed, use_analytical_placer=use_analytical_placer,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
-        # for each layout, generate a placement_verilog_d, make sure the constraints are attached to the leaves, then generate the restrictions
-        # convert the restrictions into the form needed for the subsequent placements
+        update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 
-        if primitives is not None:
-            # Restrict verilog_d to include only sub-hierachies of the current name
-            s_verilog_d = subset_verilog_d( verilog_d, DB.hierTree[idx].name)
-
-            frontier = {}
-
-            for sel in range(DB.hierTree[idx].numPlacement):
-                # create new verilog for each placement
-                hN = DB.CheckoutHierNode( idx, sel)
-                placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
-                # hN units
-                scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor)
-                # layers.json units (*5 if in anstroms)
-
-                for leaf in scaled_placement_verilog_d['leaves']:
-                    ctn = leaf['concrete_name']
-                    if ctn not in primitives:
-                        continue # special case capacitors
-
-                    primitive = primitives[ctn]
-                    if 'metadata' in primitive and 'constraints' in primitive['metadata']:
-                        if 'constraints' not in leaf:
-                            leaf['constraints'] = []
-
-                        leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
-
-                top_name = f'{hN.name}_{sel}'
-                gen_constraints(scaled_placement_verilog_d, top_name)
-                top_module = next(iter([module for module in scaled_placement_verilog_d['modules'] if module['concrete_name'] == top_name]))
-
-                frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'place_on_grid']
-
-                for constraint in frontier[top_name]:
-                    assert constraint['constraint'] == 'place_on_grid'
-                    # assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
-                    # Warn now and fail at the end for human-readable error message
-                    if not constraint['ored_terms']:
-                        logger.warning(f'No legal grid locations for {top_name} {constraint}')
-
-            grid_constraints.update(frontier)
 
     placements_to_run, placement_verilog_alternatives = process_placements(DB=DB, verilog_d=verilog_d, gui=gui,
                                                                            lambda_coeff=lambda_coeff, scale_factor=scale_factor,
