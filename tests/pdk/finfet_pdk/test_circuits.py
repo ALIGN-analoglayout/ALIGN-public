@@ -137,9 +137,7 @@ def test_cmp_fp2_regions():
         {"constraint": "DoNotIdentify", "instances": ["mn11", "mn12", "mp13", "mp14"]},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SymmetricBlocks", "direction": "V",
-            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["mn11", "mn12"], ["mp13", "mp14"], ["mp7", "mp8"], ["mp9", "mp10"]]},
-        {"constraint": "Floorplan", "order": True, "regions": [
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
             ["mp7", "mp9", "mp10", "mp8"],
             ["mp13", "ccp", "mp14"],
             ["mn11", "ccn", "mn12"],
@@ -186,11 +184,10 @@ def test_ota_six():
     netlist = circuits.ota_six(name)
     constraints = [
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": False},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "tail"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "diffpair"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "load"},
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["load"], ["diffpair"], ["tail"]]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup)

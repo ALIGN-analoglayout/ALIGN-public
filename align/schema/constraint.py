@@ -623,7 +623,7 @@ class AlignInOrder(UserConstraint):
             )
 
 
-class Floorplan(UserConstraint):
+class Floorplan(SoftConstraint):
     '''
     Row-based layout floorplan from top to bottom
     Instances on each row are ordered from left to right.
@@ -641,6 +641,7 @@ class Floorplan(UserConstraint):
     '''
     regions: List[List[str]]
     order: bool = False
+    symmetrize: bool = False
 
     @types.validator('regions', allow_reuse=True, always=True)
     def _check_instance(cls, value):
@@ -651,18 +652,35 @@ class Floorplan(UserConstraint):
 
     def yield_constraints(self):
         with set_context(self._parent):
-            # Rows ordered bottom up
+            logger.debug("=== Floorplan ========================")
+            # Regions from top to bottom
             logger.debug("===========================")
             for i in range(len(self.regions)-1):
                 for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
+                    logger.debug(f'Above:{above} Below:{below}')
                     yield Order(instances=[above, below], direction='top_to_bottom')
-            # Each row ordered left to right
+            # Order instances in each region from left to right
             if self.order:
                 logger.debug("===========================")
                 for region in self.regions:
-                    logger.debug(region)
+                    logger.debug(f'Order left to right: {region}')
                     if len(region) > 1:
                         yield Order(instances=region, direction='left_to_right')
+            # Symmetrize instances along a single vertical line
+            if self.symmetrize:
+                logger.debug("===========================")
+                pairs = list()
+                for region in self.regions:
+                    if len(region) <= 2:
+                        pairs.append(region)
+                    else:
+                        for i in range(len(region)//2):
+                            pairs.append([region[i], region[-1-i]])
+                        if len(region) % 2 == 1:
+                            pairs.append([region[i+1]])
+                logger.debug(f'Symmetric blocks:\n{pairs}')
+                yield SymmetricBlocks(pairs=pairs, direction='V')
+
 
 #
 # list of 'SoftConstraint'
