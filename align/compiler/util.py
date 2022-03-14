@@ -4,7 +4,6 @@ Created on Tue Dec 11 11:34:45 2018
 
 @author: kunal
 """
-from email.mime import base
 from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging

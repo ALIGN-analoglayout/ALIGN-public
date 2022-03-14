@@ -1,4 +1,3 @@
-from operator import sub
 import pathlib
 from align.schema import SubCircuit, constraint
 from align.compiler.compiler import compiler_input, generate_hierarchy

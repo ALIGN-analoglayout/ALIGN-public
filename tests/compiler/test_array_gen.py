@@ -31,6 +31,37 @@ def test_array_gen_ro():
     clean_data(name)
 
 
+def test_array_gen_ro_off():
+    name = f'ckt_{get_test_id()}'
+    netlist = ring_oscillator(name)
+    constraints = [{"constraint": "ConfigureCompiler", "identify_array": False}
+                   ]
+    example = build_example(name, netlist, constraints)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    ckt = ckt_lib.find(name)
+    assert ckt, f"No ckt {name} found in library"
+    array_cl = process_arrays(ckt, dict())
+    array1 = array_cl.find_array('VCCX', ['VSSX'])
+    assert array1 == None
+    clean_data(name)
+
+
+def test_array_gen_ro_skip_digital():
+    name = f'ckt_{get_test_id()}'
+    netlist = ring_oscillator(name)
+    constraints = [{"constraint": "ConfigureCompiler", "is_digital": True}
+                   ]
+    example = build_example(name, netlist, constraints)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    ckt = ckt_lib.find(name)
+    assert ckt, f"No ckt {name} found in library"
+    array_cl = process_arrays(ckt, dict())
+    array1 = array_cl.find_array('VCCX', ['VSSX'])
+    assert array1 == None
+    clean_data(name)
+
 def test_array_gen_ro_fh():
     name = f'ckt_{get_test_id()}'
     netlist = ring_oscillator_flat(name)

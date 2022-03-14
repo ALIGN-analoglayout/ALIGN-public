@@ -195,8 +195,8 @@ class process_arrays:
             for nbr in nbrs:
                 if self.graph._is_element(self.graph.nodes[nbr]):
                     inst = self.graph.element(nbr)
-                    # logger.debug(f"instance {inst}")
-                    # super_list.append(inst.model)
+
+
                     super_list.append(inst.abstract_name)
                 else:
                     super_list.append("net")
