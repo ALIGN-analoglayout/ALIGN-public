@@ -80,3 +80,8 @@ def test_read(db):
     assert subckt.get_element("R1").parameters == {"VALUE": "10", "PARALLEL": "1"}
     assert subckt.get_element("M1").parameters == {"PARAM1": "1.0", "M": "1"}
     assert subckt.get_element("M2").parameters == {"PARAM1": "1.0", "M": "2"}
+
+def test_basic_template():
+    from align.compiler.util import get_primitive_spice
+    template_path = get_primitive_spice()
+    assert template_path.exists()

@@ -28,7 +28,7 @@ class ConstraintParser:
         self.constraint_dict = {}
         if combined_const_file.exists():
             for x in types.List[ConstJsonEntry].parse_file(combined_const_file):
-                assert x.subcircuit not in self.constraint_dict
+                assert x.subcircuit not in self.constraint_dict, f"already existing constraint in {self.constraint_dict} for {x.subcircuit}"
                 self.constraint_dict[x.subcircuit] = x.constraints
 
     def annotate_user_constraints(self, node):

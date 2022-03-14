@@ -32,16 +32,16 @@ class CreateDatabase:
         """
         Add user constraints to the design
         """
-        subckt = self.lib.find(name.upper())
-        assert subckt, f"{name.upper()} not found in library {[e.name for e in self.lib]}"
-        logger.debug(f"creating database for {subckt}")
+        top_subckt = self.lib.find(name.upper())
+        assert top_subckt, f"{name.upper()} not found in library {[e.name for e in self.lib]}"
+        logger.debug(f"creating database for {top_subckt}")
         if self.circuit.parameters:
             self.resolve_parameters(name, self.circuit.parameters)
         else:
-            self.resolve_parameters(name, subckt.parameters)
+            self.resolve_parameters(name, top_subckt.parameters)
         self._update_leaf_instances()
-        pwr, gnd, clk = self._get_pgc(subckt)
-        self._propagate_power_ports(subckt, pwr, gnd, clk)
+        pwr, gnd, clk = self._get_pgc(top_subckt)
+        self._propagate_power_ports(top_subckt, pwr, gnd, clk)
         self.propagate_const_top_to_bottom(name, {name})
         return self.lib
 
