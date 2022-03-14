@@ -137,7 +137,7 @@ class Order(HardConstraint):
         'left_to_right', 'right_to_left',
         'bottom_to_top', 'top_to_bottom'
     ]]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -587,7 +587,7 @@ class AlignInOrder(UserConstraint):
         'center'
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -875,7 +875,7 @@ class DoNotUseLib(SoftConstraint):
         }
     '''
     libraries: List[str]
-    propagate: Optional[bool]
+    propagate: bool = False
 
 
 class ConfigureCompiler(SoftConstraint):
