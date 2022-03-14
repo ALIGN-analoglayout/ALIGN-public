@@ -17,7 +17,7 @@ def test_zero():
 def test_res_hier():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.tia(name)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
@@ -33,7 +33,7 @@ def test_res_flat():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, log_level='DEBUG', additional_args=['--flow_stop', '3_pnr:prep'])
 
@@ -72,7 +72,7 @@ def test_res_one():
         xi5 a b tfr_prim w=2e-6 l=2e-6
         .ends {name}
     """)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
