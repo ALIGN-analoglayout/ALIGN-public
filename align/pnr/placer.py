@@ -116,18 +116,12 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
         check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
-def per_placement( placement_verilog_d, *, hN, concrete_top_name, abstract_top_name, scale_factor, gui, opath, tagged_bboxes, leaf_map, placement_verilog_alternatives, is_toplevel):
-    if hN is not None:
-        abstract_name = hN.name
-        concrete_names = { m['concrete_name'] for m in placement_verilog_d['modules'] if m['abstract_name'] == abstract_name}
-        assert len(concrete_names) == 1, concrete_names
-        concrete_name = next(iter(concrete_names))
-    else:
-        abstract_name = abstract_top_name
-        concrete_name = concrete_top_name
-
-    if not gui:
-        logger.info( f'Working on {concrete_name}')
+def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_verilog_alternatives, is_toplevel, metrics):
+    assert hN is not None
+    abstract_name = hN.name
+    concrete_names = { m['concrete_name'] for m in placement_verilog_d['modules'] if m['abstract_name'] == abstract_name}
+    assert len(concrete_names) == 1, concrete_names
+    concrete_name = next(iter(concrete_names))
 
     scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
     
@@ -135,41 +129,23 @@ def per_placement( placement_verilog_d, *, hN, concrete_top_name, abstract_top_n
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
     hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
 
-    if hN is not None:
-        if hpwl_alt != hN.HPWL_extend:
-            logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
-        else:
-            logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
+    if hpwl_alt != hN.HPWL_extend:
+        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+    else:
+        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
 
-    if gui:
+    reported_hpwl = hpwl_alt / 2000
 
-        def r2wh( r):
-            return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
+    cost, constraint_penalty = hN.cost, hN.constraint_penalty
+    area_norm, hpwl_norm = hN.area_norm, hN.HPWL_norm
 
-        # placement_verilog_d is in hN units
-        # gui_scaled_placement_verilog_d is in microns
-        gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
-
-        modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
-
-        p = r2wh(modules[concrete_name]['bbox'])
-
-        reported_hpwl = hpwl_alt / 2000
-
-        cost, constraint_penalty, area_norm, hpwl_norm = 0, 0, 0, 0
-        if hN is not None:
-            cost, constraint_penalty = hN.cost, hN.constraint_penalty
-            area_norm, hpwl_norm = hN.area_norm, hN.HPWL_norm
-
-        d = { 'width': p[0], 'height': p[1],
-              'hpwl': reported_hpwl, 'cost': cost,
-              'constraint_penalty': constraint_penalty,
-              'area_norm': area_norm, 'hpwl_norm': hpwl_norm
-        }
-
-        logger.debug( f"Working on {concrete_name}: {d}")
-
-        tagged_bboxes[abstract_name][concrete_name] = d, list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
+    metrics[concrete_name] = {
+        'hpwl': reported_hpwl, 'cost': cost,
+        'constraint_penalty': constraint_penalty,
+        'area_norm': area_norm, 'hpwl_norm': hpwl_norm,
+        'abstract_name': abstract_name,
+        'concrete_name': concrete_name
+    }
 
 
 def gen_leaf_map(*, DB, gui):
@@ -192,13 +168,59 @@ def gen_leaf_map(*, DB, gui):
     
     return leaf_map
 
+def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics):
 
-
-def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, reference_placement_verilog_d, concrete_top_name, abstract_top_name, opath):
-    leaf_map = gen_leaf_map(DB=DB, gui=gui)
     tagged_bboxes = defaultdict(dict)
 
+    for concrete_name, placement_verilog_d in placement_verilog_alternatives.items():
+        nets_d = gen_netlist(placement_verilog_d, concrete_name)
+
+        def r2wh( r):
+            return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
+
+        # placement_verilog_d is in hN units
+        # gui_scaled_placement_verilog_d is in microns
+        gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
+
+        modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
+
+        p = r2wh(modules[concrete_name]['bbox'])
+
+        metrics[concrete_name].update( {'width': p[0], 'height': p[1]})
+
+        abstract_name = metrics[concrete_name]['abstract_name']
+
+        tagged_bboxes[abstract_name][concrete_name] = metrics[concrete_name], list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
+
+
+    placements_to_run = None
+    tagged_bboxes.update( leaf_map)
+
+    print( f"Press Ctrl-C to end the GUI interaction. If current selection is a toplevel placement, the routing engine will be called on that placement. If the current selection is not toplevel (an intermediate hierarchy or a leaf), the router call will be skipped.")
+
+    selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
+
+    # Don't like name hacking; make we can do this another way
+    p = re.compile( r'^(\S+)_(\d+)$')
+
+    placements_to_run = []
+    m = p.match(selected_concrete_name)
+    if m:
+        if m.groups()[0] == top_level:
+            sel = int(m.groups()[1])
+            placements_to_run = [sel]
+    else:
+        if selected_concrete_name in placement_verilog_alternatives:
+            placements_to_run = None
+
+    return placements_to_run, placement_verilog_alternatives
+
+
+
+def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, opath):
+
     placement_verilog_alternatives = {}
+    metrics = {}
 
     TraverseOrder = DB.TraverseHierTree()
 
@@ -212,44 +234,25 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, refere
             # create new verilog for each placement
             hN = DB.CheckoutHierNode( idx, sel)
             placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
-            per_placement( placement_verilog_d, hN=hN, concrete_top_name=concrete_top_name, abstract_top_name=abstract_top_name, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
+            per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel, metrics=metrics)
 
-    # hack for a reference placement_verilog_d
-    # What is this for?
-    #   I guess to add an old placement into the fix to visualize it as well as the others.
+    leaf_map = gen_leaf_map(DB=DB, gui=gui)
+    top_level = DB.hierTree[TraverseOrder[-1]].name
 
-    if False and reference_placement_verilog_d is not None:
-        scaled_placement_verilog_d = VerilogJsonTop.parse_obj(reference_placement_verilog_d)
-        # from layers.json units to hN units (loss of precision can happen here)
-        placement_verilog_d = scale_placement_verilog( scaled_placement_verilog_d, scale_factor, invert=True)
+    del DB
 
-        per_placement( placement_verilog_d, hN=None, concrete_top_name=concrete_top_name, abstract_top_name=abstract_top_name, scale_factor=scale_factor, gui=gui, opath=opath, tagged_bboxes=tagged_bboxes, leaf_map=leaf_map, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=True)
 
-        # placement_verilog_alternatives is in layers.json units
+    if not gui:
+        return None, placement_verilog_alternatives
+    else:
 
-    placements_to_run = None
-    if gui:
-        tagged_bboxes.update( leaf_map)
-        top_level = DB.hierTree[TraverseOrder[-1]].name
+        return startup_gui(top_level=top_level,
+                           leaf_map=leaf_map,
+                           lambda_coeff=lambda_coeff,
+                           placement_verilog_alternatives=placement_verilog_alternatives,
+                           metrics=metrics)
 
-        print( f"Press Ctrl-C to end the GUI interaction. If current selection is a toplevel placement, the routing engine will be called on that placement. If the current selection is not toplevel (an intermediate hierarchy or a leaf), the router call will be skipped.")
 
-        selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
-
-        # Don't like name hacking; make we can do this another way
-        p = re.compile( r'^(\S+)_(\d+)$')
-
-        placements_to_run = []
-        m = p.match(selected_concrete_name)
-        if m:
-            if m.groups()[0] == top_level:
-                sel = int(m.groups()[1])
-                placements_to_run = [(sel,placement_verilog_alternatives[selected_concrete_name])]
-        else:
-            if selected_concrete_name in placement_verilog_alternatives:
-                placements_to_run = [(None,placement_verilog_alternatives[selected_concrete_name])]                
-
-    return placements_to_run, placement_verilog_alternatives
 
 
 def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor):
@@ -302,16 +305,16 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        gui, lambda_coeff, scale_factor,
-                       reference_placement_verilog_d, concrete_top_name, abstract_top_name, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
+                       placement_verilog_d, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
-    logger.info(f'Calling hierarchical_place with {"existing placement" if reference_placement_verilog_d is not None else "no placement"}')
+    logger.info(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
-    if reference_placement_verilog_d:
+    if placement_verilog_d is not None:
         #
         # Need to do this until we fix the PnR set placement code
         #    scales by 1 if scale_factor is 1, by 10 if scale_factor is 10 (2* compenstates for the automatic divide by 2 in scale_placement_verilog)
         #
-        hack_placement_verilog_d = scale_placement_verilog( reference_placement_verilog_d, 2*scale_factor, invert=True)        
+        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 2*scale_factor, invert=True)        
 
         modules = defaultdict(list)
         for m in hack_placement_verilog_d['modules']:
@@ -324,7 +327,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
 
         modules_d = None
-        if reference_placement_verilog_d is not None:
+        if placement_verilog_d is not None:
             modules_d = modules[DB.hierTree[idx].name]
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
@@ -337,43 +340,14 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
     placements_to_run, placement_verilog_alternatives = process_placements(DB=DB, verilog_d=verilog_d, gui=gui,
                                                                            lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                                                                           reference_placement_verilog_d=reference_placement_verilog_d,
-                                                                           concrete_top_name=concrete_top_name,
-                                                                           abstract_top_name=abstract_top_name,
                                                                            opath=opath)
-
-    if placements_to_run is not None:
-        if placements_to_run:
-            assert len(placements_to_run) == 1
-            _, placement_verilog_d = placements_to_run[0]
-
-            with open("__placement_verilog_d", "wt") as fp:
-                fp.write(placement_verilog_d.json(indent=2))
-
-            # Observation from looking at this file
-            # In the set_bounding_box constraint, top-level cells are named instances (should be concrete_template)
-            # There might be an issue with name space collisions if an instance and template are named the same
-            # there is a flag to distinguish between instances and template; we should probably just rename instance
-            # to something more generic like 'nm'.
-
-            #
-            # Build DB objects from placement_verilog_d
-            #
-            # create new blocks that are clones of existing blocks
-            # 
-            # Add in placement information
-
-    if placements_to_run is not None:
-        placements_to_run = [p[0] for p in placements_to_run]
-        if placements_to_run == [None]: # Fix corner case until the new scheme works
-            placements_to_run = None
 
     return placements_to_run, placement_verilog_alternatives
 
 
 def placer_driver(*, cap_map, cap_lef_s,
                   gui, lambda_coeff, scale_factor,
-                  reference_placement_verilog_json, concrete_top_name, select_in_ILP, seed,
+                  select_in_ILP, seed,
                   use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args_d, results_dir):
 
     fpath = toplevel_args_d['input_dir']
@@ -382,8 +356,6 @@ def placer_driver(*, cap_map, cap_lef_s,
 
     lef_file = toplevel_args_d['lef_file']
     map_file = toplevel_args_d['map_file']
-
-    abstract_top_name = toplevel_args_d['subckt'].upper()
 
     p = re.compile(r'^(\S+)\s+(\S+)\s*$')
 
@@ -411,17 +383,10 @@ def placer_driver(*, cap_map, cap_lef_s,
 
     logger.debug(f'Using {ilp_solver} to solve ILP in placer')
 
-    reference_placement_verilog_d = None
-    if reference_placement_verilog_json is not None:
-        with open(reference_placement_verilog_json, "rt") as fp:
-            reference_placement_verilog_d = json.load(fp)
-
     placements_to_run, placement_verilog_alternatives = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
                                                                            verilog_d=verilog_d, gui=gui, lambda_coeff=lambda_coeff,
                                                                            scale_factor=scale_factor,
-                                                                           reference_placement_verilog_d=reference_placement_verilog_d,
-                                                                           concrete_top_name=concrete_top_name,
-                                                                           abstract_top_name=abstract_top_name,
+                                                                           placement_verilog_d=None,
                                                                            select_in_ILP=select_in_ILP, seed=seed,
                                                                            use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                            primitives=primitives)

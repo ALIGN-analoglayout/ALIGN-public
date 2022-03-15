@@ -125,8 +125,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
-                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None,
-                     concrete_top_name=None,
+                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     steps_to_run = build_steps(flow_start, flow_stop)
@@ -206,8 +205,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
-                                concrete_top_name=concrete_top_name,
+                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
         results.append((subckt, variants))
