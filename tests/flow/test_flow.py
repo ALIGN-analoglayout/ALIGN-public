@@ -55,6 +55,11 @@ def test_flow_each_step():
 
     assert results is not None
 
+    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:gui', '--flow_stop', '3_pnr:gui']
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None
+
     args = [f'../../examples/{nm}', '--flow_start', '3_pnr:route']
     results = align.CmdlineParser().parse_args(args)
 
