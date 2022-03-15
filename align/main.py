@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'route']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'gui', 'route']}
 
     unimplemented_start_points = set()
     unimplemented_stop_points = set()

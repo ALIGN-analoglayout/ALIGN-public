@@ -148,23 +148,23 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_ve
     }
 
 
-def gen_leaf_map(*, DB, gui):
+def gen_leaf_map(*, DB):
     leaf_map = defaultdict(dict)
-    if gui:
-        # Get all the leaf cells sizes; now includes the CC capacitors
-        for atn, gds_lst in DB.gdsData2.items():
-            ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
-            for ctn in ctns:
-                if ctn in DB.lefData:
-                    lef = DB.lefData[ctn][0]
-                    p = scalar_rational_scaling(lef.width,mul=0.001,div=2), scalar_rational_scaling(lef.height,mul=0.001,div=2)
-                    if ctn in leaf_map[atn]:
-                        assert leaf_map[atn][ctn][0] == p, (leaf_map[atn][ctn][0], p)
-                    else:
-                        leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
 
+    # Get all the leaf cells sizes; now includes the CC capacitors
+    for atn, gds_lst in DB.gdsData2.items():
+        ctns = [str(pathlib.Path(fn).stem) for fn in gds_lst]
+        for ctn in ctns:
+            if ctn in DB.lefData:
+                lef = DB.lefData[ctn][0]
+                p = scalar_rational_scaling(lef.width,mul=0.001,div=2), scalar_rational_scaling(lef.height,mul=0.001,div=2)
+                if ctn in leaf_map[atn]:
+                    assert leaf_map[atn][ctn][0] == p, (leaf_map[atn][ctn][0], p)
                 else:
-                    logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
+                    leaf_map[atn][ctn] = gen_leaf_bbox_and_hovertext( ctn, p)
+
+            else:
+                logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
     
     return leaf_map
 
@@ -213,11 +213,11 @@ def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_c
         if selected_concrete_name in placement_verilog_alternatives:
             placements_to_run = None
 
-    return placements_to_run, placement_verilog_alternatives
+    return placements_to_run
 
 
 
-def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, opath):
+def process_placements(*, DB, verilog_d, lambda_coeff, scale_factor, opath):
 
     placement_verilog_alternatives = {}
     metrics = {}
@@ -236,21 +236,16 @@ def process_placements(*, DB, verilog_d, gui, lambda_coeff, scale_factor, opath)
             placement_verilog_d = gen_placement_verilog( hN, idx, sel, DB, s_verilog_d)
             per_placement( placement_verilog_d, hN=hN, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel, metrics=metrics)
 
-    leaf_map = gen_leaf_map(DB=DB, gui=gui)
+    leaf_map = gen_leaf_map(DB=DB)
     top_level = DB.hierTree[TraverseOrder[-1]].name
 
     del DB
 
 
-    if not gui:
-        return None, placement_verilog_alternatives
-    else:
+    return top_level, leaf_map, placement_verilog_alternatives, metrics
 
-        return startup_gui(top_level=top_level,
-                           leaf_map=leaf_map,
-                           lambda_coeff=lambda_coeff,
-                           placement_verilog_alternatives=placement_verilog_alternatives,
-                           metrics=metrics)
+
+
 
 
 
@@ -304,7 +299,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
-                       gui, lambda_coeff, scale_factor,
+                       lambda_coeff, scale_factor,
                        placement_verilog_d, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
     logger.info(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
@@ -338,17 +333,18 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 
 
-    placements_to_run, placement_verilog_alternatives = process_placements(DB=DB, verilog_d=verilog_d, gui=gui,
-                                                                           lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                                                                           opath=opath)
+    top_level, leaf_map, placement_verilog_alternatives, metrics = process_placements(DB=DB, verilog_d=verilog_d,
+                                                                                      lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                                                                      opath=opath)
 
-    return placements_to_run, placement_verilog_alternatives
+    return top_level, leaf_map, placement_verilog_alternatives, metrics
+
 
 
 def placer_driver(*, cap_map, cap_lef_s,
-                  gui, lambda_coeff, scale_factor,
+                  lambda_coeff, scale_factor,
                   select_in_ILP, seed,
-                  use_analytical_placer, ilp_solver, primitives, nroutings, toplevel_args_d, results_dir):
+                  use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir):
 
     fpath = toplevel_args_d['input_dir']
 
@@ -383,25 +379,12 @@ def placer_driver(*, cap_map, cap_lef_s,
 
     logger.debug(f'Using {ilp_solver} to solve ILP in placer')
 
-    placements_to_run, placement_verilog_alternatives = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
-                                                                           verilog_d=verilog_d, gui=gui, lambda_coeff=lambda_coeff,
-                                                                           scale_factor=scale_factor,
-                                                                           placement_verilog_d=None,
-                                                                           select_in_ILP=select_in_ILP, seed=seed,
-                                                                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                                                           primitives=primitives)
+    top_level, leaf_map, placement_verilog_alternatives, metrics = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort,
+                                                                                      verilog_d=verilog_d, lambda_coeff=lambda_coeff,
+                                                                                      scale_factor=scale_factor,
+                                                                                      placement_verilog_d=None,
+                                                                                      select_in_ILP=select_in_ILP, seed=seed,
+                                                                                      use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
+                                                                                      primitives=primitives)
 
-    pattern = re.compile(r'^(\S+)_(\d+)$')
-    last_key = list(placement_verilog_alternatives.keys())[-1]
-    m = pattern.match(last_key)
-    assert m
-    topname = m.groups()[0]
-
-    assert nroutings == 1, f"nroutings other than 1 is currently not working"
-
-    if placements_to_run is None:
-        verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
-    else:
-        verilog_ds_to_run = [(f'{topname}_{i}', placement_verilog_alternatives[f'{topname}_{i}']) for i in placements_to_run]
-
-    return verilog_ds_to_run
+    return top_level, leaf_map, placement_verilog_alternatives, metrics
