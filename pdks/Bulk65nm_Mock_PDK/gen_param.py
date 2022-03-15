@@ -140,7 +140,7 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"Generating lef for {block_name}")
         if isinstance(size, int):
             for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {name} {mvalues}"
+                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"W should be same for all devices in {name} {mvalues}"
                 size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
