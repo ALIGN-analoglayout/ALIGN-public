@@ -25,6 +25,15 @@ TEST(SeqPairTest, KeepOrdering) {
 
     design d;
 
+    design::block b;
+    b.counterpart = -1;
+    std::vector<design::block> blocks;
+    blocks.push_back(b);
+
+    d.Blocks.push_back(blocks);
+
+    d.Ordering_Constraints.push_back(std::make_pair(std::make_pair(0, 0), placerDB::V));
+
     sp.KeepOrdering(d);
 
 

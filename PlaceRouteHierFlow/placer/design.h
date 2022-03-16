@@ -29,7 +29,7 @@ using std::string;
 using std::vector;
 
 class design {
-  private:
+ public:
   friend class SeqPair;
   friend class SeqPairEnumerator;
   friend class Placer;
