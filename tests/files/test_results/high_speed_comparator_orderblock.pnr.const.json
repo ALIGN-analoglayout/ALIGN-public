@@ -20,15 +20,6 @@
             ]
         },
         {
-            "const_name": "DoNotIdentify",
-            "blocks": [
-                "X_CCN_MN3_MN4",
-                "X_CCP_MP5_MP6",
-                "X_DP_MN1_MN2",
-                "X_MN0"
-            ]
-        },
-        {
             "pairs": [
                 {
                     "type": "sympair",
