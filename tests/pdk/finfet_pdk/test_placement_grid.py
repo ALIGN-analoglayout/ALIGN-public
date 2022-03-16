@@ -156,4 +156,4 @@ def test_cmp_on_grid(place_on_grid_h):
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, n=1, cleanup=False, area=5e9)
+    run_example(example, cleanup=False, area=5e9)
