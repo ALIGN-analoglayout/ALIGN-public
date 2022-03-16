@@ -161,7 +161,6 @@ class RemoveDuplicates():
         # Should use a region generator
         self.skip_layers.add( 'boundary')
         self.skip_layers.add( 'Rboundary')
-        self.skip_layers.add( 'Rvt')
 
         for (nm, gen) in self.canvas.generators.items():
             if   isinstance( gen, Region):
