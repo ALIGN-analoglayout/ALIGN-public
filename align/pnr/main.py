@@ -21,7 +21,7 @@ from ..schema import constraint
 from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
 from .manipulate_hierarchy import manipulate_hierarchy
 
-from .placer import placer_driver
+from .placer import placer_driver, startup_gui
 from .router import router_driver
 from .cap_placer import cap_placer_driver
 
@@ -198,7 +198,7 @@ def write_verilog_d(verilog_d):
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
-                 reference_placement_verilog_json, concrete_top_name, nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
+                 nroutings=1, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     subckt = subckt.upper()
 
@@ -330,25 +330,50 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'nvariants': nvariants,
                            'effort': effort}
 
-        verilog_ds_to_run = \
+        top_level, leaf_map, placement_verilog_alternatives, metrics = \
             placer_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
-                          gui=gui, lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                          reference_placement_verilog_json=reference_placement_verilog_json, concrete_top_name=concrete_top_name, select_in_ILP=select_in_ILP, seed=seed,
-                          use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives, nroutings=nroutings,
+                          lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                          select_in_ILP=select_in_ILP, seed=seed,
+                          use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
                           toplevel_args_d=toplevel_args_d, results_dir=None)
 
-        with (working_dir / "__verilog_ds__.json").open('wt') as fp:
-            json.dump([(nm, v.dict()) for nm, v in verilog_ds_to_run], fp, indent=2)
+        with open("__placer_dump__.json", "wt") as fp:
+            json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
 
         os.chdir(current_working_dir)
 
+    elif '3_pnr:gui' in steps_to_run or '3_pnr:route' in steps_to_run:
+        with (working_dir / "__placer_dump__.json").open('rt') as fp:
+            top_level, leaf_map, placement_verilog_alternatives, metrics = json.load(fp)
+            placement_verilog_alternatives = {nm : VerilogJsonTop.parse_obj(v) for nm, v in placement_verilog_alternatives}
+
+    if '3_pnr:gui' in steps_to_run:
+        if gui:
+            placements_to_run = startup_gui(top_level=top_level,
+                                            leaf_map=leaf_map,
+                                            lambda_coeff=lambda_coeff,
+                                            placement_verilog_alternatives=placement_verilog_alternatives,
+                                            metrics=metrics)
+        else:
+            placements_to_run = None
+        
+        with open("__placements_to_run__.json", "wt") as fp:
+            json.dump(placements_to_run, fp=fp, indent=2)
+
     elif '3_pnr:route' in steps_to_run:
-        with (working_dir / "__verilog_ds__.json").open('rt') as fp:
-            verilog_ds_to_run = [(nm, VerilogJsonTop.parse_obj(v)) for nm, v in json.load(fp)]
+        with open("__placements_to_run__.json", "rt") as fp:
+            placements_to_run = json.load(fp)
 
     variants = defaultdict(defaultdict)
 
     if '3_pnr:route' in steps_to_run:
+
+        assert nroutings == 1, f"nroutings other than 1 is currently not working"
+
+        if placements_to_run is None:
+            verilog_ds_to_run = [(f'{top_level}_{i}', placement_verilog_alternatives[f'{top_level}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
+        else:
+            verilog_ds_to_run = [(f'{top_level}_{i}', placement_verilog_alternatives[f'{top_level}_{i}']) for i in placements_to_run]
 
         with (pdk_dir / pdk_file).open( 'rt') as fp:
             scale_factor = json.load(fp)["ScaleFactor"]
