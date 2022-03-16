@@ -9,7 +9,8 @@ from . import circuits
 import time
 
 
-cleanup = False
+CLEANUP = False
+LOG_LEVEL = 'DEBUG'
 
 
 @pytest.mark.skip
@@ -68,7 +69,7 @@ def test_place_cmp_1():
     area_pct = round(100*((area_new/area_best)-1))
     print(f'Generated layout is {hpwl_pct}% worse in HPWL and {area_pct}% worse in AREA')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -132,7 +133,7 @@ def test_place_cmp_2():
     # with open(example / 'dptail.const.json', 'w') as fp:
     #     fp.write(json.dumps(constraints, indent=2))
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, area=4e10)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, area=4e10)
 
     cn = f'{name.upper()}_0'
 
@@ -147,7 +148,7 @@ def test_place_cmp_2():
 
         print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -188,7 +189,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     else:
         placer = 'annealing'
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, log_level='DEBUG', additional_args=additional_args)
 
     cn = f'{name.upper()}_0'
 
@@ -249,7 +250,7 @@ def test_cmp_analytical():
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
-    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    run_example(example, cleanup=CLEANUP, log_level='DEBUG', additional_args=additional_args)
 
 
 def comparator_constraints(name):
@@ -285,7 +286,7 @@ def test_cmp_fast():
     constraints = comparator_constraints(name)
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=CLEANUP, area=5e9)
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -297,7 +298,7 @@ def test_cmp_slow():
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    run_example(example, cleanup=CLEANUP, area=5e9, log_level='DEBUG')
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -319,7 +320,7 @@ def test_hang_1():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_hang_2():
@@ -339,7 +340,7 @@ def test_hang_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_hang_3():
@@ -360,4 +361,48 @@ def test_hang_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
+
+
+def test_hang_4():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vssx vccx
+    mp1  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp2  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp3  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp4  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp5  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp6  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp7  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp8  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp9  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp10 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp11 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp12 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp13 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp14 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp15 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp16 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp17 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp18 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp19 o i vssx vccx p w=360e-9 nf=2 m=4
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
+        {"constraint": "Floorplan", "order": True, "symmetrize": False, "regions": [
+            ["mp1"],
+            ["mp2", "mp3", "mp4", "mp5", "mp6"],
+            ["mp7", "mp8", "mp9", "mp10"],
+            ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
+            ["mp17", "mp18"],
+            ["mp19"]
+        ]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
+            ["mp1"], ["mp2"], ["mp3", "mp4"]
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, n=1, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
