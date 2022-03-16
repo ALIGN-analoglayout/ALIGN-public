@@ -12,27 +12,17 @@ LOG_LEVEL = 'INFO'
 def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, area=4.5e9, log_level=LOG_LEVEL)
-
-    counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
-    assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
-
-    if CLEANUP:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
-
-
-def test_cmp_vanilla_pg():
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
+    ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL)
+    counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
+    assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 @pytest.mark.skip(reason='This test is failing. Enable in a future PR after refactoring')
@@ -73,6 +63,7 @@ def test_cmp_fp1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -181,7 +172,7 @@ def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "tail"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "diffpair"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "load"},
