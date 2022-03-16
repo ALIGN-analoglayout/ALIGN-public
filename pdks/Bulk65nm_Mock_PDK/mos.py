@@ -102,39 +102,45 @@ class MOSGenerator(DefaultCanvas):
         info = self.pdk['V0']
 
     def _addMOS( self, x, y, x_cells,  vt_type, name='M1', reflect=False, **parameters):
-        
 
+        if len(parameters) > 1:
+            device_name = [*parameters.keys()]
+            activeWidth =  float(parameters[device_name[0]]['W'])*1E+9
+        else:
+            activeWidth = self.activeWidth
+        RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
+        
         stoppoint = ((self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset'])*(1-self.shared_diff)
         active = Wire( 'active', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.activeWidth, offset=self.activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=activeWidth, offset=self.activeOffset),
                                          spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
 
         RVT = Wire( 'RVT', 'Rvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                       spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
         
         LVT = Wire( 'LVT', 'Lvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                       spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
 
         HVT = Wire( 'HVT', 'Hvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                       spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
 
         active_diff = Wire( 'active_diff', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.activeWidth, offset=self.activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=activeWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
         
         RVT_diff = Wire( 'RVT_diff', 'Rvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)) 
 
         LVT_diff = Wire( 'LVT_diff', 'Lvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
    
         HVT_diff = Wire( 'HVT_diff', 'Hvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.RVTWidth, offset=self.activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
         
         

@@ -115,10 +115,7 @@ def gen_param(subckt, primitives, pdk_dir):
 
         for key in mvalues:
             assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}"
-            assert int(
-                float(mvalues[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
-                f"Width of device {key} in {block_name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
-            size = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
+            size = ceil(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
             mvalues[key]["NFIN"] = size
         name_arg = 'NFIN'+str(size)
 
@@ -140,7 +137,7 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"Generating lef for {block_name}")
         if isinstance(size, int):
             for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {name} {mvalues}"
+                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"W should be same for all devices in {name} {mvalues}"
                 size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
