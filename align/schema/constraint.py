@@ -94,7 +94,8 @@ class UserConstraint(HardConstraint, abc.ABC):
 
     def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.translate(solver)
+            if isinstance(constraint, HardConstraint):
+                yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
@@ -623,7 +624,7 @@ class AlignInOrder(UserConstraint):
             )
 
 
-class Floorplan(SoftConstraint):
+class Floorplan(UserConstraint):
     '''
     Row-based layout floorplan from top to bottom
     Instances on each row are ordered from left to right.
@@ -651,6 +652,7 @@ class Floorplan(SoftConstraint):
         return new_rows
 
     def yield_constraints(self):
+        above_below = set()
         with set_context(self._parent):
             logger.debug("=== Floorplan ========================")
             # Regions from top to bottom
@@ -658,6 +660,9 @@ class Floorplan(SoftConstraint):
             for i in range(len(self.regions)-1):
                 for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
                     logger.debug(f'Above:{above} Below:{below}')
+                    above_below.add((above, below))
+                    assert (below, above) not in above_below, \
+                        f'Please review floorplan constraint:\n{self.regions}.\n{below} is previously placed above {above}.'
                     yield Order(instances=[above, below], direction='top_to_bottom', abut=False)
             # Order instances in each region from left to right
             if self.order:
