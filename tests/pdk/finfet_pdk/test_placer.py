@@ -394,7 +394,7 @@ def test_hang_4():
         {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
         {"constraint": "Floorplan", "order": True, "symmetrize": False, "regions": [
             ["mp1"],
-            ["mp2", "mp3", "mp4", "mp5", "mp6"],
+            ["mp3", "mp2", "mp4", "mp5", "mp6"],
             ["mp7", "mp8", "mp9", "mp10"],
             ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
             ["mp17", "mp18"],
