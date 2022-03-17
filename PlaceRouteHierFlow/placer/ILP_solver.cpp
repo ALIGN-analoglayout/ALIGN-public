@@ -2427,7 +2427,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
     sym_set_int_param(env, "verbosity", -2);
 
-    //solve the integer program
+    /*//solve the integer program
     static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
@@ -2467,7 +2467,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       sym_set_col_names(env, names);
       sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
-    }
+    }*/
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       sym_solve(env);
