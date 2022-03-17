@@ -141,8 +141,8 @@ TEST(SeqPairTest, KeepOrdering) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
 
-    std::vector<int> posPair = {12,21,0,11,13,1,2,14,15,16,17,18};
-    std::vector<int> negPair = {12,11,0,21,13,1,2,14,15,16,17,18};
+    std::vector<int> posPair = {12,11,13,2,16};
+    std::vector<int> negPair = {12,11,13,2,16};
 
     sp.posPair = posPair;
     sp.negPair = negPair;
@@ -152,9 +152,8 @@ TEST(SeqPairTest, KeepOrdering) {
 
     design d;
 
-    //                                 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+    //                               0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
     std::vector<int> counterparts = {0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,11,13,12,-1,-1,-1,-1,-1};
-    //std::vector<int> counterparts =  {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,13,12,-1,-1,-1,-1,-1};
     
     for (const auto& counterpart : counterparts) {
       design::block b;
@@ -164,49 +163,18 @@ TEST(SeqPairTest, KeepOrdering) {
       d.Blocks.push_back(blocks);
     }
 
+    // keep 2 16 11 12 13
+
     std::vector<std::pair<int,int> > v_orderings =  {
-      {0, 11},
-      {0, 11},
-      {0, 12},
-      {0, 13},
-      {0, 13},
-      {0, 12},
-      {0, 14},
-      {0, 15},
       {11, 16},
-      {11, 17},
-      {11, 18},
-      {11, 1},
       {12, 16},
-      {12, 17},
-      {12, 18},
-      {12, 1},
       {13, 16},
-      {13, 17},
-      {13, 18},
-      {13, 1},
-      {14, 16},
-      {14, 17},
-      {14, 18},
-      {14, 1},
-      {15, 16},
-      {15, 17},
-      {15, 18},
-      {15, 1},
       {16, 2},
-      {17, 2},
-      {18, 2},
-      {1, 2}
     };
 
     std::vector<std::pair<int,int> > h_orderings =  {
       {11, 12},
       {12, 13},
-      {13, 14},
-      {14, 15},
-      {16, 17},
-      {17, 18},
-      {18, 1},
     };
 
     for (const auto& ordering : v_orderings) {
