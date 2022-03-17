@@ -1980,6 +1980,35 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     }
   }
 
+  // matchblock
+  for(auto pair:mydesign.Match_blocks){
+    int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), pair.blockid1) - curr_sp.posPair.begin();
+    int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), pair.blockid1) - curr_sp.negPair.begin();
+    int j_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), pair.blockid2) - curr_sp.posPair.begin();
+    int j_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), pair.blockid2) - curr_sp.negPair.begin();
+    if (i_pos_index < j_pos_index) {
+      if (i_neg_index < j_neg_index) {
+        // i is left of j
+        objective.at(pair.blockid1 * 4) += -1;
+        objective.at(pair.blockid2 * 4) += 1;
+      } else {
+        // i is above j
+        objective.at(pair.blockid1 * 4 + 1) += 1;
+        objective.at(pair.blockid2 * 4 + 1) += -1;
+      }
+    } else {
+      if (i_neg_index < j_neg_index) {
+        // i is below j
+        objective.at(pair.blockid1 * 4 + 1) += -1;
+        objective.at(pair.blockid2 * 4 + 1) += 1;
+      } else {
+        // i is right of j
+        objective.at(pair.blockid1 * 4) += 1;
+        objective.at(pair.blockid2 * 4) += -1;
+      }
+    }
+  }
+  
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
