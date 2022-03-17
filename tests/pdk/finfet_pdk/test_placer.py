@@ -290,6 +290,7 @@ def test_cmp_fast():
     print('Elapsed time:', e-s)
 
 
+@pytest.mark.skip(reason="Currently takes 4 minutes to run")
 def test_cmp_slow():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
