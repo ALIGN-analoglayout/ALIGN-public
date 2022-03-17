@@ -102,6 +102,7 @@ class SeqPair {
   bool Enumerate() const { return _seqPairEnum ? true : false; }
   const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
   void PrintSeqPair();
+  void PrintVec(const string& tag, const vector<int>& vec);
   void SameSelected(design& caseNL);
   placerDB::Smark GetSymmBlockAxis(int SBidx);
   bool MoveAsymmetricBlockposPair(design& caseNL);

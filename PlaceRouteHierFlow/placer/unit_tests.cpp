@@ -189,6 +189,7 @@ TEST(SeqPairTest, KeepOrdering) {
 };
 */
 
+/*
 TEST(SeqPairTest, KeepOrdering) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
@@ -231,6 +232,90 @@ TEST(SeqPairTest, KeepOrdering) {
     }
 
     sp.KeepOrdering(d);
+};
+*/
 
+TEST(SeqPairTest, KeepOrderingShortWithValidOrdering) {
+    spdlog::set_level(spdlog::level::debug);
+    SeqPair sp;
 
+    std::vector<int> posPair = {0,1,2};
+    //std::vector<int> negPair = {0,1,2};
+    std::vector<int> negPair = {1,2,0};
+
+    sp.posPair = posPair;
+    sp.negPair = negPair;
+
+    sp.PrintSeqPair();
+
+    design d;
+
+    std::vector<int> counterparts = {1,-1,-1};
+    
+    for (const auto& counterpart : counterparts) {
+      design::block b;
+      b.counterpart = counterpart;
+      std::vector<design::block> blocks;
+      blocks.push_back(b);
+      d.Blocks.push_back(blocks);
+    }
+
+    std::vector<std::pair<int,int> > v_orderings =  {
+      {0, 2},
+      {2, 1}
+    };
+
+    std::vector<std::pair<int,int> > h_orderings =  {
+    };
+
+    for (const auto& ordering : v_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::V));
+    }
+    for (const auto& ordering : h_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
+    }
+
+    sp.KeepOrdering(d);
+};
+
+TEST(SeqPairTest, KeepOrderingShort) {
+    spdlog::set_level(spdlog::level::debug);
+    SeqPair sp;
+
+    std::vector<int> posPair = {0,1,2};
+    std::vector<int> negPair = {0,1,2};
+
+    sp.posPair = posPair;
+    sp.negPair = negPair;
+
+    sp.PrintSeqPair();
+
+    design d;
+
+    std::vector<int> counterparts = {1,-1,-1};
+    
+    for (const auto& counterpart : counterparts) {
+      design::block b;
+      b.counterpart = counterpart;
+      std::vector<design::block> blocks;
+      blocks.push_back(b);
+      d.Blocks.push_back(blocks);
+    }
+
+    std::vector<std::pair<int,int> > v_orderings =  {
+      {0, 2},
+      {2, 1}
+    };
+
+    std::vector<std::pair<int,int> > h_orderings =  {
+    };
+
+    for (const auto& ordering : v_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::V));
+    }
+    for (const auto& ordering : h_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
+    }
+
+    sp.KeepOrdering(d);
 };
