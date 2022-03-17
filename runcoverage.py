@@ -54,10 +54,6 @@ def main():
         if not exit_status:
             exit_status = ret.returncode
 
-    ret = subprocess.run(['tests/test_PnR', '--gtest_filter=-*Infinite*'])
-    if not exit_status:
-        exit_status = ret.returncode
-
     # Actual command is run here
     ret = subprocess.run(' '.join([
         'pytest', '-vv',  # Call pytest in verbose mode

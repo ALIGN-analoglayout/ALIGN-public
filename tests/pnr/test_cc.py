@@ -157,7 +157,7 @@ def test_cc_60():
     ]
 
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level='INFO', additional_args=["--skipGDS"])
+    run_example(example, cleanup=False, log_level='INFO', additional_args=["--skipGDS"], max_errors=1)
 
 @pytest.mark.skip("Coredumping")
 def test_cc_with_dummies():

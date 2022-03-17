@@ -189,8 +189,7 @@ TEST(SeqPairTest, KeepOrdering) {
 };
 */
 
-/*
-TEST(SeqPairTest, KeepOrdering) {
+TEST(SeqPairTest, DISABLED_KeepOrdering) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
 
@@ -233,7 +232,7 @@ TEST(SeqPairTest, KeepOrdering) {
 
     sp.KeepOrdering(d);
 };
-*/
+
 
 TEST(SeqPairTest, KeepOrderingShortWithValidOrdering) {
     spdlog::set_level(spdlog::level::debug);
@@ -278,7 +277,7 @@ TEST(SeqPairTest, KeepOrderingShortWithValidOrdering) {
     sp.KeepOrdering(d);
 };
 
-TEST(SeqPairTest, KeepOrderingShortInfiniteLoop) {
+TEST(SeqPairTest, DISABLED_KeepOrderingShortInfiniteLoop) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
 
