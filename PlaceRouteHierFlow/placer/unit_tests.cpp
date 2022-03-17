@@ -278,7 +278,7 @@ TEST(SeqPairTest, KeepOrderingShortWithValidOrdering) {
     sp.KeepOrdering(d);
 };
 
-TEST(SeqPairTest, KeepOrderingShort) {
+TEST(SeqPairTest, KeepOrderingShortInfiniteLoop) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
 
