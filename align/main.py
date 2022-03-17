@@ -2,17 +2,14 @@ import pathlib
 import shutil
 import os
 import json
-import re
-import copy
-import math
-from collections import defaultdict
 import sys
 import http.server
 import socketserver
 import functools
 
-from .compiler import generate_hierarchy, read_lib
-from .primitive import generate_primitive
+from .compiler import generate_hierarchy
+from align.schema.library import read_lib_json
+from .primitive import generate_primitives
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png
@@ -24,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'route', 'check']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'gui', 'route']}
 
-    unimplemented_start_points = {'3_pnr:route', '3_pnr:check'}
-    unimplemented_stop_points = {'3_pnr:place'}
+    unimplemented_start_points = set()
+    unimplemented_stop_points = set()
 
     if flow_start is None:
         flow_start = steps[0]
@@ -67,140 +64,6 @@ def build_steps(flow_start, flow_stop):
     return steps_to_run
 
 
-def gen_more_primitives(primitives, topology_dir, subckt):
-    """primitives dictionary updated in place"""
-
-    #
-    # This code should be improved and moved to 2_primitives
-    #
-    map_d = defaultdict(list)
-
-    # As a hack, add more primitives if it matches this pattern
-    p = re.compile(r'^(\S+)_nfin(\d+)_n(\d+)_X(\d+)_Y(\d+)(|_\S+)$')
-
-    p_2 = re.compile(r'^(\S+)_X(\d+)_Y(\d+)$')
-
-    more_primitives = {}
-
-    #
-    # Hack to limit aspect ratios when there are a lot of choices
-    #
-    def limit_pairs(pairs):
-        if len(pairs) > 12:
-            new_pairs = []
-            #log10_aspect_ratios = [ -1.0, -0.3, -0.1, 0, 0.1, 0.3, 1.0]
-            log10_aspect_ratios = [-0.3, 0, 0.3]
-            for l in log10_aspect_ratios:
-                best_pair = min((abs(math.log10(newy) - math.log10(newx) - l), (newx, newy))
-                                for newx, newy in pairs)[1]
-                new_pairs.append(best_pair)
-            return new_pairs
-        else:
-            return pairs
-
-    def gen_pairs(n, nfin):
-        clusters = (nfin+n-1) // n
-
-        pairs = set()
-        for newx in range(1, clusters+1):
-            newy = (nfin+newx*n-1)//(newx*n)
-            assert newx*newy*n >= nfin
-            pairs.add((newx, newy))
-
-        by_y = defaultdict(list)
-        for x, y in pairs:
-            by_y[y].append(x)
-
-        pairs = set()
-        for y, xs in by_y.items():
-            pairs.add((min(xs), y))
-
-        return limit_pairs(pairs.difference({(X, Y)}))
-
-    for k, v in primitives.items():
-        m = p.match(k)
-        mm = p_2.match(k)
-
-        if m:
-            nfin, n, X, Y = tuple(int(x) for x in m.groups()[1:-1])
-            prefix = f'{m.groups()[0]}_nfin{nfin}'
-            suffix = m.groups()[-1]
-            pairs = gen_pairs(n, nfin)
-
-            abstract_name = f'{prefix}{suffix}'
-            map_d[abstract_name].append(k)
-            for newx, newy in pairs:
-                concrete_name = f'{prefix}_N{n}_X{newx}_Y{newy}{suffix}'
-                map_d[abstract_name].append(concrete_name)
-                if concrete_name not in primitives and \
-                        concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-
-        elif mm:
-            prefix = mm.groups()[0]
-            x, y = tuple(int(x) for x in mm.groups()[1:])
-            prefix = mm.groups()[0]
-            pairs = set()
-            m = x*y
-            y_sqrt = math.floor(math.sqrt(x*y))
-            for y in range(y_sqrt, 0, -1):
-                if m % y == 0:
-                    pairs.add((y, m//y))
-                    pairs.add((m//y, y))
-                if y == 1:
-                    break
-
-            pairs = limit_pairs(pairs)
-
-            abstract_name = f'{prefix}'
-            map_d[abstract_name].append(k)
-            for newx, newy in pairs:
-                concrete_name = f'{prefix}_X{newx}_Y{newy}'
-                map_d[abstract_name].append(concrete_name)
-                if concrete_name not in primitives and concrete_name not in more_primitives:
-                    more_primitives[concrete_name] = copy.deepcopy(v)
-                    more_primitives[concrete_name]['x_cells'] = newx
-                    more_primitives[concrete_name]['y_cells'] = newy
-        else:
-            if not (k.startswith("Res") or k.startswith("Cap")):
-                logger.debug(f'Didn\'t match primitive {k}')
-            map_d[k].append(k)
-
-    primitives.update(more_primitives)
-
-    #
-    # This code should move to 1_topology, we also need two different the primitives.json files;
-    # One generated in 1_topology and consumed by 2_primitives that has abstract_template_names
-    # One generated in 2_primitives and consumed by 3_pnr that has both abstract_template_names and concrete_template_name
-    #
-    concrete2abstract = {vv: k for k, v in map_d.items() for vv in v}
-
-    for k, v in primitives.items():
-        v['abstract_template_name'] = concrete2abstract[k]
-        v['concrete_template_name'] = k
-
-    # now hack the netlist to replace the template names using the concrete2abstract mapping
-
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open('rt') as fp:
-        verilog_json_d = json.load(fp)
-
-    for module in verilog_json_d['modules']:
-        for instance in module['instances']:
-            t = instance['template_name']
-            if t in concrete2abstract:
-                del instance['template_name']
-                instance['abstract_template_name'] = concrete2abstract[t]
-            else:
-                # actually want all instances to use abstract_template_name, even the non-leaf ones
-                del instance['template_name']
-                instance['abstract_template_name'] = t
-
-    with (topology_dir / f'{subckt.upper()}.verilog.json').open('wt') as fp:
-        json.dump(verilog_json_d, fp=fp, indent=2)
-
-
 def extract_netlist_files(netlist_dir, netlist_file):
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
@@ -230,7 +93,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 
     viewer_dir = pathlib.Path(__file__).resolve().parent.parent / 'Viewer'
     if not viewer_dir.exists():
-        logger.warning(f'Viewer could not be located.')
+        logger.warning('Viewer could not be located.')
         return
 
     local_viewer_dir = working_dir/'Viewer'
@@ -246,7 +109,7 @@ def start_viewer(working_dir, pnr_dir, variant):
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
     with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
         logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
-        logger.info(f'Please type Ctrl + C to continue')
+        logger.info('Please type Ctrl + C to continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
             try:
@@ -254,13 +117,12 @@ def start_viewer(working_dir, pnr_dir, variant):
             except KeyboardInterrupt:
                 pass
     sys.stderr = stderr
-    logger.info(f'Viewer terminated')
+    logger.info('Viewer terminated')
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
-                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None,
-                     concrete_top_name=None,
+                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     steps_to_run = build_steps(flow_start, flow_stop)
@@ -298,59 +160,38 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
-        primitives, ckt_data = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
-
-        gen_more_primitives(primitives, topology_dir, subckt)
-
-        with (topology_dir / '__primitives__.json').open('wt') as fp:
-            json.dump(primitives, fp=fp, indent=2)
+        primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)
     else:
         if subckt is None:
             subckt = extract_netlist_files(netlist_dir, netlist_file).stem
-
-        with (topology_dir / '__primitives__.json').open('rt') as fp:
-            primitives = json.load(fp)
+        primitive_lib = read_lib_json(topology_dir / '__primitives_library__.json')
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
-        for block_name, block_args in primitives.items():
-            if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
-                if 'ckt_data' in globals() or 'ckt_data' in locals():
-                    primitive_def = ckt_data.find(block_args['primitive'])
-                else:
-                    # read in circuit from basic library
-                    primitive_def = read_lib(pdk_dir).find(block_args['primitive'])
-                assert primitive_def is not None, f"unavailable primitive definition {block_args['primitive']}"
-            else:
-                primitive_def = block_args['primitive']
-            block_args.pop("primitive", None)
-            uc = generate_primitive(block_name, primitive_def, ** block_args,
-                                    pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
-            if hasattr(uc, 'metadata'):
-                primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
-
+        primitives = generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir)
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
-    else:
+    elif sub_steps:
         with (primitive_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
     # run PNR tool
-    pnr_dir = working_dir / '3_pnr'
-    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
+        pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
-                                concrete_top_name=concrete_top_name,
+                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, \
+        assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory

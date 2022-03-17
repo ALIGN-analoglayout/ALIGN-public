@@ -85,10 +85,6 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   }*/
 }
 
-bool OrderedEnumerator::NextPermutation(vector<int>& seq) {
-  if (_cnt < _sequences.size()) seq = _sequences[_cnt];
-  return (++_cnt < _sequences.size());
-}
 
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter)
     : _enumIndex({0, 0}),
@@ -181,21 +177,22 @@ const bool SeqPairEnumerator::IncrementSelected() {
 void SeqPairEnumerator::Permute() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
   // if (!EnumFlip())
+  if (_exhausted) return;
   if (!IncrementSelected()) {
     if (_enumIndex.second >= _maxEnum - 1) {
+      std::sort(_negPair.begin(), _negPair.end());
       _enumIndex.second = 0;
       ++_enumIndex.first;
-      std::sort(_negPair.begin(), _negPair.end());
       if (_posEnumerator.valid())
-        _posEnumerator.NextPermutation(_posPair);
+        _posEnumerator.NextPermutation(_posPair, _enumIndex.first);
       else
         std::next_permutation(std::begin(_posPair), std::end(_posPair));
     } else {
+      ++_enumIndex.second;
       if (_negEnumerator.valid())
-        _negEnumerator.NextPermutation(_negPair);
+        _negEnumerator.NextPermutation(_negPair, _enumIndex.second);
       else
         std::next_permutation(std::begin(_negPair), std::end(_negPair));
-      ++_enumIndex.second;
     }
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
@@ -690,7 +687,7 @@ void SeqPair::KeepOrdering(design& caseNL) {
           int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
           int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
           auto it = negPair.begin();
-          if (first_counterpart == -1) {
+          if (first_counterpart == -1 || first_counterpart == order.first.first) {
             // move first to after second
             it = negPair.insert(it + second_it + 1, order.first.first);
             it = negPair.begin();
@@ -1220,6 +1217,11 @@ bool SeqPair::PerturbationNew(design& caseNL) {
     KeepOrdering(caseNL);
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
+    std::string tmpstr, tmpstrn, tmpstrs;
+    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+    for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
+    for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
+    logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
   } while (retval && ++trial_cnt < max_trial_cnt);
   return !retval;
 }

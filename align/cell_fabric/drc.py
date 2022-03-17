@@ -29,7 +29,7 @@ class DesignRuleCheck():
         self.r_regions = RegionSet()
         for term in self.canvas.terminals:
             if term['layer'] == 'Boundary':
-                logger.debug(f"Adding region {term['rect']} using 'Boundary' object")
+                # logger.debug(f"Adding region {term['rect']} using 'Boundary' object")
                 self.r_regions.add_region(term['rect'])
 
     @property
@@ -66,6 +66,7 @@ class DesignRuleCheck():
 
     def _check_via_rules(self, layer, vv):
         '''Simple rules related to vertical and horizontal spacing; need more work for diagonals'''
+
         space_y = self.canvas.pdk[layer].get('SpaceY', None)
         if space_y is not None:
             # Since vias are stored as vertical wires in the scan lines, this is the easy case
@@ -78,6 +79,7 @@ class DesignRuleCheck():
                         if slr0.rect[3] < slr1.rect[1]:
                             if slr0.rect[3] + space_y > slr1.rect[1]:
                                 self.errors.append(f"Vertical space violation on {layer}: {slr0} {slr1} {space_y}")
+
         space_x = self.canvas.pdk[layer].get('SpaceX', None)
         if space_x is not None:
             horizontal_bins = defaultdict(list)
@@ -93,6 +95,48 @@ class DesignRuleCheck():
                         if slr0[2] < slr1[0]:
                             if slr0[2] + space_x > slr1[0]:
                                 self.errors.append(f"Horizontal space violation on {layer}: {slr0} {slr1} {space_x}")
+
+        max_adjacent_y = self.canvas.pdk[layer].get('MaxAdjacentY', None)
+        if max_adjacent_y is not None:
+            via = getattr(self.canvas, layer)
+            for (_, sl) in vv.items():
+                idx_prev = None
+                for slr in sl.rects:
+                    idx = via.h_clg.inverseBounds((slr.rect[1]+slr.rect[3])//2)[0][0]
+                    if idx_prev is None:
+                        count = 1
+                    elif idx - idx_prev == 1:
+                        count += 1
+                    else:
+                        count = 0
+                    idx_prev = idx
+                    if count > max_adjacent_y:
+                        self.errors.append(f"Vertical max adjacent via violation on {layer}: {slr}")
+
+        max_adjacent_x = self.canvas.pdk[layer].get('MaxAdjacentX', None)
+        if max_adjacent_x is not None:
+            via = getattr(self.canvas, layer)
+
+            # Build horizontal scanlines
+            vv_h = defaultdict(list)
+            for (_, sl) in vv.items():
+                for slr in sl.rects:
+                    vv_h[slr.rect[1] + slr.rect[3]].append(slr.rect)
+
+            for (_, sl) in vv_h.items():
+                sl.sort(key=lambda slr: slr[0])
+                idy_prev = None
+                for r in sl:
+                    idy = via.v_clg.inverseBounds((r[0]+r[2])//2)[0][0]
+                    if idy_prev is None:
+                        count = 1
+                    elif idy - idy_prev == 1:
+                        count += 1
+                    else:
+                        count = 0
+                    idy_prev = idy
+                    if count > max_adjacent_x:
+                        self.errors.append(f"Horizontal max adjacent via violation on {layer}: {slr}")
 
     def _check_via_enclosure_rules(self, layer, vv):
         '''Check via enclosures.'''

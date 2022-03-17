@@ -17,10 +17,10 @@ def test_symm_net():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
     constraints = [
-        {"constraint": "IsDigital", "isTrue": True}
+        {"constraint": "ConfigureCompiler", "is_digital": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     G = Graph(ckt)
     pairs, pinsA, pinsB = symmnet_device_pairs(G, 'VIN', 'VIP', list(), None, True)
@@ -50,10 +50,10 @@ def test_add_symmetry_const():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
     constraints = [
-        {"constraint": "IsDigital", "isTrue": True}
+        {"constraint": "ConfigureCompiler", "is_digital": True}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library = compiler_input(example, name, pdk_path, config_path)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     with set_context(ckt.constraints):
         x = constraint.SymmetricBlocks(direction="V", pairs=[["MN4", "MN3"]])

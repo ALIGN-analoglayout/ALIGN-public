@@ -133,9 +133,10 @@ def _attach_constraint_files( DB, fpath):
 
         fp = d / f"{curr_node.name}.pnr.const.json"
         if fp.exists():
-            with fp.open( "rt") as fp:
+            with fp.open("rt") as fp:
                 jsonStr = fp.read()
-            DB.ReadConstraint_Json( curr_node, jsonStr)
+            logger.debug(f"Reading contraint json file {curr_node.name}.pnr.const.json:\n{jsonStr}")
+            DB.ReadConstraint_Json(curr_node, jsonStr)
             logger.debug(f"Finished reading contraint json file {curr_node.name}.pnr.const.json")
         else:
             logger.warning(f"No constraint file for module {curr_node.name}")
@@ -148,7 +149,7 @@ def _attach_constraint_files( DB, fpath):
             DB.ReadPrimitiveOffsetPitch(instances, jsonStr)
             logger.debug(f"Finished reading primitive json file {name}.json")
         else:
-            logger.warning(f"No primitive json file for primitive {name}")
+            logger.warning(f"No primitive json file for primitive {name}. Okay if a CC capacitor.")
 
 def _semantic(DB, path, topcell, global_signals):
     _attach_constraint_files( DB, path)
@@ -163,7 +164,7 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
     DB.ReadPDKJSON( path + '/' + drname)
 
     if lef_s_in is not None:
-        logger.error(f'Reading LEF from string')
+        logger.info(f'Reading LEF from string...')
         DB.ReadLEFFromString(lef_s_in)
     else:
         p = pathlib.Path(path) / lefname
@@ -189,3 +190,28 @@ def PnRdatabase( path, topcell, vname, lefname, mapname, drname, *, verilog_d_in
     _semantic(DB, path, topcell, global_signals)
 
     return DB, verilog_d
+
+def gen_DB_verilog_d(toplevel_args_d, results_dir, *, verilog_d_in=None, map_d_in=None, lef_s_in=None):
+    fpath = toplevel_args_d['input_dir']
+    lfile = toplevel_args_d['lef_file']
+    vfile = toplevel_args_d['verilog_file']
+    mfile = toplevel_args_d['map_file']
+    dfile = toplevel_args_d['pdk_file']
+    topcell = toplevel_args_d['subckt']
+    numLayout = toplevel_args_d['nvariants']
+    effort = toplevel_args_d['effort']
+
+    DB, verilog_d = PnRdatabase( fpath, topcell, vfile, lfile, mfile, dfile, verilog_d_in=verilog_d_in, map_d_in=map_d_in, lef_s_in=lef_s_in)
+
+    assert verilog_d is not None
+
+    if results_dir is None:
+        opath = './Results/'
+    else:
+        opath = str(pathlib.Path(results_dir))
+        if opath[-1] != '/':
+            opath = opath + '/'
+
+    pathlib.Path(opath).mkdir(parents=True,exist_ok=True)
+
+    return DB, verilog_d, fpath, opath, numLayout, effort

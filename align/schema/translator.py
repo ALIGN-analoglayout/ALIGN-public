@@ -4,6 +4,7 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 
+from operator import sub
 from .types import set_context
 import logging
 from align.schema import constraint
@@ -69,7 +70,8 @@ class ConstraintTranslator():
                         self._check_const_length(
                             self.ckt_data.find(bottom).constraints, sconst
                         )
-                logger.debug(f"Transferred constraints to {bottom} {sub_const}")
+                if sub_const:
+                    logger.debug(f"transferred constraints to {bottom} {sub_const}")
 
     def _update_const(self, name, remove_nodes, new_inst):
         """
@@ -116,6 +118,17 @@ class ConstraintTranslator():
                     elif len(pair) == 1:
                         if pair[0] in remove_nodes:
                             pair[0] = new_inst
+            elif hasattr(const, "regions"):
+                for i, row in enumerate(const.regions):
+                    if set(row) & set(remove_nodes):
+                        replace = True
+                        for old_inst in remove_nodes:
+                            if replace:
+                                _list_replace(const.regions[i], old_inst, new_inst)
+                                replace = False
+                            elif old_inst in row:
+                                const.regions[i].remove(old_inst)
+
         logger.debug(f"updated constraints of {name} {const_list}")
 
     def _check_const_length(self, const_list, const):

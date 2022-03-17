@@ -4,6 +4,7 @@ import pathlib
 from copy import deepcopy
 import shutil
 import align.pdk.finfet
+import re
 
 align_home = os.getenv('ALIGN_HOME')
 
@@ -77,6 +78,15 @@ def build_example(name, netlist, constraints):
     with open(example / f'{name}.const.json', 'w') as fp:
         fp.write(json.dumps(constraints, indent=2))
     return example
+
+def _count_pattern(pattern):
+    data = set()
+    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
+        for line in fp:
+            if re.search(pattern, line):
+                line = line.split(pattern)[1]
+                data.add(line)
+    return len(data)
 
 
 def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):

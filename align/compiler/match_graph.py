@@ -17,16 +17,14 @@ logger = logging.getLogger(__name__)
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
-    Boundries (clk,digital, etc) are defined from setup file
+    Boundries (clk,digital, etc) are defined from constraints
     """
 
     def __init__(self, ckt_data, primitive_library):
         """
         Args:
-            ckt_data (dict): all subckt graph, names and port
-            design_setup (dict): information from setup file
-            library (list): list of library elements in dict format
-            existing_generator (list): list of names of existing generators
+            ckt_data (dict): all subckt information
+            library (list): template library to match
         """
         self.ckt_data = ckt_data
         self.lib = primitive_library
@@ -46,8 +44,8 @@ class Annotate:
     def _is_digital(self, ckt):
         IsDigital = False
         for const in ckt.constraints:
-            if isinstance(const, constraint.IsDigital):
-                IsDigital = const.isTrue
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = const.is_digital
         return IsDigital
 
     def annotate(self):
@@ -73,7 +71,6 @@ class Annotate:
             f"All subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
         )
 
-        traversed = []  # libray gets appended, so only traverse subckt once
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
             if not isinstance(ckt, SubCircuit):
@@ -85,23 +82,21 @@ class Annotate:
             elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
                 logger.debug(f"skip annotation for circuit {ckt.name} with available generators {ckt.constraints}")
                 continue
-            elif ckt.name in traversed:
-                logger.debug(f"Finished annotation for circuit circuit {ckt.name}")
-                continue
             else:
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
                 logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
                     f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
-                    ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
+                    ele: {[e.name for e in ckt.elements]} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
                 for const in ckt.constraints:
                     if isinstance(const, constraint.DoNotUseLib):
                         do_not_use_lib.update(const.libraries)
-                traversed.append(ckt.name)
                 for subckt in self.lib:
+                    logger.debug(f"matching circuit {subckt.name}")
+
                     if subckt.name == ckt.name or \
                        subckt.name in do_not_use_lib or \
                        (subckt.name in temp_match_dict and ckt.name in temp_match_dict[subckt.name]):  # to stop searching INVB in INVB_1
@@ -194,7 +189,6 @@ class Annotate:
                     name=inst_name,
                     model=const.name.upper(),
                     pins={x: x for x in ac_nets},
-                    generator=const.name.upper(),
                 )
                 subckt.elements.append(X1)
             # Translate any constraints defined on the groupblock elements to subckt
@@ -242,6 +236,7 @@ class Annotate:
                     new_subckt = Model(
                         name=cc_name, pins=list(new_pins.keys())
                     )
+                if not self.ckt_data.find(cc_name):
                     self.ckt_data.append(new_subckt)
 
             with set_context(subckt.elements):
@@ -251,8 +246,7 @@ class Annotate:
                 X1 = Instance(
                     name=const.name.upper(),
                     model=cc_name,
-                    pins=new_pins,
-                    generator=cc_name,
+                    pins=new_pins
                 )
                 subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock

@@ -261,6 +261,19 @@ def FindSymmetry(subckt, stop_points: set):
     return match_pairs
 
 
+def constraint_generator(ckt_data):
+    """
+    Search for symmetry constraints
+    Args:
+        ckt_data : ckt library after annotation
+    """
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
+            continue
+        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
+        if not gen_const:
+            FindConst(subckt)
+
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
@@ -274,9 +287,8 @@ def FindConst(subckt):
                 isinstance(const, constraint.GroundPorts) or \
                 isinstance(const, constraint.ClockPorts):
             stop_points.update(const.ports)
-        elif isinstance(const, constraint.IsDigital) or \
-                isinstance(const, constraint.AutoConstraint):
-            auto_constraint = const.isTrue
+        elif isinstance(const, constraint.ConfigureCompiler):
+            auto_constraint = not const.is_digital and const.auto_constraint
     logger.debug(f"Stop_points : {stop_points}")
 
     pp = process_input_const(subckt)

@@ -15,7 +15,7 @@
           "constraint": "symmetric_blocks",
           "pairs": [
             [
-              "MN0"
+              "X_MN0"
             ],
             [
               "X_DP_MN1_MN2"
@@ -27,12 +27,12 @@
               "X_CCP_MP5_MP6"
             ],
             [
-              "MP7",
-              "MP8"
+              "X_MP7",
+              "X_MP8"
             ],
             [
-              "MP9",
-              "MP10"
+              "X_MP9",
+              "X_MP10"
             ],
             [
               "X_INV_N_MP11_MN13",
@@ -49,11 +49,11 @@
             "X_DP_MN1_MN2",
             "X_INV_N_MP11_MN13",
             "X_INV_P_MP12_MN14",
-            "MN0",
-            "MP10",
-            "MP7",
-            "MP8",
-            "MP9"
+            "X_MN0",
+            "X_MP10",
+            "X_MP7",
+            "X_MP8",
+            "X_MP9"
           ]
         }
       ]

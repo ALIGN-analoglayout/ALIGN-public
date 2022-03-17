@@ -28,8 +28,7 @@
         "unit_size_cap": 12,
         "unit_height_res": 600,
 	"Fin_pitch": 42,
-	"max_size_cap": 1000,
-        "pdk_type": "FinFET"
+	"max_size_cap": 1000
     },
     "Abstraction": [
         {
