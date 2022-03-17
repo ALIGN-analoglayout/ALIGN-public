@@ -361,3 +361,34 @@ def test_hang_3():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
+
+
+def test_sub_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} a1 a2 a3 vssx vccx
+    mn0 vssx a1 vssx vssx n w=180e-9 m=1 nf=2
+    mn1 vssx a2 vssx vssx n w=180e-9 m=1 nf=2
+    mn2 vssx a3 vssx vssx n w=180e-9 m=1 nf=2
+    mp0 vccx a1 vccx vccx p w=180e-9 m=3 nf=2
+    mp1 vccx a2 vccx vccx p w=180e-9 m=4 nf=2
+    mp2 vccx a3 vccx vccx p w=180e-9 m=5 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp0", "mp1", "mp2"]},
+        {"constraint": "Floorplan", "regions": [
+            ["mn0", "mn1", "mn2"],
+            ["mp0", "mp1", "mp2"]
+        ]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mp0"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn1"], ["mp1"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn2"], ["mp2"]]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=cleanup)
