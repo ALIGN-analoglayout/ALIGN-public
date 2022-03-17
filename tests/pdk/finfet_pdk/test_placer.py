@@ -9,7 +9,7 @@ from . import circuits
 import time
 
 
-cleanup = False
+CLEANUP = False
 
 
 @pytest.mark.skip
@@ -68,7 +68,7 @@ def test_place_cmp_1():
     area_pct = round(100*((area_new/area_best)-1))
     print(f'Generated layout is {hpwl_pct}% worse in HPWL and {area_pct}% worse in AREA')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -132,7 +132,7 @@ def test_place_cmp_2():
     # with open(example / 'dptail.const.json', 'w') as fp:
     #     fp.write(json.dumps(constraints, indent=2))
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, area=4e10)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, area=4e10)
 
     cn = f'{name.upper()}_0'
 
@@ -147,7 +147,7 @@ def test_place_cmp_2():
 
         print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -188,7 +188,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     else:
         placer = 'annealing'
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, log_level='DEBUG', additional_args=additional_args)
 
     cn = f'{name.upper()}_0'
 
@@ -249,7 +249,7 @@ def test_cmp_analytical():
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
-    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    run_example(example, cleanup=CLEANUP, log_level='DEBUG', additional_args=additional_args)
 
 
 def comparator_constraints(name):
@@ -285,7 +285,7 @@ def test_cmp_fast():
     constraints = comparator_constraints(name)
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=CLEANUP, area=5e9)
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -297,7 +297,7 @@ def test_cmp_slow():
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    run_example(example, cleanup=CLEANUP, area=5e9, log_level='DEBUG')
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -319,7 +319,7 @@ def test_hang_1():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level="DEBUG")
 
 
 def test_hang_2():
@@ -339,7 +339,7 @@ def test_hang_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level="DEBUG")
 
 
 def test_hang_3():
@@ -360,10 +360,11 @@ def test_hang_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
 
 
 def test_sub_1():
+    ''' suboptimal placement '''
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt {name} a1 a2 a3 vssx vccx
@@ -381,7 +382,7 @@ def test_sub_1():
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp0", "mp1", "mp2"]},
-        {"constraint": "Floorplan", "regions": [
+        {"constraint": "Floorplan", "order": True, "regions": [
             ["mn0", "mn1", "mn2"],
             ["mp0", "mp1", "mp2"]
         ]},
@@ -391,4 +392,12 @@ def test_sub_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    _, run_dir = run_example(example, cleanup=False)
+
+    with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
+        placement = json.load(fp)
+        assert 'modules' in placement, 'modules not in placement'
+        instances = {i['instance_name']: i['transformation'] for i in placement['modules'][0]['instances']}
+        assert instances['X_MP0']['oY'] > 0, 'Suboptimal placement: MP0 should be just below MN0'
+        assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
+    shutil.rmtree(run_dir)
