@@ -1887,10 +1887,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-    objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 2) = hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight * estimated_height;
+    objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight * estimated_width;
+    objective.at(ind + 2) = hyper.LAMBDA * mydesign.Nets[i].weight * estimated_height;
+    objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight * estimated_width;
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
