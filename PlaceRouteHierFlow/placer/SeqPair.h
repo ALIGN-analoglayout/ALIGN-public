@@ -74,7 +74,7 @@ class SeqPairEnumerator {
 };
 
 class SeqPair {
-  private:
+  public:
   friend class ILP_solver;
   friend class ExtremeBlocksOfNet;
   friend class Placer;
