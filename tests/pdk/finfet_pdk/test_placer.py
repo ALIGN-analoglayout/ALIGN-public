@@ -9,7 +9,8 @@ from . import circuits
 import time
 
 
-cleanup = False
+CLEANUP = False
+LOG_LEVEL = 'INFO'
 
 
 @pytest.mark.skip
@@ -37,7 +38,7 @@ def test_place_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, log_level='DEBUG',
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL,
                                    additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op'])
 
     print(f'run_dir: {run_dir}')
@@ -68,7 +69,7 @@ def test_place_cmp_1():
     area_pct = round(100*((area_new/area_best)-1))
     print(f'Generated layout is {hpwl_pct}% worse in HPWL and {area_pct}% worse in AREA')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -132,7 +133,7 @@ def test_place_cmp_2():
     # with open(example / 'dptail.const.json', 'w') as fp:
     #     fp.write(json.dumps(constraints, indent=2))
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, area=4e10)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, area=4e10)
 
     cn = f'{name.upper()}_0'
 
@@ -147,7 +148,7 @@ def test_place_cmp_2():
 
         print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -188,7 +189,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     else:
         placer = 'annealing'
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    _, run_dir = run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=additional_args)
 
     cn = f'{name.upper()}_0'
 
@@ -249,7 +250,7 @@ def test_cmp_analytical():
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
-    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=additional_args)
 
 
 def comparator_constraints(name):
@@ -285,7 +286,7 @@ def test_cmp_fast():
     constraints = comparator_constraints(name)
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -298,7 +299,7 @@ def test_cmp_slow():
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -320,7 +321,7 @@ def test_hang_1():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
 
 def test_hang_2():
@@ -340,7 +341,7 @@ def test_hang_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
 
 def test_hang_3():
@@ -361,4 +362,4 @@ def test_hang_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
