@@ -137,12 +137,13 @@ TEST(SeqPairTest, KeepOrdering) {
 };
 */
 
+/*
 TEST(SeqPairTest, KeepOrdering) {
     spdlog::set_level(spdlog::level::debug);
     SeqPair sp;
 
-    std::vector<int> posPair = {12,11,13,2,16};
-    std::vector<int> negPair = {12,11,13,2,16};
+    std::vector<int> posPair = {12,13,2,16};
+    std::vector<int> negPair = {12,13,2,16};
 
     sp.posPair = posPair;
     sp.negPair = negPair;
@@ -166,15 +167,60 @@ TEST(SeqPairTest, KeepOrdering) {
     // keep 2 16 11 12 13
 
     std::vector<std::pair<int,int> > v_orderings =  {
-      {11, 16},
       {12, 16},
       {13, 16},
       {16, 2},
     };
 
     std::vector<std::pair<int,int> > h_orderings =  {
-      {11, 12},
       {12, 13},
+    };
+
+    for (const auto& ordering : v_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::V));
+    }
+    for (const auto& ordering : h_orderings) {
+      d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
+    }
+
+    sp.KeepOrdering(d);
+
+
+};
+*/
+
+TEST(SeqPairTest, KeepOrdering) {
+    spdlog::set_level(spdlog::level::debug);
+    SeqPair sp;
+
+    std::vector<int> posPair = {0,1,2,3};
+    std::vector<int> negPair = {0,1,2,3};
+
+    sp.posPair = posPair;
+    sp.negPair = negPair;
+
+    sp.PrintSeqPair();
+
+    design d;
+
+    std::vector<int> counterparts = {1,0,-1,-1};
+    
+    for (const auto& counterpart : counterparts) {
+      design::block b;
+      b.counterpart = counterpart;
+      std::vector<design::block> blocks;
+      blocks.push_back(b);
+      d.Blocks.push_back(blocks);
+    }
+
+    std::vector<std::pair<int,int> > v_orderings =  {
+      {0, 3},
+      {1, 3},
+      {3, 2}
+    };
+
+    std::vector<std::pair<int,int> > h_orderings =  {
+      {0, 1}
     };
 
     for (const auto& ordering : v_orderings) {
