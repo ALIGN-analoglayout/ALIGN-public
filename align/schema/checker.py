@@ -184,7 +184,7 @@ class Z3Checker(AbstractSolver):
             z3.set_option(max_depth=10000, max_args=100, max_lines=10000)
             logger.debug(f"Unsat encountered: {self._solver}")
             raise SolutionNotFoundError(
-                message=f'No satisfying solution could be found',
+                message='No satisfying solution could be found. Please review constraints.',
                 labels=self._solver.unsat_core())
 
     def checkpoint(self):
