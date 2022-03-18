@@ -1010,13 +1010,41 @@ class SymmetricBlocks(HardConstraint):
         return value
 
     def translate(self, solver):
+
+        def construct_expression(b1, b2=None):
+            c = 'x' if self.direction == 'V' else 'y'
+            expression = getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            if b2:
+                expression += getattr(b2, f'll{c}') + getattr(b2, f'ur{c}')
+            else:
+                expression += getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            return expression
+
         for i, instances in enumerate(self.pairs):
             if len(instances) == 2:
-                # center lines of the two blocks should match in the orthogonal direction
                 b0 = solver.bbox_vars(instances[0])
                 b1 = solver.bbox_vars(instances[1])
+
+                # center lines of the two blocks should match in the orthogonal direction
                 c = 'y' if self.direction == 'V' else 'x'
-                yield getattr(b0, f'll{c}') + getattr(b0, f'ur{c}') == getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+                expression = (getattr(b0, f'll{c}') + getattr(b0, f'ur{c}') == getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
+                # logger.debug(f'\n{expression=}')
+                yield expression
+
+                # the two blocks should be in order
+                c = 'x' if self.direction == 'V' else 'y'
+                expression = getattr(b0, f'ur{c}') <= getattr(b1, f'll{c}')
+                # logger.debug(f'\n{expression=}')
+                yield expression
+
+            # center lines of pairs should match along the direction
+            if i == 0:
+                reference = construct_expression(*solver.iter_bbox_vars(instances))
+            else:
+                centerline = construct_expression(*solver.iter_bbox_vars(instances))
+                expression = (reference == centerline)
+                # logger.debug(f'\n{expression=}')
+                yield expression
 
 
 class OffsetsScalings(BaseModel):

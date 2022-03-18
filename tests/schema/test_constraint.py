@@ -133,6 +133,39 @@ def test_SymmetricBlocks_perpendicular(db):
             db.append(constraint.Order(direction="top_to_bottom", instances=['M1', 'M2']))
 
 
+def test_SymmetricBlocks_perpendicular_coord(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2']]))
+        db.append(constraint.AssignBboxVariables(bbox_name='M1', llx=10, lly=0, urx=20, ury=40))
+        db.checkpoint()
+        db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=10, urx=50, ury=30))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=0, urx=50, ury=50))
+
+
+def test_SymmetricBlocks_along(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2'], ['M3']]))
+        db.checkpoint()
+        db.append(constraint.Order(direction="top_to_bottom", instances=['M3', 'M1']))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M1']))
+
+
+def test_SymmetricBlocks_along_coord(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2'], ['M3']]))
+        db.append(constraint.AssignBboxVariables(bbox_name='M1', llx=10, urx=20, lly=10, ury=40))
+        db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, urx=50, lly=10, ury=40))
+        db.checkpoint()
+        db.append(constraint.AssignBboxVariables(bbox_name='M3', llx=15, urx=40, lly=50, ury=60))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.AssignBboxVariables(bbox_name='M3', llx=10, urx=40, lly=50, ury=60))
+
+
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments
