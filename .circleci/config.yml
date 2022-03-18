@@ -111,7 +111,7 @@ jobs:
           name: "Build align in developer mode"
           command: |
             pip install setuptools numpy wheel pybind11 scikit-build cmake ninja
-            pip install -v --no-build-isolation -e .[test] --install-option='-DBUILD_TESTING=ON'
+            pip install -v --no-build-isolation -e .[test]
             pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'
       - run:
           name: "Test align using coverage.py"
