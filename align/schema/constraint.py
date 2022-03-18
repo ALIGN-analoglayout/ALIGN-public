@@ -979,6 +979,8 @@ class SymmetricBlocks(HardConstraint):
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
         _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if len(value) == 1:
+            assert len(value[0]) == 2, 'Must contain at least a pair of two instances or more than two pairs.'
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
