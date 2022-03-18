@@ -11,7 +11,7 @@ from itertools import combinations, combinations_with_replacement
 import logging
 
 from .create_array_hierarchy import process_arrays
-from .util import compare_two_nodes, get_base_model, get_ports_weight, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection, get_ports_weight
+from .util import compare_two_nodes, get_base_model, get_ports_weight, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection
 from ..schema import constraint
 from ..schema.graph import Graph
 from align.schema.subcircuit import SubCircuit
@@ -160,7 +160,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                             # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif node1 == node2 and nbrs1 == nbrs2:
-        logger.debug(f"traversing converging branch")
+        logger.debug("traversing converging branch")
         match_pair[node1] = node2
         traversed.update([node1, node2])
         nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
@@ -273,6 +273,7 @@ def constraint_generator(ckt_data):
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const:
             FindConst(subckt)
+
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
@@ -515,7 +516,7 @@ def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
                 written_symmblocks.extend([set(pair) for pair in pairsj])
                 # written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
-        except:
+        except BaseException:
             while len(iconst) > _temp:
                 iconst.pop()
             logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
@@ -596,7 +597,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
                         )
                         return [None, None, None]
-                    elif user == False and {instA_name, instB_name} not in smb:
+                    elif (not user) and {instA_name, instB_name} not in smb:
                         logger.debug(f"unsymmetrical instances {instA_name, instB_name} {smb}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
