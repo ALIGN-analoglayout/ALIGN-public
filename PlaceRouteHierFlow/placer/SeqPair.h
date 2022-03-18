@@ -28,6 +28,16 @@ using std::string;
 using std::swap;
 using std::vector;
 
+struct VectorHasher {
+    int operator()(const vector<int> &V) const {
+        int hash = V.size();
+        for(auto &i : V) {
+            hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        }
+        return hash;
+    }
+};
+
 class OrderedEnumerator {
   private:
   vector<vector<int>> _sequences;
@@ -117,7 +127,7 @@ class SeqPair {
   void TestSwap();
   int GetBlockSelected(int blockNo);
   bool ChangeSelectedBlock(design& caseNL);
-  void KeepOrdering(design& caseNL);
+  bool KeepOrdering(design& caseNL);
   //bool ValidateSelect(design& caseNL);
   void CompactSeq();
 

@@ -4,6 +4,10 @@
 #include "SeqPair.h"
 #include "design.h"
 
+#include <vector>
+#include <set>
+#include <unordered_set>
+
 TEST(PlacerTest, True) {
     EXPECT_TRUE( 1);
 };
@@ -11,6 +15,70 @@ TEST(PlacerTest, True) {
 TEST(PlacerTest, False) {
     EXPECT_FALSE( 0);
 };
+
+TEST(PlacerTest, VectorHasherTest) {
+  std::vector<int> a = {0, 1, 3};
+  std::vector<int> b = {0, 3, 1};
+
+  
+  VectorHasher vh;
+
+  EXPECT_TRUE(vh(a) != vh(b));
+};
+
+
+TEST(PlacerTest, UnorderedSetOfVecOfInt) {
+
+  std::unordered_set<std::vector<int>,VectorHasher> s;
+
+  std::vector<int> a = {0, 1, 3};
+  std::vector<int> b = {0, 3, 1};
+
+  s.insert(a);
+  s.insert(b);
+    
+  s.insert(a);
+
+  EXPECT_TRUE(s.find(a) != s.end());
+
+  EXPECT_TRUE(s.find(b) != s.end());
+
+  s.erase(a);
+
+  EXPECT_TRUE(s.find(a) == s.end());
+
+  s.erase(b);
+
+  EXPECT_TRUE(s.find(b) == s.end());
+
+};
+
+TEST(PlacerTest, SetOfVecOfInt) {
+
+  std::set<std::vector<int> > s;
+
+  std::vector<int> a = {0, 1, 3};
+  std::vector<int> b = {0, 3, 1};
+
+  s.insert(a);
+  s.insert(b);
+    
+  s.insert(a);
+
+  EXPECT_TRUE(s.find(a) != s.end());
+
+  EXPECT_TRUE(s.find(b) != s.end());
+
+  s.erase(a);
+
+  EXPECT_TRUE(s.find(a) == s.end());
+
+  s.erase(b);
+
+  EXPECT_TRUE(s.find(b) == s.end());
+
+};
+
 
 TEST(SeqPairTest, Constructor) {
     spdlog::set_level(spdlog::level::debug);
@@ -187,7 +255,7 @@ TEST(SeqPairTest, KeepOrderingCorrectStartingOrder) {
       d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
     }
 
-    sp.KeepOrdering(d);
+    EXPECT_TRUE(sp.KeepOrdering(d));
 
     spdlog::set_level(save_level);
 
@@ -242,7 +310,7 @@ TEST(SeqPairTest, DISABLED_KeepOrdering) {
       d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
     }
 
-    sp.KeepOrdering(d);
+    EXPECT_TRUE(sp.KeepOrdering(d));
 
     spdlog::set_level(save_level);
 
