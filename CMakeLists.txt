@@ -11,7 +11,7 @@ project(align VERSION "${ALIGN_VERSION}")
 option(
     BUILD_TESTING
     "Builds test/test_PnR in developer mode (`pip install -e . --no-build-isolation`)"
-    OFF)
+    ON)
 option(
     CODE_COVERAGE
     "Instruments code coverage (pip install -e . --no-build-isolation --install-option='-DCODE_COVERAGE=ON')"
