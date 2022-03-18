@@ -364,7 +364,7 @@ def test_hang_3():
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
-    
+
 def test_hang_4():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -448,3 +448,26 @@ def test_sub_1():
         assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
     shutil.rmtree(ckt_dir)
     shutil.rmtree(run_dir)
+
+
+def test_symmetry():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} g1 g2 d1 d2 vssx vccx
+    mn1 d1 g1 t1   vssx n w=180e-9 m=1 nf=2
+    mn2 d2 g2 t1   vssx n w=180e-9 m=1 nf=2
+    mn0 t1 b1 vssx vssx n w=180e-9 m=1 nf=2
+    mp1 d1 d1 vccx vccx p w=180e-9 m=1 nf=2
+    mp2 d2 d2 vccx vccx p w=180e-9 m=1 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp1", "mp2"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1", "mn2"], ["mp2", "mp1"]]},
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
