@@ -791,11 +791,12 @@ class CreateAlias(SoftConstraint):
     name: str
 
 
-class MatchBlocks(SoftConstraint):
+class PlaceCloser(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
+        `instances` are preferred to be placed closer.
     '''
     instances: List[str]
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
 class PowerPorts(SoftConstraint):
@@ -1336,7 +1337,7 @@ ConstraintType = Union[
     SameTemplate,
     CreateAlias,
     GroupBlocks,
-    MatchBlocks,
+    PlaceCloser,
     DoNotIdentify,
     PlaceOnGrid,
     BlockDistance,
