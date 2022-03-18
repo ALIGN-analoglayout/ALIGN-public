@@ -73,18 +73,17 @@ def test_add_symmetry_const():
     assert len(ckt.constraints) == 2
     clean_data(name)
 
-def test_converging_branch():
+def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
     constraints = [
     ]
     example = build_example(name, netlist, constraints)
-    ckt_library,  primitive_library = compiler_input(example, name, pdk_path, config_path)
-    annotate_library(ckt_library, primitive_library)
+    ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     ckt = ckt_library.find(name)
     graph = Graph(ckt)
     match_pairs = dict()
     stop_points = {'IBIAS', 'TAIL', 'VCCX', 'VSSX', 'VON', 'VOP'}
     ports_weight = get_ports_weight(graph)
     recursive_start_points(graph, match_pairs, stop_points, 'VIN', 'VIP', ports_weight)
-    assert match_pairs[('VIN', 'VIP')] == {'VIN': 'VIP', 'X_MN3_MN4': 'X_MN3_MN4'}
+    assert match_pairs[('VIN', 'VIP')] == {'MN4': 'MN3', 'VIN': 'VIP'}

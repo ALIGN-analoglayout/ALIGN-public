@@ -60,12 +60,10 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
 
     """
     logger.debug(f"comparing {node1}, {node2}, traversed {traversed}")
+    # remove body connections
     nbrs1 = sorted(set(G.neighbors(node1)) - traversed)
-    # remove dummies get_leaf_connection(subckt, port)
-
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
     nbrs2 = sorted(set(G.neighbors(node2)) - traversed)
-    # remove dummies
     nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
     logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
@@ -159,31 +157,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                             match_pairs[(nbr1, nbr1)] = new_pair
                             # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
-    # elif node1 == node2 and nbrs1 == nbrs2:
-    #     assert False, f"traversing converging branch"
-    #     logger.debug(f"traversing converging branch")
-    #     match_pair[node1] = node2
-    #     traversed.update([node1, node2])
-    #     nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
-    #     # logger.debug(f"all non traversed neighbours: {nbrs1}")
-    #     if len(nbrs1) == 1:
-    #         nbr1 = nbr2 = nbrs1[0]
-    #         # logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
-    #         compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
-    #     else:
-    #         for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
-    #             # logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
-    #             if (nbr1, nbr2) not in match_pairs.keys():
-    #                 new_pair = {}
-    #                 compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
-    #                 # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
-    #                 if new_pair:
-    #                     match_pairs[(nbr1, nbr2)] = new_pair
-    #                     # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
-
     elif compare_two_nodes(G, node1, node2, ports_weight):
-        nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
-        nbrs2 = sorted(set([nbr for nbr in nbrs2 if reduced_neighbors(G, node2, nbr)]))
         match_pair[node1] = node2
         traversed.update([node1, node2])
         logger.debug(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
@@ -191,11 +165,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         nbrs2_wt = [pin for nbr in nbrs2 for pin in G.get_edge_data(node2, nbr)["pin"]]
         logger.debug(f"nbr1 conn: {nbrs1_wt}, nbr2 {nbrs2_wt}")
         unique_match = find_unique_matching_branches(G, nbrs1, nbrs2, ports_weight)
-        if len(nbrs1) == 0 or len(nbrs2) == 0:
-            logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
-        elif len(nbrs1) == 1 and len(nbrs2) == 1:
-            compare_nodes(G, match_pairs, match_pair, traversed, nbrs1.pop(), nbrs2.pop(), ports_weight)
-        elif unique_match:
+        if unique_match:
             match_pair[node1] = node2
             traversed.update([node1, node2])
             for nbr1, nbr2 in unique_match.items():
