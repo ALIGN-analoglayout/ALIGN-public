@@ -11,7 +11,7 @@ from itertools import combinations, combinations_with_replacement
 import logging
 
 from .create_array_hierarchy import process_arrays
-from .util import compare_two_nodes, get_base_model, get_ports_weight, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection, get_ports_weight
+from .util import compare_two_nodes, get_base_model, reduced_neighbors, reduced_SD_neighbors, get_leaf_connection, get_ports_weight
 from ..schema import constraint
 from ..schema.graph import Graph
 from align.schema.subcircuit import SubCircuit
@@ -74,12 +74,12 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             match_pair[node1] = node2
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
-    elif len(nbrs1) > 10:
-        if "start_point" in match_pair.keys():
-            match_pair["start_point"] += [node1, node2]
+    elif len(nbrs1) > 10: #TODO remove hack
+        if "array_start_point" in match_pair.keys():
+            match_pair["array_start_point"] += [node1, node2]
         else:
-            match_pair["start_point"] = [node1, node2]
-        logger.debug(f"skipping high fanout nets{node1, nbrs1}")
+            match_pair["array_start_point"] = [node1, node2]
+        logger.debug(f"high fanout nets are start point for arrays{node1, nbrs1}")
         traversed.add(node1)
         return
 
@@ -159,26 +159,27 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                             match_pairs[(nbr1, nbr1)] = new_pair
                             # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
-    elif node1 == node2 and nbrs1 == nbrs2:
-        logger.debug(f"traversing converging branch")
-        match_pair[node1] = node2
-        traversed.update([node1, node2])
-        nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
-        # logger.debug(f"all non traversed neighbours: {nbrs1}")
-        if len(nbrs1) == 1:
-            nbr1 = nbr2 = nbrs1[0]
-            # logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
-            compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
-        else:
-            for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
-                # logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
-                if (nbr1, nbr2) not in match_pairs.keys():
-                    new_pair = {}
-                    compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
-                    # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
-                    if new_pair:
-                        match_pairs[(nbr1, nbr2)] = new_pair
-                        # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
+    # elif node1 == node2 and nbrs1 == nbrs2:
+    #     assert False, f"traversing converging branch"
+    #     logger.debug(f"traversing converging branch")
+    #     match_pair[node1] = node2
+    #     traversed.update([node1, node2])
+    #     nbrs1 = sorted(set(nbrs1) - set([node1, node2]))
+    #     # logger.debug(f"all non traversed neighbours: {nbrs1}")
+    #     if len(nbrs1) == 1:
+    #         nbr1 = nbr2 = nbrs1[0]
+    #         # logger.debug(f"keeping single converged branch inline {nbr1} {nbr2}")
+    #         compare_nodes(G, match_pairs, match_pair, traversed.copy(), nbr1, nbr2, ports_weight)
+    #     else:
+    #         for nbr1, nbr2 in combinations_with_replacement(nbrs1, 2):
+    #             # logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
+    #             if (nbr1, nbr2) not in match_pairs.keys():
+    #                 new_pair = {}
+    #                 compare_nodes(G, match_pairs, new_pair, traversed.copy(), nbr1, nbr2, ports_weight)
+    #                 # filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
+    #                 if new_pair:
+    #                     match_pairs[(nbr1, nbr2)] = new_pair
+    #                     # logger.debug(f"updating match pairs: {pprint.pformat(match_pairs, indent=4)}")
 
     elif compare_two_nodes(G, node1, node2, ports_weight):
         nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
@@ -305,8 +306,8 @@ def FindConst(subckt):
     array_hier.add_new_array_hier()
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
     for pair in match_pairs.values():
-        if "start_point" in pair.keys():
-            del pair["start_point"]
+        if "array_start_point" in pair.keys():
+            del pair["array_start_point"]
     # Add symmetry constraints
     skip_const = written_symmblocks.copy()
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
