@@ -519,6 +519,13 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
 }
 
 
+void SeqPair::PrintVec(const std::string& tag, const std::vector<int>& vec) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintVec");
+  std::string tmpstr;
+  for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
+  logger->trace("{0} {1}", tag, tmpstr);
+}
+
 void SeqPair::PrintSeqPair() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
 
@@ -620,6 +627,8 @@ bool SeqPair::ValidateSelect(design & caseNL){
 }**/
 
 void SeqPair::KeepOrdering(design& caseNL) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
+
   // ids of blocks which have order constraints
   // set<int> block_id_with_order;
   // for (auto order : caseNL.Ordering_Constraints) {
@@ -644,21 +653,29 @@ void SeqPair::KeepOrdering(design& caseNL) {
   // std::default_random_engine e(seed);
   // generate a pos order
   do {
+    
+    logger->trace("====Fixup pos order====");
+
+    PrintVec("Before:", posPair);
+
     int first_it, second_it;
     pos_keep_order = true;
     for (const auto& order : caseNL.Ordering_Constraints) {
       first_it = find(posPair.begin(), posPair.end(), order.first.first) - posPair.begin();
       second_it = find(posPair.begin(), posPair.end(), order.first.second) - posPair.begin();
+      assert(first_it != posPair.end() - posPair.begin());
+      assert(second_it != posPair.end() - posPair.begin());
       if (first_it - second_it > 0) {
+	logger->trace("Fixup pos: {0} at pos {1} is after {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
         pos_keep_order = false;
         int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-        int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
+        int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
         auto it = posPair.begin();
         if (first_counterpart == -1) {
           posPair.erase(it + first_it);
           it = posPair.insert(it + second_it, order.first.first);
           // move first to before second
-        } else if (second_couterpart == -1) {
+        } else if (second_counterpart == -1) {
           it = posPair.insert(it + first_it + 1, order.first.second);
           it = posPair.begin();
           posPair.erase(it + second_it);
@@ -669,30 +686,35 @@ void SeqPair::KeepOrdering(design& caseNL) {
         break;
       }
     }
-    // if (!pos_keep_order) {
-    // swap(pos_order.at(first_it), pos_order.at(second_it));
-    // shuffle(pos_order.begin(), pos_order.end(), e);
-    //}
+    PrintVec("After: ", posPair);
   } while (!pos_keep_order);
+
   // generate a neg order
   do {
+    logger->trace("====Fixup neg order====");
+    PrintVec("Before:", negPair);
     int first_it, second_it;
     neg_keep_order = true;
     for (const auto& order : caseNL.Ordering_Constraints) {
       first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
       second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
+      assert(first_it != negPair.end() - negPair.begin());
+      assert(second_it != negPair.end() - negPair.begin());
       if (first_it - second_it < 0) {
+	logger->trace("Fixup neg: {0} at pos {1} is before {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
         if (order.second == placerDB::V) {
           neg_keep_order = false;
           int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-          int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
+          int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
           auto it = negPair.begin();
+	  logger->trace("Order: {0} {1}", order.first.first, order.first.second);
+	  logger->trace("Counterparts: {0} {1}", first_counterpart, second_counterpart);
           if (first_counterpart == -1 || first_counterpart == order.first.first) {
             // move first to after second
             it = negPair.insert(it + second_it + 1, order.first.first);
             it = negPair.begin();
             negPair.erase(it + first_it);
-          } else if (second_couterpart == -1) {
+          } else if (second_counterpart == -1) {
             // mvoe second to before first
             negPair.erase(it + second_it);
             it = negPair.insert(it + first_it, order.first.second);
@@ -704,14 +726,14 @@ void SeqPair::KeepOrdering(design& caseNL) {
       } else if (order.second == placerDB::H) {
         neg_keep_order = false;
         int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-        int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
+        int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
         auto it = negPair.begin();
         if (first_counterpart == -1) {
           // mvoe second to after first
           it = negPair.insert(it + first_it + 1, order.first.second);
           it = negPair.begin();
           negPair.erase(it + second_it);
-        } else if (second_couterpart == -1) {
+        } else if (second_counterpart == -1) {
           // move first to before second
           negPair.erase(it + first_it);
           it = negPair.insert(it + second_it, order.first.first);
@@ -721,17 +743,8 @@ void SeqPair::KeepOrdering(design& caseNL) {
         break;
       }
     }
-    // if (!neg_keep_order) {
-    // swap(neg_order.at(first_it), neg_order.at(second_it));
-    // shuffle(neg_order.begin(), neg_order.end(), e);
-    //}
+    PrintVec("After: ", negPair);
   } while (!neg_keep_order);
-  // write order back to pospair and negpair
-
-  // for (unsigned int i = 0; i < pos_idx.size(); i++) {
-  // posPair[pos_idx[i]] = pos_order[i];
-  // negPair[neg_idx[i]] = neg_order[i];
-  //}
 }
 
 inline size_t SeqPair::Factorial(const size_t& t) {
