@@ -953,14 +953,13 @@ class DoNotIdentify(SoftConstraint):
 class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
 
-    Defines a symmetry constraint between pair of blocks.
+    Defines a symmetry constraint between single and/or pairs of blocks.
 
     Args:
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
         direction (str) : Direction for axis of symmetry.
-        mirrot (bool) : true/ false, Mirror instances along line of symmetry
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -969,7 +968,7 @@ class SymmetricBlocks(HardConstraint):
 
         {
             "constraint" : "SymmetricBlocks",
-            "pairs" : [["MN0","MN1"], ["MN2","MN3"],["MN4"]],
+            "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
             "direction" : "vertical"
         }
 
@@ -979,12 +978,6 @@ class SymmetricBlocks(HardConstraint):
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
-        '''
-        X = Align(2, 3, 'h_center')
-        Y = Align(4, 5, 'h_center')
-        Align(1, X, Y, 6, 'center')
-
-        '''
         _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
@@ -1007,7 +1000,7 @@ class SymmetricBlocks(HardConstraint):
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Parameters of the symmetry pair {pair} do not match in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
     def translate(self, solver):
@@ -1029,12 +1022,6 @@ class SymmetricBlocks(HardConstraint):
                 # center lines of the two blocks should match in the orthogonal direction
                 c = 'y' if self.direction == 'V' else 'x'
                 expression = (getattr(b0, f'll{c}') + getattr(b0, f'ur{c}') == getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
-                # logger.debug(f'\n{expression=}')
-                yield expression
-
-                # the two blocks should be in order
-                c = 'x' if self.direction == 'V' else 'y'
-                expression = getattr(b0, f'ur{c}') <= getattr(b1, f'll{c}')
                 # logger.debug(f'\n{expression=}')
                 yield expression
 

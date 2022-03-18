@@ -129,6 +129,7 @@ def test_SymmetricBlocks_perpendicular(db):
         db.checkpoint()
         db.append(constraint.Order(direction="left_to_right", instances=['M1', 'M2']))
         db.revert()
+        ''' M1 and M2 cannot have above/below relationship'''
         with pytest.raises(SolutionNotFoundError):
             db.append(constraint.Order(direction="top_to_bottom", instances=['M1', 'M2']))
 
@@ -150,8 +151,10 @@ def test_SymmetricBlocks_along(db):
         db.checkpoint()
         db.append(constraint.Order(direction="top_to_bottom", instances=['M3', 'M1']))
         db.revert()
+        db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M1']))
+        ''' M3 cannot preceed or succeed both M1 and M2 '''
         with pytest.raises(SolutionNotFoundError):
-            db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M1']))
+            db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M2']))
 
 
 def test_SymmetricBlocks_along_coord(db):
