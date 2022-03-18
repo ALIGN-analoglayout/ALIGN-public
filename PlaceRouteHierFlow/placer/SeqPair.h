@@ -117,7 +117,7 @@ class SeqPair {
   void TestSwap();
   int GetBlockSelected(int blockNo);
   bool ChangeSelectedBlock(design& caseNL);
-  void KeepOrdering(design& caseNL);
+  bool KeepOrdering(design& caseNL);
   //bool ValidateSelect(design& caseNL);
   void CompactSeq();
 

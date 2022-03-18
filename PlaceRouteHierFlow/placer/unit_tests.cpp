@@ -187,7 +187,7 @@ TEST(SeqPairTest, KeepOrderingCorrectStartingOrder) {
       d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
     }
 
-    sp.KeepOrdering(d);
+    EXPECT_TRUE(sp.KeepOrdering(d));
 
     spdlog::set_level(save_level);
 
@@ -242,7 +242,7 @@ TEST(SeqPairTest, DISABLED_KeepOrdering) {
       d.Ordering_Constraints.push_back(make_pair(ordering, placerDB::H));
     }
 
-    sp.KeepOrdering(d);
+    EXPECT_TRUE(sp.KeepOrdering(d));
 
     spdlog::set_level(save_level);
 
