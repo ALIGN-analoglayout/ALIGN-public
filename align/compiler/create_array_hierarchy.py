@@ -59,11 +59,11 @@ class process_arrays:
     def _filter_start_points_from_match_pairs(self):
         for k, pair in self.match_pairs.items():
             logger.debug(f"all pairs from {k}:{pair}")
-            if "start_point" in pair.keys():
-                if pair["start_point"] and isinstance(pair["start_point"][0], str):
+            if "array_start_point" in pair.keys():
+                if pair["array_start_point"] and isinstance(pair["array_start_point"][0], str):
                     # Check later for CTDTDSM
-                    self.hier_sp.update(pair["start_point"])
-                del pair["start_point"]
+                    self.hier_sp.update(pair["array_start_point"])
+                del pair["array_start_point"]
                 logger.debug(f"New symmetrical start points {pair}")
         logger.debug(f"updated match pairs: {pprint.pformat(self.match_pairs, indent=4)}")
 
@@ -75,9 +75,7 @@ class process_arrays:
                 traversed: {traversed} \
                 existing match pairs: {pprint.pformat(self.match_pairs, indent=4)}"
             )
-            if sp not in self.graph.nodes():
-                logger.debug(f"{sp} not found in graph {self.graph.nodes()}")
-                continue
+            assert sp in self.graph.nodes(), f"{sp} not found in graph {self.graph.nodes()}"
             array = self.find_array(sp, traversed)
             if array:
                 logger.debug(f"found array instances {array}")
@@ -123,6 +121,7 @@ class process_arrays:
 
     def process_results(self, start_node, array):
         if not array:
+            assert False, f"UNTESTED code"
             logger.debug(f"no symmetry from {start_node}")
             return
         array_2D = list()
@@ -155,6 +154,7 @@ class process_arrays:
                         found_flag = 1
                         break
                     elif l1_node2 in sublist:
+                        assert False, f"UNTESTED code"
                         similar_groups[index].append(l1_node1)
                         found_flag = 1
                         break
@@ -208,6 +208,7 @@ class process_arrays:
             if val == main:
                 continue
             else:
+                assert False, f"UNTESTED code"
                 return False
         return True
 
@@ -217,6 +218,7 @@ class process_arrays:
             common_node = set(val).intersection(vals)
             common_element = [node for node in common_node if self.graph._is_element(node)]
             if common_element:
+                assert False, f"UNTESTED code"
                 logger.debug(f"{common_element} already existing , ending further array search")
                 return False
             else:
@@ -304,9 +306,7 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             if net in parent.pins or
              (set(G.neighbors(net))-set(elements))
             }
-    if not pins_map:
-        logger.error(f"can't create module with no pins")
-        return
+    assert pins_map, f"can't create module with no pins"
     logger.debug(f"new subckt pins : {pins_map}")
     assert not dl.find(child_name), f"subcircuit {child_name} already existing"
     with set_context(dl):
@@ -333,6 +333,7 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
                     constraint.CompactPlacement,
                 ]
             ):
+                assert False, f"UNTESTED code"
                 child.constraints.append(const)
     # Remove elements from subckt then add new_subckt instance
     inst_name = "X_"+child_name

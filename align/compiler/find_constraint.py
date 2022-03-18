@@ -73,6 +73,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
     elif len(nbrs1) > 10: #TODO remove hack
+        assert False, f"UNTESTED code"
         if "array_start_point" in match_pair.keys():
             match_pair["array_start_point"] += [node1, node2]
         else:
@@ -176,10 +177,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         ):
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1] = node2
-            if "start_point" in match_pair.keys():
-                match_pair["start_point"] += [node1, node2]
+            if "array_start_point" in match_pair.keys():
+                assert False, f"UNTESTED code"
+                match_pair["array_start_point"] += [node1, node2]
             else:
-                match_pair["start_point"] = [node1, node2]
+                match_pair["array_start_point"] = [node1, node2]
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
@@ -242,15 +244,12 @@ def constraint_generator(ckt_data):
         if not isinstance(subckt, SubCircuit):
             continue
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
-        if not gen_const:
+        if not gen_const and not "ARRAY_HIER_" in subckt.name.upper():
             FindConst(subckt)
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
-    if "ARRAY_HIER" in subckt.name.upper():
-        # TODO Generate consraints for array hierarchies
-        return
     stop_points = set()
     auto_constraint = True
     for const in subckt.constraints:
@@ -275,9 +274,6 @@ def FindConst(subckt):
     array_hier.add_align_block_const()
     array_hier.add_new_array_hier()
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
-    for pair in match_pairs.values():
-        if "array_start_point" in pair.keys():
-            del pair["array_start_point"]
     # Add symmetry constraints
     skip_const = written_symmblocks.copy()
     add_symm = add_symmetry_const(subckt, match_pairs, stop_points, written_symmblocks, skip_const)
@@ -400,11 +396,8 @@ class add_symmetry_const:
                 smb_1d.add(inst)
             else:
                 smb_1d.update(inst)
-
-        if key in self.stop:
-            # logger.debug(f"skipping symmetry b/w {key, value} as they are present in stop points")
-            return True
-        elif {key, value} & smb_1d:
+        assert not key in self.stop, f"No constraints should be generated for power ports {key}"
+        if {key, value} & smb_1d:
             # logger.debug(f"skipping symmetry b/w {key, value} as already written {self.written_symmblocks}")
             return True
         elif key not in self.G.nodes():
@@ -425,10 +418,12 @@ class add_symmetry_const:
             if self.pre_fiter(key, value):
                 continue
             if {key, value} & insts_in_single_symmetry:
+                assert False, f"UNTESTED code"
                 continue
             if not self.G.nodes[key].get("instance"):
                 continue
-            elif "Dcap" in self.G.nodes[key].get("instance").model:
+            elif "DCAP" in self.G.nodes[key].get("instance").model:
+                assert False, f"UNTESTED code"
                 logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 bm = get_base_model(self.subckt, key)
@@ -487,6 +482,7 @@ def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
         except:
             while len(iconst) > _temp:
+                assert False, f"UNTESTED code"
                 iconst.pop()
             logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
             pass
@@ -562,6 +558,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                     and instA.model == instB.model
                 ):
                     if instB in pairs.values():
+                        assert False, f"UNTESTED code"
                         logger.debug(
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
                         )
