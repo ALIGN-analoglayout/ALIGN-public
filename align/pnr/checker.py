@@ -45,7 +45,7 @@ def check_placement(placement_verilog_d, scale_factor):
         for const in constraints:
             if isinstance(const, constraint.SameTemplate):
                 for inst in const.instances:
-                    same_template.add(const.instances)
+                    same_template.add(inst)
         same_template_bbox = dict()
 
         for inst in module['instances']:
