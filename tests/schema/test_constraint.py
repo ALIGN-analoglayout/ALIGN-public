@@ -123,6 +123,16 @@ def test_Floorplan(db):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
 
 
+def test_SymmetricBlocks_perpendicular(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2']]))
+        db.checkpoint()
+        db.append(constraint.Order(direction="left_to_right", instances=['M1', 'M2']))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.Order(direction="top_to_bottom", instances=['M1', 'M2']))
+
+
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments

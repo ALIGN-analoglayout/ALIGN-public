@@ -949,7 +949,7 @@ class DoNotIdentify(SoftConstraint):
     instances: List[str]
 
 
-class SymmetricBlocks(SoftConstraint):
+class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
 
     Defines a symmetry constraint between pair of blocks.
@@ -1008,6 +1008,15 @@ class SymmetricBlocks(SoftConstraint):
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
                     f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
         return value
+
+    def translate(self, solver):
+        for i, instances in enumerate(self.pairs):
+            if len(instances) == 2:
+                # center lines of the two blocks should match in the orthogonal direction
+                b0 = solver.bbox_vars(instances[0])
+                b1 = solver.bbox_vars(instances[1])
+                c = 'y' if self.direction == 'V' else 'x'
+                yield getattr(b0, f'll{c}') + getattr(b0, f'ur{c}') == getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
 
 
 class OffsetsScalings(BaseModel):
