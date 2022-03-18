@@ -497,7 +497,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
-  KeepOrdering(caseNL);
+  bool ok = KeepOrdering(caseNL);
+  assert(ok);
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
@@ -628,16 +629,6 @@ bool SeqPair::ValidateSelect(design & caseNL){
   // }
   return true;
 }**/
-
-struct VectorHasher {
-    int operator()(const vector<int> &V) const {
-        int hash = V.size();
-        for(auto &i : V) {
-            hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-        }
-        return hash;
-    }
-};
 
 bool SeqPair::KeepOrdering(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
@@ -1271,7 +1262,9 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         fail++;
       }
     }
-    KeepOrdering(caseNL);
+    bool ok = KeepOrdering(caseNL);
+    assert(ok);
+
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
     std::string tmpstr, tmpstrn, tmpstrs;
