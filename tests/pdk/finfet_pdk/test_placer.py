@@ -11,7 +11,7 @@ import time
 
 
 CLEANUP = False
-LOG_LEVEL = os.getenv(LOG_LEVEL, 'INFO')
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 
 @pytest.mark.skip
@@ -362,7 +362,7 @@ def test_hang_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
     
 def test_hang_4():
@@ -406,7 +406,7 @@ def test_hang_4():
         ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
 
 def test_sub_1():
