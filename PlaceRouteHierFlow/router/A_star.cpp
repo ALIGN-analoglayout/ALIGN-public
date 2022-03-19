@@ -1325,7 +1325,10 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
     }
 
     // std::vector<int> expand_candidate_node;
+    std::cout<<"current node "<<current_node<<" "<<grid.vertices_total[current_node].metal<<" "<<grid.vertices_total[current_node].x<<" "<<grid.vertices_total[current_node].y<<std::endl;
+
     for (int i = 0; i < (int)candidate_node.size(); i++) {
+      std::cout<<"expand node "<<candidate_node[i]<<" "<<grid.vertices_total[candidate_node[i]].metal<<" "<<grid.vertices_total[candidate_node[i]].x<<" "<<grid.vertices_total[candidate_node[i]].y<<std::endl;
       int M_dis = Manhattan_distan(candidate_node[i], grid);
       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) +
                       abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) +

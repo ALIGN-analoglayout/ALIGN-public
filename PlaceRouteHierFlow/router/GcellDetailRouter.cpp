@@ -394,7 +394,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         // bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
         bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
         // std::cout<<"performing detailed router on debug 1"<<std::endl;
-        /*
+        
         if(pathMark==0){
           grid.CreateGridData();
           //grid.CreateGridData_new();
@@ -402,7 +402,7 @@ void GcellDetailRouter::create_detailrouter_new() {
           generate_set_data(Set_x);
           assert(0);
          }
-        */
+        
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         std::vector<std::vector<int>> extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
