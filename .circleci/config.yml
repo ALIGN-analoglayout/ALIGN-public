@@ -25,7 +25,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 2 # number of vCPUs (2)
+      MAX_JOBS: 4 # number of vCPUs (2)
 
     steps:
       - run:
@@ -95,7 +95,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 2
+      MAX_JOBS: 4
 
     steps:
       - run:
@@ -110,9 +110,9 @@ jobs:
       - run:
           name: "Build align in developer mode"
           command: |
-            pip install setuptools wheel pybind11 scikit-build cmake ninja
+            pip install setuptools numpy wheel pybind11 scikit-build cmake ninja
             pip install -v --no-build-isolation -e .[test]
-            pip install -v --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
+            pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'
       - run:
           name: "Test align using coverage.py"
           command: |
@@ -154,7 +154,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 2
+      MAX_JOBS: 4
 
     steps:
       - run:

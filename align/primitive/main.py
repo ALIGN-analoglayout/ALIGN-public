@@ -2,8 +2,8 @@ from ..cell_fabric.pdk import Pdk
 from ..cell_fabric import gen_gds_json
 from ..cell_fabric import positive_coord
 from ..cell_fabric import gen_lef
-from ..schema.subcircuit import SubCircuit, Model
-
+from ..schema.subcircuit import SubCircuit
+import copy
 import sys
 import datetime
 import pathlib
@@ -139,13 +139,35 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     )
     return uc, parameters["ports"]
 
-def generate_primitive_param(subckt:SubCircuit, primitives:list, pdk_dir:pathlib.Path, uniform_height=False):
+
+def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
+    primitives = dict()
+    for primitive in primitive_lib:
+        if isinstance(primitive, SubCircuit):
+            generate_primitive_param(primitive, primitives, pdk_dir)
+    for block_name, block_args in primitives.items():
+        logger.debug(f"Generating primitive {block_name}")
+        if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
+            primitive_def = primitive_lib.find(block_args['abstract_template_name'])
+            assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
+        else:
+            primitive_def = block_args['primitive']
+        block_args.pop("primitive", None)
+        uc = generate_primitive(block_name, primitive_def,  ** block_args,
+                                pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
+        if hasattr(uc, 'metadata'):
+            primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
+    return primitives
+
+
+def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: pathlib.Path, uniform_height=False):
     """ Return commands to generate parameterized lef"""
     assert isinstance(subckt, SubCircuit), f"invalid input for primitive generator {subckt}"
     spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
     modules = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modules)
     assert modules.gen_param(subckt, primitives, pdk_dir), f"unabble to generate primitive {subckt}"
+
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,

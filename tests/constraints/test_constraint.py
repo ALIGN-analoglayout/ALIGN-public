@@ -223,8 +223,7 @@ def test_netpriority():
     shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skip(reason='Failing test to be enabled in a follow up next PR')
-def test_matchblocks():
+def test_placecloser():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt inv vi vo vccx vssx
@@ -248,7 +247,7 @@ def test_matchblocks():
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "SameTemplate", "instances": ["xi1", "xi2"]},
         {"constraint": "Align", "line": "h_bottom", "instances": ["xi0", "xi1", "xi2"]},
-        {"constraint": "MatchBlocks", "instances": ["xi1", "xi2"]}
+        {"constraint": "PlaceCloser", "instances": ["xi1", "xi2"]}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False)

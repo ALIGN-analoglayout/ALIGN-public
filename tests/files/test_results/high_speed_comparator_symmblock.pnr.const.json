@@ -44,21 +44,6 @@
             ],
             "const_name": "SymmBlock",
             "axis_dir": "V"
-        },
-        {
-            "const_name": "DoNotIdentify",
-            "blocks": [
-                "X_CCN_MN3_MN4",
-                "X_CCP_MP5_MP6",
-                "X_DP_MN1_MN2",
-                "X_INV_N_MP11_MN13",
-                "X_INV_P_MP12_MN14",
-                "X_MN0",
-                "X_MP10",
-                "X_MP7",
-                "X_MP8",
-                "X_MP9"
-            ]
         }
     ]
 }
