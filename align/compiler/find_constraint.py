@@ -371,7 +371,7 @@ class add_symmetry_const:
         self.skip_const = skip_const
         # logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
         # logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
-        # logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)}")
+        logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)} {match_pairs}")
 
     def loop_through_pairs(self):
         for pairs in self.all_pairs:
@@ -383,7 +383,7 @@ class add_symmetry_const:
             pairs = sorted(pairs.items(), key=lambda k: k[0])
             logger.debug(f"symmnet pairs: {pairs}, existing: {self.written_symmblocks}")
             self.filter_symnet_const(pairs)
-            # add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
+            add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
     def pre_fiter(self, key, value):
@@ -403,10 +403,10 @@ class add_symmetry_const:
         elif key not in self.G.nodes():
             # logger.debug(f"skipping symmetry b/w {key, value} as {key} is not in graph")
             return True
-        else:
-            nbrs1, nbrs2 = self.G.all_neighbors([key, value])
+        elif key in self.subckt.nets and key in self.subckt.nets:
+            nbrs1, nbrs2 = self.G.all_neighbors_dist([key, value])
             if nbrs1 != nbrs2:
-                # logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
+                logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
                 return True
             else:
                 logger.debug(f"all neigbors matched {key}:{nbrs1}, {value}:{nbrs2}")
@@ -415,15 +415,15 @@ class add_symmetry_const:
         pairsj = list()
         insts_in_single_symmetry = set()
         for key, value in pairs:
+            logger.info(f"key, value {key} {value} {self.subckt.get_element(key)}")
             if self.pre_fiter(key, value):
                 continue
             if {key, value} & insts_in_single_symmetry:
-                assert False, f"UNTESTED code"
                 continue
             if not self.G.nodes[key].get("instance"):
+                logger.info(f"not found {pairsj}")
                 continue
-            elif "DCAP" in self.G.nodes[key].get("instance").model:
-                assert False, f"UNTESTED code"
+            elif "DCAP" in self.subckt.get_element(key).model:
                 logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 bm = get_base_model(self.subckt, key)
@@ -435,6 +435,7 @@ class add_symmetry_const:
                 else:
                     pairsj.append([key])
                     insts_in_single_symmetry.add(key)
+            logger.info(f"pairs {pairsj}")
         return pairsj
 
     def filter_symnet_const(self, pairs: list):
@@ -472,7 +473,6 @@ class add_symmetry_const:
 def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
     logger.debug(f"filterd symmetry pairs: {pairsj}")
     if len(pairsj) > 1 or (pairsj and len(pairsj[0]) == 2):
-        _temp = len(iconst)
         try:
             with set_context(iconst):
                 symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
@@ -481,9 +481,6 @@ def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
                 # written_symmblocks.extend([str(ele) for pair in pairsj for ele in pair])
                 logger.debug(f"one axis of written symmetries: {symmBlock}")
         except:
-            while len(iconst) > _temp:
-                assert False, f"UNTESTED code"
-                iconst.pop()
             logger.debug(f"skipping match {pairsj} due to unsatisfied constraints")
             pass
 

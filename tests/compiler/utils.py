@@ -30,6 +30,41 @@ def ota_six(name):
     return netlist
 
 
+def ota_dcap(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} ibias vccx vssx  von vin vip
+        mn1 ibias ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn2 tail  ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn3 vop vip tail vssx n w=360e-9 nf=2 m=16
+        mn4 von vin tail vssx n w=360e-9 nf=2 m=16
+        mn3_cap vssx vop vssx vssx n w=360e-9 nf=2 m=16
+        mn4_cap vssx von vssx vssx n w=360e-9 nf=2 m=16
+        mp5 vop vop vccx vccx p w=360e-9 nf=2 m=4
+        mp6 von vop vccx vccx p w=360e-9 nf=2 m=4
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def ota_dummy(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} ibias vccx vssx  von vin vip
+        mn1 ibias ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn2 tail  ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn3 vop vip tail vssx n w=360e-9 nf=2 m=16
+        mn4 von vin tail vssx n w=360e-9 nf=2 m=16
+        mn3_dummy vop vop vop vssx n w=360e-9 nf=2 m=16
+        mn4_dummy von von von vssx n w=360e-9 nf=2 m=16
+        mp5 vop vop vccx vccx p w=360e-9 nf=2 m=4
+        mp6 von vop vccx vccx p w=360e-9 nf=2 m=4
+        .ends {name}
+    """
+    )
+    return netlist
+
 def ota_six_flip(name):
     netlist = textwrap.dedent(
         f"""\

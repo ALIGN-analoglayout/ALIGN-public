@@ -7,7 +7,7 @@ from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import  constraint_generator
 from align.schema.checker import SolutionNotFoundError
 from align.schema import SubCircuit
-from utils import clean_data, build_example, get_test_id
+from utils import clean_data, build_example, get_test_id, ota_six
 
 
 pdk_dir = (
@@ -185,3 +185,14 @@ def test_group_cap():
     clean_data(name)
 
 
+def test_identify_differential_pair():
+    name = f'ckt_{get_test_id()}'
+    netlist = ota_six(name)
+    constraints = [{"constraint": "PowerPorts", "ports": ["VCCX"]},
+                   {"constraint": "GroundPorts", "ports": ["VSSX"]},
+                   {"constraint": "DoNotUseLib", "libraries": ["SCM_PMOS"]}]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    DP_NMOS = [ckt.name for ckt in cktlib if ckt.name.startswith("DP_NMOS")]
+    assert DP_NMOS, f"differential pair not identified"
