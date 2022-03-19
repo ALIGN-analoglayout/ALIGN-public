@@ -1,6 +1,44 @@
-import pathlib
-
+import pytest
+from align.schema.parser import SpiceParser
 from align.compiler.compiler import compiler_input
+import pathlib
+import os
+
+ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent.parent
+
+if "ALIGN_HOME" in os.environ:
+    assert pathlib.Path(os.environ["ALIGN_HOME"]).resolve() == ALIGN_HOME
+else:
+    os.environ["ALIGN_HOME"] = str(ALIGN_HOME)
+
+skip_dirs = [
+]
+
+examples_dir = ALIGN_HOME / "examples"
+assert examples_dir.is_dir()
+examples = [
+    p
+    for p in examples_dir.rglob("*.sp")
+    if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
+]
+
+
+@pytest.fixture
+def get_parser():
+    parser = SpiceParser()
+    mydir = pathlib.Path(__file__).resolve().parent
+    models = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'models.sp'
+    with open(models) as f:
+        lines = f.read()
+    parser.parse(lines)
+    return parser
+
+
+@pytest.mark.parametrize("design", examples)
+def test_all_examples(get_parser, design):
+    with open(design) as f:
+        lines = f.read()
+    get_parser.parse(lines)
 
 
 def test_simple_circuit():

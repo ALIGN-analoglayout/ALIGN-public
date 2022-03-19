@@ -313,7 +313,6 @@ def router_driver(*, cap_map, cap_lef_s,
 
         tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
-        concrete_top_name0 = tr_tbl[concrete_top_name]
 
         # don't need to send this to disk; for debug only
         if True:
@@ -369,16 +368,15 @@ def router_driver(*, cap_map, cap_lef_s,
 
         # populate new DB with placements to run
 
-        placements_to_run, _ = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
-                                                  verilog_d=abstract_verilog_d, gui=False, lambda_coeff=1,
-                                                  scale_factor=scale_factor,
-                                                  reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
-                                                  concrete_top_name=concrete_top_name0,
-                                                  abstract_top_name=concrete_top_name0,
-                                                  select_in_ILP=False, seed=0,
-                                                  use_analytical_placer=False, ilp_solver='symphony',
-                                                  primitives=primitives)
+        hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
+                           verilog_d=abstract_verilog_d, lambda_coeff=1,
+                           scale_factor=scale_factor,
+                           placement_verilog_d=scaled_placement_verilog_d.dict(),
+                           select_in_ILP=False, seed=0,
+                           use_analytical_placer=False, ilp_solver='symphony',
+                           primitives=primitives)
 
+        placements_to_run = None
 
         res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                      router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)

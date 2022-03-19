@@ -108,6 +108,10 @@ class MOSGenerator(CanvasPDK):
         self.ports = ports
         self.mos_array()
 
+        # bounding box as visual aid
+        if parameters['real_inst_type'].lower().startswith('p'):
+            self.terminals.insert(0, {'layer': 'Nwell', 'netName': None, 'netType': 'drawing', 'rect': self.bbox.toList()})
+
     def mos_array(self):
 
         assert len(self.transistor_array.m) <= 2, 'Arrays of more than 2 devices not supported yet'

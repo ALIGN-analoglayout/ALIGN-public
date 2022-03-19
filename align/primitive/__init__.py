@@ -1,1 +1,1 @@
-from .main import generate_primitive, get_generator, generate_primitive_param
+from .main import generate_primitives, get_generator, generate_primitive
