@@ -17,7 +17,7 @@ def test_lef():
     with open( json_file_name, "rt") as fp0, \
          open( mydir / "foo.lef_cand", 'wt') as fp1:
         gen_lef.json_lef( json_file_name, 'foo_cand',
-                          cell_pin=['DA','DB','S', 'B'], bodyswitch=0, blockM=0, p=p)
+                          bodyswitch=0, blockM=0, p=p)
 
     assert filecmp.cmp( mydir / "foo_cand.lef", mydir / "foo.lef_gold")
 

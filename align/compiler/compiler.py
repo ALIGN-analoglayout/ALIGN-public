@@ -1,17 +1,17 @@
 import pathlib
-import pprint
 import json
 
-from ..schema.subcircuit import SubCircuit, Model
-from ..schema import constraint
+from align import primitive
+
+from ..schema import SubCircuit, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
 from .read_library import read_lib, read_models, order_lib
 from .match_graph import Annotate
 from .write_verilog_lef import WriteVerilog
-from .find_constraint import FindConst
+from .find_constraint import constraint_generator
 from .user_const import ConstraintParser
-from ..primitive import generate_primitive_lef
+from .gen_abstract_name import PrimitiveLibrary
 import logging
 
 
@@ -23,33 +23,23 @@ def generate_hierarchy(
     design_name: str,
     output_dir: pathlib.Path,
     flatten_heirarchy: bool,
-    pdk_dir: pathlib.Path,
-    uniform_height: bool
+    pdk_dir: pathlib.Path
 ):
     config_path = pathlib.Path(__file__).resolve().parent.parent / "config"
-    ckt_data = compiler_input(
+    ckt_data, primitive_library = compiler_input(
         netlist_path,
         design_name,
         pdk_dir,
         config_path,
         flatten_heirarchy
     )
-    primitives = call_primitive_generator(
-        ckt_data,
-        pdk_dir,
-        uniform_height
-    )
-    verilog_tbl = constraint_generator(
-        ckt_data
-    )
-    compiler_output(
-        ckt_data,
-        design_name,
-        verilog_tbl,
-        output_dir,
-    )
-    return primitives, ckt_data
-
+    annotate_library(ckt_data, primitive_library)
+    primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
+    constraint_generator(ckt_data)
+    compiler_output(ckt_data, design_name, output_dir)
+    with open(output_dir/"__primitives_library__.json", "w") as f:
+        json.dump(primitives.dict()["__root__"], f, indent=2)
+    return primitives
 
 def compiler_input(
     input_ckt: pathlib.Path,
@@ -93,7 +83,7 @@ def compiler_input(
     ckt_parser.parse(lines)
 
     library = read_lib(pdk_dir, config_path)
-    primitives = order_lib(library)
+    primitive_library = order_lib(library)
 
     const_parse = ConstraintParser(pdk_dir, input_dir)
     # TODO FLAT implementation
@@ -105,8 +95,12 @@ def compiler_input(
 
     logger.debug("\n###### FINAL CIRCUIT AFTER preprocessing ###### \n")
     logger.debug(ckt_parser)
-    annotate = Annotate(ckt_data, primitives)
-    annotate.annotate()
+    return ckt_data, primitive_library
+
+
+def annotate_library(ckt_data, primitive_library):
+    at = Annotate(ckt_data, primitive_library)
+    at.annotate()
     for ckt in ckt_data:
         if isinstance(ckt, SubCircuit):
             assert ckt.pins, f"floating module found {ckt.name}"
@@ -116,120 +110,11 @@ def compiler_input(
             for ele in ckt.elements:
                 if isinstance(ckt_data.find(ele.model), SubCircuit):
                     assert len(ele.pins) == len(ckt_data.find(ele.model).pins), "incorrect subckt instantiation"
-    return ckt_data
-
-
-def call_primitive_generator(
-    ckt_data,
-    pdk_dir: pathlib.Path,
-    uniform_height=False
-):
-    """call_primitive_generator [summary]
-
-    [extended_summary]
-
-    Args:
-        ckt_data ([type]): ckt library after annotation
-        pdk_dir (pathlib.Path):  directory path containing pdk layers.json file
-        DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory
-        uniform_height (bool, optional): creates cells of uniform height. Defaults to False.
-
-    Returns:
-        primitives, list of generated primitives
-    """
-    layers_json = pdk_dir / "layers.json"
-    with open(layers_json, "rt") as fp:
-        pdk_data = json.load(fp)
-    design_config = pdk_data["design_info"]
-    # read lef to not write those modules as macros
-    primitives = {}
-    for ckt in ckt_data:
-        if not isinstance(ckt, SubCircuit):
-            continue
-        elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
-            continue
-        logger.debug(f"Found module: {ckt.name} {ckt.elements} {ckt.pins}")
-        group_cap_instances = []
-        for const in ckt.constraints:
-            if isinstance(const, constraint.GuardRing):
-                primitives["guard_ring"] = {"primitive": "guard_ring"}
-            if isinstance(const, constraint.GroupCaps):
-                primitives[const.unit_cap.upper()] = {
-                    "primitive": "cap",
-                    "value": int(const.unit_cap.split("_")[1].replace("f", "")),
-                }
-                group_cap_instances.append(const.name.upper())
-
-        for ele in ckt.elements:
-            # Three types of elements can exist:
-            # ele can be a model ele can be model defined in models.sp/base model
-            # ele can be a subcircuit with a generator associated
-            # ele can be a sucircuit with no generator, PnR will place and route this instance
-            generator = ckt_data.find(ele.generator)
-            logger.debug(f"element {ele.name} generator {ele.generator} generator properties {generator}")
-            if ele.name in group_cap_instances:
-                ele.add_abs_name(ele.model)
-            elif isinstance(generator, SubCircuit):
-                gen_const = [True for const in generator.constraints if isinstance(const, constraint.Generator)]
-                if gen_const:
-                    assert generate_primitive_lef(
-                        ele,
-                        primitives,
-                        design_config,
-                        uniform_height,
-                        pdk_dir
-                    )
-                else:
-                    ele.add_abs_name(ele.model)
-                    logger.info(
-                        f"No physical information found for: {ele.name} of type : {ele.model}"
-                    )
-            elif generator is None or isinstance(generator, Model):
-                assert generate_primitive_lef(
-                    ele,
-                    primitives,
-                    design_config,
-                    uniform_height,
-                    pdk_dir
-                )
-            else:
-                assert False, f"No definition found for instance {ele} in {ckt.name}"
-        logger.debug(
-            f"generated data for {ele.name} : {pprint.pformat(primitives, indent=4)}"
-        )
-
-    return primitives
-
-
-def constraint_generator(ckt_data):
-    """
-    search for constraints and
-    Args:
-        ckt_data : ckt library after annotation
-        design_name : name of top level design
-        result_dir : directoy path for writing results
-
-    """
-
-    verilog_tbl = {"modules": [], "global_signals": []}
-
-    for subckt in ckt_data:
-        if not isinstance(subckt, SubCircuit):
-            continue
-        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
-        if not gen_const:
-            FindConst(subckt)
-            # Create modified netlist & constraints as JSON
-            logger.debug(f"call verilog writer for block: {subckt.name}")
-            wv = WriteVerilog(subckt, ckt_data)
-            verilog_tbl["modules"].append(wv.gen_dict())
-    return verilog_tbl
 
 
 def compiler_output(
     ckt_data,
     design_name: str,
-    verilog_tbl: dict,
     result_dir: pathlib.Path,
 ):
     """compiler_output: write output in verilog format
@@ -241,6 +126,19 @@ def compiler_output(
     """
     top_ckt = ckt_data.find(design_name)
     assert top_ckt, f"design {top_ckt} not found in database"
+
+    verilog_tbl = {"modules": [], "global_signals": []}
+
+    for subckt in ckt_data:
+        if not isinstance(subckt, SubCircuit):
+            continue
+        gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
+        if not gen_const:
+            # Create modified netlist
+            logger.debug(f"call verilog writer for block: {subckt.name}")
+            wv = WriteVerilog(subckt, ckt_data)
+            verilog_tbl["modules"].append(wv.gen_dict())
+
     power_ports = list()
     ground_ports = list()
     for const in top_ckt.constraints:
@@ -262,9 +160,7 @@ def compiler_output(
                  "formal": f"supply{i}",
                  "actual": nm}
             )
-
-    if not result_dir.exists():
-        result_dir.mkdir()
+    result_dir.mkdir(exist_ok=True)
     logger.debug(f"Writing results in dir: {result_dir} {ckt_data}")
     with (result_dir / f"{design_name.upper()}.verilog.json").open("wt") as fp:
         json.dump(verilog_tbl, fp=fp, indent=2)

@@ -158,8 +158,9 @@ def build_example(name, netlist, constraints):
     example.mkdir(parents=True)
     with open(example / f"{name}.sp", "w") as fp:
         fp.write(netlist)
-    with open(example / f"{name}.const.json", "w") as fp:
-        fp.write(json.dumps(constraints, indent=2))
+    if constraints:
+        with open(example / f"{name}.const.json", "w") as fp:
+            fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")
 
 

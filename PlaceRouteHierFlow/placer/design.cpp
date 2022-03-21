@@ -138,7 +138,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     placerDB::net tmpnet;
     tmpnet.name = it->name;
     tmpnet.priority = it->priority;
-    tmpnet.weight = 1;
+    tmpnet.weight = it->weight;
     tmpnet.upperBound = it->upperBound;
     tmpnet.lowerBound = it->lowerBound;
     for (vector<PnRDB::connectNode>::iterator nit = it->connected.begin(); nit != it->connected.end(); ++nit) {
@@ -282,7 +282,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
-          Blocks[order.first[i + 1]][0].counterpart != order.first[i])
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
         Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
     }

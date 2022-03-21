@@ -20,21 +20,21 @@ def db():
             parameters={'PARAM1': 1, 'PARAM2': '1E-3'})
         library.append(subckt)
     with set_context(subckt.elements):
-        subckt.elements.append(Instance(name='M1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M3', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}, generator='Dummy'))
-        subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, generator='Dummy'))
+        subckt.elements.append(Instance(name='M1', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M2', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M3', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
+        subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
     return subckt.constraints
 
 
 def test_Order_input_sanitation(db):
     with set_context(db):
-        x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
-        x = constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
+        constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+        constraint.Order(direction='left_to_right', instances=['M1', 'M2', 'M3'])
         with pytest.raises(Exception):
-            x = constraint.Order(direction='lefta_to_rightb', instances=['M1', 'M2', 'M3'])
+            constraint.Order(direction='lefta_to_rightb', instances=['M1', 'M2', 'M3'])
 
 
 def test_Order_constraintname(db):
@@ -46,17 +46,17 @@ def test_Order_constraintname(db):
 def test_Order_nblock_checking(db):
     with set_context(db):
         with pytest.raises(Exception):
-            x = constraint.Order(direction='left_to_right', instances=[])
+            constraint.Order(direction='left_to_right', instances=[])
         with pytest.raises(Exception):
-            x = constraint.Order(direction='left_to_right', instances=['M1'])
+            constraint.Order(direction='left_to_right', instances=['M1'])
 
 
 @pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
     with set_context(db):
         with pytest.raises(Exception):
-            x = constraint.Order(direction='left_to_right', instances=['undefined', 'M2'])
-        x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
+            constraint.Order(direction='left_to_right', instances=['undefined', 'M2'])
+        constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
 
 
 def test_ConstraintDB_inputapi(db):
@@ -87,10 +87,10 @@ def test_Order_db_append(db):
 
 def test_AlignInOrder_input_sanitation():
     with set_context(db):
-        x = constraint.AlignInOrder(instances=['M1', 'M2'], line='top')
-        x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='top')
+        constraint.AlignInOrder(instances=['M1', 'M2'], line='top')
+        constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='top')
         with pytest.raises(Exception):
-            x = constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='garbage')
+            constraint.AlignInOrder(instances=['M1', 'M2', 'M3'], line='garbage')
 
 
 def test_AlignInOrder_smt_checking(db):
@@ -103,9 +103,9 @@ def test_AlignInOrder_smt_checking(db):
 
 def test_AspectRatio_input_sanitation(db):
     with set_context(db):
-        x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
+        constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
         with pytest.raises(Exception):
-            x = constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
+            constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
 
 
 def test_AspectRatio_smt_checking(db):
@@ -113,6 +113,14 @@ def test_AspectRatio_smt_checking(db):
         db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5))
         with pytest.raises(SolutionNotFoundError):
             db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=1.0))
+
+
+def test_Floorplan(db):
+    with set_context(db):
+        with pytest.raises(AssertionError):
+            db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M1']]))
+        with pytest.raises(AssertionError):
+            db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
 
 
 def test_ConstraintDB_incremental_checking(db):
@@ -154,7 +162,7 @@ def test_ConstraintDB_nonincremental_revert(db):
     checkpoint() by name, needing to unroll multiple
     checkpoints can indicate suboptimal compiler design
     '''
-    
+
     with set_context(db):
         constraint1 = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
         db.append(constraint1)
@@ -179,7 +187,6 @@ def test_ConstraintDB_nonincremental_revert(db):
     assert str(db.parent._checker.label(constraint1)) in str(db.parent._checker._solver)
     assert str(db.parent._checker.label(constraint2)) not in str(db.parent._checker._solver)
     assert str(db.parent._checker.label(constraint3)) not in str(db.parent._checker._solver)
-
 
 
 def test_ConstraintDB_json(db):

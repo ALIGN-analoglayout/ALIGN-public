@@ -6,7 +6,7 @@ import importlib
 import sys
 import pathlib
 import re
-from .toplevel import NType
+from .router import NType
 
 from .render_placement import gen_transformation
 
@@ -116,17 +116,17 @@ def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json
         if not found and input_dir is not None:
 
             logger.debug( f"blk.gdsFile: {blk.gdsFile} {found} {input_dir}")
-            p = re.compile( r"^\./Results/(\S+)\.gds$")
+            p = re.compile( r"^(\./|)Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
-                pth = input_dir / (m.groups()[0] + ".json")
+                pth = input_dir / (m.groups()[1] + ".json")
                 if not pth.is_file():
                     logger.error( f"{pth} not found in input_dir")
                 else:
                     logger.debug( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.error( f"'{blk.gdsFile}' does not end in .gds")
+                logger.error( f"'{blk.gdsFile}' does not match pattern {p.pattern}")
 
         if found:
             with pth.open( "rt") as fp:

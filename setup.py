@@ -65,7 +65,6 @@ setup(name='align',
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
-          'bin/pnr_compiler.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
           'bin/convert_lef_to_layout_json.py'
@@ -80,10 +79,12 @@ setup(name='align',
           'more-itertools',
           'colorlog',
           'plotly',
+          'numpy',
           'pandas',
           'dash',
           'typing_extensions; python_version<"3.8"',
-          'memory_profiler'
+          'memory_profiler',
+          'flatdict'
       ],
       extras_require={
           'test': [
