@@ -16,16 +16,6 @@ def test_cmp_vanilla_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=4.5e9, max_errors=3 if not BYPASS_ERRORS else 0)
-
-
-def test_cmp_vanilla_pg_pr(partial_routing):
-    name = f'ckt_{get_test_id()}'
-    netlist = circuits.comparator(name)
-    constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
@@ -38,6 +28,7 @@ def test_cmp_fp1_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -63,6 +54,7 @@ def test_cmp_fp2_pr(partial_routing):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},

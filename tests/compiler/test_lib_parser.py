@@ -1,8 +1,13 @@
 import pathlib
+import shutil
+import textwrap
+
 from align.schema.types import set_context
 from align.schema.parser import SpiceParser
 from align.schema import constraint
 from align.compiler.read_library import read_lib, read_models, order_lib
+from utils import get_test_id
+
 
 def test_basic_lib():
     parser = SpiceParser()
@@ -29,6 +34,43 @@ def test_basic_lib():
     assert x in dp_const
     assert dp_const[1].constraint == "symmetric_blocks"
     assert dp_const[1].pairs == [["M1", "M2"]]
+
+
+def test_basic_models():
+    mydir = pathlib.Path(__file__).resolve().parent
+    name = f'ckt_{get_test_id()}'.upper()
+    dummy_pdk_dir = mydir / name
+    dummy_pdk_dir.mkdir(exist_ok=True)
+    (dummy_pdk_dir / '__init__.py').touch()
+    ckt_parser = read_models(dummy_pdk_dir)
+    assert len(ckt_parser.library) == 5
+    shutil.rmtree(dummy_pdk_dir)
+
+def test_subckt_generator():
+    mydir = pathlib.Path(__file__).resolve().parent
+    name = f'ckt_{get_test_id()}'.upper()
+    dummy_pdk_dir = mydir / name
+    dummy_pdk_dir.mkdir(exist_ok=True)
+    (dummy_pdk_dir / '__init__.py').touch()
+    dummy_gen = textwrap.dedent(f"""\
+    class dummy():
+        pass
+    """)
+    with open(dummy_pdk_dir / f'dummy_gen.py', 'w') as fp:
+        fp.write(dummy_gen)
+    with open(dummy_pdk_dir / f'__init__.py', 'w') as fp:
+        fp.write('from .dummy_gen import *')
+    netlist = textwrap.dedent(f"""\
+    .subckt dummy a o vccx vssx
+    M0 o a vccx vccx pmos w=45e-9 m=1 nf=1
+    .ends
+    """)
+    with open(dummy_pdk_dir / f'user_template.sp', 'w') as fp:
+        fp.write(netlist)
+    library = read_lib(dummy_pdk_dir)
+    assert library.find('DUMMY')
+    assert library.find('DUMMY').generator['name'] == 'DUMMY'
+    shutil.rmtree(dummy_pdk_dir)
 
 
 def test_default_models():

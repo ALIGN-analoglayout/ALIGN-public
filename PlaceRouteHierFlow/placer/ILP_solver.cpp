@@ -1783,6 +1783,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) place_on_grid_var_count += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
   }
   N_var += place_on_grid_var_count;
+  N_var += 2; //Area x and y variables
 
   const auto infty = sym_get_infinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
@@ -1848,6 +1849,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
+    collb[N_var - 1] = -infty;
+    collb[N_var - 2] = -infty;
+    colub[N_var - 1] = 0;
+    colub[N_var - 2] = 0;
   }
 
   Pdatatype hyper;
@@ -1868,21 +1873,28 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
     }
   }
-  // add estimated area
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-    objective.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_width : -estimated_width) / 2);
-  }
+  //// add estimated area
+  //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
+  //  objective.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_width : -estimated_width) / 2);
+  //}
   // estimate height
   for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
     if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
       estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
     }
   }
-  // add estimated area
-  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
-    objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
+  //// add estimated area
+  //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+  //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
+  //  objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
+  //}
+  if (flushbl) {
+    objective[N_var - 1] = estimated_width;
+    objective[N_var - 2] = estimated_height;
+  } else {
+    objective[N_var - 1] = -estimated_width;
+    objective[N_var - 2] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -1980,6 +1992,35 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     }
   }
 
+  // matchblock
+  for(auto pair:mydesign.Match_blocks){
+    int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), pair.blockid1) - curr_sp.posPair.begin();
+    int i_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), pair.blockid1) - curr_sp.negPair.begin();
+    int j_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), pair.blockid2) - curr_sp.posPair.begin();
+    int j_neg_index = find(curr_sp.negPair.begin(), curr_sp.negPair.end(), pair.blockid2) - curr_sp.negPair.begin();
+    if (i_pos_index < j_pos_index) {
+      if (i_neg_index < j_neg_index) {
+        // i is left of j
+        objective.at(pair.blockid1 * 4) += -1;
+        objective.at(pair.blockid2 * 4) += 1;
+      } else {
+        // i is above j
+        objective.at(pair.blockid1 * 4 + 1) += 1;
+        objective.at(pair.blockid2 * 4 + 1) += -1;
+      }
+    } else {
+      if (i_neg_index < j_neg_index) {
+        // i is below j
+        objective.at(pair.blockid1 * 4 + 1) += -1;
+        objective.at(pair.blockid2 * 4 + 1) += 1;
+      } else {
+        // i is right of j
+        objective.at(pair.blockid1 * 4) += 1;
+        objective.at(pair.blockid2 * 4) += -1;
+      }
+    }
+  }
+  
   // overlap constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
     int i_pos_index = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), i) - curr_sp.posPair.begin();
@@ -2361,6 +2402,42 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       }
     }
   }
+
+  // add area constraints
+  {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+      const auto& blk = mydesign.Blocks[i][curr_sp.selected[i]];
+      if (flushbl) {
+        rowindofcol[i * 4].push_back(rhs.size());
+        rowindofcol[N_var - 2].push_back(rhs.size());
+        constrvalues[i * 4].push_back(-1);
+        constrvalues[N_var - 2].push_back(1);
+        sens.push_back('G');
+        rhs.push_back(blk.width);
+
+        rowindofcol[i * 4 + 1].push_back(rhs.size());
+        rowindofcol[N_var - 1].push_back(rhs.size());
+        constrvalues[i * 4 + 1].push_back(-1);
+        constrvalues[N_var - 1].push_back(1);
+        sens.push_back('G');
+        rhs.push_back(blk.height);
+      } else {
+        rowindofcol[i * 4].push_back(rhs.size());
+        rowindofcol[N_var - 2].push_back(rhs.size());
+        constrvalues[i * 4].push_back(-1);
+        constrvalues[N_var - 2].push_back(1);
+        sens.push_back('L');
+        rhs.push_back(0);
+
+        rowindofcol[i * 4 + 1].push_back(rhs.size());
+        rowindofcol[N_var - 1].push_back(rhs.size());
+        constrvalues[i * 4 + 1].push_back(-1);
+        constrvalues[N_var - 1].push_back(1);
+        sens.push_back('L');
+        rhs.push_back(0);
+      }
+    }
+  }
   area_ilp = 0.;
   HPWL_ILP = 0.;
   {
@@ -2379,8 +2456,8 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
     sym_set_int_param(env, "verbosity", -2);
 
-    //solve the integer program
-    /*static int write_cnt{0};
+    /*//solve the integer program
+    static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -2389,6 +2466,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     if (write_cnt < 10) {
       char* names[N_var];
       std::vector<std::string> namesvec(N_var);
+      namesvec[N_var - 2]     = "area_x\0";
+      names[N_var - 2] = &(namesvec[N_var - 2][0]);
+      namesvec[N_var - 1]     = "area_y\0";
+      names[N_var - 1] = &(namesvec[N_var - 1][0]);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         int ind = i * 4;
         namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
@@ -2432,9 +2513,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     sym_close_environment(env);
     sighandler = signal(SIGINT, sighandler);
     int minx(INT_MAX), miny(INT_MAX);
-    for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
-      area_ilp += (objective[i] * var[i]);
-    }
+    //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
+    //  area_ilp += (objective[i] * var[i]);
+    //}
+    area_ilp = var[N_var - 1] * var[N_var - 2];
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
