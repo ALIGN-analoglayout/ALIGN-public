@@ -37,7 +37,16 @@ def test_ru_2():
     for i in range(1, 4, 2):
         cv.addWire(cv.m2, 'S',  i, (3, -1),  (6, 1), netType='pin')
     constraints = [{"constraint": "MultiConnection", "nets": ["S"], "multiplier": 2}]
-    run_postamble(name, cv, max_errors=0, constraints=constraints)
+
+    data = run_postamble(name, cv, max_errors=0, constraints=constraints)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    count = 0
+    for term in cvr.terminals:
+        if term['layer'] == 'M3':
+            count += 1
+    assert count == 2, f'Too many M3 tracks utilized: Expected=2 Actual={count}'
 
 
 def test_ru_3():

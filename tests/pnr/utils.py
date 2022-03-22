@@ -132,6 +132,12 @@ def run_postamble(nm, cv, max_errors=0, constraints=None):
             assert 'errors' in v, f"No Layouts were generated for {nm} ({k})"
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
 
+    for k, v in results[0][1].items():
+        with (v['json']).open('rt') as fp:
+            data = json.load(fp)
+        break
+    return data
+
 
 def build_example(name, netlist, constraints):
     example = MY_DIR / name
