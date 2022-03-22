@@ -3,7 +3,7 @@ import json
 import pathlib
 import shutil
 import align.pdk.finfet
-from align.cell_fabric import gen_lef
+from align.cell_fabric import gen_lef, transformation
 
 ALIGN_HOME = os.getenv('ALIGN_HOME')
 MY_DIR = pathlib.Path(__file__).resolve().parent
@@ -20,10 +20,29 @@ def get_test_id():
     return t
 
 
+def set_bbox(cv):
+    cv.bbox = transformation.Rect(None, None, None, None)
+    for term in cv.terminals:
+        r = transformation.Rect(*term['rect'])
+        if cv.bbox.llx is None or cv.bbox.llx > r.llx:
+            cv.bbox.llx = r.llx
+        if cv.bbox.lly is None or cv.bbox.lly > r.lly:
+            cv.bbox.lly = r.lly
+        if cv.bbox.urx is None or cv.bbox.urx < r.urx:
+            cv.bbox.urx = r.urx
+        if cv.bbox.ury is None or cv.bbox.ury < r.ury:
+            cv.bbox.ury = r.ury
+    cv.bbox.llx = (cv.bbox.llx // cv.pdk['M1']['Pitch']) * cv.pdk['M1']['Pitch']
+    cv.bbox.urx = (cv.bbox.urx // cv.pdk['M1']['Pitch']) * cv.pdk['M1']['Pitch']
+    cv.bbox.lly = (cv.bbox.lly // cv.pdk['M2']['Pitch']) * cv.pdk['M2']['Pitch']
+    cv.bbox.ury = (cv.bbox.ury // cv.pdk['M2']['Pitch']) * cv.pdk['M2']['Pitch']
+    cv.bbox.llx = cv.bbox.lly = 0
+
+
 def run_postamble(nm, cv, max_errors=0):
 
     if cv.bbox is None:
-        cv.computeBbox()
+        set_bbox(cv)
     bbox = cv.bbox.toList()
     terminals = cv.removeDuplicates(silence_errors=True)
     terminals.insert(0, {"layer": "Boundary", "netName": None, "rect": bbox, "netType": "drawing"})
@@ -102,8 +121,6 @@ def run_postamble(nm, cv, max_errors=0):
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
 
 
-
-
 def build_example(name, netlist, constraints):
     example = MY_DIR / name
     if example.exists() and example.is_dir():
@@ -119,6 +136,7 @@ def build_example(name, netlist, constraints):
         with open(example / f'{name}.const.json', 'w') as fp:
             fp.write(json.dumps(constraints, indent=2))
     return example
+
 
 def run_example(example, *, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
     run_dir = MY_DIR / f'run_{example.name}'
