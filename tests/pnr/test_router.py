@@ -32,8 +32,8 @@ def test_ru_2():
     cv = CanvasPDK()
     for i in range(10):
         cv.addWire(cv.m1, None,  i, (0, -1),  (15, 1), netType='blockage')
-    for i in range(9, 13):
+    for i in range(9, 14, 2):
         cv.addWire(cv.m2, 'source',  i, (1, -1),  (8, 1), netType='pin')
-    for i in range(1, 3):
+    for i in range(1, 4, 2):
         cv.addWire(cv.m2, 'source',  i, (3, -1),  (6, 1), netType='pin')
     run_postamble(name, cv, max_errors=0)
