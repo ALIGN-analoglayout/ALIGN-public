@@ -39,10 +39,20 @@ def set_bbox(cv):
     cv.bbox.llx = cv.bbox.lly = 0
 
 
-def run_postamble(nm, cv, max_errors=0):
+def run_postamble(nm, cv, max_errors=0, constraints=None):
 
     if cv.bbox is None:
         set_bbox(cv)
+
+    # === Make sure the test case does not have shorts nor violations
+    nets_allowed_to_be_open = set()
+    for term in cv.terminals:
+        if term['netName']:
+            nets_allowed_to_be_open.add(term['netName'])
+    _ = cv.gen_data(run_drc=True, run_pex=False, nets_allowed_to_be_open=nets_allowed_to_be_open)
+    assert cv.drc.num_errors == 0, f'Unit test has design rule violations: {cv.drc.errors}'
+    assert len(cv.rd.shorts) == 0, f'Unit test has shorts: {cv.rd.shorts}'
+
     bbox = cv.bbox.toList()
     terminals = cv.removeDuplicates(silence_errors=True)
     terminals.insert(0, {"layer": "Boundary", "netName": None, "rect": bbox, "netType": "drawing"})
@@ -79,6 +89,8 @@ def run_postamble(nm, cv, max_errors=0):
     instance = {'instance_name': 'ILEAF', 'abstract_template_name': ctn, 'fa_map': fa_map}
 
     topmodule = {'name': nm.upper(), 'parameters': [], 'instances': [instance], 'constraints': []}
+    if constraints:
+        topmodule['constraints'] = constraints
 
     run_dir = MY_DIR / nm
     if run_dir.exists():
