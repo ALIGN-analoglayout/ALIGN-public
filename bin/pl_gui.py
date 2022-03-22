@@ -261,6 +261,9 @@ def legalize(topm):
     ks = list(topm._instances.keys())
     for i in range(len(ks)):
         inst1 = topm._instances[ks[i]]
+        if inst1._lk:
+            model += x[i] == inst1._bbox.xmin()
+            model += y[i] == inst1._bbox.ymin()
         model += area_x >= (x[i] + inst1.width())
         model += area_y >= (y[i] + inst1.height())
         for j in range(i + 1, len(ks)):
