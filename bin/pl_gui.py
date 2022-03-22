@@ -110,6 +110,7 @@ class Instance:
         self._modu = modu
         self._gh   = None # gui handle
         self._th   = None # text handle
+        self._lk   = None # lock icon handle
         self._bbox = modu._bbox.transform(self._tr, modu.width(), modu.height()) if modu else None
     def __str__(self):
         return f'{self._name} {str(self._tr)}'
@@ -219,14 +220,19 @@ module_list = [k for k in modules if not modules[k]._leaf];
 top_cell = module_list[0]
 topm = modules[top_cell]
 
+lock50  = b'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAOCAQAAAC8qkUgAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAADIAAAAyADmg1OUAAAAHdElNRQfmAxYGMRzoygfjAAAAfklEQVQY06XOoQ3CQABG4XdHQupgBMIEJCzQrc4zS/coG7QSA0gCjlQcou1DkQDF8X73qR8RNjScadiJCMKKO25di1QvrHGvZJPcRIKEC4u2GAJ0Yzk4hwgEZp392I9XMCSAGr+WApmCz9o4IVhGfvQfPiKnCR6g5Pj2MVPLEwOjQ+ZPJN+IAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTAzLTIyVDExOjQ5OjI4LTA1OjAwTh6m8QAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0wMy0yMlQxMTo0OToyOC0wNTowMD9DHk0AAAAUdEVYdHBkZjpWZXJzaW9uAFBERi0xLjUgBVwLOQAAAABJRU5ErkJggg=='
+lock100 = b'iVBORw0KGgoAAAANSUhEUgAAABMAAAAbCAQAAAA0CnwqAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAGQAAABkAA+Wxd0AAAAHdElNRQfmAxYGMDYqav90AAAA8klEQVQ4y+3RMU4CQRTG8f+uEhISYralIjQeYC+w9pTQUdDZ0uIxvIDWVhSegW7trSjXjmwCOgvqR/GEHcC4ewDfFPPevN9kkjeI/WJEfigcGYnXOyT3bNHRcoxPGAmflsYaaqjIjtdEx2xhyUxOQix1Y41njxGxQuhO5YtL23Kfjay38FihWAhn1SVe5Lxon7fpkMJPbezNiiu6QXnpQ8C3z2754gIGRCpZCtAKMvpKEcxP5qWz+cUwZlPBRAZZJRIupEV1NEO2NRhhHfTPfmHNeuy1hiqgx7ry6x8QTP6EG+YiEBD0eOKa4uyxBu9M9Qg7xVnlUXrM3VEAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDMtMjJUMTE6NDg6NTQtMDU6MDBsua6iAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTAzLTIyVDExOjQ4OjU0LTA1OjAwHeQWHgAAABR0RVh0cGRmOlZlcnNpb24AUERGLTEuNSAFXAs5AAAAAElFTkSuQmCC'
+lock200 = b'iVBORw0KGgoAAAANSUhEUgAAACcAAAA3CAQAAAAlfJslAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAMgAAADIAGP6560AAAAHdElNRQfmAxYHFieCxjaVAAABoUlEQVRYw+2XsVLCQBCGv2SspEphaWHGyjavkMo+hT4AtY9AiRWPgJVvoBUFZRosncFxKB0GCinMoAWuRQT2MBcCnDPOyG6Ry/25L7u52+SCYHMCEloMFx09mkT26wXBLiS8FQop4YY4ArolIbzT2ABHQlaaUR5jUAlHyHQtTJiRVsM9VoDlXpCyJ2jzWlwZHQQkRIQM6NDhVUsfnMnAvNqMLFq9XSKZLE8ziU29V5osLVO9kbUZRmW4oRlZ8SNTEc5oWnGE5rjMgnspSVc361qJLTBBjLIwFV/NyoWeohi7JVblQLUnWjglk3HhkGNOKuH6Wnim5tUsgyZiw/k4Ncc4neyhFq7pWFPqqbaXcqlKbbFMGpVLf9Wny1KZH9KtYbm3FW61Vrfyxjfu53tky5TDHNd3ghNSARJHMEGIfc6dLbpPYo8RR86ADx6yO2Vpf7tm97g9bo/b4/4Pbrw7ZGFPPh2HuHufrkPcHQSMHH20+/mmInaEi35jByUQbPCfaN3uLHACwU4RtuYN1Ue81aT09W+eoRBQ57YydESbxOz6Apjmq4/ub+k3AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIyLTAzLTIyVDEyOjIyOjM5LTA1OjAwiVzwoQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMi0wMy0yMlQxMjoyMjozOS0wNTowMPgBSB0AAAAUdEVYdHBkZjpWZXJzaW9uAFBERi0xLjUgBVwLOQAAAABJRU5ErkJggg=='
+lock400 = b'iVBORw0KGgoAAAANSUhEUgAAAE4AAABuCAQAAAAjD+2gAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAZAAAAGQAFbw2+gAAAAHdElNRQfmAxYHFjF2EoPEAAADLElEQVR42u2bu5HbMBCGf3AcecYBxoFnHPJKoEtgC7Q7YAt0CXIJcglUCboSqNSRxcyhycAFrAOJehKvJUhibrAb3B2woL7DEoCwsysIU0QUyJBBIrs0tWhxQIsd9ZMeDQDEUkiUqA1GDSqkvOefP4UFtnEw3yNbCA4SG3TOn7LlzaCbccEAG3QzK5yTM8e0hpwFDhLbiWgEQuPmXlu0xgMagdC5LA87I19ojng2Jj4ceu9cy3fPbFB5RiMQai9wyGdAI1huLEJ/torm5tQ0SA4A6HGwM3+hdtLZitJmFlKqqKaOhoYjbakk42u1nehWHM1oGxrv6KgyjTWuWl2X8UTIqCGdQa2fv/0UOMO8bcj0cEJHha7bcF6oOzL951YWaEbvGTzPdGpKvTVco3Zuw4XTHll7azSCdlPTvpSq5tSPSwfNVR2lblSi2P60W2/lfFMpVR2pbhQDLocUrnCFaoR2EhI4S+4+BEAx3syauW/qIdaHrc0oFtwH9ZDc2ancf+kdaxrQ018H6894Lz55hPuNj7phUsgFZkHl1n+MZ2nlj0e4ICTCRbiT9Kx4IyeSyFjhX5Ez8H4q2kWN78p7mOIL0y/H70TTVBG/G2ua445v0g4jl43nBt+REXt9ulHc/+Ev1MV0rxJudbQnvDAcqnDu9ZepEV9/elkaw4+5Ql0c7YYL4wC3Xx3pVrc3cHahrkU1vcJZhLoW1voMF+C8EQjZ6cbPu4jOLTkgjGHhteRAXxJRTH/OLJKJNAnUqQBQJPqAwKoiE2boYwnJErhe3ZcTKRDmWgXw9q6GES7CRbgIF+Ei3NoS4SJchItwES7CRbgIF4ZEuAgX4SLcG4drA4d7XZtBKYeElSqzjPQhz9yrgES3NsWotPSSUB/o3O1OW0mwcCBATqggnEv3BEICUK/MH1tPfgC4pG6ElYJwLoAZ4MJKQkjv4ILJZCLcZDNd4ULIASPc5YHdtAaxau+qcu56kK2M91C/+dC7qnO3j+VCTxaeCpTddaTEadQO5cL73n68vElpz6rX5+hRXV6lGQWJauakv1pf92XMshISBXJIj2lFPQ5o8Uo7k+F/3fkd8GNw0bkAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDMtMjJUMTI6MjI6NDktMDU6MDCDmfm4AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTAzLTIyVDEyOjIyOjQ5LTA1OjAw8sRBBAAAABR0RVh0cGRmOlZlcnNpb24AUERGLTEuNSAFXAs5AAAAAElFTkSuQmCC'
 CSIZE = 800
 def replot(top_name, window, graph):
     global topm
     global top_cell
     global undo_list
     global CSIZE
+    cs = CSIZE
     CSIZE = int(min(window.size[0], window.size[1]) * 0.0099) * 100
-    graph.erase()
+     #graph.erase()
     graph.set_size((CSIZE, CSIZE))
     graph.change_coordinates((0,0), (CSIZE,CSIZE))
     top_cell = top_name
@@ -236,9 +242,14 @@ def replot(top_name, window, graph):
         yl = inst._bbox._ll._y * CSIZE / maxdim
         xh = inst._bbox._ur._x * CSIZE / maxdim
         yh = inst._bbox._ur._y * CSIZE / maxdim
+        graph.delete_figure(inst._gh)
+        if inst._lk: graph.delete_figure(inst._lk)
+        graph.delete_figure(inst._th)
         inst._gh = graph.draw_rectangle((xl, yl), (xh, yh), fill_color='#DEDEDE', line_color='red')
+        if inst._lk: inst._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
         topm._instgh[inst._gh] = inst
         inst._th = graph.draw_text(inst._name, ((xl + xh)/2, (yl + yh)/2), color = "black", font = None, angle = 0, text_location = "center")
+    graph.update()
 
 def legalize(topm):
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
@@ -275,7 +286,7 @@ def legalize(topm):
 
 def rungui():
     undo_list = list()
-    sg.theme('Dark Blue 3')
+     #sg.theme('Dark Blue 3')
 
     newpl_file = (args.pl_file[0:args.pl_file.find('.placement_verilog.json')] + "_1" + ".placement_verilog.json")
     if not module_list:
@@ -286,10 +297,11 @@ def rungui():
 
     col = [
       [sg.Combo(module_list, default_value = module_list[0], enable_events = True, key = '-TOP-', size = (max(max([len(k) for k in module_list]), 30), 6), readonly = True, auto_size_text = True)],
-      [sg.Button('Undo', key='-UNDO-')],
-      [sg.Button('Legalize', key='-LGL-')],
-      [sg.Button('Save', key='-SAVE-')],
-      [sg.Button('Write', key='-WRITE-'), sg.Text('Write to file : '), sg.InputText(newpl_file, key='-FN-')]
+      [sg.Button('Lock', key='-LOCK-', button_color = ('black')),
+      sg.Button('Undo', key='-UNDO-', button_color = ('black')),
+      sg.Button('Legalize', key='-LGL-', button_color = ('black'))],
+      [sg.Button('Save Changes', key='-SAVE-', button_color = ('black'))],
+      [sg.Button('Write', key='-WRITE-', button_color = ('black')), sg.Text('Write to file : '), sg.InputText(newpl_file, key='-FN-')]
     ]
 
     layout = [[sg.Graph(
@@ -306,15 +318,14 @@ def rungui():
     window.bind('<Configure>',"-RESIZE-")
     graph = window["-GRAPH-"] 
     graph.expand(expand_x = True, expand_y = True)
-
     winsize = window.size
-
     replot(module_list[0], window, graph)
     dragging = False
     start_point = end_point = None
     drag_figures = []
     graph.bind('<Button-3>', '+RIGHT+')
     movedinst = None
+    lockmode = False
     while True:
         event, values = window.read()
         if event is None:
@@ -322,13 +333,42 @@ def rungui():
         elif not event.startswith('-GRAPH-'):
             graph.Widget.config(cursor='left_ptr')
 
-        if event in ('-TOP-', '-RESIZE-'):
+        if event is '-LOCK-':
+            if not lockmode:
+                for k in ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']:
+                    window[k].update(button_color=('gray'), disabled=True)
+            else:
+                for k in ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']:
+                    window[k].update(button_color=('black'), disabled=False)
+            lockmode = ~lockmode
+            continue
+        if lockmode:
+            if event is '-GRAPH-':
+                x, y = values["-GRAPH-"]
+                continue
+            if event.endswith('+UP'):
+                figs = graph.get_figures_at_location((x,y))
+                for fig in figs:
+                    if fig in topm._instgh:
+                        inst = topm._instgh[fig]
+                        if inst._lk:
+                            graph.delete_figure(inst._lk)
+                            inst._lk = None
+                        else:
+                            xl = inst._bbox._ll._x * CSIZE / maxdim
+                            yl = inst._bbox._ll._y * CSIZE / maxdim
+                            xh = inst._bbox._ur._x * CSIZE / maxdim
+                            yh = inst._bbox._ur._y * CSIZE / maxdim
+                            inst._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
+                graph.update()
+                continue
+        elif event in ('-TOP-', '-RESIZE-'):
             if event is '-RESIZE-':
                 if winsize == window.size: continue
                 else: winsize = window.size
-            topm._instgh = dict()
-            for iname, inst in topm._instances.items():
-                inst._gh = inst._th = None
+             #topm._instgh = dict()
+             #for iname, inst in topm._instances.items():
+             #   inst._gh = inst._th = None
             replot(values['-TOP-'], window, graph)
             #undo_list = list()
         elif event is '-UNDO-':
@@ -338,6 +378,7 @@ def rungui():
                     inst = op[0]
                     graph.move_figure(inst._gh, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
                     graph.move_figure(inst._th, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
+                    if inst._lk: graph.move_figure(inst._lk, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
                     inst._bbox.moveto(op[1], op[2])
                      #inst._tr._or._x = op[1]
                      #inst._tr._or._y = op[2]
@@ -373,6 +414,7 @@ def rungui():
                        movedinst = topm._instgh[fig]
                        graph.move_figure(fig, delta_x, delta_y)
                        graph.move_figure(movedinst._th, delta_x, delta_y)
+                       if movedinst._lk: graph.move_figure(movedinst._lk, delta_x, delta_y)
                    graph.update()
         elif event.endswith('+UP'):
             info = window["info"]
