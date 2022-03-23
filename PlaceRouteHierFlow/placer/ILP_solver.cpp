@@ -2474,7 +2474,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
 
     //solve the integer program
-    static int write_cnt{0};
+    /*static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -2518,7 +2518,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp").c_str()));
       ++write_cnt;
-    }
+    }*/
     CbcModel model(osiclp);
     int status{0};
     {
