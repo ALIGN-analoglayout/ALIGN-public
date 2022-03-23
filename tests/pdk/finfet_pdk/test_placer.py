@@ -453,12 +453,16 @@ def test_sub_1():
 def test_symmetry():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
-    .subckt {name} g1 g2 d1 d2 vssx vccx
-    mn1 d1 g1 t1   vssx n w=180e-9 m=1 nf=2
-    mn2 d2 g2 t1   vssx n w=180e-9 m=1 nf=2
-    mn0 t1 b1 vssx vssx n w=180e-9 m=1 nf=2
-    mp1 d1 d1 vccx vccx p w=180e-9 m=1 nf=2
-    mp2 d2 d2 vccx vccx p w=180e-9 m=1 nf=2
+    .subckt {name} g1 g2 g3 g4 g5 g6 g7 g8 vssx vccx
+    mn0 vccx g0 vssx vssx n w=180e-9 m=1 nf=2
+    mn1 vccx g1 vssx vssx n w=180e-9 m=1 nf=2
+    mn2 vccx g2 vssx vssx n w=180e-9 m=1 nf=2
+    mn3 vccx g3 vssx vssx n w=180e-9 m=1 nf=2
+    mn4 dddd g4 vssx vssx n w=180e-9 m=1 nf=2
+    mn5 vccx g5 vssx vssx n w=180e-9 m=1 nf=2
+    mn6 dddd g6 vssx vssx n w=180e-9 m=1 nf=2
+    mn7 vccx g7 vssx vssx n w=180e-9 m=1 nf=2
+    mn8 vccx g8 vssx vssx n w=180e-9 m=1 nf=2
     .ends {name}
     .END
     """)
@@ -466,8 +470,13 @@ def test_symmetry():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp1", "mp2"]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1", "mn2"], ["mp2", "mp1"]]},
+        {"constraint": "DoNotIdentify", "instances": [f"mn{i}" for i in range(9)]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
+            ["mn0"],
+            ["mn1", "mn2"],
+            ["mn3", "mn4"],
+            ["mn6", "mn5"],
+        ]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
