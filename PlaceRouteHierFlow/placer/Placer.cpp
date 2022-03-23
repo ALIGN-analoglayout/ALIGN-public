@@ -334,6 +334,16 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           if (delta_cost < 0) {
             Smark = true;
             logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+            //std::ofstream ofs(designData.name + "_opt_sol.lp");
+            //std::ifstream ifs(designData.name + "_ilp.lp");
+            //std::string tmpstr, tmpstrn, tmpstrs;
+            //for (const auto& it : trial_sp.posPair) tmpstr += (std::to_string(it) + " ");
+            //for (const auto& it : trial_sp.negPair) tmpstrn += (std::to_string(it) + " ");
+            //for (const auto& it : trial_sp.selected) tmpstrs += (std::to_string(it) + " ");
+            //ofs << "// pos pair " << tmpstr << "neg pair " << tmpstrn << "sel " << tmpstrs << '\n';
+            //if (ifs) ofs << ifs.rdbuf();
+            //ofs.close();
+            //ifs.close();
           } else {
             double r = (double)rand() / RAND_MAX;
             // De-normalize the delta cost

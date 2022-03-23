@@ -3,7 +3,8 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "symphony.h"
+#include "CbcModel.hpp"
+#include "OsiClpSolverInterface.hpp"
 #include <signal.h>
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
@@ -204,15 +205,15 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
     } else if (mydesign.rightAlign()) {
-      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
     } else {
-      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
       std::vector<Block> blockslocal{Blocks};
       auto selectedlocal = curr_sp.selected;
       // frame and solve ILP to flush top/right
-      if (!PlaceILPSymphony_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -231,9 +232,9 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   return sol;
 }
 
-bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
+bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPSymphony_select");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPCbc_select");
 
   auto sighandler = signal(SIGINT, nullptr);
   int v_metal_index = -1;
@@ -296,7 +297,8 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
   // i*6+3:V_flip
   // i*6+4:Width
   // i*6+5:Height
-  const auto infty = sym_get_infinity();
+  OsiClpSolverInterface osiclp;
+  const double infty{osiclp.getInfinity()};
 
   std::vector<int> rowindofcol[N_var_max];
   std::vector<double> constrvalues[N_var_max];
@@ -1584,14 +1586,16 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
           break;
       }
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
-    sym_set_dbl_param(env, "time_limit", 500.);
+        objective.data(), rhslb, rhsub);
+    for (int i = 0; i < intvars.size(); ++i) {
+      if (intvars[i]) {
+        osiclp.setInteger(i);
+      }
+    }
 
-    static int write_cnt{0};
+    /*static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -1691,72 +1695,98 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       namesvec[N_aspect_ratio_max - 2] = (mydesign.name + "_aspect_n\0");
       names[N_aspect_ratio_max - 2]    = &(namesvec[N_aspect_ratio_max - 2][0]);
 
-      sym_set_col_names(env, names);
+      for (unsigned i = 0; i < namesvec.size(); ++i) {
+        osiclp.setColName(i, names[i]);
+      }
       
-      //for (unsigned i = 0; i < rhs.size(); ++i) {
-      //  osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
-      //}
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      for (unsigned i = 0; i < rhs.size(); ++i) {
+        osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
+      }
+      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
       ++write_cnt;
-    }
+    }*/
     //solve the integer program
+    CbcModel model(osiclp);
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      //Cbc_setLogLevel(model, 0);
+      //Cbc_setMaximumSolutions(model, numsol);
+      //Cbc_setMaximumSeconds(model, 500);
+      //CbcMain0(model);
+      model.setLogLevel(0);
+      model.setMaximumSolutions(1000);
+      model.setMaximumSavedSolutions(1000);
+      model.setMaximumSeconds(300);
+      //model.setNumberHeuristics(0);
+      if (num_threads > 1 && CbcModel::haveMultiThreadSupport()) {
+        model.setNumberThreads(num_threads);
+        model.setMaximumSeconds(500 * num_threads);
+        const char* argv[] = {"", "-log", "0", "-threads", std::to_string(num_threads).c_str(), "-solve"};
+        status = CbcMain(6, argv, model);
+      } else {
+        const char* argv[] = {"", "-log", "0", "-solve"};
+        status = CbcMain(4, argv, model);
+      }
     }
-    //int status = model.secondaryStatus();
+    status = model.secondaryStatus();
     //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
     //const double* var = Cbc_bestSolution(model);
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       sighandler = signal(SIGINT, sighandler);
       return false;
     }
     //logger->info("obj : {0}", model.savedSolutionObjective(i));
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    int minx(INT_MAX), miny(INT_MAX);
-    area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
-    logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = roundupint(var[i * 6]);
-      Blocks[i].y = roundupint(var[i * 6 + 1]);
-      minx = std::min(minx, Blocks[i].x);
-      miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
-      Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
-      if (mydesign.Blocks[i].size() > 1) {
-        int select{-1};
-        for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
-          if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
-            select = j;
-            break;
+    //std::vector<double> var(N_var, 0.);
+    //sym_get_col_solution(env, var.data());
+    const int numsaved = model.numberSavedSolutions();
+    sighandler = signal(SIGINT, sighandler);
+    for (int i = 0;  i < numsaved; ++i) {
+      //logger->info("obj : {0}", model.savedSolutionObjective(i));
+      const double* var = model.savedSolution(i);
+      if (!var) break;
+      int minx(INT_MAX), miny(INT_MAX);
+      area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
+      logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        Blocks[i].x = roundupint(var[i * 6]);
+        Blocks[i].y = roundupint(var[i * 6 + 1]);
+        minx = std::min(minx, Blocks[i].x);
+        miny = std::min(miny, Blocks[i].y);
+        Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
+        Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
+        if (mydesign.Blocks[i].size() > 1) {
+          int select{-1};
+          for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
+            if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
+              select = j;
+              break;
+            }
+          }
+          if (select >= 0) {
+            const_cast<SeqPair&>(curr_sp).selected[i] = select;
           }
         }
-        if (select >= 0) {
-          const_cast<SeqPair&>(curr_sp).selected[i] = select;
-        }
       }
-    }
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x -= minx;
-      Blocks[i].y -= miny;
-    }
-    // calculate HPWL from ILP solution
-    for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = int(N_block_vars_max + i * 4);
-      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
-    }
-    //Cbc_deleteModel(model);
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        Blocks[i].x -= minx;
+        Blocks[i].y -= miny;
+      }
+      // calculate HPWL from ILP solution
+      for (int i = 0; i < mydesign.Nets.size(); ++i) {
+        int ind = int(N_block_vars_max + i * 4);
+        HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+      }
+      //Cbc_deleteModel(model);
 
-    cost = UpdateAreaHPWLCost(mydesign, curr_sp);
-    if (cost >= 0) {
-      if (sol.find(cost) == sol.end()) {
-        sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
+      cost = UpdateAreaHPWLCost(mydesign, curr_sp);
+      if (cost >= 0) {
+        if (sol.find(cost) == sol.end()) {
+          sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
+        }
+        logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
       }
-      logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
     }
   }
   return !sol.empty();

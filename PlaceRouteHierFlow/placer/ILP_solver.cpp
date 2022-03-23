@@ -1,6 +1,8 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-#include "symphony.h"
+//#include "symphony.h"
+#include "CbcModel.hpp"
+#include "OsiClpSolverInterface.hpp"
 #include <iostream>
 #include <malloc.h>
 #include <signal.h>
@@ -1729,9 +1731,9 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   return true;
 }**/
 
-bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPSymphony");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPCbc");
 
   auto sighandler = signal(SIGINT, nullptr);
   int v_metal_index = -1;
@@ -1768,8 +1770,12 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   }
   N_var += place_on_grid_var_count;
   N_var += 2; //Area x and y variables
+  const unsigned N_area_x = N_var - 2;
+  const unsigned N_area_y = N_var - 1;
 
-  const auto infty = sym_get_infinity();
+  //const auto infty = sym_get_infinity();
+  OsiClpSolverInterface osiclp;
+  const double infty{osiclp.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -1833,10 +1839,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
-    collb[N_var - 1] = -infty;
-    collb[N_var - 2] = -infty;
-    colub[N_var - 1] = 0;
-    colub[N_var - 2] = 0;
+    collb[N_area_y] = -infty;
+    collb[N_area_x] = -infty;
+    colub[N_area_y] = 0;
+    colub[N_area_x] = 0;
   }
 
   Pdatatype hyper;
@@ -1874,11 +1880,11 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   //  objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
   //}
   if (flushbl) {
-    objective[N_var - 1] = estimated_width;
-    objective[N_var - 2] = estimated_height;
+    objective[N_area_y] = estimated_width;
+    objective[N_area_x] = estimated_height;
   } else {
-    objective[N_var - 1] = -estimated_width;
-    objective[N_var - 2] = -estimated_height;
+    objective[N_area_y] = -estimated_width;
+    objective[N_area_x] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -2393,30 +2399,30 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       const auto& blk = mydesign.Blocks[i][curr_sp.selected[i]];
       if (flushbl) {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.width);
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.height);
       } else {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
       }
@@ -2434,27 +2440,53 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    //sym_environment *env = sym_open_environment();
+    //sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    //    values.data(), collb.data(), colub.data(),
+    //    intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
+    //sym_set_int_param(env, "verbosity", -2);
+    double rhslb[rhs.size()], rhsub[rhs.size()];
+    for (unsigned i = 0;i < sens.size(); ++i) {
+      switch (sens[i]) {
+        case 'E':
+        default:
+          rhslb[i] = rhs[i];
+          rhsub[i] = rhs[i];
+          break;
+        case 'G':
+          rhslb[i] = rhs[i];
+          rhsub[i] = infty;
+          break;
+        case 'L':
+          rhslb[i] = -infty;
+          rhsub[i] = rhs[i];
+          break;
+      }
+    }
+    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
+        objective.data(), rhslb, rhsub);
+    for (int i = 0; i < intvars.size(); ++i) {
+      if (intvars[i]) {
+        osiclp.setInteger(i);
+      }
+    }
     //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
 
-    /*//solve the integer program
+    //solve the integer program
     static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
       block_name = mydesign.name;
     }
-    if (write_cnt < 10) {
+    if (1) {
       char* names[N_var];
       std::vector<std::string> namesvec(N_var);
-      namesvec[N_var - 2]     = "area_x\0";
-      names[N_var - 2] = &(namesvec[N_var - 2][0]);
-      namesvec[N_var - 1]     = "area_y\0";
-      names[N_var - 1] = &(namesvec[N_var - 1][0]);
+      namesvec[N_area_x]     = "area_x\0";
+      names[N_area_x] = &(namesvec[N_area_x][0]);
+      namesvec[N_area_y]     = "area_y\0";
+      names[N_area_y] = &(namesvec[N_area_y][0]);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         int ind = i * 4;
         namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
@@ -2478,30 +2510,52 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      //sym_set_col_names(env, names);
+      //sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      for (unsigned i = 0; i < namesvec.size(); ++i) {
+        osiclp.setColName(i, names[i]);
+      }
+      
+      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp").c_str()));
       ++write_cnt;
-    }*/
+    }
+    CbcModel model(osiclp);
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      //sym_solve(env);
+      //CbcMain0(model);
+      model.setLogLevel(0);
+      model.setMaximumSolutions(1000);
+      model.setMaximumSavedSolutions(1000);
+      model.setMaximumSeconds(300);
+      //model.setNumberHeuristics(0);
+      const char* argv[] = {"", "-log", "0", "-solve"};
+      status = CbcMain(4, argv, model);
     }
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    //int status = sym_get_status(env);
+    //if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    //  ++const_cast<design&>(mydesign)._infeasILPFail;
+    //  sym_close_environment(env);
+    //  sighandler = signal(SIGINT, sighandler);
+    //  return false;
+    //}
+    status = model.secondaryStatus();
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       sighandler = signal(SIGINT, sighandler);
       return false;
     }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    sym_close_environment(env);
+    //std::vector<double> var(N_var, 0.);
+    //sym_get_col_solution(env, var.data());
+    //sym_close_environment(env);
+    const double* var = model.bestSolution();
     sighandler = signal(SIGINT, sighandler);
     int minx(INT_MAX), miny(INT_MAX);
     //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
     //  area_ilp += (objective[i] * var[i]);
     //}
-    area_ilp = var[N_var - 1] * var[N_var - 2];
+    area_ilp = var[N_area_y] * var[N_area_x];
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
