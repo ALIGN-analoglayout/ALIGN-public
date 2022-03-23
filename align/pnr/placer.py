@@ -42,7 +42,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
-    # hyper.select_in_ILP = False
+    hyper.select_in_ILP = select_in_ILP
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer

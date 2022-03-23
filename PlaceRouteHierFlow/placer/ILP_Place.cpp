@@ -1589,6 +1589,7 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
     sym_set_int_param(env, "verbosity", -2);
+    sym_set_dbl_param(env, "time_limit", 500.);
 
     static int write_cnt{0};
     static std::string block_name;
