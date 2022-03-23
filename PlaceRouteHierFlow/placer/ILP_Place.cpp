@@ -3,9 +3,8 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "CbcModel.hpp"
-#include "OsiClpSolverInterface.hpp"
-//#include "Cbc_C_Interface.h"
+#include "symphony.h"
+#include <signal.h>
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
@@ -236,6 +235,7 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPSymphony_select");
 
+  auto sighandler = signal(SIGINT, nullptr);
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -296,8 +296,7 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
   // i*6+3:V_flip
   // i*6+4:Width
   // i*6+5:Height
-  OsiClpSolverInterface osiclp;
-  const double infty{osiclp.getInfinity()};
+  const auto infty = sym_get_infinity();
 
   std::vector<int> rowindofcol[N_var_max];
   std::vector<double> constrvalues[N_var_max];
@@ -1585,14 +1584,11 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
           break;
       }
     }
-    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    sym_environment *env = sym_open_environment();
+    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        objective.data(), rhslb, rhsub);
-    for (int i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) {
-        osiclp.setInteger(i);
-      }
-    }
+        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
+    sym_set_int_param(env, "verbosity", -2);
 
     static int write_cnt{0};
     static std::string block_name;
@@ -1694,98 +1690,72 @@ bool ILP_solver::PlaceILPSymphony_select(SolutionMap& sol, const design& mydesig
       namesvec[N_aspect_ratio_max - 2] = (mydesign.name + "_aspect_n\0");
       names[N_aspect_ratio_max - 2]    = &(namesvec[N_aspect_ratio_max - 2][0]);
 
-      for (unsigned i = 0; i < N_var; ++i) {
-        osiclp.setColName(i, names[i]);
-        //Cbc_setColName(model, i, names[i]);
-      }
-      for (unsigned i = 0; i < rhs.size(); ++i) {
-        osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
-        //Cbc_setRowName(model, i, (rowtype[i] + std::to_string(i)).c_str());
-      }
-      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      //Cbc_writeLp(model, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      sym_set_col_names(env, names);
+      
+      //for (unsigned i = 0; i < rhs.size(); ++i) {
+      //  osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
+      //}
+      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }
     //solve the integer program
-    CbcModel model(osiclp);
-    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      //Cbc_setLogLevel(model, 0);
-      //Cbc_setMaximumSolutions(model, numsol);
-      //Cbc_setMaximumSeconds(model, 500);
-      CbcMain0(model);
-      model.setLogLevel(0);
-      model.setMaximumSolutions(1000);
-      model.setMaximumSavedSolutions(1000);
-      model.setMaximumSeconds(300);
-      //model.setNumberHeuristics(0);
-      if (num_threads > 0 && CbcModel::haveMultiThreadSupport()) {
-        model.setNumberThreads(num_threads);
-        model.setMaximumSeconds(500 * num_threads);
-        const char* argv[] = {"", "-log", "0", "-threads", std::to_string(num_threads).c_str(), "-solve"};
-        status = CbcMain1(6, argv, model);
-      } else {
-        const char* argv[] = {"", "-log", "0", "-solve"};
-        status = CbcMain1(4, argv, model);
-      }
-      //model.branchAndBound();
-      //status = Cbc_solve(model);
-      logger->info("status : {0} {1} {2} {3} {4}", status, model.secondaryStatus(), model.getSolutionCount(), model.numberSavedSolutions(), (model.savedSolution(1) != nullptr));
+      sym_solve(env);
     }
     //int status = model.secondaryStatus();
     //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
     //const double* var = Cbc_bestSolution(model);
-    if (status != 0) {
+    int status = sym_get_status(env);
+    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
+      sym_close_environment(env);
+      sighandler = signal(SIGINT, sighandler);
       return false;
     }
-    const int numsaved = model.numberSavedSolutions();
-    for (int i = 0;  i < numsaved; ++i) {
-      //logger->info("obj : {0}", model.savedSolutionObjective(i));
-      const double* var = model.savedSolution(i);
-      if (!var) break;
-      int minx(INT_MAX), miny(INT_MAX);
-      area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
-      logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        Blocks[i].x = roundupint(var[i * 6]);
-        Blocks[i].y = roundupint(var[i * 6 + 1]);
-        minx = std::min(minx, Blocks[i].x);
-        miny = std::min(miny, Blocks[i].y);
-        Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
-        Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
-        if (mydesign.Blocks[i].size() > 1) {
-          int select{-1};
-          for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
-            if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
-              select = j;
-              break;
-            }
-          }
-          if (select >= 0) {
-            const_cast<SeqPair&>(curr_sp).selected[i] = select;
+    //logger->info("obj : {0}", model.savedSolutionObjective(i));
+    std::vector<double> var(N_var, 0.);
+    sym_get_col_solution(env, var.data());
+    int minx(INT_MAX), miny(INT_MAX);
+    area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
+    logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      Blocks[i].x = roundupint(var[i * 6]);
+      Blocks[i].y = roundupint(var[i * 6 + 1]);
+      minx = std::min(minx, Blocks[i].x);
+      miny = std::min(miny, Blocks[i].y);
+      Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
+      Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
+      if (mydesign.Blocks[i].size() > 1) {
+        int select{-1};
+        for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
+          if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
+            select = j;
+            break;
           }
         }
+        if (select >= 0) {
+          const_cast<SeqPair&>(curr_sp).selected[i] = select;
+        }
       }
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        Blocks[i].x -= minx;
-        Blocks[i].y -= miny;
-      }
-      // calculate HPWL from ILP solution
-      for (int i = 0; i < mydesign.Nets.size(); ++i) {
-        int ind = int(N_block_vars_max + i * 4);
-        HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
-      }
-      //Cbc_deleteModel(model);
+    }
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      Blocks[i].x -= minx;
+      Blocks[i].y -= miny;
+    }
+    // calculate HPWL from ILP solution
+    for (int i = 0; i < mydesign.Nets.size(); ++i) {
+      int ind = int(N_block_vars_max + i * 4);
+      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+    }
+    //Cbc_deleteModel(model);
 
-      cost = UpdateAreaHPWLCost(mydesign, curr_sp);
-      if (cost >= 0) {
-        if (sol.find(cost) == sol.end()) {
-          sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
-        }
-        logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
+    cost = UpdateAreaHPWLCost(mydesign, curr_sp);
+    if (cost >= 0) {
+      if (sol.find(cost) == sol.end()) {
+        sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
       }
+      logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
     }
   }
   return !sol.empty();
