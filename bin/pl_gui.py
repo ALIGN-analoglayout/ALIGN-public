@@ -123,6 +123,14 @@ class Instance:
             self._modu = modu
             self._bbox = modu._bbox.transform(self._tr, modu.width(), modu.height())
 
+    def addlock(self, graph, cs, maxdim):
+        if not self._lk:
+            xl = self._bbox._ll._x * CSIZE / maxdim
+            yl = self._bbox._ll._y * CSIZE / maxdim
+            xh = self._bbox._ur._x * CSIZE / maxdim
+            yh = self._bbox._ur._y * CSIZE / maxdim
+            self._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
+
 
 class Constraint:
     def __init__(self, name = ""):
@@ -301,6 +309,7 @@ def rungui():
     col = [
       [sg.Combo(module_list, default_value = module_list[0], enable_events = True, key = '-TOP-', size = (max(max([len(k) for k in module_list]), 30), 6), readonly = True, auto_size_text = True)],
       [sg.Button('Lock', key='-LOCK-', button_color = ('black')),
+      sg.Button('Lock all', key='-LOCKALL-', button_color = ('black')),
       sg.Button('Undo', key='-UNDO-', button_color = ('black')),
       sg.Button('Legalize', key='-LGL-', button_color = ('black'))],
       [sg.Button('Save Changes', key='-SAVE-', button_color = ('black'))],
@@ -336,6 +345,12 @@ def rungui():
         elif not event.startswith('-GRAPH-'):
             graph.Widget.config(cursor='left_ptr')
 
+        if event is '-LOCKALL-':
+            for k, inst in topm._instances.items():
+                inst.addlock(graph, CSIZE, maxdim)
+            graph.update()
+            continue
+
         if event is '-LOCK-':
             if not lockmode:
                 for k in ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']:
@@ -358,11 +373,7 @@ def rungui():
                             graph.delete_figure(inst._lk)
                             inst._lk = None
                         else:
-                            xl = inst._bbox._ll._x * CSIZE / maxdim
-                            yl = inst._bbox._ll._y * CSIZE / maxdim
-                            xh = inst._bbox._ur._x * CSIZE / maxdim
-                            yh = inst._bbox._ur._y * CSIZE / maxdim
-                            inst._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
+                            inst.addlock(graph, CSIZE, maxdim)
                 graph.update()
                 continue
         elif event in ('-TOP-', '-RESIZE-'):
