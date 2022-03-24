@@ -201,43 +201,57 @@ def array_limit(name):
     return netlist
 
 
-def array_pair(name):
+def array_mismatch(name):
     netlist = textwrap.dedent(
         f"""\
-        .subckt binary_t s0 s1 s2
-        mn01 s0 g01 s1 vssx n w=360e-9 nf=2 m=8
-        mn02 s0 g02 s2 vssx n w=360e-9 nf=2 m=8
-        .ends binary
-        .subckt {name} s0
-        xi0 s0 s1 s2 binary
-        mnp11 a1 g1 s1 vssx n w=360e-9 nf=2 m=8
-        mnp12 a2 g2 s1 vssx n w=360e-9 nf=2 m=8
-        mnp13 a3 g3 s1 vssx n w=360e-9 nf=2 m=8
-        mnp14 a4 g4 s1 vssx n w=360e-9 nf=2 m=8
-        mnp15 a5 g5 s1 vssx n w=360e-9 nf=2 m=8
-        mnp16 a6 g6 s1 vssx n w=360e-9 nf=2 m=8
-        mnp17 a7 g7 s1 vssx n w=360e-9 nf=2 m=8
-        mnp18 a8 g8 s1 vssx n w=360e-9 nf=2 m=8
-        mnp19 a9 g9 s1 vssx n w=360e-9 nf=2 m=8
-        mnp110 a10 g10 s1 vssx n w=360e-9 nf=2 m=8
-        mnp111 a11 g11 s1 vssx n w=360e-9 nf=2 m=8
-        mnp112 a12 g12 s1 vssx n w=360e-9 nf=2 m=8
-        mnp21 a1 g1 s2 vssx n w=360e-9 nf=2 m=8
-        mnp22 a2 g2 s2 vssx n w=360e-9 nf=2 m=8
-        mnp23 a3 g3 s2 vssx n w=360e-9 nf=2 m=8
-        mnp24 a4 g4 s2 vssx n w=360e-9 nf=2 m=8
-        mnp25 a5 g5 s2 vssx n w=360e-9 nf=2 m=8
-        mnp26 a6 g6 s2 vssx n w=360e-9 nf=2 m=8
-        mnp27 a7 g7 s2 vssx n w=360e-9 nf=2 m=8
-        mnp28 a8 g8 s2 vssx n w=360e-9 nf=2 m=8
-        mnp29 a9 g9 s2 vssx n w=360e-9 nf=2 m=8
-        mnp210 a10 g10 s2 vssx n w=360e-9 nf=2 m=8
-        mnp211 a11 g11 s2 vssx n w=360e-9 nf=2 m=8
-        mnp212 a12 g12 s2 vssx n w=360e-9 nf=2 m=8
+        .subckt {name} s vssx
+        mn1a a1a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a1a vssx n w=360e-9 nf=2 m=8
+        mn2a a2a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a2a vssx n w=360e-9 nf=2 m=8
+        mn3a a3a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a3a vssx n w=360e-9 nf=2 m=8
+        mn3c a3c g3c a3a vssx n w=360e-9 nf=2 m=8
         .ends {name}
     """
     )
     return netlist
+
+
+def array_converged_net(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s vssx
+        mn1a a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a vssx n w=360e-9 nf=2 m=8
+        mn2a a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a vssx n w=360e-9 nf=2 m=8
+        mn3a a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_converged_instance(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt three_terminal a1 a2 a3
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        .ends three_terminal
+        .subckt {name} s vssx
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        xi0 a1 a2 a3 three_terminal
+        .ends {name}
+    """
+    )
+    return netlist
+
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():

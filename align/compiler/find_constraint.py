@@ -174,7 +174,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         ):
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1] = node2
-            assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
+            assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
             match_pair["array_start_point"] = [node1, node2]
         else:
             match_pair = {}

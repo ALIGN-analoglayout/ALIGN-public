@@ -117,17 +117,14 @@ class process_arrays:
                 array = match_grps.copy()
                 self.trace_template(match_grps, visited, templates[start_node], array)
                 logger.debug(f"similar groups final from {start_node}:{array}")
-        # converts results to a 2D/1D list
+        # Assign a dummy array hier or a H-align const
         return self.process_results(start_node, array)
 
     def process_results(self, start_node, array):
-        if not array:
-            assert False, f"UNTESTED code"
-            logger.debug(f"no symmetry from {start_node}")
-            return
+        assert array, f"Wrong array identification, check find_array() code "
         array_2D = list()
         for inst_list in array.values():
-            array_2D.append([inst for inst in inst_list \
+            array_2D.append([inst for inst in sorted(inst_list) \
                 if self.ckt.get_element(inst)])
         if len(array_2D[0])==1:
             self.align_block_const[start_node] = [inst[0] for inst in array_2D]
@@ -154,11 +151,7 @@ class process_arrays:
                         similar_groups[index].append(l1_node2)
                         found_flag = 1
                         break
-                    elif l1_node2 in sublist:
-                        assert False, f"UNTESTED code"
-                        similar_groups[index].append(l1_node1)
-                        found_flag = 1
-                        break
+                    assert l1_node1 in sublist or not l1_node2 in sublist, f"broken combinations of {lvl1}"
                 if found_flag == 0:
                     similar_groups.append([l1_node1, l1_node2])
         return similar_groups
@@ -169,7 +162,7 @@ class process_arrays:
         logger.debug(f"tracing groups {match_grps} visited {visited}")
         for source, groups in match_grps.items():
             next_match[source] = list()
-            for node in groups:
+            for node in sorted(groups):
                 nbrs = set(self.graph.neighbors(node)) - set(traversed)
                 lvl1 = [nbr for nbr in nbrs if reduced_SD_neighbors(self.graph, node, nbr)]
                 # logger.debug(f"lvl1 {lvl1} {set(self.graph.neighbors(node))} {traversed}")
@@ -184,7 +177,7 @@ class process_arrays:
                     array[source] += next_match[source]
 
             template += next_match[list(next_match.keys())[0]]
-            logger.debug(f"found matching lvl {template}, {match_grps}")
+            logger.debug(f"found matching lvl {template}, {match_grps} {next_match}")
             if self.check_non_convergence(next_match):
                 self.trace_template(next_match, visited, template, array)
 
@@ -196,20 +189,17 @@ class process_arrays:
             for nbr in nbrs:
                 if self.graph._is_element(self.graph.nodes[nbr]):
                     inst = self.graph.element(nbr)
-
-
+                    logger.debug(f"neighbour {nbr} {inst}")
                     super_list.append(inst.abstract_name)
                 else:
                     super_list.append("net")
             logger.debug(f"all probable neighbors from {node} {super_list}")
             nbr_values[node] = Counter(super_list)
         logger.debug(f"all nbr properties {nbr_values}")
+        #all nodes should have identical neighbors
         _, main = nbr_values.popitem()
         for node, val in nbr_values.items():
-            if val == main:
-                continue
-            else:
-                assert False, f"UNTESTED code"
+            if not val == main:
                 return False
         return True
 
@@ -217,14 +207,14 @@ class process_arrays:
         vals = list()
         for val in match.values():
             common_node = set(val).intersection(vals)
-            common_element = [node for node in common_node if self.graph._is_element(node)]
+            common_element = [node for node in common_node if self.graph._is_element(self.graph.nodes[node])]
+            logger.debug(f"common element {common_node} {val} {common_element}")
             if common_element:
-                assert False, f"UNTESTED code"
                 logger.debug(f"{common_element} already existing , ending further array search")
                 return False
             else:
                 vals += val
-        logger.debug("not converging level")
+        logger.debug(f"not converging level {match}")
         return True
 
     def add_align_block_const(self):
@@ -334,7 +324,6 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
                     constraint.CompactPlacement,
                 ]
             ):
-                assert False, f"UNTESTED code"
                 child.constraints.append(const)
     # Remove elements from subckt then add new_subckt instance
     inst_name = "X_"+child_name
