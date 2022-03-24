@@ -122,7 +122,7 @@ def run_postamble(nm, cv, max_errors=0, constraints=None):
 
     os.chdir(run_dir)
 
-    args = ['unknown', '-s', nm, '--flow_start', '3_pnr', '--skipGDS', '-p', str(cv.pdk.layerfile.parent)]
+    args = ['unknown', '-s', nm, '--flow_start', '3_pnr', '--skipGDS', '-p', str(cv.pdk.layerfile.parent), '-x']
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f'No results for {nm}'
 
