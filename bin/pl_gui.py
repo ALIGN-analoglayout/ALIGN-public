@@ -349,6 +349,16 @@ def legalize(topm):
                 vert = (cons._attr["dir"] == "V")
                 for i in range(len(cons._instances)):
                     ci = cons._instances[i]
+                    if len(ci) == 2:
+                        ci1idx = instidxmap[ci[0]]
+                        ci2idx = instidxmap[ci[1]]
+                        insti1 = topm._instances[ci[0]]
+                        insti2 = topm._instances[ci[1]]
+                        if vert:
+                            model += y[ci1idx] - y[ci2idx] == (instj._modu.height()  - insti._modu.height())/2
+                        else:
+                            model += x[ci1idx] - x[ci2idx] == (instj._modu.width() - insti._modu.width())/2
+                        
                     for j in range(i, len(cons._instances)):
                         cj = cons._instances[j]
                         if len(ci) == 1 and len(cj) == 1:
