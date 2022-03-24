@@ -82,6 +82,8 @@ setup(name='align',
           'numpy',
           'pandas',
           'dash',
+          'mip',
+          'pysimplegui',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
           'flatdict'
