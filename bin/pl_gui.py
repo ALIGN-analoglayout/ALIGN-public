@@ -501,18 +501,18 @@ def rungui():
     lockmodedisable = ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']
     while True:
         event, values = window.read()
-        if event is None:
+        if event == None:
             break  # exit
         elif not event.startswith('-GRAPH-'):
             graph.Widget.config(cursor='left_ptr')
 
-        if event is '-LOCKALL-':
+        if event == '-LOCKALL-':
             for k, inst in topm._instances.items():
                 inst.addlock(graph, CSIZE, maxdim)
             graph.update()
             continue
 
-        if event is '-LOCK-':
+        if event == '-LOCK-':
             if not lockmode:
                 for k in lockmodedisable:
                     window[k].update(button_color=('gray'), disabled=True)
@@ -522,7 +522,7 @@ def rungui():
             lockmode = ~lockmode
             continue
         if lockmode:
-            if event is '-GRAPH-':
+            if event == '-GRAPH-':
                 x, y = values["-GRAPH-"]
                 continue
             if event.endswith('+UP'):
@@ -538,7 +538,7 @@ def rungui():
                 graph.update()
                 continue
         elif event in ('-TOP-', '-RESIZE-'):
-            if event is '-RESIZE-':
+            if event == '-RESIZE-':
                 if winsize == window.size: continue
                 else: winsize = window.size
              #topm._instgh = dict()
@@ -546,7 +546,7 @@ def rungui():
              #   inst._gh = inst._th = None
             replot(values['-TOP-'], window, graph)
             #undo_list = list()
-        elif event is '-UNDO-':
+        elif event == '-UNDO-':
             if undo_list:
                 op = undo_list.pop()
                 if op:
@@ -558,12 +558,12 @@ def rungui():
                     inst._bbox.moveto(op[1], op[2])
                      #inst._tr._or._x = op[1]
                      #inst._tr._or._y = op[2]
-        elif event is '-SAVE-':
+        elif event == '-SAVE-':
             update_coord()
-        elif event is '-LGL-':
+        elif event == '-LGL-':
             legalize(topm)
             replot(values['-TOP-'], window, graph)
-        elif event is '-WRITE-':
+        elif event == '-WRITE-':
             info = window["info"]
             fp = open(values["-FN-"], "w")
             if fp:
