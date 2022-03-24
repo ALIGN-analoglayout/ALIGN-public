@@ -57,7 +57,6 @@ class process_arrays:
         self._check_array_start_points(self.stop_points)
 
     def _filter_start_points_from_match_pairs(self):
-        logger.debug(f"{self.match_pairs}")
         for k, pair in self.match_pairs.items():
             logger.debug(f"all pairs from {k}:{pair}")
             if "array_start_point" in pair.keys():
@@ -189,11 +188,9 @@ class process_arrays:
             for nbr in nbrs:
                 if self.graph._is_element(self.graph.nodes[nbr]):
                     inst = self.graph.element(nbr)
-                    logger.debug(f"neighbour {nbr} {inst}")
                     super_list.append(inst.abstract_name)
                 else:
                     super_list.append("net")
-            logger.debug(f"all probable neighbors from {node} {super_list}")
             nbr_values[node] = Counter(super_list)
         logger.debug(f"all nbr properties {nbr_values}")
         #all nodes should have identical neighbors
@@ -208,7 +205,6 @@ class process_arrays:
         for val in match.values():
             common_node = set(val).intersection(vals)
             common_element = [node for node in common_node if self.graph._is_element(self.graph.nodes[node])]
-            logger.debug(f"common element {common_node} {val} {common_element}")
             if common_element:
                 logger.debug(f"{common_element} already existing , ending further array search")
                 return False

@@ -224,7 +224,7 @@ def FindSymmetry(subckt, stop_points: set):
             traversed.update([port1, port2])
             recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
-            logger.debug(f"Matches starting from {port1, port2} (final): {pprint.pformat(match_pairs, indent=4)}")
+            # logger.debug(f"Matches starting from {port1, port2} (final): {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
 
@@ -366,7 +366,7 @@ class add_symmetry_const:
         self.skip_const = skip_const
         # logger.debug(f"stop points for hier {subckt.name} are {stop_points}")
         # logger.debug(f"excluded input symmetry pairs {self.written_symmblocks}")
-        logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)} {match_pairs}")
+        # logger.debug(f"all symmetry matching pairs {pprint.pformat(self.all_pairs, indent=4)} {match_pairs}")
 
     def loop_through_pairs(self):
         for pairs in self.all_pairs:
@@ -401,7 +401,7 @@ class add_symmetry_const:
         elif key in self.subckt.nets and key in self.subckt.nets:
             nbrs1, nbrs2 = self.G.all_neighbors_dist([key, value])
             if nbrs1 != nbrs2:
-                logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
+                # logger.debug(f"all neigbors mismatch {key}:{nbrs1}, {value}:{nbrs2}")
                 return True
             else:
                 logger.debug(f"all neigbors matched {key}:{nbrs1}, {value}:{nbrs2}")
@@ -410,13 +410,11 @@ class add_symmetry_const:
         pairsj = list()
         insts_in_single_symmetry = set()
         for key, value in pairs:
-            logger.info(f"key, value {key} {value} {self.subckt.get_element(key)}")
             if self.pre_fiter(key, value):
                 continue
             if {key, value} & insts_in_single_symmetry:
                 continue
             if not self.G.nodes[key].get("instance"):
-                logger.info(f"not found {pairsj}")
                 continue
             elif "DCAP" in self.subckt.get_element(key).model:
                 logger.debug(f"skipping symmetry for dcaps {key} {value}")
@@ -430,7 +428,6 @@ class add_symmetry_const:
                 else:
                     pairsj.append([key])
                     insts_in_single_symmetry.add(key)
-            logger.info(f"pairs {pairsj}")
         return pairsj
 
     def filter_symnet_const(self, pairs: list):
@@ -533,7 +530,6 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
             # tuple of (block, pin)
-            logger.debug(f"Check ele_a {ele_A}, ele_B {ele_B}, pairs {pairs}")
             if isinstance(ele_A, tuple) and isinstance(ele_B, tuple):
                 instA_name = ele_A[0]
                 instB_name = ele_B[0]
@@ -550,9 +546,9 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                     and instA.model == instB.model
                 ):
                     if instB_name in pairs.values():
-                        logger.debug(
-                            f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
-                        )
+                        # logger.debug(
+                        #     f"Skip symmnet: Multiple matches of net {net_B} found"
+                        # )
                         return [None, None, None]
                     elif user == False and {instA_name, instB_name} not in smb:
                         logger.debug(f"unsymmetrical instances {instA_name, instB_name} {smb}")
@@ -574,7 +570,6 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                 pinsA.append(ele_A)
                 pinsB.append(ele_B)
             else:
-                logger.debug(f"unmatched connections:{ele_A, conn_A[ele_A]}, {ele_B, conn_B[ele_B]}")
                 continue
 
     # Atleast two pair of pins need to be matched
