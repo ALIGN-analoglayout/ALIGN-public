@@ -1595,7 +1595,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       }
     }
 
-    /*static int write_cnt{0};
+    static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -1704,7 +1704,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       }
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
       ++write_cnt;
-    }*/
+    }
     //solve the integer program
     CbcModel model(osiclp);
     int status{0};
