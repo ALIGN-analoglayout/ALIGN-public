@@ -7,7 +7,7 @@ from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import  constraint_generator
 from align.schema.checker import SolutionNotFoundError
 from align.schema import SubCircuit
-from utils import clean_data, build_example, get_test_id, ota_six
+from utils import clean_data, build_example, get_test_id
 
 
 pdk_dir = (
@@ -185,14 +185,93 @@ def test_group_cap():
     clean_data(name)
 
 
-def test_identify_differential_pair():
+
+def test_symmnet_unmatched_nets():
     name = f'ckt_{get_test_id()}'
-    netlist = ota_six(name)
-    constraints = [{"constraint": "PowerPorts", "ports": ["VCCX"]},
-                   {"constraint": "GroundPorts", "ports": ["VSSX"]},
-                   {"constraint": "DoNotUseLib", "libraries": ["SCM_PMOS"]}]
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 a g2 vssx vssx n w=360e-9 nf=2 m=8
+        mn4 b g3 vssx vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False},
+                   {"constraint": "DoNotUseLib", "libraries": ["SCM_PMOS", "CMC_NMOS", "DP_NMOS", "DP_NMOS_B"]},
+                   {
+                    "constraint": "SymmetricNets",
+                    "direction": "V",
+                    "net1": "A",
+                    "net2": "B",
+                    }
+                    ]
     example = build_example(name, netlist, constraints)
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
-    DP_NMOS = [ckt.name for ckt in cktlib if ckt.name.startswith("DP_NMOS")]
-    assert DP_NMOS, f"differential pair not identified"
+    with pytest.raises(AssertionError):
+        constraint_generator(cktlib)
+
+
+def test_symmnet_multi_matched_nets():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 a g2 vssx vssx n w=360e-9 nf=2 m=8
+        mn3 b g3 vssx vssx n w=360e-9 nf=2 m=8
+        mn4 b g4 vssx vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False},
+                   {"constraint": "DoNotUseLib", "libraries": ["SCM_PMOS", "CMC_NMOS", "DP_NMOS", "DP_NMOS_B"]},
+                   {
+        "constraint": "SymmetricNets",
+        "direction": "V",
+        "net1": "A",
+        "net2": "B",
+    }
+    ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    with pytest.raises(AssertionError):
+        constraint_generator(cktlib)
+
+def test_symmnet_translation():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 a g2 vssx vssx n w=360e-9 nf=2 m=9
+        mn3 b g3 vssx vssx n w=360e-9 nf=2 m=8
+        mn4 b g4 vssx vssx n w=360e-9 nf=2 m=9
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False},
+                   {"constraint": "DoNotUseLib", "libraries": ["SCM_PMOS", "CMC_NMOS", "DP_NMOS", "DP_NMOS_B"]},
+                   {
+        "constraint": "SymmetricNets",
+        "direction": "V",
+        "net1": "A",
+        "net2": "B",
+    }
+    ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    constraint_generator(cktlib)
+    symnet_const = cktlib.find(name).constraints.dict()["__root__"][2]
+    modified_symmnet = {
+        "constraint": "symmetric_nets",
+        "direction": "V",
+        "net1": "A",
+        "pins1": ["X_MN1/D", "X_MN2/D", "A"],
+        "net2": "B",
+        "pins2": ["X_MN3/D", "X_MN4/D", "B"]
+    }
+    assert symnet_const == modified_symmnet, f"incorrect ports identified for symmnet"

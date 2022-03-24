@@ -180,6 +180,18 @@ def variable_gain_amplifier_ratioed(name):
     return netlist
 
 
+def symmnet1(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 a g2 vssx vssx n w=360e-9 nf=2 m=8
+        mn4 b g3 vssx vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():

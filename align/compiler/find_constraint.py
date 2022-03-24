@@ -505,7 +505,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
         """
         assert G.nodes(net)
         conn = {}
-        logger.debug(f"checking connections of net: {net}, {list(G.neighbors(net))}")
+        logger.debug(f"checking connections of net: {net}, {list(G.neighbors(net))}, port {net in  G.subckt.pins}")
         for nbr in list(G.neighbors(net)):
             pins = G.get_edge_data(net, nbr)["pin"]
             child = G.subckt.parent.find(G.nodes[nbr].get("instance").model)
@@ -538,8 +538,8 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
             # tuple of (block, pin)
+            logger.debug(f"Check ele_a {ele_A}, ele_B {ele_B}, pairs {pairs}")
             if isinstance(ele_A, tuple) and isinstance(ele_B, tuple):
-                logger.debug(f"Check ele_a {ele_A}, ele_B {ele_B}, pairs {pairs}")
                 instA_name = ele_A[0]
                 instB_name = ele_B[0]
                 if skip_blocks and (instA_name in skip_blocks or instB_name in skip_blocks):
@@ -554,8 +554,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                     conn_A[ele_A] == conn_B[ele_B]
                     and instA.model == instB.model
                 ):
-                    if instB in pairs.values():
-                        assert False, f"UNTESTED code"
+                    if instB_name in pairs.values():
                         logger.debug(
                             f"Skip symmnet: Multiple matches of net {net_B} nbr {ele_B} to {pairs.values()} "
                         )
@@ -575,14 +574,18 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                 and ele_B not in pinsB
             ):
                 # Ports matching
-                logger.debug(f"Add symmetric ports: {ele_A}, {ele_A}")
+                logger.debug(f"Add symmetric ports: {ele_A}, {ele_B}")
                 pairs[ele_A] = ele_B
                 pinsA.append(ele_A)
                 pinsB.append(ele_B)
+            else:
+                logger.debug(f"unmatched connections:{ele_A, conn_A[ele_A]}, {ele_B, conn_B[ele_B]}")
+                continue
 
     # Atleast two pair of pins need to be matched
     if len(pairs.keys()) > 1:
+        logger.debug(f"found pairs {pairs}")
         return pairs, pinsA, pinsB
     else:
-        # logger.debug(f"Skip symmnet: Non identical instances {conn_A} {conn_B} {smb}")
+        logger.debug(f"Skip symmnet: Non identical instances {conn_A} {conn_B} {smb}")
         return [None, None, None]
