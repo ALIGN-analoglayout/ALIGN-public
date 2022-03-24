@@ -297,7 +297,7 @@ def replot(top_name, window, graph):
         inst._gh = graph.draw_rectangle((xl, yl), (xh, yh), fill_color='#DEDEDE', line_color='red')
         if inst._lk: inst._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
         topm._instgh[inst._gh] = inst
-        inst._th = graph.draw_text(inst._name, ((xl + xh)/2, (yl + yh)/2), color = "black", font = None, angle = 0, text_location = "center")
+        inst._th = graph.draw_text(inst._name, ((xl + xh)/2, (yl + yh)/2), text_location = "center")
     graph.update()
 
 def legalize(topm):
@@ -541,6 +541,7 @@ def rungui():
             if event == '-RESIZE-':
                 if winsize == window.size: continue
                 else: winsize = window.size
+            else: graph.erase()
              #topm._instgh = dict()
              #for iname, inst in topm._instances.items():
              #   inst._gh = inst._th = None
