@@ -27,7 +27,7 @@ def test_b1(name, params):
     name = f'ckt_b1_{name}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
