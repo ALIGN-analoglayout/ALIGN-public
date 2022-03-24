@@ -81,12 +81,12 @@ class Rect:
 
     def overlapinx(self, r, strict = False):
         if strict:
-           return self._ll._x < r._ur._x and self._ur._x > r._ll._x
+            return self._ll._x < r._ur._x and self._ur._x > r._ll._x
         return self._ll._x <= r._ur._x and self._ur._x >= r._ll._x
 
     def overlapiny(self, r, strict = False):
         if strict:
-           return self._ll._y < r._ur._y and self._ur._y > r._ll._y
+            return self._ll._y < r._ur._y and self._ur._y > r._ll._y
         return self._ll._y <= r._ur._y and self._ur._y >= r._ll._y
 
     def overlap(self, r, strict = False):
@@ -131,12 +131,17 @@ class Instance:
             yh = self._bbox._ur._y * CSIZE / maxdim
             self._lk = graph.draw_image(data=lock100, location=((xl + xh)/2, (yl + yh)/2.1))
 
+    def moveby(self, graph, dx, dy):
+        if self._gh: graph.move_figure(self._gh, dx, dy)
+        if self._th: graph.move_figure(self._th, dx, dy)
+        if self._lk: graph.move_figure(self._lk, dx, dy)
+
 
 class Constraint:
-    def __init__(self, name = ""):
+    def __init__(self, name = "", instances = list(), attr = dict()):
         self._name = name
-        self._instances = list()
-        self._attr = dict()
+        self._instances = instances
+        self._attr = attr
 
 class Module:
     def __init__(self, name = "", leaf = False):
@@ -159,6 +164,29 @@ class Module:
         return self._bbox.width()
     def height(self):
         return self._bbox.height()
+
+    def inorder(self, inst1, inst2):
+        if "order" in self._constraints:
+            for cons in self._constraints["order"]:
+                if inst1 in cons._instances and inst2 in cons._instances:
+                    return True
+        return False
+
+    def ishoralign(self, inst1, inst2):
+        if "align" in self._constraints:
+            for cons in self._constraints["align"]:
+                if cons._attr["line"] in ("h_bottom", "h_top", "h_center"):
+                    if inst1 in cons._instances and inst2 in cons._instances:
+                        return True
+        return False
+
+    def isveralign(self, inst1, inst2):
+        if "align" in self._constraints:
+            for cons in self._constraints["align"]:
+                if cons._attr["line"] in ("v_left", "v_right", "v_center"):
+                    if inst1 in cons._instances and inst2 in cons._instances:
+                        return True
+        return False
 
 modules = dict()
 pldata = None
@@ -190,10 +218,14 @@ if args.pl_file:
                 if "constraints" in m:
                     for c in m.get("constraints"):
                         cname = c.get("constraint")
-                        if cname in ("symmetric_blocks", "align", "order") and cname not in modu._constraints:
-                                modu._constraints[cname] = list()
-                        if "instances" in c and cname in modu._constraints:
-                            modu._constraints[cname].append(Constraint(m.get("instances")))
+                        if cname in ("symmetric_blocks", "order", "align") and cname not in modu._constraints:
+                            modu._constraints[cname] = list()
+                        if cname == "symmetric_blocks":
+                            modu._constraints[cname].append(Constraint(cname, c.get("pairs"), {"dir":c.get("direction")}))
+                        elif cname == "order":
+                            modu._constraints[cname].append(Constraint(cname, c.get("instances"), {"dir":c.get("direction"), "abut":c.get("abut")}))
+                        elif cname == "align":
+                            modu._constraints[cname].append(Constraint(cname, c.get("instances"), {"line":c.get("line")}))
                 modules[modu._name] = modu
 maxdim = 0
 for mname in modules:
@@ -245,6 +277,15 @@ def replot(top_name, window, graph):
     graph.change_coordinates((0,0), (CSIZE,CSIZE))
     top_cell = top_name
     topm = modules[top_cell]
+    maxdim = 0
+    for mname in modules:
+        m = modules[mname]
+        xdim, ydim = 0, 0
+        for iname in m._instances:
+            inst = m._instances[iname]
+            xdim = max(xdim, inst._bbox.xmax())
+            ydim = max(ydim, inst._bbox.ymax())
+        maxdim = max(maxdim, xdim, ydim) * 1.02
     for iname, inst in topm._instances.items():
         xl = inst._bbox._ll._x * CSIZE / maxdim
         yl = inst._bbox._ll._y * CSIZE / maxdim
@@ -267,6 +308,7 @@ def legalize(topm):
     area_y = model.add_var(name = "area_y", lb = 0, ub = 1e30)
     model.objective = mip.minimize(area_x + area_y)
     ks = list(topm._instances.keys())
+    instidxmap = {ks[i]:i for i in range(len(ks))}
     for i in range(len(ks)):
         inst1 = topm._instances[ks[i]]
         if inst1._lk:
@@ -276,19 +318,127 @@ def legalize(topm):
         model += area_y >= (y[i] + inst1.height())
         for j in range(i + 1, len(ks)):
             inst2 = topm._instances[ks[j]]
+            if topm.inorder(ks[i], ks[j]): continue
             if inst2._bbox.overlapiny(inst1._bbox, True):
+                if topm.isveralign(ks[i], ks[j]): continue
                 if inst2._bbox.xmin() <= inst1._bbox.xmin():
                     model += x[j] + inst2._modu.width() <= x[i]
                 else:
                     model += x[i] + inst1._modu.width() <= x[j]
-
-            if inst2._bbox.overlapinx(inst1._bbox, True):
+            elif inst2._bbox.overlapinx(inst1._bbox, True):
+                if topm.ishoralign(ks[i], ks[j]): continue
                 if inst2._bbox.ymin() <= inst1._bbox.ymin():
                     model += y[j] + inst2._modu.height() <= y[i]
                 else:
                     model += y[i] + inst1._modu.height() <= y[j]
+            else:
+                if not topm.isveralign(ks[i], ks[j]):
+                    if inst2._bbox.xmin() <= inst1._bbox.xmin():
+                        model += x[j] + inst2._modu.width() <= x[i]
+                    else:
+                        model += x[i] + inst1._modu.width() <= x[j]
+                if not topm.ishoralign(ks[i], ks[j]):
+                    if inst2._bbox.ymin() <= inst1._bbox.ymin():
+                        model += y[j] + inst2._modu.height() <= y[i]
+                    else:
+                        model += y[i] + inst1._modu.height() <= y[j]
+
+    for cname, conss in topm._constraints.items():
+        if cname == 'symmetric_blocks':
+            for cons in conss:
+                vert = (cons._attr["dir"] == "V")
+                for i in range(len(cons._instances)):
+                    ci = cons._instances[i]
+                    for j in range(i, len(cons._instances)):
+                        cj = cons._instances[j]
+                        if len(ci) == 1 and len(cj) == 1:
+                            ciidx = instidxmap[ci[0]]
+                            cjidx = instidxmap[cj[0]]
+                            insti = topm._instances[ci[0]]
+                            instj = topm._instances[cj[0]]
+                            if vert:
+                                model += x[ciidx] - x[cjidx] == (instj._modu.width()  - insti._modu.width())/2
+                            else:
+                                model += y[ciidx] - y[cjidx] == (instj._modu.height() - insti._modu.height())/2
+                        elif len(ci) == 2 and len(cj) == 2:
+                            ci1idx = instidxmap[ci[0]]
+                            ci2idx = instidxmap[ci[1]]
+                            cj1idx = instidxmap[cj[0]]
+                            cj2idx = instidxmap[cj[1]]
+                            insti1 = topm._instances[ci[0]]
+                            insti2 = topm._instances[ci[1]]
+                            instj1 = topm._instances[cj[0]]
+                            instj2 = topm._instances[cj[1]]
+                            if vert:
+                                model += x[ci1idx] + x[ci2idx] - x[cj1idx] - x[cj2idx] == (instj1._modu.width()  + instj2._modu.width()  - insti1._modu.width()  - insti2._modu.width())/2
+                            else:
+                                model += y[ci1idx] + y[ci2idx] - y[cj1idx] - y[cj2idx] == (instj1._modu.height() + instj2._modu.height() - insti1._modu.height() - insti2._modu.height())/2
+                        elif len(ci) == 2 and len(cj) == 1:
+                            ci1idx = instidxmap[ci[0]]
+                            ci2idx = instidxmap[ci[1]]
+                            cjidx = instidxmap[cj[0]]
+                            insti1 = topm._instances[ci[0]]
+                            insti2 = topm._instances[ci[1]]
+                            instj = topm._instances[cj[0]]
+                            if vert:
+                                model += x[ci1idx]/2 + x[ci2idx]/2 - x[cjidx] == (instj._modu.width()  - insti1._modu.width()/2  - insti2._modu.width()/2)/2
+                            else:
+                                model += y[ci1idx]/2 + y[ci2idx]/2 - y[cjidx] == (instj._modu.height() - insti1._modu.height()/2 - insti2._modu.height()/2)/2
+                        elif len(ci) == 1 and len(cj) == 2:
+                            ciidx = instidxmap[ci[0]]
+                            cj1idx = instidxmap[cj[0]]
+                            cj2idx = instidxmap[cj[1]]
+                            insti = topm._instances[ci[0]]
+                            instj1 = topm._instances[cj[0]]
+                            instj2 = topm._instances[cj[1]]
+                            if vert:
+                                model += x[cj1idx]/2 + x[cj2idx]/2 - x[ciidx] == (insti._modu.width()  - instj1._modu.width()/2  - instj2._modu.width()/2)/2
+                            else:
+                                model += y[cj1idx]/2 + y[cj2idx]/2 - y[ciidx] == (insti._modu.height() - instj1._modu.height()/2 - instj2._modu.height()/2)/2
+        elif cname == "order":
+            for cons in conss:
+                vert = (cons._attr["dir"] == "top_to_bottom")
+                abut = cons._attr["abut"]
+                for i in range(len(cons._instances)-1):
+                    ci = cons._instances[i]
+                    cj = cons._instances[i + 1]
+                    ciidx = instidxmap[ci]
+                    cjidx = instidxmap[cj]
+                    insti = topm._instances[ci]
+                    instj = topm._instances[cj]
+                    if vert:
+                        if abut: model += y[ciidx] - y[cjidx] == instj._modu.height()
+                        else:    model += y[ciidx] - y[cjidx] >= instj._modu.height()
+                    else:
+                        if abut: model += x[ciidx] - x[cjidx] == instj._modu.width()
+                        else:    model += x[ciidx] - x[cjidx] >= instj._modu.width()
+
+        elif cname == "align":
+            for cons in conss:
+                linetype = cons._attr["line"]
+                for i in range(len(cons._instances)-1):
+                    ci = cons._instances[i]
+                    cj = cons._instances[i + 1]
+                    ciidx = instidxmap[ci]
+                    cjidx = instidxmap[cj]
+                    insti = topm._instances[ci]
+                    instj = topm._instances[cj]
+                    if linetype == "h_bottom":
+                        model += y[ciidx] == y[cjidx]
+                    elif linetype == "h_top":
+                        model += y[ciidx] - y[cjidx] == instj._modu.height() - insti._modu.height()
+                    elif linetype == "h_center":
+                        model += y[ciidx] - y[cjidx] == (instj._modu.height() - insti._modu.height())/2
+                    elif linetype == "v_left":
+                        model += x[ciidx] == y[cjidx]
+                    elif linetype == "v_right":
+                        model += x[ciidx] - x[cjidx] == instj._modu.width() - insti._modu.width()
+                    elif linetype == "v_center":
+                        model += x[ciidx] - x[cjidx] == (instj._modu.width() - insti._modu.width())/2
+                        
     model.verbose = 0
     status = model.optimize(max_seconds=10)
+    print(f'legalize ilp status : {status}')
     model.write('out.lp')
     if status == mip.OptimizationStatus.OPTIMAL:
         if model.num_solutions > 0:
@@ -338,6 +488,7 @@ def rungui():
     graph.bind('<Button-3>', '+RIGHT+')
     movedinst = None
     lockmode = False
+    lockmodedisable = ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']
     while True:
         event, values = window.read()
         if event is None:
@@ -353,10 +504,10 @@ def rungui():
 
         if event is '-LOCK-':
             if not lockmode:
-                for k in ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']:
+                for k in lockmodedisable:
                     window[k].update(button_color=('gray'), disabled=True)
             else:
-                for k in ['-UNDO-', '-LGL-', '-SAVE-', '-WRITE-']:
+                for k in lockmodedisable:
                     window[k].update(button_color=('black'), disabled=False)
             lockmode = ~lockmode
             continue
@@ -390,9 +541,10 @@ def rungui():
                 op = undo_list.pop()
                 if op:
                     inst = op[0]
-                    graph.move_figure(inst._gh, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
-                    graph.move_figure(inst._th, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
-                    if inst._lk: graph.move_figure(inst._lk, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
+                    inst.moveby(graph, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
+                     #graph.move_figure(inst._gh, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
+                     #graph.move_figure(inst._th, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
+                     #if inst._lk: graph.move_figure(inst._lk, (-inst._bbox._ll._x + op[1]) * CSIZE / maxdim, (-inst._bbox._ll._y + op[2]) * CSIZE / maxdim)
                     inst._bbox.moveto(op[1], op[2])
                      #inst._tr._or._x = op[1]
                      #inst._tr._or._y = op[2]
@@ -423,25 +575,28 @@ def rungui():
             delta_x, delta_y = x - lastxy[0], y - lastxy[1]
             lastxy = x,y
             if None not in (start_point, end_point):
-               for fig in drag_figures:
-                   if fig in topm._instgh:
-                       movedinst = topm._instgh[fig]
-                       graph.move_figure(fig, delta_x, delta_y)
-                       graph.move_figure(movedinst._th, delta_x, delta_y)
-                       if movedinst._lk: graph.move_figure(movedinst._lk, delta_x, delta_y)
-                   graph.update()
+                if len(drag_figures) > 0:
+                    fig = drag_figures[0]
+                    if fig in topm._instgh:
+                        movedinst = topm._instgh[fig]
+                        movedinst.moveby(graph, delta_x, delta_y)
+                         #graph.move_figure(fig, delta_x, delta_y)
+                         #graph.move_figure(movedinst._th, delta_x, delta_y)
+                         #if movedinst._lk: graph.move_figure(movedinst._lk, delta_x, delta_y)
+                    graph.update()
         elif event.endswith('+UP'):
             info = window["info"]
             if None not in (start_point, end_point):
                 dx = end_point[0] - start_point[0]
                 dy = end_point[1] - start_point[1]
                 topm._modified = True
-                for fig in drag_figures:
+                if len(drag_figures) > 0:
+                    fig = drag_figures[0]
                     if fig in topm._instgh:
                         movedinst = topm._instgh[fig]
-                        info.update(value=f"grabbed {movedinst._name} from {start_point} to {end_point}")
-                        undo_list.append([movedinst, movedinst._bbox._ll._x, movedinst._bbox._ll._y])
+                        undo_list.append([movedinst, movedinst._bbox.xmin(), movedinst._bbox.ymin()])
                         movedinst._bbox.moveby(dx * maxdim / CSIZE, dy * maxdim / CSIZE)
+                        info.update(value=f"grabbed {movedinst._name} from ({undo_list[-1][1]},{undo_list[-1][2]}) to ({movedinst._bbox.xmin()},{movedinst._bbox.ymin()})")
                 topm._modified = True
             start_point, end_point = None, None  # enable grabbing a new rect
             dragging = False
