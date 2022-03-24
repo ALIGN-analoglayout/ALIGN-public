@@ -179,19 +179,65 @@ def variable_gain_amplifier_ratioed(name):
     )
     return netlist
 
-
-def symmnet1(name):
+def array_limit(name):
     netlist = textwrap.dedent(
         f"""\
-        .subckt {name} a b
-        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
-        mn2 a g2 vssx vssx n w=360e-9 nf=2 m=8
-        mn4 b g3 vssx vssx n w=360e-9 nf=2 m=8
+        .subckt {name} s
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        mn4 a4 g4 s vssx n w=360e-9 nf=2 m=8
+        mn5 a5 g5 s vssx n w=360e-9 nf=2 m=8
+        mn6 a6 g6 s vssx n w=360e-9 nf=2 m=8
+        mn7 a7 g7 s vssx n w=360e-9 nf=2 m=8
+        mn8 a8 g8 s vssx n w=360e-9 nf=2 m=8
+        mn9 a9 g9 s vssx n w=360e-9 nf=2 m=8
+        mn10 a10 g10 s vssx n w=360e-9 nf=2 m=8
+        mn11 a11 g11 s vssx n w=360e-9 nf=2 m=8
+        mn12 a12 g12 s vssx n w=360e-9 nf=2 m=8
         .ends {name}
     """
     )
     return netlist
 
+
+def array_pair(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt binary_t s0 s1 s2
+        mn01 s0 g01 s1 vssx n w=360e-9 nf=2 m=8
+        mn02 s0 g02 s2 vssx n w=360e-9 nf=2 m=8
+        .ends binary
+        .subckt {name} s0
+        xi0 s0 s1 s2 binary
+        mnp11 a1 g1 s1 vssx n w=360e-9 nf=2 m=8
+        mnp12 a2 g2 s1 vssx n w=360e-9 nf=2 m=8
+        mnp13 a3 g3 s1 vssx n w=360e-9 nf=2 m=8
+        mnp14 a4 g4 s1 vssx n w=360e-9 nf=2 m=8
+        mnp15 a5 g5 s1 vssx n w=360e-9 nf=2 m=8
+        mnp16 a6 g6 s1 vssx n w=360e-9 nf=2 m=8
+        mnp17 a7 g7 s1 vssx n w=360e-9 nf=2 m=8
+        mnp18 a8 g8 s1 vssx n w=360e-9 nf=2 m=8
+        mnp19 a9 g9 s1 vssx n w=360e-9 nf=2 m=8
+        mnp110 a10 g10 s1 vssx n w=360e-9 nf=2 m=8
+        mnp111 a11 g11 s1 vssx n w=360e-9 nf=2 m=8
+        mnp112 a12 g12 s1 vssx n w=360e-9 nf=2 m=8
+        mnp21 a1 g1 s2 vssx n w=360e-9 nf=2 m=8
+        mnp22 a2 g2 s2 vssx n w=360e-9 nf=2 m=8
+        mnp23 a3 g3 s2 vssx n w=360e-9 nf=2 m=8
+        mnp24 a4 g4 s2 vssx n w=360e-9 nf=2 m=8
+        mnp25 a5 g5 s2 vssx n w=360e-9 nf=2 m=8
+        mnp26 a6 g6 s2 vssx n w=360e-9 nf=2 m=8
+        mnp27 a7 g7 s2 vssx n w=360e-9 nf=2 m=8
+        mnp28 a8 g8 s2 vssx n w=360e-9 nf=2 m=8
+        mnp29 a9 g9 s2 vssx n w=360e-9 nf=2 m=8
+        mnp210 a10 g10 s2 vssx n w=360e-9 nf=2 m=8
+        mnp211 a11 g11 s2 vssx n w=360e-9 nf=2 m=8
+        mnp212 a12 g12 s2 vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():

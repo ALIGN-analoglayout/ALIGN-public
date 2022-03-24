@@ -73,12 +73,9 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
     elif len(nbrs1) > 10: #TODO remove hack
-        assert False, f"UNTESTED code"
-        if "array_start_point" in match_pair.keys():
-            match_pair["array_start_point"] += [node1, node2]
-        else:
-            match_pair["array_start_point"] = [node1, node2]
-        logger.debug(f"high fanout nets are start point for arrays{node1, nbrs1}")
+        assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
+        match_pair["array_start_point"] = [node1, node2]
+        logger.debug(f"high fanout nets are start point for arrays: (net, neighbors){node1, nbrs1}")
         traversed.add(node1)
         return
 
@@ -177,11 +174,8 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         ):
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1] = node2
-            if "array_start_point" in match_pair.keys():
-                assert False, f"UNTESTED code"
-                match_pair["array_start_point"] += [node1, node2]
-            else:
-                match_pair["array_start_point"] = [node1, node2]
+            assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
+            match_pair["array_start_point"] = [node1, node2]
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
@@ -230,7 +224,7 @@ def FindSymmetry(subckt, stop_points: set):
             traversed.update([port1, port2])
             recursive_start_points(graph, match_pairs, traversed, port1, port2, ports_weight)
             match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 0}
-            # logger.debug(f"Matches starting from {port1, port2} pair: {pprint.pformat(match_pairs, indent=4)}")
+            logger.debug(f"Matches starting from {port1, port2} (final): {pprint.pformat(match_pairs, indent=4)}")
     return match_pairs
 
 
@@ -269,6 +263,7 @@ def FindConst(subckt):
 
     # Search symmetry constraints
     match_pairs = FindSymmetry(subckt, stop_points)
+    logger.debug(f"match pairs {match_pairs}")
     # Generate hiearchies based on array identification
     array_hier = process_arrays(subckt, match_pairs)
     array_hier.add_align_block_const()

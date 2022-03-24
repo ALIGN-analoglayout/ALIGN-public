@@ -47,7 +47,7 @@ class process_arrays:
             elif isinstance(const, constraint.ConfigureCompiler):
                 self.condition = const.identify_array
                 self.is_digital = const.is_digital
-        self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
+        self.match_pairs = match_pairs
         self.name = ckt.name
         self.iconst = ckt.constraints
         self.hier_sp = set()
@@ -57,6 +57,7 @@ class process_arrays:
         self._check_array_start_points(self.stop_points)
 
     def _filter_start_points_from_match_pairs(self):
+        logger.debug(f"{self.match_pairs}")
         for k, pair in self.match_pairs.items():
             logger.debug(f"all pairs from {k}:{pair}")
             if "array_start_point" in pair.keys():

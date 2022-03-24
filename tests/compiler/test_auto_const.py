@@ -143,4 +143,3 @@ def test_filter_dummy():
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
 
-

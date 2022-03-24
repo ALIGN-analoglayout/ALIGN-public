@@ -4,7 +4,7 @@ import json
 import shutil
 import textwrap
 from align.compiler.compiler import compiler_input, annotate_library
-from align.compiler.find_constraint import  constraint_generator
+from align.compiler.find_constraint import FindConst
 from align.schema.checker import SolutionNotFoundError
 from align.schema import SubCircuit
 from utils import clean_data, build_example, get_test_id
@@ -48,7 +48,7 @@ def test_group_block_hsc(dir_name):
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
     result_path.mkdir(parents=True, exist_ok=False)
-    constraint_generator(updated_cktlib)
+    FindConst(updated_cktlib.find("HIGH_SPEED_COMPARATOR"))
     gen_const = updated_cktlib.find("HIGH_SPEED_COMPARATOR").constraints.dict()["__root__"]
     gen_const.sort(key=lambda item: item.get("constraint"))
     gold_const_path = (
@@ -99,7 +99,7 @@ def test_scf():
     annotate_library(updated_cktlib, prim_lib)
 
     assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
-    constraint_generator(updated_cktlib)
+    FindConst(updated_cktlib.find("SWITCHED_CAPACITOR_FILTER"))
     gen_const = updated_cktlib.find("SWITCHED_CAPACITOR_FILTER").constraints.dict()["__root__"]
     gen_const.sort(key=lambda item: item.get("constraint"))
 
@@ -210,7 +210,8 @@ def test_symmnet_unmatched_nets():
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
     with pytest.raises(AssertionError):
-        constraint_generator(cktlib)
+        FindConst(cktlib.find(name))
+    clean_data(name)
 
 
 def test_symmnet_multi_matched_nets():
@@ -238,7 +239,8 @@ def test_symmnet_multi_matched_nets():
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
     with pytest.raises(AssertionError):
-        constraint_generator(cktlib)
+        FindConst(cktlib.find(name))
+    clean_data(name)
 
 def test_symmnet_translation():
     name = f'ckt_{get_test_id()}'
@@ -264,7 +266,7 @@ def test_symmnet_translation():
     example = build_example(name, netlist, constraints)
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
-    constraint_generator(cktlib)
+    FindConst(cktlib.find(name))
     symnet_const = cktlib.find(name).constraints.dict()["__root__"][2]
     modified_symmnet = {
         "constraint": "symmetric_nets",
@@ -275,3 +277,4 @@ def test_symmnet_translation():
         "pins2": ["X_MN3/D", "X_MN4/D", "B"]
     }
     assert symnet_const == modified_symmnet, f"incorrect ports identified for symmnet"
+    clean_data(name)
