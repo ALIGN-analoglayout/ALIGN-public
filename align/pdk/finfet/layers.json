@@ -36,6 +36,11 @@
       "GdsDatatype": {"Draw":0}
     },
     {
+      "Layer": "Nwell",
+      "GdsLayerNo": 992,
+      "GdsDatatype": {"Draw":0}
+    },
+    {
       "Layer": "Poly",
       "GdsLayerNo": 992,
       "GdsDatatype": {"Draw":0},

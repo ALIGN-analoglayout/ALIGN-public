@@ -28,13 +28,17 @@ class PnRConstraintWriter:
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
-            const = input_const.dict(exclude={'constraint'}, exclude_unset=True)
+            const = input_const.dict(exclude={'constraint'}, exclude_unset=False)
             const['const_name'] = input_const.__class__.__name__
 
             # Rename instances to blocks
             if 'instances' in const:
                 const['blocks'] = const['instances']
                 del const['instances']
+
+            # Exclude constraints not to be exposed to PnR
+            if const['const_name'] in ['DoNotIdentify', 'DoNotUseLib', 'ConfigureCompiler']:
+                continue
 
             # Exclude constraints that need to be to multiple constraints
             if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection'):

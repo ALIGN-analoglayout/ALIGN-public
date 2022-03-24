@@ -1,5 +1,5 @@
 [
     {"constraint": "PowerPorts", "ports": ["VDD"]},
     {"constraint": "GroundPorts", "ports": ["VSS"]},
-    {"constraint": "MergeParallelDevices", "isTrue": false}
+    {"constraint": "ConfigureCompiler", "merge_parallel_devices": false}
 ]

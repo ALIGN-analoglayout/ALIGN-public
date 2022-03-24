@@ -1,3 +1,4 @@
+import os
 import pytest
 import textwrap
 import json
@@ -9,7 +10,8 @@ from . import circuits
 import time
 
 
-cleanup = False
+CLEANUP = False
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 
 @pytest.mark.skip
@@ -18,7 +20,7 @@ def test_place_cmp_1():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -37,7 +39,7 @@ def test_place_cmp_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False, log_level='DEBUG',
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL,
                                    additional_args=['-e', '4', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op'])
 
     print(f'run_dir: {run_dir}')
@@ -68,7 +70,7 @@ def test_place_cmp_1():
     area_pct = round(100*((area_new/area_best)-1))
     print(f'Generated layout is {hpwl_pct}% worse in HPWL and {area_pct}% worse in AREA')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -100,7 +102,7 @@ def test_place_cmp_2():
         .ends {name}
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
@@ -132,7 +134,7 @@ def test_place_cmp_2():
     # with open(example / 'dptail.const.json', 'w') as fp:
     #     fp.write(json.dumps(constraints, indent=2))
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, area=4e10)
+    ckt_dir, run_dir = run_example(example, cleanup=CLEANUP, area=4e10)
 
     cn = f'{name.upper()}_0'
 
@@ -147,7 +149,7 @@ def test_place_cmp_2():
 
         print(f'hpwl_new={hpwl_new} area_new={area_new}')
 
-    if cleanup:
+    if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
@@ -160,7 +162,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -188,7 +190,7 @@ def test_place_cmp_seed(seed, analytical_placer):
     else:
         placer = 'annealing'
 
-    ckt_dir, run_dir = run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    _, run_dir = run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=additional_args)
 
     cn = f'{name.upper()}_0'
 
@@ -228,7 +230,7 @@ def test_cmp_analytical():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
@@ -249,15 +251,17 @@ def test_cmp_analytical():
 
     additional_args = ['-e', '1', '--flow_stop', '3_pnr:route', '--router_mode', 'no_op', '--seed', str(0), '--use_analytical_placer']
 
-    run_example(example, cleanup=cleanup, log_level='DEBUG', additional_args=additional_args)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=additional_args)
 
 
 def comparator_constraints(name):
     constraints = [
-        {"constraint": "FixSourceDrain", "isTrue": False, "propagate": True},
-        {"constraint": "MergeSeriesDevices", "isTrue": False, "propagate": True},
-        {"constraint": "MergeParallelDevices", "isTrue": False, "propagate": True},
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler",
+         "auto_constraint": False,
+         'merge_series_devices': False,
+         'merge_parallel_devices': False,
+         'propagate': True
+         },
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
@@ -283,7 +287,7 @@ def test_cmp_fast():
     constraints = comparator_constraints(name)
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -295,7 +299,7 @@ def test_cmp_slow():
     constraints.append({"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp7", "mn0", "mp8"]})
     example = build_example(name, netlist, constraints)
     s = time.time()
-    run_example(example, cleanup=cleanup, area=5e9, log_level='DEBUG')
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
     e = time.time()
     print('Elapsed time:', e-s)
 
@@ -317,7 +321,7 @@ def test_hang_1():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
 
 def test_hang_2():
@@ -337,7 +341,7 @@ def test_hang_2():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG")
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
 
 
 def test_hang_3():
@@ -358,4 +362,121 @@ def test_hang_3():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup, log_level="DEBUG", additional_args=['--flow_stop', '3_pnr:place'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
+
+
+def test_hang_4():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vssx vccx
+    mp1  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp2  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp3  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp4  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp5  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp6  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp7  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp8  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp9  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp10 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp11 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp12 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp13 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp14 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp15 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp16 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp17 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp18 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp19 o i vssx vccx p w=360e-9 nf=2 m=4
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
+        {"constraint": "Floorplan", "order": True, "symmetrize": False, "regions": [
+            ["mp1"],
+            ["mp3", "mp2", "mp4", "mp5", "mp6"],
+            ["mp7", "mp8", "mp9", "mp10"],
+            ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
+            ["mp17", "mp18"],
+            ["mp19"]
+        ]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
+            ["mp1"], ["mp2"], ["mp3", "mp4"]
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
+
+
+def test_sub_1():
+    ''' suboptimal placement '''
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} a1 a2 a3 vssx vccx
+    mn0 vssx a1 vssx vssx n w=180e-9 m=1 nf=2
+    mn1 vssx a2 vssx vssx n w=180e-9 m=1 nf=2
+    mn2 vssx a3 vssx vssx n w=180e-9 m=1 nf=2
+    mp0 vccx a1 vccx vccx p w=180e-9 m=3 nf=2
+    mp1 vccx a2 vccx vccx p w=180e-9 m=4 nf=2
+    mp2 vccx a3 vccx vccx p w=180e-9 m=5 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp0", "mp1", "mp2"]},
+        {"constraint": "Floorplan", "order": True, "regions": [
+            ["mn0", "mn1", "mn2"],
+            ["mp0", "mp1", "mp2"]
+        ]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mp0"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn1"], ["mp1"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn2"], ["mp2"]]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
+
+    with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
+        placement = json.load(fp)
+        assert 'modules' in placement, 'modules not in placement'
+        instances = {i['instance_name']: i['transformation'] for i in placement['modules'][0]['instances']}
+        assert instances['X_MP0']['oY'] > 0, 'Suboptimal placement: MP0 should be just below MN0'
+        assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
+    shutil.rmtree(ckt_dir)
+    shutil.rmtree(run_dir)
+
+
+def test_symmetry():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} g1 g2 g3 g4 g5 g6 g7 g8 vssx vccx
+    mn0 vccx g0 vssx vssx n w=180e-9 m=1 nf=2
+    mn1 vccx g1 vssx vssx n w=180e-9 m=1 nf=2
+    mn2 vccx g2 vssx vssx n w=180e-9 m=1 nf=2
+    mn3 vccx g3 vssx vssx n w=180e-9 m=1 nf=2
+    mn4 dddd g4 vssx vssx n w=180e-9 m=1 nf=2
+    mn5 vccx g5 vssx vssx n w=180e-9 m=1 nf=2
+    mn6 dddd g6 vssx vssx n w=180e-9 m=1 nf=2
+    mn7 vccx g7 vssx vssx n w=180e-9 m=1 nf=2
+    mn8 vccx g8 vssx vssx n w=180e-9 m=1 nf=2
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "DoNotIdentify", "instances": [f"mn{i}" for i in range(9)]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
+            ["mn0"],
+            ["mn1", "mn2"],
+            ["mn3", "mn4"],
+            ["mn6", "mn5"],
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)

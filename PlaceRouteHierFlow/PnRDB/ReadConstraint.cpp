@@ -87,7 +87,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "CritNet") {
       for (int i = 0; i < (int)node.Nets.size(); i++) {
         if (node.Nets.at(i).name == constraint["net_name"]) {
-          node.Nets.at(i).priority = constraint["priority"];
+          node.Nets.at(i).weight = constraint["priority"];
           break;
         }
       }

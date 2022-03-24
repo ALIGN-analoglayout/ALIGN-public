@@ -44,10 +44,9 @@ class process_arrays:
                 isinstance(const, constraint.GroundPorts) or \
                 isinstance(const, constraint.ClockPorts):
                 self.stop_points.extend(const.ports)
-            elif isinstance(const, constraint.IdentifyArray):
-                self.condition = const.isTrue
-            elif isinstance(const, constraint.IsDigital):
-                self.is_digital = const.isTrue
+            elif isinstance(const, constraint.ConfigureCompiler):
+                self.condition = const.identify_array
+                self.is_digital = const.is_digital
         self.match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
         self.name = ckt.name
         self.iconst = ckt.constraints
@@ -196,8 +195,8 @@ class process_arrays:
             for nbr in nbrs:
                 if self.graph._is_element(self.graph.nodes[nbr]):
                     inst = self.graph.element(nbr)
-                    # logger.debug(f"instance {inst}")
-                    # super_list.append(inst.model)
+
+
                     super_list.append(inst.abstract_name)
                 else:
                     super_list.append("net")
