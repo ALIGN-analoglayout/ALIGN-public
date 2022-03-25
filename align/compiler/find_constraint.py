@@ -569,8 +569,6 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                 pairs[ele_A] = ele_B
                 pinsA.append(ele_A)
                 pinsB.append(ele_B)
-            else:
-                continue
 
     # Atleast two pair of pins need to be matched
     if len(pairs.keys()) > 1:

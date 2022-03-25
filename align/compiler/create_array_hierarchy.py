@@ -150,7 +150,6 @@ class process_arrays:
                         similar_groups[index].append(l1_node2)
                         found_flag = 1
                         break
-                    assert l1_node1 in sublist or not l1_node2 in sublist, f"broken combinations of {lvl1}"
                 if found_flag == 0:
                     similar_groups.append([l1_node1, l1_node2])
         return similar_groups
