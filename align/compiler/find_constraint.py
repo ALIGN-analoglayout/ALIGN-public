@@ -72,7 +72,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             match_pair[node1] = node2
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
-    elif len(nbrs1) > 10: #TODO remove hack
+    elif len(nbrs1) > 10:  # TODO remove hack
         assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
         match_pair["array_start_point"] = [node1, node2]
         logger.debug(f"high fanout nets are start point for arrays: (net, neighbors){node1, nbrs1}")
@@ -240,6 +240,7 @@ def constraint_generator(ckt_data):
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const and not "ARRAY_HIER_" in subckt.name.upper():
             FindConst(subckt)
+
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
