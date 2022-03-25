@@ -87,7 +87,7 @@ def test_array_gen_ro_fh():
     clean_data(name)
 
 
-def test_array_gen_ro_f():
+def test_array_gen_ro_flat():
     name = f'ckt_{get_test_id()}'
     netlist = ring_oscillator_flat(name)
     constraints = [
@@ -101,7 +101,7 @@ def test_array_gen_ro_f():
     assert ckt, f"No ckt {name} found in library"
     array_cl = process_arrays(ckt, dict())
     array1 = array_cl.find_array('VCCX', ['VSSX'])
-    assert array1 == [['X_MP0', 'X_MN0'], ['X_MP1', 'X_MN1'], ['X_MP2', 'X_MN2'], ['X_MP3', 'X_MN3'], ['X_MP4', 'X_MN4']]
+    assert array1 == [['X_MN0', 'X_MP0'], ['X_MN1', 'X_MP1'], ['X_MN2', 'X_MP2'], ['X_MN3', 'X_MP3'], ['X_MN4', 'X_MP4']]
     array_cl.add_align_block_const()
     array_cl.add_new_array_hier()
     assert ckt.get_element("X_ARRAY_HIER_VCCX")

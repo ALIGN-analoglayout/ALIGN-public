@@ -1,8 +1,6 @@
 import pathlib
 import json
 
-from align import primitive
-
 from ..schema import SubCircuit, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
