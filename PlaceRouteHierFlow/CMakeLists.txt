@@ -10,7 +10,6 @@ set(sources
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
-add_dependencies(PnR cbc)
 find_package(OpenMP)
 
 target_link_libraries(
@@ -28,13 +27,12 @@ target_link_libraries(
      nlohmann_json::nlohmann_json
      spdlog::spdlog
      superlu
-     HiGHS
      pybind11::module
      Boost::boost
      OpenMP::OpenMP_CXX
+     HiGHS
 
-     ${cbc_LIBRARIES}
-     ${highs_LIBRARIES}
+#     ${cbc_LIBRARIES}
 )
 target_code_coverage(PnR)
 
@@ -59,12 +57,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           # External Dependencies
           lpsolve::lpsolve55
           OpenMP::OpenMP_CXX
-          ${cbc_LIBRARIES}
-          ${highs_LIBRARIES}
+#          ${cbc_LIBRARIES}
+          HiGHS
           nlohmann_json::nlohmann_json
           spdlog::spdlog
           superlu
-          HiGHS
           pybind11::module
           Boost::boost
           GTest::gtest

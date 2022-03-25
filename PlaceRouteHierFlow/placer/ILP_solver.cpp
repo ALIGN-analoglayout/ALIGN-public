@@ -1,8 +1,6 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-//#include "symphony.h"
-#include "CbcModel.hpp"
-#include "OsiClpSolverInterface.hpp"
+#include "interfaces/highs_c_api.h"
 #include <iostream>
 #include <malloc.h>
 #include <signal.h>
@@ -1774,8 +1772,8 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   const unsigned N_area_y = N_var - 1;
 
   //const auto infty = sym_get_infinity();
-  OsiClpSolverInterface osiclp;
-  const double infty{osiclp.getInfinity()};
+  OsiHiGHSSolverInterface osihighs;
+  const double infty{osihighs.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -2463,12 +2461,12 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
-    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    osihighs.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub);
     for (int i = 0; i < intvars.size(); ++i) {
       if (intvars[i]) {
-        osiclp.setInteger(i);
+        osihighs.setInteger(i);
       }
     }
     //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
@@ -2513,10 +2511,10 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       //sym_set_col_names(env, names);
       //sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       for (unsigned i = 0; i < namesvec.size(); ++i) {
-        osiclp.setColName(i, names[i]);
+        osihighs.setColName(i, names[i]);
       }
       
-      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp").c_str()));
+      osihighs.writeLp(const_cast<char*>((mydesign.name + "_ilp").c_str()));
       ++write_cnt;
     }*/
     CbcModel model(osiclp);
