@@ -1,3 +1,5 @@
+#define CATCH_INFINITE_LOOP
+
 #include "SeqPair.h"
 
 #include <exception>
@@ -525,9 +527,11 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
 
 void SeqPair::PrintVec(const std::string& tag, const std::vector<int>& vec) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintVec");
-  std::string tmpstr;
-  for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
-  logger->trace("{0} {1}", tag, tmpstr);
+  if (logger->should_log(spdlog::level::trace)) {
+    std::string tmpstr;
+    for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
+    logger->trace("{0} {1}", tag, tmpstr);
+  }
 }
 
 void SeqPair::PrintSeqPair() {
@@ -659,15 +663,18 @@ bool SeqPair::KeepOrdering(design& caseNL) {
 
   {
 
+#ifdef CATCH_INFINITE_LOOP
     std::unordered_set<std::vector<int>,VectorHasher> visitedPosPair = {posPair};
+#endif
 
     bool pos_keep_order;
 
     do {
     
+#ifdef CATCH_INFINITE_LOOP
       logger->trace("====Fixup pos order====");
-
       PrintVec("Before:", posPair);
+#endif
 
       int first_it, second_it;
       pos_keep_order = true;
@@ -698,25 +705,30 @@ bool SeqPair::KeepOrdering(design& caseNL) {
 	  break;
 	}
       }
+#ifdef CATCH_INFINITE_LOOP
       PrintVec("After: ", posPair);
-
       if (!pos_keep_order && visitedPosPair.find(posPair) != visitedPosPair.end()) {
 	logger->critical("Infinite loop in posPair loop.");
 	return false;
       } else {
 	visitedPosPair.insert(posPair);
       }
+#endif
     } while (!pos_keep_order);
   }
   {
     bool neg_keep_order;
 
+#ifdef CATCH_INFINITE_LOOP
     std::unordered_set<std::vector<int>,VectorHasher> visitedNegPair = {negPair};
+#endif
 
     // generate a neg order
     do {
+#ifdef CATCH_INFINITE_LOOP
       logger->trace("====Fixup neg order====");
       PrintVec("Before:", negPair);
+#endif
       int first_it, second_it;
       neg_keep_order = true;
       for (const auto& order : caseNL.Ordering_Constraints) {
@@ -767,15 +779,15 @@ bool SeqPair::KeepOrdering(design& caseNL) {
 	  break;
 	}
       }
+#ifdef CATCH_INFINITE_LOOP
       PrintVec("After: ", negPair);
-
       if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
 	logger->critical("Infinite loop in negPair loop.");
 	return false;
       } else {
 	visitedNegPair.insert(negPair);
       }
-
+#endif
 
     } while (!neg_keep_order);
   }
