@@ -1,5 +1,6 @@
 import abc
 import more_itertools as itertools
+import itertools as plain_itertools
 import re
 import logging
 
@@ -93,7 +94,8 @@ class UserConstraint(HardConstraint, abc.ABC):
 
     def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.translate(solver)
+            if isinstance(constraint, HardConstraint):
+                yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
@@ -136,7 +138,7 @@ class Order(HardConstraint):
         'left_to_right', 'right_to_left',
         'bottom_to_top', 'top_to_bottom'
     ]]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -586,7 +588,7 @@ class AlignInOrder(UserConstraint):
         'center'
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -622,12 +624,76 @@ class AlignInOrder(UserConstraint):
             )
 
 
+class Floorplan(UserConstraint):
+    '''
+    Row-based layout floorplan from top to bottom
+    Instances on each row are ordered from left to right.
+
+    Example: Define three regions and assign each instance to a region:
+        {"constraint":"Floorplan", "regions": [["A", "B", "C"], ["D", "E"], ["G"], "order": true}
+
+        -----
+        A B C
+        -----
+        D E
+        -----
+        G
+        -----
+    '''
+    regions: List[List[str]]
+    order: bool = False
+    symmetrize: bool = False
+
+    @types.validator('regions', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        new_rows = list()
+        for row in value:
+            new_rows.append(validate_instances(cls, row))
+        return new_rows
+
+    def yield_constraints(self):
+        above_below = set()
+        with set_context(self._parent):
+            logger.debug("=== Floorplan ========================")
+            # Regions from top to bottom
+            logger.debug("===========================")
+            for i in range(len(self.regions)-1):
+                for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
+                    logger.debug(f'Above:{above} Below:{below}')
+                    above_below.add((above, below))
+                    assert (below, above) not in above_below, \
+                        f'Please review floorplan constraint:\n{self.regions}.\n{below} is previously placed above {above}.'
+                    yield Order(instances=[above, below], direction='top_to_bottom', abut=False)
+            # Order instances in each region from left to right
+            if self.order:
+                logger.debug("===========================")
+                for region in self.regions:
+                    logger.debug(f'Order left to right: {region}')
+                    if len(region) > 1:
+                        yield Order(instances=region, direction='left_to_right', abut=False)
+            # Symmetrize instances along a single vertical line
+            if self.symmetrize:
+                logger.debug("===========================")
+                pairs = list()
+                for region in self.regions:
+                    if len(region) <= 2:
+                        pairs.append(region)
+                    else:
+                        for i in range(len(region)//2):
+                            pairs.append([region[i], region[-1-i]])
+                        if len(region) % 2 == 1:
+                            pairs.append([region[i+1]])
+                logger.debug(f'Symmetric blocks:\n{pairs}')
+                yield SymmetricBlocks(pairs=pairs, direction='V')
+
+
 #
 # list of 'SoftConstraint'
 #
 # Below is a list of legacy constraints
 # that have not been hardened yet
 #
+
 
 class PlaceSymmetric(SoftConstraint):
     # TODO: Finish implementing this. Not registered to
@@ -725,11 +791,12 @@ class CreateAlias(SoftConstraint):
     name: str
 
 
-class MatchBlocks(SoftConstraint):
+class PlaceCloser(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
+        `instances` are preferred to be placed closer.
     '''
     instances: List[str]
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
 class PowerPorts(SoftConstraint):
@@ -814,7 +881,8 @@ class DoNotUseLib(SoftConstraint):
         }
     '''
     libraries: List[str]
-    propagate: Optional[bool]
+    propagate: bool = False
+
 
 class ConfigureCompiler(SoftConstraint):
     '''
@@ -837,14 +905,14 @@ class ConfigureCompiler(SoftConstraint):
             "propagate": true
         }
     '''
-    is_digital: bool = False # Annotation and auto-constraint generation
+    is_digital: bool = False  # Annotation and auto-constraint generation
     auto_constraint: bool = True  # Auto-constraint generation
     identify_array: bool = True  # Forbids/Allow any array identification
     fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
     remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
-    propagate: bool = True #propagate constraint to all lower hierarchies
+    propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
 class Generator(SoftConstraint):
@@ -1218,7 +1286,7 @@ class DoNotRoute(SoftConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align,
+    Order, Align, Floorplan,
     Enclose, Spread,
     AssignBboxVariables,
     AspectRatio,
@@ -1232,7 +1300,7 @@ ConstraintType = Union[
     SameTemplate,
     CreateAlias,
     GroupBlocks,
-    MatchBlocks,
+    PlaceCloser,
     DoNotIdentify,
     PlaceOnGrid,
     BlockDistance,

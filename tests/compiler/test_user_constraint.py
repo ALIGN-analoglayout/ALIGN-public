@@ -148,7 +148,7 @@ def test_merged_const():
     )
     assert available_modules == all_modules, f"{available_modules}"
     assert ckt_library.find(name).constraints.dict()['__root__'] == [{"constraint": "ground_ports", "ports": ["S"]}]
-    assert ckt_library.find('PARAM_MOS').constraints.dict()['__root__'] == [{"constraint": "do_not_use_lib", "libraries": ["DP_NMOS_B"], 'propagate': None},
+    assert ckt_library.find('PARAM_MOS').constraints.dict()['__root__'] == [{"constraint": "do_not_use_lib", "libraries": ["DP_NMOS_B"], 'propagate': False},
                                                                             {"constraint": "ground_ports", "ports": ["S"]}]
     clean_data(name)
 

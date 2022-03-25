@@ -6,7 +6,6 @@ import align.pdk.finfet
 from align.cell_fabric import gen_lef
 
 ALIGN_HOME = os.getenv('ALIGN_HOME')
-
 MY_DIR = pathlib.Path(__file__).resolve().parent
 
 
@@ -101,3 +100,52 @@ def run_postamble(nm, cv, max_errors=0):
         for (k, v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {nm} ({k})"
             assert v['errors'] <= max_errors, f"{nm} ({k}):Number of DRC errors: {str(v['errors'])}"
+
+
+
+
+def build_example(name, netlist, constraints):
+    example = MY_DIR / name
+    if example.exists() and example.is_dir():
+        shutil.rmtree(example)
+    example.mkdir(parents=True)
+    with open(example / f'{name}.sp', 'w') as fp:
+        fp.write(netlist)
+    if isinstance(constraints, dict):
+        for k, v in constraints.items():
+            with open(example / f'{k}.const.json', 'w') as fp:
+                fp.write(json.dumps(v, indent=2))
+    else:
+        with open(example / f'{name}.const.json', 'w') as fp:
+            fp.write(json.dumps(constraints, indent=2))
+    return example
+
+def run_example(example, *, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
+    run_dir = MY_DIR / f'run_{example.name}'
+    if run_dir.exists() and run_dir.is_dir():
+        shutil.rmtree(run_dir)
+    run_dir.mkdir(parents=True)
+    os.chdir(run_dir)
+
+    args = [str(example), '-l', log_level, '-n', str(n)]
+
+    if additional_args:
+        for elem in additional_args:
+            if elem:
+                args.append(elem)
+
+    results = align.CmdlineParser().parse_args(args)
+
+    assert results is not None, f"{example.name}: No results generated"
+
+    for result in results:
+        _, variants = result
+        for (k, v) in variants.items():
+            assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
+            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errors: {str(v['errors'])}"
+
+    if cleanup:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(example)
+    else:
+        return (example, run_dir)
