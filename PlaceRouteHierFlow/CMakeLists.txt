@@ -28,11 +28,13 @@ target_link_libraries(
      nlohmann_json::nlohmann_json
      spdlog::spdlog
      superlu
+     HiGHS
      pybind11::module
      Boost::boost
      OpenMP::OpenMP_CXX
 
      ${cbc_LIBRARIES}
+     ${highs_LIBRARIES}
 )
 target_code_coverage(PnR)
 
@@ -58,9 +60,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           lpsolve::lpsolve55
           OpenMP::OpenMP_CXX
           ${cbc_LIBRARIES}
+          ${highs_LIBRARIES}
           nlohmann_json::nlohmann_json
           spdlog::spdlog
           superlu
+          HiGHS
           pybind11::module
           Boost::boost
           GTest::gtest
