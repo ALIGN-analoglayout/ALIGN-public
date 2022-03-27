@@ -1,6 +1,6 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-#include "interfaces/highs_c_api.h"
+#include "Highs.h"
 #include <iostream>
 #include <malloc.h>
 #include <signal.h>
@@ -1772,8 +1772,8 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   const unsigned N_area_y = N_var - 1;
 
   //const auto infty = sym_get_infinity();
-  OsiHiGHSSolverInterface osihighs;
-  const double infty{osihighs.getInfinity()};
+  //OsiHiGHSSolverInterface osihighs;
+  const double infty{1e30};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -2461,14 +2461,14 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
-    osihighs.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
-        values.data(), collb.data(), colub.data(),
-        objective.data(), rhslb, rhsub);
-    for (int i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) {
-        osihighs.setInteger(i);
-      }
-    }
+    //osihighs.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    //    values.data(), collb.data(), colub.data(),
+    //    objective.data(), rhslb, rhsub);
+    //for (int i = 0; i < intvars.size(); ++i) {
+    //  if (intvars[i]) {
+    //    osihighs.setInteger(i);
+    //  }
+    //}
     //sym_set_int_param(env, "max_active_nodes", (num_threads > 0 ? num_threads : 1));
 
     //solve the integer program
@@ -2517,62 +2517,61 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       osihighs.writeLp(const_cast<char*>((mydesign.name + "_ilp").c_str()));
       ++write_cnt;
     }*/
-    CbcModel model(osiclp);
-    int status{0};
-    {
-      TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      //sym_solve(env);
-      //CbcMain0(model);
-      model.setLogLevel(0);
-      model.setMaximumSolutions(1000);
-      model.setMaximumSavedSolutions(1000);
-      model.setMaximumSeconds(300);
-      //model.setNumberHeuristics(0);
-      const char* argv[] = {"", "-log", "0", "-solve"};
-      status = CbcMain(4, argv, model);
-    }
-    //int status = sym_get_status(env);
-    //if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    //int status{0};
+    //{
+    //  TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
+    //  //sym_solve(env);
+    //  //CbcMain0(model);
+    //  model.setLogLevel(0);
+    //  model.setMaximumSolutions(1000);
+    //  model.setMaximumSavedSolutions(1000);
+    //  model.setMaximumSeconds(300);
+    //  //model.setNumberHeuristics(0);
+    //  const char* argv[] = {"", "-log", "0", "-solve"};
+    //  status = CbcMain(4, argv, model);
+    //}
+    ////int status = sym_get_status(env);
+    ////if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    ////  ++const_cast<design&>(mydesign)._infeasILPFail;
+    ////  sym_close_environment(env);
+    ////  sighandler = signal(SIGINT, sighandler);
+    ////  return false;
+    ////}
+    //status = model.secondaryStatus();
+    //if (status != 0) {
     //  ++const_cast<design&>(mydesign)._infeasILPFail;
-    //  sym_close_environment(env);
     //  sighandler = signal(SIGINT, sighandler);
     //  return false;
     //}
-    status = model.secondaryStatus();
-    if (status != 0) {
-      ++const_cast<design&>(mydesign)._infeasILPFail;
-      sighandler = signal(SIGINT, sighandler);
-      return false;
-    }
-    //std::vector<double> var(N_var, 0.);
-    //sym_get_col_solution(env, var.data());
-    //sym_close_environment(env);
-    const double* var = model.bestSolution();
-    sighandler = signal(SIGINT, sighandler);
-    int minx(INT_MAX), miny(INT_MAX);
-    //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
-    //  area_ilp += (objective[i] * var[i]);
+    ////std::vector<double> var(N_var, 0.);
+    ////sym_get_col_solution(env, var.data());
+    ////sym_close_environment(env);
+    //const double* var = model.bestSolution();
+    //sighandler = signal(SIGINT, sighandler);
+    //int minx(INT_MAX), miny(INT_MAX);
+    ////for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
+    ////  area_ilp += (objective[i] * var[i]);
+    ////}
+    //area_ilp = var[N_area_y] * var[N_area_x];
+    //for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    //  Blocks[i].x = roundupint(var[i * 4]);
+    //  Blocks[i].y = roundupint(var[i * 4 + 1]);
+    //  minx = std::min(minx, Blocks[i].x);
+    //  miny = std::min(miny, Blocks[i].y);
+    //  Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
+    //  Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     //}
-    area_ilp = var[N_area_y] * var[N_area_x];
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = roundupint(var[i * 4]);
-      Blocks[i].y = roundupint(var[i * 4 + 1]);
-      minx = std::min(minx, Blocks[i].x);
-      miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
-      Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
-    }
-    /** may fail place on grid constraint
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x -= minx;
-      Blocks[i].y -= miny;
-    }
-    **/
-    // calculate HPWL from ILP solution
-    for (int i = 0; i < mydesign.Nets.size(); ++i) {
-      int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
-      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
-    }
+    ///** may fail place on grid constraint
+    //for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    //  Blocks[i].x -= minx;
+    //  Blocks[i].y -= miny;
+    //}
+    //**/
+    //// calculate HPWL from ILP solution
+    //for (int i = 0; i < mydesign.Nets.size(); ++i) {
+    //  int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+    //  HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+    //}
   }
 
   return true;

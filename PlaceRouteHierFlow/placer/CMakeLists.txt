@@ -27,7 +27,7 @@ target_link_libraries(
      lpsolve::lpsolve55
      Boost::boost
      nlohmann_json::nlohmann_json
-     HiGHS
+     ${highs_LIBRARIES}
      )
 
 target_code_coverage(placer)

@@ -30,9 +30,8 @@ target_link_libraries(
      pybind11::module
      Boost::boost
      OpenMP::OpenMP_CXX
-     HiGHS
 
-#     ${cbc_LIBRARIES}
+     ${highs_LIBRARIES}
 )
 target_code_coverage(PnR)
 
@@ -57,8 +56,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           # External Dependencies
           lpsolve::lpsolve55
           OpenMP::OpenMP_CXX
-#          ${cbc_LIBRARIES}
-          HiGHS
+          ${highs_LIBRARIES}
           nlohmann_json::nlohmann_json
           spdlog::spdlog
           superlu
