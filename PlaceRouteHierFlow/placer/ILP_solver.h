@@ -62,11 +62,11 @@ class ILP_solver {
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
   //bool FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
-  bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool FrameSolveILPHighs(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
     //if (use_ilp_solver == SYMPHONY) 
-    return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    return FrameSolveILPHighs(mydesign, curr_sp, drcInfo, flushlb, prev);
     //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }
   public:
