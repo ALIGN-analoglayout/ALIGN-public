@@ -2489,6 +2489,12 @@ bool ILP_solver::FrameSolveILPHighs(const design& mydesign, const SeqPair& curr_
       if (intvars[i]) model.lp_.integrality_[i] = HighsVarType::kInteger;
     }
 
+    highs.setOptionValue(kLogFileString, "");
+    highs.setOptionValue("log_to_console", false);
+    highs.setOptionValue("time_limit", mydesign.Blocks.size() * 1.);
+    highs.setOptionValue("log_dev_level", 0);
+    highs.setOptionValue("highs_debug_level", 0);
+    highs.setOptionValue("output_flag", false);
     highs.passModel(model);
     HighsStatus status;
     {

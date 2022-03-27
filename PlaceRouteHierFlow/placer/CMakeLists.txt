@@ -16,7 +16,7 @@ set(sources
      Preadfile.cpp
      design.cpp)
 
-include_directories(${highs_SOURCE_DIR})
+include_directories(${highs_SOURCE_DIR}/src)
 include_directories(${highs_BINARY_DIR})
 add_library(placer STATIC ${sources} ${headers})
 
