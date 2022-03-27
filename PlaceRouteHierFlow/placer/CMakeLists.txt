@@ -16,9 +16,8 @@ set(sources
      Preadfile.cpp
      design.cpp)
 
-ExternalProject_Get_Property(symphony binary_dir)
-ExternalProject_Get_Property(symphony source_dir)
-include_directories(${source_dir}/SYMPHONY/include)
+include_directories(${highs_SOURCE_DIR})
+include_directories(${highs_BINARY_DIR})
 add_library(placer STATIC ${sources} ${headers})
 
 target_link_libraries(
@@ -27,7 +26,7 @@ target_link_libraries(
      lpsolve::lpsolve55
      Boost::boost
      nlohmann_json::nlohmann_json
-     ${symphony_LIBRARIES}
+     ${highs_LIBRARIES}
      )
 
 target_code_coverage(placer)
