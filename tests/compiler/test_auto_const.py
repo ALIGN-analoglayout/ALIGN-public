@@ -6,12 +6,13 @@ from align.schema.types import set_context
 from align.compiler.util import get_ports_weight
 from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const
-from utils import clean_data, build_example, ota_six, get_test_id, ota_dcap, ota_dummy
+from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
 config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
+
 
 def test_symm_net():
     name = f'ckt_{get_test_id()}'
@@ -76,6 +77,7 @@ def test_add_symmetry_const():
     assert len(ckt.constraints) == 2, f"skip instances who does not exist {const_pairs}"
     clean_data(name)
 
+
 def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
@@ -90,6 +92,7 @@ def test_match_start_points():
     ports_weight = get_ports_weight(graph)
     recursive_start_points(graph, match_pairs, stop_points, 'VIN', 'VIP', ports_weight)
     assert match_pairs[('VIN', 'VIP')] == {'MN4': 'MN3', 'VIN': 'VIP'}
+
 
 def test_filter_duplicate_instances():
     name = f'ckt_{get_test_id()}'
@@ -116,19 +119,6 @@ def test_symmnet_filters():
     add.loop_through_pairs()
     assert ckt.constraints[0].pairs == [['MN3', 'MN4']]
 
-def test_filter_dcap():
-    name = f'ckt_{get_test_id()}'
-    netlist = ota_dcap(name)
-    constraints = []
-    example = build_example(name, netlist, constraints)
-    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
-    annotate_library(ckt_library, primitive_library)
-    ckt = ckt_library.find(name)
-    add = add_symmetry_const(ckt, dict(), set(), [], None)
-    pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_CAP', 'X_MN4_CAP']]
-    mpairs = add.filter_symblock_const(pairs)
-    assert mpairs == [['X_MN3_MN4']]
-
 
 def test_filter_dummy():
     name = f'ckt_{get_test_id()}'
@@ -142,4 +132,3 @@ def test_filter_dummy():
     pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
-
