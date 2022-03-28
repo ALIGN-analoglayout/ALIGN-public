@@ -417,8 +417,6 @@ class add_symmetry_const:
                 continue
             if not self.G.nodes[key].get("instance"):
                 continue
-            elif "DCAP" in self.subckt.get_element(key).model:
-                logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 bm = get_base_model(self.subckt, key)
                 if key == value and bm in ["NMOS", "PMOS", "RES", "CAP"]:
