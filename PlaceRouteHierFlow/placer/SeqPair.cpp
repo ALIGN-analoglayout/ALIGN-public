@@ -180,7 +180,7 @@ const bool SeqPairEnumerator::IncrementSelected() {
 }*/
 
 void SeqPairEnumerator::Permute() {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
+  //auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
   // if (!EnumFlip())
   if (_exhausted) return;
   if (!IncrementSelected()) {
@@ -514,7 +514,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
+  //auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
   this->posPair = sp.posPair;
   this->negPair = sp.negPair;
   this->orient = sp.orient;
@@ -537,27 +537,29 @@ void SeqPair::PrintVec(const std::string& tag, const std::vector<int>& vec) {
 void SeqPair::PrintSeqPair() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
 
-  logger->debug("=== Sequence Pair ===");
-  std::string tmpstr;
-  for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Positive pair: {0}", tmpstr);
+  if (logger->should_log(spdlog::level::debug)) {
+    logger->debug("=== Sequence Pair ===");
+    std::string tmpstr;
+    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Positive pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Negative pair: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Negative pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Orientation: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Orientation: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
-  logger->debug("Symmetry axis: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
+    logger->debug("Symmetry axis: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Selected: {0}", tmpstr);
-  // cout<<endl;
+    tmpstr = "";
+    for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Selected: {0}", tmpstr);
+    // cout<<endl;
+  }
 }
 
 void SeqPair::SameSelected(design& caseNL) {
@@ -1279,11 +1281,13 @@ bool SeqPair::PerturbationNew(design& caseNL) {
 
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
-    std::string tmpstr, tmpstrn, tmpstrs;
-    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
-    for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
-    for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
-    logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
+    if (logger->should_log(spdlog::level::debug)) {
+      std::string tmpstr, tmpstrn, tmpstrs;
+      for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+      for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
+      for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
+      logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
+    }
   } while (retval && ++trial_cnt < max_trial_cnt);
   return !retval;
 }
