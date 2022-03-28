@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 import pytest
@@ -152,6 +153,7 @@ def cmp_constraints(name):
 
 
 def test_cmp_on_grid(place_on_grid_h):
+    print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
