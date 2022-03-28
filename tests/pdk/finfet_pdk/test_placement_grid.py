@@ -152,6 +152,7 @@ def cmp_constraints(name):
     return constraints
 
 
+@pytest.mark.skip(reason='Too slow')
 def test_cmp_on_grid(place_on_grid_h):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
