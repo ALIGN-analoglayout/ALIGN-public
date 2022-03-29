@@ -1681,7 +1681,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       status = CbcMain1(4, argv, model);
     }
     
-    if (status != 0 || var == nullptr) {
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
