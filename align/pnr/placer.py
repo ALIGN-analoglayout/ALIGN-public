@@ -4,24 +4,21 @@ import pathlib
 import json
 import copy
 from collections import defaultdict
-
 from .. import PnR
-
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .checker import check_placement, check_place_on_grid
 from ..gui.mockup import run_gui
-from ..schema.hacks import VerilogJsonTop
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
-
 from .grid_constraints import gen_constraints
-
 import math
-
-from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d
 from .build_pnr_model import gen_DB_verilog_d
 
 
 logger = logging.getLogger(__name__)
+
+
+PLACER_SA_MAX_ITER = 1e4
+
 
 def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
@@ -35,7 +32,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # Defaults; change (and uncomment) as required
     hyper.T_INT = 0.5  # Increase for denormalized decision criteria
     hyper.T_MIN = 0.05
-    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/1e4)
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/PLACER_SA_MAX_ITER)
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
     # hyper.ALPHA = 0.99925
     # hyper.max_init_trial_count = 10000
