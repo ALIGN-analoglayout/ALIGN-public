@@ -389,6 +389,9 @@ void SeqPair::CompactSeq() {
 }
 
 SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
+  
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SeqPair");
+
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
@@ -498,13 +501,13 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   }
 
   bool ok = KeepOrdering(caseNL);
-  assert(ok);
+  // logger->info("KeepOrdering end: {0}", ok);
+
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
 
   if (_seqPairEnum->valid()) {
-    auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
     logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
@@ -633,30 +636,6 @@ bool SeqPair::ValidateSelect(design & caseNL){
 bool SeqPair::KeepOrdering(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
 
-  // ids of blocks which have order constraints
-  // set<int> block_id_with_order;
-  // for (auto order : caseNL.Ordering_Constraints) {
-  // block_id_with_order.insert(order.first.first);
-  // block_id_with_order.insert(order.first.second);
-  //}
-  // places of block_id_with_order in pair
-  // vector<int> pos_idx, neg_idx;
-
-  // for (unsigned int i = 0; i < posPair.size(); i++) {
-  // if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
-  // if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
-  //}
-
-  // vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
-  // for (unsigned int i = 0; i < block_id_with_order.size(); i++) {
-  // pos_order[i] = posPair[pos_idx[i]];
-  // neg_order[i] = negPair[neg_idx[i]];
-  //}
-
-  // unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  // std::default_random_engine e(seed);
-  // generate a pos order
-
   {
 
     std::unordered_set<std::vector<int>,VectorHasher> visitedPosPair = {posPair};
@@ -701,7 +680,7 @@ bool SeqPair::KeepOrdering(design& caseNL) {
       PrintVec("After: ", posPair);
 
       if (!pos_keep_order && visitedPosPair.find(posPair) != visitedPosPair.end()) {
-	logger->critical("Infinite loop in posPair loop.");
+	// logger->critical("Infinite loop in posPair loop.");
 	return false;
       } else {
 	visitedPosPair.insert(posPair);
@@ -770,7 +749,7 @@ bool SeqPair::KeepOrdering(design& caseNL) {
       PrintVec("After: ", negPair);
 
       if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
-	logger->critical("Infinite loop in negPair loop.");
+	// logger->critical("Infinite loop in negPair loop.");
 	return false;
       } else {
 	visitedNegPair.insert(negPair);
@@ -1263,10 +1242,10 @@ bool SeqPair::PerturbationNew(design& caseNL) {
       }
     }
     bool ok = KeepOrdering(caseNL);
-    assert(ok);
+    // logger->info("KeepOrdering end: {0}", ok);
 
     SameSelected(caseNL);
-    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
+    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
     std::string tmpstr, tmpstrn, tmpstrs;
     for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
     for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
