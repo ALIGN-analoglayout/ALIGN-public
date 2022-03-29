@@ -3,7 +3,8 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "Highs.h"
+#include "CbcModel.hpp"
+#include "OsiClpSolverInterface.hpp"
 #include <signal.h>
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
@@ -204,15 +205,15 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!PlaceILPHighs_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
     } else if (mydesign.rightAlign()) {
-      if (!PlaceILPHighs_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
     } else {
-      if (!PlaceILPHighs_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
       std::vector<Block> blockslocal{Blocks};
       auto selectedlocal = curr_sp.selected;
       // frame and solve ILP to flush top/right
-      if (!PlaceILPHighs_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -231,9 +232,9 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   return sol;
 }
 
-bool ILP_solver::PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
+bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPHighs_select");
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPCbc_select");
 
   auto sighandler = signal(SIGINT, nullptr);
   int v_metal_index = -1;
@@ -296,8 +297,8 @@ bool ILP_solver::PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, 
   // i*6+3:V_flip
   // i*6+4:Width
   // i*6+5:Height
-  Highs highs;
-  const double infty{highs.getInfinity()};
+  OsiClpSolverInterface osiclp;
+  const double infty{osiclp.getInfinity()};
 
   std::vector<int> rowindofcol[N_var_max];
   std::vector<double> constrvalues[N_var_max];
@@ -1585,45 +1586,7 @@ bool ILP_solver::PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, 
           break;
       }
     }
-    //
-    // Pass the model to HiGHS
-    /*Highs highs;
-    highs.passModel (N_var, (int)rhs.size(), (int)values.size(),
-        MatrixFormat::kColwise, ObjSense::kMinimize, 0, objective.data(), collb.data(),
-        colub.data(), rhslb, rhsub, starts.data(), indices.data(), values.data(), intvars.data());*/
 
-    //solve the integer programa
-    HighsStatus status;
-    HighsModel model;
-    model.lp_.num_col_ = (int)N_var;
-    model.lp_.num_row_ = (int)rhs.size();
-    model.lp_.sense_ = ObjSense::kMinimize;
-    model.lp_.offset_ = 0;
-    model.lp_.col_cost_ = objective;
-    model.lp_.col_lower_ = collb;
-    model.lp_.col_upper_ = colub;
-    model.lp_.row_lower_ = rhslb;
-    model.lp_.row_upper_ = rhsub;
-    model.lp_.a_matrix_.format_ = MatrixFormat::kColwise;
-    model.lp_.a_matrix_.start_ = starts;
-    model.lp_.a_matrix_.index_ = indices;
-    model.lp_.a_matrix_.value_ = values;
-    model.lp_.integrality_.resize(N_var, HighsVarType::kContinuous);
-
-    for (unsigned i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) model.lp_.integrality_[i] = HighsVarType::kInteger;
-    }
-     //status = highs.passModel(N_var, (int)rhs.size(), (int)values.size(),
-     //    MatrixFormat::kColwise, ObjSense::kMinimize, 0, objective.data(), collb.data(),
-     //    colub.data(), rhslb, rhsub, starts.data(), indices.data(), values.data(), intvars.data());
-
-    highs.setOptionValue(kLogFileString, "");
-    highs.setOptionValue("log_to_console", false);
-    highs.setOptionValue("time_limit", mydesign.Blocks.size() * 1.);
-    highs.setOptionValue("log_dev_level", 0);
-    highs.setOptionValue("highs_debug_level", 0);
-    highs.setOptionValue("output_flag", false);
-    highs.passModel(model);
     static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
@@ -1698,39 +1661,45 @@ bool ILP_solver::PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, 
       namesvec[N_aspect_ratio_max - 1] = (mydesign.name + "_aspect_p\0");
       namesvec[N_aspect_ratio_max - 2] = (mydesign.name + "_aspect_n\0");
 
-      model.lp_.col_names_ = namesvec;
-      model.lp_.row_names_.resize(rhs.size());
-      for (unsigned i = 0; i < rhs.size(); ++i) {
-        model.lp_.row_names_[i] = (rowtype[i] + std::to_string(i));
-      }*/
-      highs.writeModel(mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp");
+      //model.lp_.col_names_ = namesvec;
+      //model.lp_.row_names_.resize(rhs.size());
+      //for (unsigned i = 0; i < rhs.size(); ++i) {
+      //  model.lp_.row_names_[i] = (rowtype[i] + std::to_string(i));
+      //}
+      osiclp.writeLP(mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp");*/
       ++write_cnt;
     }
+    CbcModel model(osiclp);
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = highs.run();
+      CbcMain0(model);
+      model.setLogLevel(0);
+      model.setMaximumSeconds(300);
+      //model.setNumberHeuristics(0);
+      const char* argv[] = {"", "-log", "0", "-solve"};
+      status = CbcMain1(4, argv, model);
     }
-    auto mstatus = highs.getModelStatus();
-    logger->info("status : {0} {1}", (status == HighsStatus::kOk || status == HighsStatus::kWarning), highs.modelStatusToString(mstatus));
-    if ((status != HighsStatus::kOk && status != HighsStatus::kWarning) || mstatus != HighsModelStatus::kOptimal) {
+    
+    if (status != 0 || var == nullptr) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       return false;
     }
-    auto ilpsol = highs.getSolution().col_value;
+    const double* var = model.bestSolution();
     int minx(INT_MAX), miny(INT_MAX);
-    area_ilp = (ilpsol[N_area_max - 1] * ilpsol[N_area_max - 2]);
-    logger->info("area : {0} {1}", ilpsol[N_area_max - 2], ilpsol[N_area_max - 1]);
+    area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
+    logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x = roundupint(ilpsol[i * 6]);
-      Blocks[i].y = roundupint(ilpsol[i * 6 + 1]);
+      Blocks[i].x = roundupint(var[i * 6]);
+      Blocks[i].y = roundupint(var[i * 6 + 1]);
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
-      Blocks[i].H_flip = roundupint(ilpsol[i * 6 + 2]);
-      Blocks[i].V_flip = roundupint(ilpsol[i * 6 + 3]);
+      Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
+      Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
       if (mydesign.Blocks[i].size() > 1) {
         int select{-1};
         for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
-          if (roundupint(ilpsol[blk_select_idx[i] + j]) > 0.5) {
+          if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
             select = j;
             break;
           }
@@ -1747,7 +1716,7 @@ bool ILP_solver::PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, 
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = int(N_block_vars_max + i * 4);
-      HPWL_ILP += (ilpsol[ind + 3] + ilpsol[ind + 2] - ilpsol[ind + 1] - ilpsol[ind]);
+      HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
 
     cost = UpdateAreaHPWLCost(mydesign, curr_sp);

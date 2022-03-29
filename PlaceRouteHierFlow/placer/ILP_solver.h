@@ -65,11 +65,23 @@ class ILP_solver {
   };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
-  bool FrameSolveILPHighs(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const vector<placerDB::point>* prev);
-  bool PlaceILPHighs_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
+  bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
-    return FrameSolveILPHighs(mydesign, curr_sp, drcInfo, num_threads, flushlb, prev);
+    //if (use_ilp_solver == SYMPHONY) 
+    bool no_place_on_grid{true};
+    for(unsigned int i=0;i<mydesign.Blocks.size();i++){
+      if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
+          !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
+        no_place_on_grid = false;
+        break;
+      }
+    }
+    if (no_place_on_grid) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    return FrameSolveILPCbc(mydesign, curr_sp, drcInfo, flushlb, prev);
+    //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }
   std::vector<std::set<int>> GetCC(const design& mydesign) const;
   public:
