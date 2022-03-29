@@ -6,6 +6,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include "symphony.h"
+
 
 bool OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited) {
   if (_sequences.size() > _maxSeq) {
@@ -200,6 +202,20 @@ void SeqPairEnumerator::Permute() {
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
   // logger->info("enum index : {0} {1}", _enumIndex.first, _enumIndex.second);
+}
+
+
+void SeqPair::InitSP(const design& mydesign)
+{
+  // each block gets two vars : one each in pos and neg
+  unsigned int N_var = 2 * posPair.size();
+  std::vector<int> rowindofcol[N_var];
+  std::vector<double> constrvalues[N_var];
+  std::vector<double> rhs;
+  std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
+  intvars.resize(N_var, TRUE);
+  std::vector<char> sens;
+  std::vector<double> collb(N_var, 0), colub(N_var, 1);
 }
 
 SeqPair::SeqPair() {
