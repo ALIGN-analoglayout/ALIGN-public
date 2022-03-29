@@ -7,7 +7,12 @@
 #include <unordered_set>
 
 #include "spdlog/spdlog.h"
+#include "symphony.h"
+#include <signal.h>
 
+#define BOOST_ALLOW_DEPRECATED_HEADERS
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/connected_components.hpp>
 
 bool OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited) {
   if (_sequences.size() > _maxSeq) {
@@ -203,6 +208,596 @@ void SeqPairEnumerator::Permute() {
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
   // logger->info("enum index : {0} {1}", _enumIndex.first, _enumIndex.second);
 }
+
+
+std::vector<std::set<int>> SeqPair::GetCC(const design& mydesign) const
+{
+  using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS>;
+  Graph graph;
+  for (const auto& it : mydesign.Ordering_Constraints) {
+    add_edge(it.first.first, it.first.second, graph);
+  }
+
+  std::map<Graph::vertex_descriptor, int> compmap;
+  int num = connected_components(graph, boost::make_assoc_property_map(compmap));
+  std::map<int, std::set<int>> cc;
+  for (auto& it : compmap) {
+    cc[it.second].insert(it.first);
+  }
+
+  std::vector<std::set<int>> ret;
+  for (auto& it : cc) {
+    ret.push_back(std::move(it.second));
+  }
+  return ret;
+}
+
+void SeqPair::Init(const design& mydesign)
+{
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.Init");
+  auto sighandler = signal(SIGINT, nullptr);
+
+  // each block has 4 vars, x, y, H_flip, V_flip;
+  const unsigned N_block_vars_max = mydesign.Blocks.size() * 2;
+  unsigned N_var{N_block_vars_max};
+
+  const unsigned N_var_max{N_var + (unsigned)(mydesign.Blocks.size() * (mydesign.Blocks.size() - 1))};
+  // i*1:x
+  // i*2+1:y
+  const auto infty = sym_get_infinity();
+
+  std::vector<int> rowindofcol[N_var_max];
+  std::vector<double> constrvalues[N_var_max];
+  std::vector<double> rhs;
+  std::vector<char> intvars;
+  intvars.reserve(N_var_max);
+  intvars.resize(N_var, 0);
+  std::vector<char> sens, rowtype;
+  std::vector<double> collb, colub;
+  collb.reserve(N_var_max); colub.reserve(N_var_max);
+  collb.resize(N_var, 0);   colub.resize(N_var, infty);
+  sens.reserve(posPair.size() * posPair.size() * 5);
+  rowtype.reserve(posPair.size() * posPair.size() * 5);
+  rhs.reserve(posPair.size() * posPair.size() * 5);
+
+  int maxhierwidth{0}, maxhierheight{0};
+  for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+    maxhierwidth  += mydesign.Blocks[i][0].width;
+    maxhierheight += mydesign.Blocks[i][0].height;
+  }
+
+  std::vector<double> objective(N_var_max, 0);
+  const int maxxdim = maxhierwidth  * 5;
+  const int maxydim = maxhierheight * 5;
+  int maxdim = std::max(maxxdim, maxydim) * 2;
+
+  const auto overlap_constr = GetCC(mydesign);
+  std::map<int, const std::set<int>&> overlap_constr_map;
+  for (const auto& it : overlap_constr) {
+    for (auto& e : it) {
+      overlap_constr_map.emplace(e, it);
+    }
+  }
+
+  std::map<int, std::set<int>> align_constr_map_h, align_constr_map_v;
+  std::vector<std::set<int>> align_constr_h, align_constr_v;
+  for (unsigned i = 0; i < mydesign.Align_blocks.size(); ++i) {
+    const auto& align = mydesign.Align_blocks[i];
+    if (align.horizon) {
+      align_constr_h.emplace_back(align.blocks.begin(), align.blocks.end());
+      for (auto& it : align_constr_h.back()) {
+        align_constr_map_h[it] = align_constr_h.back();
+      }
+    } else {
+      align_constr_v.emplace_back(align.blocks.begin(), align.blocks.end());
+      for (auto& it : align_constr_v.back()) {
+        align_constr_map_v[it] = align_constr_v.back();
+      }
+    }
+  }
+
+  std::map<std::pair<int, int>, unsigned> buf_indx_map, buf_xy_indx_map;
+  // overlap constraint
+  unsigned buf_var_index{0};
+  for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
+    //auto itoverlap = overlap_constr_map.find(i);
+    auto italignh  = align_constr_map_h.find(i);
+    auto italignv  = align_constr_map_v.find(i);
+    for (unsigned int j = i + 1; j < mydesign.Blocks.size(); j++) {
+      //if (itoverlap != overlap_constr_map.end() && itoverlap->second.find(j) != itoverlap->second.end()) continue;
+      bool cont{false};
+      for (auto& itord : mydesign.Ordering_Constraints) {
+        if ((itord.first.first == i && itord.first.second == j) || (itord.first.first == j && itord.first.second == i)) {
+          cont = true;
+          break;
+        }
+      }
+      if (cont) continue;
+      if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
+          mydesign.Abut_Constraints.end()) continue;
+      if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
+          mydesign.Abut_Constraints.end()) continue;
+
+      bool alignhij = (italignh != align_constr_map_h.end() && italignh->second.find(j) != italignh->second.end());
+      bool alignvij = (italignv != align_constr_map_v.end() && italignv->second.find(j) != italignv->second.end());
+      if (!alignhij && !alignvij) {
+        buf_indx_map[std::make_pair(i, j)] = N_var++;
+        buf_xy_indx_map[std::make_pair(i, j)] = N_var++;
+        if (collb.size() < N_var) {
+          collb.resize(N_var, 0);
+          colub.resize(N_var, 1);
+          intvars.resize(N_var, 1);
+        }
+
+        auto indxy = N_var - 1;
+        auto ind   = N_var - 2;
+        rowindofcol[i * 2].push_back(rhs.size());
+        rowindofcol[j * 2].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        rowindofcol[indxy].push_back(rhs.size());
+        constrvalues[i * 2].push_back(1);
+        constrvalues[j * 2].push_back(-1);
+        constrvalues[ind].push_back(maxxdim);
+        constrvalues[indxy].push_back(maxdim);
+        sens.push_back('G');
+        rhs.push_back(mydesign.Blocks[j][0].width);
+        rowtype.push_back('o');
+
+        rowindofcol[i * 2].push_back(rhs.size());
+        rowindofcol[j * 2].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        rowindofcol[indxy].push_back(rhs.size());
+        constrvalues[i * 2].push_back(1);
+        constrvalues[j * 2].push_back(-1);
+        constrvalues[ind].push_back(maxxdim);
+        constrvalues[indxy].push_back(-maxdim);
+        sens.push_back('L');
+        rhs.push_back(maxxdim - mydesign.Blocks[i][0].width);
+        rowtype.push_back('o');
+
+        rowindofcol[i * 2 + 1].push_back(rhs.size());
+        rowindofcol[j * 2 + 1].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        rowindofcol[indxy].push_back(rhs.size());
+        constrvalues[i * 2 + 1].push_back(1);
+        constrvalues[j * 2 + 1].push_back(-1);
+        constrvalues[ind].push_back(maxydim);
+        constrvalues[indxy].push_back(-maxdim);
+        sens.push_back('G');
+        rhs.push_back(-maxdim + mydesign.Blocks[j][0].height);
+        rowtype.push_back('o');
+
+        rowindofcol[i * 2 + 1].push_back(rhs.size());
+        rowindofcol[j * 2 + 1].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        rowindofcol[indxy].push_back(rhs.size());
+        constrvalues[i * 2 + 1].push_back(1);
+        constrvalues[j * 2 + 1].push_back(-1);
+        constrvalues[ind].push_back(maxydim);
+        constrvalues[indxy].push_back(maxdim);
+        sens.push_back('L');
+        rhs.push_back(maxydim + maxdim - mydesign.Blocks[i][0].height);
+        rowtype.push_back('o');
+      } else if (alignhij) {
+        buf_indx_map[std::make_pair(i, j)] = N_var++;
+        if (collb.size() < N_var) {
+          collb.resize(N_var, 0);
+          colub.resize(N_var, 1);
+          intvars.resize(N_var, 1);
+        }
+
+        auto ind = N_var - 1;
+        rowindofcol[i * 2].push_back(rhs.size());
+        rowindofcol[j * 2].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        constrvalues[i * 2].push_back(1);
+        constrvalues[j * 2].push_back(-1);
+        constrvalues[ind].push_back(maxxdim);
+        sens.push_back('G');
+        rhs.push_back(mydesign.Blocks[j][0].width);
+        rowtype.push_back('o');
+
+        rowindofcol[i * 2].push_back(rhs.size());
+        rowindofcol[j * 2].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        constrvalues[i * 2].push_back(1);
+        constrvalues[j * 2].push_back(-1);
+        constrvalues[ind].push_back(maxxdim);
+        sens.push_back('L');
+        rhs.push_back(maxxdim - mydesign.Blocks[i][0].width);
+        rowtype.push_back('o');
+      } else if (alignvij) {
+        buf_indx_map[std::make_pair(i, j)] = N_var++;
+        if (collb.size() < N_var) {
+          collb.resize(N_var, 0);
+          colub.resize(N_var, 1);
+          intvars.resize(N_var, 1);
+        }
+
+        auto ind = N_var - 1;
+        rowindofcol[i * 2 + 1].push_back(rhs.size());
+        rowindofcol[j * 2 + 1].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        constrvalues[i * 2 + 1].push_back(1);
+        constrvalues[j * 2 + 1].push_back(-1);
+        constrvalues[ind].push_back(maxydim);
+        sens.push_back('G');
+        rhs.push_back(mydesign.Blocks[j][0].height);
+        rowtype.push_back('o');
+
+        rowindofcol[i * 2 + 1].push_back(rhs.size());
+        rowindofcol[j * 2 + 1].push_back(rhs.size());
+        rowindofcol[ind].push_back(rhs.size());
+        constrvalues[i * 2 + 1].push_back(1);
+        constrvalues[j * 2 + 1].push_back(-1);
+        constrvalues[ind].push_back(maxydim);
+        sens.push_back('L');
+        rhs.push_back(maxydim - mydesign.Blocks[i][0].height);
+        rowtype.push_back('o');
+      }
+    }
+  }
+
+  // ordering constraint
+  std::set<std::pair<int, int>> ordering_h, ordering_v;
+  for (const auto& it : mydesign.Ordering_Constraints) {
+    if (it.second == placerDB::H) {
+      ordering_h.emplace(it.first);
+    } else {
+      ordering_v.emplace(it.first);
+    }
+  }
+
+
+  std::set<std::pair<int, int>> abut_h, abut_v;
+  for (const auto& it : mydesign.Abut_Constraints) {
+    if (it.second == placerDB::H) {
+      abut_h.emplace(it.first);
+    } else {
+      abut_v.emplace(it.first);
+    }
+  }
+  for (int v : {1, 0}) {
+    const double bias{0.};
+    for (const auto& it : (v ? ordering_v : ordering_h)) {
+      auto itabut = (v ? abut_v.find(it) : abut_h.find(it));
+      if ((v && abut_v.find(it) != abut_v.end()) || (!v && abut_h.find(it) != abut_h.end())) {
+        continue;
+      }
+      const auto& i = v ? it.second : it.first;
+      const auto& j = v ? it.first  : it.second;
+      rowindofcol[i * 2 + v].push_back(rhs.size());
+      rowindofcol[j * 2 + v].push_back(rhs.size());
+      constrvalues[i * 2 + v].push_back(1);
+      constrvalues[j * 2 + v].push_back(-1);
+      sens.push_back('L');
+      rhs.push_back(-bias + (v ? mydesign.Blocks[j][0].height : mydesign.Blocks[j][0].width));
+      rowtype.push_back('v');
+    }
+    for (const auto& it : (v ? abut_v : abut_h)) {
+      const auto& i = it.first;
+      const auto& j = it.second;
+      rowindofcol[i * 2 + v].push_back(rhs.size());
+      rowindofcol[j * 2 + v].push_back(rhs.size());
+      constrvalues[i * 2 + v].push_back(1);
+      constrvalues[j * 2 + v].push_back(-1);
+      sens.push_back('E');
+      rhs.push_back(v ? mydesign.Blocks[j][0].height : mydesign.Blocks[i][0].width);
+      rowtype.push_back('a');
+    }
+  }
+
+  // symmetry block constraint
+  for (const auto& SPBlock : mydesign.SPBlocks) {
+    std::set<std::pair<int, int>> sympair(SPBlock.sympair.begin(), SPBlock.sympair.end());
+    std::set<int> selfsym;
+    for (const auto& it : SPBlock.selfsym) {
+      selfsym.insert(it.first);
+    }
+    if (SPBlock.axis_dir == placerDB::H) {
+      // constraint inside one pair
+      for (const auto& sp : sympair) {
+        int first_id = sp.first, second_id = sp.second;
+        // x center of blocks in each pair are the same
+        {
+          rowindofcol[first_id   * 2].push_back(rhs.size());
+          rowindofcol[second_id  * 2].push_back(rhs.size());
+          constrvalues[first_id  * 2].push_back(1);
+          constrvalues[second_id * 2].push_back(-1);
+          sens.push_back('E');
+          rhs.push_back(0.5 * (mydesign.Blocks[second_id][0].width - mydesign.Blocks[first_id][0].width));
+          rowtype.push_back('s');
+        }
+      }
+
+      // constraint between two pairs
+      for (auto i = sympair.begin(); i != sympair.end(); ++i) {
+        int i_first_id = i->first, i_second_id = i->second;
+        auto j = std::next(i);
+        if (j == sympair.end()) break;
+        // the y center of the two pairs are the same
+        int j_first_id = j->first, j_second_id = j->second;
+        rowindofcol[i_first_id  * 2 + 1].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[j_first_id  * 2 + 1].push_back(rhs.size());
+        rowindofcol[j_second_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[i_first_id  * 2 + 5].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 5].push_back(rhs.size());
+        rowindofcol[j_first_id  * 2 + 5].push_back(rhs.size());
+        rowindofcol[j_second_id * 2 + 5].push_back(rhs.size());
+        constrvalues[i_first_id  * 2 + 1].push_back(0.5);
+        constrvalues[i_second_id * 2 + 1].push_back(0.5);
+        constrvalues[j_first_id  * 2 + 1].push_back(-0.5);
+        constrvalues[j_second_id * 2 + 1].push_back(-0.5);
+        constrvalues[i_first_id  * 2 + 5].push_back(0.25);
+        constrvalues[i_second_id * 2 + 5].push_back(0.25);
+        constrvalues[j_first_id  * 2 + 5].push_back(-0.25);
+        constrvalues[j_second_id * 2 + 5].push_back(-0.25);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+      // constraint between two selfsyms
+      for (auto i = selfsym.begin(); i != selfsym.end(); ++i) {
+        int i_id = *i;
+        auto j = std::next(i);
+        if (j == selfsym.end()) break;
+        // the y center of the two selfsyms are the same
+        int j_id = *j;
+        rowindofcol[i_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[i_id * 2 + 5].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 5].push_back(rhs.size());
+        constrvalues[i_id * 2 + 1].push_back(1);
+        constrvalues[j_id * 2 + 1].push_back(-1);
+        constrvalues[i_id * 2 + 5].push_back(0.5);
+        constrvalues[j_id * 2 + 5].push_back(-0.5);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+      if (!sympair.empty() && !selfsym.empty()) {
+        // constraint between a pair and a selfsym
+        const auto& i = *(sympair.begin());
+        int i_first_id = i.first, i_second_id = i.second;
+        int j_id = *(selfsym.begin());
+        // the y center of the pair and the selfsym are the same
+        rowindofcol[i_first_id  * 2 + 1].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 1].push_back(rhs.size());
+        rowindofcol[i_first_id  * 2 + 5].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 5].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 5].push_back(rhs.size());
+        constrvalues[i_first_id  * 2 + 1].push_back(0.5);
+        constrvalues[i_second_id * 2 + 1].push_back(0.5);
+        constrvalues[j_id * 2 + 1].push_back(-1);
+        constrvalues[i_first_id  * 2 + 5].push_back(0.25);
+        constrvalues[i_second_id * 2 + 5].push_back(0.25);
+        constrvalues[j_id * 2 + 5].push_back(-0.5);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+    } else {
+      // axis_dir==V
+      // constraint inside one pair
+      for (const auto& sp : sympair) {
+        int first_id = sp.first, second_id = sp.second;
+        // y center of blocks in each pair are the same
+        {
+          rowindofcol[first_id   * 2 + 1].push_back(rhs.size());
+          rowindofcol[second_id  * 2 + 1].push_back(rhs.size());
+          rowindofcol[first_id   * 2 + 5].push_back(rhs.size());
+          rowindofcol[second_id  * 2 + 5].push_back(rhs.size());
+          constrvalues[first_id  * 2 + 1].push_back(1);
+          constrvalues[second_id * 2 + 1].push_back(-1);
+          constrvalues[first_id  * 2 + 5].push_back(0.5);
+          constrvalues[second_id * 2 + 5].push_back(-0.5);
+          sens.push_back('E');
+          rhs.push_back(0);
+          rowtype.push_back('s');
+        }
+      }
+
+      // constraint between two pairs
+      for (auto i = sympair.begin(); i != sympair.end(); ++i) {
+        int i_first_id = i->first, i_second_id = i->second;
+        auto j = std::next(i);
+        if (j == sympair.end()) break;
+        // the x center of the two pairs are the same
+        int j_first_id = j->first, j_second_id = j->second;
+        rowindofcol[i_first_id  * 2].push_back(rhs.size());
+        rowindofcol[i_second_id * 2].push_back(rhs.size());
+        rowindofcol[j_first_id  * 2].push_back(rhs.size());
+        rowindofcol[j_second_id * 2].push_back(rhs.size());
+        rowindofcol[i_first_id  * 2 + 4].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 4].push_back(rhs.size());
+        rowindofcol[j_first_id  * 2 + 4].push_back(rhs.size());
+        rowindofcol[j_second_id * 2 + 4].push_back(rhs.size());
+        constrvalues[i_first_id  * 2].push_back(0.5);
+        constrvalues[i_second_id * 2].push_back(0.5);
+        constrvalues[j_first_id  * 2].push_back(-0.5);
+        constrvalues[j_second_id * 2].push_back(-0.5);
+        constrvalues[i_first_id  * 2 + 4].push_back(0.25);
+        constrvalues[i_second_id * 2 + 4].push_back(0.25);
+        constrvalues[j_first_id  * 2 + 4].push_back(-0.25);
+        constrvalues[j_second_id * 2 + 4].push_back(-0.25);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+      // constraint between two selfsyms
+      for (auto i = selfsym.begin(); i != selfsym.end(); ++i) {
+        int i_id = *i;
+        auto j = std::next(i);
+        if (j == selfsym.end()) break;
+        // the x center of the two selfsyms are the same
+        int j_id = *j;
+        rowindofcol[i_id * 2].push_back(rhs.size());
+        rowindofcol[j_id * 2].push_back(rhs.size());
+        rowindofcol[i_id * 2 + 4].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 4].push_back(rhs.size());
+        constrvalues[i_id * 2].push_back(1);
+        constrvalues[j_id * 2].push_back(-1);
+        constrvalues[i_id * 2 + 4].push_back(0.5);
+        constrvalues[j_id * 2 + 4].push_back(-0.5);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+      if (!sympair.empty() && !selfsym.empty()) {
+        // constraint between a pair and a selfsym
+        const auto& i = *sympair.begin();
+        int i_first_id = i.first, i_second_id = i.second;
+        int j_id = *selfsym.begin();
+        // the x center of the pair and the selfsym are the same
+        rowindofcol[i_first_id  * 2].push_back(rhs.size());
+        rowindofcol[i_second_id * 2].push_back(rhs.size());
+        rowindofcol[j_id * 2].push_back(rhs.size());
+        rowindofcol[i_first_id  * 2 + 4].push_back(rhs.size());
+        rowindofcol[i_second_id * 2 + 4].push_back(rhs.size());
+        rowindofcol[j_id * 2 + 4].push_back(rhs.size());
+        constrvalues[i_first_id  * 2].push_back(0.5);
+        constrvalues[i_second_id * 2].push_back(0.5);
+        constrvalues[j_id * 2].push_back(-1);
+        constrvalues[i_first_id  * 2 + 4].push_back(0.25);
+        constrvalues[i_second_id * 2 + 4].push_back(0.25);
+        constrvalues[j_id * 2 + 4].push_back(-0.5);
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('s');
+      }
+    } 
+  }
+
+  // align block constraint
+  for (const auto& alignment_unit : mydesign.Align_blocks) {
+    for (unsigned int j = 0; j < alignment_unit.blocks.size() - 1; j++) {
+      int first_id = alignment_unit.blocks[j], second_id = alignment_unit.blocks[j + 1];
+      if (alignment_unit.horizon == 1) {
+        rowindofcol[first_id  * 2 + 1].push_back(rhs.size());
+        rowindofcol[second_id * 2 + 1].push_back(rhs.size());
+        constrvalues[first_id  * 2 + 1].push_back(1);
+        constrvalues[second_id * 2 + 1].push_back(-1);
+        if (alignment_unit.line == 1) {
+          // align center y
+          rowindofcol[first_id  * 2 + 5].push_back(rhs.size());
+          rowindofcol[second_id * 2 + 5].push_back(rhs.size());
+          constrvalues[first_id  * 2 + 5].push_back(0.5);
+          constrvalues[second_id * 2 + 5].push_back(-0.5);
+        } else if (alignment_unit.line == 2) {
+          // align to top
+          rowindofcol[first_id  * 2 + 5].push_back(rhs.size());
+          rowindofcol[second_id * 2 + 5].push_back(rhs.size());
+          constrvalues[first_id  * 2 + 5].push_back(1);
+          constrvalues[second_id * 2 + 5].push_back(-1);
+        }
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('l');
+      } else {
+        rowindofcol[first_id  * 2].push_back(rhs.size());
+        rowindofcol[second_id * 2].push_back(rhs.size());
+        constrvalues[first_id  * 2].push_back(1);
+        constrvalues[second_id * 2].push_back(-1);
+        if (alignment_unit.line == 1) {
+          // align center x
+          rowindofcol[first_id  * 2 + 4].push_back(rhs.size());
+          rowindofcol[second_id * 2 + 4].push_back(rhs.size());
+          constrvalues[first_id  * 2 + 4].push_back(0.5);
+          constrvalues[second_id * 2 + 4].push_back(-0.5);
+        } else if (alignment_unit.line == 2) {
+          // align to right
+          rowindofcol[first_id  * 2 + 4].push_back(rhs.size());
+          rowindofcol[second_id * 2 + 4].push_back(rhs.size());
+          constrvalues[first_id  * 2 + 4].push_back(1);
+          constrvalues[second_id * 2 + 4].push_back(-1);
+        }
+        sens.push_back('E');
+        rhs.push_back(0);
+        rowtype.push_back('l');
+      }
+    }
+  }
+
+  {
+    std::vector<int> starts, indices;
+    std::vector<double> values;
+    starts.push_back(0);
+    assert(rhs.size() == sens.size());
+    for (int i = 0; i < N_var; ++i) {
+      starts.push_back(starts.back() + rowindofcol[i].size());
+      indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
+      values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
+    }
+    double rhslb[rhs.size()], rhsub[rhs.size()];
+    for (unsigned i = 0;i < sens.size(); ++i) {
+      switch (sens[i]) {
+        case 'E':
+        default:
+          rhslb[i] = rhs[i];
+          rhsub[i] = rhs[i];
+          break;
+        case 'G':
+          rhslb[i] = rhs[i];
+          rhsub[i] = infty;
+          break;
+        case 'L':
+          rhslb[i] = -infty;
+          rhsub[i] = rhs[i];
+          break;
+      }
+    }
+    sym_environment *env = sym_open_environment();
+    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+        values.data(), collb.data(), colub.data(),
+        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
+    sym_set_int_param(env, "verbosity", -2);
+
+    static int write_cnt{0};
+    static std::string block_name;
+    if (block_name != mydesign.name) {
+      write_cnt = 0;
+      block_name = mydesign.name;
+    }
+    if (write_cnt < 10) {
+      std::vector<std::string> namesvec(N_var);
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        int ind = i * 2;
+        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
+      }
+
+      for (auto& it : buf_indx_map) {
+        namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf\0");
+      }
+      for (auto& it : buf_xy_indx_map) {
+        namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf_xy\0");
+      }
+
+      char* names[N_var];
+      for (unsigned i = 0; i < namesvec.size(); ++i) {
+        names[i] = &(namesvec[i][0]);
+      }
+
+      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      ++write_cnt;
+    }
+    sym_solve(env);
+    int status = sym_get_status(env);
+    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+      ++const_cast<design&>(mydesign)._infeasILPFail;
+      sym_close_environment(env);
+      sighandler = signal(SIGINT, sighandler);
+      return;
+    }
+    std::vector<double> var(N_var, 0.);
+    sym_get_col_solution(env, var.data());
+    sym_close_environment(env);
+    sighandler = signal(SIGINT, sighandler);
+  }
+}
+  
 
 SeqPair::SeqPair() {
   this->posPair.clear();
