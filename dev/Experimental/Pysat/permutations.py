@@ -155,32 +155,36 @@ class SeqPair:
         pairs = [lst for lst in lst_of_lst if len(lst) == 2]
         assert len(singles) + len(pairs) == len(lst_of_lst)
 
-        print(singles, pairs)
+        oa = SeqPair.other_axis(axis)
 
         if len(singles) > 1:
             self.align_array([lst[0] for lst in singles], axis=axis)
 
         for u, v in pairs:
             self.order(u, v, axis=SeqPair.other_axis(axis))
+            for lst in singles:
+                x = lst[0]
+                print(f'Adding {x} between {u} and {v}')
+                self.s.emit_iff(self.order_expr(u,x,axis=oa), self.order_expr(x,v,axis=oa))
 
-        def symmetric_pair( pair0, pair1):
+        for pair0, pair1 in combinations(pairs, 2):
             u0, v0 = pair0
             u1, v1 = pair1
 
             # u0   u1  ccc   v1 v0
             # u1   u0  ccc   v0 v1
 
-            u0u1_order = self.order_expr(u0, u1)
-            self.s.add_clause([-u0u1_order,self.order_expr(u1, v1)])
-            self.s.add_clause([-u0u1_order,self.order_expr(v1, v0)])
-
-            u1u0_order = self.order_expr(u1, u0)
-            self.s.add_clause([-u1u0_order,self.order_expr(u0, v0)])
-            self.s.add_clause([-u1u0_order,self.order_expr(v0, v1)])
+            # (u0<u1) => u1 < v1 and v1 < v0
+            u0u1_order = self.order_expr(u0, u1, axis=oa)
+            self.s.emit_implies(u0u1_order, self.order_expr(u1, v1, axis=oa))
+            self.s.emit_implies(u0u1_order, self.order_expr(v1, v0, axis=oa))
 
 
-        for pair0, pair1 in combinations(pairs, 2):
-            symmetric_pair(pair0, pair1)
+            # (u1<u0) => u0 < v0 and v0 < v1
+            u1u0_order = self.order_expr(u1, u0, axis=oa)
+            self.s.emit_implies(u1u0_order, self.order_expr(u0, v0, axis=oa))
+            self.s.emit_implies(u1u0_order, self.order_expr(v0, v1, axis=oa))
+
 
 
 
@@ -341,6 +345,56 @@ def test_abut_h_fail():
     sp.s.solve()
     assert sp.s.state == 'UNSAT'
 
+def test_symmetric_2():
+    sp = SeqPair(2)
+    sp.symmetric([[0,1]], 'V')
+    sp.align_array([0,1], 'H')
+
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1], [0,1]))
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,0], [1,0]))
+    assert sp.s.state == 'UNSAT'
+
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1], [1,0]))
+    assert sp.s.state == 'UNSAT'
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,0], [0,1]))
+    assert sp.s.state == 'UNSAT'
+
+
+def test_symmetric_3():
+    sp = SeqPair(3)
+    sp.symmetric([[0], [1,2]], 'V')
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,0,2], [1,0,2]))
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1,2], [1,2,0]))
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,2,0], [0,1,2]))
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1,2], [0,1,2]))
+    assert sp.s.state == 'UNSAT'
+
+    sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
+    assert sp.s.state == 'UNSAT'
+
+
 def test_soner():
 
     constraints = [
@@ -353,8 +407,16 @@ def test_soner():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
     ]
 
+    #
+    #                       f
+    #                  a         b
+    #                  c         d
+    #                  g    |    h
+    #                  m         n
+    #                       e 
+
     instances_s = "abcdefghmn"
-    pos_s, neg_s = "fabcdghmen", "emgcabdfhn"
+    pos_s, neg_s = "fabcdghmne", "emgcabdhnf"
 
     m = {c: i for i,c in enumerate(instances_s)}
     
@@ -373,10 +435,193 @@ def test_soner():
             axis = constraint['direction']
             sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
 
-    #assump = sp.gen_assumptions([m[c] for c in "fabcdghmen"], [m[c] for c in "emgcabdfhn"])
+    assump = sp.gen_assumptions([m[c] for c in pos_s], [m[c] for c in neg_s])
+    #assump = None
+
+    sp.s.solve(assumptions=assump)
+    assert sp.s.state == 'SAT'
+
+    print( ''.join(invm[x] for x in SeqPair.perm2vec(sp.pos)),  ''.join(invm[x] for x in SeqPair.perm2vec(sp.neg)))
+
+
+def test_soner2():
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs":
+            [["a", "b"], ["c", "d"], ["e"], ["f"], ["g", "h"], ["m", "n"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["f", "a", "c", "g", "m", "e"], "abut": True},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "d"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]},
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "o", "p"]},
+        {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
+    ]
+
+
+
+    #                       f
+    #      o    p      a         b
+    #                  c         d
+    #                  g    |    h
+    #                  m         n
+    #                       e 
+    #                  r
+
+    instances_s  = "abcdefghmnopr"
+
+    pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
+
+    m = {c: i for i,c in enumerate(instances_s)}
+    
+    invm = list(instances_s)
+
+    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H", "h_bottom": "H", "v_left": "V"}
+
+    sp = SeqPair(len(m))
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Order":
+            axis = axis_tbl[constraint['direction']]
+            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
+
+        if constraint['constraint'] == "SymmetricBlocks":
+            axis = constraint['direction']
+            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
+
+        if constraint['constraint'] == "Align":
+            axis = axis_tbl[constraint['direction']]
+            sp.align_array([m[iname] for iname in constraint['instances']], axis=axis)
+
+    assump = sp.gen_assumptions([m[c] for c in pos_s], [m[c] for c in neg_s])
     assump = None
 
     sp.s.solve(assumptions=assump)
     assert sp.s.state == 'SAT'
 
     print( ''.join(invm[x] for x in SeqPair.perm2vec(sp.pos)),  ''.join(invm[x] for x in SeqPair.perm2vec(sp.neg)))
+
+
+def test_soner_big():
+    constraints = [
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XDECAP_P', 'X_XPTAIL']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XDECAP_P', 'X_XP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XDECAP_P', 'X_XPPBIAS']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XDECAP_P', 'X_XSW_PULLUP_ENB']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XDECAP_P', 'X_XSW_PBIAS_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPTAIL', 'X_DP_XPINP_XPINN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPTAIL', 'X_XINVP1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPTAIL', 'X_XINVP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPTAIL', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XP2', 'X_DP_XPINP_XPINN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XP2', 'X_XINVP1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XP2', 'X_XINVP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XP2', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPPBIAS', 'X_DP_XPINP_XPINN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPPBIAS', 'X_XINVP1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPPBIAS', 'X_XINVP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XPPBIAS', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLUP_ENB', 'X_DP_XPINP_XPINN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLUP_ENB', 'X_XINVP1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLUP_ENB', 'X_XINVP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLUP_ENB', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PBIAS_EN', 'X_DP_XPINP_XPINN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PBIAS_EN', 'X_XINVP1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PBIAS_EN', 'X_XINVP2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PBIAS_EN', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_XSW_PULLDN_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_CM_XNLDL_XNLDR']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_XSW_PULLDN_EN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_XN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_XINVN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_DP_XPINP_XPINN', 'X_XINVN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_XSW_PULLDN_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_CM_XNLDL_XNLDR']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_XSW_PULLDN_EN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_XN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_XINVN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP1', 'X_XINVN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_XSW_PULLDN_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_CM_XNLDL_XNLDR']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_XSW_PULLDN_EN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_XN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_XINVN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVP2', 'X_XINVN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_XSW_PULLDN_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_CM_XNLDL_XNLDR']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_XSW_PULLDN_EN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_XN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_XINVN1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XMP_TIE_HI', 'X_XINVN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLDN_EN', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLDN_EN', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_CM_XNLDL_XNLDR', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_CM_XNLDL_XNLDR', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLDN_EN1', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XSW_PULLDN_EN1', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XN2', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XN2', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVN1', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVN1', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVN2', 'X_XNRES0']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XINVN2', 'X_XNRES1']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XNRES0', 'X_XDECAP_NZ3']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XNRES1', 'X_XDECAP_NZ3']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2']},
+        {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_XNRES0', 'X_XNRES1']},
+        {'constraint': 'SymmetricBlocks', 'direction': 'V', 'pairs': [['X_XPTAIL'], ['X_DP_XPINP_XPINN'], ['X_CM_XNLDL_XNLDR'], ['X_XSW_PULLDN_EN', 'X_XSW_PULLDN_EN1']]},
+    ]
+
+
+    print('Building...')
+
+    instances_s  = set()
+    
+
+    for constraint in constraints:
+        if constraint['constraint'] == 'Order':
+            for iname in constraint['instances']:
+                instances_s.add(iname)
+        elif constraint['constraint'] == 'SymmetricBlocks':
+            for lst in constraint['pairs']:
+                for iname in lst:
+                    instances_s.add(iname)                    
+
+
+    instances_s = list(instances_s)
+
+    pos_s, neg_s = ['X_XDECAP_P', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_XNRES0', 'X_XNRES1', 'X_XDECAP_NZ3'], ['X_XDECAP_NZ3', 'X_XNRES0', 'X_XNRES1', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_XDECAP_P']
+    #pos_s, neg_s = [], []
+
+    m = {s: i for i,s in enumerate(instances_s)}
+    
+    invm = list(instances_s)
+
+    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H", "h_bottom": "H", "v_left": "V"}
+
+    sp = SeqPair(len(m))
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Order":
+            axis = axis_tbl[constraint['direction']]
+            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
+
+        if constraint['constraint'] == "SymmetricBlocks":
+            axis = constraint['direction']
+            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
+
+        if constraint['constraint'] == "Align":
+            axis = axis_tbl[constraint['direction']]
+            sp.align_array([m[iname] for iname in constraint['instances']], axis=axis)
+
+    assump = sp.gen_assumptions([m[s] for s in pos_s], [m[s] for s in neg_s])
+    assump = None
+
+    print('Solving...')
+    sp.s.solve(assumptions=assump)
+    assert sp.s.state == 'SAT'
+
+    print('Done...')
+
+    print([invm[x] for x in SeqPair.perm2vec(sp.pos)],  [invm[x] for x in SeqPair.perm2vec(sp.neg)])
