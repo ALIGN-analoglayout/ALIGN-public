@@ -43,6 +43,7 @@ for const in constraints:
 
 num_blocks = len(block_vars)
 # print(block_vars)
+print(f"{num_blocks=}")
 
 solver = z3.Solver()
 
@@ -71,31 +72,35 @@ for const in constraints:
             else:
                 symm_self.extend(p)
 
-        # pairs can only have before/after relationship
+        # blocks in a pair can only have before/after relationship
         for p in symm_pair:
             a = block_vars[p[0]]
             b = block_vars[p[1]]
+            # [a, b]: a must be before or after b
             solver.add(z3.Or(
                 z3.And(a[pos] < b[pos], a[neg] < b[neg]),
                 z3.And(a[pos] > b[pos], a[neg] > b[neg])
             ))
 
-        # selfs can only have above/below relationship
+        # self symmetric blocks can only have above/below relationship
         for p in itertools.combinations(symm_self, 2):
             a = block_vars[p[0]]
             b = block_vars[p[1]]
+            # [a], [b]: a must be above or below b
             solver.add(z3.Or(
                 z3.And(a[pos] < b[pos], a[neg] > b[neg]),
                 z3.And(a[pos] > b[pos], a[neg] < b[neg])
             ))
 
-        # selfs cannot be before/after of pairs
+        # self symmetric blocks cannot be before/after a pair of blocks
         for i in symm_self:
             s = block_vars[i]
             for j, k in symm_pair:
                 a = block_vars[j]
                 b = block_vars[k]
+                # [a,b], [s]: s cannot be before a and b
                 solver.add(z3.Not(z3.And(s[pos] < a[pos], s[pos] < b[pos], s[neg] < a[neg], s[neg] < b[neg])))
+                # [a,b], [s]: s cannot be after a and b
                 solver.add(z3.Not(z3.And(s[pos] > a[pos], s[pos] > b[pos], s[neg] > a[neg], s[neg] > b[neg])))
 
         for p in itertools.combinations(symm_pair, 2):
@@ -139,6 +144,7 @@ for const in constraints:
             a = block_vars[i]
             b = block_vars[j]
             if const["direction"] == "top_to_bottom":
+                # a,b: a must be before b
                 solver.add(z3.And(a[pos] < b[pos], a[neg] > b[neg]))
                 if getattr(const, "abut", False):
                     # any block c cannot be below a and above b
@@ -149,6 +155,7 @@ for const in constraints:
                                 a[pos] < c[pos], c[pos] < b[pos],
                                 a[neg] > c[neg], c[neg] > b[neg])))
             else:
+                # a,b: a must be above b
                 solver.add(z3.And(a[pos] < b[pos], a[neg] < b[neg]))
                 if getattr(const, "abut", False):
                     # any block c cannot be after a and before b
@@ -180,6 +187,7 @@ for const in constraints:
 s = time.time()
 r = solver.check()
 e = time.time()
+print(f"Elapsed time: {e-s:0.3f} seconds")
 # print(r, solver.model())
 if r == z3.sat:
     m = solver.model()
@@ -196,7 +204,6 @@ if r == z3.sat:
     seq_pos = "".join(seq_pos)
     seq_neg = "".join(seq_neg)
 
-    print(f"Elapsed time: {e-s:0.3f} seconds")
     # print(sorted([(d, m[d]) for d in m], key=lambda x: str(x[0])))
 
     print(f"Sequence pair: {seq_pos}, {seq_neg}")
