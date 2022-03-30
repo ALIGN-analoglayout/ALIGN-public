@@ -234,10 +234,11 @@ std::vector<std::set<int>> SeqPair::GetCC(const design& mydesign) const
 
 void SeqPair::Init(const design& mydesign)
 {
+  if (mydesign.Blocks.size() <= 1) return;
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.Init");
   auto sighandler = signal(SIGINT, nullptr);
 
-  // each block has 4 vars, x, y, H_flip, V_flip;
+  // each block has 2 vars, x, y
   const unsigned N_block_vars_max = mydesign.Blocks.size() * 2;
   unsigned N_var{N_block_vars_max};
 
@@ -261,12 +262,14 @@ void SeqPair::Init(const design& mydesign)
   rhs.reserve(posPair.size() * posPair.size() * 5);
 
   int maxhierwidth{0}, maxhierheight{0};
+  std::vector<double> objective(N_var_max, 0);
   for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+    //objective[2 * i]     = 1;
+    //objective[2 * i + 1] = 1;
     maxhierwidth  += mydesign.Blocks[i][0].width;
     maxhierheight += mydesign.Blocks[i][0].height;
   }
 
-  std::vector<double> objective(N_var_max, 0);
   const int maxxdim = maxhierwidth  * 5;
   const int maxydim = maxhierheight * 5;
   int maxdim = std::max(maxxdim, maxydim) * 2;
@@ -521,20 +524,13 @@ void SeqPair::Init(const design& mydesign)
         rowindofcol[i_second_id * 2 + 1].push_back(rhs.size());
         rowindofcol[j_first_id  * 2 + 1].push_back(rhs.size());
         rowindofcol[j_second_id * 2 + 1].push_back(rhs.size());
-        rowindofcol[i_first_id  * 2 + 5].push_back(rhs.size());
-        rowindofcol[i_second_id * 2 + 5].push_back(rhs.size());
-        rowindofcol[j_first_id  * 2 + 5].push_back(rhs.size());
-        rowindofcol[j_second_id * 2 + 5].push_back(rhs.size());
-        constrvalues[i_first_id  * 2 + 1].push_back(0.5);
-        constrvalues[i_second_id * 2 + 1].push_back(0.5);
-        constrvalues[j_first_id  * 2 + 1].push_back(-0.5);
-        constrvalues[j_second_id * 2 + 1].push_back(-0.5);
-        constrvalues[i_first_id  * 2 + 5].push_back(0.25);
-        constrvalues[i_second_id * 2 + 5].push_back(0.25);
-        constrvalues[j_first_id  * 2 + 5].push_back(-0.25);
-        constrvalues[j_second_id * 2 + 5].push_back(-0.25);
+        constrvalues[i_first_id  * 2 + 1].push_back(1.);
+        constrvalues[i_second_id * 2 + 1].push_back(1.);
+        constrvalues[j_first_id  * 2 + 1].push_back(-1.);
+        constrvalues[j_second_id * 2 + 1].push_back(-1.);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * (mydesign.Blocks[j_first_id][0].height + mydesign.Blocks[j_second_id][0].height
+              - mydesign.Blocks[i_first_id][0].height - mydesign.Blocks[i_second_id][0].height));
         rowtype.push_back('s');
       }
       // constraint between two selfsyms
@@ -546,14 +542,10 @@ void SeqPair::Init(const design& mydesign)
         int j_id = *j;
         rowindofcol[i_id * 2 + 1].push_back(rhs.size());
         rowindofcol[j_id * 2 + 1].push_back(rhs.size());
-        rowindofcol[i_id * 2 + 5].push_back(rhs.size());
-        rowindofcol[j_id * 2 + 5].push_back(rhs.size());
         constrvalues[i_id * 2 + 1].push_back(1);
         constrvalues[j_id * 2 + 1].push_back(-1);
-        constrvalues[i_id * 2 + 5].push_back(0.5);
-        constrvalues[j_id * 2 + 5].push_back(-0.5);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * (mydesign.Blocks[j_id][0].height - mydesign.Blocks[i_id][0].height));
         rowtype.push_back('s');
       }
       if (!sympair.empty() && !selfsym.empty()) {
@@ -565,17 +557,12 @@ void SeqPair::Init(const design& mydesign)
         rowindofcol[i_first_id  * 2 + 1].push_back(rhs.size());
         rowindofcol[i_second_id * 2 + 1].push_back(rhs.size());
         rowindofcol[j_id * 2 + 1].push_back(rhs.size());
-        rowindofcol[i_first_id  * 2 + 5].push_back(rhs.size());
-        rowindofcol[i_second_id * 2 + 5].push_back(rhs.size());
-        rowindofcol[j_id * 2 + 5].push_back(rhs.size());
         constrvalues[i_first_id  * 2 + 1].push_back(0.5);
         constrvalues[i_second_id * 2 + 1].push_back(0.5);
         constrvalues[j_id * 2 + 1].push_back(-1);
-        constrvalues[i_first_id  * 2 + 5].push_back(0.25);
-        constrvalues[i_second_id * 2 + 5].push_back(0.25);
-        constrvalues[j_id * 2 + 5].push_back(-0.5);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * mydesign.Blocks[j_id][0].height
+            - 0.25 * (mydesign.Blocks[i_first_id][0].height + mydesign.Blocks[i_second_id][0].height));
         rowtype.push_back('s');
       }
     } else {
@@ -587,14 +574,10 @@ void SeqPair::Init(const design& mydesign)
         {
           rowindofcol[first_id   * 2 + 1].push_back(rhs.size());
           rowindofcol[second_id  * 2 + 1].push_back(rhs.size());
-          rowindofcol[first_id   * 2 + 5].push_back(rhs.size());
-          rowindofcol[second_id  * 2 + 5].push_back(rhs.size());
           constrvalues[first_id  * 2 + 1].push_back(1);
           constrvalues[second_id * 2 + 1].push_back(-1);
-          constrvalues[first_id  * 2 + 5].push_back(0.5);
-          constrvalues[second_id * 2 + 5].push_back(-0.5);
           sens.push_back('E');
-          rhs.push_back(0);
+          rhs.push_back(0.5 * (mydesign.Blocks[second_id][0].height - mydesign.Blocks[first_id][0].height));
           rowtype.push_back('s');
         }
       }
@@ -610,20 +593,13 @@ void SeqPair::Init(const design& mydesign)
         rowindofcol[i_second_id * 2].push_back(rhs.size());
         rowindofcol[j_first_id  * 2].push_back(rhs.size());
         rowindofcol[j_second_id * 2].push_back(rhs.size());
-        rowindofcol[i_first_id  * 2 + 4].push_back(rhs.size());
-        rowindofcol[i_second_id * 2 + 4].push_back(rhs.size());
-        rowindofcol[j_first_id  * 2 + 4].push_back(rhs.size());
-        rowindofcol[j_second_id * 2 + 4].push_back(rhs.size());
-        constrvalues[i_first_id  * 2].push_back(0.5);
-        constrvalues[i_second_id * 2].push_back(0.5);
-        constrvalues[j_first_id  * 2].push_back(-0.5);
-        constrvalues[j_second_id * 2].push_back(-0.5);
-        constrvalues[i_first_id  * 2 + 4].push_back(0.25);
-        constrvalues[i_second_id * 2 + 4].push_back(0.25);
-        constrvalues[j_first_id  * 2 + 4].push_back(-0.25);
-        constrvalues[j_second_id * 2 + 4].push_back(-0.25);
+        constrvalues[i_first_id  * 2].push_back(1.);
+        constrvalues[i_second_id * 2].push_back(1.);
+        constrvalues[j_first_id  * 2].push_back(-1.);
+        constrvalues[j_second_id * 2].push_back(-1.);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * (mydesign.Blocks[j_first_id][0].width + mydesign.Blocks[j_second_id][0].width
+              - mydesign.Blocks[i_first_id][0].width - mydesign.Blocks[i_second_id][0].width));
         rowtype.push_back('s');
       }
       // constraint between two selfsyms
@@ -635,14 +611,10 @@ void SeqPair::Init(const design& mydesign)
         int j_id = *j;
         rowindofcol[i_id * 2].push_back(rhs.size());
         rowindofcol[j_id * 2].push_back(rhs.size());
-        rowindofcol[i_id * 2 + 4].push_back(rhs.size());
-        rowindofcol[j_id * 2 + 4].push_back(rhs.size());
         constrvalues[i_id * 2].push_back(1);
         constrvalues[j_id * 2].push_back(-1);
-        constrvalues[i_id * 2 + 4].push_back(0.5);
-        constrvalues[j_id * 2 + 4].push_back(-0.5);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * (mydesign.Blocks[j_id][0].width - mydesign.Blocks[i_id][0].width));
         rowtype.push_back('s');
       }
       if (!sympair.empty() && !selfsym.empty()) {
@@ -654,17 +626,12 @@ void SeqPair::Init(const design& mydesign)
         rowindofcol[i_first_id  * 2].push_back(rhs.size());
         rowindofcol[i_second_id * 2].push_back(rhs.size());
         rowindofcol[j_id * 2].push_back(rhs.size());
-        rowindofcol[i_first_id  * 2 + 4].push_back(rhs.size());
-        rowindofcol[i_second_id * 2 + 4].push_back(rhs.size());
-        rowindofcol[j_id * 2 + 4].push_back(rhs.size());
         constrvalues[i_first_id  * 2].push_back(0.5);
         constrvalues[i_second_id * 2].push_back(0.5);
         constrvalues[j_id * 2].push_back(-1);
-        constrvalues[i_first_id  * 2 + 4].push_back(0.25);
-        constrvalues[i_second_id * 2 + 4].push_back(0.25);
-        constrvalues[j_id * 2 + 4].push_back(-0.5);
         sens.push_back('E');
-        rhs.push_back(0);
+        rhs.push_back(0.5 * mydesign.Blocks[j_id][0].width
+            - 0.25 * (mydesign.Blocks[i_first_id][0].width + mydesign.Blocks[i_second_id][0].width));
         rowtype.push_back('s');
       }
     } 
@@ -679,42 +646,32 @@ void SeqPair::Init(const design& mydesign)
         rowindofcol[second_id * 2 + 1].push_back(rhs.size());
         constrvalues[first_id  * 2 + 1].push_back(1);
         constrvalues[second_id * 2 + 1].push_back(-1);
+        sens.push_back('E');
         if (alignment_unit.line == 1) {
           // align center y
-          rowindofcol[first_id  * 2 + 5].push_back(rhs.size());
-          rowindofcol[second_id * 2 + 5].push_back(rhs.size());
-          constrvalues[first_id  * 2 + 5].push_back(0.5);
-          constrvalues[second_id * 2 + 5].push_back(-0.5);
+          rhs.push_back(0.5 * (mydesign.Blocks[second_id][0].height - mydesign.Blocks[first_id][0].height));
         } else if (alignment_unit.line == 2) {
           // align to top
-          rowindofcol[first_id  * 2 + 5].push_back(rhs.size());
-          rowindofcol[second_id * 2 + 5].push_back(rhs.size());
-          constrvalues[first_id  * 2 + 5].push_back(1);
-          constrvalues[second_id * 2 + 5].push_back(-1);
+          rhs.push_back(mydesign.Blocks[second_id][0].height - mydesign.Blocks[first_id][0].height);
+        } else {
+          rhs.push_back(0.);
         }
-        sens.push_back('E');
-        rhs.push_back(0);
         rowtype.push_back('l');
       } else {
         rowindofcol[first_id  * 2].push_back(rhs.size());
         rowindofcol[second_id * 2].push_back(rhs.size());
         constrvalues[first_id  * 2].push_back(1);
         constrvalues[second_id * 2].push_back(-1);
+        sens.push_back('E');
         if (alignment_unit.line == 1) {
           // align center x
-          rowindofcol[first_id  * 2 + 4].push_back(rhs.size());
-          rowindofcol[second_id * 2 + 4].push_back(rhs.size());
-          constrvalues[first_id  * 2 + 4].push_back(0.5);
-          constrvalues[second_id * 2 + 4].push_back(-0.5);
+          rhs.push_back(0.5 * (mydesign.Blocks[second_id][0].width - mydesign.Blocks[first_id][0].width));
         } else if (alignment_unit.line == 2) {
           // align to right
-          rowindofcol[first_id  * 2 + 4].push_back(rhs.size());
-          rowindofcol[second_id * 2 + 4].push_back(rhs.size());
-          constrvalues[first_id  * 2 + 4].push_back(1);
-          constrvalues[second_id * 2 + 4].push_back(-1);
+          rhs.push_back(mydesign.Blocks[second_id][0].width - mydesign.Blocks[first_id][0].width);
+        } else {
+          rhs.push_back(0.);
         }
-        sens.push_back('E');
-        rhs.push_back(0);
         rowtype.push_back('l');
       }
     }
@@ -760,7 +717,7 @@ void SeqPair::Init(const design& mydesign)
       write_cnt = 0;
       block_name = mydesign.name;
     }
-    if (write_cnt < 10) {
+    if (write_cnt < 2) {
       std::vector<std::string> namesvec(N_var);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         int ind = i * 2;
@@ -779,8 +736,8 @@ void SeqPair::Init(const design& mydesign)
       for (unsigned i = 0; i < namesvec.size(); ++i) {
         names[i] = &(namesvec[i][0]);
       }
-
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      sym_set_col_names(env, names);
+      sym_write_lp(env, const_cast<char*>((mydesign.name + "_init_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }
     sym_solve(env);
@@ -1094,6 +1051,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
+  Init(caseNL);
   bool ok = KeepOrdering(caseNL);
   assert(ok);
   SameSelected(caseNL);
