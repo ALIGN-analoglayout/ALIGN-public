@@ -9,31 +9,31 @@ neg = 'neg'
 constraints = [
     {"constraint": "SymmetricBlocks", "direction": "V", "pairs":
         [["a", "b"], ["c", "d"], ["e"], ["f"], ["g", "h"], ["m", "n"]]},
-    {"constraint": "Order", "direction": "top_to_bottom", "instances": ["f", "a", "c", "g", "m", "e"]}, 
+    {"constraint": "Order", "direction": "top_to_bottom", "instances": ["f", "a", "c", "g", "m", "e"], "abut": True},
     {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
     {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "d"]},
-    {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"]},
+    {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
     {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
     ]
 
 # Define variables for each block
-for c in constraints:
-    if c["constraint"] == "SymmetricBlocks":
-        assert c["direction"] == "V", f"Not implemented yet: {c}"
-        for p in c["pairs"]:
+for const in constraints:
+    if const["constraint"] == "SymmetricBlocks":
+        assert const["direction"] == "V", f"Not implemented yet: {const}"
+        for p in const["pairs"]:
             for b in p:
                 if b not in block_vars:
                     block_vars[b] = dict()
                     block_vars[b][pos] = z3.Int(f"pos_{b}")
                     block_vars[b][neg] = z3.Int(f"neg_{b}")
-    elif c["constraint"] == "Order":
-        for i in c["instances"]:
+    elif const["constraint"] == "Order":
+        for i in const["instances"]:
             if i not in block_vars:
                 block_vars[b] = dict()
                 block_vars[b][pos] = z3.Int(f"pos_{b}")
                 block_vars[b][neg] = z3.Int(f"neg_{b}")
     else:
-        assert False, f"Not implemented yet: {c}"
+        assert False, f"Not implemented yet: {const}"
 
 num_blocks = len(block_vars)
 # print(block_vars)
@@ -55,11 +55,11 @@ for i, j in itertools.combinations(blocks, 2):
     solver.add(a[neg] != b[neg])
 
 # Constraints due to symmetric blocks
-for c in constraints:
-    if c["constraint"] == "SymmetricBlocks":
+for const in constraints:
+    if const["constraint"] == "SymmetricBlocks":
         symm_self = list()
         symm_pair = list()
-        for p in c['pairs']:
+        for p in const['pairs']:
             if len(p) == 2:
                 symm_pair.append(p)
             else:
@@ -128,13 +128,13 @@ for c in constraints:
                 b[neg] < c[neg], b[neg] > d[neg],
             )))
 
-    elif c["constraint"] == "Order":
-        for i, j in itertools.combinations(c["instances"], 2):
+    elif const["constraint"] == "Order":
+        for i, j in itertools.combinations(const["instances"], 2):
             a = block_vars[i]
             b = block_vars[j]
-            if c["direction"] == "top_to_bottom":
+            if const["direction"] == "top_to_bottom":
                 solver.add(z3.And(a[pos] < b[pos], a[neg] > b[neg]))
-                if "abut" in c and c["abut"]:
+                if getattr(const, "abut", False):
                     # any block c cannot be below a and above b
                     for k in blocks:
                         if k not in [i, j]:
@@ -144,7 +144,7 @@ for c in constraints:
                                 a[neg] > c[neg], c[neg] > b[neg])))
             else:
                 solver.add(z3.And(a[pos] < b[pos], a[neg] < b[neg]))
-                if "abut" in c and c["abut"]:
+                if getattr(const, "abut", False):
                     # any block c cannot be after a and before b
                     for k in blocks:
                         if k not in [i, j]:
