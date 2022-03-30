@@ -1,5 +1,7 @@
+from gettext import find
 import z3
 import time
+import random
 import itertools
 
 POS = "pos"
@@ -14,7 +16,36 @@ def define_vars(block_vars, b):
         block_vars[b][NEG] = z3.Int(f"{NEG}{SEP}{b}")
 
 
-def generate_sequence_pair(constraints, solver):
+def find_solution(solver):
+    # Solve
+    s = time.time()
+    r = solver.check()
+    e = time.time()
+    print(f"Elapsed time: {e-s:0.3f} seconds")
+    if r == z3.sat:
+        m = solver.model()
+
+        seq_pos = [(b, m[b]) for b in m if str(b).startswith("pos")]
+        seq_neg = [(b, m[b]) for b in m if str(b).startswith("neg")]
+
+        seq_pos = sorted(seq_pos, key=lambda x: x[1].as_long())
+        seq_neg = sorted(seq_neg, key=lambda x: x[1].as_long())
+
+        seq_pos = [str(b[0]).split(SEP)[1] for b in seq_pos]
+        seq_neg = [str(b[0]).split(SEP)[1] for b in seq_neg]
+
+        seq_pos = " ".join(seq_pos)
+        seq_neg = " ".join(seq_neg)
+
+        # print(sorted([(d, m[d]) for d in m], key=lambda x: str(x[0])))
+        sequence_pair = f"{seq_pos},{seq_neg}"
+        print(f"{sequence_pair=}")
+        return sequence_pair
+    else:
+        return False
+
+
+def generate_sequence_pair(constraints, solver, n=1):
     block_vars = dict()
 
     # Define variables for each block
@@ -173,32 +204,10 @@ def generate_sequence_pair(constraints, solver):
                         z3.And(a[POS] > b[POS], a[NEG] < b[NEG])
                     ))
 
-    # Solve
-    s = time.time()
-    r = solver.check()
-    e = time.time()
-    print(f"Elapsed time: {e-s:0.3f} seconds")
-    if r == z3.sat:
-        m = solver.model()
-
-        seq_pos = [(b, m[b]) for b in m if str(b).startswith("pos")]
-        seq_neg = [(b, m[b]) for b in m if str(b).startswith("neg")]
-
-        seq_pos = sorted(seq_pos, key=lambda x: x[1].as_long())
-        seq_neg = sorted(seq_neg, key=lambda x: x[1].as_long())
-
-        seq_pos = [str(b[0]).split(SEP)[1] for b in seq_pos]
-        seq_neg = [str(b[0]).split(SEP)[1] for b in seq_neg]
-
-        seq_pos = " ".join(seq_pos)
-        seq_neg = " ".join(seq_neg)
-
-        # print(sorted([(d, m[d]) for d in m], key=lambda x: str(x[0])))
-        sequence_pair = f"{seq_pos},{seq_neg}"
-        print(f"{sequence_pair=}")
-        return sequence_pair
+    if n < 2:
+        return(find_solution(solver))
     else:
-        return False
+        assert False
 
 
 def test_1():
