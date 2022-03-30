@@ -235,7 +235,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
   // Perturb as the very first sequence pair may not be legal
   int trial_initial = 0;
-  int limit_initial = 1000000;
+  int limit_initial = 100000;
   while (++trial_initial < limit_initial) {
     if (!curr_sp.PerturbationNew(designData)) continue;
   }
