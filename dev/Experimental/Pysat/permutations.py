@@ -1,5 +1,6 @@
 import pytest
 from tally.tally import Tally, VarMgr, BitVec
+from itertools import combinations
 
 class SeqPair:
 
@@ -135,8 +136,51 @@ class SeqPair:
         abut_aux(u, v)
         abut_aux(v, u)
 
-    def symmetric(self, lst_of_lst, axis='H'):
-        pass
+    def align_array(self, a, axis='H'):
+        assert a
+        u = a[0]
+        for v in a[1:]:
+            self.align(u, v, axis)
+
+    def order_array(self, a, axis='H', abut=False):
+        assert a
+        for u, v in zip(a[:-1], a[1:]):
+            self.order(u, v, axis)
+            if abut:
+                self.abut(u, v, axis)
+
+    def symmetric(self, lst_of_lst, axis='V'):
+        # default is a vertical line of symmetry
+        singles = [lst for lst in lst_of_lst if len(lst) == 1]
+        pairs = [lst for lst in lst_of_lst if len(lst) == 2]
+        assert len(singles) + len(pairs) == len(lst_of_lst)
+
+        print(singles, pairs)
+
+        if len(singles) > 1:
+            self.align_array([lst[0] for lst in singles], axis=axis)
+
+        for u, v in pairs:
+            self.order(u, v, axis=SeqPair.other_axis(axis))
+
+        def symmetric_pair( pair0, pair1):
+            u0, v0 = pair0
+            u1, v1 = pair1
+
+            # u0   u1  ccc   v1 v0
+            # u1   u0  ccc   v0 v1
+
+            u0u1_order = self.order_expr(u0, u1)
+            self.s.add_clause([-u0u1_order,self.order_expr(u1, v1)])
+            self.s.add_clause([-u0u1_order,self.order_expr(v1, v0)])
+
+            u1u0_order = self.order_expr(u1, u0)
+            self.s.add_clause([-u1u0_order,self.order_expr(u0, v0)])
+            self.s.add_clause([-u1u0_order,self.order_expr(v0, v1)])
+
+
+        for pair0, pair1 in combinations(pairs, 2):
+            symmetric_pair(pair0, pair1)
 
 
 
@@ -167,11 +211,37 @@ def test_order_h():
     assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
     assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
 
+def test_order_array_h():
+    sp = SeqPair(4)
+    sp.order_array([3,2,1,0],'H')
+
+    sp.s.solve()
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
+    assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
+
 def test_order_v():
     sp = SeqPair(4)
     sp.order(3,2,'V')
     sp.order(2,1,'V')
     sp.order(1,0,'V')
+
+    sp.s.solve()
+    assert sp.s.state == 'SAT'
+
+    print()
+    sp.prnt()
+
+    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
+    assert SeqPair.perm2vec(sp.neg) == [0,1,2,3]
+
+def test_order_array_v():
+    sp = SeqPair(4)
+    sp.order_array([3,2,1,0],'V')
 
     sp.s.solve()
     assert sp.s.state == 'SAT'
@@ -189,14 +259,22 @@ def test_order_bad_axis():
 
 def test_align_h_pass():
     sp = SeqPair(2)
-    sp.order(0,1,'H')
     sp.align(0,1,'H')
 
-    sp.s.solve()
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1],[0,1]))
     assert sp.s.state == 'SAT'
 
-    print()
-    sp.prnt()
+    sp.s.solve(assumptions=sp.gen_assumptions([0,1],[1,0]))
+    assert sp.s.state == 'UNSAT'
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,0],[1,0]))
+    assert sp.s.state == 'SAT'
+
+    sp.s.solve(assumptions=sp.gen_assumptions([1,0],[0,1]))
+    assert sp.s.state == 'UNSAT'
+
+
+
 
 def test_align_h_fail():
     sp = SeqPair(2)
@@ -262,3 +340,43 @@ def test_abut_h_fail():
 
     sp.s.solve()
     assert sp.s.state == 'UNSAT'
+
+def test_soner():
+
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs":
+            [["a", "b"], ["c", "d"], ["e"], ["f"], ["g", "h"], ["m", "n"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["f", "a", "c", "g", "m", "e"], "abut": True},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "d"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
+    ]
+
+    instances_s = "abcdefghmn"
+    pos_s, neg_s = "fabcdghmen", "emgcabdfhn"
+
+    m = {c: i for i,c in enumerate(instances_s)}
+    
+    invm = list(instances_s)
+
+    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H"}
+
+    sp = SeqPair(len(m))
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Order":
+            axis = axis_tbl[constraint['direction']]
+            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
+
+        if constraint['constraint'] == "SymmetricBlocks":
+            axis = constraint['direction']
+            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
+
+    #assump = sp.gen_assumptions([m[c] for c in "fabcdghmen"], [m[c] for c in "emgcabdfhn"])
+    assump = None
+
+    sp.s.solve(assumptions=assump)
+    assert sp.s.state == 'SAT'
+
+    print( ''.join(invm[x] for x in SeqPair.perm2vec(sp.pos)),  ''.join(invm[x] for x in SeqPair.perm2vec(sp.neg)))
