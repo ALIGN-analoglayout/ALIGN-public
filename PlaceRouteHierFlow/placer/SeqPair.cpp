@@ -232,6 +232,82 @@ std::vector<std::set<int>> SeqPair::GetCC(const design& mydesign) const
   return ret;
 }
 
+class SPGraph {
+  private:
+    class Node {
+      private:
+        const int _attr;
+        int _level;
+        std::vector<const Node*> _ie, _oe;
+      public:
+        Node(const int attr) : _attr{attr}, _level{-1} {
+          _ie.reserve(16);
+          _oe.reserve(16);
+        }
+        int Attr() const { return _attr; }
+        int Level() const { return _level; }
+        void SetLevel(const int l) { _level = l; }
+        void AddOutEdge(const Node* n) { _oe.push_back(n); }
+        void AddInEdge(const Node* n)  { _ie.push_back(n); }
+        const std::vector<const Node*>& OutEdges() const { return _ie; }
+        const std::vector<const Node*>& InEdges() const { return _oe; }
+    };
+    std::map<int, Node*> _nodes;
+
+    void LevelOrderInt(Node* n)
+    {
+      if (n->InEdges().empty()) {
+        n->SetLevel(0);
+      } else {
+        int level{-1};
+        for (auto& ie : n->InEdges()) {
+          if (ie->Level() < 0) {
+            LevelOrderInt(const_cast<Node*>(ie));
+          }
+          level = std::max(level, ie->Level() + 1);
+        }
+        n->SetLevel(level);
+      }
+    }
+    void LevelOrder()
+    {
+      for (auto& it : _nodes) {
+        if (it.second->OutEdges().empty()) {
+          LevelOrderInt(const_cast<Node*>(it.second));
+        }
+      }
+    }
+  public:
+    SPGraph() {}
+    ~SPGraph()
+    {
+      for (auto& it : _nodes) delete it.second;
+      _nodes.clear();
+    }
+    void AddNode(const int& attr) { if (_nodes.find(attr) == _nodes.end()) _nodes[attr] = new Node(attr); }
+
+    void AddEdge(const int& n1, const int& n2)
+    {
+      auto it1 = _nodes.find(n1);
+      auto it2 = _nodes.find(n2);
+      if (it1 != _nodes.end() && it2 != _nodes.end()) {
+        it1->second->AddOutEdge(it2->second);
+        it2->second->AddInEdge(it1->second);
+      }
+    }
+
+    std::vector<std::vector<int>> LevelOrderSet()
+    {
+      LevelOrder();
+      int maxLevel{-1};
+      for (auto& it : _nodes) maxLevel = std::max(maxLevel, it.second->Level());
+      std::vector<std::vector<int>> lset(maxLevel + 1);
+      for (auto& it : _nodes) lset[it.second->Level()].push_back(it.second->Attr());
+      return lset;
+    }
+
+};
+
 void SeqPair::Init(const design& mydesign)
 {
   if (mydesign.Blocks.size() <= 1) return;
@@ -677,81 +753,107 @@ void SeqPair::Init(const design& mydesign)
     }
   }
 
-  {
-    std::vector<int> starts, indices;
-    std::vector<double> values;
-    starts.push_back(0);
-    assert(rhs.size() == sens.size());
-    for (int i = 0; i < N_var; ++i) {
-      starts.push_back(starts.back() + rowindofcol[i].size());
-      indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
-      values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
+  std::vector<int> starts, indices;
+  std::vector<double> values;
+  starts.push_back(0);
+  assert(rhs.size() == sens.size());
+  for (int i = 0; i < N_var; ++i) {
+    starts.push_back(starts.back() + rowindofcol[i].size());
+    indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
+    values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
+  }
+  double rhslb[rhs.size()], rhsub[rhs.size()];
+  for (unsigned i = 0;i < sens.size(); ++i) {
+    switch (sens[i]) {
+      case 'E':
+      default:
+        rhslb[i] = rhs[i];
+        rhsub[i] = rhs[i];
+        break;
+      case 'G':
+        rhslb[i] = rhs[i];
+        rhsub[i] = infty;
+        break;
+      case 'L':
+        rhslb[i] = -infty;
+        rhsub[i] = rhs[i];
+        break;
     }
-    double rhslb[rhs.size()], rhsub[rhs.size()];
-    for (unsigned i = 0;i < sens.size(); ++i) {
-      switch (sens[i]) {
-        case 'E':
-        default:
-          rhslb[i] = rhs[i];
-          rhsub[i] = rhs[i];
-          break;
-        case 'G':
-          rhslb[i] = rhs[i];
-          rhsub[i] = infty;
-          break;
-        case 'L':
-          rhslb[i] = -infty;
-          rhsub[i] = rhs[i];
-          break;
-      }
-    }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
-        values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
+  }
+  sym_environment *env = sym_open_environment();
+  sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+      values.data(), collb.data(), colub.data(),
+      intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
+  sym_set_int_param(env, "verbosity", -2);
 
-    static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
+  static int write_cnt{0};
+  static std::string block_name;
+  if (block_name != mydesign.name) {
+    write_cnt = 0;
+    block_name = mydesign.name;
+  }
+  if (write_cnt < 2) {
+    std::vector<std::string> namesvec(N_var);
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      int ind = i * 2;
+      namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+      namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
     }
-    if (write_cnt < 2) {
-      std::vector<std::string> namesvec(N_var);
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        int ind = i * 2;
-        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
-        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
-      }
 
-      for (auto& it : buf_indx_map) {
-        namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf\0");
-      }
-      for (auto& it : buf_xy_indx_map) {
-        namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf_xy\0");
-      }
+    for (auto& it : buf_indx_map) {
+      namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf\0");
+    }
+    for (auto& it : buf_xy_indx_map) {
+      namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf_xy\0");
+    }
 
-      char* names[N_var];
-      for (unsigned i = 0; i < namesvec.size(); ++i) {
-        names[i] = &(namesvec[i][0]);
-      }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_init_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
+    char* names[N_var];
+    for (unsigned i = 0; i < namesvec.size(); ++i) {
+      names[i] = &(namesvec[i][0]);
     }
-    sym_solve(env);
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
-      ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
-      sighandler = signal(SIGINT, sighandler);
-      return;
-    }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
+    sym_set_col_names(env, names);
+    sym_write_lp(env, const_cast<char*>((mydesign.name + "_init_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+    ++write_cnt;
+  }
+  sym_solve(env);
+  int status = sym_get_status(env);
+  if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    ++const_cast<design&>(mydesign)._infeasILPFail;
     sym_close_environment(env);
     sighandler = signal(SIGINT, sighandler);
+    return;
+  }
+  std::vector<double> var(N_var, 0.);
+  sym_get_col_solution(env, var.data());
+  sym_close_environment(env);
+  sighandler = signal(SIGINT, sighandler);
+  SPGraph spgraph;
+  for (auto& i : posPair) spgraph.AddNode(i);
+  for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+    for (unsigned j = i + 1; j < mydesign.Blocks.size(); ++j) {
+      if (var[2 * i + 1] + mydesign.Blocks[i][0].height <= var[2 * j + 1]) {
+        spgraph.AddEdge(i, j);
+      } else if (var[2 * j + 1] + mydesign.Blocks[j][0].height <= var[2 * i + 1]) {
+        spgraph.AddEdge(j, i);
+      }
+    }
+  }
+  auto lset = spgraph.LevelOrderSet();
+  for (unsigned i = 0; i < lset.size(); ++i) {
+    std::string r;
+    for (unsigned j = 0; j < lset[i].size(); ++j) {
+      r += (" " + std::to_string(lset[i][j]));
+    }
+    logger->info("level : {0} elem : {1}", i, r);
+    std::sort(lset[i].begin(), lset[i].end(), [&var](const int& a, const int& b)
+        {
+          return var[2 * a] < var[2 * b];
+        }
+        );
+    r.clear();
+    for (unsigned j = 0; j < lset[i].size(); ++j) {
+      r += (" " + std::to_string(lset[i][j]));
+    }
   }
 }
   
@@ -794,116 +896,6 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->selected = sp.selected;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
 }
-
-
-
-void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
-  // std::cout<<"InsertNewSBlock "<<originIdx<<std::endl;
-  placerDB::Smark axis;
-  vector<placerDB::SymmBlock>::iterator bit = originNL.SBlocks.begin() + originIdx;
-  // axis=bit->axis_dir;
-  // axis=placerDB::V; // initialize veritcal symmetry
-  /*
-  if ( !(bit->selfsym).empty() ) {
-    switch( (bit->selfsym).at(0).second ) {
-      case placerDB::H: axis=placerDB::V;break;
-      case placerDB::V: axis=placerDB::H;break;
-    }
-  }
- */
-  axis = bit->axis_dir;
-  // cout<<"axis"<<axis<<endl;
-  this->symAxis.at(originIdx) = axis;
-  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-  if (!bit->sympair.empty()) {
-    for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-      if (pit->first < (int)originNL.GetSizeofBlocks()) {
-        posPair.push_back(pit->first);  // a1,a2,...,ap --> positive
-        orient[pit->first] = placerDB::N;
-      }
-    }
-  }
-  posPair.push_back(bit->dnode);  // axis --> positive
-  if (!bit->selfsym.empty()) {
-    for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
-      if (sit->first < (int)originNL.GetSizeofBlocks()) {
-        posPair.push_back(sit->first);  // c1,...cs --> positve
-        orient[sit->first] = placerDB::N;
-      }
-    }
-  }
-  if (!bit->sympair.empty()) {
-    // for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
-    for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-      if (pit->second < (int)originNL.GetSizeofBlocks()) {
-        posPair.push_back(pit->second);  // bp,...,b1 --> positive
-        if (axis == placerDB::V) {
-          orient[pit->second] = placerDB::FN;
-        } else if (axis == placerDB::H) {
-          orient[pit->second] = placerDB::FS;
-        }
-      }
-    }
-  }
-  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-  if (axis == placerDB::V) {
-    if (!bit->sympair.empty()) {
-      for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-        if (pit->first < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(pit->first);  // a1,a2,...,ap --> negative
-        }
-      }
-    }
-    if (!bit->selfsym.empty()) {
-      // for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.end()-1; sit>=bit->selfsym.begin(); --sit) {
-      for (vector<pair<int, placerDB::Smark>>::reverse_iterator sit = bit->selfsym.rbegin(); sit != bit->selfsym.rend(); ++sit) {
-        if (sit->first < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(sit->first);  // cs,...c1 --> negative
-        }
-      }
-    }
-    negPair.push_back(bit->dnode);  // axis --> negative
-    if (!bit->sympair.empty()) {
-      // for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
-      for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-        if (pit->second < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(pit->second);  // bp,...,b1 --> positive
-        }
-      }
-    }
-  } else if (axis == placerDB::H) {
-    if (!bit->sympair.empty()) {
-      for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-        if (pit->second < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(pit->second);  // b1,...,bp --> negative
-        }
-      }
-    }
-    negPair.push_back(bit->dnode);  // axis --> negative
-    if (!bit->selfsym.empty()) {
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
-        if (sit->first < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(sit->first);  // c1,...cs --> negative
-        }
-      }
-    }
-    if (!bit->sympair.empty()) {
-      // for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
-      for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-        if (pit->first < (int)originNL.GetSizeofBlocks()) {
-          negPair.push_back(pit->first);  // ap,...,a1 --> negative
-        }
-      }
-    }
-  }
-}
-
 
 void SeqPair::CompactSeq() {
   vector<int> temp_p;
@@ -967,7 +959,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
         }
       }
     }
-    posPair.push_back(bit->dnode);  // axis --> positive
+    //posPair.push_back(bit->dnode);  // axis --> positive
     if (!bit->selfsym.empty()) {
       for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
         if (sit->first < (int)caseNL.GetSizeofBlocks()) {
@@ -1007,7 +999,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
           }
         }
       }
-      negPair.push_back(bit->dnode);  // axis --> negative
+      //negPair.push_back(bit->dnode);  // axis --> negative
       if (!bit->sympair.empty()) {
         for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
           if (pit->second < (int)caseNL.GetSizeofBlocks()) {
@@ -1023,7 +1015,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
           }
         }
       }
-      negPair.push_back(bit->dnode);  // axis --> negative
+      //negPair.push_back(bit->dnode);  // axis --> negative
       if (!bit->selfsym.empty()) {
         for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
           if (sit->first < (int)caseNL.GetSizeofBlocks()) {

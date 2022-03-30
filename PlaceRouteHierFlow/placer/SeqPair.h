@@ -99,7 +99,6 @@ class SeqPair {
   bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
   vector<int> GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L);
   vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
-  void InsertNewSBlock(design& originNL, int originIdx);
   std::vector<std::set<int>> GetCC(const design& mydesign) const;
   void Init(const design& mydesign);
 
