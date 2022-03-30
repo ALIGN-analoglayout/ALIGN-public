@@ -872,10 +872,10 @@ void SeqPair::Init(const design& mydesign)
   std::copy(ppair.begin(), ppair.end(), posPair.begin());
   std::copy(npair.begin(), npair.end(), negPair.begin());
   r.clear();
-  for (auto& i : posPair) r += (" " + std::to_string(i));
+  for (auto& i : posPair) r += (" " + mydesign.Blocks[i][0].name);
   logger->info("pos :{0}", r);
   r.clear();
-  for (auto& i : negPair) r += (" " + std::to_string(i));
+  for (auto& i : negPair) r += (" " + mydesign.Blocks[i][0].name);
   logger->info("neg :{0}", r);
 }
   
