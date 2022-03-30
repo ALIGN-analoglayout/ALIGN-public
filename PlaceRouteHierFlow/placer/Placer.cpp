@@ -245,7 +245,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
     
     if (curr_cost > 0) {
-      logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
+      logger->info("Required {0} perturbations to generate a feasible solution.", trial_count - 1);
       break;
     } else {
       int trial_cached = 0;
