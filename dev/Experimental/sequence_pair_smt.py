@@ -13,8 +13,18 @@ constraints = [
     {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
     {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "d"]},
     {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
-    {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
+    {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]},
+    {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "o", "p"]},
+    {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
     ]
+
+
+def define_vars(block_vars, b):
+    if b not in block_vars:
+        block_vars[b] = dict()
+        block_vars[b][pos] = z3.Int(f"pos_{b}")
+        block_vars[b][neg] = z3.Int(f"neg_{b}")
+
 
 # Define variables for each block
 for const in constraints:
@@ -22,16 +32,12 @@ for const in constraints:
         assert const["direction"] == "V", f"Not implemented yet: {const}"
         for p in const["pairs"]:
             for b in p:
-                if b not in block_vars:
-                    block_vars[b] = dict()
-                    block_vars[b][pos] = z3.Int(f"pos_{b}")
-                    block_vars[b][neg] = z3.Int(f"neg_{b}")
-    elif const["constraint"] == "Order":
+                define_vars(block_vars, b)
+    elif const["constraint"] in ["Align", "Order"]:
         for i in const["instances"]:
-            if i not in block_vars:
-                block_vars[b] = dict()
-                block_vars[b][pos] = z3.Int(f"pos_{b}")
-                block_vars[b][neg] = z3.Int(f"neg_{b}")
+            define_vars(block_vars, i)
+        if const["constraint"] == "Align":
+            assert const["direction"] in ["h_bottom", "v_left"], f"Not implemented yet: {const}"
     else:
         assert False, f"Not implemented yet: {const}"
 
@@ -152,6 +158,23 @@ for const in constraints:
                             solver.add(z3.Not(z3.And(
                                 a[pos] < c[pos], c[pos] < b[pos],
                                 a[neg] < c[neg], c[neg] < b[neg])))
+
+    elif const["constraint"] == "Align":
+        for i, j in itertools.combinations(const["instances"], 2):
+            a = block_vars[i]
+            b = block_vars[j]
+            if const["direction"] == "h_bottom":
+                # a can only be before or after b
+                solver.add(z3.Or(
+                    z3.And(a[pos] < b[pos], a[neg] < b[neg]),
+                    z3.And(a[pos] > b[pos], a[neg] > b[neg])
+                ))
+            elif const["direction"] == "v_left":
+                # a can only be above or below b
+                solver.add(z3.Or(
+                    z3.And(a[pos] < b[pos], a[neg] > b[neg]),
+                    z3.And(a[pos] > b[pos], a[neg] < b[neg])
+                ))
 
 # Solve
 s = time.time()
