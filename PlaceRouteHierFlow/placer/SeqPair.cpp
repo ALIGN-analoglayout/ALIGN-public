@@ -4,6 +4,8 @@
 
 #include <exception>
 #include <set>
+#include <list>
+#include <algorithm>
 #include <unordered_set>
 
 #include "spdlog/spdlog.h"
@@ -839,22 +841,42 @@ void SeqPair::Init(const design& mydesign)
     }
   }
   auto lset = spgraph.LevelOrderSet();
+  std::list<int> ppair, npair;
+  std::string r;
+  for (auto& i : posPair) r += (" " + std::to_string(i));
+  logger->info("pos :{0}", r);
+  r.clear();
+  for (auto& i : negPair) r += (" " + std::to_string(i));
+  logger->info("neg :{0}", r);
   for (unsigned i = 0; i < lset.size(); ++i) {
     std::string r;
     for (unsigned j = 0; j < lset[i].size(); ++j) {
       r += (" " + std::to_string(lset[i][j]));
     }
     logger->info("level : {0} elem : {1}", i, r);
-    std::sort(lset[i].begin(), lset[i].end(), [&var](const int& a, const int& b)
-        {
-          return var[2 * a] < var[2 * b];
-        }
-        );
+    std::sort(lset[i].begin(), lset[i].end(),
+        [&var](const int& a, const int& b) {
+        if (var[2 * a] == var[2 * b]) return var[2 * a + 1] < var[2 * b + 1];
+        return var[2 * a] < var[2 * b];
+        });
     r.clear();
     for (unsigned j = 0; j < lset[i].size(); ++j) {
       r += (" " + std::to_string(lset[i][j]));
     }
+    logger->info("level : {0} elem : {1}", i, r);
+    for (auto& j : lset[i]) ppair.push_back(j);
+    for (auto it = lset[i].rbegin(); it != lset[i].rend(); ++it) {
+      npair.push_front(*it);
+    }
   }
+  std::copy(ppair.begin(), ppair.end(), posPair.begin());
+  std::copy(npair.begin(), npair.end(), negPair.begin());
+  r.clear();
+  for (auto& i : posPair) r += (" " + std::to_string(i));
+  logger->info("pos :{0}", r);
+  r.clear();
+  for (auto& i : negPair) r += (" " + std::to_string(i));
+  logger->info("neg :{0}", r);
 }
   
 
@@ -1043,11 +1065,6 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
-  Init(caseNL);
-  bool ok = KeepOrdering(caseNL);
-  assert(ok);
-  SameSelected(caseNL);
-
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
 
   if (_seqPairEnum->valid()) {
@@ -1055,6 +1072,10 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
+    Init(caseNL);
+    bool ok = KeepOrdering(caseNL);
+    assert(ok);
+    SameSelected(caseNL);
   }
 }
 
