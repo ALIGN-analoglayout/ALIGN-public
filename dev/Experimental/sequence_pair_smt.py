@@ -1,8 +1,8 @@
-from gettext import find
 import z3
 import time
-import random
 import itertools
+import more_itertools
+
 
 POS = "pos"
 NEG = "neg"
@@ -161,13 +161,13 @@ def generate_sequence_pair(constraints, solver, n=1):
                 )))
 
         elif const["constraint"] == "Order":
-            for i, j in itertools.combinations(const["instances"], 2):
+            for i, j in more_itertools.pairwise(const["instances"]):
                 a = block_vars[i]
                 b = block_vars[j]
                 if const["direction"] == "top_to_bottom":
                     # a,b: a must be before b
                     solver.add(z3.And(a[POS] < b[POS], a[NEG] > b[NEG]))
-                    if getattr(const, "abut", False):
+                    if "abut" in const and const["abut"]:
                         # any block c cannot be below a and above b
                         for k in blocks:
                             if k not in [i, j]:
@@ -175,10 +175,10 @@ def generate_sequence_pair(constraints, solver, n=1):
                                 solver.add(z3.Not(z3.And(
                                     a[POS] < c[POS], c[POS] < b[POS],
                                     a[NEG] > c[NEG], c[NEG] > b[NEG])))
-                else:
+                elif const["direction"] == "left_to_right":
                     # a,b: a must be above b
                     solver.add(z3.And(a[POS] < b[POS], a[NEG] < b[NEG]))
-                    if getattr(const, "abut", False):
+                    if "abut" in const and const["abut"]:
                         # any block c cannot be after a and before b
                         for k in blocks:
                             if k not in [i, j]:
@@ -186,6 +186,8 @@ def generate_sequence_pair(constraints, solver, n=1):
                                 solver.add(z3.Not(z3.And(
                                     a[POS] < c[POS], c[POS] < b[POS],
                                     a[NEG] < c[NEG], c[NEG] < b[NEG])))
+                else:
+                    assert False
 
         elif const["constraint"] == "Align":
             for i, j in itertools.combinations(const["instances"], 2):
@@ -203,6 +205,8 @@ def generate_sequence_pair(constraints, solver, n=1):
                         z3.And(a[POS] < b[POS], a[NEG] > b[NEG]),
                         z3.And(a[POS] > b[POS], a[NEG] < b[NEG])
                     ))
+                else:
+                    assert False
 
     if n < 2:
         return(find_solution(solver))
@@ -237,7 +241,7 @@ def test_2():
         {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
         ]
     sequence_pair = generate_sequence_pair(constraints, z3.Solver())
-    assert sequence_pair == 'r f o a b p c g h m n e d,o e m g c r h d a f b p n'
+    assert sequence_pair == 'r f a c d g h m e n p b o,e m g c a p d f b r n o h'
 
 
 def test_3():
