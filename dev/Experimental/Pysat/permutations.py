@@ -199,18 +199,9 @@ class SeqPair:
                 break
             p_res, n_res = SeqPair.perm2vec(self.pos), SeqPair.perm2vec(self.neg)
             
-            yield p_res, n_res
+            yield tuple(p_res), tuple(n_res)
 
             self.s.add_clause([-x for x in self.gen_assumptions(p_res, n_res)])
-
-
-def test_A0():
-    n = 19
-    sp = SeqPair(n)
-    sp.order(15, 6, 'H')
-    sp.order(18, 0, 'V')
-
-    sp.solve_and_check()
 
 
 def test_order_h():
@@ -219,19 +210,14 @@ def test_order_h():
     sp.order(2,1,'H')
     sp.order(1,0,'H')
 
-    sp.solve_and_check()
-
-    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
-    assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
+    assert {((3,2,1,0),(3,2,1,0))} == set(sp.gen_solutions(max_solutions=100))
 
 def test_order_array_h():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'H')
 
-    sp.solve_and_check()
+    assert {((3,2,1,0),(3,2,1,0))} == set(sp.gen_solutions(max_solutions=100))
 
-    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
-    assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
 
 def test_order_v():
     sp = SeqPair(4)
@@ -239,42 +225,27 @@ def test_order_v():
     sp.order(2,1,'V')
     sp.order(1,0,'V')
 
-    sp.solve_and_check()
+    assert {((3,2,1,0),(0,1,2,3))} == set(sp.gen_solutions(max_solutions=100))
 
-    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
-    assert SeqPair.perm2vec(sp.neg) == [0,1,2,3]
 
 def test_order_array_v():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'V')
 
-    sp.solve_and_check()
+    assert {((3,2,1,0),(0,1,2,3))} == set(sp.gen_solutions(max_solutions=100))
 
-    assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
-    assert SeqPair.perm2vec(sp.neg) == [0,1,2,3]
 
 def test_order_bad_axis():
     sp = SeqPair(4)
     with pytest.raises(AssertionError) as exc:
         sp.order(3,2,'G')
 
+
 def test_align_h_pass():
     sp = SeqPair(2)
     sp.align(0,1,'H')
 
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1],[0,1]))
-    assert sp.s.state == 'SAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1],[1,0]))
-    assert sp.s.state == 'UNSAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([1,0],[1,0]))
-    assert sp.s.state == 'SAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([1,0],[0,1]))
-    assert sp.s.state == 'UNSAT'
-
-
+    assert {((0,1),(0,1)), ((1,0),(1,0))} == set(sp.gen_solutions(max_solutions=100))
 
 
 def test_align_h_fail():
@@ -282,8 +253,8 @@ def test_align_h_fail():
     sp.order(0,1,'H')
     sp.align(0,1,'V')
 
-    sp.s.solve()
-    assert sp.s.state == 'UNSAT'
+    assert set() == set(sp.gen_solutions(max_solutions=100))
+
 
 def test_abut_h_pass0():
     sp = SeqPair(3)
@@ -293,14 +264,12 @@ def test_abut_h_pass0():
     sp.order(0,2,'H')
     sp.order(2,1,'H')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
+    assert {((0,2,1),(0,2,1))} == set(sp.gen_solutions(max_solutions=100))
 
-    assert SeqPair.perm2vec(sp.pos) == [0,2,1]
-    assert SeqPair.perm2vec(sp.neg) == [0,2,1]
 
 def test_assumptions():
     sp = SeqPair(3)
+
     sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
     assert sp.s.state == 'SAT'
 
@@ -326,7 +295,6 @@ def test_abut_h_pass1():
     print()
     sp.prnt()
 
-
     assert SeqPair.perm2vec(sp.pos) == [2,0,1]
     assert SeqPair.perm2vec(sp.neg) == [2,0,1]
 
@@ -347,49 +315,14 @@ def test_symmetric_2():
     sp.symmetric([[0,1]], 'V')
     sp.align_array([0,1], 'H')
 
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1], [0,1]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    sp.s.solve(assumptions=sp.gen_assumptions([1,0], [1,0]))
-    assert sp.s.state == 'UNSAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1], [1,0]))
-    assert sp.s.state == 'UNSAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([1,0], [0,1]))
-    assert sp.s.state == 'UNSAT'
+    assert {((0,1),(0,1))} == set(sp.gen_solutions(max_solutions=100))
 
 
 def test_symmetric_3():
     sp = SeqPair(3)
     sp.symmetric([[0], [1,2]], 'V')
 
-    sp.s.solve(assumptions=sp.gen_assumptions([1,0,2], [1,0,2]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1,2], [1,2,0]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    sp.s.solve(assumptions=sp.gen_assumptions([1,2,0], [0,1,2]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    sp.s.solve(assumptions=sp.gen_assumptions([0,1,2], [0,1,2]))
-    assert sp.s.state == 'UNSAT'
-
-    sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
-    assert sp.s.state == 'UNSAT'
+    assert {((1,0,2),(1,0,2)), ((0,1,2),(1,2,0)), ((1,2,0),(0,1,2))} == set(sp.gen_solutions(max_solutions=100))
 
 
 def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False, max_solutions=1):
@@ -518,7 +451,7 @@ def test_soner2():
     pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
     pos_s, neg_s = None, None
 
-    satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=100)
+    satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=10000)
 
 
 
