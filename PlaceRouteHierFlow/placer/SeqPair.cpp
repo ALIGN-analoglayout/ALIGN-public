@@ -553,7 +553,7 @@ void SeqPair::Init(const design& mydesign)
       constrvalues[i * 2 + v].push_back(1);
       constrvalues[j * 2 + v].push_back(-1);
       sens.push_back('L');
-      rhs.push_back(-(v ? mydesign.Blocks[j][0].height : mydesign.Blocks[j][0].width));
+      rhs.push_back(-(v ? mydesign.Blocks[i][0].height : mydesign.Blocks[i][0].width));
       rowtype.push_back('v');
     }
     for (const auto& it : (v ? abut_v : abut_h)) {
@@ -564,7 +564,7 @@ void SeqPair::Init(const design& mydesign)
       constrvalues[i * 2 + v].push_back(1);
       constrvalues[j * 2 + v].push_back(-1);
       sens.push_back('E');
-      rhs.push_back(v ? mydesign.Blocks[j][0].height : mydesign.Blocks[i][0].width);
+      rhs.push_back(v ? mydesign.Blocks[i][0].height : mydesign.Blocks[i][0].width);
       rowtype.push_back('a');
     }
   }
@@ -837,36 +837,24 @@ void SeqPair::Init(const design& mydesign)
   };
   for (auto& i : posPair) spgraph.AddNode(i);
   for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+    auto ih = roundupint(var[2 * i + 1]);
     for (unsigned j = i + 1; j < mydesign.Blocks.size(); ++j) {
-      if (roundupint(var[2 * i + 1]) + mydesign.Blocks[i][0].height <= roundupint(var[2 * j + 1])) {
+      auto jh = roundupint(var[2 * j + 1]);
+      if (ih + mydesign.Blocks[i][0].height <= jh) {
         spgraph.AddEdge(j, i);
-      } else if (roundupint(var[2 * j + 1]) + mydesign.Blocks[j][0].height <= roundupint(var[2 * i + 1])) {
+      } else if (jh + mydesign.Blocks[j][0].height <= ih) {
         spgraph.AddEdge(i, j);
       }
     }
   }
   auto lset = spgraph.LevelOrderSet();
   std::list<int> ppair, npair;
-  //std::string r;
-  //for (auto& i : posPair) r += (" " + std::to_string(i));
-  //logger->info("pos :{0}", r);
-  //r.clear();
-  //for (auto& i : negPair) r += (" " + std::to_string(i));
-  //logger->info("neg :{0}", r);
   for (unsigned i = 0; i < lset.size(); ++i) {
-    std::string r;
-    for (unsigned j = 0; j < lset[i].size(); ++j) {
-      r += (" " + std::to_string(lset[i][j]));
-    }
     std::sort(lset[i].begin(), lset[i].end(),
         [&var](const int& a, const int& b) {
         if (var[2 * a] == var[2 * b]) return var[2 * a + 1] < var[2 * b + 1];
         return var[2 * a] < var[2 * b];
         });
-    r.clear();
-    for (unsigned j = 0; j < lset[i].size(); ++j) {
-      r += (" " + std::to_string(lset[i][j]));
-    }
     for (auto& j : lset[i]) npair.push_back(j);
     for (auto it = lset[i].rbegin(); it != lset[i].rend(); ++it) {
       ppair.push_front(*it);
@@ -874,7 +862,7 @@ void SeqPair::Init(const design& mydesign)
   }
   std::copy(ppair.begin(), ppair.end(), posPair.begin());
   std::copy(npair.begin(), npair.end(), negPair.begin());
-  //r.clear();
+  //std::string r;
   //for (auto& i : posPair) r += (" " + mydesign.Blocks[i][0].name);
   //logger->info("pos :{0}", r);
   //r.clear();
