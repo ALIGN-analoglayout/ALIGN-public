@@ -1,3 +1,5 @@
+#define CATCH_INFINITE_LOOP
+
 #include "SeqPair.h"
 
 #include <exception>
@@ -176,7 +178,7 @@ const bool SeqPairEnumerator::IncrementSelected() {
 }*/
 
 void SeqPairEnumerator::Permute() {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
+  // auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
   // if (!EnumFlip())
   if (_exhausted) return;
   if (!IncrementSelected()) {
@@ -384,6 +386,8 @@ void SeqPair::CompactSeq() {
 }
 
 SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SeqPair");
+
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
@@ -493,13 +497,13 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   }
 
   bool ok = KeepOrdering(caseNL);
-  assert(ok);
+  // logger->info("KeepOrdering end: {0}", ok);
+
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
 
   if (_seqPairEnum->valid()) {
-    auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
     logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
@@ -507,7 +511,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
+  // auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
   this->posPair = sp.posPair;
   this->negPair = sp.negPair;
   this->orient = sp.orient;
@@ -519,35 +523,39 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
 
 void SeqPair::PrintVec(const std::string& tag, const std::vector<int>& vec) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintVec");
-  std::string tmpstr;
-  for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
-  logger->trace("{0} {1}", tag, tmpstr);
+  if (logger->should_log(spdlog::level::trace)) {
+    std::string tmpstr;
+    for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
+    logger->trace("{0} {1}", tag, tmpstr);
+  }
 }
 
 void SeqPair::PrintSeqPair() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
 
-  logger->debug("=== Sequence Pair ===");
-  std::string tmpstr;
-  for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Positive pair: {0}", tmpstr);
+  if (logger->should_log(spdlog::level::debug)) {
+    logger->debug("=== Sequence Pair ===");
+    std::string tmpstr;
+    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Positive pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Negative pair: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Negative pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Orientation: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Orientation: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
-  logger->debug("Symmetry axis: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
+    logger->debug("Symmetry axis: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Selected: {0}", tmpstr);
-  // cout<<endl;
+    tmpstr = "";
+    for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Selected: {0}", tmpstr);
+    // cout<<endl;
+  }
 }
 
 void SeqPair::SameSelected(design& caseNL) {
@@ -625,50 +633,28 @@ bool SeqPair::ValidateSelect(design & caseNL){
 bool SeqPair::KeepOrdering(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
 
-  // ids of blocks which have order constraints
-  // set<int> block_id_with_order;
-  // for (auto order : caseNL.Ordering_Constraints) {
-  // block_id_with_order.insert(order.first.first);
-  // block_id_with_order.insert(order.first.second);
-  //}
-  // places of block_id_with_order in pair
-  // vector<int> pos_idx, neg_idx;
-
-  // for (unsigned int i = 0; i < posPair.size(); i++) {
-  // if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
-  // if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
-  //}
-
-  // vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
-  // for (unsigned int i = 0; i < block_id_with_order.size(); i++) {
-  // pos_order[i] = posPair[pos_idx[i]];
-  // neg_order[i] = negPair[neg_idx[i]];
-  //}
-
-  // unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  // std::default_random_engine e(seed);
-  // generate a pos order
-
   {
+#ifdef CATCH_INFINITE_LOOP
     std::unordered_set<std::vector<int>, VectorHasher> visitedPosPair = {posPair};
+#endif
 
     bool pos_keep_order;
 
-    std::vector<int> blocks2sort; //the block with ordering constraints
-    std::vector<int> blocks_original_position; //the blocks position in the seqpair
+    std::vector<int> blocks2sort;               // the block with ordering constraints
+    std::vector<int> blocks_original_position;  // the blocks position in the seqpair
     std::map<int, int> blockid2indexinvec;
     std::vector<int> blockid_after_sort;
     vector<vector<int>> adj;
     vector<int> ind;
     std::queue<int> q;
     for (const auto& order : caseNL.Ordering_Constraints) {
-      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()){
-        blocks2sort.push_back(order.first.first);//store blocks to sort
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size()-1);
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.first);  // store blocks to sort
+        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
       }
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.second);
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size()-1);//store block index in vec
+        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
       }
     }
     adj.resize(blocks2sort.size());
@@ -676,19 +662,19 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     for (const auto& b : blocks2sort) {
       blocks_original_position.push_back(find(negPair.begin(), negPair.end(), b) - negPair.begin());
     }
-    for(const auto& order : caseNL.Ordering_Constraints){
+    for (const auto& order : caseNL.Ordering_Constraints) {
       int first_it = blockid2indexinvec[order.first.first];
       int second_it = blockid2indexinvec[order.first.second];
-      if (find(adj[first_it].begin(), adj[first_it].end(), second_it)==adj[first_it].end()){
-          adj[first_it].push_back(second_it);
-          ind[second_it]++;
+      if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+        adj[first_it].push_back(second_it);
+        ind[second_it]++;
       }
     }
-    for (unsigned int i = 0; i < blocks2sort.size();i++){
+    for (unsigned int i = 0; i < blocks2sort.size(); i++) {
       int it = blockid2indexinvec[blocks2sort[i]];
       if (ind[it] == 0) q.push(it);
     }
-    while(!q.empty()){
+    while (!q.empty()) {
       int v = q.front();
       q.pop();
       blockid_after_sort.push_back(blocks2sort[v]);
@@ -703,9 +689,10 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     }
 
     do {
+#ifdef CATCH_INFINITE_LOOP
       logger->trace("====Fixup pos order====");
-
       PrintVec("Before:", posPair);
+#endif
 
       int first_it, second_it;
       pos_keep_order = true;
@@ -736,35 +723,38 @@ bool SeqPair::KeepOrdering(design& caseNL) {
           break;
         }
       }
+#ifdef CATCH_INFINITE_LOOP
       PrintVec("After: ", posPair);
-
       if (!pos_keep_order && visitedPosPair.find(posPair) != visitedPosPair.end()) {
-        logger->critical("Infinite loop in posPair loop.");
+        // logger->critical("Infinite loop in posPair loop.");
         return false;
       } else {
         visitedPosPair.insert(posPair);
       }
+#endif
     } while (!pos_keep_order);
   }
   {
     bool neg_keep_order;
 
+#ifdef CATCH_INFINITE_LOOP
     std::unordered_set<std::vector<int>, VectorHasher> visitedNegPair = {negPair};
-    std::vector<int> blocks2sort; //the block with ordering constraints
-    std::vector<int> blocks_original_position; //the blocks position in the seqpair
+#endif
+    std::vector<int> blocks2sort;               // the block with ordering constraints
+    std::vector<int> blocks_original_position;  // the blocks position in the seqpair
     std::map<int, int> blockid2indexinvec;
     std::vector<int> blockid_after_sort;
     vector<vector<int>> adj;
     vector<int> ind;
     std::queue<int> q;
     for (const auto& order : caseNL.Ordering_Constraints) {
-      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()){
-        blocks2sort.push_back(order.first.first);//store blocks to sort
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size()-1);
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.first);  // store blocks to sort
+        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
       }
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.second);
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size()-1);//store block index in vec
+        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
       }
     }
     adj.resize(blocks2sort.size());
@@ -772,28 +762,28 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     for (const auto& b : blocks2sort) {
       blocks_original_position.push_back(find(negPair.begin(), negPair.end(), b) - negPair.begin());
     }
-    for(const auto& order : caseNL.Ordering_Constraints){
-      if(order.second == placerDB::H){
+    for (const auto& order : caseNL.Ordering_Constraints) {
+      if (order.second == placerDB::H) {
         int first_it = blockid2indexinvec[order.first.first];
         int second_it = blockid2indexinvec[order.first.second];
-        if (find(adj[first_it].begin(), adj[first_it].end(), second_it)==adj[first_it].end()){
-           adj[first_it].push_back(second_it);
-           ind[second_it]++;
+        if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+          adj[first_it].push_back(second_it);
+          ind[second_it]++;
         }
-      }else{
+      } else {
         int first_it = blockid2indexinvec[order.first.first];
         int second_it = blockid2indexinvec[order.first.second];
-        if (find(adj[second_it].begin(), adj[second_it].end(), first_it)==adj[second_it].end()){
-           adj[second_it].push_back(first_it);
-           ind[first_it]++;
+        if (find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+          adj[second_it].push_back(first_it);
+          ind[first_it]++;
         }
       }
     }
-    for (unsigned int i = 0; i < blocks2sort.size();i++){
+    for (unsigned int i = 0; i < blocks2sort.size(); i++) {
       int it = blockid2indexinvec[blocks2sort[i]];
       if (ind[it] == 0) q.push(it);
     }
-    while(!q.empty()){
+    while (!q.empty()) {
       int v = q.front();
       q.pop();
       blockid_after_sort.push_back(blocks2sort[v]);
@@ -806,71 +796,80 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     for (unsigned int i = 0; i < blockid_after_sort.size(); i++) {
       negPair[blocks_original_position[i]] = blockid_after_sort[i];
     }
-
-      // generate a neg order
-      do {
-        logger->trace("====Fixup neg order====");
-        PrintVec("Before:", negPair);
-        int first_it, second_it;
-        neg_keep_order = true;
-        for (const auto& order : caseNL.Ordering_Constraints) {
-          first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
-          second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
-          assert(first_it != negPair.end() - negPair.begin());
-          assert(second_it != negPair.end() - negPair.begin());
-          if (first_it - second_it < 0) {
-            logger->trace("Fixup neg: {0} at pos {1} is before {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
-            if (order.second == placerDB::V) {
-              neg_keep_order = false;
-              int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-              int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
-              auto it = negPair.begin();
-              logger->trace("Order: {0} {1}", order.first.first, order.first.second);
-              logger->trace("Counterparts: {0} {1}", first_counterpart, second_counterpart);
-              if (first_counterpart == -1 || first_counterpart == order.first.first) {
-                // move first to after second
-                it = negPair.insert(it + second_it + 1, order.first.first);
-                it = negPair.begin();
-                negPair.erase(it + first_it);
-              } else if (second_counterpart == -1) {
-                // mvoe second to before first
-                negPair.erase(it + second_it);
-                it = negPair.insert(it + first_it, order.first.second);
-              } else {
-                swap(negPair.at(first_it), negPair.at(second_it));
-              }
-              break;
-            }
-          } else if (order.second == placerDB::H) {
+    // generate a neg order
+    do {
+#ifdef CATCH_INFINITE_LOOP
+      logger->trace("====Fixup neg order====");
+      PrintVec("Before:", negPair);
+#endif
+      int first_it, second_it;
+      neg_keep_order = true;
+      for (const auto& order : caseNL.Ordering_Constraints) {
+        first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
+        second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
+        assert(first_it != negPair.end() - negPair.begin());
+        assert(second_it != negPair.end() - negPair.begin());
+        if (first_it - second_it < 0) {
+          logger->trace("Fixup neg: {0} at pos {1} is before {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
+          if (order.second == placerDB::V) {
             neg_keep_order = false;
             int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
             int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
             auto it = negPair.begin();
-            if (first_counterpart == -1) {
-              // mvoe second to after first
-              it = negPair.insert(it + first_it + 1, order.first.second);
+            logger->trace("Order: {0} {1}", order.first.first, order.first.second);
+            logger->trace("Counterparts: {0} {1}", first_counterpart, second_counterpart);
+            if (first_counterpart == -1 || first_counterpart == order.first.first) {
+              // move first to after second
+              it = negPair.insert(it + second_it + 1, order.first.first);
               it = negPair.begin();
-              negPair.erase(it + second_it);
-            } else if (second_counterpart == -1) {
-              // move first to before second
               negPair.erase(it + first_it);
-              it = negPair.insert(it + second_it, order.first.first);
+            } else if (second_counterpart == -1) {
+              // mvoe second to before first
+              negPair.erase(it + second_it);
+              it = negPair.insert(it + first_it, order.first.second);
             } else {
               swap(negPair.at(first_it), negPair.at(second_it));
             }
             break;
           }
+        } else if (order.second == placerDB::H) {
+          neg_keep_order = false;
+          int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
+          int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
+          auto it = negPair.begin();
+          if (first_counterpart == -1) {
+            // mvoe second to after first
+            it = negPair.insert(it + first_it + 1, order.first.second);
+            it = negPair.begin();
+            negPair.erase(it + second_it);
+          } else if (second_counterpart == -1) {
+            // move first to before second
+            negPair.erase(it + first_it);
+            it = negPair.insert(it + second_it, order.first.first);
+          } else {
+            swap(negPair.at(first_it), negPair.at(second_it));
+          }
+          break;
         }
-        PrintVec("After: ", negPair);
+      }
+#ifdef CATCH_INFINITE_LOOP
+      PrintVec("After: ", negPair);
+      if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
+        // logger->critical("Infinite loop in negPair loop.");
+        return false;
+      } else {
+        visitedNegPair.insert(negPair);
+      }
+#endif
 
-        if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
-          logger->critical("Infinite loop in negPair loop.");
-          return false;
-        } else {
-          visitedNegPair.insert(negPair);
-        }
+      if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
+        logger->critical("Infinite loop in negPair loop.");
+        return false;
+      } else {
+        visitedNegPair.insert(negPair);
+      }
 
-      } while (!neg_keep_order);
+    } while (!neg_keep_order);
   }
   return true;
 }
@@ -1356,15 +1355,17 @@ bool SeqPair::PerturbationNew(design& caseNL) {
       }
     }
     bool ok = KeepOrdering(caseNL);
-    assert(ok);
+    // logger->info("KeepOrdering end: {0}", ok);
 
     SameSelected(caseNL);
-    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
-    std::string tmpstr, tmpstrn, tmpstrs;
-    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
-    for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
-    for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
-    logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
+    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
+    if (logger->should_log(spdlog::level::debug)) {
+      std::string tmpstr, tmpstrn, tmpstrs;
+      for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+      for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
+      for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
+      logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
+    }
   } while (retval && ++trial_cnt < max_trial_cnt);
   return !retval;
 }
