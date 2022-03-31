@@ -194,17 +194,15 @@ def generate_sequence_pair(constraints, solver, n=1):
                 a = block_vars[i]
                 b = block_vars[j]
                 if const["direction"] == "h_bottom":
-                    # a can only be before or after b
-                    solver.add(z3.Or(
-                        z3.And(a[POS] < b[POS], a[NEG] < b[NEG]),
-                        z3.And(a[POS] > b[POS], a[NEG] > b[NEG])
-                    ))
+                    # a cannot be above b
+                    solver.add(z3.Not(z3.And(a[POS] < b[POS], a[NEG] > b[NEG])))
+                    # a cannot be below b
+                    solver.add(z3.Not(z3.And(a[POS] > b[POS], a[NEG] < b[NEG])))
                 elif const["direction"] == "v_left":
-                    # a can only be above or below b
-                    solver.add(z3.Or(
-                        z3.And(a[POS] < b[POS], a[NEG] > b[NEG]),
-                        z3.And(a[POS] > b[POS], a[NEG] < b[NEG])
-                    ))
+                    # a cannot be before b
+                    solver.add(z3.Not(z3.And(a[POS] < b[POS], a[NEG] < b[NEG])))
+                    # a cannot be after b
+                    solver.add(z3.Not(z3.And(a[POS] > b[POS], a[NEG] > b[NEG])))
                 else:
                     assert False
 
@@ -212,6 +210,41 @@ def generate_sequence_pair(constraints, solver, n=1):
         return(find_solution(solver))
     else:
         assert False
+
+
+def test_order():
+    constraints = [
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b", "c"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "a"]},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+    constraints = [
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b", "c"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "c"], "abut": True},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+    constraints = [
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b", "c"]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "a"], "abut": True},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+
+def test_align():
+    constraints = [
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["b", "c"]},
+        {"constraint": "Align", "direction": "v_left",   "instances": ["a", "c"]},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+    # TODO: This test is failing. Merge align constraints to catch inconsistencies
+    # Example; Above can be reduced to:
+    #   {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]}
+    #   {"constraint": "Align", "direction": "v_left",   "instances": ["a", "c"]}
+    # TODO: Test conflicting align and order
+    # TODO: Test conflicting symmetry
 
 
 def test_1():
