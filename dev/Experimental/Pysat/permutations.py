@@ -395,6 +395,61 @@ def test_symmetric_3():
     assert sp.s.state == 'UNSAT'
 
 
+def satisfy_constraints(constraints, pos_solution=None, neg_solution=None):
+    print('Building...')
+    instances_s = set()
+
+    for constraint in constraints:
+        if constraint['constraint'] == 'Order' or constraint['constraint'] == "Align":
+            for iname in constraint['instances']:
+                instances_s.add(iname)
+        elif constraint['constraint'] == 'SymmetricBlocks':
+            for lst in constraint['pairs']:
+                for iname in lst:
+                    instances_s.add(iname)                    
+        else:
+            assert False, constraint
+
+    m = {c: i for i,c in enumerate(instances_s)}
+    
+    invm = list(instances_s)
+
+    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H", "h_bottom": "H", "v_left": "V"}
+
+    sp = SeqPair(len(m))
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Order":
+            axis = axis_tbl[constraint['direction']]
+            abut = constraint.get('abut', False)
+            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=abut)
+
+        elif constraint['constraint'] == "SymmetricBlocks":
+            axis = constraint['direction']
+            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
+
+        elif constraint['constraint'] == "Align":
+            axis = axis_tbl[constraint['direction']]
+            sp.align_array([m[iname] for iname in constraint['instances']], axis=axis)
+
+        else:
+            assert False, constraint
+
+    assump = None
+    if pos_solution is not None and neg_solution is not None:
+        assert len(pos_solution) == len(m) and len(neg_solution) == len(m)
+        assump = sp.gen_assumptions([m[c] for c in pos_solution], [m[c] for c in neg_solution])
+
+    print('Solving...')
+    sp.s.solve(assumptions=assump)
+    assert sp.s.state == 'SAT'
+    print('Done...')
+
+    print( [invm[x] for x in SeqPair.perm2vec(sp.pos)],  [invm[x] for x in SeqPair.perm2vec(sp.neg)])
+    
+    return sp
+
+
 def test_soner():
 
     constraints = [
@@ -407,6 +462,8 @@ def test_soner():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
     ]
 
+    pos_s, neg_s = "fabcdghmne", "emgcabdhnf"
+
     #
     #                       f
     #                  a         b
@@ -415,33 +472,8 @@ def test_soner():
     #                  m         n
     #                       e 
 
-    instances_s = "abcdefghmn"
-    pos_s, neg_s = "fabcdghmne", "emgcabdhnf"
+    satisfy_constraints(constraints, pos_s, neg_s)
 
-    m = {c: i for i,c in enumerate(instances_s)}
-    
-    invm = list(instances_s)
-
-    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H"}
-
-    sp = SeqPair(len(m))
-
-    for constraint in constraints:
-        if constraint['constraint'] == "Order":
-            axis = axis_tbl[constraint['direction']]
-            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
-
-        if constraint['constraint'] == "SymmetricBlocks":
-            axis = constraint['direction']
-            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
-
-    assump = sp.gen_assumptions([m[c] for c in pos_s], [m[c] for c in neg_s])
-    #assump = None
-
-    sp.s.solve(assumptions=assump)
-    assert sp.s.state == 'SAT'
-
-    print( ''.join(invm[x] for x in SeqPair.perm2vec(sp.pos)),  ''.join(invm[x] for x in SeqPair.perm2vec(sp.neg)))
 
 
 def test_soner2():
@@ -467,38 +499,10 @@ def test_soner2():
     #                       e 
     #                  r
 
-    instances_s  = "abcdefghmnopr"
-
     pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
 
-    m = {c: i for i,c in enumerate(instances_s)}
-    
-    invm = list(instances_s)
+    satisfy_constraints(constraints, pos_s, neg_s)
 
-    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H", "h_bottom": "H", "v_left": "V"}
-
-    sp = SeqPair(len(m))
-
-    for constraint in constraints:
-        if constraint['constraint'] == "Order":
-            axis = axis_tbl[constraint['direction']]
-            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
-
-        if constraint['constraint'] == "SymmetricBlocks":
-            axis = constraint['direction']
-            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
-
-        if constraint['constraint'] == "Align":
-            axis = axis_tbl[constraint['direction']]
-            sp.align_array([m[iname] for iname in constraint['instances']], axis=axis)
-
-    assump = sp.gen_assumptions([m[c] for c in pos_s], [m[c] for c in neg_s])
-    assump = None
-
-    sp.s.solve(assumptions=assump)
-    assert sp.s.state == 'SAT'
-
-    print( ''.join(invm[x] for x in SeqPair.perm2vec(sp.pos)),  ''.join(invm[x] for x in SeqPair.perm2vec(sp.neg)))
 
 
 def test_soner_big():
@@ -574,54 +578,9 @@ def test_soner_big():
     ]
 
 
-    print('Building...')
-
-    instances_s  = set()
-    
-
-    for constraint in constraints:
-        if constraint['constraint'] == 'Order':
-            for iname in constraint['instances']:
-                instances_s.add(iname)
-        elif constraint['constraint'] == 'SymmetricBlocks':
-            for lst in constraint['pairs']:
-                for iname in lst:
-                    instances_s.add(iname)                    
-
-
-    instances_s = list(instances_s)
-
     pos_s, neg_s = ['X_XDECAP_P', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_XNRES0', 'X_XNRES1', 'X_XDECAP_NZ3'], ['X_XDECAP_NZ3', 'X_XNRES0', 'X_XNRES1', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_XDECAP_P']
-    #pos_s, neg_s = [], []
 
-    m = {s: i for i,s in enumerate(instances_s)}
-    
-    invm = list(instances_s)
+    satisfy_constraints(constraints, pos_s, neg_s)
 
-    axis_tbl = {"top_to_bottom": "V", "left_to_right": "H", "h_bottom": "H", "v_left": "V"}
-
-    sp = SeqPair(len(m))
-
-    for constraint in constraints:
-        if constraint['constraint'] == "Order":
-            axis = axis_tbl[constraint['direction']]
-            sp.order_array( [m[iname] for iname in constraint['instances']], axis=axis, abut=True)
-
-        if constraint['constraint'] == "SymmetricBlocks":
-            axis = constraint['direction']
-            sp.symmetric( [ [m[iname] for iname in lst] for lst in constraint['pairs']], axis=axis)
-
-        if constraint['constraint'] == "Align":
-            axis = axis_tbl[constraint['direction']]
-            sp.align_array([m[iname] for iname in constraint['instances']], axis=axis)
-
-    assump = sp.gen_assumptions([m[s] for s in pos_s], [m[s] for s in neg_s])
-    assump = None
-
-    print('Solving...')
-    sp.s.solve(assumptions=assump)
-    assert sp.s.state == 'SAT'
-
-    print('Done...')
-
-    print([invm[x] for x in SeqPair.perm2vec(sp.pos)],  [invm[x] for x in SeqPair.perm2vec(sp.neg)])
+if __name__ == "__main__":
+    test_soner_big()
