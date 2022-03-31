@@ -53,7 +53,7 @@ class Module:
             s += f' [{str(i)} {i._modu._name}]'
         return s
     def add(self):
-        print(f'working on cell {self._name}')
+         #print(f'working on cell {self._name}')
         for i in self._instances:
             if i._modu:
                 if not i._modu._added:
@@ -116,7 +116,6 @@ if (args.gds_dir):
             m._cell.flatten()
             m._added = True
         with open(m._fname) as fp:
-            print('found', m._fname)
             leafdata = json.load(fp)
             m._cell = gdspy.Cell(j)
             if 'bgnlib' in leafdata:
@@ -150,6 +149,8 @@ for j,m in modules.items():
 gdslib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
 for j,m in modules.items():
     m.add()
+    bbox = m._cell.get_bounding_box();
+    print(f'bounding box of {m._name} : ({round(bbox[0][0],2)},{round(bbox[0][1],2)}) ({round(bbox[1][0],2)},{round(bbox[1][1],2)})')
     gdslib.add(m._cell)
 
 print(f'writing gds file {args.top_cell}_out.gds')
