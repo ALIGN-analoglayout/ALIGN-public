@@ -258,7 +258,7 @@ def generate_sequence_pair(constraints, solver, n=10):
                 else:
                     assert False
 
-    print(solver)
+    # print(solver)
     initial_pair = find_solution(solver)
     if n < 2 or not initial_pair:
         return(initial_pair)
@@ -272,12 +272,12 @@ def generate_sequence_pair(constraints, solver, n=10):
             for b in block_vars:
                 for SEQ in [POS, NEG]:
                     bvar = block_vars[b][SEQ]
-                    clauses.append(bvar != previous_solution[str(bvar)])
+                    clauses.append(bvar == previous_solution[str(bvar)])
 
-            print(z3.And(*clauses))
+            # print(z3.Not(z3.And(*clauses)))
             # assert False
 
-            solver.add(z3.And(*clauses))
+            solver.add(z3.Not(z3.And(*clauses)))
             # print(solver)
 
             if new_solution := find_solution(solver):
@@ -538,10 +538,18 @@ def test_4():
     assert generate_sequence_pair(constraints, z3.Solver())
 
 
+def test_variants_sanity():
+    for abc in itertools.permutations("abc"):
+        constraints = [
+            {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]},
+            {"constraint": "Order", "direction": "left_to_right", "instances": abc},
+        ]
+        assert generate_sequence_pair(constraints, z3.Solver(), n=24)
+
+
 def test_variants():
     constraints = [
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]},
-        # {"constraint": "Order", "direction": "left_to_right", "instances": ["b", "a", "c", "d"]},
     ]
     s = time.time()
     sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=24)
