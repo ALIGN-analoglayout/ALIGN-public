@@ -13,12 +13,15 @@ ap.add_argument( "-t", "--top_cell", type=str, default="library", help='<top cel
 ap.add_argument( "-u", "--units", type=float, default=1e-6, help='<units in m>')
 ap.add_argument( "-s", "--scale", type=float, default=2e3, help='<scale>')
 args = ap.parse_args()
+
+if args.pl_file == "" or args.gds_dir == "":
+    ap.print_help()
+    exit(0)
+
 print(f"placement verilog : {args.pl_file}")
 print(f"gds dir           : {args.gds_dir}")
 print(f"top cell          : {args.top_cell}")
 print(f"units             : {args.units}")
-
-
 class Transform:
     def __init__(self, oX = 0, oY = 0, sX = 1, sY = 1):
         self._oX = oX 
@@ -102,14 +105,40 @@ if (args.gds_dir):
     for j,m in modules.items():
         if not m._leaf:
             continue
-        m._fname = args.gds_dir + '/' + j + '.gds'
+        m._fname = args.gds_dir + '/' + j + '.gds.json'
         if not os.path.isfile(m._fname):
-            print(f'leaf {m._fname} not found')
-            exit()
-        lib = gdspy.GdsLibrary(infile=m._fname)
-        m._cell = lib.top_level()[0]
-        m._cell.flatten()
-        m._added = True
+            m._fname = args.gds_dir + '/' + j + '.gds'
+            if not os.path.isfile(m._fname):
+                print(f'leaf {m._fname} not found')
+                exit()
+            lib = gdspy.GdsLibrary(infile=m._fname)
+            m._cell = lib.top_level()[0]
+            m._cell.flatten()
+            m._added = True
+        with open(m._fname) as fp:
+            print('found', m._fname)
+            leafdata = json.load(fp)
+            m._cell = gdspy.Cell(j)
+            if 'bgnlib' in leafdata:
+                for bl in leafdata['bgnlib']:
+                    if 'bgnstr' in bl:
+                        for bstr in bl['bgnstr']:
+                            if 'elements' in bstr:
+                                elements = bstr['elements']
+                                for el in elements:
+                                    layer = el['layer'] if 'layer' in el else 0
+                                    ldata = el['datatype'] if 'datatype' in el else 0
+                                    xy = el['xy'] if 'xy' in el else None
+                                    if xy and len(xy) == 10:
+                                        xmin = min([xy[k] for k in range(0, len(xy), 2)])/args.scale
+                                        ymin = min([xy[k] for k in range(1, len(xy), 2)])/args.scale
+                                        xmax = max([xy[k] for k in range(0, len(xy), 2)])/args.scale
+                                        ymax = max([xy[k] for k in range(1, len(xy), 2)])/args.scale
+                                        m._cell.add(gdspy.Rectangle((xmin, ymin), (xmax, ymax), layer=layer, datatype=ldata))
+                                    else:
+                                        pts = [(xy[k]/args.scale, xy[k + 1]/args.scale) for k in range(0, len(xy), 2)]
+                                        m._cell.add(gdspy.Polygon(pts, layer=layer, datatype=ldata))
+            m._added = True
 
 
 for j,m in modules.items():
