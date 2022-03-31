@@ -299,12 +299,12 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
     return router_engines[router_mode]( DB=DB, idx=idx, opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-def router_driver(*, fpath, cap_map, cap_lef_s, 
+def router_driver(*, cap_map, cap_lef_s, 
                   numLayout, effort, adr_mode, PDN_mode,
                   router_mode, skipGDS, scale_factor,
-                  nroutings, primitives, toplevel_args, results_dir, verilog_ds_to_run):
+                  nroutings, primitives, toplevel_args_d, results_dir, verilog_ds_to_run):
 
-
+    fpath = toplevel_args_d['input_dir']
         
     res_dict = {}
     for concrete_top_name, scaled_placement_verilog_d in verilog_ds_to_run:
@@ -313,12 +313,11 @@ def router_driver(*, fpath, cap_map, cap_lef_s,
 
         tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
-        concrete_top_name0 = tr_tbl[concrete_top_name]
 
         # don't need to send this to disk; for debug only
         if True:
             logger.debug(f"updated verilog: {abstract_verilog_d}")
-            verilog_file = toplevel_args[3]
+            verilog_file = toplevel_args_d['verilog_file']
 
             abstract_verilog_file = verilog_file.replace(".verilog.json", ".abstract_verilog.json")
 
@@ -331,10 +330,10 @@ def router_driver(*, fpath, cap_map, cap_lef_s,
                 json.dump(scaled_placement_verilog_d.dict(), fp=fp, indent=2, default=str)
 
 
-        lef_file = toplevel_args[2]
-        map_file = toplevel_args[4]
+        lef_file = toplevel_args_d['lef_file']
+        map_file = toplevel_args_d['map_file']
         new_lef_file = lef_file.replace(".placement_lef", ".lef")
-        toplevel_args[2] = new_lef_file
+        toplevel_args_d['lef_file'] = new_lef_file
 
         # Build up a new map file
 
@@ -361,7 +360,7 @@ def router_driver(*, fpath, cap_map, cap_lef_s,
 
         # create a fresh DB and populate it with a placement verilog d    
 
-        DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
+        DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         
         assert new_verilog_d == abstract_verilog_d
 
@@ -369,16 +368,15 @@ def router_driver(*, fpath, cap_map, cap_lef_s,
 
         # populate new DB with placements to run
 
-        placements_to_run, _ = hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
-                                                  verilog_d=abstract_verilog_d, gui=False, lambda_coeff=1,
-                                                  scale_factor=scale_factor,
-                                                  reference_placement_verilog_d=scaled_placement_verilog_d.dict(),
-                                                  concrete_top_name=concrete_top_name0,
-                                                  abstract_top_name=concrete_top_name0,
-                                                  select_in_ILP=False, seed=0,
-                                                  use_analytical_placer=False, ilp_solver='symphony',
-                                                  primitives=primitives)
+        hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
+                           verilog_d=abstract_verilog_d, lambda_coeff=1,
+                           scale_factor=scale_factor,
+                           placement_verilog_d=scaled_placement_verilog_d.dict(),
+                           select_in_ILP=False, seed=0,
+                           use_analytical_placer=False, ilp_solver='symphony',
+                           primitives=primitives)
 
+        placements_to_run = None
 
         res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                      router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)

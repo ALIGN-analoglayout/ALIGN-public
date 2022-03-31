@@ -1,5 +1,5 @@
 [
     {"constraint": "PowerPorts", "ports": ["VDD"]},
     {"constraint": "GroundPorts", "ports": ["VSS"]},
-    {"constraint": "IsDigital", "isTrue": false}
+    {"constraint": "ConfigureCompiler", "is_digital": false}
 ]

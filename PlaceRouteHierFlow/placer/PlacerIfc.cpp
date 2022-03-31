@@ -8,7 +8,7 @@
 
 double Pdatatype::LAMBDA=1.;
 double Pdatatype::GAMAR=30;
-double Pdatatype::BETA=0.1;
+double Pdatatype::BETA=0.5;
 double Pdatatype::SIGMA=1000;
 double Pdatatype::PHI=0.05;
 double Pdatatype::PI=0.05;

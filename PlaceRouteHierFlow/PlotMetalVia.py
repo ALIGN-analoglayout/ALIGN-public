@@ -36,8 +36,16 @@ def plot_grid_metal_via(temp_matrix,layer):
       MetalOfVia.append(temp_matrix[i])
   plot_Box(internal_metal,'b')
   plot_Box(via,'r')
-  plot_Box(MetalOfVia,'g')
+  #plot_Box(MetalOfVia,'b')
   plt.savefig(str(layer)+"_MetalVias.png")
+  plt.show()
+
+def plot_grid_Set_x(temp_matrix,layer):
+  internal_metal = []
+  for i in range(temp_matrix.shape[0]):
+    internal_metal.append(temp_matrix[i])
+  plot_Box(internal_metal,'r')
+  plt.savefig(str(layer)+"_Set_X.png")
   plt.show()
 
 def plot_Box(temp_matrix,c):
@@ -51,8 +59,13 @@ def plot_box(llx,lly,urx,ury,c):
     plt.plot([llx,llx], [lly,ury], lw=2, color=c)
   
 
-filename_metalvia = sys.argv[1] 
-layer = int(sys.argv[2])
+filename_metalvia = sys.argv[1]
+filename_set_x = sys.argv[2] 
+layer = int(sys.argv[3])
 matrix = readfile(filename_metalvia)
 temp_matrix = metal_via_data(matrix,layer)
 plot_grid_metal_via(temp_matrix,layer)
+
+matrix = readfile(filename_set_x)
+temp_matrix = metal_via_data(matrix,layer)
+plot_grid_Set_x(temp_matrix,layer)

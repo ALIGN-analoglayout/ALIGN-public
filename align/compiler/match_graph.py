@@ -44,8 +44,8 @@ class Annotate:
     def _is_digital(self, ckt):
         IsDigital = False
         for const in ckt.constraints:
-            if isinstance(const, constraint.IsDigital):
-                IsDigital = const.isTrue
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = const.is_digital
         return IsDigital
 
     def annotate(self):
@@ -71,7 +71,6 @@ class Annotate:
             f"All subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
         )
 
-        traversed = []  # libray gets appended, so only traverse subckt once
         temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
             if not isinstance(ckt, SubCircuit):
@@ -83,22 +82,18 @@ class Annotate:
             elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
                 logger.debug(f"skip annotation for circuit {ckt.name} with available generators {ckt.constraints}")
                 continue
-            elif ckt.name in traversed:
-                logger.debug(f"Finished annotation for circuit circuit {ckt.name}")
-                continue
             else:
                 netlist_graph = Graph(ckt)
                 skip_nodes = self._is_skip(ckt)
                 logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
                 logger.debug(
                     f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
-                    ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
+                    ele: {[e.name for e in ckt.elements]} skip: {skip_nodes}"
                 )
                 do_not_use_lib = set()
                 for const in ckt.constraints:
                     if isinstance(const, constraint.DoNotUseLib):
                         do_not_use_lib.update(const.libraries)
-                traversed.append(ckt.name)
                 for subckt in self.lib:
                     logger.debug(f"matching circuit {subckt.name}")
 

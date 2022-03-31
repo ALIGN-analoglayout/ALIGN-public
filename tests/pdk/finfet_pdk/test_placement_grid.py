@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 import pytest
@@ -5,10 +6,17 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 from align.schema.constraint import OffsetsScalings, PlaceOnGrid
+import align
 
 """
 monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
 """
+
+
+@pytest.fixture
+def placer_max_iter(monkeypatch):
+    # Reduce number of iterations to speed up tests
+    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 10)
 
 
 @pytest.fixture
@@ -51,7 +59,7 @@ def test_scalings(place_on_grid_h):
     .END
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "AlignInOrder", "line": "left", "instances": ["xi0", "xi1", "xi2"]},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
@@ -100,7 +108,7 @@ def test_ota_on_grid_h(place_on_grid_h):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
@@ -116,7 +124,7 @@ def test_ota_on_grid_v(place_on_grid_v):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
@@ -130,7 +138,7 @@ def test_ota_on_grid_v(place_on_grid_v):
 
 def cmp_constraints(name):
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -151,9 +159,10 @@ def cmp_constraints(name):
     return constraints
 
 
-def test_cmp_on_grid(place_on_grid_h):
+def test_cmp_on_grid(place_on_grid_h, placer_max_iter):
+    print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, area=5e9)
+    run_example(example, cleanup=False)

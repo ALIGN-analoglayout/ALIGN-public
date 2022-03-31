@@ -2,17 +2,14 @@ import pathlib
 import shutil
 import os
 import json
-import copy
 import sys
 import http.server
 import socketserver
 import functools
 
-from align.schema.subcircuit import SubCircuit
-
 from .compiler import generate_hierarchy
 from align.schema.library import read_lib_json
-from .primitive import generate_primitive, generate_primitive_param
+from .primitive import generate_primitives
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png
@@ -24,10 +21,10 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'route', 'check']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'gui', 'route']}
 
-    unimplemented_start_points = {'3_pnr:route', '3_pnr:check'}
-    unimplemented_stop_points = {'3_pnr:place'}
+    unimplemented_start_points = set()
+    unimplemented_stop_points = set()
 
     if flow_start is None:
         flow_start = steps[0]
@@ -96,7 +93,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 
     viewer_dir = pathlib.Path(__file__).resolve().parent.parent / 'Viewer'
     if not viewer_dir.exists():
-        logger.warning(f'Viewer could not be located.')
+        logger.warning('Viewer could not be located.')
         return
 
     local_viewer_dir = working_dir/'Viewer'
@@ -112,7 +109,7 @@ def start_viewer(working_dir, pnr_dir, variant):
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
     with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
         logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
-        logger.info(f'Please type Ctrl + C to continue')
+        logger.info('Please type Ctrl + C to continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
             try:
@@ -120,13 +117,12 @@ def start_viewer(working_dir, pnr_dir, variant):
             except KeyboardInterrupt:
                 pass
     sys.stderr = stderr
-    logger.info(f'Viewer terminated')
+    logger.info('Viewer terminated')
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
-                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0, reference_placement_verilog_json=None,
-                     concrete_top_name=None,
+                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony'):
 
     steps_to_run = build_steps(flow_start, flow_stop)
@@ -172,46 +168,30 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     # Generate primitives
     primitive_dir = (working_dir / '2_primitives')
+
+    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
+
     if '2_primitives' in steps_to_run:
         primitive_dir.mkdir(exist_ok=True)
-        primitives = {}
-        for primitive in primitive_lib:
-            if isinstance(primitive, SubCircuit):
-                generate_primitive_param(primitive, primitives, pdk_dir)
-        for block_name, block_args in primitives.items():
-            logger.debug(f"Generating primitive {block_name}")
-            if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
-                primitive_def = primitive_lib.find(block_args['abstract_template_name'])
-                assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
-            else:
-                primitive_def = block_args['primitive']
-            block_args.pop("primitive", None)
-            uc = generate_primitive(block_name, primitive_def,  ** block_args,
-                                    pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
-            if hasattr(uc, 'metadata'):
-                primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
-
+        primitives = generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir)
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
-    else:
+    elif sub_steps:
         with (primitive_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
-
     # run PNR tool
-    pnr_dir = working_dir / '3_pnr'
-    sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
     if sub_steps:
+        pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
-                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff, reference_placement_verilog_json=reference_placement_verilog_json,
-                                concrete_top_name=concrete_top_name,
+                                steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP, seed=seed, use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver)
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:check' not in sub_steps or len(variants) > 0, \
+        assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory

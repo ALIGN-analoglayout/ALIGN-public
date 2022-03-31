@@ -1,8 +1,6 @@
 import pathlib
 import json
 
-from align import primitive
-
 from ..schema import SubCircuit, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
@@ -160,9 +158,7 @@ def compiler_output(
                  "formal": f"supply{i}",
                  "actual": nm}
             )
-
-    if not result_dir.exists():
-        result_dir.mkdir()
+    result_dir.mkdir(exist_ok=True)
     logger.debug(f"Writing results in dir: {result_dir} {ckt_data}")
     with (result_dir / f"{design_name.upper()}.verilog.json").open("wt") as fp:
         json.dump(verilog_tbl, fp=fp, indent=2)

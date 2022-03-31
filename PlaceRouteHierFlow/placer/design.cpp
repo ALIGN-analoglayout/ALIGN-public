@@ -138,7 +138,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     placerDB::net tmpnet;
     tmpnet.name = it->name;
     tmpnet.priority = it->priority;
-    tmpnet.weight = 1;
+    tmpnet.weight = it->weight;
     tmpnet.upperBound = it->upperBound;
     tmpnet.lowerBound = it->lowerBound;
     for (vector<PnRDB::connectNode>::iterator nit = it->connected.begin(); nit != it->connected.end(); ++nit) {

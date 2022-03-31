@@ -30,6 +30,24 @@ def ota_six(name):
     return netlist
 
 
+def ota_dummy(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} ibias vccx vssx  von vin vip
+        mn1 ibias ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn2 tail  ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn3 vop vip tail vssx n w=360e-9 nf=2 m=16
+        mn4 von vin tail vssx n w=360e-9 nf=2 m=16
+        mn3_dummy vop vop vop vssx n w=360e-9 nf=2 m=16
+        mn4_dummy von von von vssx n w=360e-9 nf=2 m=16
+        mp5 vop vop vccx vccx p w=360e-9 nf=2 m=4
+        mp6 von vop vccx vccx p w=360e-9 nf=2 m=4
+        .ends {name}
+    """
+    )
+    return netlist
+
+
 def ota_six_flip(name):
     netlist = textwrap.dedent(
         f"""\
@@ -145,6 +163,80 @@ def variable_gain_amplifier_ratioed(name):
     return netlist
 
 
+def array_limit(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        mn4 a4 g4 s vssx n w=360e-9 nf=2 m=8
+        mn5 a5 g5 s vssx n w=360e-9 nf=2 m=8
+        mn6 a6 g6 s vssx n w=360e-9 nf=2 m=8
+        mn7 a7 g7 s vssx n w=360e-9 nf=2 m=8
+        mn8 a8 g8 s vssx n w=360e-9 nf=2 m=8
+        mn9 a9 g9 s vssx n w=360e-9 nf=2 m=8
+        mn10 a10 g10 s vssx n w=360e-9 nf=2 m=8
+        mn11 a11 g11 s vssx n w=360e-9 nf=2 m=8
+        mn12 a12 g12 s vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_mismatch(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s vssx
+        mn1a a1a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a1a vssx n w=360e-9 nf=2 m=8
+        mn2a a2a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a2a vssx n w=360e-9 nf=2 m=8
+        mn3a a3a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a3a vssx n w=360e-9 nf=2 m=8
+        mn3c a3c g3c a3a vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_converged_net(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s vssx
+        mn1a a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a vssx n w=360e-9 nf=2 m=8
+        mn2a a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a vssx n w=360e-9 nf=2 m=8
+        mn3a a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_converged_instance(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt three_terminal a1 a2 a3
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        .ends three_terminal
+        .subckt {name} s vssx
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        xi0 a1 a2 a3 three_terminal
+        .ends {name}
+    """
+    )
+    return netlist
+
+
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():
@@ -158,8 +250,9 @@ def build_example(name, netlist, constraints):
     example.mkdir(parents=True)
     with open(example / f"{name}.sp", "w") as fp:
         fp.write(netlist)
-    with open(example / f"{name}.const.json", "w") as fp:
-        fp.write(json.dumps(constraints, indent=2))
+    if constraints:
+        with open(example / f"{name}.const.json", "w") as fp:
+            fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")
 
 

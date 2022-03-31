@@ -1,11 +1,12 @@
 import pytest
-from align.schema import Model, Instance, SubCircuit, Library
+from align.schema import Model, Instance, SubCircuit, Library, constraint
 from align.schema.types import set_context
 from align.compiler.preprocess import (
     add_parallel_devices,
     add_series_devices,
     find_dummy_hier,
     remove_dummies,
+    define_SD
 )
 
 
@@ -282,7 +283,6 @@ def dbr():
                 pins={"TD": "D", "TG": "G", "TS": "S", "TB": "B"},
             )
         )
-
     return library
 
 
@@ -319,3 +319,70 @@ def test_remove_dummy_hier(dbr):
         "PARAM": "1",
     }
     assert top.elements[0].pins == {"D": "D", "G": "G", "S": "S", "B": "B"}
+
+
+@pytest.fixture
+def dbswap():
+    library = Library()
+    with set_context(library):
+        model_pmos = Model(name="PMOS", pins=["D", "G", "S", "B"])
+        library.append(model_pmos)
+        model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
+        library.append(model_nmos)
+        subckt = SubCircuit(
+            name="SUBCKT", pins=["VDD", "G", "GND", "B"], parameters=None
+        )
+        library.append(subckt)
+    with set_context(subckt.constraints):
+        subckt.constraints.append(constraint.GroundPorts(ports=["GND"]))
+        subckt.constraints.append(constraint.PowerPorts(ports=["VDD"]))
+
+    with set_context(subckt.elements):
+        subckt.elements.append(
+            Instance(
+                name="M1",
+                model="PMOS",
+                pins={"D": "VDD", "G": "G", "S": "GND", "B": "B"},
+            )
+        )
+        subckt.elements.append(
+            Instance(
+                name="M2",
+                model="PMOS",
+                pins={"D": "NET1", "G": "G", "S": "VDD", "B": "B"},
+            )
+        )
+        subckt.elements.append(
+            Instance(
+                name="M3",
+                model="PMOS",
+                pins={"D": "NET1", "G": "G", "S": "GND", "B": "B"},
+            )
+        )
+        subckt.elements.append(
+            Instance(
+                name="M4",
+                model="NMOS",
+                pins={"D": "VDD", "G": "G", "S": "GND", "B": "B"},
+            )
+        )
+        subckt.elements.append(
+            Instance(
+                name="M5",
+                model="NMOS",
+                pins={"D": "GND", "G": "G", "S": "VDD", "B": "B"},
+            )
+        )
+    return subckt
+
+
+def test_swap(dbswap):
+    assert dbswap.get_element("M1").name == "M1"
+    define_SD(dbswap, update=False)
+    assert dbswap.get_element("M1").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
+    define_SD(dbswap, update=True)
+    assert dbswap.get_element("M1").pins == {"D": "GND", "G": "G", "S": "VDD", "B": "B"}
+    assert dbswap.get_element("M2").pins == {"D": "NET1", "G": "G", "S": "VDD", "B": "B"}
+    assert dbswap.get_element("M3").pins == {"D": "GND", "G": "G", "S": "NET1", "B": "B"}
+    assert dbswap.get_element("M4").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
+    assert dbswap.get_element("M5").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
