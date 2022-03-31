@@ -264,7 +264,13 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   unsigned N_var{N_area_max};
 
   unsigned count_blocks{0};
-  for (const auto& blk : mydesign.Blocks) count_blocks += blk.size();
+  for (const auto& blk : mydesign.Blocks) {
+    if (!blk.empty()) {
+      count_blocks += blk.size();
+      if (!blk[0].xoffset.empty()) count_blocks += (blk[0].xoffset.size() + 2);
+      if (!blk[0].yoffset.empty()) count_blocks += (blk[0].yoffset.size() + 2);
+    }
+  }
 
   std::map<std::pair<int, int>, std::tuple<int, int, int>> pin_idx_map;
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
@@ -1678,7 +1684,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       for (unsigned i = 0; i < rhs.size(); ++i) {
         osiclp.setRowName(i, (rowtype[i] + std::to_string(i)).c_str());
       }
-      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
+      //osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
       ++write_cnt;
     }
     CbcModel model(osiclp);
@@ -1719,7 +1725,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       if (!var) break;
       int minx(INT_MAX), miny(INT_MAX);
       area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
-      logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
+      //logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         Blocks[i].x = roundupint(var[i * 6]);
         Blocks[i].y = roundupint(var[i * 6 + 1]);
@@ -1756,7 +1762,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         if (sol.find(cost) == sol.end()) {
           sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
         }
-        logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
+        //logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
       }
     }
   }
