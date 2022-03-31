@@ -258,10 +258,27 @@ def generate_sequence_pair(constraints, solver, n=1):
                 else:
                     assert False
 
+    sequence_pair = find_solution(solver)
     if n < 2:
-        return(find_solution(solver))
+        return(sequence_pair)
     else:
-        assert False
+        sequence_pairs = set([sequence_pair])
+        m = solver.model()
+        initial_solution = {str(p): m[p].as_long() for p in m}
+        trials = 0
+        for b in block_vars:
+            for SEQ in [POS, NEG]:
+                bvar = block_vars[b][SEQ]
+                print(bvar != initial_solution[str(bvar)])
+                solver.push()
+                solver.add(bvar != initial_solution[str(bvar)])
+                if candidate_pair := find_solution(solver):
+                    assert candidate_pair != sequence_pair
+                    sequence_pairs.add(candidate_pair)
+                solver.pop()
+                trials += 1
+        print(f"{trials=} {len(sequence_pairs)=}")
+        return sequence_pairs
 
 
 def test_merge_align_constraints():
@@ -349,8 +366,7 @@ def test_1():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
         ]
-    sequence_pair = generate_sequence_pair(constraints, z3.Solver())
-    assert sequence_pair == 'f a c d g m h n e b,e m g h n c a d b f'
+    generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_2():
@@ -365,8 +381,7 @@ def test_2():
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "o", "p"]},
         {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
         ]
-    sequence_pair = generate_sequence_pair(constraints, z3.Solver())
-    assert sequence_pair == 'r f a c b d g h m e n p o,e m g c a b f d p r n o h'
+    generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_3():
@@ -509,4 +524,16 @@ def test_4():
         {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_XNRES0', 'X_XNRES1']},
         {'constraint': 'SymmetricBlocks', 'direction': 'V', 'pairs': [['X_XPTAIL'], ['X_DP_XPINP_XPINN'], ['X_CM_XNLDL_XNLDR'], ['X_XSW_PULLDN_EN', 'X_XSW_PULLDN_EN1']]},
     ]
-    generate_sequence_pair(constraints, z3.Solver())
+    generate_sequence_pair(constraints, z3.Solver(), n=10)
+
+
+def test_variants():
+    constraints = [
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c", "d"]},
+        ]
+    s = time.time()
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10)
+    e = time.time()
+    print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
+    for p in sequence_pairs:
+        print(p)
