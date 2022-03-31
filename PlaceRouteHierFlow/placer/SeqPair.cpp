@@ -1068,15 +1068,13 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
 
+  Init(caseNL);
+  SameSelected(caseNL);
   if (_seqPairEnum->valid()) {
     auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
     logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
-    Init(caseNL);
-    bool ok = KeepOrdering(caseNL);
-    assert(ok);
-    SameSelected(caseNL);
   }
 }
 
