@@ -1830,9 +1830,9 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         }
         fail++;
       }
+      bool ok = KeepOrdering(caseNL);
+      assert(ok);
     }
-    bool ok = KeepOrdering(caseNL);
-    assert(ok);
 
     SameSelected(caseNL);
     retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
