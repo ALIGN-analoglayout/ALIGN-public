@@ -45,6 +45,56 @@ def find_solution(solver):
         return False
 
 
+def merge_align_constraints(constraints):
+
+    h_groups = []
+    v_groups = []
+    merged_constraints = list()
+    for const in constraints:
+        if const["constraint"] == "Align":
+            if const["direction"] == "h_bottom":
+                if not h_groups:
+                    h_groups.append(set(const['instances']))
+                else:
+                    group_exists = False
+                    inst_set = set(const['instances'])
+                    for i, hg in enumerate(h_groups):
+                        if set.intersection(hg, inst_set):
+                            group_exists = True
+                            break
+                    if group_exists:
+                        h_groups[i] = set.union(h_groups[i], inst_set)
+                    else:
+                        h_groups.append(inst_set)
+            else:
+                if not v_groups:
+                    v_groups.append(set(const['instances']))
+                else:
+                    group_exists = False
+                    inst_set = set(const['instances'])
+                    for i, vg in enumerate(v_groups):
+                        if set.intersection(vg, inst_set):
+                            group_exists = True
+                            break
+                    if group_exists:
+                        v_groups[i] = set.union(v_groups[i], inst_set)
+                    else:
+                        v_groups.append(inst_set)
+
+        else:
+            merged_constraints.append(const)
+
+    for hg in h_groups:
+        const = {"constraint": "Align", "direction": "h_bottom", "instances": sorted(list(hg))}
+        merged_constraints.append(const)
+
+    for vg in v_groups:
+        const = {"constraint": "Align", "direction": "v_left", "instances": sorted(list(vg))}
+        merged_constraints.append(const)
+
+    return(merged_constraints)
+
+
 def generate_sequence_pair(constraints, solver, n=1):
     block_vars = dict()
 
@@ -62,6 +112,8 @@ def generate_sequence_pair(constraints, solver, n=1):
                 assert const["direction"] in ["h_bottom", "v_left"], f"Not implemented yet: {const}"
         else:
             assert False, f"Not implemented yet: {const}"
+
+    constraints = merge_align_constraints(constraints)
 
     num_blocks = len(block_vars)
     # print(block_vars)
@@ -212,6 +264,20 @@ def generate_sequence_pair(constraints, solver, n=1):
         assert False
 
 
+def test_merge_align_constraints():
+    constraints = [
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
+        {"constraint": "Align", "direction": "h_bottom",  "instances": ["b", "c"]}
+    ]
+    assert merge_align_constraints(constraints) == [{"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]}]
+
+    constraints = [
+        {"constraint": "Align", "direction": "v_left", "instances": ["a", "b"]},
+        {"constraint": "Align", "direction": "v_left", "instances": ["b", "c"]}
+    ]
+    assert merge_align_constraints(constraints) == [{"constraint": "Align", "direction": "v_left", "instances": ["a", "b", "c"]}]
+
+
 def test_order():
     constraints = [
         {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b", "c"]},
@@ -235,16 +301,42 @@ def test_order():
 def test_align():
     constraints = [
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
+        {"constraint": "Align", "direction": "v_left",   "instances": ["b", "a"]},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+    constraints = [
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
         {"constraint": "Align", "direction": "h_bottom", "instances": ["b", "c"]},
         {"constraint": "Align", "direction": "v_left",   "instances": ["a", "c"]},
         ]
     assert not generate_sequence_pair(constraints, z3.Solver())
-    # TODO: This test is failing. Merge align constraints to catch inconsistencies
-    # Example; Above can be reduced to:
-    #   {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]}
-    #   {"constraint": "Align", "direction": "v_left",   "instances": ["a", "c"]}
-    # TODO: Test conflicting align and order
-    # TODO: Test conflicting symmetry
+
+    constraints = [
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["b", "a"]},
+        ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+
+def test_symmetry():
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b"]},
+    ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "b", "a"]},
+    ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
+        {"constraint": "Align", "direction": "v_left", "instances": ["b", "a"]},
+    ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_1():
@@ -258,7 +350,7 @@ def test_1():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
         ]
     sequence_pair = generate_sequence_pair(constraints, z3.Solver())
-    assert sequence_pair == 'f a b c d g h m e n,e m g c a b d f h n'
+    assert sequence_pair == 'f a c d g m h n e b,e m g h n c a d b f'
 
 
 def test_2():
@@ -274,7 +366,7 @@ def test_2():
         {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
         ]
     sequence_pair = generate_sequence_pair(constraints, z3.Solver())
-    assert sequence_pair == 'r f a c d g h m e n p b o,e m g c a p d f b r n o h'
+    assert sequence_pair == 'r f a c b d g h m e n p o,e m g c a b f d p r n o h'
 
 
 def test_3():
