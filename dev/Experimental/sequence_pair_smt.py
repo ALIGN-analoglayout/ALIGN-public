@@ -95,7 +95,7 @@ def merge_align_constraints(constraints):
     return(merged_constraints)
 
 
-def generate_sequence_pair(constraints, solver, n=1):
+def generate_sequence_pair(constraints, solver, n=10):
     block_vars = dict()
 
     # Define variables for each block
@@ -258,65 +258,34 @@ def generate_sequence_pair(constraints, solver, n=1):
                 else:
                     assert False
 
+    # print(solver)
     initial_pair = find_solution(solver)
-    if n < 2:
+    if n < 2 or not initial_pair:
         return(initial_pair)
     else:
-        sequence_pairs = set([initial_pair])
         m = solver.model()
-        initial_solution = {str(p): m[p].as_long() for p in m}
-        trials = 0
+        previous_solution = {str(p): m[p].as_long() for p in m}
+        sequence_pairs = [initial_pair]
+        for i in range(n):
 
-        # # Restrict single block
-        # for b in block_vars:
-        #     for SEQ in [POS, NEG]:
-        #         bvar = block_vars[b][SEQ]
-        #         print(bvar != initial_solution[str(bvar)])
-        #         solver.push()
-        #         solver.add(bvar != initial_solution[str(bvar)])
-        #         if candidate_pair := find_solution(solver):
-        #             assert candidate_pair != sequence_pair
-        #             sequence_pairs.add(candidate_pair)
-        #         solver.pop()
-        #         trials += 1
+            clauses = []
+            for b in block_vars:
+                for SEQ in [POS, NEG]:
+                    bvar = block_vars[b][SEQ]
+                    clauses.append(bvar != previous_solution[str(bvar)])
 
-        # # Restrict two blocks
-        # for a, b in itertools.combinations(block_vars, 2):
-        #     for aSEQ in [POS, NEG]:
-        #         for bSEQ in [POS, NEG]:
-        #             avar = block_vars[a][aSEQ]
-        #             bvar = block_vars[b][bSEQ]
-        #             solver.push()
-        #             solver.add(avar != initial_solution[str(avar)])
-        #             solver.add(bvar != initial_solution[str(bvar)])
-        #             if candidate_pair := find_solution(solver):
-        #                 assert candidate_pair != sequence_pair
-        #                 sequence_pairs.add(candidate_pair)
-        #             solver.pop()
-        #             trials += 1
+            # print(z3.And(*clauses))
+            # assert False
 
-        # TODO: Restrict a_pos, a_neg as well!!
+            solver.add(z3.And(*clauses))
+            if new_solution := find_solution(solver):
+                sequence_pairs.append(new_solution)
+                m = solver.model()
+                previous_solution = {str(p): m[p].as_long() for p in m}
+            else:
+                break
 
-        # Restrict n blocks
-        for n in range(1, n+1):
-            for abc in itertools.combinations(block_vars, n):
-                SEQ = itertools.product([POS, NEG], repeat=n)
-                for s in SEQ:
-                    const_addon = list()
-                    solver.push()
-                    for i, a in enumerate(abc):
-                        avar = block_vars[a][s[i]]
-                        const_addon += str(avar)
-                        const_addon += ' '
-                        solver.add(avar != initial_solution[str(avar)])
-                    print(f"Adding constraints: {''.join(const_addon)}")
-                    if candidate_pair := find_solution(solver):
-                        assert candidate_pair != initial_pair
-                        sequence_pairs.add(candidate_pair)
-                    solver.pop()
-                    trials += 1
-
-        print(f"{trials=} {len(sequence_pairs)=}")
+        print(f"{n=} {len(sequence_pairs)=}")
 
         return sequence_pairs
 
@@ -406,7 +375,7 @@ def test_1():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["g", "h"], "abut": True},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
         ]
-    generate_sequence_pair(constraints, z3.Solver())
+    assert generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_2():
@@ -421,7 +390,7 @@ def test_2():
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "o", "p"]},
         {"constraint": "Align", "direction": "v_left", "instances": ["c", "g", "r"]}
         ]
-    generate_sequence_pair(constraints, z3.Solver())
+    assert generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_3():
@@ -490,7 +459,7 @@ def test_3():
         {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XNRES0', 'X_XDECAP_NZ3']},
         {'abut': False, 'constraint': 'Order', 'direction': 'top_to_bottom', 'instances': ['X_XNRES1', 'X_XDECAP_NZ3']},
     ]
-    generate_sequence_pair(constraints, z3.Solver())
+    assert generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_4():
@@ -564,16 +533,18 @@ def test_4():
         {'abut': False, 'constraint': 'Order', 'direction': 'left_to_right', 'instances': ['X_XNRES0', 'X_XNRES1']},
         {'constraint': 'SymmetricBlocks', 'direction': 'V', 'pairs': [['X_XPTAIL'], ['X_DP_XPINP_XPINN'], ['X_CM_XNLDL_XNLDR'], ['X_XSW_PULLDN_EN', 'X_XSW_PULLDN_EN1']]},
     ]
-    generate_sequence_pair(constraints, z3.Solver(), n=4)
+    assert generate_sequence_pair(constraints, z3.Solver())
 
 
 def test_variants():
     constraints = [
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c", "d"]},
-        ]
+        # {"constraint": "Order", "direction": "left_to_right", "instances": ["b", "a", "c", "d"]},
+    ]
     s = time.time()
-    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=4)
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=24)
     e = time.time()
     print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
     for p in sequence_pairs:
         print(p)
+    assert len(sequence_pairs) == 24
