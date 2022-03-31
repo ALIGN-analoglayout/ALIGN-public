@@ -12,6 +12,8 @@ class SeqPair:
         self.pos = self.build_permutation()
         self.neg = self.build_permutation()
 
+        self.cache = {}
+
 
     def build_permutation(self):
         perm = []
@@ -79,6 +81,11 @@ class SeqPair:
         print(self.perm2vec(self.neg))
 
     def order_expr(self, u, v, axis='H'):
+
+        k = (u,v,axis)
+        if k in self.cache:
+            return self.cache[k]
+
         assert axis == 'H' or axis == 'V'
         z = self.s.add_var()
         l_pos = self.ordering_expr(self.pos[u], self.pos[v])
@@ -87,6 +94,9 @@ class SeqPair:
         else:
             l_neg = self.ordering_expr(self.neg[v], self.neg[u])
         self.s.emit_and([l_pos, l_neg], z)
+
+        self.cache[k] = z
+
         return z
 
     def order_alt(self, u, v, axis='H'):
@@ -162,9 +172,7 @@ class SeqPair:
 
         for u, v in pairs:
             self.order(u, v, axis=SeqPair.other_axis(axis))
-            for lst in singles:
-                x = lst[0]
-                print(f'Adding {x} between {u} and {v}')
+            for x in (lst[0] for lst in singles):
                 self.s.emit_iff(self.order_expr(u,x,axis=oa), self.order_expr(x,v,axis=oa))
 
         for pair0, pair1 in combinations(pairs, 2):
@@ -395,7 +403,7 @@ def test_symmetric_3():
     assert sp.s.state == 'UNSAT'
 
 
-def satisfy_constraints(constraints, pos_solution=None, neg_solution=None):
+def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False):
     print('Building...')
     instances_s = set()
 
@@ -445,7 +453,15 @@ def satisfy_constraints(constraints, pos_solution=None, neg_solution=None):
     assert sp.s.state == 'SAT'
     print('Done...')
 
-    print( [invm[x] for x in SeqPair.perm2vec(sp.pos)],  [invm[x] for x in SeqPair.perm2vec(sp.neg)])
+    print()
+    sp.prnt()
+
+    p_res, n_res = [invm[x] for x in SeqPair.perm2vec(sp.pos)],  [invm[x] for x in SeqPair.perm2vec(sp.neg)]
+
+    if single_character:
+        print(''.join(p_res), ''.join(n_res))
+    else:
+        print(p_res, n_res)
     
     return sp
 
@@ -462,7 +478,9 @@ def test_soner():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["m", "n"]}
     ]
 
+    #pos_s, neg_s = "fabcdghmen", "emgcabdfhn"
     pos_s, neg_s = "fabcdghmne", "emgcabdhnf"
+    pos_s, neg_s = None, None
 
     #
     #                       f
@@ -472,7 +490,7 @@ def test_soner():
     #                  m         n
     #                       e 
 
-    satisfy_constraints(constraints, pos_s, neg_s)
+    satisfy_constraints(constraints, pos_s, neg_s, single_character=True)
 
 
 
@@ -499,9 +517,12 @@ def test_soner2():
     #                       e 
     #                  r
 
-    pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
 
-    satisfy_constraints(constraints, pos_s, neg_s)
+    #pos_s, neg_s = "fopabcdghmenr", "emnoprgcabdfh"
+    pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
+    pos_s, neg_s = None, None
+
+    satisfy_constraints(constraints, pos_s, neg_s, single_character=True)
 
 
 
