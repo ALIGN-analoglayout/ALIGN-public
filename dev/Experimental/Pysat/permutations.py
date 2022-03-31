@@ -109,11 +109,7 @@ class SeqPair:
 
     @staticmethod
     def other_axis(axis):
-        assert axis == 'H' or axis == 'V'
-        if axis == 'H':
-            return 'V'
-        else:
-            return 'H'
+        return {'H': 'V', 'V': 'H'}[axis]
 
     def order(self, u, v, axis='H'):
         self.s.emit_always(self.order_expr(u, v, axis))
@@ -161,39 +157,51 @@ class SeqPair:
 
     def symmetric(self, lst_of_lst, axis='V'):
         # default is a vertical line of symmetry
-        singles = [lst for lst in lst_of_lst if len(lst) == 1]
+        singles = [lst[0] for lst in lst_of_lst if len(lst) == 1]
         pairs = [lst for lst in lst_of_lst if len(lst) == 2]
         assert len(singles) + len(pairs) == len(lst_of_lst)
 
         oa = SeqPair.other_axis(axis)
 
         if len(singles) > 1:
-            self.align_array([lst[0] for lst in singles], axis=axis)
+            self.align_array(singles, axis=axis)
 
         for u, v in pairs:
-            self.order(u, v, axis=SeqPair.other_axis(axis))
-            for x in (lst[0] for lst in singles):
+            # force u is (to the left of)/(on top of) v
+            self.order(u, v, axis=oa)
+            # if one of a pair is ordered with a single, then the other needs to b reverse ordered
+            for x in singles:
                 self.s.emit_iff(self.order_expr(u,x,axis=oa), self.order_expr(x,v,axis=oa))
 
-        for pair0, pair1 in combinations(pairs, 2):
-            u0, v0 = pair0
-            u1, v1 = pair1
-
+        for (u0, v0), (u1, v1) in combinations(pairs, 2):
             # u0   u1  ccc   v1 v0
-            # u1   u0  ccc   v0 v1
-
             # (u0<u1) => u1 < v1 and v1 < v0
-            u0u1_order = self.order_expr(u0, u1, axis=oa)
-            self.s.emit_implies(u0u1_order, self.order_expr(u1, v1, axis=oa))
-            self.s.emit_implies(u0u1_order, self.order_expr(v1, v0, axis=oa))
+            self.s.emit_implies(self.order_expr(u0, u1, axis=oa), self.order_expr(u1, v1, axis=oa))
+            self.s.emit_implies(self.order_expr(u0, u1, axis=oa), self.order_expr(v1, v0, axis=oa))
 
-
+            # u1   u0  ccc   v0 v1
             # (u1<u0) => u0 < v0 and v0 < v1
-            u1u0_order = self.order_expr(u1, u0, axis=oa)
-            self.s.emit_implies(u1u0_order, self.order_expr(u0, v0, axis=oa))
-            self.s.emit_implies(u1u0_order, self.order_expr(v0, v1, axis=oa))
+            self.s.emit_implies(self.order_expr(u1, u0, axis=oa), self.order_expr(u0, v0, axis=oa))
+            self.s.emit_implies(self.order_expr(u1, u0, axis=oa), self.order_expr(v0, v1, axis=oa))
 
+    def solve_and_check(self, expected_status='SAT'):
+        self.s.solve()
+        assert self.s.state == expected_status
+        if expected_status == 'SAT':
+            print()
+            self.prnt()
 
+    def gen_solutions(self, max_solutions=100):
+        # Only get to run this once "Destroys the model" 
+        for i in range(max_solutions):
+            self.s.solve()
+            if self.s.state != 'SAT':
+                break
+            p_res, n_res = SeqPair.perm2vec(self.pos), SeqPair.perm2vec(self.neg)
+            
+            yield p_res, n_res
+
+            self.s.add_clause([-x for x in self.gen_assumptions(p_res, n_res)])
 
 
 def test_A0():
@@ -202,11 +210,8 @@ def test_A0():
     sp.order(15, 6, 'H')
     sp.order(18, 0, 'V')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
+    sp.solve_and_check()
 
-    print()
-    sp.prnt()
 
 def test_order_h():
     sp = SeqPair(4)
@@ -214,11 +219,7 @@ def test_order_h():
     sp.order(2,1,'H')
     sp.order(1,0,'H')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
+    sp.solve_and_check()
 
     assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
     assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
@@ -227,11 +228,7 @@ def test_order_array_h():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'H')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
+    sp.solve_and_check()
 
     assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
     assert SeqPair.perm2vec(sp.neg) == [3,2,1,0]
@@ -242,11 +239,7 @@ def test_order_v():
     sp.order(2,1,'V')
     sp.order(1,0,'V')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
+    sp.solve_and_check()
 
     assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
     assert SeqPair.perm2vec(sp.neg) == [0,1,2,3]
@@ -255,11 +248,7 @@ def test_order_array_v():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'V')
 
-    sp.s.solve()
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
+    sp.solve_and_check()
 
     assert SeqPair.perm2vec(sp.pos) == [3,2,1,0]
     assert SeqPair.perm2vec(sp.neg) == [0,1,2,3]
@@ -403,8 +392,7 @@ def test_symmetric_3():
     assert sp.s.state == 'UNSAT'
 
 
-def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False):
-    print('Building...')
+def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False, max_solutions=1):
     instances_s = set()
 
     for constraint in constraints:
@@ -463,6 +451,14 @@ def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, singl
     else:
         print(p_res, n_res)
     
+
+    for i, (p_res, n_res) in enumerate(sp.gen_solutions(max_solutions)):
+        p_res_s, n_res_s = [invm[x] for x in p_res], [invm[x] for x in n_res]
+        if single_character:
+            print(f'Solution: {i:4d}', ''.join(p_res_s), ''.join(n_res_s))
+        else:
+            print(f'Solution: {i:4d}', p_res_s, n_res_s)
+
     return sp
 
 
@@ -490,7 +486,7 @@ def test_soner():
     #                  m         n
     #                       e 
 
-    satisfy_constraints(constraints, pos_s, neg_s, single_character=True)
+    satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=100)
 
 
 
@@ -522,7 +518,7 @@ def test_soner2():
     pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
     pos_s, neg_s = None, None
 
-    satisfy_constraints(constraints, pos_s, neg_s, single_character=True)
+    satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=100)
 
 
 
@@ -599,9 +595,11 @@ def test_soner_big():
     ]
 
 
-    pos_s, neg_s = ['X_XDECAP_P', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_XNRES0', 'X_XNRES1', 'X_XDECAP_NZ3'], ['X_XDECAP_NZ3', 'X_XNRES0', 'X_XNRES1', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_XDECAP_P']
+    #pos_s, neg_s = ['X_XDECAP_P', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_XNRES0', 'X_XNRES1', 'X_XDECAP_NZ3'], ['X_XDECAP_NZ3', 'X_XNRES0', 'X_XNRES1', 'X_XSW_PULLDN_EN', 'X_CM_XNLDL_XNLDR', 'X_XSW_PULLDN_EN1', 'X_XN2', 'X_XINVN1', 'X_XINVN2', 'X_DP_XPINP_XPINN', 'X_XINVP1', 'X_XINVP2', 'X_XMP_TIE_HI', 'X_XPTAIL', 'X_XP2', 'X_XPPBIAS', 'X_XSW_PULLUP_ENB', 'X_XSW_PBIAS_EN', 'X_XDECAP_P']
 
-    satisfy_constraints(constraints, pos_s, neg_s)
+    pos_s, neg_s = None, None
+
+    satisfy_constraints(constraints, pos_s, neg_s, max_solutions=100)
 
 if __name__ == "__main__":
     test_soner_big()
