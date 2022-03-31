@@ -258,7 +258,7 @@ def generate_sequence_pair(constraints, solver, n=10):
                 else:
                     assert False
 
-    # print(solver)
+    print(solver)
     initial_pair = find_solution(solver)
     if n < 2 or not initial_pair:
         return(initial_pair)
@@ -274,10 +274,12 @@ def generate_sequence_pair(constraints, solver, n=10):
                     bvar = block_vars[b][SEQ]
                     clauses.append(bvar != previous_solution[str(bvar)])
 
-            # print(z3.And(*clauses))
+            print(z3.And(*clauses))
             # assert False
 
             solver.add(z3.And(*clauses))
+            # print(solver)
+
             if new_solution := find_solution(solver):
                 sequence_pairs.append(new_solution)
                 m = solver.model()
@@ -538,7 +540,7 @@ def test_4():
 
 def test_variants():
     constraints = [
-        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c", "d"]},
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]},
         # {"constraint": "Order", "direction": "left_to_right", "instances": ["b", "a", "c", "d"]},
     ]
     s = time.time()
@@ -547,4 +549,4 @@ def test_variants():
     print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
     for p in sequence_pairs:
         print(p)
-    assert len(sequence_pairs) == 24
+    assert len(sequence_pairs) == 6
