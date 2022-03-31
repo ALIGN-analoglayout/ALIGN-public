@@ -123,12 +123,14 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
     }
     logger->debug("enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3}", (_valid ? 1 : 0), maxIter, _posPair.size(),
                   totEnum);
+    std::sort(_posPair.begin(), _posPair.end());
+    _negPair = _posPair;
   } else {
     _maxEnum = _posEnumerator.NumSequences();
+    _posEnumerator.NextPermutation(_posPair, 0);
+    _negEnumerator.NextPermutation(_negPair, 0);
   }
   if (!_valid) return;
-  std::sort(_posPair.begin(), _posPair.end());
-  _negPair = _posPair;
 
   _selected.resize(casenl.GetSizeofBlocks(), 0);
   _maxSelected.reserve(casenl.GetSizeofBlocks());
