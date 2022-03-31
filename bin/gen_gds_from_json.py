@@ -78,16 +78,16 @@ if args.pl_file:
     with open(args.pl_file) as fp:
         pldata = json.load(fp)
         for l in pldata.get("leaves"):
-            lname = l.get("abstract_name")
+            lname = l.get("concrete_name")
             if lname:
                 modu = Module(lname, True)
                 modules[modu._name] = modu
         for m in pldata.get("modules"):
-            mname = m.get("abstract_name")
+            mname = m.get("concrete_name")
             if mname:
                 modu = Module(mname)
                 for i in m.get("instances"):
-                    iname = i.get("abstract_template_name")
+                    iname = i.get("concrete_template_name")
                     trstr = i.get("transformation")
                     tr = Transform()
                     if trstr:
