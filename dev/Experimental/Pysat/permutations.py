@@ -192,16 +192,18 @@ class SeqPair:
             self.prnt()
 
     def gen_solutions(self, max_solutions=100):
-        # Only get to run this once "Destroys the model" 
+        # Only get to run this once "Destroys the model"
+        control = self.s.add_var()
         for i in range(max_solutions):
-            self.s.solve()
+            self.s.solve(assumptions=[control])
+            print(self.s.solver.accum_stats())
             if self.s.state != 'SAT':
                 break
             p_res, n_res = SeqPair.perm2vec(self.pos), SeqPair.perm2vec(self.neg)
             
             yield tuple(p_res), tuple(n_res)
 
-            self.s.add_clause([-x for x in self.gen_assumptions(p_res, n_res)])
+            self.s.add_clause([-control]+[-x for x in self.gen_assumptions(p_res, n_res)])
 
 
 def test_order_h():
@@ -315,14 +317,23 @@ def test_symmetric_2():
     sp.symmetric([[0,1]], 'V')
     sp.align_array([0,1], 'H')
 
+    print(sp.s.solver.accum_stats())
     assert {((0,1),(0,1))} == set(sp.gen_solutions(max_solutions=100))
+
+    assert {((0,1),(0,1))} == set(sp.gen_solutions(max_solutions=100))    
+
+
 
 
 def test_symmetric_3():
     sp = SeqPair(3)
     sp.symmetric([[0], [1,2]], 'V')
 
+    sp.s.dump_cnf("symmetric_3.cnf")
+
     assert {((1,0,2),(1,0,2)), ((0,1,2),(1,2,0)), ((1,2,0),(0,1,2))} == set(sp.gen_solutions(max_solutions=100))
+
+
 
 
 def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False, max_solutions=1):
@@ -369,10 +380,8 @@ def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, singl
         assert len(pos_solution) == len(m) and len(neg_solution) == len(m)
         assump = sp.gen_assumptions([m[c] for c in pos_solution], [m[c] for c in neg_solution])
 
-    print('Solving...')
     sp.s.solve(assumptions=assump)
     assert sp.s.state == 'SAT'
-    print('Done...')
 
     print()
     sp.prnt()
@@ -451,8 +460,9 @@ def test_soner2():
     pos_s, neg_s = "fopabcdghmner", "remnghcdopabf"
     pos_s, neg_s = None, None
 
-    satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=10000)
+    sp = satisfy_constraints(constraints, pos_s, neg_s, single_character=True, max_solutions=100)
 
+    
 
 
 def test_soner_big():
