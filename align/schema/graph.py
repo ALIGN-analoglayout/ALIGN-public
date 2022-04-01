@@ -132,15 +132,15 @@ class Graph(networkx.Graph):
                     self.subckt.constraints.remove(x)
                 elif const.constraint == 'symmetric_nets':
                     pair = [self._get_key(const.net1, match), self._get_key(const.net2, match)]
-                    nbrs1, nbrs2 = self.all_neighbors(pair)
+                    nbrs1, nbrs2 = self.all_neighbors_dist(pair)
                     assert nbrs1 == nbrs2, f"neighbors mismatch {nbrs1} {nbrs2}"
 
-    def all_neighbors(self, pair):
-        nbrs1 = networkx.shortest_path_length(self, source=pair[0])
-        nbrs2 = networkx.shortest_path_length(self, source=pair[1])
+    def all_neighbors_dist(self, pair):
+        nbrs1 = self.neighbors(pair[0])
+        nbrs2 = self.neighbors(pair[1])
         # TODO: Can be modified to flat-distances? gropblock1 != groupblock2
-        nbrs1_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])])
-        nbrs2_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])])
+        nbrs1_type = Counter([self.element(nbr).model for nbr in nbrs1])
+        nbrs2_type = Counter([self.element(nbr).model for nbr in nbrs2])
         logger.debug(f"All neighbors of {pair[0]}: {nbrs1_type} , {pair[1]}: {nbrs2_type}")
         return nbrs1_type, nbrs2_type
 
