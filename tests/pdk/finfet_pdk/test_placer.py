@@ -316,6 +316,10 @@ def test_hang_1():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "AlignInOrder", "line": "left", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -336,6 +340,10 @@ def test_hang_2():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -358,6 +366,10 @@ def test_hang_3():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1"], ["mn2"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
@@ -372,7 +384,7 @@ def test_hang_4():
     mp1  o i vssx vccx p w=360e-9 nf=2 m=4
     mp2  o i vssx vccx p w=360e-9 nf=2 m=4
     mp3  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp4  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp4  o i vssx vccx p w=360e-9 nf=4 m=4
     mp5  o i vssx vccx p w=360e-9 nf=2 m=4
     mp6  o i vssx vccx p w=360e-9 nf=2 m=4
     mp7  o i vssx vccx p w=360e-9 nf=2 m=4
@@ -392,21 +404,22 @@ def test_hang_4():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
-        {"constraint": "Floorplan", "order": True, "symmetrize": False, "regions": [
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
             ["mp1"],
             ["mp3", "mp2", "mp4", "mp5", "mp6"],
             ["mp7", "mp8", "mp9", "mp10"],
             ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
             ["mp17", "mp18"],
             ["mp19"]
-        ]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
-            ["mp1"], ["mp2"], ["mp3", "mp4"]
         ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_sub_1():
@@ -448,35 +461,3 @@ def test_sub_1():
         assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
     shutil.rmtree(ckt_dir)
     shutil.rmtree(run_dir)
-
-
-def test_symmetry():
-    name = f'ckt_{get_test_id()}'
-    netlist = textwrap.dedent(f"""\
-    .subckt {name} g1 g2 g3 g4 g5 g6 g7 g8 vssx vccx
-    mn0 vccx g0 vssx vssx n w=180e-9 m=1 nf=2
-    mn1 vccx g1 vssx vssx n w=180e-9 m=1 nf=2
-    mn2 vccx g2 vssx vssx n w=180e-9 m=1 nf=2
-    mn3 vccx g3 vssx vssx n w=180e-9 m=1 nf=2
-    mn4 dddd g4 vssx vssx n w=180e-9 m=1 nf=2
-    mn5 vccx g5 vssx vssx n w=180e-9 m=1 nf=2
-    mn6 dddd g6 vssx vssx n w=180e-9 m=1 nf=2
-    mn7 vccx g7 vssx vssx n w=180e-9 m=1 nf=2
-    mn8 vccx g8 vssx vssx n w=180e-9 m=1 nf=2
-    .ends {name}
-    .END
-    """)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "DoNotIdentify", "instances": [f"mn{i}" for i in range(9)]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [
-            ["mn0"],
-            ["mn1", "mn2"],
-            ["mn3", "mn4"],
-            ["mn6", "mn5"],
-        ]}
-    ]
-    example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)

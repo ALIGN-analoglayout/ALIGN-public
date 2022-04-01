@@ -233,17 +233,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
-  // Perturb as the very first sequence pair may not be legal
-  int trial_initial = 0;
-  int limit_initial = 100000;
-  while (++trial_initial < limit_initial) {
-    if (!curr_sp.PerturbationNew(designData)) continue;
-  }
-  logger->info("Initial perturbation count: {0}", trial_initial);
-  if (trial_initial == limit_initial) {
-    logger->error("Could not find a feasible sequence pair after {0} perturbations", trial_initial);
-  }
-
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
