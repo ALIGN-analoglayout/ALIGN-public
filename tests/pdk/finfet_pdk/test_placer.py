@@ -381,25 +381,25 @@ def test_hang_4():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt {name} vssx vccx
-    mp1  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp2  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp3  o i vssx vccx p w=360e-9 nf=2 m=4
+    mp1  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp2  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp3  o i vssx vccx p w=360e-9 nf=2 m=1
     mp4  o i vssx vccx p w=360e-9 nf=4 m=4
-    mp5  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp6  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp7  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp8  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp9  o i vssx vccx p w=360e-9 nf=2 m=4
-    mp10 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp11 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp12 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp13 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp14 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp15 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp16 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp17 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp18 o i vssx vccx p w=360e-9 nf=2 m=4
-    mp19 o i vssx vccx p w=360e-9 nf=2 m=4
+    mp5  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp6  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp7  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp8  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp9  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp10 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp11 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp12 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp13 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp14 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp15 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp16 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp17 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp18 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp19 o i vssx vccx p w=360e-9 nf=2 m=1
     .ends {name}
     .END
     """)
