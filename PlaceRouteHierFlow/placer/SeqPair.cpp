@@ -390,7 +390,7 @@ void SeqPair::CompactSeq() {
   negPair = temp_n;
 }
 
-SeqPair::SeqPair(design& caseNL, const size_t maxIter, bool select_in_ILP) {
+SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
@@ -499,10 +499,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter, bool select_in_ILP) {
     }
   }
 
-  if (!select_in_ILP) {
-    bool ok = KeepOrdering(caseNL);
-    assert(ok);
-  }
+  bool ok = KeepOrdering(caseNL);
+  assert(ok);
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);

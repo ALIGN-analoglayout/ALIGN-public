@@ -131,7 +131,6 @@ class design {
   double maxBlockAreaSum = 0.;
   double maxBlockHPWLSum = 0.;
   string name = "";
-  bool isTop = false;
 
   // added by ya
 

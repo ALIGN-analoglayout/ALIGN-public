@@ -35,7 +35,6 @@ design::design(PnRDB::hierNode& node, const int seed) {
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks
   name = node.name;
-  isTop = node.isTop;
   // Add blocks
   if (getenv("ALIGN_SKIP_SEQ_PAIR_CACHE") == nullptr || !std::atoi(getenv("ALIGN_SKIP_SEQ_PAIR_CACHE"))) {
     _useCache = true;

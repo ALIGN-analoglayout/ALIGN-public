@@ -225,7 +225,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double mean_cache_miss{0};
   int num_perturb{0};
 
-  if (hyper.select_in_ILP && (!curr_sp.Enumerate() || designData.isTop)) {
+  if (!curr_sp.Enumerate() && hyper.use_ILP_placer) {
     logger->info("Placing using ILP");
     oData = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
     logger->info("num sol : {0}", oData.size());
@@ -245,10 +245,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    //if (hyper.select_in_ILP)
-    //  curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    //else
-    curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+    if (hyper.select_in_ILP)
+      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+    else
+      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
 
     curr_sp.cacheSeq(designData);
 
@@ -318,10 +318,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      //if (hyper.select_in_ILP)
-      //  trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      //else
-      trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      if (hyper.select_in_ILP)
+        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+      else
+        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
@@ -335,16 +335,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           if (delta_cost < 0) {
             Smark = true;
             logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
-            //std::ofstream ofs(designData.name + "_opt_sol.lp");
-            //std::ifstream ifs(designData.name + "_ilp.lp");
-            //std::string tmpstr, tmpstrn, tmpstrs;
-            //for (const auto& it : trial_sp.posPair) tmpstr += (std::to_string(it) + " ");
-            //for (const auto& it : trial_sp.negPair) tmpstrn += (std::to_string(it) + " ");
-            //for (const auto& it : trial_sp.selected) tmpstrs += (std::to_string(it) + " ");
-            //ofs << "// pos pair " << tmpstr << "neg pair " << tmpstrn << "sel " << tmpstrs << '\n';
-            //if (ifs) ofs << ifs.rdbuf();
-            //ofs.close();
-            //ifs.close();
           } else {
             double r = (double)rand() / RAND_MAX;
             // De-normalize the delta cost
