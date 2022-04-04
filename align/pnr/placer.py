@@ -43,7 +43,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
-    hyper.use_ILP_placer = True
+    # hyper.use_ILP_placer = True
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
