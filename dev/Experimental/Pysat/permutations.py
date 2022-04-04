@@ -14,6 +14,10 @@ class SeqPair:
 
         self.cache = {}
 
+        self.specified_alignments = set()
+
+        self.semantic_run = False
+
 
     def build_permutation(self):
         perm = []
@@ -115,12 +119,21 @@ class SeqPair:
         self.s.emit_always(self.order_expr(u, v, axis))
 
     def align(self, u, v, axis='H'):
+        self.specified_alignments.add((u,v,axis))
+
+    def align_add_constraint(self, u, v, axis='H'):
         # Either of these will work
         # 1) u -> v or v -> u are axis ordered
         self.s.add_clause([self.order_expr(u, v, axis), self.order_expr(v, u, axis)])
         # 2) neither u-> v nor v -> u are other_axis ordered
         #self.s.emit_never(self.order_expr(u,v, self.other_axis(axis)))
         #self.s.emit_never(self.order_expr(v,u, self.other_axis(axis)))
+
+
+    def semantic(self):
+        for (u,v,a) in self.specified_alignments:
+            self.align_add_constraint(u,v,axis=a)
+        self.semantic_run = True
 
     def gen_assumptions(self, pvec, nvec):
         return [self.pos[x].var(i) for i, x in enumerate(pvec)] + [self.neg[x].var(i) for i, x in enumerate(nvec)]
@@ -155,7 +168,7 @@ class SeqPair:
             if abut:
                 self.abut(u, v, axis)
 
-    def symmetric(self, lst_of_lst, axis='V'):
+    def symmetric_pairs_ordered(self, lst_of_lst, axis='V'):
         # default is a vertical line of symmetry
         singles = [lst[0] for lst in lst_of_lst if len(lst) == 1]
         pairs = [lst for lst in lst_of_lst if len(lst) == 2]
@@ -184,7 +197,55 @@ class SeqPair:
             self.s.emit_implies(self.order_expr(u1, u0, axis=oa), self.order_expr(u0, v0, axis=oa))
             self.s.emit_implies(self.order_expr(u1, u0, axis=oa), self.order_expr(v0, v1, axis=oa))
 
+    def symmetric(self, lst_of_lst, axis='V'):
+        # default is a vertical line of symmetry
+        singles = [lst[0] for lst in lst_of_lst if len(lst) == 1]
+        pairs = [lst for lst in lst_of_lst if len(lst) == 2]
+        assert len(singles) + len(pairs) == len(lst_of_lst)
+
+        oa = SeqPair.other_axis(axis)
+
+        if len(singles) > 1:
+            self.align_array(singles, axis=axis)
+
+        def aux0(l,u,x,v):
+            self.s.add_clause([-l, -self.order_expr(u,x,axis=oa), self.order_expr(x,v,axis=oa)])
+            self.s.add_clause([-l, -self.order_expr(x,v,axis=oa), self.order_expr(u,x,axis=oa)])
+
+        for u, v in pairs:
+            self.align(u,v,axis=oa)
+
+            # if one of a pair is ordered with a single, then the other needs to b reverse ordered
+            p = self.order_expr(u,v,axis=oa)
+            n = self.order_expr(v,u,axis=oa)
+
+            for x in singles:
+                aux0(p,u,x,v)
+                aux0(n,v,x,u)
+
+
+        def aux1(l0,l1,u0,v0,u1,v1):
+            self.s.add_clause([-l0,-l1,-self.order_expr(u0, u1, axis=oa), self.order_expr(u1, v1, axis=oa)])
+            self.s.add_clause([-l0,-l1,-self.order_expr(u0, u1, axis=oa), self.order_expr(v1, v0, axis=oa)])
+            self.s.add_clause([-l0,-l1,-self.order_expr(u1, u0, axis=oa), self.order_expr(u0, v0, axis=oa)])
+            self.s.add_clause([-l0,-l1,-self.order_expr(u1, u0, axis=oa), self.order_expr(v0, v1, axis=oa)])
+
+        for (u0, v0), (u1, v1) in combinations(pairs, 2):
+            p0 = self.order_expr(u0,v0,axis=oa)
+            n0 = self.order_expr(v0,u0,axis=oa)
+            p1 = self.order_expr(u1,v1,axis=oa)
+            n1 = self.order_expr(v1,u1,axis=oa)
+
+            aux1(p0,p1,u0,v0,u1,v1)
+            aux1(n0,p1,v0,u0,u1,v1)
+            aux1(p0,n1,u0,v0,v1,u1)
+            aux1(n0,n1,v0,u0,v1,u1)
+
+
     def solve_and_check(self, expected_status='SAT'):
+        if not self.semantic_run:
+            self.semantic()
+
         self.s.solve()
         assert self.s.state == expected_status
         if expected_status == 'SAT':
@@ -192,11 +253,14 @@ class SeqPair:
             self.prnt()
 
     def gen_solutions(self, max_solutions=100):
+        if not self.semantic_run:
+            self.semantic()
+
         # Only get to run this once "Destroys the model"
         control = self.s.add_var()
         for i in range(max_solutions):
             self.s.solve(assumptions=[control])
-            print(self.s.solver.accum_stats())
+            #print(self.s.solver.accum_stats())
             if self.s.state != 'SAT':
                 break
             p_res, n_res = SeqPair.perm2vec(self.pos), SeqPair.perm2vec(self.neg)
@@ -257,6 +321,40 @@ def test_align_h_fail():
 
     assert set() == set(sp.gen_solutions(max_solutions=100))
 
+def test_align_transitive_fail():
+    sp = SeqPair(3)
+
+    #  (0, 2, 1), (2, 0, 1) and 3 others
+    #
+    #  0 < 1
+    #  ^
+    #  2 < 1
+    #
+    # This only works if the 0,1 is an align top and 1,2 is an align bot and the size of block 1 is no less than the sum of block 0 and block 2
+
+    sp.align(0,1,'H')
+    sp.align(1,2,'H')
+    sp.align(0,2,'H')
+    sp.align(0,2,'V')
+
+    assert set() == set(sp.gen_solutions(max_solutions=100))
+
+def test_align_order_transitive_fail():
+    sp = SeqPair(3)
+
+    #  (0, 2, 1), (2, 0, 1) and 3 others
+    #
+    #  0 < 1
+    #  ^
+    #  2 < 1
+    #
+    # This only works if the 0,1 is an align top and 1,2 is an align bot and the size of block 1 is no less than the sum of block 0 and block 2
+
+    sp.order(0,1,'H')
+    sp.order(2,1,'H')
+    sp.align(0,2,'V')
+
+    assert set() == set(sp.gen_solutions(max_solutions=100))
 
 def test_abut_h_pass0():
     sp = SeqPair(3)
@@ -317,13 +415,7 @@ def test_symmetric_2():
     sp.symmetric([[0,1]], 'V')
     sp.align_array([0,1], 'H')
 
-    print(sp.s.solver.accum_stats())
-    assert {((0,1),(0,1))} == set(sp.gen_solutions(max_solutions=100))
-
-    assert {((0,1),(0,1))} == set(sp.gen_solutions(max_solutions=100))    
-
-
-
+    assert {((0,1),(0,1)),((1,0),(1,0))} == set(sp.gen_solutions(max_solutions=100))
 
 def test_symmetric_3():
     sp = SeqPair(3)
@@ -331,10 +423,15 @@ def test_symmetric_3():
 
     sp.s.dump_cnf("symmetric_3.cnf")
 
-    assert {((1,0,2),(1,0,2)), ((0,1,2),(1,2,0)), ((1,2,0),(0,1,2))} == set(sp.gen_solutions(max_solutions=100))
+    assert 6 == len(set(sp.gen_solutions(max_solutions=100)))
 
+def test_symmetric_4():
+    sp = SeqPair(4)
+    sp.symmetric([[0,1], [2,3]], 'V')
 
+    sp.s.dump_cnf("symmetric_4.cnf")
 
+    assert 80 == len(set(sp.gen_solutions(max_solutions=1000)))
 
 def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, single_character=False, max_solutions=1):
     instances_s = set()
