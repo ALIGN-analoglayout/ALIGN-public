@@ -87,6 +87,7 @@ else()
   find_library(osi_lib NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}Osi${CMAKE_SHARED_LIBRARY_SUFFIX})
   find_library(osisym_lib NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}OsiSym${CMAKE_SHARED_LIBRARY_SUFFIX})
   find_library(osiclp_lib NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}OsiClp${CMAKE_SHARED_LIBRARY_SUFFIX})
+  find_library(clpsolver_lib NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}ClpSolver${CMAKE_SHARED_LIBRARY_SUFFIX})
   find_library(coinutils_lib NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}CoinUtils${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(symphony_LIBRARIES
     ${symphony_lib}
@@ -95,6 +96,7 @@ else()
     ${osi_lib}
     ${osisym_lib}
     ${osiclp_lib}
+    ${clpsolver_lib}
     ${coinutils_lib}
     )
   FetchContent_GetProperties(symphony)
