@@ -1,6 +1,25 @@
 import pytest
 from tally.tally import Tally, VarMgr, BitVec
 from itertools import combinations
+from collections import defaultdict
+
+class UnionFind: 
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [1]*n
+        
+    def find(self, p): 
+        if p != self.parent[p]: 
+            self.parent[p] = self.find(self.parent[p])
+        return self.parent[p]
+    
+    def union(self, p, q): 
+        prt, qrt = self.find(p), self.find(q)
+        if prt != qrt: 
+            if self.rank[prt] > self.rank[qrt]:
+                prt, qrt = qrt, prt
+            self.parent[prt] = qrt
+            self.rank[qrt] += self.rank[prt]
 
 class SeqPair:
 
@@ -13,6 +32,7 @@ class SeqPair:
         self.neg = self.build_permutation()
 
         self.cache = {}
+        self.half_cache = {}
 
         self.specified_alignments = set()
 
@@ -40,6 +60,18 @@ class SeqPair:
             for j in range(i+1,self.n):
                 lst.append(a_v.var(j))
             self.s.add_clause(lst)
+
+    def ordering_expr_pos(self, u, v):
+        k = (u,v,'pos')
+        if k not in self.half_cache:
+            self.half_cache[k] = self.ordering_expr(self.pos[u], self.pos[v])
+        return self.half_cache[k]
+
+    def ordering_expr_neg(self, u, v):
+        k = (u,v,'neg')
+        if k not in self.half_cache:
+            self.half_cache[k] = self.ordering_expr(self.neg[u], self.neg[v])
+        return self.half_cache[k]
 
     def ordering_expr(self, a_u, a_v):
         z = self.s.add_var()
@@ -92,11 +124,11 @@ class SeqPair:
 
         assert axis == 'H' or axis == 'V'
         z = self.s.add_var()
-        l_pos = self.ordering_expr(self.pos[u], self.pos[v])
+        l_pos = self.ordering_expr_pos(u, v)
         if axis == 'H':
-            l_neg = self.ordering_expr(self.neg[u], self.neg[v])
+            l_neg = self.ordering_expr_neg(u, v)
         else:
-            l_neg = self.ordering_expr(self.neg[v], self.neg[u])
+            l_neg = self.ordering_expr_neg(v, u)
         self.s.emit_and([l_pos, l_neg], z)
 
         self.cache[k] = z
@@ -117,6 +149,7 @@ class SeqPair:
 
     def order(self, u, v, axis='H'):
         self.s.emit_always(self.order_expr(u, v, axis))
+        self.specified_alignments.add((u,v,axis))
 
     def align(self, u, v, axis='H'):
         self.specified_alignments.add((u,v,axis))
@@ -130,9 +163,26 @@ class SeqPair:
         #self.s.emit_never(self.order_expr(v,u, self.other_axis(axis)))
 
 
+    
+
+
     def semantic(self):
-        for (u,v,a) in self.specified_alignments:
-            self.align_add_constraint(u,v,axis=a)
+        for a in ['V', 'H']:
+            uf = UnionFind(self.n)
+
+            for (u,v,aa) in self.specified_alignments:
+                if aa == a:
+                    uf.union(u, v)
+
+            classes = defaultdict(list)
+
+            for u in range(self.n):
+                classes[uf.find(u)].append(u)
+
+            for k, cl in classes.items():
+                for u, v in combinations(cl, 2):
+                    self.align_add_constraint(u,v,axis=a)                    
+
         self.semantic_run = True
 
     def gen_assumptions(self, pvec, nvec):
