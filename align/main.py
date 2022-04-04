@@ -117,7 +117,6 @@ def start_viewer(working_dir, pnr_dir, variant):
             except KeyboardInterrupt:
                 pass
     sys.stderr = stderr
-    logger.info('Viewer terminated')
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,

@@ -22,7 +22,7 @@ PLACER_SA_MAX_ITER = 1e4
 
 def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
-    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
+    logger.debug(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
