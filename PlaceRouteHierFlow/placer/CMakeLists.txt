@@ -16,7 +16,6 @@ set(sources
      Preadfile.cpp
      design.cpp)
 
-ExternalProject_Get_Property(cbc binary_dir)
 ExternalProject_Get_Property(cbc source_dir)
 include_directories(${source_dir}/Cbc/src)
 include_directories(${source_dir}/Cgl/src)
