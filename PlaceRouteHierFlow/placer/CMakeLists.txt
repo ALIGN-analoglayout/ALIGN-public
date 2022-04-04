@@ -16,14 +16,13 @@ set(sources
      Preadfile.cpp
      design.cpp)
 
-ExternalProject_Get_Property(cbc source_dir)
-include_directories(${source_dir}/Cbc/src)
-include_directories(${source_dir}/Cgl/src)
-include_directories(${source_dir}/Clp/src)
-include_directories(${source_dir}/Clp/src/OsiClp)
-include_directories(${source_dir}/Osi/src/Osi)
-include_directories(${source_dir}/CoinUtils/src)
-include_directories(${source_dir}/../symphony-src/SYMPHONY/include)
+include_directories(${cbc_SOURCE_DIR}/Cbc/src)
+include_directories(${cbc_SOURCE_DIR}/Cgl/src)
+include_directories(${cbc_SOURCE_DIR}/Clp/src)
+include_directories(${cbc_SOURCE_DIR}/Clp/src/OsiClp)
+include_directories(${cbc_SOURCE_DIR}/Osi/src/Osi)
+include_directories(${cbc_SOURCE_DIR}/CoinUtils/src)
+include_directories(${symphony_SOURCE_DIR}/SYMPHONY/include)
 add_library(placer STATIC ${sources} ${headers})
 
 target_link_libraries(

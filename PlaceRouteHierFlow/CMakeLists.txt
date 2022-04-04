@@ -10,7 +10,12 @@ set(sources
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
-add_dependencies(PnR cbc symphony)
+if (NOT symphony_lib)
+  add_dependencies(PnR symphony)
+endif()
+if (NOT cbc_lib)
+  add_dependencies(PnR cbc)
+endif()
 
 target_link_libraries(
      PnR PRIVATE

@@ -2,7 +2,6 @@
 #include "spdlog/spdlog.h"
 #include "symphony.h"
 #include <iostream>
-#include <malloc.h>
 #include <signal.h>
 #include "CbcModel.hpp"
 #include "OsiClpSolverInterface.hpp"
