@@ -299,7 +299,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
                        placement_verilog_d, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
-    logger.info(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
+    logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
         #

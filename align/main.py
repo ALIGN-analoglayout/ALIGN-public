@@ -59,7 +59,7 @@ def build_steps(flow_start, flow_stop):
                 assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
                 enabled = False
 
-    logger.info(f'Running flow steps {steps_to_run}')
+    logger.debug(f'Running flow steps {steps_to_run}')
 
     return steps_to_run
 
@@ -157,7 +157,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         else:
             subckt = subckt.upper()
 
-        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+        logger.info(f"Reading netlist: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
         primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)
