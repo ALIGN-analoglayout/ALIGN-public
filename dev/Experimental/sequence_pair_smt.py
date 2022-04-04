@@ -7,6 +7,7 @@ import more_itertools
 POS = "pos"
 NEG = "neg"
 SEP = "___"
+NUM_SOLUTIONS = 3
 
 
 def define_vars(block_vars, b):
@@ -47,40 +48,26 @@ def find_solution(solver):
 
 def merge_align_constraints(constraints):
 
+    def _merge(instances, groups):
+        if not groups:
+            groups.append(set(instances))
+        else:
+            for i, g in enumerate(groups):
+                if set.intersection(g, instances):
+                    groups[i].update(instances)
+                    break
+            else:
+                groups.append(instances)
+
     h_groups = []
     v_groups = []
     merged_constraints = list()
     for const in constraints:
         if const["constraint"] == "Align":
             if const["direction"] == "h_bottom":
-                if not h_groups:
-                    h_groups.append(set(const['instances']))
-                else:
-                    group_exists = False
-                    inst_set = set(const['instances'])
-                    for i, hg in enumerate(h_groups):
-                        if set.intersection(hg, inst_set):
-                            group_exists = True
-                            break
-                    if group_exists:
-                        h_groups[i] = set.union(h_groups[i], inst_set)
-                    else:
-                        h_groups.append(inst_set)
+                _merge(set(const['instances']), h_groups)
             else:
-                if not v_groups:
-                    v_groups.append(set(const['instances']))
-                else:
-                    group_exists = False
-                    inst_set = set(const['instances'])
-                    for i, vg in enumerate(v_groups):
-                        if set.intersection(vg, inst_set):
-                            group_exists = True
-                            break
-                    if group_exists:
-                        v_groups[i] = set.union(v_groups[i], inst_set)
-                    else:
-                        v_groups.append(inst_set)
-
+                _merge(set(const['instances']), v_groups)
         else:
             merged_constraints.append(const)
 
@@ -95,7 +82,14 @@ def merge_align_constraints(constraints):
     return(merged_constraints)
 
 
-def generate_sequence_pair(constraints, solver, n=10):
+def order(a, b, axis):
+    if axis == 'h':
+        return z3.And(a[POS] < b[POS], a[NEG] < b[NEG])
+    else:
+        return z3.And(a[POS] < b[POS], a[NEG] > b[NEG])
+
+
+def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
     block_vars = dict()
 
     # Define variables for each block
@@ -149,20 +143,14 @@ def generate_sequence_pair(constraints, solver, n=10):
                 a = block_vars[p[0]]
                 b = block_vars[p[1]]
                 # [a, b]: a must be before or after b
-                solver.add(z3.Or(
-                    z3.And(a[POS] < b[POS], a[NEG] < b[NEG]),
-                    z3.And(a[POS] > b[POS], a[NEG] > b[NEG])
-                ))
+                solver.add(z3.Or(order(a, b, 'h'), order(b, a, 'h')))
 
             # self symmetric blocks can only have above/below relationship
             for p in itertools.combinations(symm_self, 2):
                 a = block_vars[p[0]]
                 b = block_vars[p[1]]
                 # [a], [b]: a must be above or below b
-                solver.add(z3.Or(
-                    z3.And(a[POS] < b[POS], a[NEG] > b[NEG]),
-                    z3.And(a[POS] > b[POS], a[NEG] < b[NEG])
-                ))
+                solver.add(z3.Or(order(a, b, 'v'), order(b, a, 'v')))
 
             # self symmetric blocks cannot be before/after a pair of blocks
             for i in symm_self:
@@ -171,9 +159,9 @@ def generate_sequence_pair(constraints, solver, n=10):
                     a = block_vars[j]
                     b = block_vars[k]
                     # [a,b], [s]: s cannot be before a and b
-                    solver.add(z3.Not(z3.And(s[POS] < a[POS], s[POS] < b[POS], s[NEG] < a[NEG], s[NEG] < b[NEG])))
+                    solver.add(z3.Not(z3.And(order(s, a, 'h'), order(s, b, 'h'))))
                     # [a,b], [s]: s cannot be after a and b
-                    solver.add(z3.Not(z3.And(s[POS] > a[POS], s[POS] > b[POS], s[NEG] > a[NEG], s[NEG] > b[NEG])))
+                    solver.add(z3.Not(z3.And(order(a, s, 'h'), order(b, s, 'h'))))
 
             # blocks in two separate pairs should not conflict
             for p in itertools.combinations(symm_pair, 2):
@@ -217,27 +205,25 @@ def generate_sequence_pair(constraints, solver, n=10):
                 a = block_vars[i]
                 b = block_vars[j]
                 if const["direction"] == "top_to_bottom":
-                    # a,b: a must be before b
-                    solver.add(z3.And(a[POS] < b[POS], a[NEG] > b[NEG]))
+                    # a,b: a must be above b
+                    solver.add(order(a, b, 'v'))
                     if "abut" in const and const["abut"]:
                         # any block c cannot be below a and above b
                         for k in blocks:
                             if k not in [i, j]:
                                 c = block_vars[k]
-                                solver.add(z3.Not(z3.And(
-                                    a[POS] < c[POS], c[POS] < b[POS],
-                                    a[NEG] > c[NEG], c[NEG] > b[NEG])))
+                                solver.add(z3.Not(z3.And(order(a, c, 'v'), order(c, b, 'v'))))
+
                 elif const["direction"] == "left_to_right":
-                    # a,b: a must be above b
-                    solver.add(z3.And(a[POS] < b[POS], a[NEG] < b[NEG]))
+                    # a,b: a must be left of b
+                    solver.add(order(a, b, 'h'))
+
                     if "abut" in const and const["abut"]:
                         # any block c cannot be after a and before b
                         for k in blocks:
                             if k not in [i, j]:
                                 c = block_vars[k]
-                                solver.add(z3.Not(z3.And(
-                                    a[POS] < c[POS], c[POS] < b[POS],
-                                    a[NEG] < c[NEG], c[NEG] < b[NEG])))
+                                solver.add(z3.Not(z3.And(order(a, c, 'h'), order(c, b, 'h'))))
                 else:
                     assert False
 
@@ -247,14 +233,14 @@ def generate_sequence_pair(constraints, solver, n=10):
                 b = block_vars[j]
                 if const["direction"] == "h_bottom":
                     # a cannot be above b
-                    solver.add(z3.Not(z3.And(a[POS] < b[POS], a[NEG] > b[NEG])))
+                    solver.add(z3.Not(order(a, b, 'v')))
                     # a cannot be below b
-                    solver.add(z3.Not(z3.And(a[POS] > b[POS], a[NEG] < b[NEG])))
+                    solver.add(z3.Not(order(b, a, 'v')))
                 elif const["direction"] == "v_left":
                     # a cannot be before b
-                    solver.add(z3.Not(z3.And(a[POS] < b[POS], a[NEG] < b[NEG])))
+                    solver.add(z3.Not(order(a, b, 'h')))
                     # a cannot be after b
-                    solver.add(z3.Not(z3.And(a[POS] > b[POS], a[NEG] > b[NEG])))
+                    solver.add(z3.Not(order(b, a, 'h')))
                 else:
                     assert False
 
@@ -266,7 +252,7 @@ def generate_sequence_pair(constraints, solver, n=10):
         m = solver.model()
         previous_solution = {str(p): m[p].as_long() for p in m}
         sequence_pairs = [initial_pair]
-        for i in range(n):
+        for i in range(n-1):
 
             clauses = []
             for b in block_vars:
