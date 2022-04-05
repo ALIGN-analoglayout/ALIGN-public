@@ -228,7 +228,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (!curr_sp.Enumerate() && hyper.use_ILP_placer) {
     logger->info("Placing using ILP");
     oData = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
-    logger->info("num sol : {0}", oData.size());
     if (!oData.empty()) {
       ReshapeSeqPairMap(oData, nodeSize);
       return oData;

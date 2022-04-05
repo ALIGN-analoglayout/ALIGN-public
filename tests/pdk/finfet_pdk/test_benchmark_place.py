@@ -10,13 +10,9 @@ from align.pnr.render_placement import standalone_overlap_checker
 
 cleanup = True
 
-# PARAMS = [
-#         ("tamu_sp", ["--router_mode", "no_op"]),
-#         ("umn_ilp", ["--router_mode", "no_op", "--select_in_ILP"])
-# ]
 PARAMS = [
-        ("tamu_sp", [""]),
-        ("umn_ilp", ["--select_in_ILP"])
+        ("tamu_sp", ["--router_mode", "no_op"]),
+        ("umn_ilp", ["--router_mode", "no_op", "--place_using_ILP"])
 ]
 
 BENCHMARK = False
