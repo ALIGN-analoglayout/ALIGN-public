@@ -1836,7 +1836,8 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node) {
             break;
           }
         }
-        if (found == 0) logger->error("Block {0} pin {1} not found in lef file", b.name, b.blockPins[k].name);
+        // SY: Downgrading non-critical error message
+        if (found == 0) logger->debug("Block {0} pin {1} not found in lef file", b.name, b.blockPins[k].name);
       }
     }
     assert(!missing_lef_file);

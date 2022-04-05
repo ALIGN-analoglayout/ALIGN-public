@@ -11,7 +11,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   ReadPrimitiveOffsetPitch(nodeVec, drcInfo, hyper_in.place_on_grid_constraints_json);
   if (hyper.use_external_placement_info) {
-    logger->info("Requesting placement from JSON");
+    logger->debug("Requesting placement from JSON");
     // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
   }else{
@@ -69,7 +69,7 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
 
 void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
-  logger->info("Calling setPlacementInfoFromJson");
+  logger->debug("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
   design designData(nodeVec.back());
   int idx = 0;
@@ -367,7 +367,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (num_perturb) mean_cache_miss /= num_perturb;
-  logger->info("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible,
+  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible,
                mean_cache_miss);
 
   // Write out placement results

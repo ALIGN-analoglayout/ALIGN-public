@@ -135,7 +135,7 @@ def scalar_rational_scaling( v, *, mul=1, div=1):
         q, r = divmod( mul*v, div)
         #assert r == 0
         if r != 0:
-            logger.error(f'Value {v} not a whole number after scaling: q={q} r={r} mul={mul} div={div}')
+            logger.debug(f'Value {v} not a whole number after scaling: q={q} r={r} mul={mul} div={div}')
         return q
 
 def array_rational_scaling( a, *, mul=1, div=1):

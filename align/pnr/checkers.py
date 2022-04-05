@@ -29,7 +29,7 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False,
                     toplevel=True, pnr_const_ds=None):
 
-    logger.info( f'Checking: {hN.name}')
+    logger.debug(f'Checking: {hN.name}')
 
     global_power_names = set( [ n.name for n in hN.PowerNets])
 
