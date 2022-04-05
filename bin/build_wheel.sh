@@ -22,7 +22,7 @@ case "$AUDITWHEEL_PLAT" in
     ;;
     "manylinux_2_24_x86_64")
         apt update
-        apt -y install libboost-dev lp-solve coinor-cbc coinor-symphony
+        apt -y install libboost-dev lp-solve
     ;;
     *)
         echo "WARNING: Unknown environment."

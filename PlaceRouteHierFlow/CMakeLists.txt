@@ -10,12 +10,7 @@ set(sources
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
-if (NOT symphony_lib)
-  add_dependencies(PnR symphony)
-endif()
-if (NOT cbc_lib)
-  add_dependencies(PnR cbc)
-endif()
+add_dependencies(PnR cbc)
 
 target_link_libraries(
      PnR PRIVATE
@@ -34,7 +29,6 @@ target_link_libraries(
      superlu
      pybind11::module
      Boost::boost
-     ${symphony_LIBRARIES}
      ${cbc_LIBRARIES}
 )
 target_code_coverage(PnR)
@@ -59,7 +53,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           MNA
           # External Dependencies
           lpsolve::lpsolve55
-          ${symphony_LIBRARIES}
           ${cbc_LIBRARIES}
           nlohmann_json::nlohmann_json
           spdlog::spdlog

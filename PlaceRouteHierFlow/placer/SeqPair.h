@@ -125,7 +125,6 @@ class SeqPair {
   bool CheckAlign(design& caseNL);
   bool CheckSymm(design& caseNL);
   void TestSwap();
-  void InitSP(const design& mydesign);
   int GetBlockSelected(int blockNo);
   bool ChangeSelectedBlock(design& caseNL);
   bool KeepOrdering(design& caseNL);

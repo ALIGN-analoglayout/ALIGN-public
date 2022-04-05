@@ -22,7 +22,6 @@ include_directories(${cbc_SOURCE_DIR}/Clp/src)
 include_directories(${cbc_SOURCE_DIR}/Clp/src/OsiClp)
 include_directories(${cbc_SOURCE_DIR}/Osi/src/Osi)
 include_directories(${cbc_SOURCE_DIR}/CoinUtils/src)
-include_directories(${symphony_SOURCE_DIR}/SYMPHONY/include)
 add_library(placer STATIC ${sources} ${headers})
 
 target_link_libraries(
@@ -31,7 +30,6 @@ target_link_libraries(
      lpsolve::lpsolve55
      Boost::boost
      nlohmann_json::nlohmann_json
-     ${symphony_LIBRARIES}
      ${cbc_LIBRARIES}
      )
 
