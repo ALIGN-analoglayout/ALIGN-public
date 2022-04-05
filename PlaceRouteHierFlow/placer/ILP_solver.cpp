@@ -3322,12 +3322,11 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      CbcMain0(model);
       model.setLogLevel(0);
       model.setMaximumSeconds(300);
       //model.setNumberHeuristics(0);
       const char* argv[] = {"", "-log", "0", "-solve"};
-      status = CbcMain1(4, argv, model);
+      status = CbcMain(4, argv, model);
     }
     const double* var = model.bestSolution();
     if (status != 0 || var == nullptr) {
