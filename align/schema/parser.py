@@ -150,11 +150,9 @@ class SpiceParser:
         if self.library.find(model):
             model = self.library.find(model)
         else:
-            logger.info(f"unknown device found {model} {kwargs}, creating a generic model for this")
+            logger.warning(f"Unknown device found {model} {kwargs}, creating a generic model for this")
             with set_context(self.library):
-                self.library.append(
-                    Model(name=model, pins=args, parameters={k:'1' for k in kwargs.keys()}, prefix='X')
-                )
+                self.library.append(Model(name=model, pins=args, parameters={k: '1' for k in kwargs.keys()}, prefix=''))
             model = self.library.find(model)
             # TODO: get it from generator
 
