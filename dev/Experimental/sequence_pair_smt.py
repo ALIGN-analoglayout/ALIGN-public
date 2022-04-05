@@ -69,6 +69,13 @@ def merge_align_constraints(constraints):
             else:
                 _merge(set(const['instances']), v_groups)
         else:
+            if const["constraint"] == "SymmetricBlocks":
+                for pairs in const['pairs']:
+                    if len(pairs) == 2:
+                        if const["direction"] == "V":
+                            _merge(set(pairs), h_groups)
+                        else:
+                            _merge(set(pairs), v_groups)
             merged_constraints.append(const)
 
     for hg in h_groups:
