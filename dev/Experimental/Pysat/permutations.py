@@ -468,6 +468,8 @@ def test_align_order_transitive_fail_larger():
     #  can 0 can be vertically related to 3 but
     #      1 can not be vertically related to 2
     #
+    # also 1 can be vertically related to 3
+    # and  0 can be vertically related to 2
 
     sp = SeqPair(4)
 
@@ -476,6 +478,8 @@ def test_align_order_transitive_fail_larger():
     sp.align(2,3,'H')
 
     sp.order(1,2,'V')
+    #sp.order(1,3,'V')
+    #sp.order(0,2,'V')
     #sp.order(0,3,'V')
 
     sp2 = SeqPair(4)
