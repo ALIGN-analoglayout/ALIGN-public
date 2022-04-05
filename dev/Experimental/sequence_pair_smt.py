@@ -353,6 +353,15 @@ def test_symmetry():
     assert not generate_sequence_pair(constraints, z3.Solver())
 
 
+def test_align_symmetry():
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"]]},
+        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "c"]},
+        {"constraint": "Align", "direction": "v_left",   "instances": ["b", "c"]},
+    ]
+    assert not generate_sequence_pair(constraints, z3.Solver())
+
+
 def test_1():
     constraints = [
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs":
