@@ -5,6 +5,7 @@ from collections import defaultdict
 
 class UnionFind: 
     def __init__(self, n):
+        self.n = n
         self.parent = list(range(n))
         self.rank = [1]*n
         
@@ -20,6 +21,62 @@ class UnionFind:
                 prt, qrt = qrt, prt
             self.parent[prt] = qrt
             self.rank[qrt] += self.rank[prt]
+
+    def build_classes(self):
+        classes = defaultdict(list)
+
+        for u in range(self.n):
+            classes[self.find(u)].append(u)
+
+        return classes
+
+
+def test_unionfind():
+    uf = UnionFind(4)
+    uf.union(0,1)
+
+    assert uf.rank[uf.find(0)] == 2
+    assert uf.rank[uf.find(1)] == 2
+    assert uf.rank[uf.find(2)] == 1
+    assert uf.rank[uf.find(3)] == 1
+
+    classes = uf.build_classes()
+
+    assert len(classes) == 3
+
+    assert set(classes[uf.find(0)]) == {0,1}
+    assert set(classes[uf.find(2)]) == {2}
+    assert set(classes[uf.find(3)]) == {3}
+
+
+    uf.union(2,3)
+    
+    assert uf.rank[uf.find(0)] == 2
+    assert uf.rank[uf.find(1)] == 2
+    assert uf.rank[uf.find(2)] == 2
+    assert uf.rank[uf.find(3)] == 2
+
+    classes = uf.build_classes()
+
+    assert len(classes) == 2
+
+    assert set(classes[uf.find(0)]) == {0,1}
+    assert set(classes[uf.find(2)]) == {2,3}
+
+    uf.union(0,2)
+
+    assert uf.rank[uf.find(0)] == 4
+    assert uf.rank[uf.find(1)] == 4
+    assert uf.rank[uf.find(2)] == 4
+    assert uf.rank[uf.find(3)] == 4
+
+    classes = uf.build_classes()
+
+    assert len(classes) == 1
+
+    assert set(classes[uf.find(0)]) == {0,1,2,3}
+
+
 
 class SeqPair:
 
@@ -149,7 +206,7 @@ class SeqPair:
 
     def order(self, u, v, axis='H'):
         self.s.emit_always(self.order_expr(u, v, axis))
-        self.specified_alignments.add((u,v,axis))
+        #self.specified_alignments.add((u,v,axis))
 
     def align(self, u, v, axis='H'):
         self.specified_alignments.add((u,v,axis))
@@ -162,10 +219,6 @@ class SeqPair:
         #self.s.emit_never(self.order_expr(u,v, self.other_axis(axis)))
         #self.s.emit_never(self.order_expr(v,u, self.other_axis(axis)))
 
-
-    
-
-
     def semantic(self):
         for a in ['V', 'H']:
             uf = UnionFind(self.n)
@@ -174,12 +227,7 @@ class SeqPair:
                 if aa == a:
                     uf.union(u, v)
 
-            classes = defaultdict(list)
-
-            for u in range(self.n):
-                classes[uf.find(u)].append(u)
-
-            for k, cl in classes.items():
+            for _, cl in uf.build_classes().items():
                 for u, v in combinations(cl, 2):
                     self.align_add_constraint(u,v,axis=a)                    
 
@@ -384,7 +432,6 @@ def test_align_transitive_fail():
 
     sp.align(0,1,'H')
     sp.align(1,2,'H')
-    sp.align(0,2,'H')
     sp.align(0,2,'V')
 
     assert set() == set(sp.gen_solutions(max_solutions=100))
@@ -400,11 +447,52 @@ def test_align_order_transitive_fail():
     #
     # This only works if the 0,1 is an align top and 1,2 is an align bot and the size of block 1 is no less than the sum of block 0 and block 2
 
-    sp.order(0,1,'H')
-    sp.order(2,1,'H')
-    sp.align(0,2,'V')
+    sp.align(0,1,'H')
+    sp.align(2,1,'H')
+    sp.order(0,2,'V')
 
     assert set() == set(sp.gen_solutions(max_solutions=100))
+
+def test_align_order_transitive_fail_larger():
+    
+    #
+    # 0 <-> 1 < 2 <-> 3
+    #
+    #
+    #   +-------+      +-------+      +-------+      +-------+
+    #   |       |      |       |      |       |      |       |
+    # --|   0   |------|   1   |--  --|   2   |------|   3   |--
+    #   |       |      |       |      |       |      |       |
+    #   +-------+      +-------+      +-------+      +-------+
+    #
+    #  can 0 can be vertically related to 3 but
+    #      1 can not be vertically related to 2
+    #
+
+    sp = SeqPair(4)
+
+    sp.align(0,1,'H')
+    sp.order(1,2,'H')
+    sp.align(2,3,'H')
+
+    sp.order(1,2,'V')
+    #sp.order(0,3,'V')
+
+    sp2 = SeqPair(4)
+
+    sp2.align(0,1,'H')
+    sp2.order(1,2,'H')
+    sp2.align(2,3,'H')
+
+    sp2.align(1,2,'H')
+
+    sp2.order(1,2,'V')
+    #sp2.order(0,3,'V')
+
+    n  = len(set(sp.gen_solutions(max_solutions=10000)))
+    n2 = len(set(sp2.gen_solutions(max_solutions=10000)))
+
+    assert n == n2
 
 def test_abut_h_pass0():
     sp = SeqPair(3)
