@@ -67,7 +67,7 @@ def split_directions_and_merge(*rs):
 
 
 def gen_constraints_for_module(m, modules, leaves):
-    logger.info(f'gen_constraints_for_module: {m["concrete_name"]}')
+    logger.debug(f'gen_constraints_for_module: {m["concrete_name"]}')
     pog_constraints = []
     for instance in m['instances']:
         iname = instance['instance_name']

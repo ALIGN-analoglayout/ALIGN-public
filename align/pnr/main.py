@@ -202,7 +202,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     subckt = subckt.upper()
 
-    logger.info(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
+    logger.info(f"Running Place & Route for {subckt}")
+    logger.debug(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'

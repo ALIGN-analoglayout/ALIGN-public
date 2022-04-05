@@ -46,7 +46,7 @@ class ConstraintParser:
             if cf.stem.upper() == design_name + ".CONST"
         ]
         if json_path and json_path[0].is_file():
-            logger.info(f"Reading constraints for {design_name.lower()}")
+            logger.info(f"Reading constraint file: {json_path}")
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):
