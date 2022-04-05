@@ -93,10 +93,10 @@ class process_arrays:
             DESCRIPTION.
         """
         if not self.condition:
-            logger.info(f"auto-array generation set to false")
+            logger.debug(f"auto-array generation set to false")
             return
         elif self.is_digital:
-            logger.info(f'cant identify array in digital ckt {self.name}')
+            logger.debug(f'cant identify array in digital ckt {self.name}')
             return
 
         node_hier = {}
@@ -279,7 +279,7 @@ class process_arrays:
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
     # Create a subckt and add to library
-    logger.info(f"adding new array hierarchy {child_name} elements {elements}")
+    logger.info(f"Adding new array hierarchy {child_name} elements {elements}")
     if not pins_map:
         pins_map = {}
         G = Graph(parent)

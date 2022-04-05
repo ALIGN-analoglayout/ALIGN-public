@@ -59,7 +59,7 @@ def build_steps(flow_start, flow_stop):
                 assert enabled, f'Stopping flow before it started: {flow_start} {flow_stop}'
                 enabled = False
 
-    logger.info(f'Running flow steps {steps_to_run}')
+    logger.debug(f'Running flow steps {steps_to_run}')
 
     return steps_to_run
 
@@ -109,7 +109,7 @@ def start_viewer(working_dir, pnr_dir, variant):
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
     with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
         logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
-        logger.info('Please type Ctrl + C to continue')
+        logger.info('Please type Ctrl + C to stop viewer and continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
             try:
@@ -117,7 +117,6 @@ def start_viewer(working_dir, pnr_dir, variant):
             except KeyboardInterrupt:
                 pass
     sys.stderr = stderr
-    logger.info('Viewer terminated')
 
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
@@ -157,7 +156,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         else:
             subckt = subckt.upper()
 
-        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+        logger.info(f"Reading netlist: {netlist} subckt={subckt}, flat={flatten}")
 
         topology_dir.mkdir(exist_ok=True)
         primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)

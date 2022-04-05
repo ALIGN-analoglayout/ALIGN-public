@@ -131,7 +131,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
         for new_idx, old_idx in enumerate(sorted(cn_indices)):
             tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
 
-    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+    logger.debug(f'change_concrete_names_for_routing: {tr_tbl}')
 
     for module in scaled_placement_verilog_d['modules']:
         module['concrete_name'] = tr_tbl[module['concrete_name']]
