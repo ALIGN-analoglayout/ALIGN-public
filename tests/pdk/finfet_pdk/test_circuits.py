@@ -168,7 +168,6 @@ def test_ota_six_noconst():
     run_example(example, cleanup=CLEANUP)
 
 
-
 def test_ota_six():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_six(name)
@@ -259,7 +258,6 @@ def test_two_stage_ota():
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
-
 def test_cs_1():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -271,7 +269,6 @@ def test_cs_1():
     constraints = []
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False, log_level=LOG_LEVEL)
-
 
 
 def test_cs_2():
