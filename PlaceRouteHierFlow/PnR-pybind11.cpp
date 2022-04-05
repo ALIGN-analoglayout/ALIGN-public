@@ -491,9 +491,9 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
     .def_readwrite("max_init_trial_count", &PlacerHyperparameters::max_init_trial_count)
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
-    .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP)
-    .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer)
-    .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver)
+    .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP) // select variant of blocks in SA using ILP used for compaction
+    .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer) // Use ILP to place blocks instead of SA
+    .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     ;
