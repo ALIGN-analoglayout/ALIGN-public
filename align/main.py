@@ -109,7 +109,7 @@ def start_viewer(working_dir, pnr_dir, variant):
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
     with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
         logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
-        logger.info('Please type Ctrl + C to continue')
+        logger.info('Please type Ctrl + C to stop viewer and continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
             try:
