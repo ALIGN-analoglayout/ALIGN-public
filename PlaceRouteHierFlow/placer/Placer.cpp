@@ -117,8 +117,8 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
         }
         if (sel < 0) logger->error("instance_name: {0} concrete_template_name: {1} not found.", instance["instance_name"], instance["concrete_template_name"]);
         sp.selected[block_id] = sel;
-        Blocks[block_id].x = 2 * (int)instance["transformation"]["oX"];
-        Blocks[block_id].y = 2 * (int)instance["transformation"]["oY"];
+        Blocks[block_id].x = (int)instance["transformation"]["oX"];
+        Blocks[block_id].y = (int)instance["transformation"]["oY"];
         if (instance["transformation"]["sX"] == -1) {
           Blocks[block_id].H_flip = 1;
           Blocks[block_id].x -= nodeVec.back().Blocks[block_id].instance[sel].width;
