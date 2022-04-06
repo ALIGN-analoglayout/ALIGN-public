@@ -400,7 +400,7 @@ void GcellDetailRouter::create_detailrouter_new() {
           //grid.CreateGridData_new();
           get_internal_metal_via();
           generate_set_data(Set_x);
-          assert(0);
+          //assert(0);
          }
         
         std::vector<std::vector<RouterDB::Metal>> physical_path;

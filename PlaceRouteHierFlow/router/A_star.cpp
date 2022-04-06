@@ -1249,7 +1249,7 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path) {
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm_Sym");
 
-  int via_expand_effort = 100;
+  int via_expand_effort = 0;
   std::set<std::pair<int, int>, RouterDB::pairComp> L_list;
   std::set<int> close_set;
   std::pair<int, int> temp_pair;
@@ -1293,12 +1293,26 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       continue;
     }
 
-    close_set.insert(current_node);
+    //close_set.insert(current_node);
 
     // found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist = found_near_node(current_node, grid, candidate_node);
+
+    if(current_node==248){
+       for(auto it: candidate_node){
+          std::cout<<"expanded node "<<current_node<<" parents "<<grid.vertices_total[current_node].parent<<" "<<it<<" "<<grid.vertices_total[it].metal<<" "<<grid.vertices_total[it].x<<" "<<grid.vertices_total[it].y<<std::endl;
+       }
+    }
+
     erase_candidate_node(close_set, candidate_node);
+
+    if(current_node==248){
+       for(auto it: candidate_node){
+          std::cout<<"nodes after erase "<<current_node<<" parents "<<grid.vertices_total[current_node].parent<<" "<<it<<" "<<grid.vertices_total[it].metal<<" "<<grid.vertices_total[it].x<<" "<<grid.vertices_total[it].y<<std::endl;
+       }
+    }
+
     if (!near_node_exist) {
       continue;
     }
@@ -1319,6 +1333,12 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
 
     candidate_node = temp_candidate_node;
 
+    if(current_node==248){
+       for(auto it: candidate_node){
+          std::cout<<"nodes after parallel "<<current_node<<" parents "<<grid.vertices_total[current_node].parent<<" "<<it<<" "<<grid.vertices_total[it].metal<<" "<<grid.vertices_total[it].x<<" "<<grid.vertices_total[it].y<<std::endl;
+       }
+    }
+
     if (candidate_node.size() == 0) {
       // grid.vertices_total[current_node].Cost = INT_MAX;
       continue;
@@ -1333,7 +1353,8 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) +
                       abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) +
                       via_expand_effort * abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) + temp_candidate_cost[i];
-      if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
+      //if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
+      if (1) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
         int sym_factor = 0;
