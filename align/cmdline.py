@@ -133,6 +133,10 @@ class CmdlineParser():
                             action='store_true',
                             help='Use ILP to determine subcircuit selection.')
 
+        parser.add_argument('--place_using_ILP',
+                            action='store_true',
+                            help='Use ILP to determine subcircuit selection.')
+
         parser.add_argument('--use_analytical_placer',
                             action='store_true',
                             help='Use analytical placer.')
