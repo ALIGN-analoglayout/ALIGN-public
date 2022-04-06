@@ -12,6 +12,7 @@ skip_pdks = {'Bulk65nm_Mock_PDK',
 
 skip_dirs = {'Sanitized_model3x_MDLL_TOP',
              'OTA_FF_2s_v3e',
+             'five_transistor_ota_Bulk'
              'Sanitized_Coarse_SAR_Logic',
              'ADC_CORE',
              'GF65_DLL_sanitized',
