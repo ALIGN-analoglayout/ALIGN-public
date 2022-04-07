@@ -96,7 +96,7 @@ def gen_param(subckt, primitives, pdk_dir):
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]
-    logger.info(f"Getting generator parameters for: {block_name}")
+    logger.debug(f"Getting generator parameters for: {block_name}")
     if get_generator(block_name.lower(), pdk_dir):
         # Subcircuit defined in netlist DIG22INV  primitive
         attr = {'ports': list(subckt.pins),
