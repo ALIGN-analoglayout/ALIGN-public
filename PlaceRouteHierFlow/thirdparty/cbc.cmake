@@ -10,10 +10,14 @@ endif ()
 FetchContent_GetProperties(cbc_solver)
 if(NOT cbc_POPULATED)
   FetchContent_Populate(cbc_solver)
+  set (solver_search_path ${cbc_solver_SOURCE_DIR}/lib)
+  if (DEFINED ENV{AUDITWHEEL_PLAT})
+    set (solver_search_path ${cbc_solver_SOURCE_DIR}/$ENV{AUDITWHEEL_PLAT}/lib)
+  endif()
   find_library(
     ilp_solver_lib
     NAMES libILPSolverIf.a
-    PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    PATHS ${solver_search_path})
   if (NOT ilp_solver_lib)
     message(STATUS "Building CBC library from source.")
     add_subdirectory(${cbc_solver_SOURCE_DIR} ${cbc_solver_BINARY_DIR})
