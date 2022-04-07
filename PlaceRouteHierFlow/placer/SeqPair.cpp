@@ -788,14 +788,14 @@ bool SeqPair::KeepOrdering(design& caseNL) {
             if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
             auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
             auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
-            if (it1 < it2 &&
-                find(adj[alignblock.blocks[i]].begin(), adj[alignblock.blocks[i]].end(), alignblock.blocks[j]) == adj[alignblock.blocks[i]].end()) {
-              adj[alignblock.blocks[i]].push_back(alignblock.blocks[j]);
-              ind[alignblock.blocks[j]]++;
-            } else if (it1 > it2 &&
-                       find(adj[alignblock.blocks[j]].begin(), adj[alignblock.blocks[j]].end(), alignblock.blocks[i]) == adj[alignblock.blocks[j]].end()) {
-              adj[alignblock.blocks[j]].push_back(alignblock.blocks[i]);
-              ind[alignblock.blocks[i]]++;
+            int first_it = blockid2indexinvec[alignblock.blocks[i]];
+            int second_it = blockid2indexinvec[alignblock.blocks[j]];
+            if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+              adj[first_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it1 > it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+              adj[second_it].push_back(first_it);
+              ind[first_it]++;
             }
           }
         }
@@ -806,14 +806,14 @@ bool SeqPair::KeepOrdering(design& caseNL) {
             if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
             auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
             auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
-            if (it1 < it2 &&
-                find(adj[alignblock.blocks[j]].begin(), adj[alignblock.blocks[j]].end(), alignblock.blocks[i]) == adj[alignblock.blocks[j]].end()) {
-              adj[alignblock.blocks[j]].push_back(alignblock.blocks[i]);
-              ind[alignblock.blocks[i]]++;
-            } else if (it1 > it2 &&
-                       find(adj[alignblock.blocks[i]].begin(), adj[alignblock.blocks[i]].end(), alignblock.blocks[j]) == adj[alignblock.blocks[i]].end()) {
-              adj[alignblock.blocks[i]].push_back(alignblock.blocks[j]);
-              ind[alignblock.blocks[j]]++;
+            int first_it = blockid2indexinvec[alignblock.blocks[i]];
+            int second_it = blockid2indexinvec[alignblock.blocks[j]];
+            if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+              adj[second_it].push_back(first_it);
+              ind[first_it]++;
+            } else if (it1 > it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+              adj[first_it].push_back(second_it);
+              ind[second_it]++;
             }
           }
         }
