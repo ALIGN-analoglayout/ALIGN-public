@@ -1,45 +1,67 @@
 FetchContent_Declare(
-  cbc
-  URL https://www.coin-or.org/download/source/Cbc/Cbc-2.10.5.tgz
-  URL_HASH MD5=46277180c0fc67f750e2de1836333189
+  cbc_solver
+  GIT_REPOSITORY https://github.com/srini229/cbc_solver.git
 )
 include(ProcessorCount)
 ProcessorCount(N)
 if (N GREATER 8)
   set (N 8)
 endif ()
-message(STATUS "Building CBC library from source.")
-FetchContent_GetProperties(cbc)
+FetchContent_GetProperties(cbc_solver)
 if(NOT cbc_POPULATED)
-  FetchContent_Populate(cbc)
-  include(ExternalProject)
-  message(STATUS "Cbc src in ${cbc_SOURCE_DIR} ${cbc_BINARY_DIR}")
-  message(STATUS ${MAKE})
-  message(STATUS ${cbc_PREFIX_DIR})
-  ExternalProject_Add(cbc
-      SOURCE_DIR ${cbc_SOURCE_DIR}
-      CONFIGURE_COMMAND ${cbc_SOURCE_DIR}/configure --enable-cbc-parallel --enable-openmp --disable-zlib --disable-bzlib --without-blas --without-lapack --enable-static --disable-shared --with-pic --prefix=${cbc_BINARY_DIR}
-      BUILD_BYPRODUCTS ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Cgl${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Clp${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Cbc${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Osi${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}OsiCbc${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}OsiClp${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CoinUtils${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ClpSolver${CMAKE_STATIC_LIBRARY_SUFFIX} 
-        ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CbcSolver${CMAKE_STATIC_LIBRARY_SUFFIX} 
-      BUILD_COMMAND make -j${N}
-      BUILD_IN_SOURCE 1
-      )
-  set(cbc_LIBRARIES
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}OsiCbc${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CbcSolver${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Cbc${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Cgl${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}OsiClp${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}ClpSolver${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Clp${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}Osi${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${cbc_BINARY_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}CoinUtils${CMAKE_STATIC_LIBRARY_SUFFIX}
-    )
+  FetchContent_Populate(cbc_solver)
+  find_library(
+    ilp_solver_lib
+    NAMES libILPSolverIf.a
+    PATHS ${cbc_solver_SOURCE_DIR}/lib)
+  if (NOT ilp_solver_lib)
+    message(STATUS "Building CBC library from source.")
+    add_subdirectory(${cbc_solver_SOURCE_DIR} ${cbc_solver_BINARY_DIR})
+    target_include_directories(ILPSolverIf INTERFACE ${cbc_solver_SOURCE_DIR}/ILPSolverIf)
+    target_include_directories(ILPSolverIf INTERFACE ${cbc_solver_LIBRARY_DIR})
+    add_library(cbc_solver::cbc_solver ALIAS ILPSolverIf)
+  else()
+    message(STATUS "CBC lib found in ${ilp_solver_lib}")
+    add_library(ilp_solver_if STATIC IMPORTED)
+    add_library(cbc_if STATIC IMPORTED)
+    add_library(clp_if STATIC IMPORTED)
+    add_library(cgl_if STATIC IMPORTED)
+    add_library(osi_if STATIC IMPORTED)
+    add_library(osiclp_if STATIC IMPORTED)
+    add_library(osicbc_if STATIC IMPORTED)
+    add_library(coinutils_if STATIC IMPORTED)
+    add_library(clpsolver_if STATIC IMPORTED)
+    add_library(cbcsolver_if STATIC IMPORTED)
+    add_library(sym_if STATIC IMPORTED)
+    add_library(osisym_if STATIC IMPORTED)
+    set_property(TARGET ilp_solver_if PROPERTY IMPORTED_LOCATION ${ilp_solver_lib})
+    target_include_directories(ilp_solver_if INTERFACE ${cbc_solver_SOURCE_DIR}/ILPSolverIf)
+    target_include_directories(ilp_solver_if INTERFACE ${cbc_solver_SOURCE_DIR}/lib)
+    find_library(cbc_lib NAMES libCbc.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET cbc_if PROPERTY IMPORTED_LOCATION ${cbc_lib})
+    find_library(cbcsolver_lib NAMES libCbcSolver.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET cbcsolver_if PROPERTY IMPORTED_LOCATION ${cbcsolver_lib})
+    find_library(clp_lib NAMES libClp.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET clp_if PROPERTY IMPORTED_LOCATION ${clp_lib})
+    find_library(cgl_lib NAMES libCgl.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET cgl_if PROPERTY IMPORTED_LOCATION ${cgl_lib})
+    find_library(osi_lib NAMES libOsi.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET osi_if PROPERTY IMPORTED_LOCATION ${osi_lib})
+    find_library(osiclp_lib NAMES libOsiClp.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET osiclp_if PROPERTY IMPORTED_LOCATION ${osiclp_lib})
+    find_library(coinutils_lib NAMES libCoinUtils.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET coinutils_if PROPERTY IMPORTED_LOCATION ${coinutils_lib})
+    find_library(clpsolver_lib NAMES libClpSolver.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET clpsolver_if PROPERTY IMPORTED_LOCATION ${clpsolver_lib})
+    find_library(osicbc_lib NAMES libOsiCbc.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET osicbc_if PROPERTY IMPORTED_LOCATION ${osicbc_lib})
+    find_library(sym_lib NAMES libSym.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET sym_if PROPERTY IMPORTED_LOCATION ${sym_lib})
+    find_library(osisym_lib NAMES libOsiSym.a PATHS ${cbc_solver_SOURCE_DIR}/lib)
+    set_property(TARGET osisym_if PROPERTY IMPORTED_LOCATION ${osisym_lib})
+
+    add_library(cbc_solver INTERFACE)
+    target_link_libraries(cbc_solver INTERFACE ilp_solver_if sym_if osicbc_if cbcsolver_if cbc_if cgl_if osisym_if osiclp_if clpsolver_if clp_if osi_if coinutils_if)
+    add_library(cbc_solver::cbc_solver ALIAS cbc_solver)
+  endif()
 endif()

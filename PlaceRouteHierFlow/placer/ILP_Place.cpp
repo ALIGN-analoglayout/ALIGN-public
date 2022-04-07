@@ -3,8 +3,7 @@
 #include <stdexcept>
 
 #include "spdlog/spdlog.h"
-#include "CbcModel.hpp"
-#include "OsiClpSolverInterface.hpp"
+#include "ILPSolverIf.h"
 #include <signal.h>
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 #include <boost/graph/adjacency_list.hpp>
@@ -309,8 +308,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   // i*6+3:V_flip
   // i*6+4:Width
   // i*6+5:Height
-  OsiClpSolverInterface osiclp;
-  const double infty{osiclp.getInfinity()};
+  ILPSolverIf solverif;
+  const double infty{solverif.getInfinity()};
 
   std::vector<int> rowindofcol[N_var_max];
   std::vector<double> constrvalues[N_var_max];
@@ -1690,14 +1689,9 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
           break;
       }
     }
-    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        objective.data(), rhslb, rhsub);
-    for (int i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) {
-        osiclp.setInteger(i);
-      }
-    }
+        objective.data(), rhslb, rhsub, intvars.data());
 
     /*static int write_cnt{0};
     static std::string block_name;
@@ -1792,26 +1786,11 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
       ++write_cnt;
     }*/
-    CbcModel model(osiclp);
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      model.setLogLevel(0);
-      model.setMaximumSolutions(1000);
-      model.setMaximumSavedSolutions(1000);
-      model.setMaximumSeconds(300);
-      //model.setNumberHeuristics(0);
-      if (num_threads > 1 && CbcModel::haveMultiThreadSupport()) {
-        model.setNumberThreads(num_threads);
-        model.setMaximumSeconds(500 * num_threads);
-        const char* argv[] = {"", "-log", "0", "-threads", std::to_string(num_threads).c_str(), "-solve"};
-        status = CbcMain(6, argv, model);
-      } else {
-        const char* argv[] = {"", "-log", "0", "-solve"};
-        status = CbcMain(4, argv, model);
-      }
+      status = solverif.solve(num_threads);
     }
-    status = model.secondaryStatus();
     //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
     //const double* var = Cbc_bestSolution(model);
     if (status != 0) {
@@ -1822,11 +1801,11 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     //logger->info("obj : {0}", model.savedSolutionObjective(i));
     //std::vector<double> var(N_var, 0.);
     //sym_get_col_solution(env, var.data());
-    const int numsaved = model.numberSavedSolutions();
+    //const int numsaved = model.numberSavedSolutions();
     sighandler = signal(SIGINT, sighandler);
-    for (int i = 0;  i < numsaved; ++i) {
+    for (int i = 0;  i < 1; ++i) {
       //logger->info("obj : {0}", model.savedSolutionObjective(i));
-      const double* var = model.savedSolution(i);
+      const double* var = solverif.solution();
       if (!var) break;
       int minx(INT_MAX), miny(INT_MAX);
       area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
