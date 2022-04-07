@@ -73,16 +73,19 @@ def get_base_model(subckt, node):
 
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
-    graph = Graph(subckt)
+    # assert net in subckt.nets, f""
     conn = []
-    for nbr in graph.neighbors(net):
-        for pin in graph.get_edge_data(net, nbr)["pin"]:
-            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-            if isinstance(s, SubCircuit):
-                conn.extend(get_leaf_connection(s, pin))
-            else:
-                conn.append(pin)
+    if net in subckt.nets:
+        graph = Graph(subckt)
+        for nbr in graph.neighbors(net):
+            for pin in graph.get_edge_data(net, nbr)["pin"]:
+                s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
+                if isinstance(s, SubCircuit):
+                    conn.extend(get_leaf_connection(s, pin))
+                else:
+                    conn.append(pin)
+    else:
+        logger.debug(f"floating net {net} found in subckt {subckt.name} {subckt.nets}")
     return conn
 
 
@@ -132,9 +135,12 @@ def get_ports_weight(G):
     subckt = G.subckt
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
-        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
-        ports_weight[port] = set(sorted(leaf_conn))
+        # logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        # assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
+        if leaf_conn:
+            ports_weight[port] = set(sorted(leaf_conn))
+        else:
+            ports_weight[port] = {}
     return ports_weight
 
 
