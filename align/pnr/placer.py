@@ -303,11 +303,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
-        #
-        # Need to do this until we fix the PnR set placement code
-        #    scales by 1 if scale_factor is 1, by 10 if scale_factor is 10 (2* compenstates for the automatic divide by 2 in scale_placement_verilog)
-        #
-        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 2*scale_factor, invert=True)        
+        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor, invert=True)        
 
         modules = defaultdict(list)
         for m in hack_placement_verilog_d['modules']:
