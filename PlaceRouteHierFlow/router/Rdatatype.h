@@ -91,6 +91,7 @@ struct vertex {
   int y = -1;
   int metal = -1;
   int Cost = INT_MAX;
+  int reopen = 1;
   // int Cost = -1;
   bool active = false;
   bool via_active_down = true;

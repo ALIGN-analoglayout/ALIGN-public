@@ -1234,12 +1234,16 @@ std::vector<int> A_star::extend_manner_direction_check(std::vector<int> temp_pat
   return extend_index;
 };
 
-void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate) {
+void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate, Grid &grid) {
   std::vector<int> temp_candidate;
 
   for (unsigned int i = 0; i < candidate.size(); i++) {
     if (Close_set.find(candidate[i]) == Close_set.end()) {
       temp_candidate.push_back(candidate[i]);
+    }else if(grid.vertices_total[candidate[i]].reopen>0){
+      temp_candidate.push_back(candidate[i]);
+      grid.vertices_total[candidate[i]].reopen--;
+      Close_set.erase(candidate[i]);
     }
   }
 
@@ -1251,6 +1255,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
 
   int via_expand_effort = 0;
   std::set<std::pair<int, int>, RouterDB::pairComp> L_list;
+  std::set<int> open_set;
   std::set<int> close_set;
   std::pair<int, int> temp_pair;
 
@@ -1262,6 +1267,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
   // logger->debug("A star source info");
   for (int i = 0; i < (int)source.size(); i++) {
     src_index.insert(source[i]);
+    open_set.insert(source[i]);
     // logger->debug("Source {0} {1} {2} ", grid.vertices_total[source[i]].metal, grid.vertices_total[source[i]].x, grid.vertices_total[source[i]].y);
     close_set.insert(source[i]);
   }
@@ -1282,7 +1288,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
-
+    open_set.erase(current_node);
     // judge whether dest found Q2// judge whether dest works
     if (dest_index.find(current_node) != dest_index.end()) {
       bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index, dest_index);  // add pre_trace_back and extendtion check here?
@@ -1293,7 +1299,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       continue;
     }
 
-    //close_set.insert(current_node);
+    close_set.insert(current_node);
 
     // found the candidates nodes
     std::vector<int> candidate_node;
@@ -1305,7 +1311,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
        }
     }
 
-    erase_candidate_node(close_set, candidate_node);
+    erase_candidate_node(close_set, candidate_node, grid);
 
     if(current_node==248){
        for(auto it: candidate_node){
@@ -1353,8 +1359,9 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) +
                       abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) +
                       via_expand_effort * abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) + temp_candidate_cost[i];
-      //if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
-      if (1) {
+      if (open_set.find(candidate_node[i])==open_set.end()) {
+      //if (1) {
+        open_set.insert(candidate_node[i]);
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
         int sym_factor = 0;
@@ -1493,7 +1500,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm(Grid &grid, int left_up, 
     // found the candidates nodes
     std::vector<int> candidate_node;
     bool near_node_exist = found_near_node(current_node, grid, candidate_node);
-    erase_candidate_node(close_set, candidate_node);
+    erase_candidate_node(close_set, candidate_node, grid);
     if (!near_node_exist) {
       continue;
     }

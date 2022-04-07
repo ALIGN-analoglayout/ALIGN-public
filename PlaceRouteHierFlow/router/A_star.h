@@ -64,7 +64,7 @@ class A_star {
   int trace_back_node_parent(int current_node, Grid &grid, std::set<int> &source_index);
   std::vector<std::vector<int>> GetPath();
   bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
-  void erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate);
+  void erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate, Grid &grid);
   bool Pre_trace_back(Grid &grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
   void rm_cycle_path(std::vector<std::vector<int>> &Node_Path);
   void lable_father(Grid &grid, std::vector<std::vector<int>> &Node_Path);
