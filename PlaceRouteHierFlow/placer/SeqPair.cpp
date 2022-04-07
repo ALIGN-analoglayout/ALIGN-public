@@ -659,7 +659,7 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     adj.resize(blocks2sort.size());
     ind.resize(blocks2sort.size());
     for (const auto& b : blocks2sort) {
-      blocks_original_position.push_back(find(negPair.begin(), negPair.end(), b) - negPair.begin());
+      blocks_original_position.push_back(find(posPair.begin(), posPair.end(), b) - posPair.begin());
     }
     for (const auto& order : caseNL.Ordering_Constraints) {
       int first_it = blockid2indexinvec[order.first.first];
