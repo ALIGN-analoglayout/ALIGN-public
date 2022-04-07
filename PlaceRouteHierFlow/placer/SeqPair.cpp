@@ -629,7 +629,6 @@ bool SeqPair::ValidateSelect(design & caseNL){
   // }
   return true;
 }**/
-
 bool SeqPair::KeepOrdering(design& caseNL) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
 
@@ -678,6 +677,7 @@ bool SeqPair::KeepOrdering(design& caseNL) {
       int v = q.front();
       q.pop();
       blockid_after_sort.push_back(blocks2sort[v]);
+      std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
       for (auto& it : adj[v]) {
         ind[it]--;
         if (ind[it] == 0) q.push(it);
@@ -779,6 +779,46 @@ bool SeqPair::KeepOrdering(design& caseNL) {
         }
       }
     }
+    // check align_blocks
+    for (const auto& alignblock : caseNL.Align_blocks) {
+      if (alignblock.horizon) {
+        for (unsigned int i = 0; i < alignblock.blocks.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[i]) == blocks2sort.end()) continue;
+          for (unsigned int j = i + 1; j < alignblock.blocks.size(); j++) {
+            if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
+            auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
+            auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
+            if (it1 < it2 &&
+                find(adj[alignblock.blocks[i]].begin(), adj[alignblock.blocks[i]].end(), alignblock.blocks[j]) == adj[alignblock.blocks[i]].end()) {
+              adj[alignblock.blocks[i]].push_back(alignblock.blocks[j]);
+              ind[alignblock.blocks[j]]++;
+            } else if (it1 > it2 &&
+                       find(adj[alignblock.blocks[j]].begin(), adj[alignblock.blocks[j]].end(), alignblock.blocks[i]) == adj[alignblock.blocks[j]].end()) {
+              adj[alignblock.blocks[j]].push_back(alignblock.blocks[i]);
+              ind[alignblock.blocks[i]]++;
+            }
+          }
+        }
+      } else {
+        for (unsigned int i = 0; i < alignblock.blocks.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[i]) == blocks2sort.end()) continue;
+          for (unsigned int j = i + 1; j < alignblock.blocks.size(); j++) {
+            if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
+            auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
+            auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
+            if (it1 < it2 &&
+                find(adj[alignblock.blocks[j]].begin(), adj[alignblock.blocks[j]].end(), alignblock.blocks[i]) == adj[alignblock.blocks[j]].end()) {
+              adj[alignblock.blocks[j]].push_back(alignblock.blocks[i]);
+              ind[alignblock.blocks[i]]++;
+            } else if (it1 > it2 &&
+                       find(adj[alignblock.blocks[i]].begin(), adj[alignblock.blocks[i]].end(), alignblock.blocks[j]) == adj[alignblock.blocks[i]].end()) {
+              adj[alignblock.blocks[i]].push_back(alignblock.blocks[j]);
+              ind[alignblock.blocks[j]]++;
+            }
+          }
+        }
+      }
+    }
     for (unsigned int i = 0; i < blocks2sort.size(); i++) {
       int it = blockid2indexinvec[blocks2sort[i]];
       if (ind[it] == 0) q.push(it);
@@ -787,6 +827,7 @@ bool SeqPair::KeepOrdering(design& caseNL) {
       int v = q.front();
       q.pop();
       blockid_after_sort.push_back(blocks2sort[v]);
+      std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
       for (auto& it : adj[v]) {
         ind[it]--;
         if (ind[it] == 0) q.push(it);
