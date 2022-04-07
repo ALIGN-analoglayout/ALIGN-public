@@ -34,16 +34,16 @@ def test_floating_pin():
 def test_floating_power_pin():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
-    .subckt sw d g s vss vcc
+    .subckt sw d g s vss vcc fp1 fp2
     qn0 d g s vss n m=1 nf=4 w=180e-9
     qn1 d g s vss n m=2 nf=2 w=90e-9
     .ends sw
-    .subckt {name} d g s vccx vssx
-    xi<0> d g s vssx vccx sw
-    xi<1> d g s vssx vccx sw
-    xi<2> d g s vssx vccx sw
-    xi<3> d g s vssx vccx sw
-    xi<4> d g s vssx vccx sw
+    .subckt {name} d g s vccx vssx fp3 fp4
+    xi<0> d g s vssx vccx fp1 fp2 sw
+    xi<1> d g s vssx vccx fp1 fp2 sw
+    xi<2> d g s vssx vccx fp1 fp2 sw
+    xi<3> d g s vssx vccx fp1 fp2 sw
+    xi<4> d g s vssx vccx fp1 fp2 sw
     .ends {name}
     .END
     """)
