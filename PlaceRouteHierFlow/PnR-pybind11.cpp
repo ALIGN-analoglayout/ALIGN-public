@@ -496,6 +496,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
+    .def_readwrite("scale_factor", &PlacerHyperparameters::scale_factor)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

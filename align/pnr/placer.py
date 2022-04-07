@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 PLACER_SA_MAX_ITER = 1e4
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, scale_factor):
 
     logger.debug(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
@@ -46,6 +46,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.use_ILP_placer = place_using_ILP
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
+    hyper.scale_factor = scale_factor
+    
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
@@ -303,26 +305,20 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
-        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor, invert=True)        
-
         modules = defaultdict(list)
-        for m in hack_placement_verilog_d['modules']:
+        for m in placement_verilog_d['modules']:
             modules[m['abstract_name']].append(m)
 
     grid_constraints = {}
 
     for idx in DB.TraverseHierTree():
-
         json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
-
-        modules_d = None
-        if placement_verilog_d is not None:
-            modules_d = modules[DB.hierTree[idx].name]
+        modules_d = modules[DB.hierTree[idx].name] if placement_verilog_d is not None else None
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
-              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
+              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str, scale_factor=scale_factor)
 
         update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 

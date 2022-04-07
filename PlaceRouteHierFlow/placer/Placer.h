@@ -32,6 +32,8 @@ class Placer {
   // nodeSize, int effort, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   std::map<double, std::pair<SeqPair, ILP_solver>> PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
                                                                                 int nodeSize, int effort, PnRDB::Drc_info& drcInfo);
+  int scale_coord(int x, int mul, int div);
+
   void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
   void ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& spMap, int nodeSize);
   void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);

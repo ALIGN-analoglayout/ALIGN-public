@@ -66,6 +66,16 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   }
 }
 
+int Placer::scale_coord(int x, int mul, int div) {
+  auto logger = spdlog::default_logger()->clone("placer.Placer.scale_coord");
+
+  int numerator = mul*x;
+  if (numerator % div != 0) {
+    logger->error("Coordinate {0} not an integer after scaling by {1}/{2}", x, mul, div);
+  }
+  return numerator / div;
+}
+
 void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
   logger->debug("Calling setPlacementInfoFromJson");
@@ -93,6 +103,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
+
   for (const auto& m : modules) {
     if (m["abstract_name"] == designData.name) {
       string concrete_template_name = m["concrete_name"];
@@ -117,8 +128,8 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
         }
         if (sel < 0) logger->error("instance_name: {0} concrete_template_name: {1} not found.", instance["instance_name"], instance["concrete_template_name"]);
         sp.selected[block_id] = sel;
-        Blocks[block_id].x = (int)instance["transformation"]["oX"];
-        Blocks[block_id].y = (int)instance["transformation"]["oY"];
+        Blocks[block_id].x = scale_coord((int)instance["transformation"]["oX"], 2, hyper.scale_factor);
+        Blocks[block_id].y = scale_coord((int)instance["transformation"]["oY"], 2, hyper.scale_factor);
         if (instance["transformation"]["sX"] == -1) {
           Blocks[block_id].H_flip = 1;
           Blocks[block_id].x -= nodeVec.back().Blocks[block_id].instance[sel].width;
