@@ -19,7 +19,7 @@ class PostProcessor():
         assert len(rect) == 4 and all(isinstance(x, int) for x in rect), f'Invalid generator output {rect}'
 
     def run(self, terminals):
-        logger.info("Running PostProcessor...")
+        logger.debug("Running PostProcessor...")
         old_terminals = deepcopy(terminals)
         terminals = []
         for term in old_terminals:

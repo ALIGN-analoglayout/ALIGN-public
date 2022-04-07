@@ -26,7 +26,7 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
     if not model_statements.exists():
         logger.warning(f"Missing {model_statements}, only basic models will be used")
     else:
-        logger.info(f"Using model file from {model_statements}")
+        logger.debug(f"Using model file from {model_statements}")
         with open(model_statements, 'r') as f:
             lines = f.read()
         ckt_parser.parse(lines)

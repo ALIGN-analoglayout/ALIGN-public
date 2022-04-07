@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 PLACER_SA_MAX_ITER = 1e4
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
-    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
+    logger.debug(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
@@ -39,10 +39,11 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
     # hyper.COUNT_LIMIT = 200
-    # hyper.select_in_ILP = False
+    hyper.select_in_ILP = select_in_ILP
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
+    hyper.use_ILP_placer = place_using_ILP
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
@@ -297,9 +298,9 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
-                       placement_verilog_d, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
+                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives):
 
-    logger.info(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
+    logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
         #
@@ -323,7 +324,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
             modules_d = modules[DB.hierTree[idx].name]
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
 
@@ -340,7 +341,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
 def placer_driver(*, cap_map, cap_lef_s,
                   lambda_coeff, scale_factor,
-                  select_in_ILP, seed,
+                  select_in_ILP, place_using_ILP, seed,
                   use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir):
 
     fpath = toplevel_args_d['input_dir']
@@ -380,7 +381,7 @@ def placer_driver(*, cap_map, cap_lef_s,
                                                                                       verilog_d=verilog_d, lambda_coeff=lambda_coeff,
                                                                                       scale_factor=scale_factor,
                                                                                       placement_verilog_d=None,
-                                                                                      select_in_ILP=select_in_ILP, seed=seed,
+                                                                                      select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                                                                                       use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                                       primitives=primitives)
 

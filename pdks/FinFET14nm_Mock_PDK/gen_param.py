@@ -176,7 +176,13 @@ def gen_param(subckt, primitives, pdk_dir):
             block_args['stack'] = int(mvalues[device_name]["STACK"])
         if vt:
             block_args['vt_type'] = vt[0]
-        add_primitive(primitives, block_name, block_args)
+
+        if 'SCM' in block_name and int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
+            primitives[block_name] = block_args
+            primitives[block_name]['abstract_template_name'] = block_name
+            primitives[block_name]['concrete_template_name'] = block_name
+        else:
+            add_primitive(primitives, block_name, block_args)
     return True
 
 

@@ -2,7 +2,6 @@
 #include "Placer.h"
 
 #include "spdlog/spdlog.h"
-#define NUM_THREADS 8
 
 std::mt19937_64 Placer::_rng{0};
 
@@ -11,7 +10,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
   auto logger = spdlog::default_logger()->clone("placer.Placer");
   ReadPrimitiveOffsetPitch(nodeVec, drcInfo, hyper_in.place_on_grid_constraints_json);
   if (hyper.use_external_placement_info) {
-    logger->info("Requesting placement from JSON");
+    logger->debug("Requesting placement from JSON");
     // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
   }else{
@@ -69,7 +68,7 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
 
 void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
-  logger->info("Calling setPlacementInfoFromJson");
+  logger->debug("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
   design designData(nodeVec.back());
   int idx = 0;
@@ -226,6 +225,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   double mean_cache_miss{0};
   int num_perturb{0};
 
+  if (!curr_sp.Enumerate() && hyper.use_ILP_placer) {
+    logger->info("Placing using ILP");
+    oData = curr_sol.PlaceUsingILP(designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
+    if (!oData.empty()) {
+      ReshapeSeqPairMap(oData, nodeSize);
+      return oData;
+    }
+  }
+
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
     seed = hyper.SEED;
@@ -239,7 +247,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     if (hyper.select_in_ILP)
       curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
     else
-      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo);
+      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
 
     curr_sp.cacheSeq(designData);
 
@@ -312,7 +320,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       if (hyper.select_in_ILP)
         trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
       else
-        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo);
+        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
@@ -367,7 +375,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (num_perturb) mean_cache_miss /= num_perturb;
-  logger->info("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible,
+  logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible,
                mean_cache_miss);
 
   // Write out placement results
@@ -392,8 +400,8 @@ void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
 
 void Placer::ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& Map, int nodeSize) {
   int idx = 0;
-  std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it;
-  for (it = Map.begin(); it != Map.end(); ++it, ++idx) {
+  auto it = Map.begin();
+  for (; it != Map.end(); ++it, ++idx) {
     if (idx == nodeSize) {
       break;
     }
@@ -427,7 +435,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   // clock_t start, finish;
   // double   duration;
   // start = clock();
-  std::map<double, std::pair<SeqPair, ILP_solver>> spVec = PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
+  auto spVec = PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
   // logger->info("lpsolve time: {0}", duration);
@@ -438,7 +446,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     nodeVec.resize(nodeSize);
   }
   int idx = 0;
-  for (std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
+  for (auto it = spVec.begin(); it != spVec.end() and idx < nodeSize; ++it, ++idx) {
     // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     // vec_sol.ConstraintGraph(designData, it->second);
     // vec_sol.updateTerminalCenter(designData, it->second);

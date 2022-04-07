@@ -88,7 +88,7 @@ class ConstraintTranslator():
                 if value == old_value:
                     lst[i] = new_value
 
-        logger.info(f"update constraints of {name} :{remove_nodes} with {new_inst}")
+        logger.debug(f"update constraints of {name} :{remove_nodes} with {new_inst}")
         assert self.ckt_data.find(name), f"subckt {name} not found in graph"
         const_list = self.ckt_data.find(name).constraints
         for const in const_list:
