@@ -318,6 +318,16 @@ def test_order():
         ]
     assert not generate_sequence_pair(constraints, z3.Solver())
 
+def test_order_mixed():
+    constraints = [
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b"]},
+        ]
+    # Legal sequence pairs: 'ab ab' or 'ab ba'
+    #     a
+    #       b
+    assert generate_sequence_pair(constraints, z3.Solver())
+
 
 def test_align():
     constraints = [
