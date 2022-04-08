@@ -1028,10 +1028,11 @@ class SymmetricBlocks(HardConstraint):
                 c = 'y' if cls.direction == 'V' else 'x'
                 b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
                 b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
-                yield solver.And(
+                expression = solver.And(
                     solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
                     solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
                 )
+                yield expression
 
             # center lines of pairs should match along the direction
             if i == 0:
