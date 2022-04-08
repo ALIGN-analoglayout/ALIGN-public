@@ -11,15 +11,15 @@ ap.add_argument( "-g", "--gds",   type=str, default="", help='<gds.json file>')
 ap.add_argument( "-f", "--lef",   type=str, default="", help='<.lef file>')
 ap.add_argument( "-u", "--use_layers",   nargs="*", type=str, default=[], help='list of layers to add obstacles (all if empty)')
 args = ap.parse_args()
+if args.layers == "" or args.gds == "" or args.lef == "":
+  ap.print_help()
+  exit(0)
 print("layers.json   : ", args.layers)
 print("gds.json file : ", args.gds)
 print(".lef file     : ", args.lef)
 if args.use_layers:
   print ("layers        : ", args.use_layers)
 
-if args.layers == "" or args.gds == "" or args.lef == "":
-  ap.print_help()
-  exit(0)
 
 class Point:
   def __init__(self, x=None, y=None):
