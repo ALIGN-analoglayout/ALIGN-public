@@ -25,7 +25,7 @@ target_link_libraries(
      lpsolve::lpsolve55
      Boost::boost
      nlohmann_json::nlohmann_json
-     cbc_solver::cbc_solver
+     ilp_solver::ilp_solver
      )
 
 target_code_coverage(placer)
