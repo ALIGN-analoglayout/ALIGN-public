@@ -5,6 +5,21 @@ import sys
 import math
 import argparse
 
+ap = argparse.ArgumentParser()
+ap.add_argument( "-l", "--layers", type=str, default="", help='<layers.json>')
+ap.add_argument( "-g", "--gds",   type=str, default="", help='<gds.json file>')
+ap.add_argument( "-f", "--lef",   type=str, default="", help='<.lef file>')
+ap.add_argument( "-u", "--filter",   nargs="*", type=str, default=[], help='list of layers to add obstacles (all if empty)')
+args = ap.parse_args()
+print("layers.json   : ", args.layers)
+print("gds.json file : ", args.gds)
+print(".lef file     : ", args.lef)
+if args.filter:
+  print ("layers        : ", args.filter)
+
+if args.layer == "" or args.gds == "" or args.lef == "":
+  ap.print_help()
+  exit(0)
 
 class Point:
   def __init__(self, x=None, y=None):
@@ -56,19 +71,6 @@ class Rect:
     return tmpstr
 
 
-
-ap = argparse.ArgumentParser()
-ap.add_argument( "-l", "--layers", type=str, default="", help='<layers.json>')
-ap.add_argument( "-g", "--gds",   type=str, default="", help='<gds.json file>')
-ap.add_argument( "-f", "--lef",   type=str, default="", help='<.lef file>')
-ap.add_argument( "-u", "--use",   nargs="*", type=str, default=[], help='list of layers to add obstacles (all if empty)')
-args = ap.parse_args()
-print("layers.json   : ", args.layers)
-print("gds.json file : ", args.gds)
-print(".lef file     : ", args.lef)
-if args.use:
-  print ("layers        : ", args.use)
-
 layerData = dict()
 layers = set()
 if (args.layers):
@@ -79,9 +81,6 @@ if (args.layers):
         if "Layer" in layer and "GdsLayerNo" in layer:
           layerData[layer["GdsLayerNo"]] = layer["Layer"]
           layers.add(layer["Layer"])
-
-#for x in layerData:
-#  print(x, layerData[x])
 
 gdsUnits = 1
 layerRects = dict()
@@ -184,7 +183,7 @@ if (args.lef):
             if pinRects and layerRects:
               ofile.write("  OBS\n")
               for l in layerRects:
-                if args.use and (l not in args.use):
+                if args.filter and (l not in args.filter):
                   continue
                 for r in layerRects[l]:
                   overlap = False
