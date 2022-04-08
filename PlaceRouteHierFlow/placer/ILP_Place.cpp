@@ -1777,13 +1777,15 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       for (unsigned i = 0; i < namesvec.size(); ++i) {
         if (namesvec[i].empty()) namesvec[i] = "x_" + std::to_string(i) + "\0";
         names[i] = &(namesvec[i][0]);
-        osiclp.setColName(i, names[i]);
       }
       
+      std::vector<std::string> rownamesvec(rhs.size());
+      char* rownames[rhs.size()];
       for (unsigned i = 0; i < rhs.size(); ++i) {
-        osiclp.setRowName(i, ( (i < rowtype.size() ? rowtype[i] : 'f') + std::to_string(i)).c_str());
+        rownamesvec[i] = ((i < rowtype.size() ? rowtype[i] : 'f') + std::to_string(i) + "\0");
+        rownames[i] = &(rownamesvec[i][0]);
       }
-      osiclp.writeLp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()));
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()), names, rownames);
       ++write_cnt;
     }*/
     int status{0};
