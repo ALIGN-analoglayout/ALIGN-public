@@ -46,6 +46,7 @@ pycharm/
 **/*.dot
 **/*.json
 **/*.lef
+**/*.placement_lef
 # Exclude files based on ALIGN naming conventions
 **/*_cand
 **/*.pl

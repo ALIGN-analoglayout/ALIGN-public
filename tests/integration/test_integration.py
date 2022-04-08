@@ -12,18 +12,14 @@ skip_pdks = {'Bulk65nm_Mock_PDK',
 
 skip_dirs = {'Sanitized_model3x_MDLL_TOP',
              'OTA_FF_2s_v3e',
+             'five_transistor_ota_Bulk',
              'Sanitized_Coarse_SAR_Logic',
              'ADC_CORE',
              'GF65_DLL_sanitized',
-             'Sanitized_5b_ADC',
              'Sanitized_CDAC_SW_Coarse',
-             'Sanitized_DLPF_RCFilter',
-             'Sanitized_TempSensor',
              'CTDTDSM_V3',
              'single_SAR',
              'Sanitized_civiR_DLDO_TOP',
-             'Sanitized_TX_8l12b',
-             'Santized_12b_ADC_TOP',
              'Sanitized_LevelCrossingDetector',
              'Sanitized_CK_Divider8',
              'mimo_bulk'}
@@ -32,6 +28,12 @@ skip_dirs = {'Sanitized_model3x_MDLL_TOP',
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
 pdks = [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() if pdk.is_dir() and pdk.name not in skip_pdks]
+
+
+@pytest.fixture
+def placer_max_iter(monkeypatch):
+    # Reduce number of iterations to speed up tests
+    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 100)
 
 
 def gen_examples():
@@ -52,8 +54,8 @@ def gen_examples():
         print(additional_skip_dirs)
 
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs and x not in additional_skip_dirs
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs and x not in additional_skip_dirs
                     for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'checkin':
         circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator"
@@ -66,8 +68,8 @@ def gen_examples():
 
         print(restricted_directories)
         examples = [p.parents[0]
-            for p in examples_dir.rglob('*.sp')
-                if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
                     and any(x in restricted_directories for x in p.relative_to(examples_dir).parts)]
     elif ci_level == 'all':
         pass
@@ -81,7 +83,7 @@ def gen_examples():
 @pytest.mark.nightly
 @pytest.mark.parametrize("design_dir", gen_examples(), ids=lambda x: x.name)
 @pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
-def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
+def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_max_iter):
     uid = os.environ.get('PYTEST_CURRENT_TEST')
     uid = uid.split(' ')[0].split(':')[-1].replace('[', '_').replace(']', '').replace('-', '_')
     run_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / uid

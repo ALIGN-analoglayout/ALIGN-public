@@ -1,6 +1,7 @@
 from align.primitive.default.canvas import DefaultCanvas
 from align.cell_fabric.generators import *
 from align.cell_fabric.grid import *
+from math import floor
 
 import logging
 logger = logging.getLogger(__name__)
@@ -41,10 +42,6 @@ class MOSGenerator(DefaultCanvas):
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
                                       spg=SingleGrid( offset=0, pitch=unitCellLength)))
-
-        self.fin_diff = self.addGen( Wire( 'fin_diff', 'Fin', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
-                                      spg=SingleGrid( offset=0, pitch=self.pdk['Poly']['Pitch']))) 
 
         stoppoint = ((self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset'])*(1-self.shared_diff)
         self.active = self.addGen( Wire( 'active', 'Active', 'h',
@@ -135,9 +132,12 @@ class MOSGenerator(DefaultCanvas):
                                     WidthY=self.pdk['V0']['WidthY']))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
-        v0pitch = 3*self.pdk['Fin']['Pitch']
-        v0Offset = ((self.finDummy+3)//2)*self.pdk['M2']['Pitch'] 
-        for i in range((activeWidth-2*self.pdk['M2']['Pitch']) // v0pitch + 1):
+        v0pitch = self.pdk['V0']['WidthY'] + self.pdk['V0']['SpaceY']
+        v0Offset = activeOffset - activeWidth//2 + self.pdk['V0']['VencA_L'] + self.pdk['V0']['WidthY']//2
+        v0_number = floor((activeWidth-2*self.pdk['V0']['VencA_L']-self.pdk['V0']['WidthY'])/v0pitch + 1)
+        assert v0_number > 0, "V0 can not be placed in the active region"
+        v0_number = v0_number if v0_number < 4 else v0_number - 1 ## To avoid voilation of V0 enclosure by M1 DRC
+        for i in range(v0_number):
             self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
         info = self.pdk['V0']
@@ -366,12 +366,14 @@ class MOSGenerator(DefaultCanvas):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
         #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin) 
+        self.addRegion( self.nselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell)
+        if self.bodyswitch==1:self.addRegion( self.pselect, None, (0, -1), y_cells* self.finsPerUnitCell, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
 
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell)
+        if self.bodyswitch==1:self.addRegion( self.nselect, None, (0, -1), y_cells* self.finsPerUnitCell, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
         self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)

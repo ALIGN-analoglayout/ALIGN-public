@@ -59,32 +59,33 @@ def get_next_level(subckt, G, tree_l1):
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
     cm = subckt.get_element(node).model
-    if cm in ["NMOS", "PMOS", "RES", "CAP"]:
-        base_model = cm
-    elif subckt.parent.find(cm):
-        sub_subckt = subckt.parent.find(cm)
-        if isinstance(sub_subckt, SubCircuit) and len(sub_subckt.elements) == 1:
-            base_model = get_base_model(sub_subckt, sub_subckt.elements[0].name)
-        elif isinstance(sub_subckt, Model):
-            base_model = subckt.parent.find(cm).base
-        else:
-            base_model = sub_subckt.name + '_'.join([param+'_'+value for param, value in sub_subckt.parameters.items()])
+    model_def = subckt.parent.find(cm)
+    assert model_def
+    if isinstance(model_def, SubCircuit) and len(model_def.elements) == 1:
+        base_model = get_base_model(model_def, model_def.elements[0].name)
+    elif isinstance(model_def, Model) and not isinstance(model_def, SubCircuit):
+        base_model = subckt.parent.find(cm).base
+        if not base_model:
+            base_model = cm
     else:
-        logger.warning(f"invalid device {node}")
+        base_model = cm
     return base_model
 
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
-    graph = Graph(subckt)
+    # assert net in subckt.nets, f""
     conn = []
-    for nbr in graph.neighbors(net):
-        for pin in graph.get_edge_data(net, nbr)["pin"]:
-            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-            if isinstance(s, SubCircuit):
-                conn.extend(get_leaf_connection(s, pin))
-            else:
-                conn.append(pin)
+    if net in subckt.nets:
+        graph = Graph(subckt)
+        for nbr in graph.neighbors(net):
+            for pin in graph.get_edge_data(net, nbr)["pin"]:
+                s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
+                if isinstance(s, SubCircuit):
+                    conn.extend(get_leaf_connection(s, pin))
+                else:
+                    conn.append(pin)
+    else:
+        logger.debug(f"floating net {net} found in subckt {subckt.name} {subckt.nets}")
     return conn
 
 
@@ -134,12 +135,12 @@ def get_ports_weight(G):
     subckt = G.subckt
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
-        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        if len(leaf_conn) == 0:
-            logger.warning(f"floating port:{port} in subckt {subckt.name}")
-            ports_weight[port] = None
-        else:
+        # logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        # assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
+        if leaf_conn:
             ports_weight[port] = set(sorted(leaf_conn))
+        else:
+            ports_weight[port] = {}
     return ports_weight
 
 

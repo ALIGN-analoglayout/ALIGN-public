@@ -1,5 +1,6 @@
 import abc
 import more_itertools as itertools
+import itertools as plain_itertools
 import re
 import logging
 
@@ -38,6 +39,11 @@ def validate_instances(cls, value):
 
 def upper_case(cls, value):
     return [v.upper() for v in value]
+
+
+def assert_non_negative(cls, value):
+    assert value >= 0, f'Value must be non-negative: {value}'
+    return value
 
 
 class SoftConstraint(types.BaseModel):
@@ -88,7 +94,8 @@ class UserConstraint(HardConstraint, abc.ABC):
 
     def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.translate(solver)
+            if isinstance(constraint, HardConstraint):
+                yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
@@ -112,7 +119,7 @@ class Order(HardConstraint):
             :obj:`'top_to_bottom'`, placement order is top to bottom.
 
             :obj:`None`: default (:obj:`'horizontal'` or :obj:`'vertical'`)
-        abut (bool, optional): If `abut` is `True` adjoining instances will touch
+        abut (bool, optional): If `abut` is `true` adjoining instances will touch
 
     .. image:: ../images/OrderBlocks.PNG
         :align: center
@@ -131,7 +138,7 @@ class Order(HardConstraint):
         'left_to_right', 'right_to_left',
         'bottom_to_top', 'top_to_bottom'
     ]]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -441,10 +448,7 @@ class AspectRatio(HardConstraint):
     ratio_high: float = 10
     weight: int = 1
 
-    @types.validator('ratio_low', allow_reuse=True)
-    def ratio_low_validator(cls, value):
-        assert value >= 0, f'AspectRatio:ratio_low should be greater than zero {value}'
-        return value
+    _ratio_low_validator = types.validator('ratio_low', allow_reuse=True)(assert_non_negative)
 
     @types.validator('ratio_high', allow_reuse=True)
     def ratio_high_validator(cls, value, values):
@@ -474,15 +478,8 @@ class Boundary(HardConstraint):
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
-    @types.validator('max_width', allow_reuse=True)
-    def max_width_validator(cls, value):
-        assert value >= 0, f'Boundary:max_width should be greater than zero {value}'
-        return value
-
-    @types.validator('max_height', allow_reuse=True)
-    def max_height_validator(cls, value):
-        assert value >= 0, f'Boundary:max_height should be greater than zero {value}'
-        return value
+    _max_width = types.validator('max_width', allow_reuse=True)(assert_non_negative)
+    _max_height = types.validator('max_height', allow_reuse=True)(assert_non_negative)
 
     def translate(self, solver):
         bvar = solver.bbox_vars('subcircuit')
@@ -591,7 +588,7 @@ class AlignInOrder(UserConstraint):
         'center'
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -627,12 +624,76 @@ class AlignInOrder(UserConstraint):
             )
 
 
+class Floorplan(UserConstraint):
+    '''
+    Row-based layout floorplan from top to bottom
+    Instances on each row are ordered from left to right.
+
+    Example: Define three regions and assign each instance to a region:
+        {"constraint":"Floorplan", "regions": [["A", "B", "C"], ["D", "E"], ["G"], "order": true}
+
+        -----
+        A B C
+        -----
+        D E
+        -----
+        G
+        -----
+    '''
+    regions: List[List[str]]
+    order: bool = False
+    symmetrize: bool = False
+
+    @types.validator('regions', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        new_rows = list()
+        for row in value:
+            new_rows.append(validate_instances(cls, row))
+        return new_rows
+
+    def yield_constraints(self):
+        above_below = set()
+        with set_context(self._parent):
+            logger.debug("=== Floorplan ========================")
+            # Regions from top to bottom
+            logger.debug("===========================")
+            for i in range(len(self.regions)-1):
+                for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
+                    logger.debug(f'Above:{above} Below:{below}')
+                    above_below.add((above, below))
+                    assert (below, above) not in above_below, \
+                        f'Please review floorplan constraint:\n{self.regions}.\n{below} is previously placed above {above}.'
+                    yield Order(instances=[above, below], direction='top_to_bottom', abut=False)
+            # Order instances in each region from left to right
+            if self.order:
+                logger.debug("===========================")
+                for region in self.regions:
+                    logger.debug(f'Order left to right: {region}')
+                    if len(region) > 1:
+                        yield Order(instances=region, direction='left_to_right', abut=False)
+            # Symmetrize instances along a single vertical line
+            if self.symmetrize:
+                logger.debug("===========================")
+                pairs = list()
+                for region in self.regions:
+                    if len(region) <= 2:
+                        pairs.append(region)
+                    else:
+                        for i in range(len(region)//2):
+                            pairs.append([region[i], region[-1-i]])
+                        if len(region) % 2 == 1:
+                            pairs.append([region[i+1]])
+                logger.debug(f'Symmetric blocks:\n{pairs}')
+                yield SymmetricBlocks(pairs=pairs, direction='V')
+
+
 #
 # list of 'SoftConstraint'
 #
 # Below is a list of legacy constraints
 # that have not been hardened yet
 #
+
 
 class PlaceSymmetric(SoftConstraint):
     # TODO: Finish implementing this. Not registered to
@@ -730,11 +791,12 @@ class CreateAlias(SoftConstraint):
     name: str
 
 
-class MatchBlocks(SoftConstraint):
+class PlaceCloser(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
+        `instances` are preferred to be placed closer.
     '''
     instances: List[str]
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
 class PowerPorts(SoftConstraint):
@@ -819,173 +881,65 @@ class DoNotUseLib(SoftConstraint):
         }
     '''
     libraries: List[str]
-    propagate: Optional[bool]
+    propagate: bool = False
 
 
-class IsDigital(SoftConstraint):
+class ConfigureCompiler(SoftConstraint):
     '''
-    Place this hierarchy as a digital hierarchy
-    Forbids any preprocessing, auto-annotation,
-    array-identification or auto-constraint generation
-
+    Compiler default optimization flags
     Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
+        is_digital(bool): true/false
+        auto_constraint(bool): true/false
+        identify_array(bool): true/false
+        fix_source_drain(bool): true/false
+        remove_dummy_hierarchies(bool): true/false
+        merge_series_devices(bool): true/false
+        merge_parallel_devices(bool): true/false
 
     Example: ::
 
         {
-            "constraint": "IsDigital",
-            "isTrue": True,
-            "propagate": False
+            "constraint": "ConfigureCompiler",
+            "is_digital": true,
+            "remove_dummy_hierarchies": true,
+            "propagate": true
         }
     '''
-    isTrue: bool
-    propagate: Optional[bool]
+    is_digital: bool = False  # Annotation and auto-constraint generation
+    auto_constraint: bool = True  # Auto-constraint generation
+    identify_array: bool = True  # Forbids/Allow any array identification
+    fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
+    remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
+    merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
+    merge_parallel_devices: bool = True  # Merge parallel devices
+    propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
-class AutoConstraint(SoftConstraint):
+class Generator(SoftConstraint):
     '''
-    Forbids/Allow any auto-constraint generation
-
+    Used to guide primitive generator.
     Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
+        name(str): name of genrator e.g., mos/cap/res/ring
+        parameters(dict): {
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
+                            parallel_wires (dict): {net_name:2}
+                            body (bool): true/ false
+                            }
 
     Example: ::
 
         {
-            "constraint": "AutoConstraint",
-            "isTrue": True,
-            "propagate": False
+            "constraint": "Generator",
+            "name": "mos",
+            "parameters : {
+                            "pattern": "cc",
+                            "parallel_wires": {"net1":2, "net2":2},
+                            "body": true
+                            }
         }
     '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class IdentifyArray(SoftConstraint):
-    '''
-    Forbids/Alow any array identification
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "IdentifyArray",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class AutoGroupCaps(SoftConstraint):
-    '''
-    Forbids/Allow creation of arrays for symmetric caps
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoGroupCaps",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class FixSourceDrain(SoftConstraint):
-    '''
-    Forbids auto checking of source/drain terminals of transistors.
-    If `True`, Traverses from power to ground and vice-versa to
-    ensure (drain of NMOS/ source of PMOS) is at higher potential.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "FixSourceDrain",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class KeepDummyHierarchies(SoftConstraint):
-    '''
-    Removes any single instance hierarchies.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "KeepDummyHierarchies",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeSeriesDevices(SoftConstraint):
-    '''
-    Allow stacking of series devices
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeSeriesDevices",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeParallelDevices(SoftConstraint):
-    '''
-    Allow merging of parallel devices.
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeParallelDevices",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
+    name: Optional[str]
+    parameters: Optional[dict]
 
 
 class DoNotIdentify(SoftConstraint):
@@ -1006,7 +960,7 @@ class SymmetricBlocks(SoftConstraint):
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
         direction (str) : Direction for axis of symmetry.
-        mirrot (bool) : True/ False, Mirror instances along line of symmetry
+        mirrot (bool) : true/ false, Mirror instances along line of symmetry
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -1031,7 +985,7 @@ class SymmetricBlocks(SoftConstraint):
         Align(1, X, Y, 6, 'center')
 
         '''
-        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
@@ -1194,7 +1148,7 @@ class GroupCaps(SoftConstraint):
             "name" : "cap_group1",
             "instances" : ["C0", "C1", "C2"],
             "num_units" : [2, 4, 8],
-            "dummy" : True
+            "dummy" : true
         }
     '''
     name: str  # subcircuit name
@@ -1202,6 +1156,18 @@ class GroupCaps(SoftConstraint):
     unit_cap: str  # cap value in fF
     num_units: List
     dummy: bool  # whether to fill in dummies
+
+
+class NetPriority(SoftConstraint):
+    """
+    Specify a non-negative priority for a list of nets for placement (default = 1).
+    Example: {"constraint": "NetPriority", "nets": ["en", "enb"], "priority": 0}
+    """
+    nets: List[str]
+    weight: int
+
+    _weight = types.validator('weight', allow_reuse=True)(assert_non_negative)
+    _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
 
 
 class NetConst(SoftConstraint):
@@ -1320,7 +1286,7 @@ class DoNotRoute(SoftConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align,
+    Order, Align, Floorplan,
     Enclose, Spread,
     AssignBboxVariables,
     AspectRatio,
@@ -1330,10 +1296,11 @@ ConstraintType = Union[
     # Legacy Align constraints
     # (SoftConstraints)
     CompactPlacement,
+    Generator,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
-    MatchBlocks,
+    PlaceCloser,
     DoNotIdentify,
     PlaceOnGrid,
     BlockDistance,
@@ -1352,14 +1319,8 @@ ConstraintType = Union[
     GroundPorts,
     ClockPorts,
     DoNotUseLib,
-    IsDigital,
-    AutoConstraint,
-    AutoGroupCaps,
-    FixSourceDrain,
-    KeepDummyHierarchies,
-    MergeSeriesDevices,
-    MergeParallelDevices,
-    IdentifyArray
+    ConfigureCompiler,
+    NetPriority
 ]
 
 
@@ -1398,6 +1359,9 @@ class ConstraintDB(types.List[ConstraintType]):
                 super().append(x)
 
     def checkpoint(self):
+        if self.parent._checker is None:
+            self.parent.verify()
+
         self.parent._checker.checkpoint()
         return super().checkpoint()
 

@@ -28,6 +28,16 @@ using std::string;
 using std::swap;
 using std::vector;
 
+struct VectorHasher {
+    int operator()(const vector<int> &V) const {
+        int hash = V.size();
+        for(auto &i : V) {
+            hash ^= i + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        }
+        return hash;
+    }
+};
+
 class OrderedEnumerator {
   private:
   vector<vector<int>> _sequences;
@@ -41,7 +51,7 @@ class OrderedEnumerator {
 
   public:
   OrderedEnumerator(const vector<int>& seq, const vector<pair<pair<int, int>, placerDB::Smark>>& constraints, const int _maxSeq, const bool pos = true);
-  bool NextPermutation(vector<int>& seq);
+  void NextPermutation(vector<int>& seq, const int i) { seq = _sequences[i % _sequences.size()]; }
   void print();
   bool valid() const { return _valid; }
   size_t NumSequences() const { return _sequences.size(); }
@@ -74,7 +84,7 @@ class SeqPairEnumerator {
 };
 
 class SeqPair {
-  private:
+  public:
   friend class ILP_solver;
   friend class ExtremeBlocksOfNet;
   friend class Placer;
@@ -89,7 +99,6 @@ class SeqPair {
   bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
   vector<int> GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L);
   vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
-  void InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx);
   void InsertNewSBlock(design& originNL, int originIdx);
 
   public:
@@ -99,25 +108,12 @@ class SeqPair {
   SeqPair(const SeqPair& sp);
   SeqPair(design& caseNL, const size_t maxIter = 0);
   SeqPair& operator=(const SeqPair& sp);
-  SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
   static size_t Factorial(const size_t& t);
   bool Enumerate() const { return _seqPairEnum ? true : false; }
   const bool EnumExhausted() const { return _seqPairEnum ? _seqPairEnum->EnumExhausted() : false; }
-  vector<int> GetBlockIndex(int blockNo);
-  vector<int> GetRightBlock(int blockNo);
-  vector<int> GetLeftBlock(int blockNo);
-  vector<int> GetAboveBlock(int blockNo);
-  vector<int> GetBelowBlock(int blockNo);
-  placerDB::Omark GetBlockOrient(int blockNo);
   void PrintSeqPair();
-  void PrintSeqPair(const design& caseNL) const;
+  void PrintVec(const string& tag, const vector<int>& vec);
   void SameSelected(design& caseNL);
-  void ChangeOrient(int blockNo, placerDB::Omark ort);
-  void FlipOrient(int blockNo);
-  void AdjustOrient(int blockNo, placerDB::Omark ort);
-  void SwitchSingleSequence(int b1, int b2, bool flag);
-  void SwitchDoubleSequence(int b1, int b2);
-  bool FastInitialScan(design& caseNL);
   placerDB::Smark GetSymmBlockAxis(int SBidx);
   bool MoveAsymmetricBlockposPair(design& caseNL);
   bool MoveAsymmetricBlocknegPair(design& caseNL);
@@ -125,18 +121,14 @@ class SeqPair {
   bool SwapTwoBlocksofSameGroup(design& caseNL);
   bool SwapMultiBlocksofSameGroup(design& caseNL);
   bool SwapTwoSymmetryGroup(design& caseNL);
-  bool ChangeAsymmetricBlockOrient(design& caseNL);
-  bool RotateSymmetryGroup(design& caseNL);
-  bool ChangeSymmetryGroupOrient(design& caseNL);
-  bool ChangeSymmetryBlockOrient(design& caseNL);
-  void Perturbation(design& caseNL);
   bool PerturbationNew(design& caseNL);
   bool CheckAlign(design& caseNL);
   bool CheckSymm(design& caseNL);
   void TestSwap();
   int GetBlockSelected(int blockNo);
   bool ChangeSelectedBlock(design& caseNL);
-  void KeepOrdering(design& caseNL);
+  bool KeepOrdering(design& caseNL);
+  //bool ValidateSelect(design& caseNL);
   void CompactSeq();
 
   std::string getLexIndex(design& des) const;

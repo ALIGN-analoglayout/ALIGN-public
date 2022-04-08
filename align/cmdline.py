@@ -120,11 +120,6 @@ class CmdlineParser():
                             default=1.0,
                             help='Multiplier for hpwl in placer cost function.')
 
-        parser.add_argument('--reference_placement_verilog_json',
-                            type=str,
-                            default=None,
-                            help='JSON file for adding a reference placement to GUI.')
-
         parser.add_argument('--nroutings',
                             type=int,
                             default=1,
@@ -135,6 +130,10 @@ class CmdlineParser():
                             help='Start lightweight viewer.')
 
         parser.add_argument('--select_in_ILP',
+                            action='store_true',
+                            help='Use ILP to determine subcircuit selection.')
+
+        parser.add_argument('--place_using_ILP',
                             action='store_true',
                             help='Use ILP to determine subcircuit selection.')
 

@@ -26,14 +26,11 @@ def preprocess_stack_parallel(ckt_data, design_name):
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
-                if isinstance(const, constraint.IsDigital):
-                    IsDigital = const.isTrue
-                elif isinstance(const, constraint.FixSourceDrain):
-                    FixSourceDrain = const.isTrue
-                elif isinstance(const, constraint.MergeSeriesDevices):
-                    MergeSeriesDevices = const.isTrue
-                elif isinstance(const, constraint.MergeParallelDevices):
-                    MergeParallelDevices = const.isTrue
+                if isinstance(const, constraint.ConfigureCompiler):
+                    IsDigital = const.is_digital
+                    FixSourceDrain = const.fix_source_drain
+                    MergeSeriesDevices = const.merge_series_devices
+                    MergeParallelDevices = const.merge_parallel_devices
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -50,29 +47,27 @@ def preprocess_stack_parallel(ckt_data, design_name):
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
-
+    # Remove dummy hiearachies by design tree traversal from design top
     if isinstance(top, SubCircuit):
         IsDigital = False
-        KeepDummyHierarchies = False
+        RemoveDummyHierarchies = True
         for const in top.constraints:
-            if isinstance(const, constraint.IsDigital):
-                IsDigital = const.isTrue
-            elif isinstance(const, constraint.KeepDummyHierarchies):
-                KeepDummyHierarchies = const.isTrue
-        if not IsDigital:
-            if not KeepDummyHierarchies:
-                # remove single instance subcircuits
-                dummy_hiers = list()
-                find_dummy_hier(ckt_data, top, dummy_hiers)
-                if len(dummy_hiers) > 0:
-                    logger.info(f"Removing dummy hierarchies {dummy_hiers}")
-                    remove_dummies(ckt_data, dummy_hiers, top.name)
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = const.is_digital
+                RemoveDummyHierarchies = const.remove_dummy_hierarchies
+        if not IsDigital and RemoveDummyHierarchies:
+            # remove single instance subcircuits
+            dummy_hiers = list()
+            find_dummy_hier(ckt_data, top, dummy_hiers)
+            if len(dummy_hiers) > 0:
+                logger.debug(f"Found dummy hierarchies {dummy_hiers}")
+                remove_dummies(ckt_data, dummy_hiers, top.name)
 
 
 def remove_dummies(library, dummy_hiers, top):
     for dh in dummy_hiers:
         if dh == top:
-            logger.debug("Cant delete top hierarchy {top}")
+            logger.debug(f"Cant delete top hierarchy {top}")
             return
         ckt = library.find(dh)
         assert ckt, f"No subckt with name {dh} found"
@@ -91,7 +86,7 @@ def remove_dummies(library, dummy_hiers, top):
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
                             ele = other_ckt.get_element(x)
-                            assert ele
+                            assert ele, f"{ele} not found in {other_ckt.name}"
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
@@ -103,17 +98,12 @@ def remove_dummies(library, dummy_hiers, top):
                                 }
                             )
                             logger.debug(f"new instance parameters: {y.parameters}")
-                            _prefix = library.find(y.model).prefix
-                            nm = ele.name
-                            if _prefix and not nm.startswith(_prefix):
-                                nm = _prefix + nm
                             other_ckt.elements.append(
                                 Instance(
-                                    name=nm,
+                                    name=ele.name,
                                     model=y.model,
                                     pins=pins,
-                                    parameters=y.parameters,
-                                    generator=y.generator,
+                                    parameters=y.parameters
                                 )
                             )
                             logger.info(
@@ -210,8 +200,14 @@ def define_SD(subckt, update=True):
 
     logger.debug(f"Start checking source and drain in {subckt.name} ")
 
+    high = [n for n in high if n in subckt.nets]
+    low = [n for n in low if n in subckt.nets]
+
+    if not high or not low:
+        logger.debug(f"Power or ground pin is floating in {subckt.name}")
+        return
+
     probable_changes_p = []
-    assert high[0] in subckt.nets
     traversed = high.copy()
     traversed.extend(gnd)
     while high:
@@ -223,7 +219,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "D" in edge_type:
@@ -251,7 +247,7 @@ def define_SD(subckt, update=True):
             if subckt.get_element(node):
                 base_model = get_base_model(subckt, node)
             else:
-                assert node in subckt.nets
+                assert node in subckt.nets, f"{node} not found in {subckt.nets}"
                 base_model = "net"
             if "PMOS" == base_model:
                 if "S" in edge_type:
@@ -292,6 +288,8 @@ def add_parallel_devices(ckt, update=True):
         G = Graph(ckt)
         for node in G.neighbors(net):
             ele = ckt.get_element(node)
+            if 'PARALLEL' not in ele.parameters:
+                continue  # this element does not support multiplicity
             p = {**ele.pins, **ele.parameters}
             p["model"] = ele.model
             if p in pp_list:
@@ -303,7 +301,7 @@ def add_parallel_devices(ckt, update=True):
             if len(pd) > 1:
                 pd0 = sorted(pd, key=lambda x: x.name)[0]
                 logger.info(f"removing parallel instances {[x.name for x in pd[1:]]} and updating {pd0.name} parameters")
-                pd0.parameters["PARALLEL"] = sum([getattr(x.parameters, "PARALLEL", 1) for x in pd])
+                pd0.parameters["PARALLEL"] = str(sum([int(getattr(x.parameters, "PARALLEL", "1")) for x in pd]))
                 for rn in pd[1:]:
                     G.remove(rn)
 
@@ -330,6 +328,8 @@ def add_series_devices(ckt, update=True):
         nbrs = sorted(list(G.neighbors(net)))
         if len(nbrs) == 2 and net not in remove_nodes:
             nbr1, nbr2 = [ckt.get_element(nbr) for nbr in nbrs]
+            if 'STACK' not in nbr1.parameters:
+                continue  # this element does not support stacking
             # Same instance type
             if nbr1.model != nbr2.model:
                 continue
@@ -366,7 +366,7 @@ def add_series_devices(ckt, update=True):
                 set(["PLUS", "MINUS"]),
             ]:
                 logger.info(f"stacking {nbrs} {stack1 + stack2}")
-                nbr1.parameters["STACK"] = stack1 + stack2
+                nbr1.parameters["STACK"] = str(stack1 + stack2)
                 for p, n in nbr1.pins.items():
                     if net == n:
                         nbr1.pins[p] = nbr2.pins[p]

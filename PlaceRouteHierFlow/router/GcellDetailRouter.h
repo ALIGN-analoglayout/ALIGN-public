@@ -45,6 +45,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   private:
   GlobalGrid Gcell;
   PnRDB::Router_report temp_report;
+  std::string HierName;
   /*
      int End_Metal_Flag = 1;
 
@@ -74,7 +75,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   // void CreatePlistNets(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
   void CreatePlistTerminals(std::vector<std::vector<RouterDB::point>> &plist, std::vector<RouterDB::terminal> &Terminals);
   // void CreatePlistNets_DetailRouter(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
-  void UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist);
+  void UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<RouterDB::point>> &plist,std::vector<std::vector<int>> extend_labels);
   void GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal>> &physical_path);
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment temp_seg);
   // void InsertPathToCand_Start(std::vector<std::vector<RouterDB::Metal> > &physical_path, RouterDB::Segment &temp_seg);
@@ -198,6 +199,23 @@ class GcellDetailRouter : public GcellGlobalRouter {
   void Mirror_Topology(std::vector<RouterDB::Metal> &sym_path, int HV_sym, int center);
   void ExtendX_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
   void ExtendY_PN(RouterDB::Metal &temp_metal, int extend_dis, bool P);
+  void get_internal_metal_via();
+
+  void create_detailrouter_new();
+  void InsertPhysicalPathToSetX(int net_index, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
+  void Refresh_Grid(Grid &grid);
+  void returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels);
+  void ReturnInternalMetalContactALL(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+  void Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set, RouterDB::point &gridll, RouterDB::point &gridur);
+  void Detailed_router_set_src_dest_new(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
+                                                     int i, RouterDB::point &sym_gridll, RouterDB::point &sym_gridur, RouterDB::point &gridll,
+                                                     RouterDB::point &gridur, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
+                                                     std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag);
+  void EraseSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+  void ExtendMetalsPhysicalPath(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<int>> &extend_labels);
+  void generate_set_data(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
+  void InsertSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+
 };
 
 #endif

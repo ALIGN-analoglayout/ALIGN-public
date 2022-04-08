@@ -1,11 +1,10 @@
 import os
 import math
+import json
 from itertools import cycle, islice
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
-from align.schema.constraint import PlaceOnGrid, OffsetsScalings
-
 import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
@@ -16,21 +15,27 @@ class MOSGenerator(CanvasPDK):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
+        self.NEW_PARTIAL_ROUTING_FEATURE = os.getenv('PARTIAL_ROUTING', None) is not None
+        if self.NEW_PARTIAL_ROUTING_FEATURE:
+            if not hasattr(self, 'metadata'):
+                self.metadata = dict()
+            self.metadata['partially_routed_pins'] = {}
+
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
 
     def addPMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
-        if os.getenv('PLACE_ON_GRID', False):
-            rh = 7*self.pdk['M2']['Pitch']
-            if parameters['real_inst_type'].lower().startswith('n'):
-                o = 0
-            else:
-                o = rh
-            self.metadata = {'constraints': [PlaceOnGrid(direction='H', pitch=2*rh,
-                                                         ored_terms=[OffsetsScalings(offsets=[o], scalings=[1, -1])]).dict()]}
 
     def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
+
+        # Inject constraints for testing purposes
+        place_on_grid = os.getenv('PLACE_ON_GRID', False)
+        if place_on_grid:
+            place_on_grid = json.loads(place_on_grid)
+            if not hasattr(self, 'metadata'):
+                self.metadata = dict()
+            self.metadata['constraints'] = place_on_grid['constraints']
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
@@ -77,15 +82,15 @@ class MOSGenerator(CanvasPDK):
                         d[t[1]] = k
             return d
 
-        p1 = find_ports(ports, 'M1')
+        element_names = sorted({c[0] for mc in ports.values() for c in mc})
+        p1 = find_ports(ports, element_names[0])
         port_arr = {1: p1}
         mult_arr = {1: m}
-
-        p2 = find_ports(ports, 'M2')
-        if len(p2) > 1:
-            port_arr[2] = p2
-            mult_arr[2] = m
-
+        if len(element_names) > 1:
+            p2 = find_ports(ports, element_names[1])
+            if len(p2) > 1:
+                port_arr[2] = p2
+                mult_arr[2] = m
         self.transistor_array = TransistorArray(
             unit_transistor=unit_transistor,
             m=mult_arr,
@@ -103,6 +108,10 @@ class MOSGenerator(CanvasPDK):
         self.ports = ports
         self.mos_array()
 
+        # bounding box as visual aid
+        if parameters['real_inst_type'].lower().startswith('p'):
+            self.terminals.insert(0, {'layer': 'Nwell', 'netName': None, 'netType': 'drawing', 'rect': self.bbox.toList()})
+
     def mos_array(self):
 
         assert len(self.transistor_array.m) <= 2, 'Arrays of more than 2 devices not supported yet'
@@ -117,11 +126,13 @@ class MOSGenerator(CanvasPDK):
         else:
             tap_map = {'B': 'B'}
 
+        '''
+            if NEW_PARTIAL_ROUTING_FEATURE:
+                route single transistor primitives up to m1 excluding gate
+                route double transistor primitives up to m2
+        '''
         # Assign M2 tracks to prevent adjacent V2 violation
         track_pattern_1 = {'G': [6], 'S': [4], 'D': [2]}
-        mg = MOS()
-        tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
-
         if is_dual:
             track_pattern_2 = {}
 
@@ -144,6 +155,13 @@ class MOSGenerator(CanvasPDK):
             else:
                 track_pattern_2['D'] = [1]
 
+        elif self.NEW_PARTIAL_ROUTING_FEATURE:
+            track_pattern_1 = {'G': [6]}
+
+        mg = MOS()
+
+        tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
+        if is_dual:
             # Alternate m2 tracks for device A and device B for improved matching
             mg = MOS()
             tx_a_2 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
@@ -218,10 +236,36 @@ class MOSGenerator(CanvasPDK):
         # Stamp the instances
         self.place(rows)
 
-        # Route
-        self.route()
+        if not self.NEW_PARTIAL_ROUTING_FEATURE:
+            self.route()
+            self.terminals = self.removeDuplicates()
+        else:
+            if not is_dual:
+                self.join_wires(self.m1)
+            self.join_wires(self.m2)
+            self.terminals = self.removeDuplicates(silence_errors=True)
 
-        self.terminals = self.removeDuplicates()
+            # Find connected entities and generate a unique pin name
+            def find_update_term(layer, rect, new_name):
+                for term in self.terminals:
+                    if term['layer'] == layer and term['rect'] == rect:
+                        term['netName'] = new_name
+                        term['netType'] = 'pin'
+            counters = {}
+            for net_opens in self.rd.opens:
+                net_name = net_opens[0]
+                for open_group in net_opens[1]:
+                    if net_name not in counters:
+                        counters[net_name] = 0
+                    counters[net_name] += 1
+                    new_name = net_name + '__' + str(counters[net_name])
+                    assert 'partially_routed_pins' in self.metadata
+                    self.metadata['partially_routed_pins'][new_name] = net_name
+                    for term in open_group:
+                        find_update_term(term[0], term[1], new_name)
+
+            # Expose pins
+            self._expose_pins()
 
     def stamp_cell(self, template, instance_name, pin_map, x_offset, y_offset, flip_x):
 

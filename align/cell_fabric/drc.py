@@ -3,14 +3,15 @@ import logging
 from collections import defaultdict
 logger = logging.getLogger(__name__)
 
+
 class RegionSet:
     def __init__(self):
         self.rects = []
 
     def add_region(self, rect):
-        self.rects.append( rect)
+        self.rects.append(rect)
 
-    def contained_in( self, rect):
+    def contained_in(self, rect):
         for r in self.rects:
             if r[0] <= rect[0] and rect[2] <= r[2] and \
                r[1] <= rect[1] and rect[3] <= r[3]:
@@ -18,7 +19,8 @@ class RegionSet:
                 return True
         #logger.debug( f"Did not filter rect {rect}: {self.rects}")
         return False
-        
+
+
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
@@ -27,8 +29,8 @@ class DesignRuleCheck():
         self.r_regions = RegionSet()
         for term in self.canvas.terminals:
             if term['layer'] == 'Boundary':
-                logger.debug( f"Adding region {term['rect']} using 'Boundary' object")
-                self.r_regions.add_region( term['rect'])
+                # logger.debug(f"Adding region {term['rect']} using 'Boundary' object")
+                self.r_regions.add_region(term['rect'])
 
     @property
     def num_errors(self):
@@ -42,7 +44,6 @@ class DesignRuleCheck():
               (aka removeDuplicates has been run)
         '''
 
-        
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if not (layer.startswith('V') or layer.startswith('M')) or layer not in self.canvas.pdk:
                 continue
@@ -51,9 +52,9 @@ class DesignRuleCheck():
                 self._check_via_enclosure_rules(layer, vv)
             else:
                 self._check_metal_rules(layer, vv)
-                self._check_adjacent_metals( layer, vv)
+                self._check_adjacent_metals(layer, vv)
 
-        #SMB Is it good enough to have the actual errors in the .errors file
+        # SMB Is it good enough to have the actual errors in the .errors file
         if True:
             if self.errors:
                 logger.error(f'Found errors: DRC {self.num_errors}')
@@ -65,90 +66,136 @@ class DesignRuleCheck():
 
     def _check_via_rules(self, layer, vv):
         '''Simple rules related to vertical and horizontal spacing; need more work for diagonals'''
-        space_y = self.canvas.pdk[layer].get('SpaceY',None)
-        if space_y is not None: 
-            # Since vias are stored as vertical wires in the scan lines, this is the easy case 
+
+        space_y = self.canvas.pdk[layer].get('SpaceY', None)
+        if space_y is not None:
+            # Since vias are stored as vertical wires in the scan lines, this is the easy case
             # find closest via with same X centerline with higher Y value
             # if this one violates there may be more that we are ignoring
             for (_, sl0) in vv.items():
-                for idx,slr0 in enumerate(sl0.rects):
+                for idx, slr0 in enumerate(sl0.rects):
                     if idx+1 < len(sl0.rects):
                         slr1 = sl0.rects[idx+1]
                         if slr0.rect[3] < slr1.rect[1]:
                             if slr0.rect[3] + space_y > slr1.rect[1]:
-                                self.errors.append( f"Vertical space violation on {layer}: {slr0} {slr1} {space_y}")
-        space_x = self.canvas.pdk[layer].get('SpaceX',None)
-        if space_x is not None: 
+                                self.errors.append(f"Vertical space violation on {layer}: {slr0} {slr1} {space_y}")
+
+        space_x = self.canvas.pdk[layer].get('SpaceX', None)
+        if space_x is not None:
             horizontal_bins = defaultdict(list)
             for cx, sl in vv.items():
                 for slr in sl.rects:
                     cy = slr.rect[1] + slr.rect[3]
-                    horizontal_bins[cy].append( slr.rect)
+                    horizontal_bins[cy].append(slr.rect)
             for cy, bins in horizontal_bins.items():
                 bins.sort(key=lambda slr: slr[0])
-                for idx,slr0 in enumerate(bins):
+                for idx, slr0 in enumerate(bins):
                     if idx+1 < len(bins):
                         slr1 = bins[idx+1]
                         if slr0[2] < slr1[0]:
                             if slr0[2] + space_x > slr1[0]:
-                                self.errors.append( f"Horizontal space violation on {layer}: {slr0} {slr1} {space_x}")
+                                self.errors.append(f"Horizontal space violation on {layer}: {slr0} {slr1} {space_x}")
 
+        max_adjacent_y = self.canvas.pdk[layer].get('MaxAdjacentY', None)
+        if max_adjacent_y is not None:
+            via = getattr(self.canvas, layer)
+            for (_, sl) in vv.items():
+                idx_prev = None
+                for slr in sl.rects:
+                    idx = via.h_clg.inverseBounds((slr.rect[1]+slr.rect[3])//2)[0][0]
+                    if idx_prev is None:
+                        count = 1
+                    elif idx - idx_prev == 1:
+                        count += 1
+                    else:
+                        count = 0
+                    idx_prev = idx
+                    if count > max_adjacent_y:
+                        self.errors.append(f"Vertical max adjacent via violation on {layer}: {slr}")
 
+        max_adjacent_x = self.canvas.pdk[layer].get('MaxAdjacentX', None)
+        if max_adjacent_x is not None:
+            via = getattr(self.canvas, layer)
+
+            # Build horizontal scanlines
+            vv_h = defaultdict(list)
+            for (_, sl) in vv.items():
+                for slr in sl.rects:
+                    vv_h[slr.rect[1] + slr.rect[3]].append(slr.rect)
+
+            for (_, sl) in vv_h.items():
+                sl.sort(key=lambda slr: slr[0])
+                idy_prev = None
+                for r in sl:
+                    idy = via.v_clg.inverseBounds((r[0]+r[2])//2)[0][0]
+                    if idy_prev is None:
+                        count = 1
+                    elif idy - idy_prev == 1:
+                        count += 1
+                    else:
+                        count = 0
+                    idy_prev = idy
+                    if count > max_adjacent_x:
+                        self.errors.append(f"Horizontal max adjacent via violation on {layer}: {slr}")
 
     def _check_via_enclosure_rules(self, layer, vv):
         '''Check via enclosures.'''
         v = self.canvas.pdk[layer]
-        [ly_l,ly_u] = v['Stack']
+        [ly_l, ly_u] = v['Stack']
         if ly_l is not None:
             ml_dir = self.canvas.pdk[ly_l]['Direction'].upper()
-            assert ml_dir in ['V','H']
+            assert ml_dir in ['V', 'H']
         if ly_u is not None:
             mu_dir = self.canvas.pdk[ly_u]['Direction'].upper()
-            assert mu_dir in ['V','H']
+            assert mu_dir in ['V', 'H']
 
-        def check_single_metal( r, ly, metal_dir, enclosure_value):
+        def check_single_metal(r, ly, metal_dir, enclosure_value):
             o = 1 if metal_dir == 'V' else 0
-            metal_r = self._find_rect_covering_via( r, ly, metal_dir)
+            metal_r = self._find_rect_covering_via(r, ly, metal_dir)
             net_name = r.netName
-            if net_name is None: net_name = "None"
+            if net_name is None:
+                net_name = "None"
             if metal_r is None:
-                self.errors.append( f"Enclosure violation on {ly}-{layer} for {net_name}: No metal found surrounding {r.rect}, {enclosure_value}")
+                self.errors.append(f"Enclosure violation on {ly}-{layer} for {net_name}: No metal found surrounding {r.rect}, {enclosure_value}")
             elif metal_r[o+0] > r.rect[o+0] - enclosure_value or metal_r[o+2] < r.rect[o+2] + enclosure_value:
-                self.errors.append( f"Enclosure violation on {ly}-{layer} for {net_name}: {metal_r} does not sufficiently surround {r.rect}, {enclosure_value}")
+                self.errors.append(
+                    f"Enclosure violation on {ly}-{layer} for {net_name}: {metal_r} does not sufficiently surround {r.rect}, {enclosure_value}")
 
         for _, sl in vv.items():
             for r in sl.rects:
-                if ly_l is not None: check_single_metal( r, ly_l, ml_dir, v['VencA_L'])
-                if ly_u is not None: check_single_metal( r, ly_u, mu_dir, v['VencA_H'])
+                if ly_l is not None:
+                    check_single_metal(r, ly_l, ml_dir, v['VencA_L'])
+                if ly_u is not None:
+                    check_single_metal(r, ly_u, mu_dir, v['VencA_H'])
 
-    def _check_adjacent_metals( self, layer, vv):
+    def _check_adjacent_metals(self, layer, vv):
         m = self.canvas.pdk[layer]
-        if 'AdjacentAttacker' not in m: return
-        
+        if 'AdjacentAttacker' not in m:
+            return
+
         dist = m['AdjacentAttacker']
 
         dr = m['Direction'].upper()
-        assert dr in ['V','H']
+        assert dr in ['V', 'H']
 
         o = 0 if dr == 'H' else 1
 
-        for cx0,v0 in vv.items():
+        for cx0, v0 in vv.items():
             for cx1 in [cx0-2*m['Pitch'], cx0+2*m['Pitch']]:
                 if cx1 in vv:
                     v1 = vv[cx1]
                     for slr0 in v0.rects:
                         for slr1 in v1.rects:
                             if 0 < slr1.rect[o+0] - slr0.rect[o+2] <= dist:
-                                self.errors.append( f"Adjacent metal attacker {layer}: {slr0.rect} too close to {slr1.rect} dist: {dist}")
+                                self.errors.append(f"Adjacent metal attacker {layer}: {slr0.rect} too close to {slr1.rect} dist: {dist}")
 
-
-    def _find_rect_covering_via( self, r, ly, metal_dir):
+    def _find_rect_covering_via(self, r, ly, metal_dir):
         cx2 = r.rect[0]+r.rect[2]
         cy2 = r.rect[1]+r.rect[3]
-        c2a,c2p,o = (cx2,cy2,0) if metal_dir == 'H' else (cy2,cx2,1)
+        c2a, c2p, o = (cx2, cy2, 0) if metal_dir == 'H' else (cy2, cx2, 1)
         sl = self.canvas.rd.store_scan_lines[ly][c2p]
 
-        def binary_search( l, u, v):
+        def binary_search(l, u, v):
             if l == u:
                 return None
             elif l+1 == u:
@@ -159,11 +206,11 @@ class DesignRuleCheck():
             else:
                 m = (l+u+1)//2
                 if sl.rects[m].rect[o+0] <= v:
-                    return binary_search( m, u, v)
+                    return binary_search(m, u, v)
                 else:
-                    return binary_search( l, m, v)
+                    return binary_search(l, m, v)
 
-        result = binary_search( 0, len(sl.rects), c2a//2)
+        result = binary_search(0, len(sl.rects), c2a//2)
         if result is not None:
             return result
         else:
@@ -185,8 +232,8 @@ class DesignRuleCheck():
             rect = slr.rect
             if rect[end] - rect[start] < min_length:
                 root = slr.root()
-                if self.r_regions.contained_in( rect):
-                    logger.debug( f"Skipping: MinLength violation on {layer}: {root.netName}{rect}")
+                if self.r_regions.contained_in(rect):
+                    logger.debug(f"Skipping: MinLength violation on {layer}: {root.netName}{rect}")
                 else:
                     self.errors.append(
                         f"MinLength violation on {layer}: {root.netName}{rect}")
@@ -198,8 +245,9 @@ class DesignRuleCheck():
         for slr in slrects:
             if prev_slr is not None and \
                0 < slr.rect[start] - prev_slr.rect[end] < min_space:
-                if self.r_regions.contained_in( slr.rect):
-                    logger.debug( f"Skipping: MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
+                if self.r_regions.contained_in(slr.rect):
+                    logger.debug(
+                        f"Skipping: MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
                 else:
                     self.errors.append(
                         f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
