@@ -1,4 +1,3 @@
-from operator import sub
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -48,7 +47,7 @@ def preprocess_stack_parallel(ckt_data, design_name):
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
-    #Remove dummy hiearachies by design tree traversal from design top
+    # Remove dummy hiearachies by design tree traversal from design top
     if isinstance(top, SubCircuit):
         IsDigital = False
         RemoveDummyHierarchies = True
@@ -201,8 +200,14 @@ def define_SD(subckt, update=True):
 
     logger.debug(f"Start checking source and drain in {subckt.name} ")
 
+    high = [n for n in high if n in subckt.nets]
+    low = [n for n in low if n in subckt.nets]
+
+    if not high or not low:
+        logger.debug(f"Power or ground pin is floating in {subckt.name}")
+        return
+
     probable_changes_p = []
-    assert high[0] in subckt.nets
     traversed = high.copy()
     traversed.extend(gnd)
     while high:
