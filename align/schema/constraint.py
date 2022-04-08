@@ -33,7 +33,8 @@ def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
-    assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    for x in value:  # explicit loop to point out the not found instance
+        assert x in instances or x.upper() in instances, f"Instance {x} not found in the circuit"
     return [x.upper() for x in value]
 
 
@@ -1025,14 +1026,12 @@ class SymmetricBlocks(HardConstraint):
                 # abs(cl_1 - cl_2) <= height_1/4  && abs(cl_1 - cl_2) <= height_2/4
                 # abs(4.cl_1 - 4.cl_2) <= height_1, height_2
                 c = 'y' if self.direction == 'V' else 'x'
-
                 b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
                 b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
-                expression = solver.And(
-                    solver.Abs(b0_quad_cl - b1_quad_cl) < getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
-                    solver.Abs(b0_quad_cl - b1_quad_cl) < getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
+                yield solver.And(
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
                 )
-                yield expression
 
             # center lines of pairs should match along the direction
             if i == 0:
