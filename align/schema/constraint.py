@@ -1006,10 +1006,10 @@ class SymmetricBlocks(HardConstraint):
                     f"Parameters of the symmetry pair {pair} do not match in subckt {cls._validator_ctx().parent.parent.name}"
         return value
 
-    def translate(self, solver):
+    def translate(cls, solver):
 
         def construct_expression(b1, b2=None):
-            c = 'x' if self.direction == 'V' else 'y'
+            c = 'x' if cls.direction == 'V' else 'y'
             expression = getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
             if b2:
                 expression += getattr(b2, f'll{c}') + getattr(b2, f'ur{c}')
@@ -1017,7 +1017,7 @@ class SymmetricBlocks(HardConstraint):
                 expression += getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
             return expression
 
-        for i, instances in enumerate(self.pairs):
+        for i, instances in enumerate(cls.pairs):
             if len(instances) == 2:
                 b0 = solver.bbox_vars(instances[0])
                 b1 = solver.bbox_vars(instances[1])
@@ -1025,7 +1025,7 @@ class SymmetricBlocks(HardConstraint):
                 # the difference between the center lines should be <= 1/4th of the block heights
                 # abs(cl_1 - cl_2) <= height_1/4  && abs(cl_1 - cl_2) <= height_2/4
                 # abs(4.cl_1 - 4.cl_2) <= height_1, height_2
-                c = 'y' if self.direction == 'V' else 'x'
+                c = 'y' if cls.direction == 'V' else 'x'
                 b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
                 b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
                 yield solver.And(
