@@ -9,15 +9,15 @@ ap = argparse.ArgumentParser()
 ap.add_argument( "-l", "--layers", type=str, default="", help='<layers.json>')
 ap.add_argument( "-g", "--gds",   type=str, default="", help='<gds.json file>')
 ap.add_argument( "-f", "--lef",   type=str, default="", help='<.lef file>')
-ap.add_argument( "-u", "--filter",   nargs="*", type=str, default=[], help='list of layers to add obstacles (all if empty)')
+ap.add_argument( "-u", "--use_layers",   nargs="*", type=str, default=[], help='list of layers to add obstacles (all if empty)')
 args = ap.parse_args()
 print("layers.json   : ", args.layers)
 print("gds.json file : ", args.gds)
 print(".lef file     : ", args.lef)
-if args.filter:
-  print ("layers        : ", args.filter)
+if args.use_layers:
+  print ("layers        : ", args.use_layers)
 
-if args.layer == "" or args.gds == "" or args.lef == "":
+if args.layers == "" or args.gds == "" or args.lef == "":
   ap.print_help()
   exit(0)
 
@@ -183,7 +183,7 @@ if (args.lef):
             if pinRects and layerRects:
               ofile.write("  OBS\n")
               for l in layerRects:
-                if args.filter and (l not in args.filter):
+                if args.use_layers and (l not in args.use_layers):
                   continue
                 for r in layerRects[l]:
                   overlap = False
