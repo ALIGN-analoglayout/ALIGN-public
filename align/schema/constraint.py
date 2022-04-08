@@ -1021,10 +1021,17 @@ class SymmetricBlocks(HardConstraint):
                 b0 = solver.bbox_vars(instances[0])
                 b1 = solver.bbox_vars(instances[1])
 
-                # center lines of the two blocks should match in the orthogonal direction
+                # the difference between the center lines should be <= 1/4th of the block heights
+                # abs(cl_1 - cl_2) <= height_1/4  && abs(cl_1 - cl_2) <= height_2/4
+                # abs(4.cl_1 - 4.cl_2) <= height_1, height_2
                 c = 'y' if self.direction == 'V' else 'x'
-                expression = (getattr(b0, f'll{c}') + getattr(b0, f'ur{c}') == getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
-                # logger.debug(f'\n{expression=}')
+
+                b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
+                b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
+                expression = solver.And(
+                    solver.Abs(b0_quad_cl - b1_quad_cl) < getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
+                    solver.Abs(b0_quad_cl - b1_quad_cl) < getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
+                )
                 yield expression
 
             # center lines of pairs should match along the direction
@@ -1033,7 +1040,6 @@ class SymmetricBlocks(HardConstraint):
             else:
                 centerline = construct_expression(*solver.iter_bbox_vars(instances))
                 expression = (reference == centerline)
-                # logger.debug(f'\n{expression=}')
                 yield expression
 
 

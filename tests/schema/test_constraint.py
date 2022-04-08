@@ -142,7 +142,7 @@ def test_SymmetricBlocks_perpendicular_coord(db):
         db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=10, urx=50, ury=30))
         db.revert()
         with pytest.raises(SolutionNotFoundError):
-            db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=0, urx=50, ury=50))
+            db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=0, urx=50, ury=150))
 
 
 def test_SymmetricBlocks_along(db):
