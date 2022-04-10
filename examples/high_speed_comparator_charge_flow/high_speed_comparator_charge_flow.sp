@@ -1,4 +1,4 @@
-.subckt high_speed_comparator clk vcc vin vip von vop vss
+.subckt high_speed_comparator_charge_flow clk vcc vin vip von vop vss
 
 mn0 vcom clk vss vss n nfin=6 nf=2 l=14e-9 m=8
 
@@ -23,4 +23,4 @@ mn13 vop vip_o vss vss n nfin=6 nf=2 l=14e-9 m=1
 mp12 von vin_o vcc vcc p nfin=6 nf=2 l=14e-9 m=1
 mn14 von vin_o vss vss n nfin=6 nf=2 l=14e-9 m=1
 
-.ends high_speed_comparator
+.ends high_speed_comparator_charge_flow
