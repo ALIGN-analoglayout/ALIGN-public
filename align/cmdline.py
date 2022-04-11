@@ -1,13 +1,12 @@
 import argparse
 from .main import schematic2layout
 from . import __version__
-
+import os
 from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
 
-import os
 
 class CmdlineParser():
 
@@ -155,7 +154,8 @@ class CmdlineParser():
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
-        logger.debug(f"Command line arguments: {' '.join(args[0])}")
+        if args:
+            logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
             return schematic2layout(**vars(arguments))
