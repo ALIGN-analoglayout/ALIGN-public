@@ -11,8 +11,8 @@ FetchContent_GetProperties(ilpsolverif)
 if(NOT ilpsolverif_POPULATED)
   FetchContent_Populate(ilpsolverif)
   set (solver_search_path ${ilpsolverif_SOURCE_DIR}/lib)
-  if (DEFINED ENV{AUDITWHEEL_PLAT})
-    set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{AUDITWHEEL_PLAT}/lib)
+  if (DEFINED ENV{BUILD_PLATFORM})
+    set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{BUILD_PLATFORM}/lib)
   endif()
   find_library(
     ilp_solver_lib
