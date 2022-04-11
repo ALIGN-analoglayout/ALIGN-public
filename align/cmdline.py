@@ -155,7 +155,7 @@ class CmdlineParser():
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
-        logger.info(f"Command line arguments: {' '.join(args[0])}")
+        logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
             return schematic2layout(**vars(arguments))
