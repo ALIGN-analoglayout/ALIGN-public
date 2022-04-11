@@ -347,7 +347,7 @@ def test_enumerate():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
 
-    #variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
+    # variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
     num_seq_pairs = _count_pattern(name.upper() + " sa_print_seq_pair")
     assert num_seq_pairs == 4, f'4 seq pairs expected but only {num_seq_pairs} seq pairs generated'
     shutil.rmtree(run_dir)
@@ -383,7 +383,7 @@ def test_enumerate_2():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=30, log_level='DEBUG')
 
-    #variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
+    # variants = [fname.name for fname in (run_dir/'3_pnr'/'Results').iterdir() if fname.name.startswith(name.upper()) and fname.name.endswith('.scaled_placement_verilog.json')]
     num_seq_pairs = _count_pattern(name.upper() + " sa_print_seq_pair")
     assert num_seq_pairs == 576, f'576 seq pairs expected but only {num_seq_pairs} seq pairs generated'
     shutil.rmtree(run_dir)
