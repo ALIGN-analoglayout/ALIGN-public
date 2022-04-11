@@ -1,11 +1,9 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-#include "symphony.h"
 #include <iostream>
 #include <malloc.h>
 #include <signal.h>
-#include "CbcModel.hpp"
-#include "OsiClpSolverInterface.hpp"
+#include "ILPSolverIf.h"
 
 ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
 {
@@ -1773,7 +1771,8 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   const unsigned N_area_x = N_var - 2;
   const unsigned N_area_y = N_var - 1;
 
-  const auto infty = sym_get_infinity();
+  ILPSolverIf solverif(SOLVER_ENUM::SYMPHONY);
+  const auto infty = solverif.getInfinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -2438,11 +2437,9 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
+        intvars.data(), objective.data(), sens.data(), rhs.data());
 
     /*//solve the integer program
     static int write_cnt{0};
@@ -2481,24 +2478,20 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names);
       ++write_cnt;
     }*/
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      status = solverif.solve();
     }
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       sighandler = signal(SIGINT, sighandler);
       return false;
     }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    sym_close_environment(env);
+    const double* var = solverif.solution();
     sighandler = signal(SIGINT, sighandler);
     int minx(INT_MAX), miny(INT_MAX);
     //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
@@ -2569,13 +2562,13 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   N_var += place_on_grid_var_count;
   N_var += 2; //Area x and y variables
 
-  OsiClpSolverInterface osiclp;
-  const double infty{osiclp.getInfinity()};
+  ILPSolverIf solverif;
+  const double infty{solverif.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
-  std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
+  std::vector<int> intvars(mydesign.Blocks.size() * 4, TRUE);
   intvars.resize(N_var, FALSE);
   std::vector<char> sens;
   std::vector<double> collb(N_var, 0), colub(N_var, infty);
@@ -3253,14 +3246,9 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
-    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        objective.data(), rhslb, rhsub);
-    for (int i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) {
-        osiclp.setInteger(i);
-      }
-    }
+        objective.data(), rhslb, rhsub, intvars.data());
 
     /*//solve the integer program
     static int write_cnt{0};
@@ -3303,18 +3291,12 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }*/
-    CbcModel model(osiclp);
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      CbcMain0(model);
-      model.setLogLevel(0);
-      model.setMaximumSeconds(300);
-      //model.setNumberHeuristics(0);
-      const char* argv[] = {"", "-log", "0", "-solve"};
-      status = CbcMain1(4, argv, model);
+      status = solverif.solve(1);
     }
-    const double* var = model.bestSolution();
+    const double* var = solverif.solution();
     if (status != 0 || var == nullptr) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       sighandler = signal(SIGINT, sighandler);
