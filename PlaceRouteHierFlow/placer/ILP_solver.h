@@ -64,6 +64,7 @@ class ILP_solver {
     return ((fabs(x-ix) > 0.5) ? ((ix < 0) ? ix - 1 : ix + 1) : ix);
   };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
+  inline void rounddown(int& v, const int pitch) { v = pitch * (v / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
   bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
   bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);

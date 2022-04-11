@@ -335,7 +335,8 @@ class process_input_const:
                         elif key not in self.user_constrained_list:
                             self.user_constrained_list.append(key)
                             pairsj.append([key])
-                    if len(pairsj) > 0:
+                    if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
+                        # Do not generate symmetry constraint for a single instance
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
@@ -549,7 +550,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                         #     f"Skip symmnet: Multiple matches of net {net_B} found"
                         # )
                         return [None, None, None]
-                    elif user == False and {instA_name, instB_name} not in smb:
+                    elif not user and {instA_name, instB_name} not in smb:
                         logger.debug(f"unsymmetrical instances {instA_name, instB_name} {smb}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
