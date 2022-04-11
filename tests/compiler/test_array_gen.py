@@ -29,8 +29,9 @@ def test_array_gen_ro():
     assert array1 == ['XI0', 'XI1', 'XI2', 'XI3', 'XI4']
     array_cl.add_align_block_const()
     with set_context(ckt.constraints):
-        x = constraint.Align(line="h_center", instances=array1)
-    assert ckt.constraints == [x]
+        x = constraint.AlignInOrder(line="bottom", direction="horizontal", instances=array1)
+        y = constraint.SameTemplate(instances=array1)
+    assert ckt.constraints == [x, y]
     clean_data(name)
 
 
@@ -82,8 +83,10 @@ def test_array_gen_ro_fh():
     assert array1 == ['X_MN0_MP0', 'X_MN1_MP1', 'X_MN2_MP2', 'X_MN3_MP3', 'X_MN4_MP4']
     array_cl.add_align_block_const()
     with set_context(ckt.constraints):
-        x = constraint.Align(line="h_center", instances=array1)
-    assert ckt.constraints[-1] == x
+        x = constraint.AlignInOrder(line="bottom", direction="horizontal", instances=array1)
+        y = constraint.SameTemplate(instances=array1)
+    assert ckt.constraints[-2] == x
+    assert ckt.constraints[-1] == y
     clean_data(name)
 
 
