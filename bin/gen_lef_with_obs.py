@@ -92,7 +92,7 @@ if (args.gds):
         if 'units' in lib:
           units = lib['units']
           if len(units) > 1:
-            gdsUnits = units[1]
+            gdsUnits = units[1] / 1.e-6
             print("GDS units : ", gdsUnits)
         if 'bgnstr' in lib:
           for cell in lib['bgnstr']:
