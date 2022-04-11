@@ -243,7 +243,7 @@ def two_stage_ota_differential(name):
     return netlist
 
 
-def charge_pump_switch(name):
+def charge_pump_switch(name, size=16):
     netlist = textwrap.dedent(f"""\
     .subckt switch ng pg t1 t2 vccx vssx
     qp0 t1 pg t2 vccx p m=1 nf=2 w=90e-9
@@ -251,7 +251,7 @@ def charge_pump_switch(name):
     .ends
     .subckt {name} en enb in out vccx vssx
     """)
-    for i in range(16):
+    for i in range(size):
         netlist += f"isw<{i}> en enb in out vccx vssx switch\n"
     netlist += textwrap.dedent(f"""\
     .ends {name}

@@ -287,7 +287,7 @@ def test_cs_2():
 
 def test_charge_pump_switch():
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.charge_pump_switch(name)
+    netlist = circuits.charge_pump_switch(name, size=16)
     constraints = {
         name: [
             {"constraint": "PowerPorts", "ports": ["vccx"]},
