@@ -220,7 +220,8 @@ class process_arrays:
                         if inst in self.graph]
             if len(h_blocks) > 0:
                 with set_context(self.iconst):
-                    self.iconst.append(constraint.Align(line="h_center", instances=h_blocks))
+                    self.iconst.append(constraint.AlignInOrder(line="bottom", direction="horizontal", instances=h_blocks))
+                    self.iconst.append(constraint.SameTemplate(instances=h_blocks))
             # del self.match_pairs[key]
         logger.debug(f"AlignBlock const update {self.iconst}")
         # hier_keys = [key for key, value in self.match_pairs.items() if "name" in value.keys()]
