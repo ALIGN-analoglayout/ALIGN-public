@@ -550,7 +550,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                         #     f"Skip symmnet: Multiple matches of net {net_B} found"
                         # )
                         return [None, None, None]
-                    elif (not user) and {instA_name, instB_name} not in smb:
+                    elif not user and {instA_name, instB_name} not in smb:
                         logger.debug(f"unsymmetrical instances {instA_name, instB_name} {smb}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:
