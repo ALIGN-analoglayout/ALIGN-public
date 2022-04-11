@@ -1360,11 +1360,14 @@ class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        if hasattr(constraint, 'translate'):
-            if self.parent._checker is None:
-                self.parent.verify()
-            self.parent.verify(constraint=constraint)
-        super().append(constraint)
+        if any(repr(constraint) == repr(x) for x in self):
+            logger.warning(f"Constraint is duplicated: {repr(constraint)}")
+        else:
+            if hasattr(constraint, 'translate'):
+                if self.parent._checker is None:
+                    self.parent.verify()
+                self.parent.verify(constraint=constraint)
+            super().append(constraint)
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):

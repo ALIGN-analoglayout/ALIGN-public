@@ -3,6 +3,7 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
 import pathlib
+import more_itertools
 logger = logging.getLogger(__name__)
 
 
@@ -40,14 +41,6 @@ def check_placement(placement_verilog_d, scale_factor):
                 )
             )
 
-        # Validate same template: Instances of the same template should match in width and height
-        same_template = set()
-        for const in constraints:
-            if isinstance(const, constraint.SameTemplate):
-                for inst in const.instances:
-                    same_template.add(inst)
-        same_template_bbox = dict()
-
         for inst in module['instances']:
             t = inst['transformation']
             ctn = inst['concrete_template_name']
@@ -67,17 +60,15 @@ def check_placement(placement_verilog_d, scale_factor):
                         ury=bbox.ury/scale_factor
                     )
                 )
-            if inst['instance_name'] in same_template:
-                same_template_bbox[inst['instance_name']] = (bbox.urx - bbox.llx, bbox.ury - bbox.lly)
 
-        # Validate same template: Instances of the same template should match in width and height
-        for const in constraints:
-            if isinstance(const, constraint.SameTemplate):
-                w_h_ref = same_template_bbox[const.instances[0]]
-                for inst in const.instances:
-                    w_h_inst = same_template_bbox[inst]
-                    assert w_h_ref == w_h_inst, \
-                        f'SameTemplate: Instance {const.instances[0]} and {inst} do not match in width and height: {w_h_ref} vs {w_h_inst}'
+        # # TODO: Check SameTemplate In a future PR. Below fails when abstract_template_name's differ
+        # # Validate SameTemplate: Instances of the same template should match in concrete_template_name
+        # instance_to_concrete = {inst["instance_name"]: inst["concrete_template_name"] for inst in module["instances"]}
+        # for const in constraints:
+        #     if isinstance(const, constraint.SameTemplate):
+        #         for i0, i1 in more_itertools.pairwise(const.instances):
+        #             assert instance_to_concrete[i0] == instance_to_concrete[i1],\
+        #                 f"Templates do not match for {i0} and {i1} {instance_to_concrete[i0]} vs {instance_to_concrete[i1]}"
 
         constraints.revert()
 

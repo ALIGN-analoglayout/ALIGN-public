@@ -164,7 +164,6 @@ class Z3Checker(AbstractSolver):
     def __init__(self):
         self._solver = z3.Solver()
         self._solver.set(unsat_core=True)
-        self._label_cache = set()
 
     def annotate(self, formulae, label):
         yield AnnotatedFormula(
@@ -175,9 +174,7 @@ class Z3Checker(AbstractSolver):
 
     def append(self, formula):
         if isinstance(formula, AnnotatedFormula):
-            if formula.label not in self._label_cache:
-                self._solver.assert_and_track(formula.formula, formula.label)
-                self._label_cache.add(formula.label)
+            self._solver.assert_and_track(formula.formula, formula.label)
         else:
             self._solver.add(formula)
 

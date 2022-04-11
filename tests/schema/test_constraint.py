@@ -123,6 +123,12 @@ def test_Floorplan(db):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
 
 
+def test_duplicate_append(db):
+    with set_context(db):
+        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+
+
 def test_SymmetricBlocks_perpendicular(db):
     with set_context(db):
         db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2']]))
