@@ -3435,6 +3435,31 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     // snap up coordinates to grid
+    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++){
+      if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
+      //if sympair center is not on grid
+      {
+        int first_id = mydesign.SPBlocks[i].sympair[0].first;
+        int second_id = mydesign.SPBlocks[i].sympair[0].second;
+        int first_selected = curr_sp.selected[first_id];
+        int second_selected = curr_sp.selected[second_id];
+        int center_line = ((Blocks[first_id].x + mydesign.Blocks[first_id][first_selected].width / 2) +
+                           (Blocks[second_id].x + mydesign.Blocks[second_id][second_selected].width / 2)) /
+                          2;
+        if (center_line % x_pitch == 0) continue;
+      }
+      for (unsigned int j = 0; j < mydesign.SPBlocks[i].sympair.size(); j++) {
+        int first_id = mydesign.SPBlocks[i].sympair[j].first;
+        int second_id = mydesign.SPBlocks[i].sympair[j].second;
+        if (Blocks[first_id].x>Blocks[second_id].x) {
+          roundup(Blocks[first_id].x, x_pitch);
+          rounddown(Blocks[second_id].x, x_pitch);
+        }else{
+          rounddown(Blocks[first_id].x, x_pitch);
+          roundup(Blocks[second_id].x, x_pitch);
+        }
+      }
+    }
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
       roundup(Blocks[i].x, x_pitch);
       roundup(Blocks[i].y, y_pitch);
