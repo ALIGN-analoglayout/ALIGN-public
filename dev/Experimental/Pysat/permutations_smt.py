@@ -2,7 +2,7 @@ import pytest
 
 import z3
 
-from itertools import combinations
+from itertools import combinations, chain
 from collections import defaultdict
 
 class UnionFind: 
@@ -125,12 +125,12 @@ class SeqPair:
     def ordering_expr_neg(self, u, v):
         k = (u,v,'neg')
         if k not in self.half_cache:
-            self.half_cache[k] = self.neg[u] > self.neg[v]
+            self.half_cache[k] = self.neg[u] < self.neg[v]
         return self.half_cache[k]
 
     def perm2vec(self, perm):
         m = self.solver.model()
-        return [m[x] for x in perm]
+        return [m[x].as_long() for x in perm]
 
     def prnt(self):
         print(self.perm2vec(self.pos))
@@ -186,7 +186,7 @@ class SeqPair:
         self.semantic_run = True
 
     def gen_assumptions(self, pvec, nvec):
-        return [self.pos[i] == x for i, x in enumerate(pvec)] + [self.neg[i] == x for i, x in enumerate(nvec)]
+        return [v == x for v, x in chain(zip(self.pos, pvec), zip(self.neg, nvec))]
 
     def abut(self, u, v, axis='H'):
         def abut_aux(u, v):
@@ -306,7 +306,6 @@ class SeqPair:
         if not self.semantic_run:
             self.semantic()
 
-        # Only get to run this once "Destroys the model"
         control = z3.Bool('control')
         for i in range(max_solutions):
             r = self.solver.check(control)
@@ -338,7 +337,17 @@ def test_order_mixed():
     assert {((0,1),(0,1)),((0,1),(1,0))} == set(sp.gen_solutions(max_solutions=100))
     
 
+def test_order_h_pair():
+    sp = SeqPair(2)
+    sp.order(1,0,'H')
 
+    assert {((1,0),(1,0))} == set(sp.gen_solutions(max_solutions=100))
+
+def test_order_v_pair():
+    sp = SeqPair(2)
+    sp.order(1,0,'V')
+
+    assert {((1,0),(0,1))} == set(sp.gen_solutions(max_solutions=100))
 
 def test_order_h():
     sp = SeqPair(4)
@@ -484,8 +493,10 @@ def test_abut_h_pass0():
 def test_assumptions():
     sp = SeqPair(3)
 
-    sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
-    assert sp.s.state == 'SAT'
+    sp.semantic()
+
+    status = sp.solver.check(*sp.gen_assumptions([2,0,1], [2,0,1]))
+    assert status == z3.sat
 
     print()
     sp.prnt()
@@ -503,14 +514,7 @@ def test_abut_h_pass1():
     sp.order(2,0,'H')
     sp.order(0,1,'H')
 
-    sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    assert sp.perm2vec(sp.pos) == [2,0,1]
-    assert sp.perm2vec(sp.neg) == [2,0,1]
+    assert {((2,0,1),(2,0,1))} == set(sp.gen_solutions(max_solutions=100))
 
 
 def test_abut_h_fail():
@@ -521,8 +525,7 @@ def test_abut_h_fail():
     sp.order(0,1,'H')
     sp.order(1,2,'H')
 
-    sp.s.solve()
-    assert sp.s.state == 'UNSAT'
+    sp.solve_and_check(z3.unsat)
 
 def test_symmetric_2():
     sp = SeqPair(2)
@@ -535,15 +538,11 @@ def test_symmetric_3():
     sp = SeqPair(3)
     sp.symmetric([[0], [1,2]], 'V')
 
-    sp.s.dump_cnf("symmetric_3.cnf")
-
     assert 6 == len(set(sp.gen_solutions(max_solutions=100)))
 
 def test_symmetric_4():
     sp = SeqPair(4)
     sp.symmetric([[0,1], [2,3]], 'V')
-
-    sp.s.dump_cnf("symmetric_4.cnf")
 
     assert 80 == len(set(sp.gen_solutions(max_solutions=1000)))
 
@@ -591,19 +590,6 @@ def satisfy_constraints(constraints, pos_solution=None, neg_solution=None, singl
         assert len(pos_solution) == len(m) and len(neg_solution) == len(m)
         assump = sp.gen_assumptions([m[c] for c in pos_solution], [m[c] for c in neg_solution])
 
-    sp.s.solve(assumptions=assump)
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    p_res, n_res = [invm[x] for x in sp.perm2vec(sp.pos)],  [invm[x] for x in sp.perm2vec(sp.neg)]
-
-    if single_character:
-        print(''.join(p_res), ''.join(n_res))
-    else:
-        print(p_res, n_res)
-    
 
     for i, (p_res, n_res) in enumerate(sp.gen_solutions(max_solutions)):
         p_res_s, n_res_s = [invm[x] for x in p_res], [invm[x] for x in n_res]

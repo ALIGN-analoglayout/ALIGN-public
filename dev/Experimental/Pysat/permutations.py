@@ -548,15 +548,7 @@ def test_abut_h_pass1():
     sp.order(2,0,'H')
     sp.order(0,1,'H')
 
-    sp.s.solve(assumptions=sp.gen_assumptions([2,0,1], [2,0,1]))
-    assert sp.s.state == 'SAT'
-
-    print()
-    sp.prnt()
-
-    assert SeqPair.perm2vec(sp.pos) == [2,0,1]
-    assert SeqPair.perm2vec(sp.neg) == [2,0,1]
-
+    assert {((2,0,1),(2,0,1))} == set(sp.gen_solutions(max_solutions=100))
 
 def test_abut_h_fail():
     sp = SeqPair(3)
