@@ -214,9 +214,20 @@ class process_arrays:
                     if isinstance(const, constraint.Align):
                         if set(const.instances).issubset(set(h_blocks)):
                             return  # duplicate constraint
+                # TODO: try/except for auto-generated constraints
                 with set_context(self.iconst):
-                    self.iconst.append(constraint.Align(line="h_bottom", instances=h_blocks))
                     self.iconst.append(constraint.SameTemplate(instances=h_blocks))
+                    # If the connectivity is identical for all blocks, ordering does not matter
+                    block_0 = self.ckt.get_element(h_blocks[0])
+                    for block in h_blocks:
+                        block_1 = self.ckt.get_element(block)
+                        if block_0.pins != block_1.pins:
+                            self.iconst.append(constraint.Align(line="h_bottom", instances=h_blocks))
+                            break
+                    else:
+                        # TODO: Create a virtual hierarchy rather than Align
+                        self.iconst.append(constraint.AlignInOrder(direction="horizontal", instances=h_blocks))
+
         logger.debug(f"AlignBlock const update {self.iconst}")
 
 
