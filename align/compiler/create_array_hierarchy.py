@@ -135,7 +135,6 @@ class process_arrays:
     def matching_groups(self, node, lvl1: list):
         similar_groups = {}
         logger.debug(f"creating groups for all neighbors: {lvl1}")
-        # TODO: modify this best case complexity from n*(n-1) to n complexity
         node_properties = {}
         for  n in lvl1:
             node_properties[n] = create_node_id(self.graph, n)+'_'.join(sorted(self.graph.get_edge_data(node, n)['pin']))
@@ -211,15 +210,15 @@ class process_arrays:
             h_blocks = [inst for inst in inst_list
                         if inst in self.graph]
             if len(h_blocks) > 0:
+                for const in self.iconst:
+                    if isinstance(const, constraint.AlignInOrder):
+                        if set(const.instances).issubset(set(h_blocks)):
+                            return #duplicate constarint
                 with set_context(self.iconst):
                     self.iconst.append(constraint.AlignInOrder(line="bottom", direction="horizontal", instances=h_blocks))
                     self.iconst.append(constraint.SameTemplate(instances=h_blocks))
-            # del self.match_pairs[key]
         logger.debug(f"AlignBlock const update {self.iconst}")
-        # hier_keys = [key for key, value in self.match_pairs.items() if "name" in value.keys()]
-        # for key in hier_keys:
-        #     del self.match_pairs[key]
-        # return hier_keys
+
 
     def add_new_array_hier(self):
         logger.debug(f"New hierarchy instances: {self.new_hier_instances}")
