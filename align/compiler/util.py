@@ -8,6 +8,7 @@ from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging
 import pathlib
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +144,40 @@ def get_ports_weight(G):
             ports_weight[port] = {}
     return ports_weight
 
+def gen_key(param):
+    """_gen_key
+    Creates a hex key for combined transistor params
+    Args:
+        param (dict): dictionary of parameters
+    Returns:
+        str: unique hex key
+    """
+    skeys = sorted(param.keys())
+    arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
+
+def creaate_node_id(G, node1, ports_weight=None):
+    in1 = G.nodes[node1].get("instance")
+    if in1:
+        properties = {'model':in1.model,
+                      'n_pins':len(set(in1.pins.values()))
+        }
+        if in1.parameters:
+            properties.update(in1.parameters)
+        return gen_key(properties)
+    else:
+        nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
+        properties = [G.nodes[nbr].get("instance").model for nbr in nbrs1]
+        if node1 in ports_weight:
+            properties.extend(ports_weight[node1])
+        else:
+            properties.extend([leaf_weights(G, node1, nbr) for nbr in nbrs1])
+        properties = sorted(properties)
+        arg_str = '_'.join(properties)
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
+
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
@@ -163,49 +198,9 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
-    nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
-    logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-    if not ports_weight:
-        ports_weight = get_ports_weight(G)
-    if G.nodes[node1].get("instance"):
-        logger.debug(f"checking match between {node1} {node2}")
-        in1 = G.nodes[node1].get("instance")
-        in2 = G.nodes[node2].get("instance")
-        if (
-            in1.model == in2.model
-            and len(set(in1.pins.values())) == len(set(in2.pins.values()))
-            and in1.parameters == in2.parameters
-        ):
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False
-    else:
-        nbrs1_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs1])
-        nbrs2_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs2])
-        if nbrs1_type != nbrs2_type:
-            logger.debug(
-                f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}"
-            )
-            return False
-        if node1 in ports_weight and node2 in ports_weight:
-            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
-                return False
-        else:
-            weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])
-            weight2 = sorted([leaf_weights(G, node2, nbr) for nbr in nbrs2])
-            if weight2 == weight1:
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
-                return False
+    id1 = creaate_node_id(G,node1, ports_weight=ports_weight)
+    id2 = creaate_node_id(G, node2, ports_weight=ports_weight)
+    return id1 ==id2
 
 
 def get_primitive_spice():
