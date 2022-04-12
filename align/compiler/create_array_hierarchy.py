@@ -211,11 +211,11 @@ class process_arrays:
                         if inst in self.graph]
             if len(h_blocks) > 0:
                 for const in self.iconst:
-                    if isinstance(const, constraint.AlignInOrder):
+                    if isinstance(const, constraint.Align):
                         if set(const.instances).issubset(set(h_blocks)):
-                            return #duplicate constarint
+                            return  # duplicate constraint
                 with set_context(self.iconst):
-                    self.iconst.append(constraint.AlignInOrder(line="bottom", direction="horizontal", instances=h_blocks))
+                    self.iconst.append(constraint.Align(line="h_bottom", instances=h_blocks))
                     self.iconst.append(constraint.SameTemplate(instances=h_blocks))
         logger.debug(f"AlignBlock const update {self.iconst}")
 
@@ -250,7 +250,7 @@ class process_arrays:
         arre_hier_const = self.dl.find(hier).constraints
         with set_context(arre_hier_const):
             instances = ['X_'+module for module in modules]
-            arre_hier_const.append(constraint.Align(line="h_center", instances=instances))
+            arre_hier_const.append(constraint.Align(line="h_bottom", instances=instances))
             arre_hier_const.append(constraint.SameTemplate(instances=instances))
         # template placement constraint
         # for template in modules:

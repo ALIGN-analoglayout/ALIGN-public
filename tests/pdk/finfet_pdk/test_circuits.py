@@ -287,7 +287,7 @@ def test_cs_2():
 
 def test_charge_pump_switch():
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.charge_pump_switch(name, size=64)
+    netlist = circuits.charge_pump_switch(name, size=16)
     constraints = {
         name: [
             {"constraint": "PowerPorts", "ports": ["vccx"]},
@@ -298,17 +298,12 @@ def test_charge_pump_switch():
         ]
     }
     example = build_example(name, netlist, constraints)
-    # ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '2_primitives'])
-    ckt_dir, run_dir = run_example(example, n=2, cleanup=False, log_level=LOG_LEVEL)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--router_mode', 'bottom_up'])
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
         assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
-
-    p = run_dir / "3_pnr"
-    v = [f for f in p.glob("SWITCH_*.json") if "gds" not in str(f)]
-    assert len(v) <= 2, f"Why are there more than 2 variants? {v}"
 
     if CLEANUP:
         shutil.rmtree(run_dir)

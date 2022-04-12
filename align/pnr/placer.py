@@ -22,8 +22,6 @@ PLACER_SA_MAX_ITER = 1e4
 
 def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
 
-    logger.debug(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
-
     current_node = DB.CheckoutHierNode(idx,-1)
 
     DB.AddingPowerPins(current_node)
@@ -50,6 +48,8 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     if modules_d is not None:
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
+    else:
+        logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
