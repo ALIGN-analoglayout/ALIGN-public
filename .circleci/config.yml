@@ -96,6 +96,7 @@ jobs:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
       MAX_JOBS: 4
+      BUILD_PLATFORM: manylinux_2_24_x86_64
 
     steps:
       - run:
