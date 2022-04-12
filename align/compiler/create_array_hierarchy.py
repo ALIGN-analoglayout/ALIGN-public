@@ -9,7 +9,7 @@ from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
 from align.schema import SubCircuit, Instance
-from .util import compare_two_nodes, reduced_SD_neighbors
+from .util import create_node_id, reduced_SD_neighbors
 from ..schema.types import set_context
 from ..schema import constraint
 
@@ -133,26 +133,18 @@ class process_arrays:
             return array_2D
 
     def matching_groups(self, node, lvl1: list):
-        similar_groups = list()
+        similar_groups = {}
         logger.debug(f"creating groups for all neighbors: {lvl1}")
         # TODO: modify this best case complexity from n*(n-1) to n complexity
-        for l1_node1, l1_node2 in combinations(lvl1, 2):
-            if compare_two_nodes(self.graph, l1_node1, l1_node2) and \
-                    self.graph.get_edge_data(node, l1_node1)['pin'] == \
-                    self.graph.get_edge_data(node, l1_node2)['pin']:
-                found_flag = 0
-                logger.debug(f"similar groups {similar_groups}")
-                for index, sublist in enumerate(similar_groups):
-                    if l1_node1 in sublist and l1_node2 in sublist:
-                        found_flag = 1
-                        break
-                    if l1_node1 in sublist:
-                        similar_groups[index].append(l1_node2)
-                        found_flag = 1
-                        break
-                if found_flag == 0:
-                    similar_groups.append([l1_node1, l1_node2])
-        return similar_groups
+        node_properties = {}
+        for  n in lvl1:
+            node_properties[n] = create_node_id(self.graph, n)+'_'.join(sorted(self.graph.get_edge_data(node, n)['pin']))
+        for k,v in node_properties.items():
+            if v in similar_groups:
+                similar_groups[v].append(k)
+            else:
+                similar_groups[v] = [k]
+        return sorted(list(v for v in similar_groups.values() if len(v)>1))
 
     def trace_template(self, match_grps, visited, template, array):
         next_match = {}
