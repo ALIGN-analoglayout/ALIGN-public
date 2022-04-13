@@ -9,6 +9,7 @@
 set -eo pipefail
 
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
+export BUILD_PLATFORM=${AUDITWHEEL_PLAT}
 
 # install some dependencies
 case "$AUDITWHEEL_PLAT" in
