@@ -894,6 +894,7 @@ class ConfigureCompiler(SoftConstraint):
         identify_array(bool): true/false
         fix_source_drain(bool): true/false
         remove_dummy_hierarchies(bool): true/false
+        remove_power_dcaps(bool): true/false
         merge_series_devices(bool): true/false
         merge_parallel_devices(bool): true/false
 
@@ -911,6 +912,7 @@ class ConfigureCompiler(SoftConstraint):
     identify_array: bool = True  # Forbids/Allow any array identification
     fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
     remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
+    remove_power_dcaps: bool = True  # Removes any single instance hierarchies.
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
     propagate: bool = True  # propagate constraint to all lower hierarchies
