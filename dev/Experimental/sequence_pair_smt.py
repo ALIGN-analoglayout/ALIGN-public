@@ -1,5 +1,6 @@
 import z3
 import time
+import pytest
 import itertools
 import more_itertools
 
@@ -55,7 +56,7 @@ def find_solution(solver):
     s = time.time()
     r = solver.check()
     e = time.time()
-    print(f"Elapsed time: {e-s:0.3f} seconds")
+    # print(f"Elapsed time: {e-s:0.3f} seconds")
     # print(solver)
     if r == z3.sat:
         m = solver.model()
@@ -74,53 +75,10 @@ def find_solution(solver):
 
         # print(sorted([(d, m[d]) for d in m], key=lambda x: str(x[0])))
         sequence_pair = f"{seq_pos},{seq_neg}"
-        print(f"{sequence_pair=}")
+        # print(f"{sequence_pair=}")
         return sequence_pair
     else:
         return False
-
-
-def merge_align_constraints(constraints):
-
-    def _merge(instances, groups):
-        if not groups:
-            groups.append(set(instances))
-        else:
-            for i, g in enumerate(groups):
-                if set.intersection(g, instances):
-                    groups[i].update(instances)
-                    break
-            else:
-                groups.append(instances)
-
-    h_groups = []
-    v_groups = []
-    merged_constraints = list()
-    for const in constraints:
-        if const["constraint"] == "Align":
-            if const["direction"] == "h_bottom":
-                _merge(set(const['instances']), h_groups)
-            else:
-                _merge(set(const['instances']), v_groups)
-        else:
-            if const["constraint"] == "SymmetricBlocks":
-                for pairs in const['pairs']:
-                    if len(pairs) == 2:
-                        if const["direction"] == "V":
-                            _merge(set(pairs), h_groups)
-                        else:
-                            _merge(set(pairs), v_groups)
-            merged_constraints.append(const)
-
-    for hg in h_groups:
-        const = {"constraint": "Align", "direction": "h_bottom", "instances": sorted(list(hg))}
-        merged_constraints.append(const)
-
-    for vg in v_groups:
-        const = {"constraint": "Align", "direction": "v_left", "instances": sorted(list(vg))}
-        merged_constraints.append(const)
-
-    return(merged_constraints)
 
 
 def order(a, b, axis, abut=False):
@@ -170,7 +128,7 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
             assert const["direction"] == "V", f"Not implemented yet: {const}"
             for p in const["pairs"]:
                 instances.extend(p)
-        elif const["constraint"] in ["Align", "Order"]:
+        elif const["constraint"] in ["Align", "Order", "SameTemplate"]:
             instances.extend(const["instances"])
             if const["constraint"] == "Align":
                 assert const["direction"] in ["h_bottom", "v_left"], f"Not implemented yet: {const}"
@@ -183,8 +141,6 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
     block_vars = define_vars(instances)
 
     default_constraints(block_vars, solver)
-
-    # constraints = merge_align_constraints(constraints)
 
     # Constraints due to symmetric blocks
     for const in constraints:
@@ -299,20 +255,6 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
         print(f"{n=} {len(sequence_pairs)=}")
 
         return sequence_pairs
-
-
-def test_merge_align_constraints():
-    constraints = [
-        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
-        {"constraint": "Align", "direction": "h_bottom",  "instances": ["b", "c"]}
-    ]
-    assert merge_align_constraints(constraints) == [{"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]}]
-
-    constraints = [
-        {"constraint": "Align", "direction": "v_left", "instances": ["a", "b"]},
-        {"constraint": "Align", "direction": "v_left", "instances": ["b", "c"]}
-    ]
-    assert merge_align_constraints(constraints) == [{"constraint": "Align", "direction": "v_left", "instances": ["a", "b", "c"]}]
 
 
 def test_order():
@@ -593,3 +535,12 @@ def test_variants():
     for p in sequence_pairs:
         print(p)
     assert len(sequence_pairs) == 2
+
+
+@pytest.mark.skip()
+def test_runtime():
+    constraints = [{"constraint": "SameTemplate", "instances": ["a", "b", "c", "d", "e"]}]
+    s = time.time()
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=1000)
+    e = time.time()
+    print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
