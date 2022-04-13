@@ -3,18 +3,51 @@ import time
 import itertools
 import more_itertools
 
-
 POS = "pos"
 NEG = "neg"
+LLX = "llx"
+URX = "urx"
+LLY = "lly"
+URY = "ury"
 SEP = "___"
-NUM_SOLUTIONS = 3
+NUM_SOLUTIONS = 1
 
 
-def define_vars(block_vars, b):
-    if b not in block_vars:
+def define_vars(instances):
+    block_vars = dict()
+    for b in instances:
         block_vars[b] = dict()
         block_vars[b][POS] = z3.Int(f"{POS}{SEP}{b}")
         block_vars[b][NEG] = z3.Int(f"{NEG}{SEP}{b}")
+        for x in [LLX, URX, LLY, URY]:
+            block_vars[b][x] = z3.Int(f"{x}{SEP}{b}")
+    return block_vars
+
+
+def default_constraints(block_vars, solver):
+    num_blocks = len(block_vars)
+
+    # Restrict range of each variable
+    for b, d in block_vars.items():
+        solver.add(z3.And(d[POS] > 0, d[POS] <= num_blocks))
+        solver.add(z3.And(d[NEG] > 0, d[NEG] <= num_blocks))
+        for x in [LLX, URX, LLY, URY]:
+            solver.add(d[x] >= 0)
+        solver.add(z3.And(d[URX] > d[LLX], d[URY] > d[LLY]))
+
+    # Two blocks cannot occupy the same index nor overlap
+    blocks = [b for b in block_vars.keys()]
+    for i, j in itertools.combinations(blocks, 2):
+        a = block_vars[i]
+        b = block_vars[j]
+        solver.add(a[POS] != b[POS])
+        solver.add(a[NEG] != b[NEG])
+        solver.add(z3.Or(
+                a[URX] <= b[LLX],
+                b[URX] <= a[LLX],
+                a[URY] <= b[LLY],
+                b[URY] <= a[LLY]
+            ))
 
 
 def find_solution(solver):
@@ -23,6 +56,7 @@ def find_solution(solver):
     r = solver.check()
     e = time.time()
     print(f"Elapsed time: {e-s:0.3f} seconds")
+    # print(solver)
     if r == z3.sat:
         m = solver.model()
 
@@ -89,50 +123,68 @@ def merge_align_constraints(constraints):
     return(merged_constraints)
 
 
-def order(a, b, axis):
+def order(a, b, axis, abut=False):
+    expression = list()
     if axis == 'h':
-        return z3.And(a[POS] < b[POS], a[NEG] < b[NEG])
+        # a cannot be after b
+        expression.append(z3.Not(z3.And(a[POS] > b[POS], a[NEG] > b[NEG])))
+        if abut:
+            expression.append(a[URX] == b[LLX])
+        else:
+            expression.append(a[URX] <= b[LLX])
     else:
-        return z3.And(a[POS] < b[POS], a[NEG] > b[NEG])
+        # a cannot be below b
+        expression.append(z3.Not(z3.And(a[POS] < b[POS], a[NEG] > b[NEG])))
+        if abut:
+            expression.append(a[LLY] == b[URY])
+        else:
+            expression.append(a[LLY] >= b[URY])
+    return z3.And(*expression)
+
+
+def align(a, b, axis):
+    expression = list()
+    if axis == 'h':
+        expression.append(z3.Or(
+            z3.And(a[POS] > b[POS], a[NEG] > b[NEG]),
+            z3.And(a[POS] < b[POS], a[NEG] < b[NEG])
+        ))
+        # a and b should align horizontally
+        expression.append(a[LLY] == b[LLY])
+    else:
+        expression.append(z3.Or(
+            z3.And(a[POS] > b[POS], a[NEG] < b[NEG]),
+            z3.And(a[POS] < b[POS], a[NEG] > b[NEG])
+        ))
+        # a and b should align vertically
+        expression.append(a[LLX] == b[LLX])
+    return z3.And(*expression)
 
 
 def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
-    block_vars = dict()
 
-    # Define variables for each block
+    # Collect instances
+    instances = list()
     for const in constraints:
         if const["constraint"] == "SymmetricBlocks":
             assert const["direction"] == "V", f"Not implemented yet: {const}"
             for p in const["pairs"]:
-                for b in p:
-                    define_vars(block_vars, b)
+                instances.extend(p)
         elif const["constraint"] in ["Align", "Order"]:
-            for i in const["instances"]:
-                define_vars(block_vars, i)
+            instances.extend(const["instances"])
             if const["constraint"] == "Align":
                 assert const["direction"] in ["h_bottom", "v_left"], f"Not implemented yet: {const}"
         else:
             assert False, f"Not implemented yet: {const}"
 
-    constraints = merge_align_constraints(constraints)
-
-    num_blocks = len(block_vars)
-    # print(block_vars)
+    instances = set(sorted(instances))
+    num_blocks = len(instances)
     print(f"{num_blocks=} {len(constraints)=}")
+    block_vars = define_vars(instances)
 
-    # Restrict range of each variable
-    for b, d in block_vars.items():
-        solver.add(z3.And(d[POS] > 0, d[POS] <= num_blocks))
-        solver.add(z3.And(d[NEG] > 0, d[NEG] <= num_blocks))
+    default_constraints(block_vars, solver)
 
-    # Two blocks cannot occupy the same index
-    blocks = [b for b in block_vars.keys()]
-
-    for i, j in itertools.combinations(blocks, 2):
-        a = block_vars[i]
-        b = block_vars[j]
-        solver.add(a[POS] != b[POS])
-        solver.add(a[NEG] != b[NEG])
+    # constraints = merge_align_constraints(constraints)
 
     # Constraints due to symmetric blocks
     for const in constraints:
@@ -145,30 +197,33 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
                 else:
                     symm_self.extend(p)
 
-            # blocks in a pair can only have before/after relationship
             for p in symm_pair:
                 a = block_vars[p[0]]
                 b = block_vars[p[1]]
-                # [a, b]: a must be before or after b
-                solver.add(z3.Or(order(a, b, 'h'), order(b, a, 'h')))
+                # a and b should align along the axis
+                solver.add(align(a, b, 'h'))
 
-            # self symmetric blocks can only have above/below relationship
             for p in itertools.combinations(symm_self, 2):
                 a = block_vars[p[0]]
                 b = block_vars[p[1]]
-                # [a], [b]: a must be above or below b
+                # a is either above or below b
                 solver.add(z3.Or(order(a, b, 'v'), order(b, a, 'v')))
+                # centerlines should match
+                solver.add(a[LLX] + a[URX] == b[LLX] + b[URX])
 
-            # self symmetric blocks cannot be before/after a pair of blocks
             for i in symm_self:
                 s = block_vars[i]
                 for j, k in symm_pair:
                     a = block_vars[j]
                     b = block_vars[k]
-                    # [a,b], [s]: s cannot be before a and b
-                    solver.add(z3.Not(z3.And(order(s, a, 'h'), order(s, b, 'h'))))
-                    # [a,b], [s]: s cannot be after a and b
-                    solver.add(z3.Not(z3.And(order(a, s, 'h'), order(b, s, 'h'))))
+                    solver.add(z3.Or(
+                        z3.And(order(a, s, 'h'), order(s, b, 'h')),
+                        z3.And(order(b, s, 'h'), order(s, a, 'h')),
+                        z3.And(order(s, a, 'v'), order(s, b, 'v')),
+                        z3.And(order(a, s, 'v'), order(b, s, 'v'))
+                    ))
+                # centerlines should match
+                solver.add(a[LLX] + a[URX] + b[LLX] + b[URX] == 2*s[LLX] + 2*s[URX])
 
             # blocks in two separate pairs should not conflict
             for p in itertools.combinations(symm_pair, 2):
@@ -176,61 +231,30 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
                 b = block_vars[p[0][1]]
                 c = block_vars[p[1][0]]
                 d = block_vars[p[1][1]]
-                # [a,b], [c,d]: a,b cannot be before c,d
+                # [a,b], [c,d]: a,b cannot be left of c,d
                 solver.add(z3.Not(z3.And(
-                    a[POS] < c[POS], a[POS] < d[POS], b[POS] < c[POS], b[POS] < d[POS],
-                    a[NEG] < c[NEG], a[NEG] < d[NEG], b[NEG] < c[NEG], b[NEG] < d[NEG],
-                )))
-                # [a,b], [c,d]: a,b cannot be after c,d
+                    order(a, c, 'h'),
+                    order(a, d, 'h'),
+                    order(b, c, 'h'),
+                    order(b, d, 'h')
+                    )))
+                # [a,b], [c,d]: a,b cannot be right of c,d
                 solver.add(z3.Not(z3.And(
-                    a[POS] > c[POS], a[POS] > d[POS], b[POS] > c[POS], b[POS] > d[POS],
-                    a[NEG] > c[NEG], a[NEG] > d[NEG], b[NEG] > c[NEG], b[NEG] > d[NEG],
-                )))
-                # [a,b], [c,d]. a cannot be above c and below d
-                solver.add(z3.Not(z3.And(
-                    a[POS] < c[POS], a[POS] > d[POS],
-                    a[NEG] > c[NEG], a[NEG] < d[NEG],
-                )))
-                # [a,b], [c,d]. a cannot be below c and above d
-                solver.add(z3.Not(z3.And(
-                    a[POS] > c[POS], a[POS] < d[POS],
-                    a[NEG] < c[NEG], a[NEG] > d[NEG],
-                )))
-                # [a,b], [c,d]. b cannot be above c and below d
-                solver.add(z3.Not(z3.And(
-                    b[POS] < c[POS], b[POS] > d[POS],
-                    b[NEG] > c[NEG], b[NEG] < d[NEG],
-                )))
-                # [a,b], [c,d]. b cannot be below c and above d
-                solver.add(z3.Not(z3.And(
-                    b[POS] > c[POS], b[POS] < d[POS],
-                    b[NEG] < c[NEG], b[NEG] > d[NEG],
-                )))
+                    order(c, a, 'h'),
+                    order(d, a, 'h'),
+                    order(c, b, 'h'),
+                    order(d, b, 'h')
+                    )))
 
         elif const["constraint"] == "Order":
+            abut = True if "abut" in const and const["abut"] else False
             for i, j in more_itertools.pairwise(const["instances"]):
                 a = block_vars[i]
                 b = block_vars[j]
                 if const["direction"] == "top_to_bottom":
-                    # a,b: a must be above b
-                    solver.add(order(a, b, 'v'))
-                    if "abut" in const and const["abut"]:
-                        # any block c cannot be below a and above b
-                        for k in blocks:
-                            if k not in [i, j]:
-                                c = block_vars[k]
-                                solver.add(z3.Not(z3.And(order(a, c, 'v'), order(c, b, 'v'))))
-
+                    solver.add(order(a, b, "v", abut=abut))
                 elif const["direction"] == "left_to_right":
-                    # a,b: a must be left of b
-                    solver.add(order(a, b, 'h'))
-
-                    if "abut" in const and const["abut"]:
-                        # any block c cannot be after a and before b
-                        for k in blocks:
-                            if k not in [i, j]:
-                                c = block_vars[k]
-                                solver.add(z3.Not(z3.And(order(a, c, 'h'), order(c, b, 'h'))))
+                    solver.add(order(a, b, "h", abut=abut))
                 else:
                     assert False
 
@@ -239,19 +263,12 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
                 a = block_vars[i]
                 b = block_vars[j]
                 if const["direction"] == "h_bottom":
-                    # a cannot be above b
-                    solver.add(z3.Not(order(a, b, 'v')))
-                    # a cannot be below b
-                    solver.add(z3.Not(order(b, a, 'v')))
+                    solver.add(align(a, b, "h"))
                 elif const["direction"] == "v_left":
-                    # a cannot be before b
-                    solver.add(z3.Not(order(a, b, 'h')))
-                    # a cannot be after b
-                    solver.add(z3.Not(order(b, a, 'h')))
+                    solver.add(align(a, b, "v"))
                 else:
                     assert False
 
-    # print(solver)
     initial_pair = find_solution(solver)
     if n < 2 or not initial_pair:
         return(initial_pair)
@@ -269,7 +286,6 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
 
             # print(z3.Not(z3.And(*clauses)))
             # assert False
-
             solver.add(z3.Not(z3.And(*clauses)))
             # print(solver)
 
@@ -304,29 +320,32 @@ def test_order():
         {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b", "c"]},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "a"]},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 1"
 
     constraints = [
         {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b", "c"]},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "c"], "abut": True},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 2"
 
     constraints = [
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b", "c"]},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "a"], "abut": True},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    # Legal solution: bca, abc
+    #  |a
+    # b|
+    #  |c
+    assert generate_sequence_pair(constraints, z3.Solver()), "case 3"
 
-def test_order_mixed():
     constraints = [
         {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "b"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b"]},
         ]
-    # Legal sequence pairs: 'ab ab' or 'ab ba'
-    #     a
-    #       b
-    assert generate_sequence_pair(constraints, z3.Solver())
+    # Legal solution: ba, ab
+    # a|
+    #  |b
+    assert generate_sequence_pair(constraints, z3.Solver()), "case 4"
 
 
 def test_align():
@@ -334,20 +353,20 @@ def test_align():
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
         {"constraint": "Align", "direction": "v_left",   "instances": ["b", "a"]},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 1"
 
     constraints = [
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
         {"constraint": "Align", "direction": "h_bottom", "instances": ["b", "c"]},
         {"constraint": "Align", "direction": "v_left",   "instances": ["a", "c"]},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 2"
 
     constraints = [
         {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["b", "a"]},
         ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 3"
 
 
 def test_symmetry():
@@ -355,19 +374,25 @@ def test_symmetry():
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["a", "b"]},
     ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 1"
 
     constraints = [
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
         {"constraint": "Order", "direction": "left_to_right", "instances": ["c", "b", "a"]},
     ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 2"
+
+    constraints = [
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
+        {"constraint": "Order", "direction": "left_to_right", "instances": ["a", "c", "b"]},
+    ]
+    assert generate_sequence_pair(constraints, z3.Solver()), "case 3"
 
     constraints = [
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["a", "b"], ["c"]]},
         {"constraint": "Align", "direction": "v_left", "instances": ["b", "a"]},
     ]
-    assert not generate_sequence_pair(constraints, z3.Solver())
+    assert not generate_sequence_pair(constraints, z3.Solver()), "case 4"
 
 
 def test_align_symmetry():
@@ -560,13 +585,11 @@ def test_variants_sanity():
 
 
 def test_variants():
-    constraints = [
-        {"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b", "c"]},
-    ]
+    constraints = [{"constraint": "Align", "direction": "h_bottom", "instances": ["a", "b"]}]
     s = time.time()
     sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=24)
     e = time.time()
     print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
     for p in sequence_pairs:
         print(p)
-    assert len(sequence_pairs) == 6
+    assert len(sequence_pairs) == 2
