@@ -394,15 +394,15 @@ void GcellDetailRouter::create_detailrouter_new() {
         // bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
         bool pathMark = a_star.FindFeasiblePath_sym(grid, this->path_number, 0, 0, symmetry_path);
         // std::cout<<"performing detailed router on debug 1"<<std::endl;
-        /*
+        
         if(pathMark==0){
           grid.CreateGridData();
           //grid.CreateGridData_new();
           get_internal_metal_via();
           generate_set_data(Set_x);
-          assert(0);
+          //assert(0);
          }
-        */
+        
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         std::vector<std::vector<int>> extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
@@ -433,7 +433,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         // logger->debug("Detail Router check point 8");
         // update physical path to
         InsertSourceDestPinContact(temp_source, temp_dest, Set_x);
-        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
+        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
         //??? insert physical_path or current_metal into sex_x
         InsertPhysicalPathToSetX(i, Set_x);
         Refresh_Grid(grid);
@@ -1043,7 +1043,7 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
 
 void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
                                              std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
-                                             std::vector<std::vector<RouterDB::Metal>> &physical_path) {
+                                             std::vector<std::vector<RouterDB::Metal>> &physical_path, int net_index) {
   // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
 
   if (source_lock == 1) {
@@ -1051,7 +1051,8 @@ void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::v
     // source_lock = 1;
   }
 
-  updateSource(physical_path, temp_source);  // wbxu: temp_dest might need be appended into temp_source
+  //updateSource(physical_path, temp_source);  // wbxu: temp_dest might need be appended into temp_source
+  updateSource_new(net_index, temp_source);  // wbxu: temp_dest might need be appended into temp_source
   grid.InactivateSourceDest();
   grid.InactivePointlist(src_dest_plist);
 
@@ -1284,7 +1285,7 @@ void GcellDetailRouter::create_detailrouter() {
 
         // logger->debug("Detail Router check point 8");
         // update physical path to
-        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
+        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
         UpdatePlistNets(physical_path, add_plist,extend_labels);
       }
       // Symmetry_Routing(sym_flag, i, Set_net);
@@ -1369,7 +1370,7 @@ void GcellDetailRouter::create_detailrouter_old() {
       }
 
       // update physical path to
-      Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
+      Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
       UpdatePlistNets(physical_path, add_plist,extend_labels);
     }
     // Symmetry_Routing(sym_flag, i, Set_net);
@@ -2768,7 +2769,6 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal>> &
       temp_sink.metalIdx = temp_path[i][j].MetalIdx;
       RouterDB::point Lpoint;
       RouterDB::point Upoint;
-
       RouterDB::point spoint;
       RouterDB::point epoint;
       spoint = temp_path[i][j].LinePoint[0];
@@ -2804,8 +2804,52 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal>> &
       temp_sink.coord.push_back(Lpoint);
       temp_sink.coord.push_back(Upoint);
       temp_source.push_back(temp_sink);
-    }
+    }   
   }
+};
+
+void GcellDetailRouter::updateSource_new(int net_index, std::vector<RouterDB::SinkData> &temp_source) {
+  RouterDB::SinkData temp_sink;
+
+  std::vector<RouterDB::Metal> temp_path = Nets[net_index].path_metal;
+  std::vector<RouterDB::Via> temp_vias = Nets[net_index].path_via;
+
+  for (unsigned int i = 0; i < temp_path.size(); i++) {
+      temp_sink.coord.clear();
+      temp_sink.metalIdx = temp_path[i].MetalIdx;
+      RouterDB::point Lpoint;
+      RouterDB::point Upoint;      
+      Lpoint.x = temp_path[i].MetalRect.placedLL.x;
+      Lpoint.y = temp_path[i].MetalRect.placedLL.y;
+      Upoint.x = temp_path[i].MetalRect.placedUR.x;
+      Upoint.y = temp_path[i].MetalRect.placedUR.y;
+      temp_sink.coord.push_back(Lpoint);
+      temp_sink.coord.push_back(Upoint);
+      temp_source.push_back(temp_sink);
+    }
+
+  for (unsigned int i = 0; i < temp_vias.size(); i++) {
+      temp_sink.coord.clear();
+      RouterDB::point Lpoint;
+      RouterDB::point Upoint; 
+      temp_sink.metalIdx = temp_vias[i].UpperMetalRect.metal;
+      Lpoint.x = temp_vias[i].UpperMetalRect.placedLL.x;
+      Lpoint.y = temp_vias[i].UpperMetalRect.placedLL.y;
+      Upoint.x = temp_vias[i].UpperMetalRect.placedUR.x;
+      Upoint.y = temp_vias[i].UpperMetalRect.placedUR.y;
+      temp_sink.coord.push_back(Lpoint);
+      temp_sink.coord.push_back(Upoint);
+      temp_source.push_back(temp_sink);
+
+      temp_sink.metalIdx = temp_vias[i].LowerMetalRect.metal;
+      Lpoint.x = temp_vias[i].LowerMetalRect.placedLL.x;
+      Lpoint.y = temp_vias[i].LowerMetalRect.placedLL.y;
+      Upoint.x = temp_vias[i].LowerMetalRect.placedUR.x;
+      Upoint.y = temp_vias[i].LowerMetalRect.placedUR.y;
+      temp_sink.coord.push_back(Lpoint);
+      temp_sink.coord.push_back(Upoint);
+      temp_source.push_back(temp_sink);
+    }   
 };
 
 void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal>> &temp_path, RouterDB::Net &temp_net, std::vector<std::vector<int>> extend_labels) {

@@ -178,7 +178,8 @@ class GcellDetailRouter : public GcellGlobalRouter {
                                     std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag);
   void Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
                             std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
-                            std::vector<std::vector<RouterDB::Metal>> &physical_path);
+                            std::vector<std::vector<RouterDB::Metal>> &physical_path, int net_index);
+  void updateSource_new(int net_index, std::vector<RouterDB::SinkData> &temp_source);
   void Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
   void InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks);
   void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
