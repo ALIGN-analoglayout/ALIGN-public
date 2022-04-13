@@ -1368,7 +1368,7 @@ class ConstraintDB(types.List[ConstraintType]):
             super().append(constraint)
             self._cache.add(constraint_str)
         else:
-            logger.warning(f"Constraint is duplicated: {constraint_str}")
+            logger.debug(f"Constraint is duplicated: {constraint_str}")
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
