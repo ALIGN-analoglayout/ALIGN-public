@@ -819,6 +819,71 @@ bool SeqPair::KeepOrdering(design& caseNL) {
         }
       }
     }
+    // check sympair
+    for (const auto& group : caseNL.SPBlocks) {
+      if (group.axis_dir == placerDB::V) {
+        for (auto pair : group.sympair) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
+          int first_it = blockid2indexinvec[pair.first];
+          int second_it = blockid2indexinvec[pair.second];
+          if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+            adj[first_it].push_back(second_it);
+            ind[second_it]++;
+          } else if (it1 > it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+            adj[second_it].push_back(first_it);
+            ind[first_it]++;
+          }
+          for (auto self : group.selfsym) {
+            auto it = find(posPair.begin(), posPair.end(), self.first) - posPair.begin();
+            int self_it = blockid2indexinvec[self.first];
+            if (it < first_it && it < second_it && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+            } else if (it > first_it && it > second_it && find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it > first_it && it < second_it && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it < first_it && it > second_it && find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end()) {
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+            }
+          }
+        }
+      } else {
+        for (auto pair : group.sympair) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
+          int first_it = blockid2indexinvec[pair.first];
+          int second_it = blockid2indexinvec[pair.second];
+          if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+            adj[second_it].push_back(first_it);
+            ind[first_it]++;
+          } else if (it1 > it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+            adj[first_it].push_back(second_it);
+            ind[second_it]++;
+          }
+        }
+      }
+    }
     for (unsigned int i = 0; i < blocks2sort.size(); i++) {
       int it = blockid2indexinvec[blocks2sort[i]];
       if (ind[it] == 0) q.push(it);
