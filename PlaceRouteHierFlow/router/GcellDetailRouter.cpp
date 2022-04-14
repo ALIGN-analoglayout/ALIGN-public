@@ -1677,6 +1677,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
 
 
   RouterDB::box box;
+  RouterDB::box check_box;
   std::vector<std::vector<RouterDB::point>> plist_metal2uppervia(this->layerNo);  // points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point>> plist_metal2lowervia(this->layerNo);  // points in this list cannot have a lower via
   /**
@@ -1831,7 +1832,11 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
           // if this box belong to any source or dest, then skip it
-          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
+          check_box.LL.x = mit->coord[0].x ;
+          check_box.LL.y = mit->coord[0].y ;
+          check_box.UR.x = mit->coord[1].x ;
+          check_box.UR.y = mit->coord[1].y ;
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, check_box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, check_box)) continue;
           // current metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // upper metal cannot go down
@@ -1851,8 +1856,12 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
         std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          check_box.LL.x = mit->coord[0].x ;
+          check_box.LL.y = mit->coord[0].y ;
+          check_box.UR.x = mit->coord[1].x ;
+          check_box.UR.y = mit->coord[1].y ;
           // if this box belong to any source or dest, then skip it
-          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, check_box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, check_box)) continue;
           // current metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // lower metal cannot go up
@@ -1871,11 +1880,16 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
           box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
           //box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y;
           box.UR.y = mit->coord[1].y ;
+          
         std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
         std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          check_box.LL.x = mit->coord[0].x ;
+          check_box.LL.y = mit->coord[0].y ;
+          check_box.UR.x = mit->coord[1].x ;
+          check_box.UR.y = mit->coord[1].y ;
           // if this box belong to any source or dest, then skip it
-          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, check_box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, check_box)) continue;
           // current metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // upper metal cannot go down
@@ -1895,8 +1909,12 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
         std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          check_box.LL.x = mit->coord[0].x ;
+          check_box.LL.y = mit->coord[0].y ;
+          check_box.UR.x = mit->coord[1].x ;
+          check_box.UR.y = mit->coord[1].y ;
           // if this box belong to any source or dest, then skip it
-          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, check_box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, check_box)) continue;
           // current metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // lower metal cannot go up
