@@ -386,7 +386,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
         //grid.CreateGridData_new();
         Detailed_router_set_src_dest_new(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
-        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
+        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur, temp_source, temp_dest);
         AddViaSpacing(Pset_via, grid, gridll, gridur);
         A_star a_star(grid, Nets[i].shielding);
         // std::cout<<"performing detailed router on "<<Nets[i].netName<<" "<<j<<" pin"<<std::endl;
@@ -404,6 +404,7 @@ void GcellDetailRouter::create_detailrouter_new() {
          }
         
         std::vector<std::vector<RouterDB::Metal>> physical_path;
+        std::vector<RouterDB::Via> physical_via;
         std::vector<std::vector<int>> extend_labels;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         logger->debug("pathMark {0}", pathMark);
@@ -417,7 +418,7 @@ void GcellDetailRouter::create_detailrouter_new() {
           // lastmile_source_new(physical_path, temp_source);
           // lastmile_dest_new(physical_path, temp_dest);
           // std::cout<<"performing detailed router on debug 2.7"<<std::endl;
-          returnPath_new(physical_path, i, extend_labels);
+          returnPath_new(physical_path, i, extend_labels, physical_via);
           // std::cout<<"performing detailed router on debug 3"<<std::endl;
           // insert via center into Pset
           InsertRoutingVia(a_star, grid, Pset_current_net_via);
@@ -433,7 +434,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         // logger->debug("Detail Router check point 8");
         // update physical path to
         InsertSourceDestPinContact(temp_source, temp_dest, Set_x);
-        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
+        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path, physical_via, i);
         //??? insert physical_path or current_metal into sex_x
         InsertPhysicalPathToSetX(i, Set_x);
         Refresh_Grid(grid);
@@ -444,11 +445,12 @@ void GcellDetailRouter::create_detailrouter_new() {
       temp_report.routed_net.push_back(temp_routing_net);
       // modify_tile_metals(Nets[i], 0);
     }
+    //end of multi connection
   }
 
 };
 
-void GcellDetailRouter::returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels) {
+void GcellDetailRouter::returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels, std::vector<RouterDB::Via> &temp_via) {
 
   //insert first
   for (unsigned int i = 0; i < temp_path.size(); i++) {
@@ -462,9 +464,82 @@ void GcellDetailRouter::returnPath_new(std::vector<std::vector<RouterDB::Metal>>
   GetPhsical_Metal_Via(net_index);
   ExtendMetals(net_index);
   //Nets[net_index].path_metal.clear();
+  GetPhsical_Metal(temp_path);
+  Obtain_vias(temp_path,temp_via);
   ExtendMetalsPhysicalPath(temp_path,extend_labels);
+  //GetPhsical_Metal(temp_path);
+  // need to return path and metal, then remove those part using the retunr path and metal
 
 };
+
+void GcellDetailRouter::Obtain_vias(std::vector<std::vector<RouterDB::Metal>> &temp_path, std::vector<RouterDB::Via> &Vias) {
+
+  RouterDB::Via temp_via;
+  std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
+
+  std::vector<RouterDB::Metal> path;
+  for(unsigned int i=0;i<temp_path.size();++i){
+     for(unsigned int j=0;j<temp_path[i].size();++j){
+        path.push_back(temp_path[i][j]);
+      }
+  }
+
+  for (unsigned int h = 0; h < path.size(); h++) {
+    int temp_metal_index = path[h].MetalIdx;
+    for (unsigned int l = 0; l < path.size(); l++) {
+      int next_metal_index = path[l].MetalIdx;
+
+      if (l == h) {
+        continue;
+      }
+
+      if (temp_metal_index == next_metal_index - 1) {
+        if (path[h].LinePoint[0].x == path[l].LinePoint[0].x &&
+            path[h].LinePoint[0].y == path[l].LinePoint[0].y) {
+          temp_via.position = path[h].LinePoint[0];
+          temp_via.model_index = temp_metal_index;
+          UpdateVia(temp_via);
+          set_via.insert(temp_via);
+        }
+
+        if (path[h].LinePoint[0].x == path[l].LinePoint[1].x &&
+            path[h].LinePoint[0].y == path[l].LinePoint[1].y) {
+          temp_via.position = path[h].LinePoint[0];
+          temp_via.model_index = temp_metal_index;
+          UpdateVia(temp_via);
+          set_via.insert(temp_via);
+        }
+
+        if (path[h].LinePoint[1].x == path[l].LinePoint[0].x &&
+            path[h].LinePoint[1].y == path[l].LinePoint[0].y) {
+          temp_via.position = path[h].LinePoint[1];
+          temp_via.model_index = temp_metal_index;
+          UpdateVia(temp_via);
+          set_via.insert(temp_via);
+        }
+
+        if (path[h].LinePoint[1].x == path[l].LinePoint[1].x &&
+            path[h].LinePoint[1].y == path[l].LinePoint[1].y) {
+          temp_via.position = path[h].LinePoint[1];
+          temp_via.model_index = temp_metal_index;
+          UpdateVia(temp_via);
+          set_via.insert(temp_via);
+        }
+      }
+    }
+  }
+
+  std::set<RouterDB::Via, RouterDB::ViaComp>::iterator via_begin, via_end, via_it;
+  via_begin = set_via.begin();
+  via_end = set_via.end();
+
+  for (via_it = via_begin; via_it != via_end; ++via_it) {
+    Vias.push_back(*via_it);
+  }
+
+};
+
+
 
 void GcellDetailRouter::ExtendMetalsPhysicalPath(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<int>> &extend_labels) {
 
@@ -1043,7 +1118,7 @@ void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<Rou
 
 void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
                                              std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
-                                             std::vector<std::vector<RouterDB::Metal>> &physical_path, int net_index) {
+                                             std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<RouterDB::Via> &physical_via, int net_index) {
   // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
 
   if (source_lock == 1) {
@@ -1052,7 +1127,11 @@ void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::v
   }
 
   //updateSource(physical_path, temp_source);  // wbxu: temp_dest might need be appended into temp_source
-  updateSource_new(net_index, temp_source);  // wbxu: temp_dest might need be appended into temp_source
+  //updateSource_old(net_index, temp_source);
+
+  updateSource_new(physical_path, physical_via, temp_source);  // wbxu: temp_dest might need be appended into temp_source
+
+  //assert(0);
   grid.InactivateSourceDest();
   grid.InactivePointlist(src_dest_plist);
 
@@ -1239,7 +1318,7 @@ void GcellDetailRouter::create_detailrouter() {
         std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
         Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
-        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur);
+        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, gridll, gridur, temp_source, temp_dest);
         AddViaSpacing(Pset_via, grid, gridll, gridur);
         A_star a_star(grid, Nets[i].shielding);
         // std::cout<<"performing detailed router on "<<Nets[i].netName<<" "<<j<<" pin"<<std::endl;
@@ -1258,6 +1337,7 @@ void GcellDetailRouter::create_detailrouter() {
         
         std::vector<std::vector<RouterDB::Metal>> physical_path;
         std::vector<std::vector<int>> extend_labels;
+        std::vector<RouterDB::Via> physical_via;
         Update_rouer_report_info(temp_routing_net, i, j, pathMark);
         logger->debug("pathMark {0}", pathMark);
         // std::cout<<"performing detailed router on debug 2"<<std::endl;
@@ -1285,7 +1365,7 @@ void GcellDetailRouter::create_detailrouter() {
 
         // logger->debug("Detail Router check point 8");
         // update physical path to
-        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
+        Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path, physical_via, i);
         UpdatePlistNets(physical_path, add_plist,extend_labels);
       }
       // Symmetry_Routing(sym_flag, i, Set_net);
@@ -1354,6 +1434,7 @@ void GcellDetailRouter::create_detailrouter_old() {
       A_star a_star(grid, Nets[i].shielding);
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       std::vector<std::vector<RouterDB::Metal>> physical_path;
+      std::vector<RouterDB::Via> physical_via;
       std::vector<std::vector<int>> extend_labels;
       Update_rouer_report_info(temp_routing_net, i, j, pathMark);
 
@@ -1370,7 +1451,7 @@ void GcellDetailRouter::create_detailrouter_old() {
       }
 
       // update physical path to
-      Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path,i);
+      Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path, physical_via, i);
       UpdatePlistNets(physical_path, add_plist,extend_labels);
     }
     // Symmetry_Routing(sym_flag, i, Set_net);
@@ -1475,6 +1556,26 @@ void GcellDetailRouter::InsertContact2Contact(std::set<RouterDB::SinkData, Route
 void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                                             std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
                                             std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net) {
+
+
+  std::ofstream datafile;
+  datafile.open(HierName+"_Metal_via_spacing_contact.txt");
+
+  auto write_out_via = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mindex, const auto& index) {
+    datafile << llx;
+    datafile << " ";
+    datafile << lly;
+    datafile << " ";
+    datafile << urx;
+    datafile << " ";
+    datafile << ury;
+    datafile << " ";
+    datafile << mindex;
+    datafile << " ";
+    datafile << index;
+    datafile << std::endl;
+  };  
+  
   RouterDB::box box;
   //***************block vias around metal******************
   std::vector<std::vector<RouterDB::point>> plist_via_lower_metal(this->layerNo);  // points in this list cannot have an upper via
@@ -1491,6 +1592,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x;
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
         ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
       }
       if (mIdx > 0) {  // not the lowest metal
         int vIdx = mIdx - 1;
@@ -1499,6 +1601,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x;
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
         ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
       }
     } else if (drc_info.Metal_info[mIdx].direct == 1) {  // Horizontal
       if (mIdx < this->layerNo - 1) {                    // not highest metal
@@ -1508,6 +1611,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y;
         ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
       }
       if (mIdx > 0) {  // not lowest metal
         int vIdx = mIdx - 1;
@@ -1516,6 +1620,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y;
         ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
       }
     }
   }
@@ -1527,31 +1632,48 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
   grid.InactivePointlist_via(Pset_via_lower_metal, true);   // inactive metal's upper via
   grid.InactivePointlist_via(Pset_via_upper_metal, false);  // inactive metal's lower via
   //***************block vias around metal******************
+
+  datafile.close();
 };
+
+bool GcellDetailRouter::CheckWhetherInsideSourceDest(std::vector<RouterDB::SinkData> &temp_src, int metal, RouterDB::box temp_box){
+
+  std::cout<<" box "<<temp_box.LL.x <<" "<<temp_box.LL.y<<" "<<temp_box.UR.x<<" "<<temp_box.UR.y<<std::endl; 
+  for(auto it: temp_src){
+     std::cout<<"src dest " <<it.metalIdx <<" "<< it.coord[0].x << " "<< it.coord[0].y << " " << it.coord[1].x << " "<< it.coord[1].y << std::endl;
+     if(it.metalIdx==metal and it.coord[0].x<=temp_box.LL.x and it.coord[0].y<=temp_box.LL.y and it.coord[1].x>=temp_box.UR.x and it.coord[1].y>=temp_box.UR.y){
+        std::cout<<" true"<<std::endl;
+        return true;
+     }
+  }
+  std::cout<<" false"<<std::endl;
+  return false;
+
+}
 
 void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact,
-                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact, RouterDB::point LL, RouterDB::point UR) {
+                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact, RouterDB::point LL, RouterDB::point UR, 
+                                        std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest) {
 
 
-  //std::ofstream matlabfile;
-  //matlabfile.open("ViaEnclosure.txt");
+  std::ofstream datafile;
+  datafile.open(HierName+"_Metal_via_spacing_contact.txt");
 
-  /*
-  auto writeout_matlabfile = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mit) {
-    matlabfile << llx;
-    matlabfile << " ";
-    matlabfile << lly;
-    matlabfile << " ";
-    matlabfile << urx;
-    matlabfile << " ";
-
-    matlabfile << ury;
-    matlabfile << " ";
-    matlabfile << mit;
-    matlabfile << std::endl;
-  };
-  */
+  auto write_out_via = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mindex, const auto& index) {
+    datafile << llx;
+    datafile << " ";
+    datafile << lly;
+    datafile << " ";
+    datafile << urx;
+    datafile << " ";
+    datafile << ury;
+    datafile << " ";
+    datafile << mindex;
+    datafile << " ";
+    datafile << index;
+    datafile << std::endl;
+  };  
 
 
   RouterDB::box box;
@@ -1665,10 +1787,15 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
         // current metal cannot go up
         ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         // upper metal cannot go down
         ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
       };
       if (mIdx > 0) {
         int vIdx = mIdx - 1;
@@ -1676,10 +1803,15 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
         // current metal cannot go down
         ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         // lower metal cannot go up
         ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
       };
     }
   } else {
@@ -1689,53 +1821,89 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         // vertical
         if (mIdx < this->layerNo - 1) {
           int vIdx = mIdx;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x;
+          //box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x;
+          box.LL.x = mit->coord[0].x;
           box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x;
+          //box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x;
+          box.UR.x = mit->coord[1].x ;
           box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          // if this box belong to any source or dest, then skip it
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
           // current metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // upper metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           //writeout_matlabfile(box.LL.x,box.LL.y,box.UR.x,box.UR.y,mIdx);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
         };
         if (mIdx > 0) {
           int vIdx = mIdx - 1;
-          box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x;
+          //box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x;
+          box.LL.x = mit->coord[0].x ;
           box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x;
+          //box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x;
+          box.UR.x = mit->coord[1].x ;
           box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          // if this box belong to any source or dest, then skip it
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
           // current metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // lower metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           //writeout_matlabfile(box.LL.x,box.LL.y,box.UR.x,box.UR.y,mIdx);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
         };
       } else {
         // horizontal
         if (mIdx < this->layerNo - 1) {
           int vIdx = mIdx;
           box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y;
+          //box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y;
+          box.LL.y = mit->coord[0].y ;
           box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y;
+          //box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y;
+          box.UR.y = mit->coord[1].y ;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          // if this box belong to any source or dest, then skip it
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
           // current metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // upper metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           //writeout_matlabfile(box.LL.x,box.LL.y,box.UR.x,box.UR.y,mIdx);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
         };
         if (mIdx > 0) {
           int vIdx = mIdx - 1;
           box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
-          box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y;
+          //box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y;
+          box.LL.y = mit->coord[0].y ;
           box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y;
+          //box.UR.y = mit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y;
+          box.UR.y = mit->coord[1].y ;
+        std::cout<<"metal contact position "<<mit->coord[0].x<<" "<<mit->coord[0].y<<" "<<mit->coord[1].x<<" "<<mit->coord[1].y<<" "<<std::endl;
+        std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
+        std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
+          // if this box belong to any source or dest, then skip it
+          if(CheckWhetherInsideSourceDest(temp_source, mIdx, box) or CheckWhetherInsideSourceDest(temp_dest, mIdx, box)) continue;
           // current metal cannot go down
           ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           // lower metal cannot go up
           ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
           //writeout_matlabfile(box.LL.x,box.LL.y,box.UR.x,box.UR.y,mIdx);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+          write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
         };
       }
     }
@@ -1749,6 +1917,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   grid.InactivePointlist_via(Pset_metal2lowervia, false);  // inactive metal's lower via
   //***************block vias around metal******************
   //matlabfile.close();
+  datafile.close();
 };
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid, RouterDB::point LL,
@@ -1756,7 +1925,7 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
 
 
   std::ofstream datafile;
-  datafile.open(HierName+"Metal_via_spacing.txt");
+  datafile.open(HierName+"_Metal_via_spacing.txt");
 
   auto write_out_via = [&](const auto& llx, const auto& lly, const auto& urx, const auto& ury, const auto& mindex, const auto& index) {
     datafile << llx;
@@ -1776,10 +1945,8 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
   //internal metal and via for nets
   for (auto bit: Pset_via) {
       int vIdx = bit.first;
-      write_out_via(bit.second.x - drc_info.Via_info[vIdx].width/2,bit.second.y- drc_info.Via_info[vIdx].width_y/2,bit.second.x + drc_info.Via_info[vIdx].width/2,bit.second.y + drc_info.Via_info[vIdx].width_y/2,vIdx,2);
+      //write_out_via(bit.second.x - drc_info.Via_info[vIdx].width/2,bit.second.y- drc_info.Via_info[vIdx].width_y/2,bit.second.x + drc_info.Via_info[vIdx].width/2,bit.second.y + drc_info.Via_info[vIdx].width_y/2,vIdx,2);
   }
-
-  datafile.close();
 
 
   RouterDB::box box;
@@ -1801,6 +1968,7 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
     // and return point list in via's bounding box
     ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    write_out_via(box.LL.x, box.LL.y, box.UR.x, box.UR.y,vIdx,2);
   }
 
   // convert vector into set
@@ -1808,6 +1976,8 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
   grid.InactivePointlist_via(Pset_via_lower_metal, true);   // inactive via's lower metal
   grid.InactivePointlist_via(Pset_via_upper_metal, false);  // inactive via's upper metal
+
+  datafile.close();
 };
 
 void GcellDetailRouter::SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact &result_contact) {
@@ -2808,25 +2978,69 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal>> &
   }
 };
 
-void GcellDetailRouter::updateSource_new(int net_index, std::vector<RouterDB::SinkData> &temp_source) {
+void GcellDetailRouter::updateSource_old(int net_index, std::vector<RouterDB::SinkData> &temp_source) {
   RouterDB::SinkData temp_sink;
 
-  std::vector<RouterDB::Metal> temp_path = Nets[net_index].path_metal;
-  std::vector<RouterDB::Via> temp_vias = Nets[net_index].path_via;
+  for(unsigned int i=0;i<Nets[net_index].path_metal.size();i++){
+         temp_sink.coord.clear();
+         temp_sink.metalIdx = Nets[net_index].path_metal[i].MetalIdx;
+         RouterDB::point Lpoint;
+         RouterDB::point Upoint;      
+         Lpoint.x = Nets[net_index].path_metal[i].MetalRect.placedLL.x;
+         Lpoint.y = Nets[net_index].path_metal[i].MetalRect.placedLL.y;
+         Upoint.x = Nets[net_index].path_metal[i].MetalRect.placedUR.x;
+         Upoint.y = Nets[net_index].path_metal[i].MetalRect.placedUR.y;
+         temp_sink.coord.push_back(Lpoint);
+         temp_sink.coord.push_back(Upoint);
+         temp_source.push_back(temp_sink);
+         std::cout<<"old metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
+  }
 
-  for (unsigned int i = 0; i < temp_path.size(); i++) {
+  for (unsigned int i = 0; i < Nets[net_index].path_via.size(); i++) {
       temp_sink.coord.clear();
-      temp_sink.metalIdx = temp_path[i].MetalIdx;
       RouterDB::point Lpoint;
-      RouterDB::point Upoint;      
-      Lpoint.x = temp_path[i].MetalRect.placedLL.x;
-      Lpoint.y = temp_path[i].MetalRect.placedLL.y;
-      Upoint.x = temp_path[i].MetalRect.placedUR.x;
-      Upoint.y = temp_path[i].MetalRect.placedUR.y;
+      RouterDB::point Upoint; 
+      temp_sink.metalIdx = Nets[net_index].path_via[i].UpperMetalRect.metal;
+      Lpoint.x = Nets[net_index].path_via[i].UpperMetalRect.placedLL.x;
+      Lpoint.y = Nets[net_index].path_via[i].UpperMetalRect.placedLL.y;
+      Upoint.x = Nets[net_index].path_via[i].UpperMetalRect.placedUR.x;
+      Upoint.y = Nets[net_index].path_via[i].UpperMetalRect.placedUR.y;
       temp_sink.coord.push_back(Lpoint);
       temp_sink.coord.push_back(Upoint);
       temp_source.push_back(temp_sink);
+      std::cout<<"old via metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
+
+      temp_sink.metalIdx = Nets[net_index].path_via[i].LowerMetalRect.metal;
+      Lpoint.x = Nets[net_index].path_via[i].LowerMetalRect.placedLL.x;
+      Lpoint.y = Nets[net_index].path_via[i].LowerMetalRect.placedLL.y;
+      Upoint.x = Nets[net_index].path_via[i].LowerMetalRect.placedUR.x;
+      Upoint.y = Nets[net_index].path_via[i].LowerMetalRect.placedUR.y;
+      temp_sink.coord.push_back(Lpoint);
+      temp_sink.coord.push_back(Upoint);
+      temp_source.push_back(temp_sink);
+      std::cout<<"old via metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
+    }   
+};
+
+void GcellDetailRouter::updateSource_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::Via> &temp_vias, std::vector<RouterDB::SinkData> &temp_source) {
+  RouterDB::SinkData temp_sink;
+
+  for(unsigned int i=0;i<temp_path.size();i++){
+     for (unsigned int j = 0; j < temp_path[i].size(); j++) {
+         temp_sink.coord.clear();
+         temp_sink.metalIdx = temp_path[i][j].MetalIdx;
+         RouterDB::point Lpoint;
+         RouterDB::point Upoint;      
+         Lpoint.x = temp_path[i][j].MetalRect.placedLL.x;
+         Lpoint.y = temp_path[i][j].MetalRect.placedLL.y;
+         Upoint.x = temp_path[i][j].MetalRect.placedUR.x;
+         Upoint.y = temp_path[i][j].MetalRect.placedUR.y;
+         temp_sink.coord.push_back(Lpoint);
+         temp_sink.coord.push_back(Upoint);
+         temp_source.push_back(temp_sink);
+         std::cout<<"new metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
     }
+  }
 
   for (unsigned int i = 0; i < temp_vias.size(); i++) {
       temp_sink.coord.clear();
@@ -2840,6 +3054,7 @@ void GcellDetailRouter::updateSource_new(int net_index, std::vector<RouterDB::Si
       temp_sink.coord.push_back(Lpoint);
       temp_sink.coord.push_back(Upoint);
       temp_source.push_back(temp_sink);
+      std::cout<<"new via metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
 
       temp_sink.metalIdx = temp_vias[i].LowerMetalRect.metal;
       Lpoint.x = temp_vias[i].LowerMetalRect.placedLL.x;
@@ -2849,6 +3064,7 @@ void GcellDetailRouter::updateSource_new(int net_index, std::vector<RouterDB::Si
       temp_sink.coord.push_back(Lpoint);
       temp_sink.coord.push_back(Upoint);
       temp_source.push_back(temp_sink);
+      std::cout<<"new via metal "<<temp_sink.metalIdx<<" "<<Lpoint.x<<" "<<Lpoint.y<<" "<<Upoint.x<<" "<<Upoint.y<<std::endl;
     }   
 };
 
@@ -3974,6 +4190,8 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
   int obs_h = this->layerNo - 1;
   // logger->debug("Enter converter");
   // int direction = drc_info.Metal_info[mIdx].direct;
+  
+  std::cout<<"box "<<LLx<<" "<<LLy<<" "<<URx<<" "<<URy<<std::endl;
 
   if (drc_info.Metal_info[mIdx].direct == 0) {  // vertical metal layer
     int curlayer_unit = drc_info.Metal_info.at(mIdx).grid_unit_x;
@@ -4003,6 +4221,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -4028,6 +4247,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -4060,6 +4280,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
@@ -4085,6 +4306,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
             tmpP.x = x;
             tmpP.y = y;
             plist.at(mIdx).push_back(tmpP);
+            std::cout<<mIdx<<" "<<x<<" "<<y<<std::endl;
           }
           // tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
