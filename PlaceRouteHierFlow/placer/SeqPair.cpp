@@ -839,25 +839,25 @@ bool SeqPair::KeepOrdering(design& caseNL) {
           for (auto self : group.selfsym) {
             auto it = find(posPair.begin(), posPair.end(), self.first) - posPair.begin();
             int self_it = blockid2indexinvec[self.first];
-            if (it < first_it && it < second_it && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+            if (it < it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
                 find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end()) {
               adj[first_it].push_back(self_it);
               ind[self_it]++;
               adj[second_it].push_back(self_it);
               ind[self_it]++;
-            } else if (it > first_it && it > second_it && find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end() &&
+            } else if (it > it1 && it > it2 && find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end() &&
                        find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
               adj[self_it].push_back(first_it);
               ind[first_it]++;
               adj[self_it].push_back(second_it);
               ind[second_it]++;
-            } else if (it > first_it && it < second_it && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+            } else if (it > it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
                        find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
               adj[first_it].push_back(self_it);
               ind[self_it]++;
               adj[self_it].push_back(second_it);
               ind[second_it]++;
-            } else if (it < first_it && it > second_it && find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end() &&
+            } else if (it < it1 && it > it2 && find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end() &&
                        find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end()) {
               adj[second_it].push_back(self_it);
               ind[self_it]++;
