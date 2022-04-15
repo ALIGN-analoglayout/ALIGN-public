@@ -757,6 +757,24 @@ bool SeqPair::KeepOrdering(design& caseNL) {
         blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
       }
     }
+    for (auto& group : caseNL.SPBlocks) {
+      for (auto& pair : group.sympair) {
+        if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) {
+          blocks2sort.push_back(pair.first);  // store blocks to sort
+          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
+        }
+        if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) {
+          blocks2sort.push_back(pair.second);  // store blocks to sort
+          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
+        }
+      }
+      for (const auto& self : group.selfsym) {
+        if (find(blocks2sort.begin(), blocks2sort.end(), self.first) == blocks2sort.end()) {
+          blocks2sort.push_back(self.first);  // store blocks to sort
+          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
+        }
+      }
+    }
     adj.resize(blocks2sort.size());
     ind.resize(blocks2sort.size());
     for (const auto& b : blocks2sort) {
