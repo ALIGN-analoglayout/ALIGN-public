@@ -68,7 +68,7 @@ class ILP_solver {
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
   bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
   bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
-  bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
+  bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr, const double* initsol = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
     //if (use_ilp_solver == SYMPHONY) 
@@ -98,6 +98,7 @@ class ILP_solver {
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
   SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
+  void PlaceUsingILP(SolutionMap& smap, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp);
   double CalculateCost(const design& mydesign) const;

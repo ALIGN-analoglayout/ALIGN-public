@@ -378,6 +378,13 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   logger->debug("sa__summary total_candidates={0} total_candidates_infeasible={1} mean_cache_miss={2}", total_candidates, total_candidates_infeasible,
                mean_cache_miss);
 
+  if (!curr_sp.Enumerate() && hyper.secondary_ILP_pass) {
+    curr_sol.PlaceUsingILP(oData, designData, curr_sp, drcInfo, hyper.NUM_THREADS, nodeSize);
+    if (!oData.empty()) {
+      ReshapeSeqPairMap(oData, nodeSize);
+      return oData;
+    }
+  }
   // Write out placement results
   // cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
   // curr_sp.PrintSeqPair();

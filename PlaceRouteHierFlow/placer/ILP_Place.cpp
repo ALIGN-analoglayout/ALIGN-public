@@ -231,7 +231,10 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   return sol;
 }
 
-bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
+bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp,
+    const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl,
+    const int numsol, const vector<placerDB::point>* prev,
+    const double* initsol) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPCbc_select");
 
@@ -1385,7 +1388,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
 
   // place_on_grid constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
-    if (mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) {
+    if (mydesign.Blocks[i][0].xoffset.size()) {
       // x + is_filp *width - pitch * n_p - offset_i * is_ith_offset = 0
       const auto& xoff = xoffsetvars[i];
       if (mydesign.Blocks[i][0].xflip == -1) {
@@ -1459,7 +1462,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       sens.push_back('E');
       rhs.push_back(0);
     }
-    if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) {
+    if (mydesign.Blocks[i][0].yoffset.size()) {
       const auto& yoff = yoffsetvars[i];
       if (mydesign.Blocks[i][0].yflip == -1) {
         rowindofcol[i * 6 + 3].push_back(rhs.size());
@@ -1791,7 +1794,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = solverif.solve(num_threads);
+      status = solverif.solve(initsol, num_threads);
     }
     //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
     //const double* var = Cbc_bestSolution(model);
@@ -1855,3 +1858,12 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   return !sol.empty();
 }
 
+void ILP_solver::PlaceUsingILP(SolutionMap& smap, const design& mydesign, const SeqPair& curr_sp,
+    const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol) {
+  if (!smap.empty()) {
+    auto &sp = smap.begin()->second.second;
+    auto &ilpsol = smap.begin()->second.first;
+    std::vector<double> initsol;
+    PlaceILPCbc_select(smap, mydesign, curr_sp, drcInfo, num_threads, true, numsol, nullptr, initsol.data());
+  }
+}

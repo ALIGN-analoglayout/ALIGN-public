@@ -493,6 +493,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
     .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP) // Choice of variant selection in SA: 0-Sequence Pair, 1-ILP
     .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer) // Use ILP to place blocks instead of SA
+    .def_readwrite("secondary_ILP_pass", &PlacerHyperparameters::secondary_ILP_pass) // call ILP using the SA solution as seed;
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)

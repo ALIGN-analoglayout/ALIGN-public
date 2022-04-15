@@ -3294,7 +3294,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = solverif.solve(1);
+      status = solverif.solve();
     }
     const double* var = solverif.solution();
     if (status != 0 || var == nullptr) {
