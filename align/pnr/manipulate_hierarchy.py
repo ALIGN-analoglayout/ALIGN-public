@@ -103,11 +103,11 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     logger.debug(f"new module is added: {nm}")
     verilog_d['modules'].append(nm)
     return updated_ckt_name
-        
+
 
 def manipulate_hierarchy(verilog_d, subckt):
     check_modules(verilog_d)
-    check_floating_pins(verilog_d)
+    # check_floating_pins(verilog_d)
     remove_pg_pins(verilog_d, subckt, {p["actual"]:p["actual"] for p in verilog_d['global_signals']})
     clean_if_extra(verilog_d, subckt)
     check_modules(verilog_d)
@@ -131,7 +131,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
         for new_idx, old_idx in enumerate(sorted(cn_indices)):
             tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
 
-    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+    logger.debug(f'change_concrete_names_for_routing: {tr_tbl}')
 
     for module in scaled_placement_verilog_d['modules']:
         module['concrete_name'] = tr_tbl[module['concrete_name']]
@@ -142,7 +142,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
                 instance['abstract_template_name'] = ctn
             else:
                 assert ctn in tr_tbl
-                instance['concrete_template_name'] = tr_tbl[ctn]                   
+                instance['concrete_template_name'] = tr_tbl[ctn]
 
     for leaf in scaled_placement_verilog_d['leaves']:
         leaf['abstract_name'] =leaf['concrete_name']
@@ -160,8 +160,8 @@ def gen_abstract_verilog_d( verilog_d):
         assert 'abstract_name' in module
         assert 'name' not in module
         module['name'] = module['abstract_name']
-        del module['abstract_name']        
-        del module['concrete_name']        
+        del module['abstract_name']
+        del module['concrete_name']
 
         assert 'bbox' in module
         del module['bbox']
@@ -191,7 +191,7 @@ def connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitiv
 
                         new_fa_map = List[FormalActualMap]()
                         for fa in instance['fa_map']:
-                            f, a = fa['formal'], fa['actual'] 
+                            f, a = fa['formal'], fa['actual']
                             for enity_name in by_net.get(f, [f]):
                                 new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
 

@@ -17,9 +17,9 @@ class SubCircuit(Model):
     parameters: Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
     generator: Optional[Dict[str, str]]  # generator name from pdk, e.g., mos, cap, res, digg2inv
-    #pdk generators are mapped during database creation, some are mapped after annotation from constraints)
+    # pdk generators are mapped during database creation, some are mapped after annotation from constraints)
     constraints: ConstraintDB
-    prefix: str = 'X'         # Instance name prefix, optional
+    prefix: str = ''         # Instance name prefix, optional
 
     @property
     def nets(self):
@@ -108,6 +108,7 @@ class SubCircuit(Model):
             assert self._checker is not None, "Incremental verification is not possible as solver hasn't been instantiated yet"
             formulae = types.cast_to_solver(constraint, self._checker)
         for x in formulae:
+            # logger.debug(f'{x=}')
             self._checker.append(x)
         try:
             self._checker.solve()
