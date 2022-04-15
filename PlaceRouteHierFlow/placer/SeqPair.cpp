@@ -639,81 +639,192 @@ bool SeqPair::KeepOrdering(design& caseNL) {
 
     bool pos_keep_order;
 
-    std::vector<int> blocks2sort;               // the block with ordering constraints
-    std::vector<int> blocks_original_position;  // the blocks position in the seqpair
-    std::map<int, int> blockid2indexinvec;
+    std::vector<int> blocks2sort;  // the block with ordering constraints
+    map<int, int> blocks_original_position_map;  // the blocks position map in the seqpair
+    vector<int> blocks_original_position;
     std::vector<int> blockid_after_sort;
-    vector<vector<int>> adj;
-    vector<int> ind;
+    map<int, vector<int>> adj;
+    map<int, int> ind;
     std::queue<int> q;
     for (const auto& order : caseNL.Ordering_Constraints) {
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.first);  // store blocks to sort
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
+        // blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
       }
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.second);
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
+        // blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
       }
     }
+   /**
     for (auto& group : caseNL.SPBlocks) {
       for (auto& pair : group.sympair) {
         if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) {
           blocks2sort.push_back(pair.first);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
         if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) {
           blocks2sort.push_back(pair.second);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
       }
       for (const auto& self : group.selfsym) {
         if (find(blocks2sort.begin(), blocks2sort.end(), self.first) == blocks2sort.end()) {
           blocks2sort.push_back(self.first);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
       }
     }
-    adj.resize(blocks2sort.size());
-    ind.resize(blocks2sort.size());
+    **/
+    // adj.resize(blocks2sort.size());
+    for (const auto& b : blocks2sort) adj[b].resize(0);
+    for (const auto& b : blocks2sort) ind[b] = 0;
     for (const auto& b : blocks2sort) {
+      blocks_original_position_map[b] = find(posPair.begin(), posPair.end(), b) - posPair.begin();
       blocks_original_position.push_back(find(posPair.begin(), posPair.end(), b) - posPair.begin());
     }
     for (const auto& order : caseNL.Ordering_Constraints) {
-      int first_it = blockid2indexinvec[order.first.first];
-      int second_it = blockid2indexinvec[order.first.second];
+      int first_it = order.first.first;
+      int second_it = order.first.second;
       if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
         adj[first_it].push_back(second_it);
         ind[second_it]++;
       }
     }
-    for (auto& group : caseNL.SPBlocks) {
+    /**for (const auto& group : caseNL.SPBlocks) {
       if (group.axis_dir == placerDB::V) {
-        for (auto& pair : group.sympair) {
-          int first_it = blockid2indexinvec[pair.first];
-          int second_it = blockid2indexinvec[pair.second];
-          auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
-          auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
-          if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end() &&
-              find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+        for (unsigned int i = 0; i < group.sympair.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), group.sympair[i].first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), group.sympair[i].second) - posPair.begin();
+          int first_it = group.sympair[i].first;
+          int second_it = group.sympair[i].second;
+          if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
             adj[first_it].push_back(second_it);
             ind[second_it]++;
-          } else if (it1 > it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end() &&
-                     find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+          } else if (it1 > it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
             adj[second_it].push_back(first_it);
             ind[first_it]++;
           }
+          for (unsigned int j = i + 1; j < group.sympair.size(); j++) {
+            auto it1j = find(posPair.begin(), posPair.end(), group.sympair[j].first) - posPair.begin();
+            auto it2j = find(posPair.begin(), posPair.end(), group.sympair[j].second) - posPair.begin();
+            int first_itj = group.sympair[j].first;
+            int second_itj = group.sympair[j].second;
+            if (it1 < it2 && it1 < it1j && it1 < it2j && it1j < it2 && it2j < it2) {
+              // pairj inside pairi
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it2 < it1 && it2 < it1j && it2 < it2j && it1j < it1 && it2j < it1) {
+              // pairj inside pairi
+              if (find(adj[second_it].begin(), adj[second_it].end(), first_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), second_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), first_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), first_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+            } else if (it1 < it1j && it1 < it2j && it2 < it1j && it2 < it2j) {
+              // pair i above pair j
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), first_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), first_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it1 > it1j && it1 > it2j && it2 > it1j && it2 > it2j) {
+              // pair i below pair j
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), first_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), second_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+            }
+          }
+
+          
+          for (auto self : group.selfsym) {
+            auto it = find(posPair.begin(), posPair.end(), self.first) - posPair.begin();
+            int self_it = self.first;
+            if (it < it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+            } else if (it > it1 && it > it2 && find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it > it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it < it1 && it > it2 && find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end()) {
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+            }
+          }
         }
       }
-    }
+    }**/
     for (unsigned int i = 0; i < blocks2sort.size(); i++) {
-      int it = blockid2indexinvec[blocks2sort[i]];
+      int it = blocks2sort[i];
       if (ind[it] == 0) q.push(it);
     }
     while (!q.empty()) {
       int v = q.front();
       q.pop();
-      blockid_after_sort.push_back(blocks2sort[v]);
+      blockid_after_sort.push_back(v);
       std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
       for (auto& it : adj[v]) {
         ind[it]--;
@@ -726,6 +837,10 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     }
     for (auto& abut : caseNL.Abut_Constraints) {
       if (abut.second == placerDB::V) {
+        int first_it = abut.first.first;
+        int second_it = abut.first.second;
+        auto it1 = find(posPair.begin(), posPair.end(), abut.first.first) - posPair.begin();
+        auto it2 = find(posPair.begin(), posPair.end(), abut.first.second) - posPair.begin();
       }
     }
 
@@ -781,57 +896,53 @@ bool SeqPair::KeepOrdering(design& caseNL) {
 #ifdef CATCH_INFINITE_LOOP
     std::unordered_set<std::vector<int>, VectorHasher> visitedNegPair = {negPair};
 #endif
-    std::vector<int> blocks2sort;               // the block with ordering constraints
-    std::vector<int> blocks_original_position;  // the blocks position in the seqpair
-    std::map<int, int> blockid2indexinvec;
+    std::vector<int> blocks2sort;  // the block with ordering constraints
+    map<int, int> blocks_original_position_map;  // the blocks position map in the seqpair
+    vector<int> blocks_original_position;
     std::vector<int> blockid_after_sort;
-    vector<vector<int>> adj;
-    vector<int> ind;
+    map<int, vector<int>> adj;
+    map<int, int> ind;
     std::queue<int> q;
     for (const auto& order : caseNL.Ordering_Constraints) {
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.first);  // store blocks to sort
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
       }
       if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
         blocks2sort.push_back(order.first.second);
-        blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);  // store block index in vec
       }
     }
     for (auto& group : caseNL.SPBlocks) {
       for (auto& pair : group.sympair) {
         if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) {
           blocks2sort.push_back(pair.first);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
         if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) {
           blocks2sort.push_back(pair.second);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
       }
       for (const auto& self : group.selfsym) {
         if (find(blocks2sort.begin(), blocks2sort.end(), self.first) == blocks2sort.end()) {
           blocks2sort.push_back(self.first);  // store blocks to sort
-          blockid2indexinvec[blocks2sort.back()] = int(blocks2sort.size() - 1);
         }
       }
     }
-    adj.resize(blocks2sort.size());
-    ind.resize(blocks2sort.size());
+    for (const auto& b : blocks2sort) adj[b].resize(0);
+    for (const auto& b : blocks2sort) ind[b] = 0;
     for (const auto& b : blocks2sort) {
+      blocks_original_position_map[b]=find(negPair.begin(), negPair.end(), b) - negPair.begin();
       blocks_original_position.push_back(find(negPair.begin(), negPair.end(), b) - negPair.begin());
     }
     for (const auto& order : caseNL.Ordering_Constraints) {
       if (order.second == placerDB::H) {
-        int first_it = blockid2indexinvec[order.first.first];
-        int second_it = blockid2indexinvec[order.first.second];
+        int first_it = order.first.first;
+        int second_it = order.first.second;
         if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
           adj[first_it].push_back(second_it);
           ind[second_it]++;
         }
       } else {
-        int first_it = blockid2indexinvec[order.first.first];
-        int second_it = blockid2indexinvec[order.first.second];
+        int first_it = order.first.first;
+        int second_it = order.first.second;
         if (find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
           adj[second_it].push_back(first_it);
           ind[first_it]++;
@@ -847,8 +958,8 @@ bool SeqPair::KeepOrdering(design& caseNL) {
             if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
             auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
             auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
-            int first_it = blockid2indexinvec[alignblock.blocks[i]];
-            int second_it = blockid2indexinvec[alignblock.blocks[j]];
+            int first_it = alignblock.blocks[i];
+            int second_it = alignblock.blocks[j];
             if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
               adj[first_it].push_back(second_it);
               ind[second_it]++;
@@ -865,8 +976,8 @@ bool SeqPair::KeepOrdering(design& caseNL) {
             if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
             auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
             auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
-            int first_it = blockid2indexinvec[alignblock.blocks[i]];
-            int second_it = blockid2indexinvec[alignblock.blocks[j]];
+            int first_it = alignblock.blocks[i];
+            int second_it = alignblock.blocks[j];
             if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
               adj[second_it].push_back(first_it);
               ind[first_it]++;
@@ -881,13 +992,13 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     // check sympair
     for (const auto& group : caseNL.SPBlocks) {
       if (group.axis_dir == placerDB::V) {
-        for (auto pair : group.sympair) {
-          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) continue;
-          if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) continue;
-          auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
-          auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
-          int first_it = blockid2indexinvec[pair.first];
-          int second_it = blockid2indexinvec[pair.second];
+        for (unsigned int i = 0; i < group.sympair.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), group.sympair[i].first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), group.sympair[i].second) - posPair.begin();
+          int first_it = group.sympair[i].first;
+          int second_it = group.sympair[i].second;
           if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
             adj[first_it].push_back(second_it);
             ind[second_it]++;
@@ -895,9 +1006,88 @@ bool SeqPair::KeepOrdering(design& caseNL) {
             adj[second_it].push_back(first_it);
             ind[first_it]++;
           }
+          for (unsigned int j = i + 1; j < group.sympair.size(); j++) {
+            auto it1j = find(posPair.begin(), posPair.end(), group.sympair[j].first) - posPair.begin();
+            auto it2j = find(posPair.begin(), posPair.end(), group.sympair[j].second) - posPair.begin();
+            int first_itj = group.sympair[j].first;
+            int second_itj = group.sympair[j].second;
+            if (it1 < it2 && it1 < it1j && it1 < it2j && it1j < it2 && it2j < it2) {
+              // pairj inside pairi
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it2 < it1 && it2 < it1j && it2 < it2j && it1j < it1 && it2j < it1) {
+              // pairj inside pairi
+              if (find(adj[second_it].begin(), adj[second_it].end(), first_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), second_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), first_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), first_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+            } else if (it1 < it1j && it1 < it2j && it2 < it1j && it2 < it2j) {
+              // pair i above pair j
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), first_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), first_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it1 > it1j && it1 > it2j && it2 > it1j && it2 > it2j) {
+              // pair i below pair j
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), first_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), second_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+            }
+          }
           for (auto self : group.selfsym) {
             auto it = find(posPair.begin(), posPair.end(), self.first) - posPair.begin();
-            int self_it = blockid2indexinvec[self.first];
+            int self_it = self.first;
             if (it < it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
                 find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end()) {
               adj[first_it].push_back(self_it);
@@ -931,8 +1121,8 @@ bool SeqPair::KeepOrdering(design& caseNL) {
           if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) continue;
           auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
           auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
-          int first_it = blockid2indexinvec[pair.first];
-          int second_it = blockid2indexinvec[pair.second];
+          int first_it = pair.first;
+          int second_it = pair.second;
           if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
             adj[second_it].push_back(first_it);
             ind[first_it]++;
@@ -944,13 +1134,13 @@ bool SeqPair::KeepOrdering(design& caseNL) {
       }
     }
     for (unsigned int i = 0; i < blocks2sort.size(); i++) {
-      int it = blockid2indexinvec[blocks2sort[i]];
+      int it = blocks2sort[i];
       if (ind[it] == 0) q.push(it);
     }
     while (!q.empty()) {
       int v = q.front();
       q.pop();
-      blockid_after_sort.push_back(blocks2sort[v]);
+      blockid_after_sort.push_back(v);
       std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
       for (auto& it : adj[v]) {
         ind[it]--;
