@@ -63,11 +63,11 @@ def test_ru_3():
     center_lines = set()
     for term in cvr.terminals:
         assert term['layer'] != 'M5', 'Why use M5 but not M3?'
-        if term['layer'] == 'M3':
-            center_lines.add((term['rect'][0]+term['rect'][3])//2)
+        if term['layer'] == 'M3' and 'netName' in term and term['netName'] is not None:
+            center_lines.add((term['rect'][0]+term['rect'][2])//2)
             segment_count += 1
-    assert len(center_lines) == 1, f'Two M3 tracks suffice to complete routing {len(center_lines)}'
-    assert segment_count == 1, f'Two M3 segments suffice to complete routing {segment_count}'
+    assert len(center_lines) == 2, f'Two M3 tracks suffice to complete routing {len(center_lines)}'
+    assert segment_count == 2, f'Two M3 segments suffice to complete routing {segment_count}'
 
 
 def test_ru_4():
@@ -90,8 +90,8 @@ def test_ru_4():
     center_lines = set()
     for term in cvr.terminals:
         assert term['layer'] != 'M5', 'Why use M5 but not M3?'
-        if term['layer'] == 'M3':
-            center_lines.add((term['rect'][0]+term['rect'][3])//2)
+        if term['layer'] == 'M3' and 'netName' in term and term['netName'] is not None:
+            center_lines.add((term['rect'][0]+term['rect'][2])//2)
             segment_count += 1
     assert len(center_lines) == 2, f'Two M3 tracks suffice to complete routing {len(center_lines)}'
     assert segment_count == 2, f'Two M3 segments suffice to complete routing {segment_count}'
