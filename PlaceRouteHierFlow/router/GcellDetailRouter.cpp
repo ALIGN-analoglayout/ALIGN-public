@@ -305,6 +305,15 @@ void GcellDetailRouter::generate_set_data(std::set<RouterDB::SinkData, RouterDB:
 
 };
 
+bool GcellDetailRouter::check_floating_net(int index){
+
+  bool floating_net = false; // checking the pin contact should be more safe
+  if(Nets[index].global_path.size()==0) floating_net = true;
+
+  return floating_net;
+
+};
+
 void GcellDetailRouter::create_detailrouter_new() {
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
 
@@ -333,7 +342,7 @@ void GcellDetailRouter::create_detailrouter_new() {
     // int multi_number = R_constraint_based_Parallel_routing_number(i);
     if (Nets[i].DoNotRoute) continue;
     int multi_number = Nets[i].multi_connection;
-    // std::cout<<"sym net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
+    //std::cout<<" net index "<<i<<" sym part"<<Nets[i].symCounterpart<<" sym axis "<<Nets[i].sym_H<<" sym center "<<Nets[i].center<<std::endl;
     std::vector<RouterDB::Metal> symmetry_path;
     if (Nets[i].symCounterpart != -1 && Nets[i].symCounterpart < int(Nets.size())) {
       symmetry_path = Nets[Nets[i].symCounterpart].path_metal;
@@ -344,6 +353,8 @@ void GcellDetailRouter::create_detailrouter_new() {
       Mirror_Topology(symmetry_path, Nets[i].sym_H, Nets[i].center);
       // logger->debug("symmetry_path size {0}", symmetry_path.size());
     }
+
+    if(check_floating_net(i)) continue; // net is floating, skip
 
     for (int multi_index = 0; multi_index < multi_number; multi_index++) {
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via;  // current net via conter and layer info
@@ -367,7 +378,6 @@ void GcellDetailRouter::create_detailrouter_new() {
       //grid.CreateGridData_new();
       int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
       Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
-      
       int source_lock = 0;
       std::vector<RouterDB::SinkData> temp_source = Initial_source_pin(temp_pins, source_lock);  // initial source
       std::vector<std::vector<RouterDB::point>> add_plist;  // new feasible grid for routed net

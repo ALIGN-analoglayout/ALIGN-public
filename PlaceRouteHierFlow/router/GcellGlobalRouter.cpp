@@ -523,6 +523,9 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     GGgraph.clearPath();
 
     for (unsigned int j = 0; j < Nets[i].connectedTile.size(); j++) {
+
+      if(Nets[i].connectedTile[j].size() == 0) continue;
+
       if (Nets[i].connectedTile[j].size() == 0) {
         // std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
         logger->error("Format Issue ");
@@ -544,6 +547,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     GGgraph.setterminals(Nets[i].terminals);
     GGgraph.setTerminals(Nets[i].connectedTile);
 
+
     std::vector<int> Pontential_Stiner_node = Get_Potential_Steiner_node(Nets[i].terminals, Tile_Set, Gcell);
 
     // std::cout<<"terminal size "<<Nets[i].terminals.size()<<std::endl;
@@ -554,6 +558,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
 
     std::vector<std::vector<std::pair<int, int> > > temp_path = GGgraph.returnPath();
     RouterDB::SteinerTree temp_st;
+
 
     for (unsigned int j = 0; j < temp_path.size(); ++j) {
       temp_st.path = temp_path[j];
@@ -570,6 +575,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
   // }
 
   // 4. LP solve Q1. Symmetry here
+
   MirrorSymSTs(Gcell, Tile_Set);
 
   // for (unsigned int i = 0; i < this->Nets.size(); ++i) {
@@ -584,11 +590,16 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
   //   logger->debug("Nets symmetry part {0} Nets global symmetry part {1}", this->Nets.at(i).symCounterpart, this->Nets.at(i).global_sym);
   // }
 
+
   ILPSolveRouting(Gcell, GGgraph, Tile_Set);
   // 5. Return hierNode  Q2. return some to hierNode for detial router
+
   ReturnHierNode(node);
+
   PlotGlobalRouter();
+
   PlotGlobalRouter_Json(node);
+
 };
 
 std::vector<int> GcellGlobalRouter::GenerateSTsUniqueV(RouterDB::Net &temp_net) {
@@ -1343,6 +1354,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   // logger->debug("Status Log: ILP Solving Starts");
 
+
 #if defined ERROR
 #undef ERROR
 #endif
@@ -1393,6 +1405,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   // logger->debug("TotNumberOfNest {0} {1}", NumberOfNets, NumberOfSTs);
   this->NumOfVar = NumberOfSTs;  //#Variable initialization
 
+
   if ((lp = make_lp(0, NumOfVar + 1)) == NULL) {
     logger->error("Error");
   }  // ERROR();}
@@ -1409,6 +1422,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   // std::cout<<"testcase 1"<<std::endl;
 
+
   // int CurNet = 0;
   // logger->debug("LP test flag 3");
   for (int i = 0; i < NumberOfNets; ++i) {
@@ -1417,7 +1431,6 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     // temp_row.push_back(0);//0th column "0" Q2?
     std::vector<double> temp_row;
     std::vector<int> temp_index;
-
     for (unsigned int j = 0; j < this->Nets.size(); ++j) {
       for (unsigned int k = 0; k < this->Nets.at(j).STs.size(); ++k) {
         /*
@@ -1436,14 +1449,17 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     }
 
     // temp_row.push_back(0);
+    if(temp_row.size()==0) continue;
     double *row = &temp_row[0];
     int *col = &temp_index[0];
     int size_element = temp_row.size();
     // if (!add_constraint(lp, row, EQ, 1)) {std::cerr << "Error" << std::endl;} //ERROR();}
+
     if (!add_constraintex(lp, size_element, row, col, EQ, 1)) {
       logger->error("Error");
     }  // ERROR();}
   }
+
 
   // symmetry problem
   // logger->debug("LP test flag 4");
@@ -1490,6 +1506,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
       }
     }
   }
+
+
 
   // CalCulated_Sym_Ax(this->Nets[i].terminals,this->Nets[j].terminals, center_x, center_y, H_or_V); //H_or_V is H if 1, else V (0);
   // 1. Based on real pin determine the center terminal position or the coordinate of ;
@@ -1541,6 +1559,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     }
   }
 
+
+
   // std::cout<<"testcase 3"<<std::endl;
   // logger->debug("LP test flag 6");
   for (unsigned int i = 0; i < Edges_To_Var.size(); ++i) {
@@ -1588,6 +1608,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     }  // ERROR();}
   }
 
+
   // std::cout<<"testcase 4"<<std::endl;
 
   // print_lp(lp);
@@ -1595,6 +1616,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   for (int i = 1; i <= this->NumOfVar; ++i) {
     set_binary(lp, i, TRUE);  //"TRUE": set variable to be a binary. upper bound=1, lower bound=0
   }
+
 
   set_bounds(lp, this->NumOfVar + 1, 0.0, 1.0);
   // printf("Set the objective function\n");
@@ -1609,13 +1631,17 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
        temp_row.push_back(0);
     }
   */
+
   temp_row.push_back(1);
   temp_index.push_back(NumOfVar + 1);
+
+
   double *row = &temp_row[0];
   int *col = &temp_index[0];
   if (!set_obj_fnex(lp, 1, row, col)) {
     logger->error("Router-Error: Objective insertion Error");
   }
+
 
   // std::cout<<"testcase 5"<<std::endl;
   // logger->debug("LP test flag 7");
@@ -1650,6 +1676,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   // logger->debug("LP test flag 13");
   // 7. Get results and store back to data structure
   // Q5?
+
+
   double Vars[NumOfVar];
   get_variables(lp, Vars);
   // logger->debug("LP test flag 14");
@@ -1659,6 +1687,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
       this->Nets.at(ValArray[i].netIter).STindex = ValArray[i].STIter;
     }
   }
+
+
   // std::cout<<"testcase 7"<<std::endl;
   // set_add_rowmode(lp, FALSE);
   // free(row);
@@ -1975,6 +2005,7 @@ void CopyTile(const RouterDB::tile &it, PnRDB::tile &ot) {
 
 void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode &HierNode) {
   for (unsigned int i = 0; i < Nets.size(); ++i) {
+    if(Nets[i].STindex>=0 and Nets[i].STindex<Nets[i].STs.size())
     Nets[i].global_path = Nets[i].STs[Nets[i].STindex].path;
   }
 
@@ -1987,6 +2018,7 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode &HierNode) {
       if (H_NET_it->name != NET_it->netName) {
         continue;
       } else {
+        if(NET_it->STindex<0 or NET_it->STindex>=NET_it->STs.size()) continue;
         std::vector<std::pair<int, int> > path = NET_it->STs.at(NET_it->STindex).path;
         H_NET_it->GcellGlobalRouterPath = path;
         H_NET_it->connectedTile = NET_it->connectedTile;

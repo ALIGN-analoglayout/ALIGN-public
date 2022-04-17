@@ -215,6 +215,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   void ExtendMetalsPhysicalPath(std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<std::vector<int>> &extend_labels);
   void generate_set_data(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
   void InsertSourceDestPinContact(std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+  bool check_floating_net(int index);
 
 };
 
