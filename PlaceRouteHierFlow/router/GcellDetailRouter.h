@@ -177,15 +177,17 @@ class GcellDetailRouter : public GcellGlobalRouter {
                                     std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
                                     std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag);
   void Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &src_dest_plist,
-                            std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
-                            std::vector<std::vector<RouterDB::Metal>> &physical_path);
+                                             std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
+                                             std::vector<std::vector<RouterDB::Metal>> &physical_path, std::vector<RouterDB::Via> &physical_via, int net_index) ;
+  void updateSource_old(int net_index, std::vector<RouterDB::SinkData> &temp_source);
+  void updateSource_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::Via> &temp_vias, std::vector<RouterDB::SinkData> &temp_source);
   void Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
   void InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks);
   void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
   void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid, RouterDB::point LL, RouterDB::point UR);
   void AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net,
-                       RouterDB::point LL, RouterDB::point UR);
+                       RouterDB::point LL, RouterDB::point UR, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest);
   void AddViaEnclosure_old(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                            std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
   RouterDB::SinkData Contact2Sinkdata(RouterDB::contact &contact);
@@ -204,7 +206,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   void create_detailrouter_new();
   void InsertPhysicalPathToSetX(int net_index, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
   void Refresh_Grid(Grid &grid);
-  void returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels);
+  void returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels, std::vector<RouterDB::Via> &temp_via);
   void ReturnInternalMetalContactALL(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
   void Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set, RouterDB::point &gridll, RouterDB::point &gridur);
   void Detailed_router_set_src_dest_new(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,

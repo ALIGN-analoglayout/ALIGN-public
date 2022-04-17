@@ -68,7 +68,8 @@ setup(name='align',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
           'bin/convert_lef_to_layout_json.py',
-          'bin/gen_gds_from_json.py'
+          'bin/gen_gds_from_json.py',
+          'bin/gen_lef_with_obs.py'
       ],
       install_requires=[
           'networkx>=2.4',

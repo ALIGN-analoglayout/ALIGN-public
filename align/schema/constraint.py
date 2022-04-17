@@ -33,7 +33,8 @@ def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
-    assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    for x in value:  # explicit loop to point out the not found instance
+        assert x in instances or x.upper() in instances, f"Instance {x} not found in the circuit"
     return [x.upper() for x in value]
 
 
@@ -950,17 +951,16 @@ class DoNotIdentify(SoftConstraint):
     instances: List[str]
 
 
-class SymmetricBlocks(SoftConstraint):
+class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
 
-    Defines a symmetry constraint between pair of blocks.
+    Defines a symmetry constraint between single and/or pairs of blocks.
 
     Args:
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
         direction (str) : Direction for axis of symmetry.
-        mirrot (bool) : true/ false, Mirror instances along line of symmetry
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -969,7 +969,7 @@ class SymmetricBlocks(SoftConstraint):
 
         {
             "constraint" : "SymmetricBlocks",
-            "pairs" : [["MN0","MN1"], ["MN2","MN3"],["MN4"]],
+            "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
             "direction" : "vertical"
         }
 
@@ -979,13 +979,9 @@ class SymmetricBlocks(SoftConstraint):
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
-        '''
-        X = Align(2, 3, 'h_center')
-        Y = Align(4, 5, 'h_center')
-        Align(1, X, Y, 6, 'center')
-
-        '''
         _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if len(value) == 1:
+            assert len(value[0]) == 2, 'Must contain at least a pair of two instances or more than two pairs.'
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
@@ -1007,8 +1003,44 @@ class SymmetricBlocks(SoftConstraint):
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Parameters of the symmetry pair {pair} do not match in subckt {cls._validator_ctx().parent.parent.name}"
         return value
+
+    def translate(cls, solver):
+
+        def construct_expression(b1, b2=None):
+            c = 'x' if cls.direction == 'V' else 'y'
+            expression = getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            if b2:
+                expression += getattr(b2, f'll{c}') + getattr(b2, f'ur{c}')
+            else:
+                expression += getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            return expression
+
+        for i, instances in enumerate(cls.pairs):
+            if len(instances) == 2:
+                b0 = solver.bbox_vars(instances[0])
+                b1 = solver.bbox_vars(instances[1])
+
+                # the difference between the center lines should be <= 1/4th of the block heights
+                # abs(cl_1 - cl_2) <= height_1/4  && abs(cl_1 - cl_2) <= height_2/4
+                # abs(4.cl_1 - 4.cl_2) <= height_1, height_2
+                c = 'y' if cls.direction == 'V' else 'x'
+                b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
+                b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
+                expression = solver.And(
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
+                )
+                yield expression
+
+            # center lines of pairs should match along the direction
+            if i == 0:
+                reference = construct_expression(*solver.iter_bbox_vars(instances))
+            else:
+                centerline = construct_expression(*solver.iter_bbox_vars(instances))
+                expression = (reference == centerline)
+                yield expression
 
 
 class OffsetsScalings(BaseModel):
@@ -1328,11 +1360,15 @@ class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        if hasattr(constraint, 'translate'):
-            if self.parent._checker is None:
-                self.parent.verify()
-            self.parent.verify(constraint=constraint)
-        super().append(constraint)
+        if (constraint_str := repr(constraint)) not in self._cache:
+            if hasattr(constraint, 'translate'):
+                if self.parent._checker is None:
+                    self.parent.verify()
+                self.parent.verify(constraint=constraint)
+            super().append(constraint)
+            self._cache.add(constraint_str)
+        else:
+            logger.debug(f"Constraint is duplicated: {constraint_str}")
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):

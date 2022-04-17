@@ -1,4 +1,5 @@
 import pathlib
+import textwrap
 from align.schema import SubCircuit
 from align.schema import constraint
 from align.compiler.find_constraint import FindConst
@@ -29,8 +30,9 @@ def test_array_gen_ro():
     assert array1 == ['XI0', 'XI1', 'XI2', 'XI3', 'XI4']
     array_cl.add_align_block_const()
     with set_context(ckt.constraints):
-        x = constraint.Align(line="h_center", instances=array1)
-    assert ckt.constraints == [x]
+        x = constraint.Align(line="h_bottom", instances=array1)
+        y = constraint.SameTemplate(instances=array1)
+    assert ckt.constraints == [y, x]
     clean_data(name)
 
 
@@ -82,7 +84,9 @@ def test_array_gen_ro_fh():
     assert array1 == ['X_MN0_MP0', 'X_MN1_MP1', 'X_MN2_MP2', 'X_MN3_MP3', 'X_MN4_MP4']
     array_cl.add_align_block_const()
     with set_context(ckt.constraints):
-        x = constraint.Align(line="h_center", instances=array1)
+        x = constraint.Align(line="h_bottom", instances=array1)
+        y = constraint.SameTemplate(instances=array1)
+    assert ckt.constraints[-2] == y
     assert ckt.constraints[-1] == x
     clean_data(name)
 
@@ -223,4 +227,44 @@ def test_end_search_at_inst_convergence():
     assert set([inst.name for inst in ckt_lib.find("ARRAY_TEMPLATE2").elements]) == {'X_MN3'}
     array_insts = ['X_ARRAY_TEMPLATE', 'X_ARRAY_TEMPLATE1', 'X_ARRAY_TEMPLATE2']
     assert [inst.name for inst in ckt_lib.find("ARRAY_HIER_S").elements] == array_insts
+    clean_data(name)
+
+
+def test_align_in_order():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt switch ng pg t1 t2 vccx vssx
+    qp0 t1 pg t2 vccx p m=1 nf=2 w=180e-9
+    qn0 t1 ng t2 vssx n m=1 nf=2 w=180e-9
+    .ends
+    .subckt {name} en enb in out vccx vssx
+    """)
+    for i in range(16):
+        netlist += f"isw<{i}> en enb in out vccx vssx switch\n"
+    netlist += textwrap.dedent(f"""\
+    .ends {name}
+    .END
+    """)
+    constraints = {
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]}
+        ],
+        "switch": [
+            {"constraint": "DoNotIdentify", "instances": ["qp0", "qn0"]}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    ckt = ckt_lib.find(name)
+    assert ckt, f"No ckt {name} found in library"
+    array_cl = process_arrays(ckt, dict())
+    array1 = array_cl.find_array('VCCX', ['VSSX'])
+    array_cl.add_align_block_const()
+    with set_context(ckt.constraints):
+        x = constraint.AlignInOrder(direction="horizontal", instances=array1)
+        y = constraint.SameTemplate(instances=array1)
+    assert ckt.constraints[2] == y
+    assert ckt.constraints[3] == x
     clean_data(name)

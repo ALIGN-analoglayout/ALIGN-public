@@ -250,8 +250,12 @@ def build_example(name, netlist, constraints):
     example.mkdir(parents=True)
     with open(example / f"{name}.sp", "w") as fp:
         fp.write(netlist)
-    if constraints:
-        with open(example / f"{name}.const.json", "w") as fp:
+    if isinstance(constraints, dict):
+        for k, v in constraints.items():
+            with open(example / f'{k}.const.json', 'w') as fp:
+                fp.write(json.dumps(v, indent=2))
+    elif constraints:
+        with open(example / f'{name}.const.json', 'w') as fp:
             fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")
 
