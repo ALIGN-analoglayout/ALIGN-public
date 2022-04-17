@@ -19,6 +19,16 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
 
   std::vector<std::vector<int> > temp_terminals = Pin_terminals;
 
+  bool empty_flag = true;
+
+  for(int i=0;i<temp_terminals.size();i++){
+      if(temp_terminals[i].size()!=0){
+          empty_flag = false;
+       }
+  }
+
+  if(empty_flag) return;
+
   for (int i = 0; i < pathNo; ++i) {
     Pin_terminals = temp_terminals;
 

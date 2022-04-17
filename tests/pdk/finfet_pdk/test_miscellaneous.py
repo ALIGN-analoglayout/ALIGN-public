@@ -32,7 +32,6 @@ def test_floating_pin():
     run_example(example, cleanup=False, n=1)
 
 
-@pytest.mark.skip(reason="For a future PR")
 def test_floating_power_pin():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
