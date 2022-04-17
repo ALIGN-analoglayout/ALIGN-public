@@ -11,7 +11,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_laye
 
     fp.write("MACRO %s\n" % out_lef)
     fp.write("  UNITS \n")
-    fp.write("    DATABASE MICRONS UNITS %s ;\n" % (1000*Scale_factor))
+    fp.write("    DATABASE MICRONS UNITS %s;\n" % (1000*Scale_factor))
     fp.write("  END UNITS \n")
     fp.write("  ORIGIN 0 0 ;\n")
     fp.write("  FOREIGN %s 0 0 ;\n" % out_lef)

@@ -65,7 +65,7 @@ class GDS2_LEF_JSON:
     
     def writeLEFJSON(self):
         if not self._cell: return
-        leffile = self._cellname + '_out.lef'
+        leffile = self._cellname + '.lef'
         bbox = self._cell.get_bounding_box() * 1e9
         dim = [round((bbox[1][0] - bbox[0][0])), round((bbox[1][1] - bbox[0][1]))]
         jsondict = dict()
@@ -81,6 +81,7 @@ class GDS2_LEF_JSON:
             ofs.write(f'  FOREIGN {self._cellname} {bbox[0][0]} {bbox[0][1]} ;\n')
             ofs.write(f'  SIZE {dim[0]} BY {dim[1]} ;\n')
             polygons = self._cell.get_polygons(True)
+            pincache = set()
             for lbl in self._cell.get_labels():
                 if lbl.layer in self._layernames:
                     lname = self._layernames[lbl.layer]
@@ -102,34 +103,50 @@ class GDS2_LEF_JSON:
                                     ofs.write(f'      LAYER {lname} ;\n')
                                     ofs.write(f'        RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
                                     ofs.write(f'    END\n  END {lbl.text}\n')
-                                    pindict = {"netName": lbl.text, "layer": lname, "rect": box, "netType": "pin"}
+                                    pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "pin"}
                                     jsondict["terminals"].append(pindict)
+                                    pincache.add(str([key, box]))
+                        drawidx = None
+                        for idx, k in self._layers[lname].items():
+                            if k == 'Draw':
+                                drawinidx = idx
+                                break
+                        key = (lbl.layer, drawinidx)
+                        if key in polygons:
+                            for poly in polygons[key]:
+                                if len(poly) != 4: continue
+                                box = [round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
+                                       round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9)]
+                                if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
+                                    pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "drawing"}
+                                    jsondict["terminals"].append(pindict)
+                                    pincache.add(str([key, box]))
                         
             ofs.write('  OBS\n')
             for k in polygons:
                 if k[0] not in self._layernames: continue
                 lname = self._layernames[k[0]]
-                if lname not in self._layers: continue
-                if k[1] not in self._layers[lname]: continue
-                if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('pin', 'label')):
-                      ofs.write(f'    LAYER {lname} ;\n')
+                if lname not in self._layers or k[1] not in self._layers[lname] or lname.lower() == 'bbox': continue
+                writelayer = True
                 for poly in polygons[k]:
                     if len(poly) == 4:
                         box = [ round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
                             round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9) ]
-                        if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('pin', 'label')):
-                            ofs.write(f'      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
-                        shapedict = {"netName": None, "layer": lname, "rect": box, "netType": "drawing"}
+                        if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('label')):
+                            if str([k, box]) not in pincache:
+                                if writelayer:
+                                    ofs.write(f'    LAYER {lname} ;\n')
+                                    writelayer = False
+                                ofs.write(f'      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
+                                shapedict = {"layer": lname, "netName": None, "rect": box, "netType": "drawing"}
+                        else: shapedict = {"netName": None, "layer": lname, "rect": box, "netType": "drawing"}
                         jsondict["terminals"].append(shapedict)
             ofs.write('  END\n')
             ofs.write(f'END {self._cellname}\n')
-        jsonfn = self._cellname + '_out.json'
+        jsonfn = self._cellname + '.json'
         with open(jsonfn, 'wt') as fp:
             print(f'Writing JSON file : {jsonfn}')
             json.dump(jsondict, fp, indent = 2)
 
 gds2lef = GDS2_LEF_JSON(args.layers, args.gds)
 gds2lef.writeLEFJSON()
-
-#gdslib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
-#gdslib.write_gds(args.top_cell + '_out.gds')
