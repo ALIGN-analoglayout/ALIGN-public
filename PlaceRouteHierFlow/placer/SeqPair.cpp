@@ -839,6 +839,36 @@ bool SeqPair::KeepOrdering(design& caseNL) {
         int second_it = abut.first.second;
         auto it1 = find(posPair.begin(), posPair.end(), abut.first.first) - posPair.begin();
         auto it2 = find(posPair.begin(), posPair.end(), abut.first.second) - posPair.begin();
+        if (it1 > it2) {
+          swap(it1, it2);
+          swap(first_it, second_it);
+        }
+        if (it2 - it1 > 0) {
+          if (caseNL.Blocks[first_it][0].counterpart == first_it && caseNL.Blocks[second_it][0].counterpart == second_it) {
+            // two self sym blocks
+            int front_block_it = it1;
+            int back_block_it = it2;
+            for (unsigned int i = it1 + 1; i < it2; i++) {
+              if (posPair[i] < caseNL.Blocks.size() && front_block_it + 1 < back_block_it) {
+                if (caseNL.Blocks[posPair[i]][0].counterpart != -1 && caseNL.Blocks[posPair[i]][0].counterpart != posPair[i]) {
+                  if (i < find(posPair.begin(), posPair.end(), caseNL.Blocks[posPair[i]][0].counterpart) - posPair.begin()) {
+                    front_block_it = i;
+                    back_block_it = find(posPair.begin(), posPair.end(), caseNL.Blocks[posPair[i]][0].counterpart) - posPair.begin();
+                  }
+                }
+              }
+            }
+            if (front_block_it < back_block_it) {
+              auto it = posPair.begin();
+              posPair.erase(it + it2);
+              it = posPair.insert(it + back_block_it, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + front_block_it + 1, first_it);
+              it = posPair.begin();
+              posPair.erase(it + it1);
+            }
+          }
+        }
       }
     }
 
