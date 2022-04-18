@@ -25,17 +25,9 @@
     {
         "constraint": "SymmetricNets",
         "direction": "V",
-        "net1": "vin",
-        "pins1": ["mn1/G"],
-        "net2": "vip",
-        "pins2": ["mn2/G"]
-    },
-    {
-        "constraint": "SymmetricNets",
-        "direction": "V",
         "net1": "vin_d",
-        "pins1": ["mn1/D","mn3/S","mp7/D"],
+        "pins1": ["dp0/DA","mn3/S","mp7/D"],
         "net2": "vip_d",
-        "pins2": ["mn2/D","mn4/S","mp8/D"]
+        "pins2": ["dp0/DB","mn4/S","mp8/D"]
     }
 ]
