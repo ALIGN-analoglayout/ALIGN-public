@@ -6,7 +6,7 @@ from align.compiler.preprocess import (
     add_series_devices,
     find_dummy_hier,
     remove_dummies,
-    remove_power_dcaps,
+    remove_dummy_devices,
     define_SD
 )
 
@@ -394,12 +394,11 @@ def dbdcap():
         library.append(model_pmos)
         model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
         library.append(model_nmos)
-        subckt = SubCircuit(
-            name="SUBCKT", pins=["VDD", "G", "GND", "B"], parameters=None
-        )
+        subckt = SubCircuit(name="SUBCKT", pins=["VDD", "G", "OUT", "VSS"], parameters=None)
         library.append(subckt)
+
     with set_context(subckt.constraints):
-        subckt.constraints.append(constraint.GroundPorts(ports=["GND"]))
+        subckt.constraints.append(constraint.GroundPorts(ports=["VSS"]))
         subckt.constraints.append(constraint.PowerPorts(ports=["VDD"]))
 
     with set_context(subckt.elements):
@@ -407,40 +406,48 @@ def dbdcap():
             Instance(
                 name="M1",
                 model="PMOS",
-                pins={"D": "VDD", "G": "G", "S": "GND", "B": "B"},
+                pins={"D": "OUT", "G": "G", "S": "VDD", "B": "VDD"},
             )
         )
         subckt.elements.append(
             Instance(
                 name="M2",
-                model="PMOS",
-                pins={"D": "NET1", "G": "VDD", "S": "NET2", "B": "B"},
+                model="NMOS",
+                pins={"D": "OUT", "G": "G", "S": "VSS", "B": "VSS"},
             )
         )
-        subckt.elements.append(
+        subckt.elements.append(  # poly
             Instance(
                 name="M3",
                 model="NMOS",
-                pins={"D": "NET1", "G": "GND", "S": "NET3", "B": "B"},
+                pins={"D": "OUT", "G": "VSS", "S": "G", "B": "VSS"},
             )
         )
-        subckt.elements.append(
+        subckt.elements.append(  # half
             Instance(
                 name="M4",
                 model="NMOS",
-                pins={"D": "N1", "G": "N1", "S": "N1", "B": "B"},
+                pins={"D": "OUT", "G": "VSS", "S": "VSS", "B": "VSS"},
             )
         )
-        subckt.elements.append(
+        subckt.elements.append(  # full
             Instance(
                 name="M5",
                 model="NMOS",
-                pins={"D": "N1", "G": "G", "S": "VDD", "B": "B"},
+                pins={"D": "OUT", "G": "OUT", "S": "OUT", "B": "VSS"},
+            )
+        )
+        subckt.elements.append(  # signal
+            Instance(
+                name="M6",
+                model="NMOS",
+                pins={"D": "OUT", "G": "OUT", "S": "OUT", "B": "VSS"},
             )
         )
     return subckt
 
-def test_remove_power_dummy(dbdcap):
-    assert [e.name for e in dbdcap.elements] == ["M1", "M2", "M3", "M4", "M5"]
-    remove_power_dcaps(dbdcap)
-    assert [e.name for e in dbdcap.elements] == ["M1", "M5"]
+
+def test_remove_dummy_devices(dbdcap):
+    assert [e.name for e in dbdcap.elements] == ["M1", "M2", "M3", "M4", "M5", "M6"]
+    remove_dummy_devices(dbdcap)
+    assert [e.name for e in dbdcap.elements] == ["M1", "M2"]

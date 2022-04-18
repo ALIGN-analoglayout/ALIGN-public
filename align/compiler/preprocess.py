@@ -23,7 +23,7 @@ def preprocess_stack_parallel(ckt_data, design_name):
         FixSourceDrain = True
         MergeSeriesDevices = True
         MergeParallelDevices = True
-        RemovePowerDcaps = True
+        RemoveDummyDevices = True
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
@@ -32,7 +32,7 @@ def preprocess_stack_parallel(ckt_data, design_name):
                     FixSourceDrain = const.fix_source_drain
                     MergeSeriesDevices = const.merge_series_devices
                     MergeParallelDevices = const.merge_parallel_devices
-                    RemovePowerDcaps = const.remove_power_dcaps
+                    RemoveDummyDevices = const.remove_dummy_devices
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -46,9 +46,9 @@ def preprocess_stack_parallel(ckt_data, design_name):
                 if MergeSeriesDevices:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
                     add_series_devices(subckt)
-                if RemovePowerDcaps:
-                    remove_power_dcaps(subckt)
-                    # remove DCAPS connected to power
+                if RemoveDummyDevices:
+                    # remove dummy devices powered down or shorted D/G/S
+                    remove_dummy_devices(subckt)
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
@@ -367,10 +367,8 @@ def add_series_devices(ckt):
                 G.remove(nbr2)
 
 
-def remove_power_dcaps(subckt):
-    logger.debug(
-        f"Removing dcap devices used as filler, initial ckt size: {len(subckt.elements)}"
-    )
+def remove_dummy_devices(subckt):
+    logger.debug(f"Removing dummy devices, initial ckt size: {len(subckt.elements)}")
     power = list()
     gnd = list()
     for const in subckt.constraints:
@@ -378,15 +376,15 @@ def remove_power_dcaps(subckt):
             power = const.ports
         elif isinstance(const, constraint.GroundPorts):
             gnd = const.ports
-    if not power or not gnd:
+    if not power and not gnd:
         logger.debug(f"No power nor ground port specified for {subckt.name}")
         return
     remove_inst = []
     for inst in subckt.elements:
         base_model = get_base_model(subckt, inst.name)
-        if ("PMOS" == base_model and inst.pins['G'] in power) or \
-            ("NMOS" == base_model and inst.pins['G'] in gnd) or \
-            ((base_model in ["NMOS", "PMOS"]) and inst.pins['S'] == inst.pins['G'] == inst.pins['S']):
+        if (power and "PMOS" == base_model and inst.pins['G'] in power) or \
+           (gnd and "NMOS" == base_model and inst.pins['G'] in gnd) or \
+           ((base_model in ["NMOS", "PMOS"]) and inst.pins['D'] == inst.pins['G'] == inst.pins['S']):
             remove_inst.append(inst)
 
     G = Graph(subckt)
