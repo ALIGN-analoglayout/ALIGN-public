@@ -4,20 +4,19 @@
     {"constraint": "ClockPorts", "ports": ["clk"]},
     {"constraint":"HorizontalDistance", "abs_distance":0},
     {"constraint":"VerticalDistance",   "abs_distance":0},
-    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
     {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "name": "ccn"},
     {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
     {"constraint": "SymmetricBlocks",
         "direction" : "V",
-        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["xi0", "xi1"]]
+        "pairs": [["mn0"], ["dp0"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["xi0", "xi1"]]
     },
     {"constraint": "Order",
         "direction" : "top_to_bottom",
-        "instances": ["mn0", "dp", "ccn", "ccp"]
+        "instances": ["mn0", "dp0", "ccn", "ccp"]
     },
     {"constraint": "align",
         "line" : "h_bottom",
-        "instances": ["mp9", "mp7", "dp", "mp8", "mp10"]
+        "instances": ["mp9", "mp7", "dp0", "mp8", "mp10"]
     },
     {"constraint": "align",
         "line" : "h_bottom",
