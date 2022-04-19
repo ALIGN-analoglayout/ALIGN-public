@@ -1792,7 +1792,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       ++write_cnt;
     }*/
     int status{0};
-    solverif.setTimeLimit(100);
+    solverif.setTimeLimit(5 * mydesign.Blocks.size());
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);
