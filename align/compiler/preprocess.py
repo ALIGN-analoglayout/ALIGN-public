@@ -95,13 +95,9 @@ def remove_dummies(library, dummy_hiers, top):
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
-                            y.parameters.update(
-                                {
-                                    k: v
-                                    for k, v in ele.parameters.items()
-                                    if k in y.parameters
-                                }
-                            )
+                            # Emulated dictionary does not have update method. Update explicitly.
+                            for k, v in ele.parameters.items():
+                                y.parameters[k] = v
                             logger.debug(f"new instance parameters: {y.parameters}")
                             other_ckt.elements.append(
                                 Instance(

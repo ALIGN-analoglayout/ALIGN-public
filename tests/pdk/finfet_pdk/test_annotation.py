@@ -26,3 +26,35 @@ def test_dcl():
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
+
+
+def test_remove_intermediate_hierarchy():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt sub0 i o vccx vssx
+    mp0 o i vccx vccx p w=180e-9 m=1 nf=2
+    mn0 o i vssx vssx n w=180e-9 m=1 nf=2
+    .ends
+    .subckt sub1 in out vccx vssx
+    xi0 in out vccx vssx sub0
+    .ends
+    .subckt {name} vi vo vccx vssx
+    xi0 vi v1 vccx vssx sub1
+    xi1 v1 v2 vccx vssx sub1
+    xi2 v2 vo vccx vssx sub1
+    .ends {name}
+    .END
+    """)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=["--flow_stop", "2_primitives"])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+        modules = {m["name"] for m in hierarchy["modules"]}
+        assert name in modules
+        assert "SUB0" in modules
+        assert "SUB1" not in modules
+
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
