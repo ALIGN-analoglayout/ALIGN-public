@@ -211,7 +211,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
 
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
-    __root__: typing.Mapping[KeyT, DataT]
+    __root__: typing.Dict[KeyT, DataT]
 
     _parent = pydantic.PrivateAttr()
 
@@ -245,6 +245,9 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
     def values(self):
         return self.__root__.values()
 
+    def update(self):
+        return self.__root__.update()
+
     def __len__(self):
         return len(self.__root__)
 
@@ -259,4 +262,3 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __contains__(self, v):
         return self.__root__.__contains__(v)
-        #return v in self.__root__
