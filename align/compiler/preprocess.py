@@ -86,7 +86,8 @@ def remove_dummies(library, dummy_hiers, top):
                             logger.debug(
                                 f"Removing instance {inst} with instance {ckt.elements[0].model}"
                             )
-                            replace[inst.name] = ckt.elements[0]
+                            if len(ckt.elements)>0:
+                                replace[inst.name] = ckt.elements[0]
                             # @Parijat, is there a better way to modify?
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
@@ -382,11 +383,14 @@ def remove_dummy_devices(subckt):
     remove_inst = []
     for inst in subckt.elements:
         base_model = get_base_model(subckt, inst.name)
-        if (power and "PMOS" == base_model and inst.pins['G'] in power) or \
-           (gnd and "NMOS" == base_model and inst.pins['G'] in gnd) or \
-           ((base_model in ["NMOS", "PMOS"]) and inst.pins['D'] == inst.pins['G'] == inst.pins['S']):
+        if (power and "PMOS" == base_model and 'G' in inst.pins and inst.pins['G'] in power) or \
+           (gnd and "NMOS" == base_model and 'G' in inst.pins and inst.pins['G'] in gnd) or \
+           ((base_model in ["NMOS", "PMOS"]) and {'D','G','S'} &
+            inst.pins.keys() == {'D', 'G', 'S'} and inst.pins['D'] == inst.pins['G'] == inst.pins['S']):
             remove_inst.append(inst)
 
     G = Graph(subckt)
+    assert len(subckt.elements) == len(remove_inst), f"subcircuit {subckt.name} has all dummy devices, please remove this hiearchy or turn off remove_dummy_devices feature"
+    logger.debug(f"removing dummy devices {[inst.name for inst in remove_inst]}")
     for inst in remove_inst:
         G.remove(inst)

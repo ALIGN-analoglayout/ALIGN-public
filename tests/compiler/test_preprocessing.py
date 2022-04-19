@@ -451,3 +451,34 @@ def test_remove_dummy_devices(dbdcap):
     assert [e.name for e in dbdcap.elements] == ["M1", "M2", "M3", "M4", "M5", "M6"]
     remove_dummy_devices(dbdcap)
     assert [e.name for e in dbdcap.elements] == ["M1", "M2"]
+
+
+@pytest.fixture
+def dbdcap1(): #corner case of single dummy in a subcircuit.
+    library = Library()
+    with set_context(library):
+        model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
+        library.append(model_nmos)
+        subckt = SubCircuit(name="SUBCKT", pins=["VDD", "G", "OUT", "VSS"], parameters=None)
+        library.append(subckt)
+
+    with set_context(subckt.constraints):
+        subckt.constraints.append(constraint.GroundPorts(ports=["VSS"]))
+        subckt.constraints.append(constraint.PowerPorts(ports=["VDD"]))
+
+    with set_context(subckt.elements):
+        subckt.elements.append(
+            Instance(
+                name="M1",
+                model="NMOS",
+                pins={"D": "OUT", "G": "G", "S": "VSS", "B": "VSS"},
+            )
+        )
+    return subckt
+
+
+def test_remove_empty_hieararchy(dbdcap1):
+    assert [e.name for e in dbdcap1.elements] == ["M1"]
+    with pytest.raises(AssertionError):
+        remove_dummy_devices(dbdcap1)
+    assert [e.name for e in dbdcap1.elements] == ["M1"]
