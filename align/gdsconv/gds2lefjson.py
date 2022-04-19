@@ -78,7 +78,7 @@ class GDS2_LEF_JSON:
                         key = (lbl.layer, pinidx)
                         if key in polygons:
                             for poly in polygons[key]:
-                                if len(poly) != 4: continue
+                                if len(poly) < 2: continue
                                 box = [round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
                                        round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9)]
                                 if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
@@ -97,7 +97,7 @@ class GDS2_LEF_JSON:
                         key = (lbl.layer, drawinidx)
                         if key in polygons:
                             for poly in polygons[key]:
-                                if len(poly) != 4: continue
+                                if len(poly) < 2: continue
                                 box = [round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
                                        round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9)]
                                 if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
@@ -111,15 +111,15 @@ class GDS2_LEF_JSON:
                 lname = self._layernames[k[0]]
                 if lname not in self._layers or k[1] not in self._layers[lname] or lname.lower() == 'bbox': continue
                 for poly in polygons[k]:
-                    if len(poly) == 4:
-                        box = [ round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
-                            round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9) ]
-                        if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('label')):
-                            if str([k, box]) not in pincache:
-                                ofs.write(f'    LAYER {lname} ;\n      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
-                                shapedict = {"layer": lname, "netName": None, "rect": box, "netType": "drawing"}
-                        else: shapedict = {"netName": None, "layer": lname, "rect": box, "netType": "drawing"}
-                        jsondict["terminals"].append(shapedict)
+                    if len(poly) < 2: continue
+                    box = [ round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
+                        round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9) ]
+                    if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('label')):
+                        if str([k, box]) not in pincache:
+                            ofs.write(f'    LAYER {lname} ;\n      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
+                            shapedict = {"layer": lname, "netName": None, "rect": box, "netType": "drawing"}
+                    else: shapedict = {"netName": None, "layer": lname, "rect": box, "netType": "drawing"}
+                    jsondict["terminals"].append(shapedict)
             ofs.write('  END\n')
             ofs.write(f'END {self._cellname}\n')
         jsonfn = self._cellname + '.json'
