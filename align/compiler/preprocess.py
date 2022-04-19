@@ -369,6 +369,13 @@ def add_series_devices(ckt):
 
 def remove_dummy_devices(subckt):
     logger.debug(f"Removing dummy devices, initial ckt size: {len(subckt.elements)}")
+
+    def _find_base_model(subckt, model_name):
+        model_definition = subckt.parent.find(model_name)
+        while model_definition.base:
+            model_definition = subckt.parent.find(model_definition.base)
+        return model_definition.name
+
     power = list()
     gnd = list()
     for const in subckt.constraints:
@@ -381,7 +388,9 @@ def remove_dummy_devices(subckt):
         return
     remove_inst = []
     for inst in subckt.elements:
-        base_model = get_base_model(subckt, inst.name)
+        base_model = _find_base_model(subckt, inst.model)
+        if not all([k in inst.pins for k in 'DGS']):
+            continue
         if (power and "PMOS" == base_model and inst.pins['G'] in power) or \
            (gnd and "NMOS" == base_model and inst.pins['G'] in gnd) or \
            ((base_model in ["NMOS", "PMOS"]) and inst.pins['D'] == inst.pins['G'] == inst.pins['S']):
