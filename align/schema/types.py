@@ -245,9 +245,6 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
     def values(self):
         return self.__root__.values()
 
-    def update(self):
-        return self.__root__.update()
-
     def __len__(self):
         return len(self.__root__)
 
