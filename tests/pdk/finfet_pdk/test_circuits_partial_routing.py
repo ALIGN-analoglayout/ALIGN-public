@@ -3,7 +3,7 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-CLEANUP = False
+CLEANUP = True
 BYPASS_ERRORS = True
 
 
