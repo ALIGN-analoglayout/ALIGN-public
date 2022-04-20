@@ -1,8 +1,8 @@
 {
   "bbox": [
-    540,
+    780,
     700,
-    77220,
+    76980,
     49700
   ],
   "globalRoutes": [],
@@ -17,7 +17,7 @@
         1380,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -28,7 +28,7 @@
         1380,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -39,7 +39,7 @@
         1380,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -50,7 +50,7 @@
         1380,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -61,7 +61,7 @@
         1380,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -72,7 +72,7 @@
         1380,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -83,7 +83,7 @@
         1380,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -94,7 +94,7 @@
         1380,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -105,7 +105,7 @@
         3540,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -116,7 +116,7 @@
         3540,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -127,7 +127,7 @@
         3540,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -138,7 +138,7 @@
         3540,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -149,7 +149,7 @@
         3540,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -160,7 +160,7 @@
         3540,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -171,7 +171,7 @@
         3540,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -182,7 +182,7 @@
         3540,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -193,7 +193,7 @@
         2460,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -204,7 +204,7 @@
         2460,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -215,7 +215,7 @@
         2460,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -226,7 +226,7 @@
         2460,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -237,7 +237,7 @@
         2460,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -248,7 +248,7 @@
         2460,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -259,7 +259,7 @@
         2460,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -270,7 +270,7 @@
         2460,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -281,7 +281,7 @@
         5700,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -292,7 +292,7 @@
         5700,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -303,7 +303,7 @@
         5700,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -314,7 +314,7 @@
         5700,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -325,7 +325,7 @@
         5700,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -336,7 +336,7 @@
         5700,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -347,7 +347,7 @@
         5700,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -358,7 +358,7 @@
         5700,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -369,7 +369,7 @@
         10020,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -380,7 +380,7 @@
         10020,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -391,7 +391,7 @@
         10020,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -402,7 +402,7 @@
         10020,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -413,7 +413,7 @@
         10020,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -424,7 +424,7 @@
         10020,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -435,7 +435,7 @@
         10020,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -446,7 +446,7 @@
         10020,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -457,7 +457,7 @@
         6780,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -468,7 +468,7 @@
         6780,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -479,7 +479,7 @@
         6780,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -490,7 +490,7 @@
         6780,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -501,7 +501,7 @@
         6780,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -512,7 +512,7 @@
         6780,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -523,7 +523,7 @@
         6780,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -534,7 +534,7 @@
         6780,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -545,7 +545,7 @@
         8940,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -556,7 +556,7 @@
         8940,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -567,7 +567,7 @@
         8940,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -578,7 +578,7 @@
         8940,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -589,7 +589,7 @@
         8940,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -600,7 +600,7 @@
         8940,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -611,7 +611,7 @@
         8940,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -622,7 +622,7 @@
         8940,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -633,7 +633,7 @@
         12180,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -644,7 +644,7 @@
         12180,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -655,7 +655,7 @@
         12180,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -666,7 +666,7 @@
         12180,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -677,7 +677,7 @@
         12180,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -688,7 +688,7 @@
         12180,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -699,7 +699,7 @@
         12180,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -710,7 +710,7 @@
         12180,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -721,7 +721,7 @@
         18660,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -732,7 +732,7 @@
         18660,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -743,7 +743,7 @@
         18660,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -754,7 +754,7 @@
         18660,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -765,7 +765,7 @@
         18660,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -776,7 +776,7 @@
         18660,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -787,7 +787,7 @@
         18660,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -798,7 +798,7 @@
         18660,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -809,7 +809,7 @@
         13260,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -820,7 +820,7 @@
         13260,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -831,7 +831,7 @@
         13260,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -842,7 +842,7 @@
         13260,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -853,7 +853,7 @@
         13260,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -864,7 +864,7 @@
         13260,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -875,7 +875,7 @@
         13260,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -886,7 +886,7 @@
         13260,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -897,7 +897,7 @@
         15420,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -908,7 +908,7 @@
         15420,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -919,7 +919,7 @@
         15420,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -930,7 +930,7 @@
         15420,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -941,7 +941,7 @@
         15420,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -952,7 +952,7 @@
         15420,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -963,7 +963,7 @@
         15420,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -974,7 +974,7 @@
         15420,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -985,7 +985,7 @@
         17580,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -996,7 +996,7 @@
         17580,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1007,7 +1007,7 @@
         17580,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1018,7 +1018,7 @@
         17580,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1029,7 +1029,7 @@
         17580,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1040,7 +1040,7 @@
         17580,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1051,7 +1051,7 @@
         17580,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1062,7 +1062,7 @@
         17580,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1073,7 +1073,7 @@
         20820,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1084,7 +1084,7 @@
         20820,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1095,7 +1095,7 @@
         20820,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1106,7 +1106,7 @@
         20820,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1117,7 +1117,7 @@
         20820,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1128,7 +1128,7 @@
         20820,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1139,7 +1139,7 @@
         20820,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1150,7 +1150,7 @@
         20820,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1161,7 +1161,7 @@
         21900,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1172,7 +1172,7 @@
         21900,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1183,7 +1183,7 @@
         21900,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1194,7 +1194,7 @@
         21900,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1205,7 +1205,7 @@
         21900,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1216,7 +1216,7 @@
         21900,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1227,7 +1227,7 @@
         21900,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1238,7 +1238,7 @@
         21900,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1249,7 +1249,7 @@
         21900,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1260,7 +1260,7 @@
         21900,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1271,7 +1271,7 @@
         21900,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1282,7 +1282,7 @@
         21900,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1293,7 +1293,7 @@
         21900,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1304,7 +1304,7 @@
         21900,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1315,7 +1315,7 @@
         21900,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1326,7 +1326,7 @@
         21900,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1337,7 +1337,7 @@
         22980,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1348,7 +1348,7 @@
         22980,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1359,7 +1359,7 @@
         22980,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1370,7 +1370,7 @@
         22980,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1381,7 +1381,7 @@
         22980,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1392,7 +1392,7 @@
         22980,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1403,7 +1403,7 @@
         22980,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1414,7 +1414,7 @@
         22980,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1425,7 +1425,7 @@
         25140,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1436,7 +1436,7 @@
         25140,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1447,7 +1447,7 @@
         25140,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1458,7 +1458,7 @@
         25140,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1469,7 +1469,7 @@
         25140,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1480,7 +1480,7 @@
         25140,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1491,7 +1491,7 @@
         25140,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1502,7 +1502,7 @@
         25140,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1513,7 +1513,7 @@
         26220,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1524,7 +1524,7 @@
         26220,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1535,7 +1535,7 @@
         26220,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1546,7 +1546,7 @@
         26220,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1557,7 +1557,7 @@
         26220,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1568,7 +1568,7 @@
         26220,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1579,7 +1579,7 @@
         26220,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1590,7 +1590,7 @@
         26220,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1601,7 +1601,7 @@
         26220,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1612,7 +1612,7 @@
         26220,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1623,7 +1623,7 @@
         26220,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1634,7 +1634,7 @@
         26220,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1645,7 +1645,7 @@
         26220,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1656,7 +1656,7 @@
         26220,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1667,7 +1667,7 @@
         26220,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1678,7 +1678,7 @@
         26220,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1689,7 +1689,7 @@
         27300,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1700,7 +1700,7 @@
         27300,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1711,7 +1711,7 @@
         27300,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1722,7 +1722,7 @@
         27300,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1733,7 +1733,7 @@
         27300,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1744,7 +1744,7 @@
         27300,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1755,7 +1755,7 @@
         27300,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1766,7 +1766,7 @@
         27300,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1777,7 +1777,7 @@
         28380,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1788,7 +1788,7 @@
         28380,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1799,7 +1799,7 @@
         28380,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1810,7 +1810,7 @@
         28380,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1821,7 +1821,7 @@
         28380,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1832,7 +1832,7 @@
         28380,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1843,7 +1843,7 @@
         28380,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1854,7 +1854,7 @@
         28380,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1865,7 +1865,7 @@
         28380,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1876,7 +1876,7 @@
         28380,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1887,7 +1887,7 @@
         28380,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1898,7 +1898,7 @@
         28380,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1909,7 +1909,7 @@
         28380,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1920,7 +1920,7 @@
         28380,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1931,7 +1931,7 @@
         28380,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1942,7 +1942,7 @@
         28380,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1953,7 +1953,7 @@
         29460,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1964,7 +1964,7 @@
         29460,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1975,7 +1975,7 @@
         29460,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1986,7 +1986,7 @@
         29460,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -1997,7 +1997,7 @@
         29460,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2008,7 +2008,7 @@
         29460,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2019,7 +2019,7 @@
         29460,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2030,7 +2030,7 @@
         29460,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2041,7 +2041,7 @@
         31620,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2052,7 +2052,7 @@
         31620,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2063,7 +2063,7 @@
         31620,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2074,7 +2074,7 @@
         31620,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2085,7 +2085,7 @@
         31620,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2096,7 +2096,7 @@
         31620,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2107,7 +2107,7 @@
         31620,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2118,7 +2118,7 @@
         31620,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2129,7 +2129,7 @@
         32700,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2140,7 +2140,7 @@
         32700,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2151,7 +2151,7 @@
         32700,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2162,7 +2162,7 @@
         32700,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2173,7 +2173,7 @@
         32700,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2184,7 +2184,7 @@
         32700,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2195,7 +2195,7 @@
         32700,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2206,7 +2206,7 @@
         32700,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2217,7 +2217,7 @@
         32700,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2228,7 +2228,7 @@
         32700,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2239,7 +2239,7 @@
         32700,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2250,7 +2250,7 @@
         32700,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2261,7 +2261,7 @@
         32700,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2272,7 +2272,7 @@
         32700,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2283,7 +2283,7 @@
         32700,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2294,7 +2294,7 @@
         32700,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2305,7 +2305,7 @@
         33780,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2316,7 +2316,7 @@
         33780,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2327,7 +2327,7 @@
         33780,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2338,7 +2338,7 @@
         33780,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2349,7 +2349,7 @@
         33780,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2360,7 +2360,7 @@
         33780,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2371,7 +2371,7 @@
         33780,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2382,7 +2382,7 @@
         33780,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2393,7 +2393,7 @@
         34860,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2404,7 +2404,7 @@
         34860,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2415,7 +2415,7 @@
         34860,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2426,7 +2426,7 @@
         34860,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2437,7 +2437,7 @@
         34860,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2448,7 +2448,7 @@
         34860,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2459,7 +2459,7 @@
         34860,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2470,7 +2470,7 @@
         34860,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2481,7 +2481,7 @@
         34860,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2492,7 +2492,7 @@
         34860,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2503,7 +2503,7 @@
         34860,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2514,7 +2514,7 @@
         34860,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2525,7 +2525,7 @@
         34860,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2536,7 +2536,7 @@
         34860,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2547,7 +2547,7 @@
         34860,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2558,7 +2558,7 @@
         34860,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2569,7 +2569,7 @@
         35940,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2580,7 +2580,7 @@
         35940,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2591,7 +2591,7 @@
         35940,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2602,7 +2602,7 @@
         35940,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2613,7 +2613,7 @@
         35940,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2624,7 +2624,7 @@
         35940,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2635,7 +2635,7 @@
         35940,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2646,7 +2646,7 @@
         35940,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2657,7 +2657,7 @@
         37020,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2668,7 +2668,7 @@
         37020,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2679,7 +2679,7 @@
         37020,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2690,7 +2690,7 @@
         37020,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2701,7 +2701,7 @@
         37020,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2712,7 +2712,7 @@
         37020,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2723,7 +2723,7 @@
         37020,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2734,7 +2734,7 @@
         37020,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2745,7 +2745,7 @@
         37020,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2756,7 +2756,7 @@
         37020,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2767,7 +2767,7 @@
         37020,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2778,7 +2778,7 @@
         37020,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2789,7 +2789,7 @@
         37020,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2800,7 +2800,7 @@
         37020,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2811,7 +2811,7 @@
         37020,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2822,7 +2822,7 @@
         37020,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2833,7 +2833,7 @@
         38100,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2844,7 +2844,7 @@
         38100,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2855,7 +2855,7 @@
         38100,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2866,7 +2866,7 @@
         38100,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2877,7 +2877,7 @@
         38100,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2888,7 +2888,7 @@
         38100,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2899,7 +2899,7 @@
         38100,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2910,7 +2910,7 @@
         38100,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2921,7 +2921,7 @@
         40260,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2932,7 +2932,7 @@
         40260,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2943,7 +2943,7 @@
         40260,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2954,7 +2954,7 @@
         40260,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2965,7 +2965,7 @@
         40260,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2976,7 +2976,7 @@
         40260,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2987,7 +2987,7 @@
         40260,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -2998,7 +2998,7 @@
         40260,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3009,7 +3009,7 @@
         42420,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3020,7 +3020,7 @@
         42420,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3031,7 +3031,7 @@
         42420,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3042,7 +3042,7 @@
         42420,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3053,7 +3053,7 @@
         42420,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3064,7 +3064,7 @@
         42420,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3075,7 +3075,7 @@
         42420,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3086,7 +3086,7 @@
         42420,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3097,7 +3097,7 @@
         41340,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3108,7 +3108,7 @@
         41340,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3119,7 +3119,7 @@
         41340,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3130,7 +3130,7 @@
         41340,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3141,7 +3141,7 @@
         41340,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3152,7 +3152,7 @@
         41340,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3163,7 +3163,7 @@
         41340,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3174,7 +3174,7 @@
         41340,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3185,7 +3185,7 @@
         44580,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3196,7 +3196,7 @@
         44580,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3207,7 +3207,7 @@
         44580,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3218,7 +3218,7 @@
         44580,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3229,7 +3229,7 @@
         44580,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3240,7 +3240,7 @@
         44580,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3251,7 +3251,7 @@
         44580,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3262,7 +3262,7 @@
         44580,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3273,7 +3273,7 @@
         48900,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3284,7 +3284,7 @@
         48900,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3295,7 +3295,7 @@
         48900,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3306,7 +3306,7 @@
         48900,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3317,7 +3317,7 @@
         48900,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3328,7 +3328,7 @@
         48900,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3339,7 +3339,7 @@
         48900,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3350,7 +3350,7 @@
         48900,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3361,7 +3361,7 @@
         45660,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3372,7 +3372,7 @@
         45660,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3383,7 +3383,7 @@
         45660,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3394,7 +3394,7 @@
         45660,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3405,7 +3405,7 @@
         45660,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3416,7 +3416,7 @@
         45660,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3427,7 +3427,7 @@
         45660,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3438,7 +3438,7 @@
         45660,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3449,7 +3449,7 @@
         47820,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3460,7 +3460,7 @@
         47820,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3471,7 +3471,7 @@
         47820,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3482,7 +3482,7 @@
         47820,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3493,7 +3493,7 @@
         47820,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3504,7 +3504,7 @@
         47820,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3515,7 +3515,7 @@
         47820,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3526,7 +3526,7 @@
         47820,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3537,7 +3537,7 @@
         51060,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3548,7 +3548,7 @@
         51060,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3559,7 +3559,7 @@
         51060,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3570,7 +3570,7 @@
         51060,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3581,7 +3581,7 @@
         51060,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3592,7 +3592,7 @@
         51060,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3603,7 +3603,7 @@
         51060,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3614,7 +3614,7 @@
         51060,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3625,7 +3625,7 @@
         57540,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3636,7 +3636,7 @@
         57540,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3647,7 +3647,7 @@
         57540,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3658,7 +3658,7 @@
         57540,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3669,7 +3669,7 @@
         57540,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3680,7 +3680,7 @@
         57540,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3691,7 +3691,7 @@
         57540,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3702,7 +3702,7 @@
         57540,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3713,7 +3713,7 @@
         52140,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3724,7 +3724,7 @@
         52140,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3735,7 +3735,7 @@
         52140,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3746,7 +3746,7 @@
         52140,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3757,7 +3757,7 @@
         52140,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3768,7 +3768,7 @@
         52140,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3779,7 +3779,7 @@
         52140,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3790,7 +3790,7 @@
         52140,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3801,7 +3801,7 @@
         54300,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3812,7 +3812,7 @@
         54300,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3823,7 +3823,7 @@
         54300,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3834,7 +3834,7 @@
         54300,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3845,7 +3845,7 @@
         54300,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3856,7 +3856,7 @@
         54300,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3867,7 +3867,7 @@
         54300,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3878,7 +3878,7 @@
         54300,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3889,7 +3889,7 @@
         56460,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3900,7 +3900,7 @@
         56460,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3911,7 +3911,7 @@
         56460,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3922,7 +3922,7 @@
         56460,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3933,7 +3933,7 @@
         56460,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3944,7 +3944,7 @@
         56460,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3955,7 +3955,7 @@
         56460,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3966,7 +3966,7 @@
         56460,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3977,7 +3977,7 @@
         59700,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3988,7 +3988,7 @@
         59700,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -3999,7 +3999,7 @@
         59700,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4010,7 +4010,7 @@
         59700,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4021,7 +4021,7 @@
         59700,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4032,7 +4032,7 @@
         59700,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4043,7 +4043,7 @@
         59700,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4054,7 +4054,7 @@
         59700,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4065,7 +4065,7 @@
         60780,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4076,7 +4076,7 @@
         60780,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4087,7 +4087,7 @@
         60780,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4098,7 +4098,7 @@
         60780,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4109,7 +4109,7 @@
         60780,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4120,7 +4120,7 @@
         60780,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4131,7 +4131,7 @@
         60780,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4142,7 +4142,7 @@
         60780,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4153,7 +4153,7 @@
         60780,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4164,7 +4164,7 @@
         60780,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4175,7 +4175,7 @@
         60780,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4186,7 +4186,7 @@
         60780,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4197,7 +4197,7 @@
         60780,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4208,7 +4208,7 @@
         60780,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4219,7 +4219,7 @@
         60780,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4230,7 +4230,7 @@
         60780,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4241,7 +4241,7 @@
         61860,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4252,7 +4252,7 @@
         61860,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4263,7 +4263,7 @@
         61860,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4274,7 +4274,7 @@
         61860,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4285,7 +4285,7 @@
         61860,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4296,7 +4296,7 @@
         61860,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4307,7 +4307,7 @@
         61860,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4318,7 +4318,7 @@
         61860,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4329,7 +4329,7 @@
         64020,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4340,7 +4340,7 @@
         64020,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4351,7 +4351,7 @@
         64020,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4362,7 +4362,7 @@
         64020,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4373,7 +4373,7 @@
         64020,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4384,7 +4384,7 @@
         64020,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4395,7 +4395,7 @@
         64020,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4406,7 +4406,7 @@
         64020,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4417,7 +4417,7 @@
         65100,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4428,7 +4428,7 @@
         65100,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4439,7 +4439,7 @@
         65100,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4450,7 +4450,7 @@
         65100,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4461,7 +4461,7 @@
         65100,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4472,7 +4472,7 @@
         65100,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4483,7 +4483,7 @@
         65100,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4494,7 +4494,7 @@
         65100,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4505,7 +4505,7 @@
         65100,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4516,7 +4516,7 @@
         65100,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4527,7 +4527,7 @@
         65100,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4538,7 +4538,7 @@
         65100,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4549,7 +4549,7 @@
         65100,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4560,7 +4560,7 @@
         65100,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4571,7 +4571,7 @@
         65100,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4582,7 +4582,7 @@
         65100,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4593,7 +4593,7 @@
         66180,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4604,7 +4604,7 @@
         66180,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4615,7 +4615,7 @@
         66180,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4626,7 +4626,7 @@
         66180,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4637,7 +4637,7 @@
         66180,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4648,7 +4648,7 @@
         66180,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4659,7 +4659,7 @@
         66180,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4670,7 +4670,7 @@
         66180,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4681,7 +4681,7 @@
         67260,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4692,7 +4692,7 @@
         67260,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4703,7 +4703,7 @@
         67260,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4714,7 +4714,7 @@
         67260,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4725,7 +4725,7 @@
         67260,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4736,7 +4736,7 @@
         67260,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4747,7 +4747,7 @@
         67260,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4758,7 +4758,7 @@
         67260,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4769,7 +4769,7 @@
         67260,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4780,7 +4780,7 @@
         67260,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4791,7 +4791,7 @@
         67260,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4802,7 +4802,7 @@
         67260,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4813,7 +4813,7 @@
         67260,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4824,7 +4824,7 @@
         67260,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4835,7 +4835,7 @@
         67260,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4846,7 +4846,7 @@
         67260,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4857,7 +4857,7 @@
         68340,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4868,7 +4868,7 @@
         68340,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4879,7 +4879,7 @@
         68340,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4890,7 +4890,7 @@
         68340,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4901,7 +4901,7 @@
         68340,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4912,7 +4912,7 @@
         68340,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4923,7 +4923,7 @@
         68340,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4934,7 +4934,7 @@
         68340,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4945,7 +4945,7 @@
         70500,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4956,7 +4956,7 @@
         70500,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4967,7 +4967,7 @@
         70500,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4978,7 +4978,7 @@
         70500,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -4989,7 +4989,7 @@
         70500,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5000,7 +5000,7 @@
         70500,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5011,7 +5011,7 @@
         70500,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5022,7 +5022,7 @@
         70500,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5033,7 +5033,7 @@
         71580,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5044,7 +5044,7 @@
         71580,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5055,7 +5055,7 @@
         71580,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5066,7 +5066,7 @@
         71580,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5077,7 +5077,7 @@
         71580,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5088,7 +5088,7 @@
         71580,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5099,7 +5099,7 @@
         71580,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5110,7 +5110,7 @@
         71580,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5121,7 +5121,7 @@
         71580,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5132,7 +5132,7 @@
         71580,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5143,7 +5143,7 @@
         71580,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5154,7 +5154,7 @@
         71580,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5165,7 +5165,7 @@
         71580,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5176,7 +5176,7 @@
         71580,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5187,7 +5187,7 @@
         71580,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5198,7 +5198,7 @@
         71580,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5209,7 +5209,7 @@
         72660,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5220,7 +5220,7 @@
         72660,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5231,7 +5231,7 @@
         72660,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5242,7 +5242,7 @@
         72660,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5253,7 +5253,7 @@
         72660,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5264,7 +5264,7 @@
         72660,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5275,7 +5275,7 @@
         72660,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5286,7 +5286,7 @@
         72660,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5297,7 +5297,7 @@
         73740,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5308,7 +5308,7 @@
         73740,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5319,7 +5319,7 @@
         73740,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5330,7 +5330,7 @@
         73740,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5341,7 +5341,7 @@
         73740,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5352,7 +5352,7 @@
         73740,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5363,7 +5363,7 @@
         73740,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5374,7 +5374,7 @@
         73740,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5385,7 +5385,7 @@
         73740,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5396,7 +5396,7 @@
         73740,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5407,7 +5407,7 @@
         73740,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5418,7 +5418,7 @@
         73740,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5429,7 +5429,7 @@
         73740,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5440,7 +5440,7 @@
         73740,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5451,7 +5451,7 @@
         73740,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5462,7 +5462,7 @@
         73740,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5473,7 +5473,7 @@
         74820,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5484,7 +5484,7 @@
         74820,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5495,7 +5495,7 @@
         74820,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5506,7 +5506,7 @@
         74820,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5517,7 +5517,7 @@
         74820,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5528,7 +5528,7 @@
         74820,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5539,7 +5539,7 @@
         74820,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5550,7 +5550,7 @@
         74820,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5561,7 +5561,7 @@
         75900,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5572,7 +5572,7 @@
         75900,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5583,7 +5583,7 @@
         75900,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5594,7 +5594,7 @@
         75900,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5605,7 +5605,7 @@
         75900,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5616,7 +5616,7 @@
         75900,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5627,7 +5627,7 @@
         75900,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5638,7 +5638,7 @@
         75900,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5649,7 +5649,7 @@
         75900,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5660,7 +5660,7 @@
         75900,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5671,7 +5671,7 @@
         75900,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5682,7 +5682,7 @@
         75900,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5693,7 +5693,7 @@
         75900,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5704,7 +5704,7 @@
         75900,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5715,7 +5715,7 @@
         75900,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5726,7 +5726,7 @@
         75900,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5737,7 +5737,7 @@
         76980,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5748,7 +5748,7 @@
         76980,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5759,7 +5759,7 @@
         76980,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5770,7 +5770,7 @@
         76980,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5781,7 +5781,7 @@
         76980,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5792,7 +5792,7 @@
         76980,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5803,7 +5803,7 @@
         76980,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M1",
@@ -5814,3175 +5814,3175 @@
         76980,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         5200,
-        3780,
+        3540,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         5200,
-        9180,
+        8940,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         5200,
-        17820,
+        17580,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         5200,
-        23220,
+        22980,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         5200,
-        28620,
+        28380,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         5200,
-        37260,
+        37020,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         5200,
-        42660,
+        42420,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         5200,
-        48060,
+        47820,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         5200,
-        56700,
+        56460,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         5200,
-        62100,
+        61860,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         5200,
-        67500,
+        67260,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         5200,
-        76140,
+        75900,
         5600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         3400,
-        2700,
+        2460,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         3400,
-        7020,
+        6780,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         3400,
-        13500,
+        13260,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         3400,
-        23220,
+        22980,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         3400,
-        29700,
+        29460,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         3400,
-        38340,
+        38100,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         3400,
-        41580,
+        41340,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         3400,
-        45900,
+        45660,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         3400,
-        52380,
+        52140,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         3400,
-        62100,
+        61860,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         3400,
-        68580,
+        68340,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         3400,
-        77220,
+        76980,
         3800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         1600,
-        3780,
+        3540,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         1600,
-        10260,
+        10020,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         1600,
-        18900,
+        18660,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         1600,
-        23220,
+        22980,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         1600,
-        29700,
+        29460,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         1600,
-        38340,
+        38100,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         1600,
-        42660,
+        42420,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         1600,
-        49140,
+        48900,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         1600,
-        57780,
+        57540,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         1600,
-        62100,
+        61860,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         1600,
-        68580,
+        68340,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         1600,
-        77220,
+        76980,
         2000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         11500,
-        3780,
+        3540,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         11500,
-        9180,
+        8940,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         11500,
-        17820,
+        17580,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         11500,
-        23220,
+        22980,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         11500,
-        28620,
+        28380,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         11500,
-        37260,
+        37020,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         11500,
-        42660,
+        42420,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         11500,
-        48060,
+        47820,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         11500,
-        56700,
+        56460,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         11500,
-        62100,
+        61860,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         11500,
-        67500,
+        67260,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         11500,
-        76140,
+        75900,
         11900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         9700,
-        2700,
+        2460,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         9700,
-        7020,
+        6780,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         9700,
-        13500,
+        13260,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         9700,
-        23220,
+        22980,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         9700,
-        29700,
+        29460,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         9700,
-        38340,
+        38100,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         9700,
-        41580,
+        41340,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         9700,
-        45900,
+        45660,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         9700,
-        52380,
+        52140,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         9700,
-        62100,
+        61860,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         9700,
-        68580,
+        68340,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         9700,
-        77220,
+        76980,
         10100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         7900,
-        3780,
+        3540,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         7900,
-        10260,
+        10020,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         7900,
-        18900,
+        18660,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         7900,
-        23220,
+        22980,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         7900,
-        29700,
+        29460,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         7900,
-        38340,
+        38100,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         7900,
-        42660,
+        42420,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         7900,
-        49140,
+        48900,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         7900,
-        57780,
+        57540,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         7900,
-        62100,
+        61860,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         7900,
-        68580,
+        68340,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         7900,
-        77220,
+        76980,
         8300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         17800,
-        3780,
+        3540,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         17800,
-        9180,
+        8940,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         17800,
-        17820,
+        17580,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         17800,
-        23220,
+        22980,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         17800,
-        28620,
+        28380,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         17800,
-        37260,
+        37020,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         17800,
-        42660,
+        42420,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         17800,
-        48060,
+        47820,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         17800,
-        56700,
+        56460,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         17800,
-        62100,
+        61860,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         17800,
-        67500,
+        67260,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         17800,
-        76140,
+        75900,
         18200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         16000,
-        2700,
+        2460,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         16000,
-        7020,
+        6780,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         16000,
-        13500,
+        13260,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         16000,
-        23220,
+        22980,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         16000,
-        29700,
+        29460,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         16000,
-        38340,
+        38100,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         16000,
-        41580,
+        41340,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         16000,
-        45900,
+        45660,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         16000,
-        52380,
+        52140,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         16000,
-        62100,
+        61860,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         16000,
-        68580,
+        68340,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         16000,
-        77220,
+        76980,
         16400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         14200,
-        3780,
+        3540,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         14200,
-        10260,
+        10020,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         14200,
-        18900,
+        18660,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         14200,
-        23220,
+        22980,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         14200,
-        29700,
+        29460,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         14200,
-        38340,
+        38100,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         14200,
-        42660,
+        42420,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         14200,
-        49140,
+        48900,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         14200,
-        57780,
+        57540,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         14200,
-        62100,
+        61860,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         14200,
-        68580,
+        68340,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         14200,
-        77220,
+        76980,
         14600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         24100,
-        3780,
+        3540,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         24100,
-        9180,
+        8940,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         24100,
-        17820,
+        17580,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         24100,
-        23220,
+        22980,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         24100,
-        28620,
+        28380,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         24100,
-        37260,
+        37020,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         24100,
-        42660,
+        42420,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         24100,
-        48060,
+        47820,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         24100,
-        56700,
+        56460,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         24100,
-        62100,
+        61860,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         24100,
-        67500,
+        67260,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         24100,
-        76140,
+        75900,
         24500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         22300,
-        2700,
+        2460,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         22300,
-        7020,
+        6780,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         22300,
-        13500,
+        13260,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         22300,
-        23220,
+        22980,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         22300,
-        29700,
+        29460,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         22300,
-        38340,
+        38100,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         22300,
-        41580,
+        41340,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         22300,
-        45900,
+        45660,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         22300,
-        52380,
+        52140,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         22300,
-        62100,
+        61860,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         22300,
-        68580,
+        68340,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         22300,
-        77220,
+        76980,
         22700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         20500,
-        3780,
+        3540,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         20500,
-        10260,
+        10020,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         20500,
-        18900,
+        18660,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         20500,
-        23220,
+        22980,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         20500,
-        29700,
+        29460,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         20500,
-        38340,
+        38100,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         20500,
-        42660,
+        42420,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         20500,
-        49140,
+        48900,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         20500,
-        57780,
+        57540,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         20500,
-        62100,
+        61860,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         20500,
-        68580,
+        68340,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         20500,
-        77220,
+        76980,
         20900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         30400,
-        3780,
+        3540,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         30400,
-        9180,
+        8940,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         30400,
-        17820,
+        17580,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         30400,
-        23220,
+        22980,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         30400,
-        28620,
+        28380,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         30400,
-        37260,
+        37020,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         30400,
-        42660,
+        42420,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         30400,
-        48060,
+        47820,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         30400,
-        56700,
+        56460,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         30400,
-        62100,
+        61860,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         30400,
-        67500,
+        67260,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         30400,
-        76140,
+        75900,
         30800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         28600,
-        2700,
+        2460,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         28600,
-        7020,
+        6780,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         28600,
-        13500,
+        13260,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         28600,
-        23220,
+        22980,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         28600,
-        29700,
+        29460,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         28600,
-        38340,
+        38100,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         28600,
-        41580,
+        41340,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         28600,
-        45900,
+        45660,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         28600,
-        52380,
+        52140,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         28600,
-        62100,
+        61860,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         28600,
-        68580,
+        68340,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         28600,
-        77220,
+        76980,
         29000
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         26800,
-        3780,
+        3540,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         26800,
-        10260,
+        10020,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         26800,
-        18900,
+        18660,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         26800,
-        23220,
+        22980,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         26800,
-        29700,
+        29460,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         26800,
-        38340,
+        38100,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         26800,
-        42660,
+        42420,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         26800,
-        49140,
+        48900,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         26800,
-        57780,
+        57540,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         26800,
-        62100,
+        61860,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         26800,
-        68580,
+        68340,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         26800,
-        77220,
+        76980,
         27200
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         36700,
-        3780,
+        3540,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         36700,
-        9180,
+        8940,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         36700,
-        17820,
+        17580,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         36700,
-        23220,
+        22980,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         36700,
-        28620,
+        28380,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         36700,
-        37260,
+        37020,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         36700,
-        42660,
+        42420,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         36700,
-        48060,
+        47820,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         36700,
-        56700,
+        56460,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         36700,
-        62100,
+        61860,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         36700,
-        67500,
+        67260,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         36700,
-        76140,
+        75900,
         37100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         34900,
-        2700,
+        2460,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         34900,
-        7020,
+        6780,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         34900,
-        13500,
+        13260,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         34900,
-        23220,
+        22980,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         34900,
-        29700,
+        29460,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         34900,
-        38340,
+        38100,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         34900,
-        41580,
+        41340,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         34900,
-        45900,
+        45660,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         34900,
-        52380,
+        52140,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         34900,
-        62100,
+        61860,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         34900,
-        68580,
+        68340,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         34900,
-        77220,
+        76980,
         35300
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         33100,
-        3780,
+        3540,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         33100,
-        10260,
+        10020,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         33100,
-        18900,
+        18660,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         33100,
-        23220,
+        22980,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         33100,
-        29700,
+        29460,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         33100,
-        38340,
+        38100,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         33100,
-        42660,
+        42420,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         33100,
-        49140,
+        48900,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         33100,
-        57780,
+        57540,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         33100,
-        62100,
+        61860,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         33100,
-        68580,
+        68340,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         33100,
-        77220,
+        76980,
         33500
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         43000,
-        3780,
+        3540,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         43000,
-        9180,
+        8940,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         43000,
-        17820,
+        17580,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         43000,
-        23220,
+        22980,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         43000,
-        28620,
+        28380,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         43000,
-        37260,
+        37020,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         43000,
-        42660,
+        42420,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         43000,
-        48060,
+        47820,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         43000,
-        56700,
+        56460,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         43000,
-        62100,
+        61860,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         43000,
-        67500,
+        67260,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         43000,
-        76140,
+        75900,
         43400
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         41200,
-        2700,
+        2460,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         41200,
-        7020,
+        6780,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         41200,
-        13500,
+        13260,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         41200,
-        23220,
+        22980,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         41200,
-        29700,
+        29460,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         41200,
-        38340,
+        38100,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         41200,
-        41580,
+        41340,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         41200,
-        45900,
+        45660,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         41200,
-        52380,
+        52140,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         41200,
-        62100,
+        61860,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         41200,
-        68580,
+        68340,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         41200,
-        77220,
+        76980,
         41600
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         39400,
-        3780,
+        3540,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         39400,
-        10260,
+        10020,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         39400,
-        18900,
+        18660,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         39400,
-        23220,
+        22980,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         39400,
-        29700,
+        29460,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         39400,
-        38340,
+        38100,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         39400,
-        42660,
+        42420,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         39400,
-        49140,
+        48900,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         39400,
-        57780,
+        57540,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         39400,
-        62100,
+        61860,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         39400,
-        68580,
+        68340,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         39400,
-        77220,
+        76980,
         39800
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        540,
+        780,
         49300,
-        3780,
+        3540,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        5940,
+        6180,
         49300,
-        9180,
+        8940,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        12420,
+        12660,
         49300,
-        17820,
+        17580,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        19980,
+        20220,
         49300,
-        23220,
+        22980,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        25380,
+        25620,
         49300,
-        28620,
+        28380,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        31860,
+        32100,
         49300,
-        37260,
+        37020,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        39420,
+        39660,
         49300,
-        42660,
+        42420,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        44820,
+        45060,
         49300,
-        48060,
+        47820,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        51300,
+        51540,
         49300,
-        56700,
+        56460,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        58860,
+        59100,
         49300,
-        62100,
+        61860,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        64260,
+        64500,
         49300,
-        67500,
+        67260,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "G",
       "rect": [
-        70740,
+        70980,
         49300,
-        76140,
+        75900,
         49700
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        540,
+        780,
         47500,
-        2700,
+        2460,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        4860,
+        5100,
         47500,
-        7020,
+        6780,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        11340,
+        11580,
         47500,
-        13500,
+        13260,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        19980,
+        20220,
         47500,
-        23220,
+        22980,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        24300,
+        24540,
         47500,
-        29700,
+        29460,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        30780,
+        31020,
         47500,
-        38340,
+        38100,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        39420,
+        39660,
         47500,
-        41580,
+        41340,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        43740,
+        43980,
         47500,
-        45900,
+        45660,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        50220,
+        50460,
         47500,
-        52380,
+        52140,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        58860,
+        59100,
         47500,
-        62100,
+        61860,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        63180,
+        63420,
         47500,
-        68580,
+        68340,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "S",
       "rect": [
-        69660,
+        69900,
         47500,
-        77220,
+        76980,
         47900
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        1620,
+        1860,
         45700,
-        3780,
+        3540,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        8100,
+        8340,
         45700,
-        10260,
+        10020,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        16740,
+        16980,
         45700,
-        18900,
+        18660,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        19980,
+        20220,
         45700,
-        23220,
+        22980,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        24300,
+        24540,
         45700,
-        29700,
+        29460,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        30780,
+        31020,
         45700,
-        38340,
+        38100,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        40500,
+        40740,
         45700,
-        42660,
+        42420,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        46980,
+        47220,
         45700,
-        49140,
+        48900,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        55620,
+        55860,
         45700,
-        57780,
+        57540,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        58860,
+        59100,
         45700,
-        62100,
+        61860,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        63180,
+        63420,
         45700,
-        68580,
+        68340,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "M2",
       "netName": "D",
       "rect": [
-        69660,
+        69900,
         45700,
-        77220,
+        76980,
         46100
       ],
-      "netType": "pin"
+      "netType": "drawing"
     },
     {
       "layer": "V1",

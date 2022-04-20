@@ -44,9 +44,6 @@
 namespace replace {
 
 
-FFT::FFT()
-  : binCntX_(0), binCntY_(0), binSizeX_(0.0), binSizeY_(0.0) {}
-
 FFT::FFT(int binCntX, int binCntY, float binSizeX, float binSizeY)
   : binCntX_(binCntX), binCntY_(binCntY), 
   binSizeX_(binSizeX), binSizeY_(binSizeY) {

@@ -9,6 +9,16 @@ using std::pair;
 using std::string;
 using std::vector;
 
+class Pdatatype {
+  public:
+  static double LAMBDA;
+  static double GAMAR;
+  static double BETA;
+  static double SIGMA;
+  static double PHI;
+  static double PI;
+  static double PII;
+};
 namespace placerDB {
 
 enum NType { Block, Terminal };
@@ -48,6 +58,7 @@ struct net {
   int margin = 0;  // margin for reduced design, used in constraint graph
   double upperBound;
   double lowerBound;
+  bool floating_pin = false;
 };
 
 struct bbox {
@@ -63,19 +74,6 @@ struct SymmBlock {
   Smark axis_dir = placerDB::V;
 };
 
-struct nodeStructComp {
-  bool operator()(const Node& lhs, const Node& rhs) const {
-    if (lhs.type == rhs.type) {
-      if (lhs.iter == rhs.iter) {
-        return lhs.iter2 < rhs.iter2;
-      } else {
-        return lhs.iter < rhs.iter;
-      }
-    } else {
-      return lhs.type < rhs.type;
-    }
-  }
-};
 
 }  // namespace placerDB
 #endif

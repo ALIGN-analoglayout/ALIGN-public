@@ -78,6 +78,11 @@ def lef_to_json( fn, nm=None, *, scale_factor=10, m1pitch=None, m2pitch=None):
     with open( fn, "rt") as fp:
         txt = fp.read()
 
-    with open( f"{nm}.json", "wt") as fp:
-        json.dump( lef_txt_to_layout_d( txt, nm, scale_factor=scale_factor, m1pitch=m1pitch, m2pitch=m2pitch), fp=fp, indent=2)
+    layout_d = lef_txt_to_layout_d( txt, nm, scale_factor=scale_factor, m1pitch=m1pitch, m2pitch=m2pitch)
+
+    if nm is not None:
+        with open( f"{nm}.json", "wt") as fp:
+            json.dump(layout_d, fp=fp, indent=2)
+    else:
+        print(json.dumps(layout_d, indent=2))
     

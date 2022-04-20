@@ -9,6 +9,7 @@
 set -eo pipefail
 
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
+export BUILD_PLATFORM=${AUDITWHEEL_PLAT}
 
 # install some dependencies
 case "$AUDITWHEEL_PLAT" in
@@ -17,7 +18,8 @@ case "$AUDITWHEEL_PLAT" in
     export CXXFLAGS=${CFLAGS}
     ;;
     "manylinux2010_x86_64"|"manylinux2014_x86_64")
-        yum -y install boost-devel lpsolve
+	#Disabling yum downloading because it is frequently timing out
+        #yum -y install boost-devel lpsolve
     ;;
     "manylinux_2_24_x86_64")
         apt update

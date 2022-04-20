@@ -1,5 +1,4 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://align-analoglayout.github.io/ALIGN-public/)
 
@@ -93,15 +92,15 @@ The second command doesn't just install ALIGN inplace, it also caches generated 
 
 If you want the build-type to be Release (-O3), you can issue the following three lines:
 ```console
-$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release' --install-option='-DBUILD_TESTING=ON'
 ```
 or
 ```console
-$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DBUILD_TESTING=ON'
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
@@ -115,6 +114,16 @@ import pstats
 from pstats import SortKey
 p = pstats.Stats('stats')
 p.sort_stats(SortKey.TIME).print_stats(20)
+```
+
+To run tests similar to the checkin and merge-to-master CI runs run:
+```
+cd $ALIGN_HOME
+# Checkin
+pytest -vv
+CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 -- tests/integration/
+# Merge to master
+CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 -- tests/integration/ tests/pdks
 ```
 
 ### Step 4: Run ALIGN

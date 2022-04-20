@@ -141,20 +141,20 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
     this->y_unit = drc_info.Metal_info.at(Lmetal).grid_unit_y * scale;
   }
   // 1. Create tiles
-  logger->debug("GlobalGrid-Info: create tiles");
+  // logger->debug("GlobalGrid-Info: create tiles");
 
   for (int i = Lmetal; i <= Hmetal; i += tileLayerNo) {
-    logger->debug("layer {0}", i);
+    // logger->debug("layer {0}", i);
     int layerIdx = (i - Lmetal) / tileLayerNo;  // current tile index
     this->tile2metal[layerIdx].clear();
     std::vector<int> tmpV;
     for (int j = 0; j < tileLayerNo && i + j <= Hmetal; j++) {
-      logger->debug("Traverse layer ", j);
+      // logger->debug("Traverse layer ", j);
       this->metal2tile[i + j] = layerIdx;
       this->tile2metal[layerIdx].insert(i + j);
       tmpV.push_back(i + j);
     }
-    logger->debug("start of creating tiles");
+    // logger->debug("start of creating tiles");
     this->Start_index.at(layerIdx) = this->tiles_total.size();
     for (int X = this->LL.x; X < this->UR.x; X += this->x_unit) {
       int Xidx = (X - this->LL.x) / this->x_unit;
@@ -200,16 +200,16 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
       }
     }
     this->End_index.at(layerIdx) = this->tiles_total.size() - 1;
-    logger->debug("end of layer {0}", i);
+    // logger->debug("end of layer {0}", i);
   }
 
   // 2. Add tile edges
-  logger->debug("GlobalGrid-Info: add tile connections");
+  // logger->debug("GlobalGrid-Info: add tile connections");
   for (int i = Lmetal; i <= Hmetal; ++i) {
     int layerIdx = this->metal2tile[i];
-    logger->debug("layer {0} tile layer {1}", i, layerIdx);
+    // logger->debug("layer {0} tile layer {1}", i, layerIdx);
     if (drc_info.Metal_info.at(i).direct == 0) {  // vertical
-      logger->debug("vertical");
+      // logger->debug("vertical");
       for (std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit = this->XYmap.at(layerIdx).begin(); mit != this->XYmap.at(layerIdx).end();
            ++mit) {
         std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit2 = mit;
@@ -224,30 +224,30 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
           continue;
         }
         if (this->tiles_total.at(pre).north.empty()) {
-          logger->debug("unit_X 1 {0}", drc_info.Metal_info.at(i).grid_unit_x);
+          // logger->debug("unit_X 1 {0}", drc_info.Metal_info.at(i).grid_unit_x);
           tmpE.next = post;
           tmpE.capacity = this->tiles_total.at(pre).width / drc_info.Metal_info.at(i).grid_unit_x;
           this->tiles_total.at(pre).north.push_back(tmpE);
-          logger->debug("add north edge between {0} and {1}", pre, post);
+          // logger->debug("add north edge between {0} and {1}", pre, post);
         } else {
-          logger->debug("unit_X 2 {0}", drc_info.Metal_info.at(i).grid_unit_x);
+          // logger->debug("unit_X 2 {0}", drc_info.Metal_info.at(i).grid_unit_x);
           this->tiles_total.at(pre).north[0].capacity += this->tiles_total.at(pre).width / drc_info.Metal_info.at(i).grid_unit_x;
-          logger->debug("update north edge between {0} and {1}", pre, post);
+          // logger->debug("update north edge between {0} and {1}", pre, post);
         }
         if (this->tiles_total.at(post).south.empty()) {
-          logger->debug("unit_X 3 {0}", drc_info.Metal_info.at(i).grid_unit_x);
+          // logger->debug("unit_X 3 {0}", drc_info.Metal_info.at(i).grid_unit_x);
           tmpE.next = pre;
           tmpE.capacity = this->tiles_total.at(post).width / drc_info.Metal_info.at(i).grid_unit_x;
           this->tiles_total.at(post).south.push_back(tmpE);
-          logger->debug("add south edge between {0} and {1}", pre, post);
+          // logger->debug("add south edge between {0} and {1}", pre, post);
         } else {
-          logger->debug("unit_X 4 {0}", drc_info.Metal_info.at(i).grid_unit_x);
+          // logger->debug("unit_X 4 {0}", drc_info.Metal_info.at(i).grid_unit_x);
           this->tiles_total.at(post).south[0].capacity += this->tiles_total.at(post).width / drc_info.Metal_info.at(i).grid_unit_x;
-          logger->debug("update south dge between {0} and {1}", pre, post);
+          // logger->debug("update south dge between {0} and {1}", pre, post);
         }
       }
     } else {  // horizontal
-      logger->debug("horizotal");
+      // logger->debug("horizotal");
       for (std::map<RouterDB::point, int, RouterDB::pointYXComp>::iterator mit = this->YXmap.at(layerIdx).begin(); mit != this->YXmap.at(layerIdx).end();
            ++mit) {
         std::map<RouterDB::point, int, RouterDB::pointYXComp>::iterator mit2 = mit;
@@ -262,26 +262,26 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
           continue;
         }
         if (this->tiles_total.at(pre).east.empty()) {
-          logger->debug("unit_y 1 {0}", drc_info.Metal_info.at(i).grid_unit_y);
+          // logger->debug("unit_y 1 {0}", drc_info.Metal_info.at(i).grid_unit_y);
           tmpE.next = post;
           tmpE.capacity = this->tiles_total.at(pre).height / drc_info.Metal_info.at(i).grid_unit_y;
           this->tiles_total.at(pre).east.push_back(tmpE);
-          logger->debug("add east edge between {0} and {1}", pre, post);
+          // logger->debug("add east edge between {0} and {1}", pre, post);
         } else {
-          logger->debug("unit_y 2 {0}", drc_info.Metal_info.at(i).grid_unit_y);
+          // logger->debug("unit_y 2 {0}", drc_info.Metal_info.at(i).grid_unit_y);
           this->tiles_total.at(pre).east[0].capacity += this->tiles_total.at(pre).height / drc_info.Metal_info.at(i).grid_unit_y;
-          logger->debug("update east edge between {0} and {1}", pre, post);
+          // logger->debug("update east edge between {0} and {1}", pre, post);
         }
         if (this->tiles_total.at(post).west.empty()) {
-          logger->debug("unit_y 3 {0}", drc_info.Metal_info.at(i).grid_unit_y);
+          // logger->debug("unit_y 3 {0}", drc_info.Metal_info.at(i).grid_unit_y);
           tmpE.next = pre;
           tmpE.capacity = this->tiles_total.at(post).height / drc_info.Metal_info.at(i).grid_unit_y;
           this->tiles_total.at(post).west.push_back(tmpE);
-          logger->debug("add west edge between {0} and {1}", pre, post);
+          // logger->debug("add west edge between {0} and {1}", pre, post);
         } else {
-          logger->debug("unit_y 4 {0}", drc_info.Metal_info.at(i).grid_unit_y);
+          // logger->debug("unit_y 4 {0}", drc_info.Metal_info.at(i).grid_unit_y);
           this->tiles_total.at(post).west[0].capacity += this->tiles_total.at(post).height / drc_info.Metal_info.at(i).grid_unit_y;
-          logger->debug("update west edge between {0} and {1}", pre, post);
+          // logger->debug("update west edge between {0} and {1}", pre, post);
         }
       }
     }
@@ -305,9 +305,9 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
         this->tiles_total.at(i).up.push_back(tmpE);
         tmpE.next = i;
         this->tiles_total.at(mit->second).down.push_back(tmpE);
-        logger->debug("add up/down edge between {0} and {1}", i, mit->second);
+        // logger->debug("add up/down edge between {0} and {1}", i, mit->second);
       } else {
-        logger->debug("GlobalGrid-Warning: cnnot create vertical edges");
+        // logger->debug("GlobalGrid-Warning: cnnot create vertical edges");
       }
     }
   }
@@ -411,9 +411,9 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
   // solution, find all set of intermetal, then adjust the capacity;
   double scale_number = 1.5;
   for (int k = 0; k < this->layerNo; ++k) {
-    logger->debug("layer {0}", k);
+    // logger->debug("layer {0}", k);
     for (int i = this->Start_index.at(k); i <= this->End_index.at(k); ++i) {
-      logger->debug("find tile  {0}", i);
+      // logger->debug("find tile  {0}", i);
       int x = this->tiles_total.at(i).x;
       int y = this->tiles_total.at(i).y;
       int w = this->tiles_total.at(i).width;
@@ -433,11 +433,11 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
       LR.y = LLy;
       for (unsigned int j = 0; j < this->tiles_total.at(i).metal.size(); ++j) {
         int mIdx = this->tiles_total.at(i).metal.at(j);
-        logger->debug("find tile {0}", i);
-        logger->debug("check metal {0} @ {1} {2} {3} {4} {5}", i, mIdx, LLx, LLy, URx, URy);
+        // logger->debug("find tile {0}", i);
+        // logger->debug("check metal {0} @ {1} {2} {3} {4} {5}", i, mIdx, LLx, LLy, URx, URy);
         int capR;
         if (this->drc_info.Metal_info.at(mIdx).direct == 0) {  // vertical
-          logger->debug("horizontal");
+          // logger->debug("horizontal");
           std::set<RouterDB::point, RouterDB::pointYXComp>::iterator itlow, itup;
           itlow = this->YXSet.at(mIdx).lower_bound(LL);
           itup = this->YXSet.at(mIdx).upper_bound(LR);
@@ -446,7 +446,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
             ++capR;
           }
           if (!this->tiles_total.at(i).south.empty()) {
-            logger->debug("south cap {0}", capR);
+            // logger->debug("south cap {0}", capR);
             this->tiles_total.at(i).south[0].capacity -= capR * scale_number;
             if (this->tiles_total.at(i).south[0].capacity < 0) {
               this->tiles_total.at(i).south[0].capacity = 0;
@@ -460,13 +460,13 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
           }
           if (!this->tiles_total.at(i).north.empty()) {
             this->tiles_total.at(i).north[0].capacity -= capR * scale_number;
-            logger->debug("north cap {0}", capR);
+            // logger->debug("north cap {0}", capR);
             if (this->tiles_total.at(i).north[0].capacity < 0) {
               this->tiles_total.at(i).north[0].capacity = 0;
             }
           }
         } else {  // horizontal
-          logger->debug("horizontal");
+          // logger->debug("horizontal");
           std::set<RouterDB::point, RouterDB::pointXYComp>::iterator itlow, itup;
           itlow = this->XYSet.at(mIdx).lower_bound(LL);
           itup = this->XYSet.at(mIdx).upper_bound(UL);
@@ -475,7 +475,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
             ++capR;
           }
           if (!this->tiles_total.at(i).west.empty()) {
-            logger->debug("west cap {0}", capR);
+            // logger->debug("west cap {0}", capR);
             this->tiles_total.at(i).west[0].capacity -= capR * scale_number;
             if (this->tiles_total.at(i).west[0].capacity < 0) {
               this->tiles_total.at(i).west[0].capacity = 0;
@@ -488,7 +488,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
             ++capR;
           }
           if (!this->tiles_total.at(i).east.empty()) {
-            logger->debug("east cap {0}", capR);
+            // logger->debug("east cap {0}", capR);
             this->tiles_total.at(i).east[0].capacity -= capR * scale_number;
             if (this->tiles_total.at(i).east[0].capacity < 0) {
               this->tiles_total.at(i).east[0].capacity = 0;
@@ -507,7 +507,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal(std::vector<RouterD
   double scale_number = 2;
   for (int k = 0; k < this->layerNo - 1; ++k) {
     if (this->Start_index.at(k) > this->End_index.at(k)) {
-      logger->debug("GlobalGrid-Error: no tiles on layer {0}", k);
+      // logger->debug("GlobalGrid-Error: no tiles on layer {0}", k);
       continue;
     }
     int viaNo = this->tiles_total.at(this->Start_index.at(k)).metal.back();
@@ -542,7 +542,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal(std::vector<RouterD
               }
             }
           } else {
-            logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
+            // logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
           }
           mit = this->XYmap.at(k + 1).find(tmpp);
           if (mit != this->XYmap.at(k + 1).end()) {
@@ -553,7 +553,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal(std::vector<RouterD
               }
             }
           } else {
-            logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
+            // logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
           }
         }
       }
@@ -567,7 +567,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin(std::vector<RouterDB::Bl
   double scale_number = 2;
   for (int k = 0; k < this->layerNo - 1; ++k) {
     if (this->Start_index.at(k) > this->End_index.at(k)) {
-      logger->debug("GlobalGrid-Error: no tiles on layer {0}", k);
+      // logger->debug("GlobalGrid-Error: no tiles on layer {0}", k);
       continue;
     }
     int viaNo = this->tiles_total.at(this->Start_index.at(k)).metal.back();
@@ -610,7 +610,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin(std::vector<RouterDB::Bl
                   }
                 }
               } else {
-                logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
+                // logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
               }
               mit = this->XYmap.at(k + 1).find(tmpp);
               if (mit != this->XYmap.at(k + 1).end()) {
@@ -621,7 +621,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin(std::vector<RouterDB::Bl
                   }
                 }
               } else {
-                logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
+                // logger->debug("GlobalGrid-Warning: cannot find tiles to adjust vertical edge cap");
               }
             }
           }
@@ -635,14 +635,14 @@ void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec,
   auto logger = spdlog::default_logger()->clone("router.GlobalGrid.ConvertNetBlockPin");
 
   int layerIdx = this->metal2tile[metalIdx];
-  logger->debug("Convert block pin {0} {1} {2} {3} @metal {4}", LLx, LLy, URx, URy, metalIdx);
+  // logger->debug("Convert block pin {0} {1} {2} {3} @metal {4}", LLx, LLy, URx, URy, metalIdx);
   int LLx_cc = floor(double(LLx - this->LL.x) / this->x_unit) * this->x_unit + this->LL.x;
   int LLy_cc = floor(double(LLy - this->LL.y) / this->y_unit) * this->y_unit + this->LL.y;
-  logger->debug("LLx_cc {0} LLy_cc {1}", LLx_cc, LLy_cc);
+  // logger->debug("LLx_cc {0} LLy_cc {1}", LLx_cc, LLy_cc);
   for (int x = LLx_cc; x < URx; x += this->x_unit) {
     for (int y = LLy_cc; y < URy; y += this->y_unit) {
       RouterDB::point tmpp;
-      logger->debug("Or check {0} {1}", x, y);
+      // logger->debug("Or check {0} {1}", x, y);
       if (x + this->x_unit > this->UR.x) {
         tmpp.x = x + (this->UR.x - x) / 2;
       } else {
@@ -654,13 +654,13 @@ void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec,
       } else {
         tmpp.y = y + this->y_unit / 2;
       }
-      logger->debug("check {0} {1}", tmpp.x, tmpp.y);
+      // logger->debug("check {0} {1}", tmpp.x, tmpp.y);
       std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit = this->XYmap.at(layerIdx).find(tmpp);
       if (mit != this->XYmap.at(layerIdx).end()) {
         sSet.insert(mit->second);
         sVec.push_back(mit->second);
       } else {
-        logger->debug("GlobalGrid-Warning: cannot map block pin to tiles");
+        // logger->debug("GlobalGrid-Warning: cannot map block pin to tiles");
       }
     }
   }
@@ -705,7 +705,7 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
 
   int net_index = 0;
   for (std::vector<RouterDB::Net>::iterator nit = Nets.begin(); nit != Nets.end(); ++nit) {
-    logger->debug("For Net {0}", net_index);
+    // logger->debug("For Net {0}", net_index);
     net_index = net_index + 1;
     int cNO = nit->connected.size();
     nit->terminals.clear();
@@ -719,14 +719,14 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
         for (std::vector<RouterDB::contact>::iterator cit = Blocks.at(iter2).pins.at(iter).pinContacts.begin();
              cit != Blocks.at(iter2).pins.at(iter).pinContacts.end(); ++cit) {
           ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
-          logger->debug("Pin Contact LL {0} {1} UR {2} {3}", cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
+          // logger->debug("Pin Contact LL {0} {1} UR {2} {3}", cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
         }
       } else if (terminal_routing) {  // terminal
 
         for (std::vector<RouterDB::contact>::iterator cit = Terminals.at(iter).termContacts.begin(); cit != Terminals.at(iter).termContacts.end(); ++cit) {
           // ConverNetTerminal(tSet, nit->connectedTile.at(i), this->lowest_metal, cit->placedCenter.x, cit->placedCenter.y);
           ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
-          logger->debug("Terminal Contact Center {0} {1}", cit->placedCenter.x, cit->placedCenter.y);
+          // logger->debug("Terminal Contact Center {0} {1}", cit->placedCenter.x, cit->placedCenter.y);
         }
         /*
                 for( std::vector<RouterDB::contact>::iterator cit=Terminals.at(iter).termContacts.begin(); cit!=Terminals.at(iter).termContacts.end(); ++cit) {
@@ -740,7 +740,7 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
       nit->terminals.push_back(*tit);
     }
     for (unsigned int i = 0; i < nit->terminals.size(); i++) {
-      logger->debug("terminal tile index {0} center {1} {2}", nit->terminals[i], tiles_total[nit->terminals[i]].x, tiles_total[nit->terminals[i]].y);
+      // logger->debug("terminal tile index {0} center {1} {2}", nit->terminals[i], tiles_total[nit->terminals[i]].x, tiles_total[nit->terminals[i]].y);
     }
   }
 }

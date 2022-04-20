@@ -27,6 +27,7 @@ class RawRouter {
   // std::vector<RouterDB::SinkData> Dest; //what is the correct defination of     Source and Dest?
   int path_number;  // number candidate path
   PnRDB::Drc_info drc_info;
+  PnRDB::Drc_info cross_layer_drc_info;
   int lowest_metal, highest_metal;  // index of lowest metal & highest metal
   int grid_scale;                   // dynamic grid_scal
   bool isTop;

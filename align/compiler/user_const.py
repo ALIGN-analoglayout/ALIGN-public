@@ -28,7 +28,7 @@ class ConstraintParser:
         self.constraint_dict = {}
         if combined_const_file.exists():
             for x in types.List[ConstJsonEntry].parse_file(combined_const_file):
-                assert x.subcircuit not in self.constraint_dict
+                assert x.subcircuit not in self.constraint_dict, f"already existing constraint in {self.constraint_dict} for {x.subcircuit}"
                 self.constraint_dict[x.subcircuit] = x.constraints
 
     def annotate_user_constraints(self, node):
@@ -46,7 +46,7 @@ class ConstraintParser:
             if cf.stem.upper() == design_name + ".CONST"
         ]
         if json_path and json_path[0].is_file():
-            logger.info(f"Reading constraints for {design_name.lower()}")
+            logger.info(f"Reading constraint file: {json_path}")
             json_path = json_path[0]
             logger.debug(f"JSON input const file for block {design_name} {json_path}")
             with types.set_context(node):

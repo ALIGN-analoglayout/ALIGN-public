@@ -1,17 +1,13 @@
 import itertools
 import logging
 from .types import Optional, List, Dict
-
 from . import types
-from pydantic import validator
-
 from .types import set_context
 from .model import Model
 from .instance import Instance
 from .constraint import ConstraintDB
 from . import checker
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -20,8 +16,10 @@ class SubCircuit(Model):
     pins: Optional[List[str]]  # List of pin names (derived from base if base exists)
     parameters: Optional[Dict[str, str]]   # Parameter Name: Value mapping (inherits & adds to base if needed)
     elements: List[Instance]
+    generator: Optional[Dict[str, str]]  # generator name from pdk, e.g., mos, cap, res, digg2inv
+    # pdk generators are mapped during database creation, some are mapped after annotation from constraints)
     constraints: ConstraintDB
-    prefix: str = 'X'         # Instance name prefix, optional
+    prefix: str = ''         # Instance name prefix, optional
 
     @property
     def nets(self):
@@ -39,10 +37,13 @@ class SubCircuit(Model):
             new_inst = Instance(name=name,
                                 model=(kwargs['model'] if 'model' in kwargs else inst.model),
                                 pins=(kwargs['pins'] if 'pins' in kwargs else inst.pins),
-                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters),
-                                generator=(kwargs['generator'] if 'generator' in kwargs else inst.generator)
+                                parameters=(kwargs['parameters'] if 'parameters' in kwargs else inst.parameters)
                                 )
             self.elements[i] = new_inst
+
+    def add_generator(self, gen):
+        with set_context(self.parent):
+            self.generator["name"]=gen
 
     def __init__(self, *args, **kwargs):
         # make elements optional in __init__
@@ -50,6 +51,8 @@ class SubCircuit(Model):
         if 'elements' not in kwargs:
             kwargs['elements'] = []
         # defer constraint processing for now
+        if 'generator' not in kwargs:
+            kwargs['generator']={}
         constraints = []
         if 'constraints' in kwargs:
             constraints = kwargs['constraints']
@@ -97,31 +100,44 @@ class SubCircuit(Model):
         # Load constraints
         yield from self.constraints.translate(solver)
 
-    def verify(self, formulae=None):
-        if formulae is None:
+    def verify(self, constraint=None):
+        if constraint is None:
             self._checker = checker.Z3Checker()
             formulae = self.translate(self._checker)
         else:
             assert self._checker is not None, "Incremental verification is not possible as solver hasn't been instantiated yet"
+            formulae = types.cast_to_solver(constraint, self._checker)
         for x in formulae:
+            # logger.debug(f'{x=}')
             self._checker.append(x)
-        self._check()
+        try:
+            self._checker.solve()
+        except checker.SolutionNotFoundError as e:
+            logger.debug(f'Checker raised error:\n {e}')
+            core = [x.json() for x in itertools.chain(self.elements, self.constraints, [constraint]) if self._checker.label(x) in e.labels]
+            logger.error(f'Solution not found due to conflict between:')
+            for x in core:
+                logger.error(f'{x}')
+            raise  # checker.SolutionNotFoundError(message=e.message, labels=e.labels)
+
+    def is_identical(self, subckt):
+        subckt_match = subckt.pins == self.pins and \
+            subckt.parameters == self.parameters and \
+            subckt.constraints == self.constraints
+        if not subckt_match:
+            return False
+
+        for x in subckt.elements:
+            y = self.get_element(x.name)
+            element_match = (y.model == x.model) and (y.pins == x.pins) and (y.parameters == x.parameters)
+            if not element_match:
+                return False
+        return True
 
     #
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
-
-    def _check(self):
-        try:
-            self._checker.solve()
-        except checker.SolutionNotFoundError as e:
-            logger.debug(f'Checker raised error:\n {e}')
-            core = [x.json() for x in itertools.chain(self.elements, self.constraints) if self._checker.label(x) in e.labels]
-            logger.error(f'Solution not found due to conflict between:')
-            for x in core:
-                logger.error(f'{x}')
-            raise checker.SolutionNotFoundError(message=e.message, labels=e.labels)
 
 
 class Circuit(SubCircuit):

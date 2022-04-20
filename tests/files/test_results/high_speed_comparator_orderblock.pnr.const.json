@@ -13,27 +13,22 @@
             "const_name": "Ordering",
             "abut": false,
             "blocks": [
-                "MN0",
+                "X_MN0",
                 "X_DP_MN1_MN2",
                 "X_CCN_MN3_MN4",
                 "X_CCP_MP5_MP6"
             ]
         },
         {
-            "const_name": "DoNotIdentify",
-            "blocks": [
-                "X_CCN_MN3_MN4",
-                "X_CCP_MP5_MP6",
-                "X_DP_MN1_MN2",
-                "MN0"
-            ]
-        },
-        {
             "pairs": [
                 {
                     "type": "sympair",
-                    "block1": "X_CMC_PMOS_MP10_MP7",
-                    "block2": "X_CMC_PMOS_MP8_MP9"
+                    "block1": "X_MP10",
+                    "block2": "X_MP9"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_MP7_MP8"
                 }
             ],
             "const_name": "SymmBlock",
