@@ -131,7 +131,6 @@ def test_b3(name, params):
         shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skipif(not BENCHMARK, reason="Exclude from CI")
 @pytest.mark.parametrize(("name", "params"), PARAMS)
 def test_b4(name, params):
     name = f'ckt_{get_test_id()}'
