@@ -569,7 +569,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> netplist = FindsetPlist(Set_net, LL, UR);
         grid.InactivePointlist_Power(netplist);
         grid.setSrcDest_detail(temp_source, temp_dest, this->width, this->height, Smap);
-        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, LL, UR);
+        AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact, LL, UR, temp_source, temp_dest);
         AddViaSpacing(Pset_via, grid, LL, UR);
         A_star a_star(grid, 0);  // no sheilding
         bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);

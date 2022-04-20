@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 import pytest
@@ -5,10 +6,17 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 from align.schema.constraint import OffsetsScalings, PlaceOnGrid
+import align
 
 """
 monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
 """
+
+
+@pytest.fixture
+def placer_max_iter(monkeypatch):
+    # Reduce number of iterations to speed up tests
+    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 10)
 
 
 @pytest.fixture
@@ -151,9 +159,18 @@ def cmp_constraints(name):
     return constraints
 
 
-def test_cmp_on_grid(place_on_grid_h):
+def test_cmp_on_grid(place_on_grid_h, placer_max_iter):
+    print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, area=5e9)
+    run_example(example, cleanup=False)
+
+def test_cmp_on_grid_ilp(place_on_grid_h, placer_max_iter):
+    print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator(name)
+    constraints = cmp_constraints(name)
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False, additional_args=['--place_using_ILP'])

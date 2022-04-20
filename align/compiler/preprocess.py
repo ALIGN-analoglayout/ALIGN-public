@@ -1,4 +1,3 @@
-from operator import sub
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -24,6 +23,7 @@ def preprocess_stack_parallel(ckt_data, design_name):
         FixSourceDrain = True
         MergeSeriesDevices = True
         MergeParallelDevices = True
+        RemoveDummyDevices = True
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
@@ -32,23 +32,27 @@ def preprocess_stack_parallel(ckt_data, design_name):
                     FixSourceDrain = const.fix_source_drain
                     MergeSeriesDevices = const.merge_series_devices
                     MergeParallelDevices = const.merge_parallel_devices
+                    RemoveDummyDevices = const.remove_dummy_devices
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
                 )
                 if FixSourceDrain:
                     # Insures Drain terminal of Nmos has higher potential than source and vice versa
-                    define_SD(subckt, FixSourceDrain)
+                    define_SD(subckt)
                 if MergeParallelDevices:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_parallel_devices(subckt, MergeParallelDevices)
+                    add_parallel_devices(subckt)
                 if MergeSeriesDevices:
                     # Find parallel devices and add a parameter parallel to them, all other parameters should be equal
-                    add_series_devices(subckt, MergeSeriesDevices)
+                    add_series_devices(subckt)
+                if RemoveDummyDevices:
+                    # remove dummy devices powered down or shorted D/G/S
+                    remove_dummy_devices(subckt)
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
-    #Remove dummy hiearachies by design tree traversal from design top
+    # Remove dummy hiearachies by design tree traversal from design top
     if isinstance(top, SubCircuit):
         IsDigital = False
         RemoveDummyHierarchies = True
@@ -91,13 +95,10 @@ def remove_dummies(library, dummy_hiers, top):
                             pins = {}
                             for p, v in y.pins.items():
                                 pins[p] = ele.pins[v]
-                            y.parameters.update(
-                                {
-                                    k: v
-                                    for k, v in ele.parameters.items()
-                                    if k in y.parameters
-                                }
-                            )
+                            # Update parameters
+                            for k, v in ele.parameters.items():
+                                if k in y.parameters:
+                                    y.parameters[k] = v
                             logger.debug(f"new instance parameters: {y.parameters}")
                             other_ckt.elements.append(
                                 Instance(
@@ -156,7 +157,7 @@ def swap_SD(circuit, G, node):
     circuit.get_element(node).pins.update({"D": nbrs, "S": nbrd})
 
 
-def define_SD(subckt, update=True):
+def define_SD(subckt):
     """define_SD
     Checks for scenarios where transistors D/S are flipped.
     It is valid configuration in spice as transistors D and S are invertible
@@ -170,13 +171,8 @@ def define_SD(subckt, update=True):
 
     Args:
         circuit ([type]): [description]
-        power ([type]): [description]
-        gnd ([type]): [description]
-        clk ([type]): [description]
     """
 
-    if not update:
-        return
     power = list()
     gnd = list()
     for const in subckt.constraints:
@@ -201,8 +197,14 @@ def define_SD(subckt, update=True):
 
     logger.debug(f"Start checking source and drain in {subckt.name} ")
 
+    high = [n for n in high if n in subckt.nets]
+    low = [n for n in low if n in subckt.nets]
+
+    if not high or not low:
+        logger.debug(f"Power or ground pin is floating in {subckt.name}")
+        return
+
     probable_changes_p = []
-    assert high[0] in subckt.nets
     traversed = high.copy()
     traversed.extend(gnd)
     while high:
@@ -261,7 +263,7 @@ def define_SD(subckt, update=True):
             swap_SD(subckt, G, node)
 
 
-def add_parallel_devices(ckt, update=True):
+def add_parallel_devices(ckt):
     """add_parallel_devics
         merge devices in parallel as single unit
         Keeps 1st device out of sorted list
@@ -270,9 +272,6 @@ def add_parallel_devices(ckt, update=True):
         ckt : subcircuit
         update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
-
-    if update is False:
-        return
     logger.debug(
         f"Checking parallel devices in {ckt.name}, initial ckt size: {len(ckt.elements)}"
     )
@@ -301,7 +300,7 @@ def add_parallel_devices(ckt, update=True):
                     G.remove(rn)
 
 
-def add_series_devices(ckt, update=True):
+def add_series_devices(ckt):
     """add_series_devics
         merge devices in series as single unit
         Keeps 1st device out of sorted list
@@ -311,9 +310,6 @@ def add_series_devices(ckt, update=True):
         ckt : subcircuit
         update (bool, optional): To turn this feature ON/OFF. Defaults to ON.
     """
-
-    if update is False:
-        return
     logger.debug(
         f"Checking stacked/series devices, initial ckt size: {len(ckt.elements)}"
     )
@@ -366,3 +362,37 @@ def add_series_devices(ckt, update=True):
                     if net == n:
                         nbr1.pins[p] = nbr2.pins[p]
                 G.remove(nbr2)
+
+
+def remove_dummy_devices(subckt):
+    logger.debug(f"Removing dummy devices, initial ckt size: {len(subckt.elements)}")
+
+    def _find_base_model(subckt, model_name):
+        model_definition = subckt.parent.find(model_name)
+        while model_definition.base:
+            model_definition = subckt.parent.find(model_definition.base)
+        return model_definition.name
+
+    power = list()
+    gnd = list()
+    for const in subckt.constraints:
+        if isinstance(const, constraint.PowerPorts):
+            power = const.ports
+        elif isinstance(const, constraint.GroundPorts):
+            gnd = const.ports
+    if not power and not gnd:
+        logger.debug(f"No power nor ground port specified for {subckt.name}")
+        return
+    remove_inst = []
+    for inst in subckt.elements:
+        base_model = _find_base_model(subckt, inst.model)
+        if not all([k in inst.pins for k in 'DGS']):
+            continue
+        if (power and "PMOS" == base_model and inst.pins['G'] in power) or \
+           (gnd and "NMOS" == base_model and inst.pins['G'] in gnd) or \
+           ((base_model in ["NMOS", "PMOS"]) and inst.pins['D'] == inst.pins['G'] == inst.pins['S']):
+            remove_inst.append(inst)
+
+    G = Graph(subckt)
+    for inst in remove_inst:
+        G.remove(inst)

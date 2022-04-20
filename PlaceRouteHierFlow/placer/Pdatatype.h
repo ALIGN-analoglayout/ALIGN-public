@@ -58,6 +58,7 @@ struct net {
   int margin = 0;  // margin for reduced design, used in constraint graph
   double upperBound;
   double lowerBound;
+  bool floating_pin = false;
 };
 
 struct bbox {
