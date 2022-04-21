@@ -98,6 +98,64 @@ def test_ru_4():
 
 
 def test_ru_5():
+    """ Partially routed single net no blockages """
+    name = get_test_id()
+    cv = CanvasPDK()
+    for i in range(10):
+        cv.addWire(cv.m1, None,  i, (0, -1),  (24, 1), netType='blockage')
+    for i in range(20, 24, 2):
+        cv.addWire(cv.m2, 'A',  i,   (5, -1),  (8, 1), netType='pin')
+    for i in range(9, 14, 2):
+        cv.addWire(cv.m2, 'A',  i,   (1, -1),  (8, 1), netType='pin')
+    for i in range(1, 4, 2):
+        cv.addWire(cv.m2, 'A',  i,   (3, -1),  (6, 1), netType='pin')
+    constraints = [{"constraint": "MultiConnection", "nets": ["A"], "multiplier": 2}]
+    data = run_postamble(name, cv, max_errors=0, constraints=constraints)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    segment_count = 0
+    center_lines = set()
+    for term in cvr.terminals:
+        assert term['layer'] != 'M5', 'Why use M5 but not M3?'
+        if term['layer'] == 'M3' and 'netName' in term and term['netName'] is not None:
+            center_lines.add((term['rect'][0]+term['rect'][2])//2)
+            segment_count += 1
+    assert len(center_lines) == 2, f'Two M3 tracks suffice to complete routing {len(center_lines)}'
+    assert segment_count == 2, f'Two M3 segments suffice to complete routing {segment_count}'
+
+
+def test_ru_6():
+    """ Partially routed two nets no blockages """
+    name = get_test_id()
+    cv = CanvasPDK()
+    for i in range(10):
+        cv.addWire(cv.m1, None,  i, (0, -1),  (15, 1), netType='blockage')
+    for i in range(9, 14, 2):
+        cv.addWire(cv.m2, 'A',  i,   (1, -1),  (8, 1), netType='pin')
+        cv.addWire(cv.m2, 'B',  i+1, (1, -1),  (8, 1), netType='pin')
+    for i in range(1, 4, 2):
+        cv.addWire(cv.m2, 'A',  i,   (3, -1),  (6, 1), netType='pin')
+        cv.addWire(cv.m2, 'B',  i+1, (3, -1),  (6, 1), netType='pin')
+    constraints = [{"constraint": "MultiConnection", "nets": ["A", "B"], "multiplier": 2}]
+    data = run_postamble(name, cv, max_errors=0, constraints=constraints)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    segment_count = 0
+    center_lines = set()
+    for term in cvr.terminals:
+        assert term['layer'] != 'M5', 'Why use M5 but not M3?'
+        if term['layer'] == 'M3' and 'netName' in term and term['netName'] is not None:
+            center_lines.add((term['rect'][0]+term['rect'][2])//2)
+            segment_count += 1
+    assert len(center_lines) == 4, f'Four M3 tracks suffice to complete routing {len(center_lines)}'
+    assert segment_count == 4, f'Four M3 segments suffice to complete routing {segment_count}'
+
+
+def test_ru_7():
     """ Partially routed common centroid """
     name = get_test_id()
     cv = CanvasPDK()
@@ -111,25 +169,28 @@ def test_ru_5():
     cv.addWire(cv.m2, 'A',  3, (8, -1),  (12, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (2, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  1, (8, -1),  (12, 1), netType='pin')
-    run_postamble(name, cv, max_errors=0)
+    constraints = [{"constraint": "MultiConnection", "nets": ["A", "B"], "multiplier": 2}]
+    data = run_postamble(name, cv, max_errors=0, constraints=constraints)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
 
 
-def test_ru_6():
+def test_ru_8():
     """ Partially routed common centroid """
     name = get_test_id()
     cv = CanvasPDK()
     for i in range(16):
         cv.addWire(cv.m1, None,  i, (0, -1),  (15, 1), netType='blockage')
-
     cv.addWire(cv.m2, 'A',  10, (2, -1),  (7, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  10, (9, -1),  (14, 1), netType='pin')
-
     cv.addWire(cv.m2, 'A',  3, (2, -1), (4, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  3, (6, -1), (10, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  3, (12, -1), (14, 1), netType='pin')
-
     cv.addWire(cv.m2, 'B',  1, (2, -1), (4, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (6, -1), (10, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  1, (12, -1), (14, 1), netType='pin')
-
-    run_postamble(name, cv, max_errors=0)
+    data = run_postamble(name, cv, max_errors=0)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
