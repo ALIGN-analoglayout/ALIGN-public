@@ -720,12 +720,12 @@ bool SeqPair::KeepOrdering(design& caseNL) {
           aftersort.push_back(caseNL.Blocks[aftersort[i]][0].counterpart);
         }
         for (unsigned int i = 0; i < aftersort.size() - 1; i++) {
-          if (find(adj[aftersort[i]].begin(), adj[aftersort[i]].end(), aftersort[i + 1]) == adj[aftersort[i]].end()) {
+          if (find(adj[aftersort[i]].begin(), adj[aftersort[i]].end(), aftersort[i + 1]) == adj[aftersort[i]].end() &&
+              find(adj[aftersort[i + 1]].begin(), adj[aftersort[i + 1]].end(), aftersort[i]) == adj[aftersort[i + 1]].end()) {
             adj[aftersort[i]].push_back(aftersort[i + 1]);
             ind[aftersort[i + 1]]++;
           }
         }
-        int a = 1;
       }
     }
     /**for (const auto& group : caseNL.SPBlocks) {
@@ -875,6 +875,49 @@ bool SeqPair::KeepOrdering(design& caseNL) {
     for (unsigned int i = 0; i < blockid_after_sort.size(); i++) {
       posPair[blocks_original_position[i]] = blockid_after_sort[i];
     }
+    // put unordered pair beside one of the self symmetry block
+    for (auto& group : caseNL.SPBlocks) {
+      if (group.axis_dir == placerDB::V) {
+        for (auto& pair : group.sympair) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end() &&
+              find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end() && group.selfsym.size()) {
+            int pivot = std::rand() % group.selfsym.size();
+            int it_pivot = find(posPair.begin(), posPair.end(), group.selfsym[pivot].first) - posPair.begin();
+            int first_it = pair.first;
+            int second_it = pair.second;
+            auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
+            auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
+            if (it1 > it2) {
+              swap(it1, it2);
+              swap(first_it, second_it);
+            }
+            auto it = posPair.begin();
+            if (it_pivot > it2) {
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+              posPair.erase(it + it2);
+              posPair.erase(it + it1);
+            } else if (it_pivot > it1) {
+              posPair.erase(it + it2);
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+              posPair.erase(it + it1);
+            } else {
+              posPair.erase(it + it2);
+              posPair.erase(it + it1);
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+            }
+          }
+        }
+      }
+    }
     for (auto& abut : caseNL.Abut_Constraints) {
       if (abut.second == placerDB::V) {
         int first_it = abut.first.first;
@@ -900,14 +943,55 @@ bool SeqPair::KeepOrdering(design& caseNL) {
                 }
               }
             }
-            if (front_block_it < back_block_it) {
+            if (front_block_it < back_block_it && front_block_it != it1 && back_block_it != it2) {
               auto it = posPair.begin();
-              posPair.erase(it + it2);
-              it = posPair.insert(it + back_block_it, second_it);
-              it = posPair.begin();
-              it = posPair.insert(it + front_block_it + 1, first_it);
-              it = posPair.begin();
-              posPair.erase(it + it1);
+              if (it2 < front_block_it) {
+                it = posPair.insert(it + back_block_it, second_it);
+                it = posPair.begin();
+                it = posPair.insert(it + front_block_it + 1, first_it);
+                it = posPair.begin();
+                posPair.erase(it + it2);
+                posPair.erase(it + it1);
+              } else if (it2 < back_block_it) {
+                if (it1 < front_block_it) {
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                } else {
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it2);
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                }
+              } else {
+                if (it1 < front_block_it) {
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                } else if (it1 < back_block_it) {
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                } else {
+                  posPair.erase(it + it2);
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                }
+              }
             }
           }
         }
