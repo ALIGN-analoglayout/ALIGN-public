@@ -9,7 +9,7 @@ from . import circuits
 import time
 
 
-CLEANUP = False
+CLEANUP = True
 LOG_LEVEL = 'INFO'
 
 
@@ -393,7 +393,7 @@ def test_sub_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
 
     with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
@@ -401,4 +401,6 @@ def test_sub_1():
         instances = {i['instance_name']: i['transformation'] for i in placement['modules'][0]['instances']}
         assert instances['X_MP0']['oY'] > 0, 'Suboptimal placement: MP0 should be just below MN0'
         assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
-    shutil.rmtree(run_dir)
+    if CLEANUP:
+        shutil.rmtree(ckt_dir)
+        shutil.rmtree(run_dir)
