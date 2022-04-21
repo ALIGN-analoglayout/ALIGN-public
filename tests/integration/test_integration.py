@@ -30,12 +30,6 @@ ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 pdks = [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() if pdk.is_dir() and pdk.name not in skip_pdks]
 
 
-@pytest.fixture
-def placer_max_iter(monkeypatch):
-    # Reduce number of iterations to speed up tests
-    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 100)
-
-
 def gen_examples():
     ci_level = os.environ.get('CI_LEVEL', 'all')
 
@@ -83,7 +77,7 @@ def gen_examples():
 @pytest.mark.nightly
 @pytest.mark.parametrize("design_dir", gen_examples(), ids=lambda x: x.name)
 @pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
-def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_max_iter):
+def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
     uid = os.environ.get('PYTEST_CURRENT_TEST')
     uid = uid.split(' ')[0].split(':')[-1].replace('[', '_').replace(']', '').replace('-', '_')
     run_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / uid
