@@ -686,6 +686,48 @@ bool SeqPair::KeepOrdering(design& caseNL) {
         ind[second_it]++;
       }
     }
+    // align block
+    for (const auto& al : caseNL.Align_blocks) {
+      if (al.horizon == 1) {
+        int center = -1;
+        vector<pair<int, int>> tosort;
+        for (const auto& b : al.blocks) {
+          if (caseNL.Blocks[b][0].counterpart == b)
+            center = b;
+          else {
+            if (caseNL.Blocks[b][0].counterpart != -1) {
+              tosort.push_back(make_pair(b, blocks_original_position_map[b]));
+            }
+          }
+        }
+        if (center == -1) continue;
+        for (const auto& b : al.blocks) {
+          if (caseNL.Blocks[b][0].counterpart != -1 && find(al.blocks.begin(), al.blocks.end(), caseNL.Blocks[b][0].counterpart) == al.blocks.end()) {
+            tosort.push_back(make_pair(caseNL.Blocks[b][0].counterpart, blocks_original_position_map[caseNL.Blocks[b][0].counterpart]));
+          }
+        }
+        vector<int> aftersort;
+        sort(tosort.begin(), tosort.end(), [](pair<int, int> a, pair<int, int> b) { return a.second < b.second; });
+        for (auto p : tosort) {
+          int counterpart = caseNL.Blocks[p.first][0].counterpart;
+          if (find(aftersort.begin(), aftersort.end(), p.first) == aftersort.end() &&
+              find(aftersort.begin(), aftersort.end(), counterpart) == aftersort.end()) {
+            aftersort.push_back(p.first);
+          }
+        }
+        aftersort.push_back(center);
+        for (int i = aftersort.size() - 2; i >= 0; i--) {
+          aftersort.push_back(caseNL.Blocks[aftersort[i]][0].counterpart);
+        }
+        for (unsigned int i = 0; i < aftersort.size() - 1; i++) {
+          if (find(adj[aftersort[i]].begin(), adj[aftersort[i]].end(), aftersort[i + 1]) == adj[aftersort[i]].end()) {
+            adj[aftersort[i]].push_back(aftersort[i + 1]);
+            ind[aftersort[i + 1]]++;
+          }
+        }
+        int a = 1;
+      }
+    }
     /**for (const auto& group : caseNL.SPBlocks) {
       if (group.axis_dir == placerDB::V) {
         for (unsigned int i = 0; i < group.sympair.size(); i++) {
