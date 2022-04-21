@@ -1,1 +1,1 @@
-from .main import generator_class
+from .main import *

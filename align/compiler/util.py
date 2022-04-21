@@ -220,10 +220,10 @@ def get_generator(name, pdkdir):
 
     def _find_generator_class(module, name):
         generator_class = getattr(module, "generator_class", False)
-        if generator_class:
+        if generator_class and generator_class(name):
             return generator_class(name)
         else:
-            return getattr(module, name.lower(), False)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)
 
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
