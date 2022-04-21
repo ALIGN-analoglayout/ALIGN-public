@@ -120,14 +120,32 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
   _negPair = _posPair;
+  _selected.resize(casenl.Blocks.size(), 0);
+  if (_posEnumerator.valid()) {
+    _posEnumerator.NextPermutation(_posPair, 0);
+    _negEnumerator.NextPermutation(_negPair, 0);
+    logger->debug("max enum : {0}", _maxEnum);
+  }
 
-  _selected.resize(casenl.GetSizeofBlocks(), 0);
-  _maxSelected.reserve(casenl.GetSizeofBlocks());
   _maxSize = 0;
+  _selmap.clear();
   for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
     auto s = static_cast<int>(casenl.Blocks.at(i).size());
     _maxSize = std::max(_maxSize, s);
-    _maxSelected.push_back(s);
+    _selmap[static_cast<int>(i)] = nullptr;
+  }
+
+  for (const auto& group : casenl.Same_Template_Constraints) {
+    auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(*group.begin()).size()));
+    _selindex.push_back(pairint);
+    for (const auto& i : group) _selmap[i] = pairint;
+  }
+  for (auto& it : _selmap) {
+    if (it.second == nullptr) {
+      auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(it.first).size()));
+      _selindex.push_back(pairint);
+      it.second = pairint;
+    }
   }
   //_hflip = 0;
   //_vflip = 0;
@@ -137,14 +155,14 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
 
 const bool SeqPairEnumerator::IncrementSelected() {
   // auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.IncrementSelected");
-  if (_maxSize <= 1) return false;
-  int i = _selected.size() - 1;
+  if (_maxSize <= 1 || _selindex.size() < 1) return false;
+  int i = _selindex.size() - 1;
   int rem = 1;
   while (i >= 0) {
     auto ui = static_cast<unsigned>(i);
-    _selected[ui] += rem;
-    if (_selected[ui] >= _maxSelected[ui]) {
-      _selected[ui] = 0;
+    _selindex[ui]->first += rem;
+    if (_selindex[ui]->first >= _selindex[ui]->second) {
+      _selindex[ui]->first = 0;
       rem = 1;
     } else {
       rem = 0;
@@ -152,7 +170,16 @@ const bool SeqPairEnumerator::IncrementSelected() {
     }
     --i;
   }
+  for (auto& it : _selmap) _selected[it.first] = _selmap[it.first]->first;
+
   return rem ? false : true;
+}
+
+SeqPairEnumerator::~SeqPairEnumerator()
+{
+  for (auto& i : _selindex) delete i;
+  _selindex.clear();
+  _selmap.clear();
 }
 
 /*vector<int> SeqPairEnumerator::GetFlip(const bool hor) const
@@ -183,13 +210,15 @@ void SeqPairEnumerator::Permute() {
   if (_exhausted) return;
   if (!IncrementSelected()) {
     if (_enumIndex.second >= _maxEnum - 1) {
-      std::sort(_negPair.begin(), _negPair.end());
       _enumIndex.second = 0;
       ++_enumIndex.first;
-      if (_posEnumerator.valid())
+      if (_posEnumerator.valid()) {
         _posEnumerator.NextPermutation(_posPair, _enumIndex.first);
-      else
+        _negEnumerator.NextPermutation(_negPair, _enumIndex.second);
+      } else {
+        std::sort(_negPair.begin(), _negPair.end());
         std::next_permutation(std::begin(_posPair), std::end(_posPair));
+      }
     } else {
       ++_enumIndex.second;
       if (_negEnumerator.valid())
@@ -1640,7 +1669,7 @@ bool SeqPair::PerturbationNew(design& caseNL) {
   bool retval{true};
   int trial_cnt{0};
   do {
-    if (_seqPairEnum) {
+    if (_seqPairEnum && _seqPairEnum->valid()) {
       posPair = _seqPairEnum->PosPair();
       negPair = _seqPairEnum->NegPair();
       selected = _seqPairEnum->Selected();

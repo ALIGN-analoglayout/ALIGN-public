@@ -125,8 +125,8 @@ int A_star::Manhattan_distan(int sindex, Grid &grid) {
   }
 
   std::set<int>::iterator it;
-
-  it = Mdis.begin();
+  //it = Mdis.begin();
+  it = Mdis.end();
 
   int dis = *it;
 

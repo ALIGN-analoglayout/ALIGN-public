@@ -84,6 +84,16 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
               strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                             "datatype" : j[k]['GdsDatatype']['Draw'],
                             "xy" : flat_rect_to_boundary( new_rect)})
+      elif pinSwitch != 0 and 'netType' in obj and obj['netType'] == 'pin':
+          strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
+                        "datatype" : j[k]['GdsDatatype']['Pin'],
+                        "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
+          if 'Label' in j[k]['GdsDatatype']:
+              bbox = list(map(scale, obj['rect']))
+              xy = [int((bbox[0] + bbox[2])/ 2), int((bbox[1] + bbox[3]) /2)]
+              strct["elements"].append ({"layer" : j[k]['GdsLayerNo'], "type": "text",
+                           "texttype" : j[k]['GdsDatatype']['Label'], "string" : obj["netName"],
+                           "xy" : xy})
       else:
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
@@ -91,10 +101,6 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       if ('color' in obj):
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype'][obj['color']],
-                        "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
-      if ('pin' in obj) and pinSwitch !=0:
-          strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
-                        "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
 
   # vias

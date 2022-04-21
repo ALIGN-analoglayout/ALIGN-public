@@ -10,8 +10,6 @@ set(sources
      PnR-pybind11.cpp)
 
 add_library(PnR SHARED ${sources} ${headers})
-add_dependencies(PnR cbc symphony)
-find_package(OpenMP)
 
 target_link_libraries(
      PnR PRIVATE
@@ -30,10 +28,7 @@ target_link_libraries(
      superlu
      pybind11::module
      Boost::boost
-     OpenMP::OpenMP_CXX
-
-     ${symphony_LIBRARIES}
-     ${cbc_LIBRARIES}
+     ilp_solver::ilp_solver
 )
 target_code_coverage(PnR)
 
@@ -57,9 +52,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           MNA
           # External Dependencies
           lpsolve::lpsolve55
-          OpenMP::OpenMP_CXX
-          ${symphony_LIBRARIES}
-          ${cbc_LIBRARIES}
+          ilp_solver::ilp_solver
           nlohmann_json::nlohmann_json
           spdlog::spdlog
           superlu
