@@ -1,7 +1,4 @@
-from operator import sub
 import pathlib
-
-from align.schema.types import set_context
 from ..schema.parser import SpiceParser
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint

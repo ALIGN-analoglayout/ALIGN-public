@@ -3,8 +3,8 @@ from ..cell_fabric import gen_gds_json
 from ..cell_fabric import positive_coord
 from ..cell_fabric import gen_lef
 from ..schema.subcircuit import SubCircuit
+from ..compiler.util import get_generator
 import copy
-import sys
 import datetime
 import pathlib
 import logging
@@ -102,31 +102,6 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
     uc.addRing(x_cells, y_cells)
 
     return uc, ['Body']
-
-
-def get_generator(name, pdkdir):
-    if pdkdir is None:
-        return False
-    pdk_dir_path = pdkdir
-    if isinstance(pdkdir, str):
-        pdk_dir_path = pathlib.Path(pdkdir)
-    pdk_dir_stem = pdk_dir_path.stem
-
-    try:  # is pdk an installed module
-        module = importlib.import_module(pdk_dir_stem)
-    except ImportError:
-        init_file = pdk_dir_path / '__init__.py'
-        if init_file.is_file():  # is pdk a package
-            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[pdk_dir_stem] = module
-            spec.loader.exec_module(module)
-        else:  # is pdk old school (backward compatibility)
-            print(f"check {pdkdir/'primitive.py'}")
-            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-    return getattr(module, name, False) or getattr(module, name.lower(), False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
