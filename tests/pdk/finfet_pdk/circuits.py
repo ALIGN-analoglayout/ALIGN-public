@@ -258,3 +258,32 @@ def charge_pump_switch(name, size=16):
     .END
     """)
     return netlist
+
+
+def power_train_thermo(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt powertrain_cell ond vccx vout
+    mmp0 vout ond vccx vccx p w=720e-9 l=40n nf=4 m=4
+    .ends
+    .subckt {name} on_d[15] on_d[14] on_d[13] on_d[12] on_d[11]
+    + on_d[10] on_d[9] on_d[8] on_d[7] on_d[6] on_d[5] on_d[4] on_d[3] on_d[2] on_d[1] on_d[0] vccx vout
+    xpowertrain_cell[15] on_d[15] vccx vout powertrain_cell
+    xpowertrain_cell[14] on_d[14] vccx vout powertrain_cell
+    xpowertrain_cell[13] on_d[13] vccx vout powertrain_cell
+    xpowertrain_cell[12] on_d[12] vccx vout powertrain_cell
+    xpowertrain_cell[11] on_d[11] vccx vout powertrain_cell
+    xpowertrain_cell[10] on_d[10] vccx vout powertrain_cell
+    xpowertrain_cell[9] on_d[9] vccx vout powertrain_cell
+    xpowertrain_cell[8] on_d[8] vccx vout powertrain_cell
+    xpowertrain_cell[7] on_d[7] vccx vout powertrain_cell
+    xpowertrain_cell[6] on_d[6] vccx vout powertrain_cell
+    xpowertrain_cell[5] on_d[5] vccx vout powertrain_cell
+    xpowertrain_cell[4] on_d[4] vccx vout powertrain_cell
+    xpowertrain_cell[3] on_d[3] vccx vout powertrain_cell
+    xpowertrain_cell[2] on_d[2] vccx vout powertrain_cell
+    xpowertrain_cell[1] on_d[1] vccx vout powertrain_cell
+    xpowertrain_cell[0] on_d[0] vccx vout powertrain_cell
+    .ends {name}
+    .END
+    """)
+    return netlist

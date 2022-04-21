@@ -2,6 +2,7 @@ import json
 import shutil
 import textwrap
 from .utils import get_test_id, build_example, run_example
+from . import circuits
 
 
 def test_dcl():
@@ -58,3 +59,19 @@ def test_remove_intermediate_hierarchy():
 
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
+
+
+def test_power_train_thermo():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.power_train_thermo(name)
+    constraints = [{"constraint": "PowerPorts", "ports": ["vccx"]}]
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=["--flow_stop", "2_primitives"])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+        modules = {m["name"] for m in hierarchy["modules"]}
+
+    # shutil.rmtree(run_dir)
+    # shutil.rmtree(ckt_dir)
