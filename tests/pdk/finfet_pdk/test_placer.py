@@ -10,7 +10,7 @@ from . import circuits
 import time
 
 
-CLEANUP = False
+CLEANUP = True
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 
@@ -459,5 +459,6 @@ def test_sub_1():
         instances = {i['instance_name']: i['transformation'] for i in placement['modules'][0]['instances']}
         assert instances['X_MP0']['oY'] > 0, 'Suboptimal placement: MP0 should be just below MN0'
         assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
-    shutil.rmtree(ckt_dir)
-    shutil.rmtree(run_dir)
+    if CLEANUP:
+        shutil.rmtree(ckt_dir)
+        shutil.rmtree(run_dir)
