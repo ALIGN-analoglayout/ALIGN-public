@@ -6,7 +6,7 @@ from ..primitive import main
 
 import logging
 from ..schema.library import Library
-from align.primitive.main import get_generator
+from .util import get_generator
 
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,6 @@
-import math
 import functools
 
-from ..main import get_generator
-
+from ...compiler.util import get_generator
 from ...cell_fabric.canvas import Canvas
 from ...cell_fabric.generators import *
 from ...cell_fabric.grid import *
