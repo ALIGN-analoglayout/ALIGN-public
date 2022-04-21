@@ -75,3 +75,20 @@ def test_power_train_thermo():
 
     # shutil.rmtree(run_dir)
     # shutil.rmtree(ckt_dir)
+
+
+def test_power_train_thermo_2():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.power_train_thermo(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        # {"constraint": "ConfigureCompiler", "remove_dummy_hierarchies": False}
+        ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=["--flow_stop", "2_primitives"])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+        modules = {m["name"]: m for m in hierarchy["modules"]}
+        constraints = {const["constraint"] for const in modules[name]["constaint"]}
+        assert "symmetric_blocks" not in constraints
