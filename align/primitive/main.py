@@ -106,6 +106,9 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
 
 def generate_generic(pdkdir, parameters, netlistdir=None):
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
+    if "values" not in parameters:
+        parameters["values"] = dict()
+    parameters["values"]["model"] = "real_inst_type"
     uc = primitive1()
     uc.generate(
         ports=parameters["ports"],
