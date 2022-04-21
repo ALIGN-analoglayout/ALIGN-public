@@ -218,8 +218,16 @@ def get_generator(name, pdkdir):
         pdk_dir_path = pathlib.Path(pdkdir)
     pdk_dir_stem = pdk_dir_path.stem
 
+    def _find_generator_class(module, name):
+        generator_class = getattr(module, "generator_class", False)
+        if generator_class:
+            return generator_class(name)
+        else:
+            return getattr(module, name.lower(), False)
+
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)
+        return _find_generator_class(module, name)
     except ImportError:
         init_file = pdk_dir_path / '__init__.py'
         if init_file.is_file():  # is pdk a package
@@ -227,8 +235,9 @@ def get_generator(name, pdkdir):
             module = importlib.util.module_from_spec(spec)
             sys.modules[pdk_dir_stem] = module
             spec.loader.exec_module(module)
+            return _find_generator_class(module, name)
         else:  # is pdk old school (backward compatibility)
             spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-    return getattr(module, name, False) or getattr(module, name.lower(), False)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)
