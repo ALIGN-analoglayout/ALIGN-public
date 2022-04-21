@@ -1,3 +1,4 @@
+import os
 import pytest
 import textwrap
 import json
@@ -10,7 +11,7 @@ import time
 
 
 CLEANUP = True
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 
 @pytest.mark.skip
@@ -315,6 +316,10 @@ def test_hang_1():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "AlignInOrder", "line": "left", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -335,6 +340,10 @@ def test_hang_2():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -357,11 +366,60 @@ def test_hang_3():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1"], ["mn2"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
+
+
+def test_hang_4():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vssx vccx
+    mp1  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp2  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp3  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp4  o i vssx vccx p w=360e-9 nf=4 m=4
+    mp5  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp6  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp7  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp8  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp9  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp10 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp11 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp12 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp13 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp14 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp15 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp16 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp17 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp18 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp19 o i vssx vccx p w=360e-9 nf=2 m=1
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
+        {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
+            ["mp1"],
+            ["mp3", "mp2", "mp4", "mp5", "mp6"],
+            ["mp7", "mp8", "mp9", "mp10"],
+            ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
+            ["mp17", "mp18"],
+            ["mp19"]
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_sub_1():
@@ -393,7 +451,7 @@ def test_sub_1():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
 
     with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
