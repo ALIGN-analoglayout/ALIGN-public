@@ -1776,6 +1776,9 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       char* names[N_var];
       for (unsigned i = 0; i < namesvec.size(); ++i) {
         if (namesvec[i].empty()) namesvec[i] = "x_" + std::to_string(i) + "\0";
+        std::replace (namesvec[i].begin(), namesvec[i].end(), '<', '(');
+        std::replace (namesvec[i].begin(), namesvec[i].end(), '>', ')');
+        //std::replace_if (namesvec[i].begin(), namesvec[i].end(), [](char c){ return (!std::isalnum(c) && c != '\0'); } , '_');
         names[i] = &(namesvec[i][0]);
       }
       
@@ -1789,6 +1792,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       ++write_cnt;
     }*/
     int status{0};
+    solverif.setTimeLimit(5 * mydesign.Blocks.size());
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);

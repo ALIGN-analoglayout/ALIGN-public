@@ -2437,6 +2437,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
+    solverif.setTimeLimit(10);
     solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), sens.data(), rhs.data());
@@ -3572,6 +3573,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+    if (neti.floating_pin) HPWL = HPWL_extend = HPWL_extend_net_priority = HPWL_extend_terminal = 0;
   }
 
   // HPWL norm
@@ -3604,7 +3606,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     double temp_sum = 0;
     for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
-    linear_const += temp_sum;
+    if(!neti.floating_pin) linear_const += temp_sum;
   }
 
   if (!mydesign.Nets.empty()) linear_const /= (mydesign.GetMaxBlockHPWLSum() * double(mydesign.Nets.size()));
@@ -4856,7 +4858,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
     for (const auto& ci : ni.connected) {
       if (ci.type == placerDB::Terminal) {
         int tno = ci.iter;
-        int bias = 20;
+        int bias = 0;
         fout << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
@@ -6159,6 +6161,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     }
   }
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    if (node.Terminals[i].netIter == -1) continue;
     auto& tC = node.Terminals.at(i).termContacts;
     tC.clear();
     for (const auto& c : node.Nets[terminal_to_net[i]].connected) {

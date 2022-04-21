@@ -141,10 +141,12 @@ design::design(PnRDB::hierNode& node, const int seed) {
     tmpnet.weight = it->weight;
     tmpnet.upperBound = it->upperBound;
     tmpnet.lowerBound = it->lowerBound;
+    bool floating_pin = true;
     for (vector<PnRDB::connectNode>::iterator nit = it->connected.begin(); nit != it->connected.end(); ++nit) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type == PnRDB::Block) {
         tmptype = placerDB::Block;
+        if (Blocks[nit->iter2][0].blockPins[nit->iter].center.size()) floating_pin = false;
       } else if (nit->type == PnRDB::Terminal) {
         tmptype = placerDB::Terminal;
       } else {
@@ -154,6 +156,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
       placerDB::Node tmpnode = {tmptype, nit->iter, nit->iter2, nit->alpha};
       tmpnet.connected.push_back(tmpnode);
     }
+    if (floating_pin == true) tmpnet.floating_pin = true;
     this->Nets.push_back(tmpnet);
   }
 
