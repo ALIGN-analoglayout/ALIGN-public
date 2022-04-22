@@ -3,7 +3,9 @@ from .utils import get_test_id, build_example, run_example
 import align.pdk.finfet
 import pathlib
 from align.compiler.read_library import read_lib
-import pytest
+
+
+CLEANUP = True
 
 
 def test_read_lib():
@@ -29,7 +31,7 @@ def test_floating_pin():
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, n=1)
+    run_example(example, cleanup=CLEANUP, n=1)
 
 
 def test_floating_power_pin():
@@ -55,4 +57,4 @@ def test_floating_power_pin():
         {"constraint": "AlignInOrder", "direction": "horizontal", "instances": [f"xi<{i}>" for i in range(5)]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, n=1)
+    run_example(example, cleanup=CLEANUP, n=1)

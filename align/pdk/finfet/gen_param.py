@@ -1,35 +1,9 @@
-import sys
-import pathlib
 import logging
-import importlib.util
 from copy import deepcopy
 from math import sqrt, floor, log10
+from align.compiler.util import get_generator
 
 logger = logging.getLogger(__name__)
-
-
-def get_generator(name, pdkdir):
-    if pdkdir is None:
-        return False
-    pdk_dir_path = pdkdir
-    if isinstance(pdkdir, str):
-        pdk_dir_path = pathlib.Path(pdkdir)
-    pdk_dir_stem = pdk_dir_path.stem
-
-    try:  # is pdk an installed module
-        module = importlib.import_module(pdk_dir_stem)
-    except ImportError:
-        init_file = pdk_dir_path / '__init__.py'
-        if init_file.is_file():  # is pdk a package
-            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[pdk_dir_stem] = module
-            spec.loader.exec_module(module)
-        else:  # is pdk old school (backward compatibility)
-            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-    return getattr(module, name, False) or getattr(module, name.lower(), False)
 
 
 def generate_generic(pdkdir, parameters, netlistdir=None):

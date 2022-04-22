@@ -9,6 +9,8 @@ from ..schema import SubCircuit, Model
 import logging
 import pathlib
 import hashlib
+import importlib
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +146,7 @@ def get_ports_weight(G):
             ports_weight[port] = {}
     return ports_weight
 
+
 def gen_key(param):
     """_gen_key
     Creates a hex key for combined transistor params
@@ -157,12 +160,11 @@ def gen_key(param):
     key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
     return key
 
+
 def create_node_id(G, node1, ports_weight=None):
     in1 = G.nodes[node1].get("instance")
     if in1:
-        properties = {'model':in1.model,
-                      'n_pins':len(set(in1.pins.values()))
-        }
+        properties = {'model': in1.model, 'n_pins': len(set(in1.pins.values()))}
         if in1.parameters:
             properties.update(in1.parameters)
         return gen_key(properties)
@@ -199,10 +201,43 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    id1 = create_node_id(G,node1, ports_weight=ports_weight)
+    id1 = create_node_id(G, node1, ports_weight=ports_weight)
     id2 = create_node_id(G, node2, ports_weight=ports_weight)
-    return id1 ==id2
+    return id1 == id2
 
 
 def get_primitive_spice():
     return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
+
+
+def get_generator(name, pdkdir):
+    if pdkdir is None:
+        return False
+    pdk_dir_path = pdkdir
+    if isinstance(pdkdir, str):
+        pdk_dir_path = pathlib.Path(pdkdir)
+    pdk_dir_stem = pdk_dir_path.stem
+
+    def _find_generator_class(module, name):
+        generator_class = getattr(module, "generator_class", False)
+        if generator_class and generator_class(name):
+            return generator_class(name)
+        else:
+            return getattr(module, name, False) or getattr(module, name.lower(), False)
+
+    try:  # is pdk an installed module
+        module = importlib.import_module(pdk_dir_stem)
+        return _find_generator_class(module, name)
+    except ImportError:
+        init_file = pdk_dir_path / '__init__.py'
+        if init_file.is_file():  # is pdk a package
+            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[pdk_dir_stem] = module
+            spec.loader.exec_module(module)
+            return _find_generator_class(module, name)
+        else:  # is pdk old school (backward compatibility)
+            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)
