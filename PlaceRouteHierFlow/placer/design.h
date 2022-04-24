@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+#include <chrono>
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -13,7 +15,6 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
-#include <chrono>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -29,7 +30,7 @@ using std::string;
 using std::vector;
 
 class design {
- public:
+  public:
   friend class SeqPair;
   friend class SeqPairEnumerator;
   friend class Placer;
@@ -240,8 +241,8 @@ class design {
   string GetBlockPinName(int blockid, int pinid, int sel);
   string GetTerminalName(int termid);
   int GetBlockPinNum(int blockid, int sel);
-  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);               // Get width of block when it's placed
-  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);              // Get height of block when it's placed
+  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);   // Get width of block when it's placed
+  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);  // Get height of block when it's placed
   placerDB::point GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL,
                                     int sel);  // Get absolute location of block center when it's placed at LL
   vector<placerDB::point> GetPlacedBlockPinRelPosition(int blockid, int pinid, placerDB::Omark ort,

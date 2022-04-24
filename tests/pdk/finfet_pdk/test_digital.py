@@ -1,13 +1,15 @@
 import textwrap
-from align.primitive import main
+from align.compiler.util import get_generator
 from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
+import shutil
+import json
 
-cleanup = True
+CLEANUP = True
 
 
 def test_dig22inv():
     name = "dig22inv"
-    primitive_generator = main.get_generator(name, pdk_dir)
+    primitive_generator = get_generator(name, pdk_dir)
     data = primitive_generator().generate(ports=['A', 'O', 'VCCX', 'VSSX'])
     export_to_viewer("dig22inv", data)
 
@@ -31,4 +33,16 @@ def test_dig_1():
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=cleanup)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+
+    name = name.upper()
+    filename = run_dir / '1_topology' / '__primitives_library__.json'
+    assert filename.exists() and filename.is_file(), f'File not found:{filename}'
+    with (filename).open('rt') as fp:
+        data = json.load(fp)
+        leaves = {m['name']: m for m in data}
+        assert "DIG22INV" in leaves
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
