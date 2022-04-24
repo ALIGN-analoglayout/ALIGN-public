@@ -87,7 +87,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "CritNet") {
       for (int i = 0; i < (int)node.Nets.size(); i++) {
         if (node.Nets.at(i).name == constraint["net_name"]) {
-          node.Nets.at(i).priority = constraint["priority"];
+          node.Nets.at(i).weight = constraint["priority"];
           break;
         }
       }
@@ -322,7 +322,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "AlignBlock") {
       PnRDB::AlignBlock alignment_unit;
       size_t found;
-      if(constraint["line"] == "h_bottom") {
+      if (constraint["line"] == "h_bottom") {
         alignment_unit.horizon = 1;
         alignment_unit.line = 0;
       } else if (constraint["line"] == "h_center") {
@@ -614,6 +614,49 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         temp_const.insert(node.Block_name_map[b]);
       }
       node.Same_Template_Constraints.push_back(temp_const);
+    } else if (constraint["const_name"] == "CompactPlacement") {
+      node.compact_style = constraint["style"];
+    } else if(constraint["const_name"] == "DoNotRoute"){
+      vector<string> DoNotRoute;
+      for(auto net : constraint["nets"]){
+         DoNotRoute.push_back(net);
+      }
+      node.DoNotRoute = DoNotRoute;
+    }
+  }
+}
+
+void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, const string &jsonStr){
+  auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase.ReadLeafOffsetPitch");
+  auto &b = lefData[primitive.front().name].front();
+  json jedb = json::parse(jsonStr);
+  if(jedb.contains("metadata")){
+    json constraints = jedb["metadata"]["constraints"];
+    for (auto constraint : constraints) {
+      if (constraint["constraint"] == "place_on_grid"){
+        string s = constraint["direction"];
+        if (constraint["direction"] == "H") {  // horizontal metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.yoffset.push_back(offset);
+            b.yoffset.back() = b.yoffset.back() * 2 / ScaleFactor;
+          }
+          b.ypitch = constraint["pitch"];
+          b.ypitch = b.ypitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.yflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        } else if (constraint["direction"] == "V") {  // vertical metal
+          for(auto offset:constraint["ored_terms"][0]["offsets"]){
+            b.xoffset.push_back(offset);
+            b.xoffset.back() = b.xoffset.back() * 2 / ScaleFactor;
+          }
+          b.xpitch = constraint["pitch"];
+          b.xpitch = b.xpitch * 2 / ScaleFactor;
+          if(constraint["ored_terms"][0]["scalings"].size()<2){
+            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+          }
+        }
+      }
     }
   }
 }

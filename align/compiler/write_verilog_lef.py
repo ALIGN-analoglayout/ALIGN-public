@@ -4,7 +4,6 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-from align.schema.subcircuit import SubCircuit
 
 import logging
 
@@ -14,12 +13,10 @@ logger = logging.getLogger(__name__)
 class WriteVerilog:
     """write hierarchical verilog file"""
 
-    def __init__(self, ckt, ckt_data, power_pins):
+    def __init__(self, ckt, ckt_data):
         self.ckt_data = ckt_data
         self.circuit_name = ckt.name
         self.pins = ckt.pins
-        self.power_pins = power_pins
-
         self.subckt_data = self.ckt_data.find(ckt.name)
         self.constraints = self.ckt_data.find(ckt.name).constraints
 
@@ -32,7 +29,7 @@ class WriteVerilog:
 
         for ele in self.subckt_data.elements:
             instance = {}
-            instance["template_name"] = ele.abstract_name
+            instance["abstract_template_name"] = ele.abstract_name
             instance["instance_name"] = ele.name
             instance["fa_map"] = self.gen_dict_fa(ele.pins.keys(), ele.pins.values())
             d["instances"].append(instance)

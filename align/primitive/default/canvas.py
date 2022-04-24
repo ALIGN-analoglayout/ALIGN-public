@@ -1,8 +1,6 @@
-import math
 import functools
 
-from ..main import get_generator
-
+from ...compiler.util import get_generator
 from ...cell_fabric.canvas import Canvas
 from ...cell_fabric.generators import *
 from ...cell_fabric.grid import *
@@ -82,9 +80,9 @@ class DefaultCanvas(Canvas):
                                                        self._get_metal_offset(nm))
 
                 ## TODO: Stoppoint shall satisfy both upper and lower layers
-                # spg_stop = max(self._get_via_ext(base_layer, nv), self._get_via_ext(base_layer, pv)) 
+                # spg_stop = max(self._get_via_ext(base_layer, nv), self._get_via_ext(base_layer, pv))
 
-            logger.debug(f"Enclosure grid for {layer}, pitch={spg_pitch}, offset={spg_offset}, stop={spg_stop}")
+            # logger.debug(f"Enclosure grid for {layer}, pitch={spg_pitch}, offset={spg_offset}, stop={spg_stop}")
 
             layer = layer.lower()
             if len(info['Color']) == 0:

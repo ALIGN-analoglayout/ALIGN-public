@@ -13,7 +13,7 @@ static double parse_and_scale(const std::string& s, double unitScale) {
   double scaled = stod(s) * unitScale;
   double result = round(scaled);
   if (fabs(scaled - result) > 0.001) {
-    logger->error( "{0}*{1} Rounded result ({2}) differs too much from unrounded result ({3})", s , unitScale , result, scaled);
+    logger->error("{0}*{1} Rounded result ({2}) differs too much from unrounded result ({3})", s, unitScale, result, scaled);
   }
   return result;
 }
@@ -25,7 +25,7 @@ bool PnRdatabase::ReadLEF(const string& leffile) {
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(leffile.c_str());
-    _ReadLEF( fin, leffile);
+    _ReadLEF(fin, leffile);
     fin.close();
     return true;
   } catch (ifstream::failure& e) {
@@ -36,15 +36,14 @@ bool PnRdatabase::ReadLEF(const string& leffile) {
 
 bool PnRdatabase::ReadLEFFromString(const string& lefStr) {
   std::istringstream is(lefStr);
-  _ReadLEF( is, "<string>");
+  _ReadLEF(is, "<string>");
   return true;
 }
 
 void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
-
   auto logger = spdlog::default_logger()->clone("PnRDB.PnRdatabase._ReadLEF");
 
-  logger->debug( "Reading LEF file {0}" , leffile);
+  // logger->debug("Reading LEF file {0}", leffile);
   string def;
   size_t found;
   vector<string> temp;
@@ -61,8 +60,9 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
   int width = -1, height = -1;
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;  // metal within each MACRO
-  vector<PnRDB::Via> interVias; //via within each MACRO
+  vector<PnRDB::Via> interVias;        // via within each MACRO
   bool Metal_Flag;
+  bool Via_Flag;
   {
     int stage = 0;
     bool skip_the_rest_of_stage_4 = false;
@@ -71,11 +71,11 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
       // cout<<def<<endl;
       // [wbxu] This function needs to be updated to support internal metals, currently we're lack of data
       if (stage == 0) {  // idle mode
-        logger->debug( "stage0.def: {0}" , def );
+        // logger->debug("stage0.def: {0}", def);
         if ((found = def.find("MACRO")) != string::npos) {
           temp = get_true_word(found, def, 0, ';', p);
           macroName = temp[1];
-          macroEnd = "END " + temp[1];
+          macroEnd = "END " + macroName;
           // cout<<"Stage "<<stage<<" @ "<<macroName<<" ~~ "<<macroEnd<<endl;
           width = 0;
           height = 0;
@@ -118,13 +118,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
-          string key = "_AspectRatio";
-          std::size_t found = macroIns.name.find(key);
-          if (found != std::string::npos) {  // different aspect ratio exists
-            macroIns.master = macroIns.name.substr(0, found);
-          } else {  // different aspect ratio does not exist
-            macroIns.master = macroIns.name;
-          }
+	  macroIns.master = macroIns.name;
           if (lefData.find(macroIns.master) == lefData.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
@@ -137,14 +131,13 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           stage = 0;
         }
       } else if (stage == 4) {  // within OBS
-        logger->debug("stage4.Def: {0}", def);
         if ((found = def.find("LAYER")) != string::npos) {
           skip_the_rest_of_stage_4 = false;
           temp = get_true_word(found, def, 0, ';', p);
           if (temp[1].front() == 'M') {
             interMetals.resize(interMetals.size() + 1);
             interMetals.back().metal = temp[1];
-          } else if (temp[1].front() == 'V' && temp[1].back()!='0') {
+          } else if (temp[1].front() == 'V' && temp[1].back() != '0') {
             interVias.resize(interVias.size() + 1);
             interVias.back().model_index = DRC_info.Viamap[temp[1]];
             interVias.back().ViaRect.metal = temp[1];
@@ -167,15 +160,15 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           tp.y = URy;
           oBox.UR = tp;
           if (!skip_the_rest_of_stage_4) {
-            if(rect_type=='M'){
+            if (rect_type == 'M') {
               assert(interMetals.size() > 0);
-            interMetals.back().originBox = oBox;
-            interMetals.back().originCenter.x = (LLx + URx) / 2;
-            interMetals.back().originCenter.y = (LLy + URy) / 2;
-            }else if(rect_type=='V'){
+              interMetals.back().originBox = oBox;
+              interMetals.back().originCenter.x = (LLx + URx) / 2;
+              interMetals.back().originCenter.y = (LLy + URy) / 2;
+            } else if (rect_type == 'V') {
               assert(interVias.size() > 0);
               PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
-              PnRDB::ViaModel via_model= DRC_info.Via_model[interVias.back().model_index];
+              PnRDB::ViaModel via_model = DRC_info.Via_model[interVias.back().model_index];
               interVias.back().originpos = center;
               interVias.back().ViaRect.originCenter = center;
               interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
@@ -217,16 +210,22 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           // Metal_Flag = true;
           temp = get_true_word(found, def, 0, ';', p);
           char rect_type = temp[1].front();
-          if(rect_type=='M'){
+          if (rect_type == 'M') {
             Metal_Flag = true;
             macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
             macroPins.back().pinContacts.back().metal = temp[1];
-          }else{
+          }else if(rect_type == 'V'){
+            Via_Flag = true;
+            macroPins.back().pinVias.resize(macroPins.back().pinVias.size() + 1);
+            macroPins.back().pinVias.back().model_index = DRC_info.Viamap[temp[1]]; 
+            //std::cout<<"pin via model_index "<<DRC_info.Viamap[temp[1]]<<std::endl;
+          }else {
+            Via_Flag = false;
             Metal_Flag = false;
           }
           // cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
         } else if ((found = def.find("RECT")) != string::npos && Metal_Flag) {
-          // Metal_Flag = true;
+          Metal_Flag = false;
           temp = get_true_word(found, def, 0, ';', p);
           int LLx = parse_and_scale(temp[1], units);
           int LLy = parse_and_scale(temp[2], units);
@@ -249,12 +248,41 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           // {
           //  cout<<" {"<<it->x<<","<<it->y<<"}";
           //}
-          // cout<<endl<<"Stage "<<stage<<" @ center
-          // "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
+          //cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
+        }else if((found = def.find("RECT")) != string::npos && Via_Flag){
+          Via_Flag = false;
+          temp = get_true_word(found, def, 0, ';', p);
+          int LLx = parse_and_scale(temp[1], units);
+          int LLy = parse_and_scale(temp[2], units);
+          int URx = parse_and_scale(temp[3], units);
+          int URy = parse_and_scale(temp[4], units);
+          PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
+          //std::cout<<"inserting via "<<center.x<<" "<<center.y<<" "<<macroPins.back().pinVias.back().model_index<<std::endl;
+          PnRDB::ViaModel via_model = DRC_info.Via_model[macroPins.back().pinVias.back().model_index];
+          macroPins.back().pinVias.back().originpos = center;
+          macroPins.back().pinVias.back().ViaRect.originCenter = center;
+          macroPins.back().pinVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
+          macroPins.back().pinVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
+          macroPins.back().pinVias.back().ViaRect.metal = via_model.name;
+          macroPins.back().pinVias.back().LowerMetalRect.originCenter = center;
+          macroPins.back().pinVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
+          macroPins.back().pinVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
+          macroPins.back().pinVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
+          macroPins.back().pinVias.back().UpperMetalRect.originCenter = center;
+          macroPins.back().pinVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
+          macroPins.back().pinVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
+          macroPins.back().pinVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+          // cout<<"Stage "<<stage<<" @ bbox ";
+          // for(vector<PnRDB::point>::iterator
+          // it=macroPins.back().pinContacts.back().originBox.polygon.begin();it!=macroPins.back().pinContacts.back().originBox.polygon.end();++it)
+          // {
+          //  cout<<" {"<<it->x<<","<<it->y<<"}";
+          //}
+          //cout<<"Stage "<<stage<<" @ center"<<macroPins.back().pinVias.back().originpos.x<<","<<macroPins.back().pinVias.back().originpos.y<<endl;
         } else if ((found = def.find(portEnd)) != string::npos) {
           // cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           if (macroPins.back().pinContacts.size() == 0 || macroPins.back().pinContacts.back().metal == "") {
-            logger->error("Error: LEF Physical Pin information Missing" );
+            logger->warn("Error: LEF Physical Pin information Missing");
             assert(0);
           }
           stage = 2;

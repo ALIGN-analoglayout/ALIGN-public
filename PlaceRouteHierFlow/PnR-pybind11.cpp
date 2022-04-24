@@ -227,6 +227,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("n_copy", &hierNode::n_copy)
       .def_readwrite("numPlacement", &hierNode::numPlacement)
       .def_readwrite("name", &hierNode::name)
+      .def_readwrite("concrete_name", &hierNode::concrete_name)
       .def_readwrite("gdsFile", &hierNode::gdsFile)
       .def_readwrite("parent", &hierNode::parent)
       .def_readwrite("Blocks", &hierNode::Blocks)
@@ -252,6 +253,7 @@ PYBIND11_MODULE(PnR, m) {
       .def_readwrite("Guardring_Consts", &hierNode::Guardring_Consts)
       .def_readwrite("bias_Hgraph", &hierNode::bias_Hgraph)
       .def_readwrite("bias_Vgraph", &hierNode::bias_Vgraph)
+      .def_readwrite("compact_style", &hierNode::compact_style)
       .def_readwrite("router_report", &hierNode::router_report)
       .def_readwrite("Block_name_map", &hierNode::Block_name_map)
       .def_readonly("HPWL", &hierNode::HPWL)
@@ -368,6 +370,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("power_routing_metal_u", &design_info::power_routing_metal_u)
     .def_readwrite("h_skip_factor", &design_info::h_skip_factor)
     .def_readwrite("v_skip_factor", &design_info::v_skip_factor)
+    .def_readwrite("compact_style", &design_info::compact_style)
     ;
 
   py::class_<guardring_info>( m, "guardring_info")
@@ -432,10 +435,6 @@ PYBIND11_MODULE(PnR, m) {
     .value("Backward",Backward)
     .export_values();
 
-  py::class_<ReadVerilogHelper>( m, "ReadVerilogHelper")
-    .def( py::init<PnRdatabase&>())
-    .def( "parse_top", &ReadVerilogHelper::parse_top);
-
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<>())
     .def( "semantic0", &PnRdatabase::semantic0)
@@ -443,13 +442,11 @@ PYBIND11_MODULE(PnR, m) {
     .def( "semantic2", &PnRdatabase::semantic2)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
-    .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
     .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
     .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
-    .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "getDrc_info", &PnRdatabase::getDrc_info)
     .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
@@ -469,11 +466,13 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
     .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
+    .def( "ReadPrimitiveOffsetPitch", &PnRdatabase::ReadPrimitiveOffsetPitch)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
+    .def_readwrite("ScaleFactor", &PnRdatabase::ScaleFactor)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
@@ -484,12 +483,23 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_INT", &PlacerHyperparameters::T_INT)
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
+    .def_readwrite("SEED", &PlacerHyperparameters::SEED)
     .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
+    .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
+    .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
+    .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
+    .def_readwrite("max_init_trial_count", &PlacerHyperparameters::max_init_trial_count)
+    .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
+    .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP) // Choice of variant selection in SA: 0-Sequence Pair, 1-ILP
+    .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer) // Use ILP to place blocks instead of SA
+    .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
+    .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
+    .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

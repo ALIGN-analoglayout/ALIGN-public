@@ -1,12 +1,10 @@
 from ..cell_fabric import transformation, pdk
-from .. import primitive
+from ..compiler.util import get_generator
 import itertools
 import json
-import importlib
-import sys
 import pathlib
 import re
-from .toplevel import NType
+from .router import NType
 
 from .render_placement import gen_transformation
 
@@ -25,13 +23,15 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False, toplevel=True):
 
-    logger.info( f'Checking: {hN.name}')
+def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False,
+                    toplevel=True, pnr_const_ds=None):
+
+    logger.debug(f'Checking: {hN.name}')
 
     global_power_names = set( [ n.name for n in hN.PowerNets])
 
-    generator = primitive.get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
@@ -114,17 +114,17 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         if not found and input_dir is not None:
 
             logger.debug( f"blk.gdsFile: {blk.gdsFile} {found} {input_dir}")
-            p = re.compile( r"^\./Results/(\S+)\.gds$")
+            p = re.compile( r"^(\./|)Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
-                pth = input_dir / (m.groups()[0] + ".json")
+                pth = input_dir / (m.groups()[1] + ".json")
                 if not pth.is_file():
                     logger.error( f"{pth} not found in input_dir")
                 else:
                     logger.debug( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.error( f"'{blk.gdsFile}' does not end in .gds")
+                logger.error( f"'{blk.gdsFile}' does not match pattern {p.pattern}")
 
         if found:
             with pth.open( "rt") as fp:
@@ -297,7 +297,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     for inst, parameters in subinsts.items():
         cnv.subinsts[inst].parameters.update(parameters)
 
-    nets_allowed_to_be_open = [] if toplevel else global_power_names
+    nets_dnr = []
+    if pnr_const_ds is not None and hN.name in pnr_const_ds:
+        for const in pnr_const_ds[hN.name]['constraints']:
+            if const['const_name'] == 'DoNotRoute':
+                nets_dnr.extend(const['nets'])
+
+    nets_allowed_to_be_open = set(nets_dnr)
+    if not toplevel:
+        nets_allowed_to_be_open = set.union(nets_allowed_to_be_open, global_power_names)
 
     new_d = cnv.gen_data(run_drc=True, run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 

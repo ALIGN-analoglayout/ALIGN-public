@@ -1,21 +1,18 @@
 set(headers
-     Aplace.h
      ILP_solver.h
      Placer.h
      PlacerHyperparameters.h
      Preadfile.h
      design.h
-     ConstGraph.h
      Pdatatype.h
      PlacerIfc.h
      SeqPair.h)
 
 set(sources
-     Aplace.cpp
      ILP_solver.cpp
+     ILP_Place.cpp
      PlacerIfc.cpp
      SeqPair.cpp
-     ConstGraph.cpp
      Placer.cpp
      Preadfile.cpp
      design.cpp)
@@ -27,5 +24,8 @@ target_link_libraries(
      spdlog::spdlog
      lpsolve::lpsolve55
      Boost::boost
-)
+     nlohmann_json::nlohmann_json
+     ilp_solver::ilp_solver
+     )
+
 target_code_coverage(placer)

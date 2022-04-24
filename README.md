@@ -1,39 +1,38 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://align-analoglayout.github.io/ALIGN-public/)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
 
-ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&M University, and Intel Corporation. 
+ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&M University, and Intel Corporation.
 
-The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs. 
+The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs.
 
 The ALIGN flow includes the following steps:
-* _Circuit annotation_ creates a multilevel hierarchical representation of the input netlist. This representation is used to implement the circuit layout in using a hierarchical manner. 
+* _Circuit annotation_ creates a multilevel hierarchical representation of the input netlist. This representation is used to implement the circuit layout in using a hierarchical manner.
 * _Design rule abstraction_ creates a compact JSON-format represetation of the design rules in a PDK. This repository provides a mock PDK based on a FinFET technology (where the parameters are based on published data). These design rules are used to guide the layout and ensure DRC-correctness.
 * _Primitive cell generation_ works with primitives, i.e., blocks at the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
-* _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
+* _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete.
 
 ## Inputs
 
-* A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
-* [Setup file](examples/telescopic_ota/telescopic_ota.setup)
+* A [SPICE netlist](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
+* [Setup file](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.setup)
   * Power and Gnd signals (First power signal is used for global power grid)
   * Clk signal (optional)
   * Digital blocks (optional)
 
 * Library:(SPICE format)
-  * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
-  * More library elements can be added in the [user_template library](align/config/user_template.sp).
+  * A basic built-in [template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+  * More library elements can be added in the [user_template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/user_template.sp).
 
-* PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
-  * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
+* PDK: Abstracted [design rules](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK)
+  * A mock FinFET 14nm PDK [rules file](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
   * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
-  * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
+  * Primitive cells(NMOS/PMOS/[Resistor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
 
 * LEF:
-  * A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
+  * A list of parameterized cells supported by cell generator is stored in file [param_lef](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/param_lef).
 
 ## Outputs
 
@@ -93,15 +92,15 @@ The second command doesn't just install ALIGN inplace, it also caches generated 
 
 If you want the build-type to be Release (-O3), you can issue the following three lines:
 ```console
-$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release' --install-option='-DBUILD_TESTING=ON'
 ```
 or
 ```console
-$ pip install setuptools wheel pybind11 scikit-build cmake ninja
+$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DBUILD_TESTING=ON'
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
@@ -115,6 +114,16 @@ import pstats
 from pstats import SortKey
 p = pstats.Stats('stats')
 p.sort_stats(SortKey.TIME).print_stats(20)
+```
+
+To run tests similar to the checkin and merge-to-master CI runs run:
+```
+cd $ALIGN_HOME
+# Checkin
+pytest -vv
+CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 -- tests/integration/
+# Merge to master
+CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 -- tests/integration/ tests/pdks
 ```
 
 ### Step 4: Run ALIGN
@@ -137,12 +146,11 @@ $ schematic2layout.py -h
 
 ## Design database:
 
-* [examples](examples): Contains example circuits with netlists running on circleci
-* [CircuitsDatabase](CircuitsDatabase): Contains benchmark circuits
+* [examples](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples): Contains example circuits with netlists running on circleci
+* [CircuitsDatabase](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/CircuitsDatabase): Contains benchmark circuits
 
 ## Viewer :
 
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
 * [KLayout](https://github.com/KLayout/klayout): GDS viewer (WSL users would need to install xming for display to work)
-* [Viewer](Viewer): Layout viewer to view output JSON file
-
+* [Viewer](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/Viewer): Layout viewer to view output JSON file

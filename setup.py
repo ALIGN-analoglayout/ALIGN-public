@@ -9,16 +9,19 @@ try:
 except ImportError:
     raise AssertionError("Use pip 10+, or install pyproject.toml requirements yourself")
 
+
 def get_version(pkg_path):
     with open(os.path.join(pkg_path, '__init__.py'), 'r') as fp:
         for line in fp:
             if line.startswith('__version__'):
                 return line.split('"' if '"' in line else "'")[1]
 
+
 def get_readme_text():
     with open("README.md", "r", encoding="utf8") as fp:
         long_description = fp.read()
     return long_description
+
 
 def align_manifest_filter(cmake_manifest):
     '''
@@ -26,10 +29,11 @@ def align_manifest_filter(cmake_manifest):
     '''
     return list(filter(lambda name: 'test_' in name or '.so' in name or '.py' in name, cmake_manifest))
 
-version=get_version(
-            os.path.join(
-                  os.path.abspath(os.path.dirname(__file__)),
-                  'align'))
+
+version = get_version(
+    os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        'align'))
 cmake_args = [f"-DALIGN_VERSION:string={version}"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
@@ -37,7 +41,7 @@ devmode = 'develop' in sys.argv
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
 if devmode and not any(x.startswith('--build-type') for x in sys.argv):
-     sys.argv.extend(['--build-type', 'Debug'])
+    sys.argv.extend(['--build-type', 'Debug'])
 
 setup(name='align',
       version=version,
@@ -48,28 +52,30 @@ setup(name='align',
       author='Parijat Mukherjee',
       author_email='parijat.mukherjee@intel.com',
       license='BSD-3-Clause',
-      packages = \
-          find_packages(include=['align', 'align.*']) \
-        + (['tests'] if devmode else []),
+      packages=find_packages(include=['align', 'align.*'])
+      + (['tests'] if devmode else []),
       package_data={
           'align': [
               'config/*',
-              'pdk/finfet/*.json'
+              'pdk/finfet/*.json',
+              'pdk/finfet/*.sp'
           ]
       },
-      cmake_args = cmake_args,
+      cmake_args=cmake_args,
       cmake_process_manifest_hook=align_manifest_filter,
       scripts=[
           'bin/schematic2layout.py',
-          'bin/pnr_compiler.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
-          'bin/convert_lef_to_layout_json.py'
+          'bin/convert_lef_to_layout_json.py',
+          'bin/gen_gds_from_json.py',
+          'bin/gen_lef_with_obs.py',
+          'bin/gen_primitive_from_gds.py'
       ],
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
-          'matplotlib',
+          'gdspy',
           'pyyaml',
           'pybind11',
           'pydantic>=1.8',
@@ -77,10 +83,14 @@ setup(name='align',
           'more-itertools',
           'colorlog',
           'plotly',
+          'numpy',
           'pandas',
+          'werkzeug==2.0.0',
           'dash',
-          'typing_extensions; python_version<"3.8"'
-          ],
+          'typing_extensions; python_version<"3.8"',
+          'memory_profiler',
+          'flatdict'
+      ],
       extras_require={
           'test': [
               'pytest',

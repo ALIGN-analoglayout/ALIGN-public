@@ -4,14 +4,13 @@ Created on Tue Dec 11 11:34:45 2018
 
 @author: kunal
 """
-import os
-from re import sub
-import networkx as nx
-import matplotlib.pyplot as plt
-from networkx.algorithms import bipartite
 from ..schema.graph import Graph
-from ..schema import SubCircuit
+from ..schema import SubCircuit, Model
 import logging
+import pathlib
+import hashlib
+import importlib
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -59,28 +58,40 @@ def get_next_level(subckt, G, tree_l1):
             tree_next.extend(list(G.neighbors(node)))
     return tree_next
 
+
 def get_base_model(subckt, node):
     assert subckt.get_element(node), f"node {node} not found in subckt {subckt}"
-    if subckt.get_element(node).model in ["NMOS", "PMOS", "RES", "CAP"]:
-        base_model = subckt.get_element(node).model
-    elif subckt.parent.find(subckt.get_element(node).model):
-        base_model = subckt.parent.find(subckt.get_element(node).model).base
+    cm = subckt.get_element(node).model
+    model_def = subckt.parent.find(cm)
+    assert model_def
+    if isinstance(model_def, SubCircuit) and len(model_def.elements) == 1:
+        base_model = get_base_model(model_def, model_def.elements[0].name)
+    elif isinstance(model_def, Model) and not isinstance(model_def, SubCircuit):
+        base_model = subckt.parent.find(cm).base
+        if not base_model:
+            base_model = cm
     else:
-        logger.warning(f"invalid device {node}")
+        base_model = cm
     return base_model
 
+
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt}"
-    graph = Graph(subckt)
+    # assert net in subckt.nets, f""
     conn = []
-    for nbr in graph.neighbors(net):
-        for pin in graph.get_edge_data(net, nbr)["pin"]:
-            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-            if isinstance(s, SubCircuit):
-                conn.extend(get_leaf_connection(s, pin))
-            else:
-                conn.append(pin)
+    if net in subckt.nets:
+        graph = Graph(subckt)
+        for nbr in graph.neighbors(net):
+            for pin in graph.get_edge_data(net, nbr)["pin"]:
+                s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
+                if isinstance(s, SubCircuit):
+                    conn.extend(get_leaf_connection(s, pin))
+                else:
+                    conn.append(pin)
+    else:
+        logger.debug(f"floating net {net} found in subckt {subckt.name} {subckt.nets}")
     return conn
+
+
 def leaf_weights(G, node, nbr):
     subckt = G.subckt
     if subckt.get_element(node):
@@ -104,6 +115,8 @@ def leaf_weights(G, node, nbr):
         else:
             conn_type = G.get_edge_data(node, nbr)["pin"]
     return conn_type
+
+
 def reduced_neighbors(G, node, nbr):
     conn_type = leaf_weights(G, node, nbr)
     if conn_type != {"B"}:
@@ -111,12 +124,63 @@ def reduced_neighbors(G, node, nbr):
     else:
         return False
 
+
 def reduced_SD_neighbors(G, node, nbr):
     conn_type = leaf_weights(G, node, nbr)
-    if conn_type-{"B","G"}:
+    if conn_type-{"B", "G"}:
         return True
     else:
         return False
+
+
+def get_ports_weight(G):
+    ports_weight = dict()
+    subckt = G.subckt
+    for port in subckt.pins:
+        leaf_conn = get_leaf_connection(subckt, port)
+        # logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        # assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
+        if leaf_conn:
+            ports_weight[port] = set(sorted(leaf_conn))
+        else:
+            ports_weight[port] = {}
+    return ports_weight
+
+
+def gen_key(param):
+    """_gen_key
+    Creates a hex key for combined transistor params
+    Args:
+        param (dict): dictionary of parameters
+    Returns:
+        str: unique hex key
+    """
+    skeys = sorted(param.keys())
+    arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
+
+
+def create_node_id(G, node1, ports_weight=None):
+    in1 = G.nodes[node1].get("instance")
+    if in1:
+        properties = {'model': in1.model, 'n_pins': len(set(in1.pins.values()))}
+        if in1.parameters:
+            properties.update(in1.parameters)
+        return gen_key(properties)
+    else:
+        nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
+        properties = [G.nodes[nbr].get("instance").model for nbr in nbrs1]
+        if node1 in ports_weight:
+            properties.extend([str(p) for p in ports_weight[node1]])
+        else:
+            lw = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
+            properties.extend([str(p) for p in lw])
+        properties = sorted(properties)
+        arg_str = '_'.join(properties)
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
+
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
@@ -137,101 +201,43 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
-    nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
-    logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
+    id1 = create_node_id(G, node1, ports_weight=ports_weight)
+    id2 = create_node_id(G, node2, ports_weight=ports_weight)
+    return id1 == id2
 
-    if G.nodes[node1].get("instance"):
-        logger.debug(f"checking match between {node1} {node2}")
-        in1 = G.nodes[node1].get("instance")
-        in2 = G.nodes[node2].get("instance")
-        if (
-            in1.model == in2.model
-            and len(set(in1.pins.values())) == len(set(in2.pins.values()))
-            and in1.parameters == in2.parameters
-        ):
-            logger.debug(" True")
-            return True
+
+def get_primitive_spice():
+    return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
+
+
+def get_generator(name, pdkdir):
+    if pdkdir is None:
+        return False
+    pdk_dir_path = pdkdir
+    if isinstance(pdkdir, str):
+        pdk_dir_path = pathlib.Path(pdkdir)
+    pdk_dir_stem = pdk_dir_path.stem
+
+    def _find_generator_class(module, name):
+        generator_class = getattr(module, "generator_class", False)
+        if generator_class and generator_class(name):
+            return generator_class(name)
         else:
-            logger.debug(" False, value mismatch")
-            return False
-    else:
-        nbrs1_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs1])
-        nbrs2_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs2])
-        if nbrs1_type != nbrs2_type:
-            logger.debug(
-                f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}"
-            )
-            return False
-        if node1 in ports_weight and node2 in ports_weight:
-            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
-                return False
-        else:
-            weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])
-            weight2 = sorted([leaf_weights(G, node2, nbr) for nbr in nbrs2])
-            if weight2 == weight1:
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
-                return False
+            return getattr(module, name, False) or getattr(module, name.lower(), False)
 
-
-def plt_graph(subgraph, sub_block_name):
-    copy_graph = subgraph
-    for node, attr in list(copy_graph.nodes(data=True)):
-        if "source" in attr["inst_type"]:
-            copy_graph.remove_node(node)
-
-    no_of_transistor = len(
-        [x for x, y in subgraph.nodes(data=True) if "net" not in y["inst_type"]]
-    )
-    Title = sub_block_name + ", no of devices:" + str(no_of_transistor)
-    if no_of_transistor > 10:
-        plt.figure(figsize=(8, 6))
-    else:
-        plt.figure(figsize=(4, 3))
-    nx.draw(copy_graph, with_labels=True, pos=nx.spring_layout(copy_graph))
-    plt.title(Title, fontsize=20)
-
-
-def _show_bipartite_circuit_graph(filename, graph, dir_path):
-    no_of_subgraph = 0
-    for subgraph in nx.connected_component_subgraphs(graph):
-        no_of_subgraph += 1
-
-        color_map = []
-        x_pos, y_pos = bipartite.sets(subgraph)
-        pos = dict()
-        pos.update((n, (1, i)) for i, n in enumerate(x_pos))  # put nodes from X at x=1
-        pos.update((n, (2, i)) for i, n in enumerate(y_pos))  # put nodes from Y at x=2
-        plt.figure(figsize=(6, 8))
-        for dummy, attr in subgraph.nodes(data=True):
-            if "inst_type" in attr:
-                if attr["inst_type"] == "pmos":
-                    color_map.append("red")
-                elif attr["inst_type"] == "nmos":
-                    color_map.append("cyan")
-                elif attr["inst_type"] == "cap":
-                    color_map.append("orange")
-                elif attr["inst_type"] == "net":
-                    color_map.append("pink")
-                else:
-                    color_map.append("green")
-        nx.draw(subgraph, node_color=color_map, with_labels=True, pos=pos)
-        plt.title(filename, fontsize=20)
-        if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
-        plt.savefig(dir_path + "/" + filename + "_" + str(no_of_subgraph) + ".png")
-        plt.close()
-
-
-def _write_circuit_graph(filename, graph, dir_path):
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-    nx.write_yaml(Graph(graph), dir_path + "/" + filename + ".yaml")
-
+    try:  # is pdk an installed module
+        module = importlib.import_module(pdk_dir_stem)
+        return _find_generator_class(module, name)
+    except ImportError:
+        init_file = pdk_dir_path / '__init__.py'
+        if init_file.is_file():  # is pdk a package
+            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[pdk_dir_stem] = module
+            spec.loader.exec_module(module)
+            return _find_generator_class(module, name)
+        else:  # is pdk old school (backward compatibility)
+            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)

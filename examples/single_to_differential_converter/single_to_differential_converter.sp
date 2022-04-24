@@ -4,12 +4,12 @@
 
 .subckt nfet2x d g s b
 .param p1=30
-    MN0 d g n1 b    nfet l=0.014u nfin=p1
-    MN1 n1 g s b    nfet l=0.014u nfin=p1
+    MN0 d g n1 b    nfet l=0.014u nfin=p1 nf=2
+    MN1 n1 g s b    nfet l=0.014u nfin=p1 nf=2
 .ends nfet2x
 
 .subckt single_to_differential_converter vb vin vout_sdc1 vout_sdc2 vps vgnd
-.param fin_count=24 rb=20k rl=900 cc=48f cl=12f
+.param fin_count=12 rb=20k rl=900 cc=48f cl=12f
 
 	xI0 vd net1 vs vgnd nfet2x p1=fin_count
 	R2 vb net1 resistor r=rb

@@ -1,13 +1,12 @@
 import argparse
 from .main import schematic2layout
 from . import __version__
-
+import os
 from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
 
-import os
 
 class CmdlineParser():
 
@@ -120,11 +119,6 @@ class CmdlineParser():
                             default=1.0,
                             help='Multiplier for hpwl in placer cost function.')
 
-        parser.add_argument('--reference_placement_verilog_json',
-                            type=str,
-                            default=None,
-                            help='JSON file for adding a reference placement to GUI.')
-
         parser.add_argument('--nroutings',
                             type=int,
                             default=1,
@@ -138,9 +132,30 @@ class CmdlineParser():
                             action='store_true',
                             help='Use ILP to determine subcircuit selection.')
 
+        parser.add_argument('--place_using_ILP',
+                            action='store_true',
+                            help='Use ILP to determine subcircuit selection.')
+
+        parser.add_argument('--use_analytical_placer',
+                            action='store_true',
+                            help='Use analytical placer.')
+
+        parser.add_argument('--seed',
+                            type=int,
+                            default=0,
+                            help='Random number generator seed for the placement algorithm')
+
+        parser.add_argument('--ilp_solver',
+                            type=str,
+                            default='symphony',
+                            choices=['symphony', 'lpsolve'],
+                            help='ILP Solver used by placer ')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
+        if args:
+            logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
             return schematic2layout(**vars(arguments))
