@@ -269,7 +269,7 @@ def test_cs_1():
         """)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_cs_2():
@@ -282,7 +282,7 @@ def test_cs_2():
         """)
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_charge_pump_switch():

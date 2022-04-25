@@ -1,9 +1,7 @@
 from ..cell_fabric import transformation, pdk
-from .. import primitive
+from ..compiler.util import get_generator
 import itertools
 import json
-import importlib
-import sys
 import pathlib
 import re
 from .router import NType
@@ -33,7 +31,7 @@ def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json
 
     global_power_names = set( [ n.name for n in hN.PowerNets])
 
-    generator = primitive.get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)

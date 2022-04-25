@@ -276,6 +276,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
+
   // Simulated annealing
   double T = hyper.T_INT;
   double delta_cost;
@@ -506,5 +507,4 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
   //}
 }
-
 

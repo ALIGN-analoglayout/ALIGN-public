@@ -5,12 +5,10 @@ Created on Fri Jan 15 10:38:14 2021
 
 @author: kunal001
 """
-from email import generator
-from operator import sub
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
-from ..primitive import main
+from .util import get_generator
 
 import logging
 
@@ -48,14 +46,13 @@ class CreateDatabase:
     def add_generators(self, pdk_dir):
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
-                if main.get_generator(subckt.name, pdk_dir) and not subckt.generator:
+                if get_generator(subckt.name, pdk_dir) and not subckt.generator:
                     logger.debug(f"available generator for this subcircuit {subckt.name} in PDK ")
                     subckt.add_generator(subckt.name)
                     if not [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
                         with set_context(subckt.constraints):
                             subckt.constraints.append(constraint.Generator(name=subckt.name))
                         logger.debug(f"adding generator for {subckt.name}")
-
 
     def add_user_const(self):
         for subckt in self.lib:
@@ -92,7 +89,7 @@ class CreateDatabase:
         _redundant_list = list()
         for model in self.lib:
             if not isinstance(model, SubCircuit):
-                if not (model.name in _model_list or model.base == None):
+                if not (model.name in _model_list or model.base is None):
                     _redundant_list.append(model)
         # Keep base models
         # Delete unused models
@@ -114,7 +111,7 @@ class CreateDatabase:
                 logger.debug(f"Same parameters found {param} {subckt.parameters}")
                 return name.upper()
             # Second time instantiation of this circuit with different parameters
-            #TODO use GUID here
+            # TODO use GUID here
             new_name, updated_param = self._find_new_inst_name(subckt, param)
             if new_name == subckt.name or self.lib.find(new_name):
                 logger.debug(
@@ -131,7 +128,7 @@ class CreateDatabase:
                         pins=subckt.pins,
                         parameters=updated_param,
                         constraints=subckt.constraints,
-                        generator = subckt.generator
+                        generator=subckt.generator
                     )
                 assert (
                     self.lib.find(new_name) is None
@@ -195,7 +192,7 @@ class CreateDatabase:
                                 inst.parameters[p] = subckt.parameters[v]
 
     def _find_new_inst_name(self, subckt, param, counter=1):
-        #TODO use GUID
+        # TODO use GUID
         name = f"{subckt.name.upper()}_{counter}"
         _ckt = self.lib.find(name)
         new_param = subckt.parameters.copy()
@@ -210,7 +207,7 @@ class CreateDatabase:
                 and subckt.constraints == _ckt.constraints
                 and subckt.generator == _ckt.generator
             ):
-                logger.debug(f"Existing ckt defnition found, checking all elements")
+                logger.debug("Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
                     if (
                         _ckt.get_element(x.name)
@@ -224,7 +221,7 @@ class CreateDatabase:
                         break  # Break after first mismatch
             else:
                 duplicate = False
-            if duplicate == False:
+            if not duplicate:
                 logger.debug(
                     f"Multiple different sized instance of subcircuit found {subckt.name} count {counter+1}"
                 )

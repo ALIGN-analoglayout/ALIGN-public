@@ -12,6 +12,8 @@ import align
 monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
 """
 
+CLEANUP = True
+
 
 @pytest.fixture
 def placer_max_iter(monkeypatch):
@@ -117,7 +119,7 @@ def test_ota_on_grid_h(place_on_grid_h):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=CLEANUP)
 
 
 def test_ota_on_grid_v(place_on_grid_v):
@@ -133,7 +135,7 @@ def test_ota_on_grid_v(place_on_grid_v):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=CLEANUP)
 
 
 def cmp_constraints(name):
@@ -165,7 +167,8 @@ def test_cmp_on_grid(place_on_grid_h, placer_max_iter):
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False)
+    run_example(example, cleanup=CLEANUP)
+
 
 def test_cmp_on_grid_ilp(place_on_grid_h, placer_max_iter):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
@@ -173,4 +176,4 @@ def test_cmp_on_grid_ilp(place_on_grid_h, placer_max_iter):
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, additional_args=['--place_using_ILP'])
+    run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP'])
