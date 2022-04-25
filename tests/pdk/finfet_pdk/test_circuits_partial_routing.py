@@ -47,6 +47,7 @@ def test_cmp_fp1_pr(partial_routing):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, max_errors=0)
