@@ -161,7 +161,7 @@ def test_cmp_on_grid(place_on_grid_h):
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, additional_args=["--placer_sa_iterations", "100"])
+    run_example(example, cleanup=CLEANUP, additional_args=["--placer_sa_iterations", "10"])
 
 def test_cmp_on_grid_ilp(place_on_grid_h):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
@@ -169,4 +169,4 @@ def test_cmp_on_grid_ilp(place_on_grid_h):
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP', "--placer_sa_iterations", "100"])
+    run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP', "--placer_sa_iterations", "10"])
