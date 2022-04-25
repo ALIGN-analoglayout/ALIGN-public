@@ -1,17 +1,18 @@
+import os
 import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-CLEANUP = True
+
+CLEANUP = os.getenv("CLEANUP", True)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 BYPASS_ERRORS = True
 
 
 @pytest.fixture
 def partial_routing(monkeypatch):
     monkeypatch.setenv('PARTIAL_ROUTING', '1')
-
-# TODO: Revise all of the tests below
 
 
 def test_cmp_vanilla_pr(partial_routing):
@@ -23,8 +24,7 @@ def test_cmp_vanilla_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    # TODO: Reduce max_errors to 0 in the next PR
-    run_example(example, cleanup=CLEANUP, max_errors=6 if not BYPASS_ERRORS else 3)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
 
 
 def test_cmp_fp1_pr(partial_routing):
@@ -47,10 +47,9 @@ def test_cmp_fp1_pr(partial_routing):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=4e10, max_errors=5 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
 
 
 def test_cmp_fp2_pr(partial_routing):
@@ -60,23 +59,26 @@ def test_cmp_fp2_pr(partial_routing):
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
-        {"constraint": "SymmetricBlocks", "direction": "V",
-            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
-        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "DoNotIdentify", "instances": ["mn11", "mn12", "mp13", "mp14"]},
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
+            ["mp9", "mp7", "mp8", "mp10"],
+            ["mp13", "ccp", "mp14"],
+            # ------ PN boundary ------
+            ["mn11", "ccn", "mn12"],
+            ["dp"],
+            ["mn0"]
+        ]},
+        {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 3}
+
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=5e9, max_errors=1 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
 
 
 def test_ota_six_pr(partial_routing):
@@ -92,7 +94,7 @@ def test_ota_six_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
 
 
 def test_cs_1_pr(partial_routing):
@@ -105,7 +107,7 @@ def test_cs_1_pr(partial_routing):
         """)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
 
 
 def test_cs_2_pr(partial_routing):
@@ -118,4 +120,4 @@ def test_cs_2_pr(partial_routing):
         """)
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, max_errors=0)
