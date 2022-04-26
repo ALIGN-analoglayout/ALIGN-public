@@ -32,10 +32,10 @@ def place_on_grid_h(monkeypatch):
 def place_on_grid_v(monkeypatch):
     pp = 1080
     ored_terms = [
-        OffsetsScalings(offsets=[pp], scalings=[1, -1]),
+        OffsetsScalings(offsets=[pp//2], scalings=[1, -1]),
     ]
     place_on_grid = {'constraints': [
-        PlaceOnGrid(direction='V', pitch=2*pp, ored_terms=ored_terms).dict()
+        PlaceOnGrid(direction='V', pitch=pp, ored_terms=ored_terms).dict()
     ]}
     monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
 
@@ -163,6 +163,7 @@ def test_cmp_on_grid(place_on_grid_h):
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, additional_args=["--placer_sa_iterations", "10"])
 
+
 def test_cmp_on_grid_ilp(place_on_grid_h):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
@@ -170,3 +171,16 @@ def test_cmp_on_grid_ilp(place_on_grid_h):
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP', "--placer_sa_iterations", "10"])
+
+
+def test_cs_on_grid_v(place_on_grid_v):
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vop vbs vccx vssx
+        mp0 vop vbs vccx vccx p w=180e-9 nf=4 m=1
+        mn0 vop vin vssx vssx n w=180e-9 nf=4 m=1
+        .ends {name}
+        """)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP)
