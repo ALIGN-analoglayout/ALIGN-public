@@ -140,6 +140,11 @@ class CmdlineParser():
                             action='store_true',
                             help='Use analytical placer.')
 
+        parser.add_argument('--placer_sa_iterations',
+                            type=int,
+                            default=10000,
+                            help="Iterations used by the placer's SA algorithm.")
+
         parser.add_argument('--seed',
                             type=int,
                             default=0,
