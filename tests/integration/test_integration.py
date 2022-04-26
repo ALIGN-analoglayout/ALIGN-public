@@ -77,7 +77,7 @@ def gen_examples():
 @pytest.mark.nightly
 @pytest.mark.parametrize("design_dir", gen_examples(), ids=lambda x: x.name)
 @pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
-def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
+def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_sa_iterations, nvariants):
     uid = os.environ.get('PYTEST_CURRENT_TEST')
     uid = uid.split(' ')[0].split(':')[-1].replace('[', '_').replace(']', '').replace('-', '_')
     run_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / uid
@@ -90,9 +90,13 @@ def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
             '-flat',  str(1 if nm in run_flat else 0), '-l', 'WARNING', '-v', 'INFO']
     args.extend(['--router_mode', router_mode])
 
+    args.extend(['--placer_sa_iterations', str(placer_sa_iterations)])
+    args.extend(['--nvariants', str(nvariants)])
+
     if skipGDS:
         args.extend(['--skipGDS'])
     else:
+        # SMB Do we really need this?
         args.extend(['--regression'])
 
     results = align.CmdlineParser().parse_args(args)
