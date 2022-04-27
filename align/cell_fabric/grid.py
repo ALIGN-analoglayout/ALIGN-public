@@ -107,7 +107,6 @@ class UncoloredCenterLineGrid(CenterLineGrid):
         self.semantic()
 
 
-
 class ColoredCenterLineGrid(CenterLineGrid):
 
     def __init__( self, *, colors, pitch, width, offset=0, repeat=None):
@@ -121,17 +120,22 @@ class ColoredCenterLineGrid(CenterLineGrid):
             self.addCenterLine( offset+idx*pitch, width, color=color)
         self.semantic()
 
+
 class EnclosureGrid(Grid):
-    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=False):
+    def __init__(self, *, clg=None, pitch, offset=0, stoppoint, check=False):
         if check and 2*stoppoint > pitch:
             logger.debug( f"Enclosure grid stop point ({stoppoint}) is more than half the pitch ({pitch}) causing the physical coordinate to be non-monotonic with the grid ordering")
+        if 2*stoppoint > pitch:
+            logger.debug("Updating stop point to keep the physical coordinate to be non-monotonic with the grid ordering")
+            stoppoint = pitch - stoppoint
         super().__init__()
-        self.addGridLine( offset,                     False)
-        self.addGridLine( offset + stoppoint,         True)
-        self.addGridLine( offset + pitch//2,          False)
-        self.addGridLine( offset + pitch - stoppoint, True)
-        self.addGridLine( offset + pitch,             False)
+        self.addGridLine(offset,                     False)
+        self.addGridLine(offset + stoppoint,         True)
+        self.addGridLine(offset + pitch//2,          False)
+        self.addGridLine(offset + pitch - stoppoint, True)
+        self.addGridLine(offset + pitch,             False)
         self.semantic()
+
 
 class SingleGrid(Grid):
     def __init__( self, *, clg=None, pitch, offset=0, repeat=1):
