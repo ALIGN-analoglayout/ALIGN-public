@@ -152,9 +152,10 @@ class SpiceParser:
         else:
             logger.warning(f"Unknown device found {model} {kwargs}, creating a generic model for this")
             with set_context(self.library):
-                self.library.append(Model(name=model, pins=args, parameters={k: '1' for k in kwargs.keys()}, prefix=''))
+                # Use generic pin names
+                pins = [f"p{i}" for i in range(len(args))]
+                self.library.append(Model(name=model, pins=pins, parameters={k: '1' for k in kwargs.keys()}, prefix=''))
             model = self.library.find(model)
-            # TODO: get it from generator
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \
