@@ -16,12 +16,6 @@ CLEANUP = True
 
 
 @pytest.fixture
-def placer_max_iter(monkeypatch):
-    # Reduce number of iterations to speed up tests
-    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 10)
-
-
-@pytest.fixture
 def place_on_grid_h(monkeypatch):
     rh = 6300
     ored_terms = [
@@ -161,19 +155,18 @@ def cmp_constraints(name):
     return constraints
 
 
-def test_cmp_on_grid(place_on_grid_h, placer_max_iter):
+def test_cmp_on_grid(place_on_grid_h):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP)
+    run_example(example, cleanup=CLEANUP, additional_args=["--placer_sa_iterations", "10"])
 
-
-def test_cmp_on_grid_ilp(place_on_grid_h, placer_max_iter):
+def test_cmp_on_grid_ilp(place_on_grid_h):
     print(f'PLACE_ON_GRID={os.environ["PLACE_ON_GRID"]}')
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = cmp_constraints(name)
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP'])
+    run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP', "--placer_sa_iterations", "10"])
