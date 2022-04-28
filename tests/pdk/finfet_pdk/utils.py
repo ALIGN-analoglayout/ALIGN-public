@@ -108,6 +108,7 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
             if elem:
                 args.append(elem)
 
+    print(f"Command: schematic2layout.py {' '.join(args)}")
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"

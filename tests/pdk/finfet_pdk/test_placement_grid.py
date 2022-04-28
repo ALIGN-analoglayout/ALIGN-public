@@ -25,7 +25,9 @@ def place_on_grid_h(monkeypatch):
     place_on_grid = {'constraints': [
         PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()
     ]}
-    monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
+    PLACE_ON_GRID = json.dumps(place_on_grid)
+    monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
+    print(f"{PLACE_ON_GRID=}")
 
 
 @pytest.fixture
@@ -37,7 +39,9 @@ def place_on_grid_v(monkeypatch):
     place_on_grid = {'constraints': [
         PlaceOnGrid(direction='V', pitch=pp, ored_terms=ored_terms).dict()
     ]}
-    monkeypatch.setenv('PLACE_ON_GRID', json.dumps(place_on_grid))
+    PLACE_ON_GRID = json.dumps(place_on_grid)
+    monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
+    print(f"{PLACE_ON_GRID=}")
 
 
 def test_scalings(place_on_grid_h):
