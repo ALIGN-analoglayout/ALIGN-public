@@ -27,7 +27,7 @@ def place_on_grid_h(monkeypatch):
     ]}
     PLACE_ON_GRID = json.dumps(place_on_grid)
     monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
-    print(f"{PLACE_ON_GRID=}")
+    print(f"\n{PLACE_ON_GRID=}")
 
 
 @pytest.fixture
