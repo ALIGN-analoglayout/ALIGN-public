@@ -36,9 +36,15 @@ def get_parameters(primitive, parameters, nfin):
 # TODO: Pass cell_pin and pattern to this function to begin with
 
 
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch, style=None):
+    
     pdk = Pdk().load(pdkdir / 'layers.json')
-    generator = get_generator('MOSGenerator', pdkdir)
+
+    if style is not None and style != '':
+        generator = get_generator(f'MOSGenerator_{style}', pdkdir)
+    else:
+        generator = get_generator('MOSGenerator', pdkdir)
+
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
@@ -62,6 +68,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             connections[actual].append((ele.name, formal))
     if len(primitive.elements) == 1:
         pattern = 0
+
+    logger.info(f'Generate primitive: {block_name} {pattern} {connections}')
+
     return uc, gen(pattern, connections)
 
 
@@ -155,13 +164,20 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
+
     if primitive == 'generic':
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name']:
+        style = None
+        if 'style' in primitive.generator:
+            style = primitive.generator['style']
+
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
-                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch, style)
+
+            
     elif 'CAP' == primitive.generator['name']:
         uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
