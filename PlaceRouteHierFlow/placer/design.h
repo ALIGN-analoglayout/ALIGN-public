@@ -132,6 +132,7 @@ class design {
   double maxBlockAreaSum = 0.;
   double maxBlockHPWLSum = 0.;
   string name = "";
+  string concrete_name = "";
 
   // added by ya
 
