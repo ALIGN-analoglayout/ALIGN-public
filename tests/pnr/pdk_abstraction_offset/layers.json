@@ -137,11 +137,11 @@
         "Direction": "V",
         "Color":[],
         "Pitch": 1080,
-        "Width": 600,
+        "Width": 680,
         "MinL": 1300,
         "MaxL": null,
         "EndToEnd": 900,
-        "Offset": 0,
+        "Offset": 540,
         "UnitC":  {"Mean":0.001},
         "UnitCC": {"Mean":0},
         "UnitR":  {"Mean":10}

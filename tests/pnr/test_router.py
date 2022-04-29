@@ -136,17 +136,25 @@ def test_ru_6():
     run_postamble(name, cv, max_errors=0)
 
 
-def test_ru_metal_offset():
+def test_ru_metal_offset_h():
     name = get_test_id()
     cv = DefaultCanvas(Pdk().load(MY_DIR / "pdk_abstraction_offset" / "layers.json"))
-    for i in [0, 2, 4]:
-        cv.addWire(cv.m2, None,  i, (0, -1),  (15, 1), netType='blockage')
+    cv.addWire(cv.m3, 'A',   1, (0, -1),  (7, 1),  netType='blockage')
+    cv.addWire(cv.m3, None,  2, (0, -1),  (7, 1), netType='blockage')
+    cv.addWire(cv.m3, None,  3, (0, -1),  (7, 1),  netType='blockage')
+    cv.addWire(cv.m3, 'A',   4, (0, -1),  (7, 1), netType='blockage')
+    for i in range(8):
+        cv.addWire(cv.m2, None,  i, (0, -1),  (8, 1), netType='blockage')
+    run_postamble(name, cv, max_errors=0)
 
-    cv.addWire(cv.m2, 'A',   1, (0, -1),  (6, 1),  netType='blockage')
-    cv.addWire(cv.m2, None,  1, (8, -1),  (15, 1), netType='blockage')
-    cv.addWire(cv.m2, None,  3, (0, -1),  (6, 1),  netType='blockage')
-    cv.addWire(cv.m2, 'A',   3, (8, -1),  (15, 1), netType='blockage')
 
-    # for i in range(2):
-    #     cv.addWire(cv.m4, None,  i, (0, -1),  (15, 1), netType='blockage')
+def test_ru_metal_offset_v():
+    name = get_test_id()
+    cv = DefaultCanvas(Pdk().load(MY_DIR / "pdk_abstraction_offset" / "layers.json"))
+    cv.addWire(cv.m4, 'A',   1, (0, -1),  (7, 1),  netType='blockage')
+    cv.addWire(cv.m4, None,  2, (0, -1),  (7, 1), netType='blockage')
+    cv.addWire(cv.m4, None,  3, (0, -1),  (7, 1),  netType='blockage')
+    cv.addWire(cv.m4, 'A',   4, (0, -1),  (7, 1), netType='blockage')
+    for i in range(8):
+        cv.addWire(cv.m3, None,  i, (0, -1),  (15, 1), netType='blockage')
     run_postamble(name, cv, max_errors=0)
