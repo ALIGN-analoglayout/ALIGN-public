@@ -1,6 +1,7 @@
 from align.pdk.finfet import CanvasPDK
-from align.cell_fabric import transformation
-from .utils import get_test_id, run_postamble
+from align.cell_fabric import Pdk, transformation
+from align.primitive.default.canvas import DefaultCanvas
+from .utils import get_test_id, run_postamble, MY_DIR
 import pytest
 
 
@@ -132,4 +133,20 @@ def test_ru_6():
     cv.addWire(cv.m2, 'A',  1, (6, -1), (10, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  1, (12, -1), (14, 1), netType='pin')
 
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_metal_offset():
+    name = get_test_id()
+    cv = DefaultCanvas(Pdk().load(MY_DIR / "pdk_abstraction_offset" / "layers.json"))
+    for i in [0, 2, 4]:
+        cv.addWire(cv.m2, None,  i, (0, -1),  (15, 1), netType='blockage')
+
+    cv.addWire(cv.m2, 'A',   1, (0, -1),  (6, 1),  netType='blockage')
+    cv.addWire(cv.m2, None,  1, (8, -1),  (15, 1), netType='blockage')
+    cv.addWire(cv.m2, None,  3, (0, -1),  (6, 1),  netType='blockage')
+    cv.addWire(cv.m2, 'A',   3, (8, -1),  (15, 1), netType='blockage')
+
+    # for i in range(2):
+    #     cv.addWire(cv.m4, None,  i, (0, -1),  (15, 1), netType='blockage')
     run_postamble(name, cv, max_errors=0)
