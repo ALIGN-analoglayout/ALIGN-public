@@ -144,8 +144,12 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
                 assert ctn in tr_tbl
                 instance['concrete_template_name'] = tr_tbl[ctn]
 
+        if 'flat_leaves' in module:
+            del module['flat_leaves']
+
+
     for leaf in scaled_placement_verilog_d['leaves']:
-        leaf['abstract_name'] =leaf['concrete_name']
+        leaf['abstract_name'] = leaf['concrete_name']
 
     return tr_tbl
 
@@ -171,6 +175,9 @@ def gen_abstract_verilog_d( verilog_d):
             del instance['concrete_template_name']
             assert 'transformation' in instance
             del instance['transformation']
+
+        if 'flat_leaves' in module:
+            del module['flat_leaves']
 
     return new_verilog_d
 

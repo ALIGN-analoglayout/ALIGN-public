@@ -276,7 +276,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
                 if 'constraints' not in leaf:
                     leaf['constraints'] = []
 
-                leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
+                leaf['constraints'].extend(primitive['metadata']['constraints'])
 
         top_name = f'{hN.name}_{sel}'
         gen_constraints(scaled_placement_verilog_d, top_name)
