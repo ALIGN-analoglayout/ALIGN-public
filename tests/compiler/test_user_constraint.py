@@ -300,4 +300,3 @@ def test_groublock_generator():
     assert dp1.constraints.dict()['__root__'][0] == {'constraint':'generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
 
     clean_data(name)
-    clean_data('run_'+name)

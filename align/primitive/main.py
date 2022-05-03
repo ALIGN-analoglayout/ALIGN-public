@@ -13,25 +13,21 @@ import importlib.util
 logger = logging.getLogger(__name__)
 
 
-def get_xcells_pattern(primitive, pattern, x_cells):
-
-    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # TODO: Generalize this (pattern is ignored)
-        x_cells = 2*x_cells + 2
-    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
-        # Dual transistor primitives
-        x_cells = 2*x_cells
-        # TODO: Fix difficulties associated with CC patterns matching this condition
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-    return x_cells, pattern
+# def get_xcells_pattern(primitive, pattern, x_cells):
+#     if any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
+#         # Dual transistor primitives
+#         x_cells = 2*x_cells
+#         # TODO: Fix difficulties associated with CC patterns matching this condition
+#         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+#     return x_cells, pattern
 
 
-def get_parameters(primitive, parameters, nfin):
-    if parameters is None:
-        parameters = {}
-    if 'model' not in parameters:
-        parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-    return parameters
+# def get_parameters(primitive, parameters, nfin):
+#     if parameters is None:
+#         parameters = {}
+#     if 'model' not in parameters:
+#         parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
+#     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
 
@@ -52,9 +48,18 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gate = 1
     shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
-    parameters = get_parameters(primitive.name, parameters, nfin)
-
+    # x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    input_pattern = getattr(primitive, 'parameters', None)
+    if not input_pattern and len(primitive.elements)==1:
+        input_pattern = 'single_device'
+    elif not input_pattern and all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+        input_pattern = 'ratio_devices' #e.g. current mirror
+    elif not input_pattern:
+        input_pattern = 'cc'
+    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio:devices':3,'ncc':4}
+    pattern = pattern_map['input_pattern']
+    # parameters = get_parameters(primitive.name, parameters, nfin)
+    assert 'model' in parameters, f"unidentified primitive found {primitive}"
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
