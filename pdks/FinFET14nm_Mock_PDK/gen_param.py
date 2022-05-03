@@ -91,7 +91,7 @@ def gen_param(subckt, primitives, pdk_dir):
         add_primitive(primitives, block_name, block_args)
 
     elif generator_name == 'RES':
-        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {name}"
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
         if "R" in values:
             size = round(float(values["R"]), 2)
         elif 'VALUE' in values:

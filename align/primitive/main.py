@@ -49,13 +49,14 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     input_pattern = getattr(primitive, 'parameters', None)
     if not input_pattern and len(primitive.elements)==1:
         input_pattern = 'single_device'
-    elif not input_pattern and all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+    elif not input_pattern and not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
         input_pattern = 'ratio_devices' #e.g. current mirror
     elif not input_pattern:
         input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
     # parameters = get_parameters(primitive.name, parameters, nfin)
+    logger.debug(f"primitive pattern {primitive.name} {x_cells} {y_cells}")
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
@@ -65,13 +66,10 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    assert isinstance(primitive, SubCircuit)
     connections = {pin: [] for pin in primitive.pins}
     for ele in primitive.elements:
         for formal, actual in ele.pins.items():
             connections[actual].append((ele.name, formal))
-    if len(primitive.elements) == 1:
-        pattern = 0
 
     logger.info(f'Generate primitive: {block_name} {pattern} {connections}')
 
