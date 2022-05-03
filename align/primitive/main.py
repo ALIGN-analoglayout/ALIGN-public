@@ -61,9 +61,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
-            uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addNMOSArray(2*x_cells, y_cells, pattern, vt_type, routing, **parameters)
         else:
-            uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addPMOSArray(2*x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
     connections = {pin: [] for pin in primitive.pins}
