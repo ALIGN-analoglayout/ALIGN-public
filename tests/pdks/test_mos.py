@@ -2,7 +2,6 @@ import pathlib
 import sys
 import pytest
 
-from align.primitive.main import get_xcells_pattern
 
 pdks = []
 for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
@@ -18,7 +17,7 @@ def check_shorts(cmdlist):
     assert len(uc.rd.shorts) == 0, uc.rd.shorts
     assert len(uc.rd.opens) == 0, uc.rd.opens
     assert len(uc.rd.different_widths) == 0, uc.rd.different_widths
-    assert len(uc.rd.subinsts) == get_xcells_pattern(args.primitive, args.pattern, args.Xcells)[0] * args.Ycells, uc.rd.subinsts
+    assert len(uc.rd.subinsts) == 2*args.Xcells*args.Ycells, uc.rd.subinsts
     assert all(len(x.pins) == 4 for x in uc.rd.subinsts.values()), uc.rd.subinsts
     assert len(uc.drc.errors) == 0, uc.drc.errors
 

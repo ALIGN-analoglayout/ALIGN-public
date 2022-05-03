@@ -68,7 +68,7 @@ def add_primitive(primitives, block_name, block_args):
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
     vt = subckt.elements[0].model
-    values = subckt.elements[0].parameters
+    values = deepcopy(subckt.elements[0].parameters)
     generator_name = subckt.generator["name"]
     logger.debug(f"Getting generator parameters for: {block_name}")
     if get_generator(block_name.lower(), pdk_dir):

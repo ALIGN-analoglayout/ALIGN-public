@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_xcells_pattern(primitive, pattern, x_cells):
-    # TODO: no need for this name based pattern mapping in the flow
+    # TODO: remove this name based multiplier for number of cells
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
@@ -45,7 +45,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gate = 1
     shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    # x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
     input_pattern = getattr(primitive, 'parameters', None)
     if not input_pattern and len(primitive.elements)==1:
         input_pattern = 'single_device'
@@ -55,15 +54,16 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
-    # parameters = get_parameters(primitive.name, parameters, nfin)
-    logger.debug(f"primitive pattern {primitive.name} {x_cells} {y_cells}")
+    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    logger.debug(
+        f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
-            uc.addNMOSArray(2*x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         else:
-            uc.addPMOSArray(2*x_cells, y_cells, pattern, vt_type, routing, **parameters)
+            uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
     connections = {pin: [] for pin in primitive.pins}
@@ -71,7 +71,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         for formal, actual in ele.pins.items():
             connections[actual].append((ele.name, formal))
 
-    logger.info(f'Generate primitive: {block_name} {pattern} {connections}')
+    logger.debug(f'Generate primitive: {block_name} {pattern} {connections}')
 
     return uc, gen(pattern, connections)
 
