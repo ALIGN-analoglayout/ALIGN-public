@@ -13,13 +13,17 @@ import importlib.util
 logger = logging.getLogger(__name__)
 
 
-# def get_xcells_pattern(primitive, pattern, x_cells):
-#     if any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
-#         # Dual transistor primitives
-#         x_cells = 2*x_cells
-#         # TODO: Fix difficulties associated with CC patterns matching this condition
-#         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-#     return x_cells, pattern
+def get_xcells_pattern(primitive, pattern, x_cells):
+    # TODO: no need for this name based pattern mapping in the flow
+    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
+        # TODO: Generalize this (pattern is ignored)
+        x_cells = 2*x_cells + 2
+    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
+        # Dual transistor primitives
+        x_cells = 2*x_cells
+        # TODO: Fix difficulties associated with CC patterns matching this condition
+        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+    return x_cells, pattern
 
 
 # TODO: Pass cell_pin and pattern to this function to begin with
