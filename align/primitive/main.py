@@ -56,7 +56,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         input_pattern = 'ratio_devices' #e.g. current mirror
     elif not input_pattern:
         input_pattern = 'cc'
-    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio:devices':3,'ncc':4}
+    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map['input_pattern']
     # parameters = get_parameters(primitive.name, parameters, nfin)
     assert 'model' in parameters, f"unidentified primitive found {primitive}"
