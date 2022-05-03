@@ -36,14 +36,15 @@ def get_parameters(primitive, parameters, nfin):
 # TODO: Pass cell_pin and pattern to this function to begin with
 
 
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch, style=None):
-    
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+
     pdk = Pdk().load(pdkdir / 'layers.json')
 
-    if style is not None and style != '':
-        generator = get_generator(f'MOSGenerator_{style}', pdkdir)
-    else:
-        generator = get_generator('MOSGenerator', pdkdir)
+    # if style is not None and style != '':
+    #     generator = get_generator(f'MOSGenerator_{style}', pdkdir)
+    # else:
+    #
+    generator = get_generator('MOSGenerator', pdkdir)
 
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
@@ -170,14 +171,15 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name']:
-        style = None
-        if 'style' in primitive.generator:
-            style = primitive.generator['style']
+        #Instead of hacking here as a style, please use a one one mapping with generator["name"]. The groupblock constraint can add generator names to the subcircuit now"
+        # style = None
+        # if 'style' in primitive.generator:
+        #     style = primitive.generator['style']
 
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
-                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch, style)
+                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
 
-            
+
     elif 'CAP' == primitive.generator['name']:
         uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

@@ -78,6 +78,7 @@ def test_add_symmetry_const():
     clean_data(name)
 
 
+
 def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
@@ -92,6 +93,7 @@ def test_match_start_points():
     ports_weight = get_ports_weight(graph)
     recursive_start_points(graph, match_pairs, stop_points, 'VIN', 'VIP', ports_weight)
     assert match_pairs[('VIN', 'VIP')] == {'MN4': 'MN3', 'VIN': 'VIP'}
+    clean_data(name)
 
 
 def test_filter_duplicate_instances():
@@ -105,6 +107,7 @@ def test_filter_duplicate_instances():
     pairs = [['MN3', 'MN4'], ['VIN', 'VIP'], ['MN4', 'MN4']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['MN3', 'MN4']]
+    clean_data(name)
 
 
 def test_symmnet_filters():
@@ -118,6 +121,7 @@ def test_symmnet_filters():
     add = add_symmetry_const(ckt, pairs, set(), [], None)
     add.loop_through_pairs()
     assert ckt.constraints[0].pairs == [['MN3', 'MN4']]
+    clean_data(name)
 
 
 def test_filter_dummy():
@@ -132,3 +136,4 @@ def test_filter_dummy():
     pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
+    clean_data(name)
