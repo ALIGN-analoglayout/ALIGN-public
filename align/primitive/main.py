@@ -22,13 +22,6 @@ logger = logging.getLogger(__name__)
 #     return x_cells, pattern
 
 
-# def get_parameters(primitive, parameters, nfin):
-#     if parameters is None:
-#         parameters = {}
-#     if 'model' not in parameters:
-#         parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-#     return parameters
-
 # TODO: Pass cell_pin and pattern to this function to begin with
 
 
@@ -57,9 +50,10 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     elif not input_pattern:
         input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
-    pattern = pattern_map['input_pattern']
+    pattern = pattern_map[input_pattern]
     # parameters = get_parameters(primitive.name, parameters, nfin)
-    assert 'model' in parameters, f"unidentified primitive found {primitive}"
+    if 'model' not in parameters:
+        parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
