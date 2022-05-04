@@ -280,7 +280,7 @@ def test_symmnet_translation():
     clean_data(name)
 
 
-def test_groublock_generator():
+def test_groupblock_generator():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(
         f"""\
@@ -296,7 +296,7 @@ def test_groublock_generator():
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
     dp1 = cktlib.find('DP1')
-    assert dp1.generator["name"] == 'MOS', f"generator defination error {dp1.generator}"
+    assert dp1.generator["name"] == 'MOS', f"generator definition error {dp1.generator}"
     assert dp1.constraints.dict()['__root__'][0] == {'constraint':'generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
 
     clean_data(name)
