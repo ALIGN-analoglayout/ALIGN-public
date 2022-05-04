@@ -44,6 +44,7 @@ ports_duo = [
 def test_uno_drc(n_row, n_col, nf, device_type, ports):
     logger.info(f'running {get_test_id()}')
     c = MOSGenerator()
+    c.semantic()
     parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
     if device_type == 'parallel':
         parameters['NF'] = nf
@@ -66,6 +67,7 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
     logger.info(f'running {get_test_id()}')
     if n_row * n_col % 2 == 0 and n_col >= 2:
         c = MOSGenerator()
+        c.semantic()
         parameters = {'M': n_row*n_col, 'NFIN': 4, 'real_inst_type': 'n'}
         if device_type == 'PARALLEL':
             parameters['NF'] = nf
@@ -80,6 +82,7 @@ def test_duo_drc(n_row, n_col, nf, device_type, ports):
 
 def test_uno_one():
     c = MOSGenerator()
+    c.semantic()
     parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
     parameters['NF'] = 2
     c.addNMOSArray(1, 1, 0, None, ports_uno[1], **parameters)
@@ -91,6 +94,7 @@ def test_uno_one():
 
 def test_duo_one():
     c = MOSGenerator()
+    c.semantic()
     parameters = {'M': 1, 'NFIN': 4, 'real_inst_type': 'p'}
     parameters['NF'] = 2
     c.addNMOSArray(2, 1, 1, None, ports_duo[0], **parameters)
@@ -104,6 +108,7 @@ def test_duo_one():
 
 def test_unit_interleave_pattern():
     mg = MOSGenerator()
+    mg.semantic()
     assert [1, 2] == mg.interleave_pattern(1, 2)
     assert [1, 2, 2, 1] == mg.interleave_pattern(2, 2)
     assert [1, 2, 1, 2, 1, 2] == mg.interleave_pattern(2, 3)
@@ -111,6 +116,7 @@ def test_unit_interleave_pattern():
 
 def test_unit_validate_array():
     mg = MOSGenerator()
+    mg.semantic()
     assert (1, 1) == mg.validate_array(1, 1, 1)
     assert (1, 2) == mg.validate_array(2, 1, 2)
     assert (1, 2) == mg.validate_array(2, 2, 2)

@@ -15,19 +15,21 @@ class MOSGenerator(CanvasPDK):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
+    def semantic(self):
         self.NEW_PARTIAL_ROUTING_FEATURE = os.getenv('PARTIAL_ROUTING', None) is not None
         if self.NEW_PARTIAL_ROUTING_FEATURE:
             if not hasattr(self, 'metadata'):
                 self.metadata = dict()
             self.metadata['partially_routed_pins'] = {}
 
+
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
-        self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
+        self.addMOSArray(x_cells, y_cells, pattern, vt_type, ports, **parameters)
 
     def addPMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
-        self.mos_array_temporary_wrapper(x_cells, y_cells, pattern, vt_type, ports, **parameters)
+        self.addMOSArray(x_cells, y_cells, pattern, vt_type, ports, **parameters)
 
-    def mos_array_temporary_wrapper(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
+    def addMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
 
         # Inject constraints for testing purposes
         place_on_grid = os.getenv('PLACE_ON_GRID', False)
