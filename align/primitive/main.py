@@ -33,11 +33,17 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     pdk = Pdk().load(pdkdir / 'layers.json')
 
-    # if style is not None and style != '':
-    #     generator = get_generator(f'MOSGenerator_{style}', pdkdir)
-    # else:
-    #
-    generator = get_generator('MOSGenerator', pdkdir)
+    style = None
+    for const in primitive.constraints:
+        if const.constraint == 'generator':
+            p = const.parameters
+            if const.parameters is not None:
+                style = const.parameters.get('style')
+
+    if style is not None and style != '':
+        generator = get_generator(f'MOSGenerator_{style}', pdkdir)
+    else:
+        generator = get_generator('MOSGenerator', pdkdir)
 
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
