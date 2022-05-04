@@ -33,17 +33,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     pdk = Pdk().load(pdkdir / 'layers.json')
 
-    style = None
-    for const in primitive.constraints:
-        if const.constraint == 'generator':
-            p = const.parameters
-            if const.parameters is not None:
-                style = const.parameters.get('style')
-
-    if style is not None and style != '':
-        generator = get_generator(f'MOSGenerator_{style}', pdkdir)
-    else:
-        generator = get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
 
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
@@ -52,11 +42,10 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
 
-    assert not hasattr(uc, 'style'), f"Don't want to override 'style' field if it already exists"
     assert not hasattr(uc, 'primitive_constraints'), f"Don't want to override 'primitive_constraints' field if it already exists"
-
-    uc.style = style
     uc.primitive_constraints = primitive.constraints
+    if hasattr(uc, 'semantic'):
+        uc.semantic()
 
     input_pattern = getattr(primitive, 'parameters', None)
     if not input_pattern and len(primitive.elements)==1:
