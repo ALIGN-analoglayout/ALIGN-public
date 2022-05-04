@@ -13,15 +13,37 @@ logger_func = logger.debug
 class MOSGenerator(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
+        self.primitive_constraints = kwargs.get('primitive_constraints', [])
+
         super().__init__()
 
-    def semantic(self):
-        self.NEW_PARTIAL_ROUTING_FEATURE = os.getenv('PARTIAL_ROUTING', None) is not None
-        if self.NEW_PARTIAL_ROUTING_FEATURE:
+        self.style = None
+        self.PARTIAL_ROUTING = False
+        for const in self.primitive_constraints:
+            if const.constraint == 'generator':
+                if const.parameters is not None:
+                    self.style = const.parameters.get('style')
+                    self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
+
+        if os.getenv('PARTIAL_ROUTING', None) is not None:
+            self.PARTIAL_ROUTING = True
+
+        if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
                 self.metadata = dict()
             self.metadata['partially_routed_pins'] = {}
 
+        # Inject constraints for testing purposes
+        place_on_grid = os.getenv('PLACE_ON_GRID', None)
+        if place_on_grid is not None:
+            place_on_grid = json.loads(place_on_grid)
+            if not hasattr(self, 'metadata'):
+                self.metadata = dict()
+            self.metadata['constraints'] = place_on_grid['constraints']
+
+
+    def semantic(self):
+        assert False, "Deprecated"
 
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.addMOSArray(x_cells, y_cells, pattern, vt_type, ports, **parameters)
@@ -30,14 +52,6 @@ class MOSGenerator(CanvasPDK):
         self.addMOSArray(x_cells, y_cells, pattern, vt_type, ports, **parameters)
 
     def addMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
-
-        # Inject constraints for testing purposes
-        place_on_grid = os.getenv('PLACE_ON_GRID', False)
-        if place_on_grid:
-            place_on_grid = json.loads(place_on_grid)
-            if not hasattr(self, 'metadata'):
-                self.metadata = dict()
-            self.metadata['constraints'] = place_on_grid['constraints']
 
         logger_func(f'x_cells={x_cells}, y_cells={y_cells}, pattern={pattern}, ports={ports}, parameters={parameters}')
 
@@ -118,127 +132,95 @@ class MOSGenerator(CanvasPDK):
 
         assert len(self.transistor_array.m) <= 2, 'Arrays of more than 2 devices not supported yet'
 
-        if len(self.transistor_array.m) == 1:
-            is_dual = False
-        else:
-            is_dual = True
+        is_dual = len(self.transistor_array.m) == 2
+        tap_map = {'B': self.transistor_array.ports[1].get('B','B')}
 
-        if 'B' in self.transistor_array.ports[1]:
-            tap_map = {'B': self.transistor_array.ports[1]['B']}
-        else:
-            tap_map = {'B': 'B'}
 
         '''
-            if NEW_PARTIAL_ROUTING_FEATURE:
+            if PARTIAL_ROUTING:
                 route single transistor primitives up to m1 excluding gate
                 route double transistor primitives up to m2
         '''
+
         # Assign M2 tracks to prevent adjacent V2 violation
         track_pattern_1 = {'G': [6], 'S': [4], 'D': [2]}
+        track_pattern_2 = {'G': [5], 'S': [3], 'D': [1]}
+
         if is_dual:
-            track_pattern_2 = {}
+            for tgt, srcs in [('G',['G','S']),('S',['S','D']),('D',['D'])]:
+                for src in srcs:
+                    if self.transistor_array.ports[2][tgt] == self.transistor_array.ports[1][src]:
+                        track_pattern_2[tgt] = track_pattern_1[src]            
+                        break
 
-            if self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['G']:
-                track_pattern_2['G'] = [6]
-            elif self.transistor_array.ports[2]['G'] == self.transistor_array.ports[1]['S']:
-                track_pattern_2['G'] = [4]
-            else:
-                track_pattern_2['G'] = [5]
+            # Alternate m2 tracks for device A and device B for improved matching
+            tx_2 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
+        elif self.PARTIAL_ROUTING:
 
-            if self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['S']:
-                track_pattern_2['S'] = [4]
-            elif self.transistor_array.ports[2]['S'] == self.transistor_array.ports[1]['D']:
-                track_pattern_2['S'] = [2]
-            else:
-                track_pattern_2['S'] = [3]
-
-            if self.transistor_array.ports[2]['D'] == self.transistor_array.ports[1]['D']:
-                track_pattern_2['D'] = [2]
-            else:
-                track_pattern_2['D'] = [1]
-
-        elif self.NEW_PARTIAL_ROUTING_FEATURE:
             track_pattern_1 = {'G': [6]}
 
-        mg = MOS()
+        tx_1 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
 
-        tx_a_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
-        if is_dual:
-            # Alternate m2 tracks for device A and device B for improved matching
-            mg = MOS()
-            tx_a_2 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
 
-            mg = MOS()
-            tx_b_1 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
-
-            mg = MOS()
-            tx_b_2 = mg.mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
-
-        tg = MOS()
-        tp = tg.tap(self.transistor_array.unit_transistor)
-
+        tp = MOS().tap(self.transistor_array.unit_transistor)
         fill = MOS().fill(1, self.transistor_array.unit_transistor.nfin)
+
 
         # Define the interleaving array (aka array logic)
         if is_dual:
-            interleave = self.interleave_pattern(self.n_row, self.n_col)
+            if self.style is not None and self.style == 'RADHARD':
+                interleave_array = self.interleave_pattern_radhard(self.n_row, self.n_col)
+            else:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            interleave = [1]*(self.n_row*self.n_col)
+            interleave_array = ['A'*self.n_col]*self.n_row
 
-        cnt = 0
         cnt_tap = 0
+        def add_tap(row, obj, tbl, flip_x):
+            nonlocal cnt_tap
+            row.append([obj, f't{cnt_tap}', tbl, flip_x])
+            cnt_tap += 1
+
         rows = []
+
+        # tap row
+        row = []
+        add_tap(row, fill, {}, 1)
+        for _ in range(self.n_col):
+            add_tap(row, tp, tap_map, 1)
+        rows.append(row)
+        add_tap(row, fill, {}, 1)
+
+        tr = {'A': (1,  1),
+              'a': (1, -1),
+              'B': (2,  1),
+              'b': (2, -1)}
+
         for y in range(self.n_row):
-            # tap row
-            if y == 0:
-                row = []
-
-                row.append([fill, f't{cnt_tap}', {}, 1])
-                cnt_tap += 1
-
-                for _ in range(self.n_col):
-                    row.append([tp, f't{cnt_tap}', tap_map, 1])
-                    cnt_tap += 1
-                rows.append(row)
-
-                row.append([fill, f't{cnt_tap}', {}, 1])
-                cnt_tap += 1
-
             row = []
+            add_tap(row, fill, {}, 1)
+            for x in range(self.n_col):
+                port_idx, flip_x = tr[interleave_array[y][x]]
 
-            row.append([fill, f't{cnt_tap}', {}, 1])
-            cnt_tap += 1
+                pin_map = self.transistor_array.ports[port_idx]
 
-            for _ in range(self.n_col):
-                pin_map = self.transistor_array.ports[interleave[cnt]]
-                flip_x = 1
-
-                if not is_dual:
-                    tx = tx_a_1
-                else:
-                    if interleave[cnt] == 2:
-                        if y % 2 == 0:
-                            tx = tx_b_2
-                        else:
-                            tx = tx_b_1
+                tx = tx_1
+                if is_dual:
+                    if port_idx == 2:
+                        tx = tx_2 if y % 2 == 0 else tx_1
                     else:
-                        if y % 2 == 0:
-                            tx = tx_a_1
-                        else:
-                            tx = tx_a_2
+                        tx = tx_1 if y % 2 == 0 else tx_2
 
-                row.append([tx, f'm{cnt}', pin_map, flip_x])
-                cnt += 1
+                #row.append([tx, f'm{y*self.n_col+x}', pin_map, flip_x])
+                row.append([tx, f'm{y}_{x}', pin_map, flip_x])
 
-            row.append([fill, f't{cnt_tap}', {}, 1])
-            cnt_tap += 1
-
+            add_tap(row, fill, {}, 1)
             rows.append(row)
 
         # Stamp the instances
         self.place(rows)
 
-        if not self.NEW_PARTIAL_ROUTING_FEATURE:
+        if not self.PARTIAL_ROUTING:
             self.route()
             self.terminals = self.removeDuplicates()
         else:
@@ -412,23 +394,33 @@ class MOSGenerator(CanvasPDK):
                     return y, m//y
 
     @staticmethod
+    def interleave_pattern_radhard(n_row, n_col):
+        """
+        n_col is only even (lower case means flipped around the y-axis (mirrored in x))
+            A b B a
+            B a A b
+        """
+        assert n_col >= 2
+        assert n_col % 2 == 0
+        interleave_array = [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
+
+        print(f'Radhard: {n_row} {n_col}')
+        for row in interleave_array:
+            print(''.join(row))
+
+        return interleave_array
+
+    @staticmethod
     def interleave_pattern(n_row, n_col):
         """
-        n_col odd:
-            A B A
-            B A B
-        n_col even:
+        n_col is only even (lower case means flipped around the y-axis (mirrored in x))
             A B A B
             B A B A
         """
-        if n_row * n_col > 1:
-            assert (n_row * n_col) % 2 == 0, f'Odd number of transistors: {n_row}, {n_col}'
-        if n_row == 1:
-            assert n_col >= 2, 'Illegal combination'
-        lst = []
-        for y in range(n_row):
-            if y % 2 == 0:
-                lst.extend([k for k in islice(cycle([1, 2]), n_col)])
-            else:
-                lst.extend([k for k in islice(cycle([2, 1]), n_col)])
-        return lst
+        interleave_array = [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
+
+        print(f'Normal: {n_row} {n_col}')
+        for row in interleave_array:
+            print(''.join(row))
+
+        return interleave_array

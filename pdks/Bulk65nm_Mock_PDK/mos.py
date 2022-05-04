@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch):
+    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
         super().__init__(pdk)
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
