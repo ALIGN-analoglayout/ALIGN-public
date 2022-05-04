@@ -91,7 +91,7 @@ def gen_param(subckt, primitives, pdk_dir):
         add_primitive(primitives, block_name, block_args)
 
     elif generator_name == 'RES':
-        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {name}"
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
         if "R" in values:
             size = round(float(values["R"]), 2)
         elif 'VALUE' in values:
@@ -129,13 +129,13 @@ def gen_param(subckt, primitives, pdk_dir):
 
         if 'NF' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {name}"
-                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {name}"
+                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {block_name}"
+                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {block_name}"
             name_arg = name_arg+'_NF'+str(int(mvalues[device_name]["NF"]))
 
         if 'M' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {name}"
+                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {block_name}"
                 if "PARALLEL" in mvalues[key].keys() and int(mvalues[key]['PARALLEL']) > 1:
                     mvalues[key]["PARALLEL"] = int(mvalues[key]['PARALLEL'])
                     mvalues[key]['M'] = int(mvalues[key]['M'])*int(mvalues[key]['PARALLEL'])
@@ -145,7 +145,8 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"Generating lef for {block_name}")
         if isinstance(size, int):
             for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {name} {mvalues}"
+                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]
+                                                                ), f"NFIN should be same for all devices in {block_name} {mvalues}"
                 size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized

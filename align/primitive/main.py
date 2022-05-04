@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_xcells_pattern(primitive, pattern, x_cells):
-
+    # TODO: remove this name based multiplier for number of cells
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
@@ -26,28 +26,41 @@ def get_xcells_pattern(primitive, pattern, x_cells):
     return x_cells, pattern
 
 
-def get_parameters(primitive, parameters, nfin):
-    if parameters is None:
-        parameters = {}
-    if 'model' not in parameters:
-        parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-    return parameters
-
 # TODO: Pass cell_pin and pattern to this function to begin with
 
 
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+
     pdk = Pdk().load(pdkdir / 'layers.json')
+
     generator = get_generator('MOSGenerator', pdkdir)
+
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
     shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
-    parameters = get_parameters(primitive.name, parameters, nfin)
 
+    assert not hasattr(uc, 'primitive_constraints'), f"Don't want to override 'primitive_constraints' field if it already exists"
+    uc.primitive_constraints = primitive.constraints
+    if hasattr(uc, 'semantic'):
+        uc.semantic()
+
+    input_pattern = getattr(primitive, 'parameters', None)
+    if not input_pattern and len(primitive.elements)==1:
+        input_pattern = 'single_device'
+    elif not input_pattern and not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+        input_pattern = 'ratio_devices' #e.g. current mirror
+    elif not input_pattern:
+        input_pattern = 'cc'
+    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
+    pattern = pattern_map[input_pattern]
+    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    logger.debug(
+        f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
+    if 'model' not in parameters:
+        parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
@@ -55,13 +68,13 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    assert isinstance(primitive, SubCircuit)
     connections = {pin: [] for pin in primitive.pins}
     for ele in primitive.elements:
         for formal, actual in ele.pins.items():
             connections[actual].append((ele.name, formal))
-    if len(primitive.elements) == 1:
-        pattern = 0
+
+    logger.debug(f'Generate primitive: {block_name} {pattern} {connections}')
+
     return uc, gen(pattern, connections)
 
 
@@ -155,13 +168,21 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
+
     if primitive == 'generic':
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name']:
+        #Instead of hacking here as a style, please use a one one mapping with generator["name"]. The groupblock constraint can add generator names to the subcircuit now"
+        # style = None
+        # if 'style' in primitive.generator:
+        #     style = primitive.generator['style']
+
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+
+
     elif 'CAP' == primitive.generator['name']:
         uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

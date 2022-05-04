@@ -501,6 +501,7 @@ class GroupBlocks(HardConstraint):
     Args:
       instances (list[str]): List of :obj:`instances`
       name (str): alias for the list of :obj:`instances`
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
 
@@ -508,11 +509,18 @@ class GroupBlocks(HardConstraint):
             "constraint":"GroupBlocks",
             "name": "group1",
             "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
         }
     """
     name: str
     instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+    generator: Optional[dict]
+    # style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]] added as part of generator
 
     @types.validator('name', allow_reuse=True)
     def group_block_name(cls, value):

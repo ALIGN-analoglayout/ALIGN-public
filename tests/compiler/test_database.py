@@ -170,6 +170,7 @@ def test_multipower_domain_propagation():
         elif isinstance(const, constraint.ClockPorts):
             special_ports["CLK"] = const.ports
     assert special_ports == {"PWR": ["D1", "D"], "GND": ["S1", "S"], "CLK": ["G1", "G"]}
+    clean_data(name)
 
 
 def test_power_and_signal_ckt():
@@ -203,6 +204,7 @@ def test_power_and_signal_ckt():
         elif isinstance(const, constraint.ClockPorts):
             special_ports["CLK"] = const.ports
     assert special_ports == {"PWR": ["D"], "GND": ["S"], "CLK": ["G"]}
+    clean_data(name)
 
 def test_multi_param():
     name = f'ckt_{get_test_id()}'.upper()
@@ -356,7 +358,7 @@ def test_subckt_generator():
     example = build_example(name, netlist, constraints)
     ckt_library, _ = compiler_input(example, name, pdk_dir, config_path)
     assert ckt_library.find('DIG22INV').generator['name'] == 'DIG22INV'
-
+    clean_data((name))
 
 def test_model_generator():
     name = f'ckt_{get_test_id()}'
@@ -409,7 +411,7 @@ def test_unimplemented_generator():
     example = build_example(name, netlist, constraints)
     with raises(AssertionError):
         generate_hierarchy(example, name, result_path, False, pdk_path)
-
+    clean_data(name)
 
 def test_global_param_2():
     name = f'ckt_{get_test_id()}'.upper()
