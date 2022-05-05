@@ -3,6 +3,7 @@ import pathlib
 from pathlib import Path
 import json
 import re
+import copy
 
 from collections import defaultdict
 
@@ -304,6 +305,10 @@ def router_driver(*, cap_map, cap_lef_s,
                   numLayout, effort, adr_mode, PDN_mode,
                   router_mode, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args_d, results_dir, verilog_ds_to_run):
+
+    toplevel_args_d = copy.deepcopy(toplevel_args_d)
+
+    toplevel_args_d['subckt'] = toplevel_args_d['subckt'] + '_0'
 
     fpath = toplevel_args_d['input_dir']
         
