@@ -284,10 +284,10 @@ class MOSGenerator(DefaultCanvas):
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
 
         def _addRVT(x_cells, y_cells):
-            self.addRegion( self.RVT, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+            self.addRegion( self.RVT, None, (0, -1), -self.bodyswitch*self.lFin, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
 
         def _addLVT(x_cells, y_cells):
-            self.addRegion( self.LVT, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+            self.addRegion( self.LVT, None, (0, -1), -self.bodyswitch*self.lFin, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
     
         def _addHVT(x_cells, y_cells):
             self.addRegion( self.HVT, None, (0, -1), -self.bodyswitch*self.lFin, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
