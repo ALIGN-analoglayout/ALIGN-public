@@ -6,7 +6,7 @@ import re
 from collections import defaultdict
 
 from .. import PnR
-from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d, connectivity_change_for_partial_routing
+from .manipulate_hierarchy import change_abstract_and_concrete_names_for_routing, gen_abstract_verilog_d, connectivity_change_for_partial_routing
 
 from .build_pnr_model import gen_DB_verilog_d
 from .placer import hierarchical_place
@@ -311,7 +311,7 @@ def router_driver(*, cap_map, cap_lef_s,
 
         connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitives)
 
-        tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
+        tr_tbl = change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
 
         # don't need to send this to disk; for debug only

@@ -112,7 +112,7 @@ def manipulate_hierarchy(verilog_d, subckt):
     clean_if_extra(verilog_d, subckt)
     check_modules(verilog_d)
 
-def change_concrete_names_for_routing(scaled_placement_verilog_d):
+def change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d):
     leaf_ctns = [leaf['concrete_name'] for leaf in scaled_placement_verilog_d['leaves']]
 
     p = re.compile(r'^(.+)_(\d+)$')
@@ -134,7 +134,9 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
     logger.debug(f'change_concrete_names_for_routing: {tr_tbl}')
 
     for module in scaled_placement_verilog_d['modules']:
-        module['concrete_name'] = tr_tbl[module['concrete_name']]
+        cn = module['concrete_name']
+        module['concrete_name'] = tr_tbl[cn]
+        module['abstract_name'] = tr_tbl[cn]
         for instance in module['instances']:
             ctn = instance['concrete_template_name']
             if ctn in leaf_ctns:
@@ -143,6 +145,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
             else:
                 assert ctn in tr_tbl
                 instance['concrete_template_name'] = tr_tbl[ctn]
+                instance['abstract_template_name'] = tr_tbl[ctn]
 
         if 'flat_leaves' in module:
             del module['flat_leaves']
@@ -157,27 +160,30 @@ def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)
 
     if 'leaves' in new_verilog_d:
-        new_verilog_d['leaves'] = None
+        del new_verilog_d['leaves']
 
     for module in new_verilog_d['modules']:
         assert 'concrete_name' in module
         assert 'abstract_name' in module
         assert 'name' not in module
-        module['name'] = module['abstract_name']
+        module['name'] = module['concrete_name']
         del module['abstract_name']
-        #del module['concrete_name']
+        del module['concrete_name']
 
         assert 'bbox' in module
         del module['bbox']
 
         for instance in module['instances']:
             assert 'concrete_template_name' in instance
+
+            ctn = instance['concrete_template_name']
+            instance['abstract_template_name'] = ctn
+
             del instance['concrete_template_name']
             assert 'transformation' in instance
             del instance['transformation']
 
-        if 'flat_leaves' in module:
-            del module['flat_leaves']
+        assert 'flat_leaves' not in module
 
     return new_verilog_d
 
