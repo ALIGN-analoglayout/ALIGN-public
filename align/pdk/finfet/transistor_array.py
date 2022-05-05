@@ -145,7 +145,7 @@ class MOSGenerator(CanvasPDK):
             for tgt, srcs in [('G',['G','S']),('S',['S','D']),('D',['D'])]:
                 for src in srcs:
                     if self.transistor_array.ports[2][tgt] == self.transistor_array.ports[1][src]:
-                        track_pattern_2[tgt] = track_pattern_1[src]            
+                        track_pattern_2[tgt] = track_pattern_1[src]
                         break
 
             # Alternate m2 tracks for device A and device B for improved matching

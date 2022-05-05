@@ -13,22 +13,7 @@ import importlib.util
 logger = logging.getLogger(__name__)
 
 
-def get_xcells_pattern(primitive, pattern, x_cells):
-    # TODO: remove this name based multiplier for number of cells
-    print(primitive)
-    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # TODO: Generalize this (pattern is ignored)
-        x_cells = 2*x_cells + 2
-    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
-        # Dual transistor primitives
-        x_cells = 2*x_cells
-        # TODO: Fix difficulties associated with CC patterns matching this condition
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-    return x_cells, pattern
-
-
 # TODO: Pass cell_pin and pattern to this function to begin with
-
 
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
 
@@ -56,9 +41,8 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         if primitive.elements[0].parameters == primitive.elements[1].parameters:
             x_cells = 2*x_cells
             pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-        else:
-            x_cells = 2*x_cells +2
-    # x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+            #TODO do this double during x_cells generation in gen_param.py/add_primitive()
+
     logger.debug(
         f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
     if 'model' not in parameters:
@@ -176,11 +160,6 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name']:
-        #Instead of hacking here as a style, please use a one one mapping with generator["name"]. The groupblock constraint can add generator names to the subcircuit now"
-        # style = None
-        # if 'style' in primitive.generator:
-        #     style = primitive.generator['style']
-
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
 
