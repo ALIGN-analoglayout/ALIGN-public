@@ -20,6 +20,8 @@ def limit_pairs(pairs):
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
+        block_args['abstract_template_name'] = block_name
+        block_args['concrete_template_name'] = block_name
         if not primitives[block_name] == block_args:
             logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
                              existing: {primitives[block_name]}\
@@ -27,29 +29,30 @@ def add_primitive(primitives, block_name, block_args):
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         if 'x_cells' in block_args and 'y_cells' in block_args:
-                x, y = block_args['x_cells'], block_args['y_cells']
-                pairs = set()
-                m = x*y
-                y_sqrt = floor(sqrt(x*y))
-                for y in range(y_sqrt, 0, -1):
-                    if m % y == 0:
-                        pairs.add((y, m//y))
-                        pairs.add((m//y, y))
-                    if y == 1:
-                        break
-                pairs = limit_pairs((pairs))
-                for newx, newy in pairs:
-                    concrete_name = f'{block_name}_X{newx}_Y{newy}'
-                    if concrete_name not in primitives:
-                        primitives[concrete_name] = deepcopy(block_args)
-                        primitives[concrete_name]['x_cells'] = newx
-                        primitives[concrete_name]['y_cells'] = newy
-                        primitives[concrete_name]['abstract_template_name'] = block_name
-                        primitives[concrete_name]['concrete_template_name'] = concrete_name
+            x, y = block_args['x_cells'], block_args['y_cells']
+            pairs = set()
+            m = x*y
+            y_sqrt = floor(sqrt(x*y))
+            for y in range(y_sqrt, 0, -1):
+                if m % y == 0:
+                    pairs.add((y, m//y))
+                    pairs.add((m//y, y))
+                if y == 1:
+                    break
+            pairs = limit_pairs((pairs))
+            for newx, newy in pairs:
+                concrete_name = f'{block_name}_X{newx}_Y{newy}'
+                if concrete_name not in primitives:
+                    primitives[concrete_name] = deepcopy(block_args)
+                    primitives[concrete_name]['x_cells'] = newx
+                    primitives[concrete_name]['y_cells'] = newy
+                    primitives[concrete_name]['abstract_template_name'] = block_name
+                    primitives[concrete_name]['concrete_template_name'] = concrete_name
         else:
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
+
 
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
@@ -57,6 +60,7 @@ def gen_param(subckt, primitives, pdk_dir):
     values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]
     block_name = subckt.name
+    logger.debug(f"Getting generator parameters for: {subckt.name}")
     generator_name = subckt.generator["name"]
     layers_json = pdk_dir / "layers.json"
     with open(layers_json, "rt") as fp:
@@ -87,7 +91,7 @@ def gen_param(subckt, primitives, pdk_dir):
         add_primitive(primitives, block_name, block_args)
 
     elif generator_name == 'RES':
-        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {name}"
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
         if "R" in values:
             size = round(float(values["R"]), 2)
         elif 'VALUE' in values:
@@ -118,19 +122,18 @@ def gen_param(subckt, primitives, pdk_dir):
             assert int(
                 float(mvalues[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
                 f"Width of device {key} in {block_name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
-            size = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
-            mvalues[key]["NFIN"] = size
-        name_arg = 'NFIN'+str(size)
+            width = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
+        name_arg = 'W'+str(width)
 
         if 'NF' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {name}"
-                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {name}"
+                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {block_name}"
+                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {block_name}"
             name_arg = name_arg+'_NF'+str(int(mvalues[device_name]["NF"]))
 
         if 'M' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {name}"
+                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {block_name}"
                 if "PARALLEL" in mvalues[key].keys() and int(mvalues[key]['PARALLEL']) > 1:
                     mvalues[key]["PARALLEL"] = int(mvalues[key]['PARALLEL'])
                     mvalues[key]['M'] = int(mvalues[key]['M'])*int(mvalues[key]['PARALLEL'])
@@ -140,7 +143,7 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"Generating lef for {block_name}")
         if isinstance(size, int):
             for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"W should be same for all devices in {name} {mvalues}"
+                assert int(float(mvalues[device_name]["W"])*1E+9) == int(float(mvalues[key]["W"])*1E+9), f"W should be same for all devices in {block_name} {mvalues}"
                 size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
@@ -152,17 +155,19 @@ def gen_param(subckt, primitives, pdk_dir):
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
-
-        if 'SCM' in block_name:
-            if int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != \
-                    int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
-                square_y = 1
-                yval = square_y
-                xval = int(no_units / square_y)
+        def total_device_size(v):
+            return int(float(v["W"])*1E+9)*int(v['NF'])*int(v["M"])
+        if len(device_name_all) > 1:
+            unequal_devices = (total_device_size(mvalues[device_name_all[0]]) !=
+                               total_device_size(mvalues[device_name_all[1]]))
+        if 'SCM' in block_name and unequal_devices:
+            square_y = 1
+            yval = square_y
+            xval = int(no_units / square_y)
 
         block_args = {
             'primitive': generator_name,
-            'value': mvalues[device_name]["NFIN"],
+            'value': width,
             'x_cells': xval,
             'y_cells': yval,
             'parameters': mvalues
@@ -172,7 +177,7 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         # TODO: remove name based hack
-        if 'SCM' in block_name and int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
+        if 'SCM' in block_name and unequal_devices:
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
