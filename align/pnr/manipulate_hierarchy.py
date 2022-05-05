@@ -166,7 +166,7 @@ def gen_abstract_verilog_d( verilog_d):
         assert 'concrete_name' in module
         assert 'abstract_name' in module
         assert 'name' not in module
-        module['name'] = module['concrete_name']
+        module['name'] = module['abstract_name']
         del module['abstract_name']
         del module['concrete_name']
 
@@ -175,11 +175,8 @@ def gen_abstract_verilog_d( verilog_d):
 
         for instance in module['instances']:
             assert 'concrete_template_name' in instance
-
-            ctn = instance['concrete_template_name']
-            instance['abstract_template_name'] = ctn
-
             del instance['concrete_template_name']
+
             assert 'transformation' in instance
             del instance['transformation']
 
