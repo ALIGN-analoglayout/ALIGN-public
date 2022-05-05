@@ -165,7 +165,7 @@ def gen_abstract_verilog_d( verilog_d):
         assert 'name' not in module
         module['name'] = module['abstract_name']
         del module['abstract_name']
-        del module['concrete_name']
+        #del module['concrete_name']
 
         assert 'bbox' in module
         del module['bbox']
