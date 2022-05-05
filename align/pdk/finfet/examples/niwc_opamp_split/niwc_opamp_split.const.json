@@ -7,10 +7,10 @@
 
     {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "name": "nrailb", "generator": { "name": "MOS", "parameters": { "style": "RADHARD"}}},
     {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail", "generator": { "name": "MOS", "parameters": { "style": "RADHARD"}}},
-    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "name": "lsa"},
-    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "name": "lsb"},
-    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "name": "ostagea"},
-    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "name": "ostageb"},
+    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "name": "lsa", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "name": "lsb", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "name": "ostagea", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "name": "ostageb", "generator": { "name": "MOS"}},
     {"constraint": "SameTemplate", "instances": ["lsa", "lsb"]},
     {"constraint": "SameTemplate", "instances": ["ostagea", "ostageb"]},
     {"constraint": "SameTemplate", "instances": ["nraila", "nrailb"]},
@@ -19,8 +19,7 @@
      "symmetrize": true,
      "regions": [
         ["prail"],
-        ["lsa", "lsb"],
-        ["ostagea","dp", "ostageb"],
+        ["ostagea", "lsa", "dp", "lsb", "ostageb"],
         ["nraila","mtail", "nrailb"]
      ]},
     {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
