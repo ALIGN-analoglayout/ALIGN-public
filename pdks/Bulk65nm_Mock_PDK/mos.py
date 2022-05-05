@@ -203,6 +203,11 @@ class MOSGenerator(DefaultCanvas):
                         diff_track = diff_track + 1
                     self.addWireAndViaSet(net, self.m2, self.v1, current_track, contacts)
                     self._nets[net][current_track] = contacts
+                    if y_cells == 1 and pin == 'B':
+                        current_track = -1*body_v0_track
+                        self.addWireAndViaSet(net, self.m2, self.v1, current_track, contacts)
+                        self._nets[net][current_track] = contacts
+
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 #direction = 1 if current_track > center_track else -1
                 #for i in contacts:
