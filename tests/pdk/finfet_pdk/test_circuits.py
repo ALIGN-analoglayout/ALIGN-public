@@ -298,13 +298,48 @@ def test_charge_pump_switch():
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--router_mode', 'bottom_up'])
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '2_primitives'])
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
+        constraints = set([c["constraint"] for c in module["constraints"]])
+        expected_constraints = {"same_template", "align_in_order", "power_ports", "ground_ports"}
+        assert expected_constraints == constraints, f"expected constraints: {expected_constraints} generated constraints: {constraints}"
 
-    if CLEANUP:
-        shutil.rmtree(run_dir)
-        shutil.rmtree(ckt_dir)
+    # if CLEANUP:
+    #     shutil.rmtree(run_dir)
+    #     shutil.rmtree(ckt_dir)
+
+
+def test_charge_pump_switch_four():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.charge_pump_switch_four(name, size=8)
+    constraints = {
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]}
+        ],
+        "switch": [
+            {"constraint": "DoNotIdentify", "instances": ["qp0", "qn0"]}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=16, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '2_primitives'])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+
+        module = [m for m in hierarchy["modules"] if m["name"] == "SWITCH_ARRAY"][0]
+        constraints = set([c["constraint"] for c in module["constraints"]])
+        expected_constraints = {"same_template", "align_in_order", "power_ports", "ground_ports"}
+        assert expected_constraints == constraints, f"expected constraints: {expected_constraints} generated constraints: {constraints}"
+
+        module = [m for m in hierarchy["modules"] if m["name"] == name][0]
+        constraints = set([c["constraint"] for c in module["constraints"]])
+        assert "symmetric_nets" not in constraints, f'{module["name"]}'
+        assert "symmetric_blocks" not in constraints, f'{module["name"]}'
+
+    # if CLEANUP:
+    #     shutil.rmtree(run_dir)
+    #     shutil.rmtree(ckt_dir)

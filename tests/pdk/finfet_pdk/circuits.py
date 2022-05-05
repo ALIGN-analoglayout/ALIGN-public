@@ -260,6 +260,29 @@ def charge_pump_switch(name, size=16):
     return netlist
 
 
+def charge_pump_switch_four(name, size=16):
+    netlist = textwrap.dedent("""\
+    .subckt switch ng pg t1 t2 vccx vssx
+    qp0 t1 pg t2 vccx p m=1 nf=2 w=90e-9
+    qn0 t1 ng t2 vssx n m=1 nf=2 w=90e-9
+    .ends
+    .subckt switch_array en enb in out vccx vssx
+    """)
+    for i in range(size):
+        netlist += f"isw<{i}> en enb in out vccx vssx switch\n"
+    netlist += textwrap.dedent(f"""\
+    .ends
+    .subckt {name} en1 en2 en3 en4 en1b en2b en3b en4b in out1 out2 ocm vccx vssx
+    xi1 en1 en1b in out1 vccx vssx switch_array
+    xi2 en2 en2b in out2 vccx vssx switch_array
+    xi3 en3 en3b out1 ocm vccx vssx switch_array
+    xi4 en4 en4b out2 ocm vccx vssx switch_array
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
 def power_train_thermo(name):
     netlist = textwrap.dedent(f"""\
     .subckt powertrain_cell ond vccx vout
