@@ -6,7 +6,6 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 from align.schema.constraint import OffsetsScalings, PlaceOnGrid
-import align
 
 """
 monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
@@ -22,9 +21,7 @@ def place_on_grid_h(monkeypatch):
         OffsetsScalings(offsets=[0*rh], scalings=[1, -1]),
         OffsetsScalings(offsets=[2*rh], scalings=[1, -1])
     ]
-    place_on_grid = {'constraints': [
-        PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()
-    ]}
+    place_on_grid = {'constraints': [PlaceOnGrid(direction='H', pitch=4*rh, ored_terms=ored_terms).dict()]}
     PLACE_ON_GRID = json.dumps(place_on_grid)
     monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
     print(f"\n{PLACE_ON_GRID=}")
@@ -33,12 +30,18 @@ def place_on_grid_h(monkeypatch):
 @pytest.fixture
 def place_on_grid_v(monkeypatch):
     pp = 1080
-    ored_terms = [
-        OffsetsScalings(offsets=[pp//2], scalings=[1, -1]),
-    ]
-    place_on_grid = {'constraints': [
-        PlaceOnGrid(direction='V', pitch=pp, ored_terms=ored_terms).dict()
-    ]}
+    ored_terms = [OffsetsScalings(offsets=[0], scalings=[1, -1])]
+    place_on_grid = {'constraints': [PlaceOnGrid(direction='V', pitch=2*pp, ored_terms=ored_terms).dict()]}
+    PLACE_ON_GRID = json.dumps(place_on_grid)
+    monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
+    print(f"\n{PLACE_ON_GRID=}")
+
+
+@pytest.fixture
+def place_on_grid_v_half(monkeypatch):
+    pp = 1080
+    ored_terms = [OffsetsScalings(offsets=[pp//2], scalings=[1, -1])]
+    place_on_grid = {'constraints': [PlaceOnGrid(direction='V', pitch=pp, ored_terms=ored_terms).dict()]}
     PLACE_ON_GRID = json.dumps(place_on_grid)
     monkeypatch.setenv('PLACE_ON_GRID', PLACE_ON_GRID)
     print(f"\n{PLACE_ON_GRID=}")
@@ -177,7 +180,7 @@ def test_cmp_on_grid_ilp(place_on_grid_h):
     run_example(example, cleanup=CLEANUP, additional_args=['--place_using_ILP', "--placer_sa_iterations", "10"])
 
 
-def test_cs_on_grid_v(place_on_grid_v):
+def test_cs_on_grid_v(place_on_grid_v_half):
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
         .subckt {name} vin vop vbs vccx vssx
