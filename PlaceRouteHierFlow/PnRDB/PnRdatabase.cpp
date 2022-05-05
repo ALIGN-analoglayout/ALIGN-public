@@ -119,7 +119,6 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID, int sel) {
 
 void PnRdatabase::AppendToHierTree(const PnRDB::hierNode& hN) { hierTree.push_back(hN); }
 
-
 static void updateContact(PnRDB::contact& c) {
   c.originBox = c.placedBox;
   c.originCenter = c.placedCenter;
@@ -271,7 +270,6 @@ void PnRdatabase::TransformContact(PnRDB::contact& contact, PnRDB::point transla
   TransformPoint(contact.placedCenter, translate, width, height, ort, transform_type);
   TransformPoint(contact.originCenter, translate, width, height, ort, transform_type);
 }
-
 
 void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   int WW = width;
@@ -501,7 +499,6 @@ void PnRdatabase::TransformNets(std::vector<PnRDB::net>& nets, PnRDB::point tran
     TransformNet(*nit, translate, width, height, ort, transform_type);
   }
 }
-
 
 PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort) {
   /*
@@ -852,7 +849,10 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
 
         lhs.instNum++;
         b.gdsFile = updatedNode.gdsFile;
-        b.lefmaster = b.master + "_" + std::to_string(lhs.instNum - 1);
+        if (!use_external_placement_info)
+          b.lefmaster = b.master + "_" + std::to_string(lhs.instNum - 1);
+        else
+          b.lefmaster = b.master;
         // update terminal to pin information
 
         b.HPWL_extend_wo_terminal = updatedNode.HPWL_extend_wo_terminal;
@@ -1412,8 +1412,6 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
   jsonStream.close();
 }
 
-
-
 // [RA] need confirmation -wbxu
 void PnRdatabase::AddingPowerPins(PnRDB::hierNode& node) {
   for (unsigned int i = 0; i < node.PowerNets.size(); i++) {
@@ -1722,7 +1720,7 @@ void PnRdatabase::semantic2() {
           hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
           for (unsigned int h = 0; h < hierTree[i].Nets[k].connected.size(); h++) {
             // logger->debug("Connected {0} {1} {2}", hierTree[i].Nets[k].connected[h].type, hierTree[i].Nets[k].connected[h].iter,
-                          // hierTree[i].Nets[k].connected[h].iter2);
+            // hierTree[i].Nets[k].connected[h].iter2);
             for (unsigned int l = 0; l < temp_LinearConst.pins.size(); l++) {
               // logger->debug("LinearConst cont {0} {1} {2}", temp_LinearConst.pins[l].first, temp_LinearConst.pins[l].second, temp_LinearConst.alpha[l]);
               if (hierTree[i].Nets[k].connected[h].type == PnRDB::Block && hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first &&

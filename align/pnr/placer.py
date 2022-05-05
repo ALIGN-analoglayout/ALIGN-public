@@ -44,6 +44,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
+        DB.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
         print(hyper.placement_info_json)
     else:
