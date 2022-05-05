@@ -133,10 +133,14 @@ def change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d):
 
     logger.debug(f'change_concrete_names_for_routing: {tr_tbl}')
 
+    an_cn_pairs = []
+
     for module in scaled_placement_verilog_d['modules']:
         cn = module['concrete_name']
         module['concrete_name'] = tr_tbl[cn]
-        module['abstract_name'] = tr_tbl[cn]
+        an_cn_pairs.append((module['abstract_name'], module['concrete_name']))
+        module['abstract_name'] = module['concrete_name']
+
         for instance in module['instances']:
             ctn = instance['concrete_template_name']
             if ctn in leaf_ctns:
@@ -154,7 +158,7 @@ def change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d):
     for leaf in scaled_placement_verilog_d['leaves']:
         leaf['abstract_name'] = leaf['concrete_name']
 
-    return tr_tbl
+    return tr_tbl, an_cn_pairs
 
 def gen_abstract_verilog_d( verilog_d):
     new_verilog_d = copy.deepcopy(verilog_d)

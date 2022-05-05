@@ -1,5 +1,6 @@
 import logging
 import pathlib
+from pathlib import Path
 import json
 import re
 
@@ -311,8 +312,24 @@ def router_driver(*, cap_map, cap_lef_s,
 
         connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitives)
 
-        tr_tbl = change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d)
+        tr_tbl, an_cn_pairs = change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
+
+        #
+        # Create links for the pnr constraints
+        #
+        for an, cn in an_cn_pairs:
+            new_file = Path(fpath) / f"{cn}.pnr.const.json"
+            old_file = Path(fpath) / f"{an}.pnr.const.json"
+
+            if new_file.exists() and new_file.is_symlink():
+                new_file.unlink()
+
+            assert old_file.exists()
+            if not new_file.exists():
+                new_file.symlink_to(old_file)
+            else:
+                logger.warning(f"{new_file} already exists. Can't add a symlink to {old_file}.")
 
         # don't need to send this to disk; for debug only
         if True:
@@ -340,7 +357,7 @@ def router_driver(*, cap_map, cap_lef_s,
         idir = pathlib.Path(fpath)
          
         cap_ctns = { str(pathlib.Path(gdsFile).stem) : gdsFile for atn, gdsFile in cap_map }
-        print(cap_ctns)
+
         map_d_in = []
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
