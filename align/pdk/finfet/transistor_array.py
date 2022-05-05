@@ -92,7 +92,6 @@ class MOSGenerator(CanvasPDK):
             return res
 
         element_names = sorted({c[0] for mc in ports.values() for c in mc})
-        logger.info(f'Building transistor array for {element_names}')
 
         p1 = find_ports(ports, element_names[0])
         port_arr = {1: p1}
@@ -145,7 +144,7 @@ class MOSGenerator(CanvasPDK):
             for tgt, srcs in [('G',['G','S']),('S',['S','D']),('D',['D'])]:
                 for src in srcs:
                     if self.transistor_array.ports[2][tgt] == self.transistor_array.ports[1][src]:
-                        track_pattern_2[tgt] = track_pattern_1[src]            
+                        track_pattern_2[tgt] = track_pattern_1[src]
                         break
 
             # Alternate m2 tracks for device A and device B for improved matching
@@ -166,14 +165,10 @@ class MOSGenerator(CanvasPDK):
             if self.style is not None and self.style == 'RADHARD':
                 interleave_array = self.interleave_pattern_radhard(self.n_row, self.n_col)
             else:
+                assert self.style is None, f"Unknown MOSGenerator style: '{style}'"
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
             interleave_array = ['A'*self.n_col]*self.n_row
-            logger.info(f'Normal (one device): {self.n_row} {self.n_col}')
-            for row in interleave_array:
-                logger.info(''.join(row))
-
-
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
@@ -402,25 +397,13 @@ class MOSGenerator(CanvasPDK):
         """
         assert n_col >= 2
         assert n_col % 2 == 0
-        interleave_array = [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
-
-        logger.info(f'Radhard: {n_row} {n_col}')
-        for row in interleave_array:
-            logger.info(''.join(row))
-
-        return interleave_array
+        return [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
 
     @staticmethod
     def interleave_pattern(n_row, n_col):
         """
-        n_col is only even (lower case means flipped around the y-axis (mirrored in x))
+        n_col can be even or odd
             A B A B
             B A B A
         """
-        interleave_array = [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
-
-        logger.info(f'Normal: {n_row} {n_col}')
-        for row in interleave_array:
-            logger.info(''.join(row))
-
-        return interleave_array
+        return [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
