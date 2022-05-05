@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def get_xcells_pattern(primitive, pattern, x_cells):
     # TODO: remove this name based multiplier for number of cells
+    print(primitive)
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*x_cells + 2
@@ -51,7 +52,13 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
-    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
+    if len(primitive.elements) ==2:
+        if primitive.elements[0].parameters == primitive.elements[1].parameters:
+            x_cells = 2*x_cells
+            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        else:
+            x_cells = 2*x_cells +2
+    # x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
     logger.debug(
         f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
     if 'model' not in parameters:
