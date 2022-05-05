@@ -169,6 +169,11 @@ class MOSGenerator(CanvasPDK):
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
             interleave_array = ['A'*self.n_col]*self.n_row
+            logger.info(f'Normal (one device): {self.n_row} {self.n_col}')
+            for row in interleave_array:
+                logger.info(''.join(row))
+
+
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
