@@ -41,10 +41,6 @@ class MOSGenerator(CanvasPDK):
                 self.metadata = dict()
             self.metadata['constraints'] = place_on_grid['constraints']
 
-
-    def semantic(self):
-        assert False, "Deprecated"
-
     def addNMOSArray(self, x_cells, y_cells, pattern, vt_type, ports, **parameters):
         self.addMOSArray(x_cells, y_cells, pattern, vt_type, ports, **parameters)
 
@@ -91,14 +87,13 @@ class MOSGenerator(CanvasPDK):
                                      model_name=parameters['real_inst_type'].lower())
 
         def find_ports(p, i):
-            d = {}
-            for (k, v) in p.items():
-                for t in v:
-                    if t[0] == i:
-                        d[t[1]] = k
-            return d
+            res = {vv: k for k, v in p.items() for kk, vv in v if kk == i}
+            logger.debug(f'find_ports: p {p} i {i} res {res}')
+            return res
 
         element_names = sorted({c[0] for mc in ports.values() for c in mc})
+        logger.info(f'Building transistor array for {element_names}')
+
         p1 = find_ports(ports, element_names[0])
         port_arr = {1: p1}
         mult_arr = {1: m}
@@ -404,9 +399,9 @@ class MOSGenerator(CanvasPDK):
         assert n_col % 2 == 0
         interleave_array = [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
 
-        print(f'Radhard: {n_row} {n_col}')
+        logger.info(f'Radhard: {n_row} {n_col}')
         for row in interleave_array:
-            print(''.join(row))
+            logger.info(''.join(row))
 
         return interleave_array
 
@@ -419,8 +414,8 @@ class MOSGenerator(CanvasPDK):
         """
         interleave_array = [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
 
-        print(f'Normal: {n_row} {n_col}')
+        logger.info(f'Normal: {n_row} {n_col}')
         for row in interleave_array:
-            print(''.join(row))
+            logger.info(''.join(row))
 
         return interleave_array
