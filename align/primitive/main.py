@@ -3,6 +3,7 @@ from ..cell_fabric import gen_gds_json
 from ..cell_fabric import positive_coord
 from ..cell_fabric import gen_lef
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
 from ..compiler.util import get_generator
 import copy
 import datetime
@@ -25,20 +26,35 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
-    shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
+
+    shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
+    gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
+    input_pattern = None
+    if gen_const:
+        gen_const=gen_const[0]
+    if gen_const:
+        if getattr(gen_const, "parameters", None):
+            print(gen_const)
+            if getattr(gen_const.parameters, "shared_diff", None):
+                shared_diff = gen_const.parameters["shared_diff"]
+            if getattr(gen_const.parameters, "pattern", None):
+                input_pattern = gen_const.parameters["pattern"]
+            if getattr(gen_const.parameters, "bodyswitch", None):
+                bodyswitch = gen_const.parameters["bodyswitch"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
-    input_pattern = getattr(primitive, 'parameters', None)
-    if not input_pattern and len(primitive.elements)==1:
-        input_pattern = 'single_device'
-    elif not input_pattern and not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
-        input_pattern = 'ratio_devices' #e.g. current mirror
-    elif not input_pattern:
-        input_pattern = 'cc'
+    # Default pattern values
+    if not input_pattern:
+        if len(primitive.elements)==1:
+            input_pattern = 'single_device'
+        elif not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+            input_pattern = 'ratio_devices' #e.g. current mirror
+        else:
+            input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
     if len(primitive.elements) ==2:
-        if primitive.elements[0].parameters == primitive.elements[1].parameters:
+        if pattern==1:
             x_cells = 2*x_cells
             pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
             #TODO do this double during x_cells generation in gen_param.py/add_primitive()
