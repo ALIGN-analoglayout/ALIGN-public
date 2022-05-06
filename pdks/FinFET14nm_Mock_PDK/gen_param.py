@@ -161,7 +161,7 @@ def gen_param(subckt, primitives, pdk_dir):
                                total_device_size(mvalues[device_name_all[1]]))
             if  unequal_devices:
                 yval = 1
-                xval = int(no_units)
+                xval = int(size/2)
 
         block_args = {
             'primitive': generator_name,
