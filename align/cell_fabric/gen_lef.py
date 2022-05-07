@@ -1,6 +1,8 @@
-import sys
 import json
 from collections import defaultdict
+import logging
+logger = logging.getLogger(__name__)
+
 
 def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_layers, Scale_factor, m1pitch, m2pitch, mode='routing'):
 
@@ -49,7 +51,8 @@ def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_laye
                 assert cy % m2pitch == 0, f"M2 pin is not on grid {cy} {cy%m2pitch}"
             if obj['layer'] == 'M1' or obj['layer'] == 'M3':
                 cx = (obj['rect'][0]+obj['rect'][2])//2
-                assert cx % m1pitch == 0, "M1 pin is not on grid {cx} {cx%m1pitch}"
+                # Pin does not need to be on grid when block will be placed at an offset
+                logger.debug(f"{out_lef} M1 pin is not on grid {cx} {cx%m1pitch}")
 
         fp.write("    END\n")
         fp.write("  END %s\n" % pin)
