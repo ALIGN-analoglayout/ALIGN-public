@@ -14,7 +14,7 @@ def test_dig22inv():
     export_to_viewer("dig22inv", data)
 
 
-def test_dig_1():
+def test_dig_primitive():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
@@ -49,7 +49,24 @@ def test_dig_1():
         shutil.rmtree(ckt_dir)
 
 
-def test_dig_2():
+def test_dig_1():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o vccx vssx
+    .ends
+    .subckt {name} vi vo vccx vssx
+    xi0 vi vo vccx vssx dig22inv
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
+
+
+def test_dig_3():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
