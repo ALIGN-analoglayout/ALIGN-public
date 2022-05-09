@@ -84,7 +84,7 @@ def gen_param(subckt, primitives, pdk_dir):
         add_primitive(primitives, block_name, block_args)
     else:  # Transistor
         vt = subckt.elements[0].model
-        values = subckt.elements[0].parameters
+        values = deepcopy(subckt.elements[0].parameters)
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
             assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
