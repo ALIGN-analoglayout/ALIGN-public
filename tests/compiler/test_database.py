@@ -10,6 +10,7 @@ pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
 config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
 
+
 def multi_domain_power_ckt(name):
     netlist = textwrap.dedent(
         f"""\
@@ -26,6 +27,7 @@ def multi_domain_power_ckt(name):
         """
     )
     return netlist
+
 
 def multi_param_ckt(name):
     netlist = textwrap.dedent(
@@ -44,6 +46,7 @@ def multi_param_ckt(name):
         """
     )
     return netlist
+
 
 def test_global_param():
     name = f'ckt_{get_test_id()}'.upper()
@@ -87,6 +90,7 @@ def test_global_param_1():
     ckt_library, _ = compiler_input(example, name, pdk_path, config_path)
     assert ckt_library.find(name).get_element('M0').parameters["NF"] == '2'
     clean_data(name)
+
 
 def test_generator():
     name = f'ckt_{get_test_id()}'.upper()
@@ -206,6 +210,7 @@ def test_power_and_signal_ckt():
     assert special_ports == {"PWR": ["D"], "GND": ["S"], "CLK": ["G"]}
     clean_data(name)
 
+
 def test_multi_param():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = multi_param_ckt(name)
@@ -305,7 +310,7 @@ def test_multi_param_skip():
 def test_preprocessing_SD():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = textwrap.dedent(
-    f"""\
+        f"""\
         .subckt p_mos D G S B
         mn1 S G D B n nfin=12 nf=2 m=8
         .ends p_mos
@@ -360,6 +365,7 @@ def test_subckt_generator():
     assert ckt_library.find('DIG22INV').generator['name'] == 'DIG22INV'
     clean_data((name))
 
+
 def test_model_generator():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -372,12 +378,13 @@ def test_model_generator():
     pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
     result_path = pathlib.Path(__file__).parent / ('run_'+name)
     example = build_example(name, netlist, constraints)
-    primitives = generate_hierarchy(example, name, result_path,False, pdk_dir)
-    all_modules = [subckt.name for subckt in primitives if subckt.name.startswith('TFR_2T')]
+    primitives = generate_hierarchy(example, name, result_path, False, pdk_dir)
+    all_modules = [subckt.name for subckt in primitives if subckt.name.startswith('TFR_')]
     assert all_modules
     assert primitives.find(all_modules[0]).generator['name'] == 'TFR'
     clean_data('run_'+name)
     clean_data(name)
+
 
 def test_generic_generator():
     name = f'ckt_{get_test_id()}'
@@ -412,6 +419,7 @@ def test_unimplemented_generator():
     with raises(AssertionError):
         generate_hierarchy(example, name, result_path, False, pdk_path)
     clean_data(name)
+
 
 def test_global_param_2():
     name = f'ckt_{get_test_id()}'.upper()
@@ -464,4 +472,3 @@ def test_base_model():
     assert ckt_library.find('PARAM_MOS').get_element('M0').pins == {"D": "D", "G": "G", "S": "S", "B": "B"}
     assert ckt_library.find('PARAM_MOS').get_element('M1').pins == {"D": "D", "G": "G", "S": "S", "B": "B"}
     clean_data(name)
-

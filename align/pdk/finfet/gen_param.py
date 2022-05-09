@@ -6,17 +6,6 @@ from align.compiler.util import get_generator
 logger = logging.getLogger(__name__)
 
 
-def generate_generic(pdkdir, parameters, netlistdir=None):
-    primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
-    uc = primitive1()
-    uc.generate(
-        ports=parameters["ports"],
-        netlist_parameters=parameters["values"],
-        netlistdir=netlistdir
-    )
-    return uc, parameters["ports"]
-
-
 def limit_pairs(pairs):
     # Hack to limit aspect ratios when there are a lot of choices
     if len(pairs) > 12:
@@ -74,7 +63,7 @@ def gen_param(subckt, primitives, pdk_dir):
         # ThinFilmResistor, StandardCell
         values = dict()
         if len(subckt.elements) > 0:
-            values = subckt.elements[0].parameters
+            values = deepcopy(subckt.elements[0].parameters)
         attr = {'ports': list(subckt.pins),
                 'values': values,
                 'real_inst_type': block_name.lower()

@@ -78,12 +78,20 @@ def test_scalings(place_on_grid_h):
         primitive = json.load(fp)
         assert 'metadata' in primitive
         assert 'constraints' in primitive['metadata']
-        golden = [{
-            "constraint": "place_on_grid",
-            "direction": "H",
-            "pitch": 12600,
-            "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
-        }]
+        golden = [
+            {
+                "constraint": "place_on_grid",
+                "direction": "H",
+                "pitch": 12600,
+                "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
+            },
+            {
+                "constraint": "place_on_grid",
+                "direction": "V",
+                "pitch": 1080,
+                "ored_terms": [{"offsets": [540], "scalings": [1, -1]}]
+            }
+        ]
         assert primitive['metadata']['constraints'] == golden
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)

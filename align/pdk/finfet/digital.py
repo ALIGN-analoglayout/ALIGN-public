@@ -2,7 +2,7 @@ from .canvas import CanvasPDK
 from align.schema.constraint import PlaceOnGrid, OffsetsScalings
 
 
-class StandardCells(CanvasPDK):
+class StandardCell(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
