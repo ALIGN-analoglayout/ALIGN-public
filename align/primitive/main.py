@@ -22,7 +22,7 @@ def get_xcells_pattern(primitive, pattern, x_cells):
         # Dual transistor primitives
         x_cells = 2*x_cells
         # TODO: Fix difficulties associated with CC patterns matching this condition
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        pattern = 2 if (x_cells % 4 != 0 and pattern !=5) else pattern  # CC is not possible; default is interdigitated
     return x_cells, pattern
 
 

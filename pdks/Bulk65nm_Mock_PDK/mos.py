@@ -20,7 +20,7 @@ class MOSGenerator(DefaultCanvas):
         self.stack = stack
         self.bodyswitch = bodyswitch
         self.gateDummy = gateDummy
-        self.gate = (2*gate)*self.stack
+        self.gate = 2*gate if self.stack ==1 else gate*self.stack
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
@@ -124,7 +124,6 @@ class MOSGenerator(DefaultCanvas):
         info = self.pdk['V0']
 
     def _addMOS( self, x, y, x_cells,  vt_type, name='M1', reflect=False, **parameters):
-
         fullname = f'{name}_X{x}_Y{y}'
         self.subinsts[fullname].parameters.update(parameters)
 
@@ -161,20 +160,19 @@ class MOSGenerator(DefaultCanvas):
         self._xpins[name]['G'].append(gate_x)
 
         # Connect Source & Drain
-        (center_terminal, side_terminal) = ('S', 'D') if self.gate%4 == 0 else ('D', 'S')
-        center_terminal = 'D' if self.stack > 1 else center_terminal # for stacked devices
-        _connect_diffusion(gate_x, center_terminal)
-
-        for x_terminal in range(1,1+self.gate//2):
-            terminal = center_terminal if x_terminal%2 == 0 else side_terminal #for fingers
-            if self.stack > 1 and x_terminal != self.gate//2: continue
-            terminal = 'S' if self.stack > 1 else terminal 
+        SD_x = self.gateDummy + x * self.gatesPerUnitCell
+        #(center_terminal, side_terminal) = ('S', 'D') if self.gate%4 == 0 else ('D', 'S')
+        #center_terminal = 'D' if self.stack > 1 else center_terminal # for stacked devices
+        #_connect_diffusion(gate_x, center_terminal)
+        count = 0
+        for x_terminal in range(0, self.gate+1, self.stack):
             if reflect:
-                _connect_diffusion(gate_x - x_terminal, terminal)
-                _connect_diffusion(gate_x + x_terminal, terminal)
+                terminal = 'D' if count%2 == 0 else 'S'
+                _connect_diffusion(SD_x + x_terminal, terminal)
             else:
-                _connect_diffusion(gate_x - x_terminal, terminal)
-                _connect_diffusion(gate_x + x_terminal, terminal)
+                terminal = 'S' if count%2 == 0 else 'D'
+                _connect_diffusion(SD_x + x_terminal, terminal)
+            count = count + 1
 
     def _connectDevicePins(self, y, y_cells, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
@@ -335,7 +333,7 @@ class MOSGenerator(DefaultCanvas):
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
-                    self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2,  **parameters)
+                    self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], False,  **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], **parameters)
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
@@ -350,6 +348,13 @@ class MOSGenerator(DefaultCanvas):
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1], **parameters)
+                elif pattern == 5: # interdigitated
+                    # TODO: Evaluate if this is truly interdigitated. Currently:
+                    # A B A B A B
+                    # B A B A B A
+                    # A B A B A B
+                    self._addMOS(x, y, x_cells, vt_type, names[((x % 2) + (y % 2)) % 2], x%2,  **parameters)   
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2], **parameters)
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
