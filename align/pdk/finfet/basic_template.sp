@@ -1,8 +1,3 @@
-.subckt tfr_2t a b
-* @: Generator(name='tfr')
-xr1 a b tfr
-.ends tfr_2t
-
 .subckt nmos_3t d g s
 * @: Generator(name='mos')
 m1 d g s s nmos
