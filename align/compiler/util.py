@@ -171,7 +171,7 @@ def create_node_id(G, node1, ports_weight=None):
     else:
         nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
         properties = [G.nodes[nbr].get("instance").model for nbr in nbrs1]
-        if node1 in ports_weight:
+        if ports_weight and node1 in ports_weight:
             properties.extend([str(p) for p in ports_weight[node1]])
         else:
             lw = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
