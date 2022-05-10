@@ -2,6 +2,7 @@ import os
 import math
 import json
 from itertools import cycle, islice
+from collections import defaultdict
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
@@ -18,15 +19,22 @@ class MOSGenerator(CanvasPDK):
         super().__init__()
 
         self.style = None
+        self.patterns = None
         self.PARTIAL_ROUTING = False
+        self.single_device_connect_m1 = True
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
                     self.style = const.parameters.get('style')
+                    self.patterns = const.parameters.get('patterns')
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
+                    self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
+
 
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
+
+        logger.info(f'patterns: {self.patterns} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
 
         if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
@@ -150,8 +158,8 @@ class MOSGenerator(CanvasPDK):
             # Alternate m2 tracks for device A and device B for improved matching
             tx_2 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
         elif self.PARTIAL_ROUTING:
-
-            track_pattern_1 = {'G': [6]}
+            if self.single_device_connect_m1:
+                track_pattern_1 = {'G': [6]}
 
         tx_1 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
 
@@ -162,7 +170,9 @@ class MOSGenerator(CanvasPDK):
 
         # Define the interleaving array (aka array logic)
         if is_dual:
-            if self.style is not None and self.style == 'RADHARD':
+            if self.patterns is not None:
+                interleave_array = self.interleave_pattern_new(self.n_row, self.n_col, patterns=self.patterns)                
+            elif self.style is not None and self.style == 'RADHARD':
                 interleave_array = self.interleave_pattern_radhard(self.n_row, self.n_col)
             else:
                 assert self.style is None, f"Unknown MOSGenerator style: '{style}'"
@@ -219,29 +229,27 @@ class MOSGenerator(CanvasPDK):
             self.route()
             self.terminals = self.removeDuplicates()
         else:
-            if not is_dual:
+            if self.single_device_connect_m1 and not is_dual:
                 self.join_wires(self.m1)
             self.join_wires(self.m2)
             self.terminals = self.removeDuplicates(silence_errors=True)
 
-            # Find connected entities and generate a unique pin name
-            def find_update_term(layer, rect, new_name):
-                for term in self.terminals:
-                    if term['layer'] == layer and term['rect'] == rect:
-                        term['netName'] = new_name
-                        term['netType'] = 'pin'
-            counters = {}
-            for net_opens in self.rd.opens:
-                net_name = net_opens[0]
-                for open_group in net_opens[1]:
-                    if net_name not in counters:
-                        counters[net_name] = 0
+            replacements = {}
+
+            counters = defaultdict(int)
+            for net_name, open_groups in self.rd.opens:
+                for open_group in open_groups:
                     counters[net_name] += 1
-                    new_name = net_name + '__' + str(counters[net_name])
+                    new_name = f'{net_name}__{counters[net_name]}'
                     assert 'partially_routed_pins' in self.metadata
                     self.metadata['partially_routed_pins'][new_name] = net_name
-                    for term in open_group:
-                        find_update_term(term[0], term[1], new_name)
+                    for layer, rect in open_group:
+                        replacements[(layer, tuple(rect))] = new_name
+
+            for term in self.terminals:
+                new_name = replacements.get((term['layer'], tuple(term['rect'])))
+                if new_name is not None:
+                    term.update({'netName': new_name, 'netType': 'pin'})
 
             # Expose pins
             self._expose_pins()
@@ -387,6 +395,22 @@ class MOSGenerator(CanvasPDK):
                     return 1, m
                 elif m % y == 0:
                     return y, m//y
+
+
+    @staticmethod
+    def interleave_pattern_new(n_row, n_col, *, patterns=["AB","BA"]):
+        """
+        (lower case means flipped around the y-axis (mirrored in x))
+            A B
+            B A
+        or
+            A a B b
+            B b A b
+        or (radhad)
+            A b B a
+            B a A b
+        """
+        return [list(islice(cycle(patterns[y%2]), n_col)) for y in range(n_row)]
 
     @staticmethod
     def interleave_pattern_radhard(n_row, n_col):
