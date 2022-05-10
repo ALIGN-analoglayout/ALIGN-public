@@ -130,7 +130,7 @@ class Order(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Order", "direction": "left_to_right"}
+        {"constraint":"Order", "instances": ['MN0', 'MN1', 'MN2'], "direction": "left_to_right"}
 
     '''
     instances: List[str]
@@ -215,7 +215,7 @@ class Align(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Align", "line": "v_center"}
+        {"constraint":"Align", "instances": ['MN0', 'MN1', 'MN2'], "line": "v_center"}
 
     '''
     instances: List[str]
@@ -285,7 +285,7 @@ class Enclose(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Enclose", "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
+        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
     '''
     instances: Optional[List[str]]
     min_height: Optional[int]
@@ -520,7 +520,6 @@ class GroupBlocks(HardConstraint):
     name: str
     instances: List[str]
     generator: Optional[dict]
-    # style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]] added as part of generator
 
     @types.validator('name', allow_reuse=True)
     def group_block_name(cls, value):
@@ -886,7 +885,7 @@ class DoNotUseLib(SoftConstraint):
         {
             "constraint": "DoNotUseLib",
             "libraries": ["DP_NMOS", "INV"],
-            "propagate": False
+            "propagate": false
         }
     '''
     libraries: List[str]
@@ -896,15 +895,17 @@ class DoNotUseLib(SoftConstraint):
 class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
+
     Args:
-        is_digital(bool): true/false
-        auto_constraint(bool): true/false
-        identify_array(bool): true/false
-        fix_source_drain(bool): true/false
-        remove_dummy_hierarchies(bool): true/false
-        remove_dummy_devices(bool): true/false
-        merge_series_devices(bool): true/false
-        merge_parallel_devices(bool): true/false
+        is_digital(bool): true/false , stops any annotation or constraint generation
+        auto_constraint(bool): true/false , stops auto-symmetry-constraint identification
+        identify_array(bool): true/false , stops array identification
+        fix_source_drain(bool): true/false , ensures (drain of NMOS/ source of PMOS) is at higher potential.
+        remove_dummy_hierarchies(bool): true/false , Removes any single instance hierarchies.
+        remove_dummy_devices(bool): true/false , Removes dummy devices in the design.
+        merge_series_devices(bool): true/false , stack series devices
+        merge_parallel_devices(bool): true/false , merge parallel devices
+        propagate(bool): true/false , propagates these constarints to lower hierarchies
 
     Example: ::
 
@@ -955,8 +956,10 @@ class Generator(SoftConstraint):
 
 class DoNotIdentify(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
-    Auto generated constraint based on all intances which are constrained
+    Stop any auto-grouping of provided instances
+    Automatically adds instances from all constraint
+
+    WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
 
@@ -970,7 +973,9 @@ class SymmetricBlocks(HardConstraint):
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
-        direction (str) : Direction for axis of symmetry.
+        direction (str) : Direction for axis of symmetry. Literal::
+
+            ['V', 'H']
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -980,7 +985,7 @@ class SymmetricBlocks(HardConstraint):
         {
             "constraint" : "SymmetricBlocks",
             "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
-            "direction" : "vertical"
+            "direction" : "V"
         }
 
     """
