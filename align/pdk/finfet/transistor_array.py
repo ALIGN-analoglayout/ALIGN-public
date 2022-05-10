@@ -18,14 +18,12 @@ class MOSGenerator(CanvasPDK):
 
         super().__init__()
 
-        self.style = None
         self.patterns = None
         self.PARTIAL_ROUTING = False
         self.single_device_connect_m1 = True
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
-                    self.style = const.parameters.get('style')
                     self.patterns = const.parameters.get('patterns')
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
                     self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
@@ -171,14 +169,11 @@ class MOSGenerator(CanvasPDK):
         # Define the interleaving array (aka array logic)
         if is_dual:
             if self.patterns is not None:
-                interleave_array = self.interleave_pattern_new(self.n_row, self.n_col, patterns=self.patterns)                
-            elif self.style is not None and self.style == 'RADHARD':
-                interleave_array = self.interleave_pattern_radhard(self.n_row, self.n_col)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=self.patterns)                
             else:
-                assert self.style is None, f"Unknown MOSGenerator style: '{style}'"
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            interleave_array = ['A'*self.n_col]*self.n_row
+            interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=["A","A"])
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
@@ -398,7 +393,7 @@ class MOSGenerator(CanvasPDK):
 
 
     @staticmethod
-    def interleave_pattern_new(n_row, n_col, *, patterns=["AB","BA"]):
+    def interleave_pattern(n_row, n_col, *, patterns=["AB","BA"]):
         """
         (lower case means flipped around the y-axis (mirrored in x))
             A B
@@ -410,24 +405,5 @@ class MOSGenerator(CanvasPDK):
             A b B a
             B a A b
         """
-        return [list(islice(cycle(patterns[y%2]), n_col)) for y in range(n_row)]
-
-    @staticmethod
-    def interleave_pattern_radhard(n_row, n_col):
-        """
-        n_col is only even (lower case means flipped around the y-axis (mirrored in x))
-            A b B a
-            B a A b
-        """
-        assert n_col >= 2
-        assert n_col % 2 == 0
-        return [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
-
-    @staticmethod
-    def interleave_pattern(n_row, n_col):
-        """
-        n_col can be even or odd
-            A B A B
-            B A B A
-        """
-        return [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
+        assert len(patterns) > 0
+        return [list(islice(cycle(patterns[y%len(patterns)]), n_col)) for y in range(n_row)]
