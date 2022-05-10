@@ -16,10 +16,10 @@ class MOSGenerator(DefaultCanvas):
         self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
-        self.shared_diff = shared_diff
+        self.shared_diff = 0
         self.stack = stack
         self.bodyswitch = bodyswitch
-        self.gateDummy = gateDummy
+        self.gateDummy = 2
         self.gate = 2*gate if self.stack ==1 else gate*self.stack
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
@@ -142,7 +142,7 @@ class MOSGenerator(DefaultCanvas):
             pass
 
         if parameters['model'] == 'NMOS':
-            if x == x_cells-1: self.addRegion( self.nselect, None, (2, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), (y+1)* self.finsPerUnitCell-6)
+            if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell-6)
         else:
             if x == x_cells-1: self.addRegion( self.pselect, None, (2, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), (y+1)* self.finsPerUnitCell-6)
 
@@ -348,13 +348,20 @@ class MOSGenerator(DefaultCanvas):
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1], **parameters)
-                elif pattern == 5: # interdigitated
+                elif pattern == 5: # Rad-Hard interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, x_cells, vt_type, names[((x % 2) + (y % 2)) % 2], x%2,  **parameters)   
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2], **parameters)
+                elif pattern == 6: # Rad-Hard CC
+                    # TODO: Evaluate if this is truly interdigitated. Currently:
+                    # A B A B A B
+                    # B A B A B A
+                    # A B A B A B
+                    self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x%2,  **parameters)   
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], **parameters)
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
