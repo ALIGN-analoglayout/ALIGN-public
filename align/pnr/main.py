@@ -402,6 +402,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                          verilog_ds_to_run=verilog_ds_to_run)
 
 
+        print(results_name_map)
+
         os.chdir(current_working_dir)
 
         for variant, (path_name, layout_idx, DB) in results_name_map.items():
@@ -418,6 +420,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                     toplevel=hN.isTop,
                                     pnr_const_ds=pnr_const_ds)
 
+            print(variant)
+
             if hN.isTop:
                 variants[variant].update(result)
 
@@ -427,5 +431,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                         assert path.exists()
                         variants[variant][tag] = path
 
+
+    print(variants)
 
     return variants

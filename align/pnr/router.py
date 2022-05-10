@@ -399,6 +399,8 @@ def router_driver(*, cap_map, cap_lef_s,
                            primitives=primitives,
                            placer_sa_iterations=10000)
 
+        print("got here")
+
         placements_to_run = None
 
         res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
