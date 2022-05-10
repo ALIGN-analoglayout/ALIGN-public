@@ -72,11 +72,6 @@ GroupBlocks
 .. autoclass:: align.schema.constraint.GroupBlocks
    :noindex:
 
-MatchBlocks
-###########
-.. autoclass:: align.schema.constraint.MatchBlocks
-   :noindex:
-
 DoNotIdentify
 ##############
 .. autoclass:: align.schema.constraint.DoNotIdentify
@@ -147,44 +142,9 @@ DoNotUseLib
 .. autoclass:: align.schema.constraint.DoNotUseLib
    :noindex:
 
-IsDigital
-#############
-.. autoclass:: align.schema.constraint.IsDigital
-   :noindex:
-
-AutoConstraint
-###############
-.. autoclass:: align.schema.constraint.AutoConstraint
-   :noindex:
-
-AutoGroupCaps
-#############
-.. autoclass:: align.schema.constraint.AutoGroupCaps
-   :noindex:
-
-FixSourceDrain
-###############
-.. autoclass:: align.schema.constraint.FixSourceDrain
-   :noindex:
-
-KeepDummyHierarchies
-#####################
-.. autoclass:: align.schema.constraint.KeepDummyHierarchies
-   :noindex:
-
-MergeSeriesDevices
-###################
-.. autoclass:: align.schema.constraint.MergeSeriesDevices
-   :noindex:
-
-MergeParallelDevices
-######################
-.. autoclass:: align.schema.constraint.MergeParallelDevices
-   :noindex:
-
 IdentifyArray
 ###################
-.. autoclass:: align.schema.constraint.IdentifyArray
+.. autoclass:: align.schema.constraint.ConfigureCompiler
    :noindex:
 
 Example constraints

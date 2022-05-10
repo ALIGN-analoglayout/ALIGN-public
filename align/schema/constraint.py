@@ -520,7 +520,6 @@ class GroupBlocks(HardConstraint):
     name: str
     instances: List[str]
     generator: Optional[dict]
-    # style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]] added as part of generator
 
     @types.validator('name', allow_reuse=True)
     def group_block_name(cls, value):
@@ -897,14 +896,14 @@ class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
     Args:
-        is_digital(bool): true/false
-        auto_constraint(bool): true/false
-        identify_array(bool): true/false
-        fix_source_drain(bool): true/false
-        remove_dummy_hierarchies(bool): true/false
-        remove_dummy_devices(bool): true/false
-        merge_series_devices(bool): true/false
-        merge_parallel_devices(bool): true/false
+        is_digital(bool): true/false , stops any annotation or constraint generation
+        auto_constraint(bool): true/false , stops auto-symmetry-constraint identification
+        identify_array(bool): true/false , stops array identification
+        fix_source_drain(bool): true/false , ensures (drain of NMOS/ source of PMOS) is at higher potential.
+        remove_dummy_hierarchies(bool): true/false , Removes any single instance hierarchies.
+        remove_dummy_devices(bool): true/false , Removes dummy devices in the design.
+        merge_series_devices(bool): true/false , stack series devices
+        merge_parallel_devices(bool): true/false , merge parallel devices
 
     Example: ::
 
@@ -955,8 +954,10 @@ class Generator(SoftConstraint):
 
 class DoNotIdentify(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
-    Auto generated constraint based on all intances which are constrained
+    Stop any auto-grouping of provided instances
+    Automatically adds instances from all constraint
+
+    WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
 

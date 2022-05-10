@@ -110,7 +110,7 @@ Then in a python shell:
 
 To run tests similar to the checkin and merge-to-master CI runs run:
 
-.. code-block:: python
+.. code-block:: bash
 
     cd $ALIGN_HOME
     # Checkin
