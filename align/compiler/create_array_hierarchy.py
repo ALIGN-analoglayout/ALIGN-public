@@ -240,7 +240,7 @@ class process_arrays:
             all_inst = set(all_inst) - repeated_elements
             array_2D = [list(set(array_1D) - repeated_elements) for array_1D in array_2D]
             sub_hier_elements.update(all_inst)
-            if len(all_inst) <= 1:
+            if len(all_inst) <= 2:
                 logger.debug(f"not enough elements to create a hierarchy")
                 continue
             new_array_hier_name = "ARRAY_HIER_" + key
