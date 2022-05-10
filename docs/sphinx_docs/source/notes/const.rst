@@ -142,7 +142,7 @@ DoNotUseLib
 .. autoclass:: align.schema.constraint.DoNotUseLib
    :noindex:
 
-IdentifyArray
+ConfigureCompiler
 ###################
 .. autoclass:: align.schema.constraint.ConfigureCompiler
    :noindex:

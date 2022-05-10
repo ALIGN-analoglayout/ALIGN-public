@@ -885,7 +885,7 @@ class DoNotUseLib(SoftConstraint):
         {
             "constraint": "DoNotUseLib",
             "libraries": ["DP_NMOS", "INV"],
-            "propagate": False
+            "propagate": false
         }
     '''
     libraries: List[str]
@@ -895,6 +895,7 @@ class DoNotUseLib(SoftConstraint):
 class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
+
     Args:
         is_digital(bool): true/false , stops any annotation or constraint generation
         auto_constraint(bool): true/false , stops auto-symmetry-constraint identification
@@ -904,6 +905,7 @@ class ConfigureCompiler(SoftConstraint):
         remove_dummy_devices(bool): true/false , Removes dummy devices in the design.
         merge_series_devices(bool): true/false , stack series devices
         merge_parallel_devices(bool): true/false , merge parallel devices
+        propagate(bool): true/false , propagates these constarints to lower hierarchies
 
     Example: ::
 
