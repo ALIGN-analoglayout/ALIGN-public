@@ -314,7 +314,7 @@ def test_charge_pump_switch():
 
 def test_charge_pump_switch_four():
     name = f'ckt_{get_test_id()}'
-    netlist = circuits.charge_pump_switch_four(name, size=8)
+    netlist = circuits.charge_pump_switch_four(name, size=4)
     constraints = {
         name: [
             {"constraint": "PowerPorts", "ports": ["vccx"]},
@@ -337,7 +337,7 @@ def test_charge_pump_switch_four():
 
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
         constraints = set([c["constraint"] for c in module["constraints"]])
-        assert "symmetric_nets" not in constraints, f'{module["name"]}'
+        assert "symmetric_nets" not in constraints, f'{module["name"]} const {module["constraints"]}'
         assert "symmetric_blocks" not in constraints, f'{module["name"]}'
 
     # if CLEANUP:

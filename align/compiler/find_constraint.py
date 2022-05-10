@@ -72,9 +72,12 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             match_pair[node1] = node2
         logger.debug(f"no new neighbours, returning recursion {match_pair}")
         return
-    elif len(nbrs1) > 10:  # TODO remove hack
+    elif len(nbrs1) > 2:
         assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
-        match_pair["array_start_point"] = [node1, node2]
+        # match_pair["array_start_point"] = [node1, node2]
+        array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+        array_hier.add_align_block_const()
+        array_hier.add_new_array_hier()
         logger.debug(f"high fanout nets are start point for arrays: (net, neighbors){node1, nbrs1}")
         traversed.add(node1)
         return
@@ -175,7 +178,10 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1] = node2
             assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
-            match_pair["array_start_point"] = [node1, node2]
+            # match_pair["array_start_point"] = [node1, node2]
+            array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+            array_hier.add_align_block_const()
+            array_hier.add_new_array_hier()
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
@@ -266,9 +272,9 @@ def FindConst(subckt):
     match_pairs = FindSymmetry(subckt, stop_points)
     logger.debug(f"match pairs {match_pairs}")
     # Generate hiearchies based on array identification
-    array_hier = process_arrays(subckt, match_pairs)
-    array_hier.add_align_block_const()
-    array_hier.add_new_array_hier()
+    # array_hier = process_arrays(subckt, match_pairs)
+    # array_hier.add_align_block_const()
+    # array_hier.add_new_array_hier()
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
     # Add symmetry constraints
     skip_const = written_symmblocks.copy()

@@ -7,7 +7,6 @@ Created on Wed July 08 13:12:15 2020
 
 from align.schema.graph import Graph
 from collections import Counter
-from itertools import combinations
 from align.schema import SubCircuit, Instance
 from .util import create_node_id, reduced_SD_neighbors
 from ..schema.types import set_context
