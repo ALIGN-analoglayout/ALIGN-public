@@ -87,9 +87,9 @@ class ResGenerator(DefaultCanvas):
                 grid_yh = ((i+1)%2)*last_y1_track
                 self.addWire( self.m1res2, None, grid_yh, (i, -1), (i+p+1, 1))
 
-        #
-        # Build the narrow m2 pitch grid starting at grid_cell_y_pitch*y in standard m2 pitch grids (m2.clg)
-        #
+#
+# Build the narrow m2 pitch grid starting at grid_cell_y_pitch*y in standard m2 pitch grids (m2.clg)
+#
         m2n = Wire( self.m2res2.nm, self.m2res2.layer, self.m2res2.direction,
                     clg=self.m2res2.clg.copyShift( self.m2res.clg.value( grid_cell_y_pitch*y)[0]),
                     spg=self.m2res2.spg)
@@ -98,9 +98,11 @@ class ResGenerator(DefaultCanvas):
         grid_x1 = grid_x0 + last_x_track
         grid_y = (x_number%2)*last_y1_track
 
-        self.addWire(m2n, 'PLUS', 0, (-4, -1), (0, 3), netType='pin')
+        pin = 'PLUS'
+        self.addWire( m2n, 'PLUS', 0, (-4, -1), (0, 1), netType = 'pin')
         self.addVia( self.v1res, None, 0, 0)
-        self.addWire(self.m2res, 'MINUS', grid_y, (grid_x1+p-1, 1), (grid_x1+p+4, 1), netType='pin')
+        pin = 'MINUS'
+        self.addWire( self.m2res, 'MINUS', grid_y, (grid_x1+p, -1), (grid_x1+p+4, 1), netType = 'pin')
         self.addVia( self.v1res, None, grid_x1+p, grid_y)
 
         if draw_boundary:
