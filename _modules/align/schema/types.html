@@ -70,7 +70,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
@@ -85,14 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
@@ -259,13 +251,17 @@
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">_ctx</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
 
-
-<span class="k">def</span> <span class="nf">set_parent</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">)):</span>
-        <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">_parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">item</span><span class="o">.</span><span class="n">_parent</span> <span class="o">==</span> <span class="n">parent</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Trying to reset parent for </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s1"> from </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">_parent</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="n">item</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
-
-
+<span class="k">def</span> <span class="nf">cast_to_solver</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s1">&#39;translate&#39;</span><span class="p">):</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s1">.translate() did not return a valid generator&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">solver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">formulae</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">formulae</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s1">.translate() yielded an empty list of expressions&#39;</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">solver</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">formulae</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+    
 <div class="viewcode-block" id="BaseModel"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.types.BaseModel">[docs]</a><span class="k">class</span> <span class="nc">BaseModel</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
 
     <span class="nd">@property</span>
@@ -333,6 +329,7 @@
 
     <span class="n">_commits</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">()</span>
     <span class="n">_parent</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">()</span>
+    <span class="n">_cache</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -389,6 +386,7 @@
         <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_gen_commit_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nchar</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
         <span class="n">id_</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span>
@@ -410,11 +408,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commits</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_revert</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">revert</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">revert</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="List.translate"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.types.List.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">cast_to_solver</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">solver</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="Dict"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.types.Dict">[docs]</a><span class="k">class</span> <span class="nc">Dict</span><span class="p">(</span><span class="n">pydantic</span><span class="o">.</span><span class="n">generics</span><span class="o">.</span><span class="n">GenericModel</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Generic</span><span class="p">[</span><span class="n">KeyT</span><span class="p">,</span> <span class="n">DataT</span><span class="p">]):</span>
-    <span class="n">__root__</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="n">KeyT</span><span class="p">,</span> <span class="n">DataT</span><span class="p">]</span>
+    <span class="n">__root__</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="n">KeyT</span><span class="p">,</span> <span class="n">DataT</span><span class="p">]</span>
 
     <span class="n">_parent</span> <span class="o">=</span> <span class="n">pydantic</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">()</span>
 
@@ -458,7 +460,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span> <span class="o">==</span> <span class="n">other</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
@@ -468,7 +473,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

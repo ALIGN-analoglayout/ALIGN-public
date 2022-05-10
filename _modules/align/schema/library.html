@@ -70,7 +70,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
@@ -85,14 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
@@ -211,93 +203,115 @@
            <div itemprop="articleBody">
              
   <h1>Source code for align.schema.library</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">.subcircuit</span> <span class="kn">import</span> <span class="n">SubCircuit</span>
-<span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">set_context</span>
-
-<span class="n">libraries</span> <span class="o">=</span> <span class="p">{}</span>
 
 
 <div class="viewcode-block" id="Library"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.library.Library">[docs]</a><span class="k">class</span> <span class="nc">Library</span><span class="p">(</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Model</span><span class="p">,</span> <span class="n">SubCircuit</span><span class="p">]]):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loadbuiltins</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">libraries</span>
-            <span class="n">libraries</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loadbuiltins</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pdk_models</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">loadbuiltins</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">libraries</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">])</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">pdk_models</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="n">pdk_models</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">loadbuiltins</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_models</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">models</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Library.find"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.library.Library.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">((</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()),</span> <span class="kc">None</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">((</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()),</span> <span class="kc">None</span><span class="p">)</span></div>
 
-<span class="c1">#</span>
-<span class="c1"># Create default library</span>
-<span class="c1">#</span>
+<div class="viewcode-block" id="Library.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.library.Library.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Duplicate model/subcircuit name </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> New: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s1">, Existing: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
 
-
-<span class="n">default</span> <span class="o">=</span> <span class="n">Library</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">)</span>
-
-
-<span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">default</span><span class="p">):</span>
-    <span class="n">default</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Model</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;NMOS&#39;</span><span class="p">,</span>
-            <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;W&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s1">&#39;NFIN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;M&#39;</span>
+<div class="viewcode-block" id="Library.default_models"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.library.Library.default_models">[docs]</a>    <span class="k">def</span> <span class="nf">default_models</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Model</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;NMOS&#39;</span><span class="p">,</span>
+                <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;W&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;NFIN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;NF&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s1">&#39;M&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;PARALLEL&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Internal attribute used for parallel and stacked devices</span>
+                    <span class="s1">&#39;STACK&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="p">)</span>
         <span class="p">)</span>
-    <span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Model</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;PMOS&#39;</span><span class="p">,</span>
+                <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;W&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;NFIN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;NF&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s1">&#39;M&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;PARALLEL&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># Internal attribute used for parallel and stacked devices</span>
+                    <span class="s1">&#39;STACK&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Model</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;CAP&#39;</span><span class="p">,</span>
+                <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;PARALLEL&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;STACK&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">},</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;C&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Model</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RES&#39;</span><span class="p">,</span>
+                <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;PARALLEL&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;STACK&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">},</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;R&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Model</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;IND&#39;</span><span class="p">,</span>
+                <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
+                <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s1">&#39;PARALLEL&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s1">&#39;STACK&#39;</span><span class="p">:</span> <span class="mi">1</span>
+                <span class="p">},</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;L&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">models</span></div></div>
 
-    <span class="n">default</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Model</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;PMOS&#39;</span><span class="p">,</span>
-            <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;W&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s1">&#39;NFIN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;M&#39;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
 
-    <span class="n">default</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Model</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;CAP&#39;</span><span class="p">,</span>
-            <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span>
-            <span class="p">},</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;C&#39;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="n">default</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Model</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RES&#39;</span><span class="p">,</span>
-            <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span>
-            <span class="p">},</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;R&#39;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">default</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Model</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;IND&#39;</span><span class="p">,</span>
-            <span class="n">pins</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">],</span>
-            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;VALUE&#39;</span><span class="p">:</span> <span class="mi">0</span>
-            <span class="p">},</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;L&#39;</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+<div class="viewcode-block" id="read_lib_json"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.library.read_lib_json">[docs]</a><span class="k">def</span> <span class="nf">read_lib_json</span><span class="p">(</span><span class="n">json_file_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">library</span> <span class="o">=</span> <span class="n">Library</span><span class="p">(</span><span class="n">loadbuiltins</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="n">library</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;generator&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SubCircuit</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">}))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">library</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Model</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span><span class="o">==</span><span class="s1">&#39;base&#39;</span><span class="p">}))</span>
+    <span class="k">return</span> <span class="n">library</span></div>
 </pre></div>
 
            </div>
@@ -307,7 +321,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

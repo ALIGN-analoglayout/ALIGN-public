@@ -70,7 +70,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
@@ -85,14 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
@@ -221,10 +213,17 @@
 <span class="sd">      structures with SubCircuit, Instance etc.</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
+<span class="kn">import</span> <span class="nn">itertools</span>
+
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">.types</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">set_context</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">.constraint</span> <span class="kn">import</span> <span class="n">ConstraintDB</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">checker</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">types</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DictEmulator"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.DictEmulator">[docs]</a><span class="k">class</span> <span class="nc">DictEmulator</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 
@@ -245,23 +244,6 @@
         <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HierDictNode"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.HierDictNode">[docs]</a><span class="k">class</span> <span class="nc">HierDictNode</span><span class="p">(</span><span class="n">DictEmulator</span><span class="p">):</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">graph</span><span class="p">:</span> <span class="n">Any</span>
-    <span class="n">ports</span><span class="p">:</span> <span class="n">List</span>
-    <span class="n">constraints</span><span class="p">:</span> <span class="n">ConstraintDB</span>
-    <span class="n">ports_weight</span><span class="p">:</span> <span class="n">Dict</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="s1">&#39;constraints&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">constraints</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="FormalActualMap"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.FormalActualMap">[docs]</a><span class="k">class</span> <span class="nc">FormalActualMap</span><span class="p">(</span><span class="n">DictEmulator</span><span class="p">):</span>
     <span class="n">formal</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">actual</span><span class="p">:</span> <span class="nb">str</span></div>
@@ -269,7 +251,16 @@
 
 <div class="viewcode-block" id="VerilogJsonInstance"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonInstance">[docs]</a><span class="k">class</span> <span class="nc">VerilogJsonInstance</span><span class="p">(</span><span class="n">DictEmulator</span><span class="p">):</span>
     <span class="n">instance_name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">fa_map</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FormalActualMap</span><span class="p">]</span></div>
+    <span class="n">fa_map</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">FormalActualMap</span><span class="p">]</span>
+
+<div class="viewcode-block" id="VerilogJsonInstance.translate"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonInstance.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Bounding boxes must have non-zero</span>
+<span class="sd">        height &amp; width</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance_name</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">llx</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">urx</span>
+        <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">lly</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">ury</span></div></div>
 
 
 <div class="viewcode-block" id="VerilogJsonModule"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonModule">[docs]</a><span class="k">class</span> <span class="nc">VerilogJsonModule</span><span class="p">(</span><span class="n">DictEmulator</span><span class="p">):</span>
@@ -285,7 +276,56 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">set_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VerilogJsonModule.translate"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonModule.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+        <span class="c1"># Initialize subcircuit bounding box</span>
+        <span class="n">bb</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="s1">&#39;subcircuit&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span> <span class="o">&lt;</span> <span class="n">bb</span><span class="o">.</span><span class="n">urx</span>
+        <span class="k">yield</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span> <span class="o">&lt;</span> <span class="n">bb</span><span class="o">.</span><span class="n">ury</span>
+        <span class="c1"># Initialize element bounding boxes</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+        <span class="n">bvars</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">iter_bbox_vars</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">instance_name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">])</span>
+        <span class="c1"># Elements must be within subckt bbox</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bvars</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">llx</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">lly</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">urx</span>
+            <span class="k">yield</span> <span class="n">b</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">bb</span><span class="o">.</span><span class="n">ury</span>
+        <span class="c1"># Elements may not overlap with each other</span>
+        <span class="k">for</span> <span class="n">b1</span><span class="p">,</span> <span class="n">b2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">bvars</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">solver</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
+                <span class="n">b1</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span>
+                <span class="n">b2</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span>
+                <span class="n">b1</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span>
+                <span class="n">b2</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b1</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># Load constraints</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VerilogJsonModule.verify"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonModule.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">constraint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">Z3Checker</span><span class="p">()</span>
+            <span class="n">formulae</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Incremental verification is not possible as solver hasn&#39;t been instantiated yet&quot;</span>
+            <span class="n">formulae</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">cast_to_solver</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">formulae</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">checker</span><span class="o">.</span><span class="n">SolutionNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Checker raised error:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">core</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">json</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="p">[</span><span class="n">constraint</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checker</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Solution not found due to conflict between:&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">core</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="c1"># checker.SolutionNotFoundError(message=e.message, labels=e.labels)</span></div>
+
+    <span class="c1">#</span>
+    <span class="c1"># Private attribute affecting class behavior</span>
+    <span class="c1">#</span>
+    <span class="n">_checker</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">PrivateAttr</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="VerilogJsonTop"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.hacks.VerilogJsonTop">[docs]</a><span class="k">class</span> <span class="nc">VerilogJsonTop</span><span class="p">(</span><span class="n">DictEmulator</span><span class="p">):</span>
@@ -300,7 +340,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

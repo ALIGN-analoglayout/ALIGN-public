@@ -70,7 +70,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
@@ -85,14 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
@@ -211,23 +203,22 @@
            <div itemprop="articleBody">
              
   <h1>Source code for align.schema.checker</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span></span><span class="kn">import</span> <span class="nn">z3</span>
+<span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">z3</span>
-
-<div class="viewcode-block" id="CheckerError"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.CheckerError">[docs]</a><span class="k">class</span> <span class="nc">CheckerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="SolutionNotFoundError"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.SolutionNotFoundError">[docs]</a><span class="k">class</span> <span class="nc">SolutionNotFoundError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="AbstractChecker"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker">[docs]</a><span class="k">class</span> <span class="nc">AbstractChecker</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-<div class="viewcode-block" id="AbstractChecker.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.append">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver">[docs]</a><span class="k">class</span> <span class="nc">AbstractSolver</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSolver.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.append">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Append formula to checker.</span>
@@ -238,15 +229,39 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.label"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.label">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.solve"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.solve">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Solve &amp; return solutions</span>
+
+<span class="sd">        If no solution is found, raise SolutionNotFoundError</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbstractSolver.label"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.label">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Generate label that can be used for </span>
 <span class="sd">        back-annotation</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.checkpoint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.checkpoint">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<span class="sd">        Note: Return None if solver</span>
+<span class="sd">              doesn&#39;t support back-annotation</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbstractSolver.annotate"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.annotate">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formulae</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Yield formulae annotated with label      </span>
+
+<span class="sd">        Note: Input &#39;formulae&#39; is iterable.</span>
+<span class="sd">        Note: MUST return an iterable object</span>
+<span class="sd">        Note: Return original iterable if solver</span>
+<span class="sd">              doesn&#39;t support back-annotation</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbstractSolver.checkpoint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.checkpoint">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Checkpoint current state of solver</span>
@@ -257,7 +272,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.revert"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.revert">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.revert"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.revert">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">revert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Revert to last checkpoint</span>
@@ -268,7 +283,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.bbox_vars">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.bbox_vars">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Generate a single namedtuple containing</span>
@@ -277,7 +292,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.iter_bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.iter_bbox_vars">[docs]</a>    <span class="k">def</span> <span class="nf">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSolver.iter_bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.iter_bbox_vars">[docs]</a>    <span class="k">def</span> <span class="nf">iter_bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Helper utility to generate multiple bbox variables</span>
 
@@ -287,7 +302,7 @@
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_vars</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.And"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.And">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.And"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.And">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">And</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">expressions</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Logical `And` of all arguments</span>
@@ -297,7 +312,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.Or"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.Or">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.Or"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.Or">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">Or</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">expressions</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Logical `Or` of all arguments</span>
@@ -307,7 +322,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.Not"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.Not">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.Not"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.Not">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">Not</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Logical `Not` of argument</span>
@@ -317,7 +332,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.Implies"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.Implies">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.Implies"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.Implies">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">Implies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr1</span><span class="p">,</span> <span class="n">expr2</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        expr1 =&gt; expr2</span>
@@ -327,7 +342,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.cast"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.cast">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.cast"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.cast">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">cast</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        cast `expr` to `type_`</span>
@@ -337,7 +352,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbstractChecker.Abs"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractChecker.Abs">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="AbstractSolver.Abs"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.AbstractSolver.Abs">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">Abs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Absolute value of expression</span>
@@ -347,35 +362,35 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">pass</span></div></div>
 
+<span class="n">AnnotatedFormula</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;AnnotatedFormula&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Z3Checker"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker">[docs]</a><span class="k">class</span> <span class="nc">Z3Checker</span><span class="p">(</span><span class="n">AbstractChecker</span><span class="p">):</span>
+<div class="viewcode-block" id="Z3Checker"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker">[docs]</a><span class="k">class</span> <span class="nc">Z3Checker</span><span class="p">(</span><span class="n">AbstractSolver</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_cache</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_cache</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_subcircuit</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">Solver</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">unsat_core</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Z3Checker.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">assert_and_track</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+<div class="viewcode-block" id="Z3Checker.annotate"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.annotate">[docs]</a>    <span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formulae</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">AnnotatedFormula</span><span class="p">(</span>
+        <span class="n">formula</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">And</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">formulae</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">formulae</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">formulae</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Z3Checker.append"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formula</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="n">AnnotatedFormula</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">assert_and_track</span><span class="p">(</span><span class="n">formula</span><span class="o">.</span><span class="n">formula</span><span class="p">,</span> <span class="n">formula</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Z3Checker.solve"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">unsat</span><span class="p">:</span>
             <span class="n">z3</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">max_args</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_lines</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsat encountered: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">CheckerError</span><span class="p">(</span>
-                <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Trying to add </span><span class="si">{</span><span class="n">formula</span><span class="si">}</span><span class="s1"> resulted in unsat&#39;</span><span class="p">,</span>
+            <span class="k">raise</span> <span class="n">SolutionNotFoundError</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="s1">&#39;No satisfying solution could be found. Please review constraints.&#39;</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">unsat_core</span><span class="p">())</span></div>
-
-<div class="viewcode-block" id="Z3Checker.label"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.label">[docs]</a>    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
-        <span class="c1"># Z3 throws &#39;index out of bounds&#39; error</span>
-        <span class="c1"># if more than 9 digits are used</span>
-        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span>
-            <span class="nb">hash</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="nb">object</span><span class="p">))</span> <span class="o">%</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>
-        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Z3Checker.checkpoint"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">push</span><span class="p">()</span></div>
@@ -383,36 +398,21 @@
 <div class="viewcode-block" id="Z3Checker.revert"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.revert">[docs]</a>    <span class="k">def</span> <span class="nf">revert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Z3Checker.bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.bbox_vars">[docs]</a>    <span class="k">def</span> <span class="nf">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">is_subcircuit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="c1"># bbox was previously generated</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_cache</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+<div class="viewcode-block" id="Z3Checker.bbox_vars"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.bbox_vars">[docs]</a>    <span class="k">def</span> <span class="nf">bbox_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="c1"># generate new bbox</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_var</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_var</span><span class="p">(</span>
             <span class="s1">&#39;Bbox&#39;</span><span class="p">,</span>
             <span class="n">llx</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_llx&#39;</span><span class="p">,</span>
             <span class="n">lly</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_lly&#39;</span><span class="p">,</span>
             <span class="n">urx</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_urx&#39;</span><span class="p">,</span>
-            <span class="n">ury</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_ury&#39;</span><span class="p">)</span>
-        <span class="c1"># width / height cannot be 0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">llx</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">urx</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">lly</span> <span class="o">&lt;</span> <span class="n">b</span><span class="o">.</span><span class="n">ury</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">is_subcircuit</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_subcircuit</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Do not overlap with other instance bboxes</span>
-            <span class="k">for</span> <span class="n">k2</span><span class="p">,</span> <span class="n">b2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_cache</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">k2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_subcircuit</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span>
-                            <span class="n">b</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span>
-                            <span class="n">b2</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span>
-                            <span class="n">b</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b2</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span>
-                            <span class="n">b2</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_cache</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
-        <span class="k">return</span> <span class="n">b</span></div>
+            <span class="n">ury</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_ury&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Z3Checker.label"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.label">[docs]</a>    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+        <span class="c1"># Z3 throws &#39;index out of bounds&#39; error</span>
+        <span class="c1"># if more than 9 digits are used</span>
+        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span>
+            <span class="nb">hash</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="nb">object</span><span class="p">))</span> <span class="o">%</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Z3Checker.Or"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.checker.Z3Checker.Or">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">Or</span><span class="p">(</span><span class="o">*</span><span class="n">expressions</span><span class="p">):</span>
@@ -459,7 +459,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -72,7 +72,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#horizontaldistance">HorizontalDistance</a></li>
@@ -87,14 +86,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#example-constraints">Example constraints</a></li>
@@ -227,15 +219,18 @@ These constraints need to be defined seperately for each of the hierachies with 
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">SymmetricBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pairs</span><span class="p">:</span> <span class="n">align.schema.constraint.List<span class="p">[</span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">direction</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>H<span class="p">, </span>V<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#SymmetricBlocks"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Defines a symmetry constraint between pair of blocks.</p>
+<dd><p>Defines a symmetry constraint between single and/or pairs of blocks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pairs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em><em>]</em>) – List of pair of instances.
 A pair can have one <code class="xref py py-obj docutils literal notranslate"><span class="pre">instance</span></code> or two instances,
 where single instance implies self-symmetry</p></li>
-<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Direction for axis of symmetry.</p></li>
-<li><p><strong>mirrot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/ False, Mirror instances along line of symmetry</p></li>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Direction for axis of symmetry. Literal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</p></li>
 </ul>
 </dd>
 </dl>
@@ -243,8 +238,8 @@ where single instance implies self-symmetry</p></li>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;constraint&quot;</span> <span class="p">:</span> <span class="s2">&quot;SymmetricBlocks&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;pairs&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span><span class="s2">&quot;MN1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;MN2&quot;</span><span class="p">,</span><span class="s2">&quot;MN3&quot;</span><span class="p">],[</span><span class="s2">&quot;MN4&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s2">&quot;vertical&quot;</span>
+    <span class="s2">&quot;pairs&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span><span class="s2">&quot;MN1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;MN2&quot;</span><span class="p">,</span><span class="s2">&quot;MN3&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;MN4&quot;</span><span class="p">]],</span>
+    <span class="s2">&quot;direction&quot;</span> <span class="p">:</span> <span class="s2">&quot;V&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -261,8 +256,8 @@ where single instance implies self-symmetry</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.Order.instances" title="align.schema.constraint.Order.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
-<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The following options for direction are supported
-<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code>, placement order is left to right or vice-versa.</p>
+<li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The following options for direction are supported</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code>, placement order is left to right or vice-versa.</p>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code>,  placement order is bottom to top or vice-versa.</p>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'left_to_right'</span></code>, placement order is left to right.</p>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'right_to_left'</span></code>, placement order is right to left.</p>
@@ -270,7 +265,7 @@ where single instance implies self-symmetry</p></li>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">'top_to_bottom'</span></code>, placement order is top to bottom.</p>
 <p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>: default (<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code>)</p>
 </p></li>
-<li><p><strong>abut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – If <cite>abut</cite> is <cite>True</cite> adjoining instances will touch</p></li>
+<li><p><strong>abut</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – If <cite>abut</cite> is <cite>true</cite> adjoining instances will touch</p></li>
 </ul>
 </dd>
 </dl>
@@ -278,7 +273,7 @@ where single instance implies self-symmetry</p></li>
 <p>WARNING: <cite>Order</cite> does not imply aligment / overlap
 of any sort (See <cite>Align</cite>)</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Order&quot;</span><span class="p">,</span> <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;left_to_right&quot;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Order&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span> <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;left_to_right&quot;</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -313,7 +308,7 @@ strict or relaxed depending on value of <cite>line</cite></p>
 <p>WARNING: <cite>Align</cite> does not imply ordering of any sort
 (See <cite>Order</cite>)</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Align&quot;</span><span class="p">,</span> <span class="s2">&quot;line&quot;</span><span class="p">:</span> <span class="s2">&quot;v_center&quot;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Align&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span> <span class="s2">&quot;line&quot;</span><span class="p">:</span> <span class="s2">&quot;v_center&quot;</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -343,7 +338,7 @@ with <cite>min_</cite> &amp; <cite>max_</cite> bounds</p>
 makes it a valid constraint but you may wish to
 specify more than one for practical purposes</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Enclose&quot;</span><span class="p">,</span> <span class="s2">&quot;min_aspect_ratio&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;max_aspect_ratio&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;Enclose&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span> <span class="s2">&quot;min_aspect_ratio&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;max_aspect_ratio&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -362,14 +357,19 @@ specify more than one for practical purposes</p>
 <li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <cite>instances</cite></p></li>
 <li><p><strong>direction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Direction for placement spread.
 (<code class="xref py py-obj docutils literal notranslate"><span class="pre">'horizontal'</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">'vertical'</span></code> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
-<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance in nm</p></li>
+<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Distance in nanometer</p></li>
 </ul>
 </dd>
 </dl>
 <p>WARNING: This constraint checks for overlap but
 doesn’t enforce it (See <cite>Align</cite>)</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;Spread&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span> <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">horizontal</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">100</span> <span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;Spread&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MN0&#39;</span><span class="p">,</span> <span class="s1">&#39;MN1&#39;</span><span class="p">,</span> <span class="s1">&#39;MN2&#39;</span><span class="p">],</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">horizontal</span><span class="p">,</span>
+    <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mi">100</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -535,7 +535,7 @@ alias later while defining constraints</p>
 <h3>GroupBlocks<a class="headerlink" href="#groupblocks" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">Literal<span class="p">[</span>tbd_interdigitated<span class="p">, </span>tbd_common_centroid<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupBlocks"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">GroupBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">generator</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#GroupBlocks"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Forces a hierarchy creation for group of instances.
 This brings the instances closer.
 This reduces the problem statement for placer thus providing
@@ -545,26 +545,24 @@ better solutions.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>instances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroupBlocks.instances" title="align.schema.constraint.GroupBlocks.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – alias for the list of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.GroupBlocks.instances" title="align.schema.constraint.GroupBlocks.instances"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instances</span></code></a></p></li>
+<li><p><strong>generator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – adds a generator constraint to the created groupblock, look into the generator constraint for more options</p></li>
 </ul>
 </dd>
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;constraint&quot;</span><span class="p">:</span><span class="s2">&quot;GroupBlocks&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;group1&quot;</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;group1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;instances&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;MN0&quot;</span><span class="p">,</span> <span class="s2">&quot;MN1&quot;</span><span class="p">,</span> <span class="s2">&quot;MN3&quot;</span><span class="p">]</span>
+    <span class="s2">&quot;generator&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="s1">&#39;MOS&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;parameters&#39;</span><span class="p">:</span>
+                    <span class="p">{</span>
+                    <span class="s2">&quot;pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-</dd></dl>
-
-</div>
-<div class="section" id="matchblocks">
-<h3>MatchBlocks<a class="headerlink" href="#matchblocks" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MatchBlocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MatchBlocks"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>TODO: Can be replicated by Enclose??</p>
 </dd></dl>
 
 </div>
@@ -573,8 +571,9 @@ better solutions.</p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotIdentify</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">instances</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotIdentify"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>TODO: Can be replicated by Enclose??
-Auto generated constraint based on all intances which are constrained</p>
+<dd><p>Stop any auto-grouping of provided instances
+Automatically adds instances from all constraint</p>
+<p>WARNING: user-defined <cite>groupblock</cite>/<cite>groupcap</cite> constraint will ignore this constraint</p>
 </dd></dl>
 
 </div>
@@ -705,7 +704,7 @@ dummy (bool):  Whether to fill in dummies or not</p>
     <span class="s2">&quot;name&quot;</span> <span class="p">:</span> <span class="s2">&quot;cap_group1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;instances&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">],</span>
     <span class="s2">&quot;num_units&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
-    <span class="s2">&quot;dummy&quot;</span> <span class="p">:</span> <span class="kc">True</span>
+    <span class="s2">&quot;dummy&quot;</span> <span class="p">:</span> <span class="n">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -838,7 +837,7 @@ Electro-migration (EM) violations</p>
 <dl class="py class">
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">PowerPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#PowerPorts"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Defines power port for each hieararchy</p>
+<dd><p>Defines power ports for each hieararchy</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.PowerPorts.ports" title="align.schema.constraint.PowerPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.
@@ -888,13 +887,10 @@ by identifying the terminal at higher potential.</p>
 <em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">ClockPorts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">ports</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#ClockPorts"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Clock port for each hieararchy. These are used as stop-points
 during auto-constraint identification, means no constraint search
-will be done beyond the nets connected to these ports</p>
+will be done beyond the nets connected to these ports.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.ClockPorts.ports" title="align.schema.constraint.ClockPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.
-The first port of top hierarchy will be used for ground grid creation.
-Power ports are used to identify source and drain of transistors
-by identifying the terminal at higher potential.</p>
+<dd class="field-odd"><p><strong>ports</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – List of <a class="reference internal" href="../modules/align.schema.html#align.schema.constraint.ClockPorts.ports" title="align.schema.constraint.ClockPorts.ports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ports</span></code></a>.</p>
 </dd>
 </dl>
 <p>Example:</p>
@@ -911,7 +907,7 @@ by identifying the terminal at higher potential.</p>
 <h3>DoNotUseLib<a class="headerlink" href="#donotuselib" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotUseLib</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">libraries</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotUseLib"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">DoNotUseLib</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">libraries</span><span class="p">:</span> <span class="n">align.schema.model.List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#DoNotUseLib"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Primitive libraries which should not be used during hierarchy annotation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -925,213 +921,40 @@ by identifying the terminal at higher potential.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;DoNotUseLib&quot;</span><span class="p">,</span>
     <span class="s2">&quot;libraries&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;DP_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;INV&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="n">false</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
 
 </div>
-<div class="section" id="isdigital">
-<h3>IsDigital<a class="headerlink" href="#isdigital" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="configurecompiler">
+<h3>ConfigureCompiler<a class="headerlink" href="#configurecompiler" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IsDigital</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IsDigital"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Place this hierarchy as a digital hierarchy
-Forbids any preprocessing, auto-annotation,
-array-identification or auto-constraint generation</p>
+<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">ConfigureCompiler</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">is_digital</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">auto_constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">identify_array</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">fix_source_drain</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">remove_dummy_hierarchies</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">remove_dummy_devices</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">merge_series_devices</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">merge_parallel_devices</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#ConfigureCompiler"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Compiler default optimization flags</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
+<li><p><strong>is_digital</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , stops any annotation or constraint generation</p></li>
+<li><p><strong>auto_constraint</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , stops auto-symmetry-constraint identification</p></li>
+<li><p><strong>identify_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , stops array identification</p></li>
+<li><p><strong>fix_source_drain</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , ensures (drain of NMOS/ source of PMOS) is at higher potential.</p></li>
+<li><p><strong>remove_dummy_hierarchies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , Removes any single instance hierarchies.</p></li>
+<li><p><strong>remove_dummy_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , Removes dummy devices in the design.</p></li>
+<li><p><strong>merge_series_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , stack series devices</p></li>
+<li><p><strong>merge_parallel_devices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , merge parallel devices</p></li>
+<li><p><strong>propagate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – true/false , propagates these constarints to lower hierarchies</p></li>
 </ul>
 </dd>
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;IsDigital&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="autoconstraint">
-<h3>AutoConstraint<a class="headerlink" href="#autoconstraint" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoConstraint</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoConstraint"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Forbids/Allow any auto-constraint generation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;AutoConstraint&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="autogroupcaps">
-<h3>AutoGroupCaps<a class="headerlink" href="#autogroupcaps" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">AutoGroupCaps</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#AutoGroupCaps"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Forbids/Allow creation of arrays for symmetric caps</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;AutoGroupCaps&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="fixsourcedrain">
-<h3>FixSourceDrain<a class="headerlink" href="#fixsourcedrain" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">FixSourceDrain</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#FixSourceDrain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Forbids auto checking of source/drain terminals of transistors.
-If <cite>True</cite>, Traverses from power to ground and vice-versa to
-ensure (drain of NMOS/ source of PMOS) is at higher potential.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;FixSourceDrain&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="keepdummyhierarchies">
-<h3>KeepDummyHierarchies<a class="headerlink" href="#keepdummyhierarchies" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">KeepDummyHierarchies</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#KeepDummyHierarchies"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Removes any single instance hierarchies.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;KeepDummyHierarchies&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="mergeseriesdevices">
-<h3>MergeSeriesDevices<a class="headerlink" href="#mergeseriesdevices" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeSeriesDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeSeriesDevices"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Allow stacking of series devices
-Only works on NMOS/PMOS/CAP/RES.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;MergeSeriesDevices&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="mergeparalleldevices">
-<h3>MergeParallelDevices<a class="headerlink" href="#mergeparalleldevices" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">MergeParallelDevices</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#MergeParallelDevices"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Allow merging of parallel devices.
-Only works on NMOS/PMOS/CAP/RES.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;MergeParallelDevices&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</div>
-<div class="section" id="identifyarray">
-<h3>IdentifyArray<a class="headerlink" href="#identifyarray" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">align.schema.constraint.</code><code class="sig-name descname">IdentifyArray</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="n">constraint</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">isTrue</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span></em>, <em class="sig-param"><span class="n">propagate</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/schema/constraint.html#IdentifyArray"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Forbids/Alow any array identification</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>isTrue</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – True/False.</p></li>
-<li><p><strong>propagate</strong> – Copy this constraint to sub-hierarchies</p></li>
-</ul>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;IdentifyArray&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;isTrue&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;ConfigureCompiler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;is_digital&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;remove_dummy_hierarchies&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="n">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1187,7 +1010,7 @@ Only works on NMOS/PMOS/CAP/RES.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

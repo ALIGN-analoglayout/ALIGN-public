@@ -70,7 +70,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
@@ -85,14 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../notes/const.html#example-constraints">Example constraints</a></li>
@@ -218,16 +210,17 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+
 <div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.model.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Model creation class</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
-    <span class="n">name</span> <span class="p">:</span> <span class="nb">str</span>                 <span class="c1"># Model Name</span>
-    <span class="n">base</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># Model Base (for derived models)</span>
-    <span class="n">pins</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="c1"># List of pin names (derived from base if base exists)</span>
-    <span class="n">parameters</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>   <span class="c1"># Parameter Name: Value mapping (inherits &amp; adds to base if needed)</span>
-    <span class="n">prefix</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>     <span class="c1"># Instance name prefix, optional</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                  <span class="c1"># Model Name</span>
+    <span class="n">base</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>        <span class="c1"># Model Base (for derived models)</span>
+    <span class="n">pins</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>  <span class="c1"># List of pin names (derived from base if base exists)</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>   <span class="c1"># Parameter Name: Value mapping (inherits &amp; adds to base if needed)</span>
+    <span class="n">prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>     <span class="c1"># Instance name prefix, optional</span>
 
 <div class="viewcode-block" id="Model.xyce"><a class="viewcode-back" href="../../../modules/align.schema.html#align.schema.model.Model.xyce">[docs]</a>    <span class="k">def</span> <span class="nf">xyce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="se">{{</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="se">}}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
@@ -291,7 +284,6 @@
         <span class="k">if</span> <span class="s1">&#39;base&#39;</span> <span class="ow">in</span> <span class="n">values</span> <span class="ow">and</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;base&#39;</span><span class="p">]:</span>
             <span class="n">prefix</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_base_model</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_validator_ctx</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;base&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">prefix</span>
         <span class="k">return</span> <span class="n">prefix</span></div></div>
-
 </pre></div>
 
            </div>
@@ -301,7 +293,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

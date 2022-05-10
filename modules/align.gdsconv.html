@@ -60,6 +60,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#symmetricblocks">SymmetricBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#order">Order</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#align">Align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#enclose">Enclose</a></li>
@@ -71,13 +72,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#verticaldistance">VerticalDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#guardring">GuardRing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#symmetricblocks">SymmetricBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groupcaps">GroupCaps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#netconst">NetConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#portlocation">PortLocation</a></li>
@@ -87,14 +86,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
@@ -218,175 +210,26 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.gds2json">
-<span id="align-gdsconv-gds2json-module"></span><h2>align.gdsconv.gds2json module<a class="headerlink" href="#module-align.gdsconv.gds2json" title="Permalink to this headline">¶</a></h2>
-<p>GDSII to JSON.</p>
-<dl class="py function">
-<dt id="align.gdsconv.gds2json.convert_GDS_GDSjson">
-<code class="sig-prename descclassname">align.gdsconv.gds2json.</code><code class="sig-name descname">convert_GDS_GDSjson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2json.html#convert_GDS_GDSjson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2json.convert_GDS_GDSjson" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2json.isElement">
-<code class="sig-prename descclassname">align.gdsconv.gds2json.</code><code class="sig-name descname">isElement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2json.html#isElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2json.isElement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2json.show_data">
-<code class="sig-prename descclassname">align.gdsconv.gds2json.</code><code class="sig-name descname">show_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rec</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2json.html#show_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2json.show_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows data in a human-readable format.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2json.usage">
-<code class="sig-prename descclassname">align.gdsconv.gds2json.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2json.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2json.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-gds2json-module">
+<h2>align.gdsconv.gds2json module<a class="headerlink" href="#align-gdsconv-gds2json-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.gds2prettyjson">
-<span id="align-gdsconv-gds2prettyjson-module"></span><h2>align.gdsconv.gds2prettyjson module<a class="headerlink" href="#module-align.gdsconv.gds2prettyjson" title="Permalink to this headline">¶</a></h2>
-<p>GDSII to PRETTY JSON.</p>
-<dl class="py function">
-<dt id="align.gdsconv.gds2prettyjson.convert_GDS_GDSprettyjson">
-<code class="sig-prename descclassname">align.gdsconv.gds2prettyjson.</code><code class="sig-name descname">convert_GDS_GDSprettyjson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2prettyjson.html#convert_GDS_GDSprettyjson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2prettyjson.convert_GDS_GDSprettyjson" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2prettyjson.isElement">
-<code class="sig-prename descclassname">align.gdsconv.gds2prettyjson.</code><code class="sig-name descname">isElement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2prettyjson.html#isElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2prettyjson.isElement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2prettyjson.quote">
-<code class="sig-prename descclassname">align.gdsconv.gds2prettyjson.</code><code class="sig-name descname">quote</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2prettyjson.html#quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2prettyjson.quote" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2prettyjson.show_data">
-<code class="sig-prename descclassname">align.gdsconv.gds2prettyjson.</code><code class="sig-name descname">show_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rec</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2prettyjson.html#show_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2prettyjson.show_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows data in a human-readable format.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.gds2prettyjson.usage">
-<code class="sig-prename descclassname">align.gdsconv.gds2prettyjson.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/gds2prettyjson.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.gds2prettyjson.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-gds2prettyjson-module">
+<h2>align.gdsconv.gds2prettyjson module<a class="headerlink" href="#align-gdsconv-gds2prettyjson-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.json2gds">
-<span id="align-gdsconv-json2gds-module"></span><h2>align.gdsconv.json2gds module<a class="headerlink" href="#module-align.gdsconv.json2gds" title="Permalink to this headline">¶</a></h2>
-<p>JSON to GDSII.</p>
-<dl class="py function">
-<dt id="align.gdsconv.json2gds.convert_GDSjson_GDS">
-<code class="sig-prename descclassname">align.gdsconv.json2gds.</code><code class="sig-name descname">convert_GDSjson_GDS</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2gds.html#convert_GDSjson_GDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2gds.convert_GDSjson_GDS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2gds.convert_GDSjson_GDS_fps">
-<code class="sig-prename descclassname">align.gdsconv.json2gds.</code><code class="sig-name descname">convert_GDSjson_GDS_fps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ifile</span></em>, <em class="sig-param"><span class="n">ofile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2gds.html#convert_GDSjson_GDS_fps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2gds.convert_GDSjson_GDS_fps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2gds.quote">
-<code class="sig-prename descclassname">align.gdsconv.json2gds.</code><code class="sig-name descname">quote</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2gds.html#quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2gds.quote" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2gds.unbracket">
-<code class="sig-prename descclassname">align.gdsconv.json2gds.</code><code class="sig-name descname">unbracket</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2gds.html#unbracket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2gds.unbracket" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2gds.usage">
-<code class="sig-prename descclassname">align.gdsconv.json2gds.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2gds.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2gds.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-json2gds-module">
+<h2>align.gdsconv.json2gds module<a class="headerlink" href="#align-gdsconv-json2gds-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.json2txt">
-<span id="align-gdsconv-json2txt-module"></span><h2>align.gdsconv.json2txt module<a class="headerlink" href="#module-align.gdsconv.json2txt" title="Permalink to this headline">¶</a></h2>
-<p>JSON to TXT.</p>
-<dl class="py function">
-<dt id="align.gdsconv.json2txt.bracket">
-<code class="sig-prename descclassname">align.gdsconv.json2txt.</code><code class="sig-name descname">bracket</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2txt.html#bracket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2txt.bracket" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2txt.convert_GDSjson_GDStxt">
-<code class="sig-prename descclassname">align.gdsconv.json2txt.</code><code class="sig-name descname">convert_GDSjson_GDStxt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2txt.html#convert_GDSjson_GDStxt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2txt.convert_GDSjson_GDStxt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2txt.quote">
-<code class="sig-prename descclassname">align.gdsconv.json2txt.</code><code class="sig-name descname">quote</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2txt.html#quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2txt.quote" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2txt.unbracket">
-<code class="sig-prename descclassname">align.gdsconv.json2txt.</code><code class="sig-name descname">unbracket</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2txt.html#unbracket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2txt.unbracket" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.json2txt.usage">
-<code class="sig-prename descclassname">align.gdsconv.json2txt.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/json2txt.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.json2txt.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-json2txt-module">
+<h2>align.gdsconv.json2txt module<a class="headerlink" href="#align-gdsconv-json2txt-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.txt2json">
-<span id="align-gdsconv-txt2json-module"></span><h2>align.gdsconv.txt2json module<a class="headerlink" href="#module-align.gdsconv.txt2json" title="Permalink to this headline">¶</a></h2>
-<p>TXT to JSON.</p>
-<dl class="py function">
-<dt id="align.gdsconv.txt2json.convert_GDStxt_GDSjson">
-<code class="sig-prename descclassname">align.gdsconv.txt2json.</code><code class="sig-name descname">convert_GDStxt_GDSjson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2json.html#convert_GDStxt_GDSjson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2json.convert_GDStxt_GDSjson" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2json.isElement">
-<code class="sig-prename descclassname">align.gdsconv.txt2json.</code><code class="sig-name descname">isElement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2json.html#isElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2json.isElement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2json.print_data">
-<code class="sig-prename descclassname">align.gdsconv.txt2json.</code><code class="sig-name descname">print_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag_type</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2json.html#print_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2json.print_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2json.usage">
-<code class="sig-prename descclassname">align.gdsconv.txt2json.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2json.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2json.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-txt2json-module">
+<h2>align.gdsconv.txt2json module<a class="headerlink" href="#align-gdsconv-txt2json-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv.txt2prettyjson">
-<span id="align-gdsconv-txt2prettyjson-module"></span><h2>align.gdsconv.txt2prettyjson module<a class="headerlink" href="#module-align.gdsconv.txt2prettyjson" title="Permalink to this headline">¶</a></h2>
-<p>TXT to PRETTY JSON.</p>
-<dl class="py function">
-<dt id="align.gdsconv.txt2prettyjson.convert_GDStxt_GDSprettyjson">
-<code class="sig-prename descclassname">align.gdsconv.txt2prettyjson.</code><code class="sig-name descname">convert_GDStxt_GDSprettyjson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">oname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2prettyjson.html#convert_GDStxt_GDSprettyjson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2prettyjson.convert_GDStxt_GDSprettyjson" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2prettyjson.isElement">
-<code class="sig-prename descclassname">align.gdsconv.txt2prettyjson.</code><code class="sig-name descname">isElement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">e</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2prettyjson.html#isElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2prettyjson.isElement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2prettyjson.quote">
-<code class="sig-prename descclassname">align.gdsconv.txt2prettyjson.</code><code class="sig-name descname">quote</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2prettyjson.html#quote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2prettyjson.quote" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2prettyjson.show_data">
-<code class="sig-prename descclassname">align.gdsconv.txt2prettyjson.</code><code class="sig-name descname">show_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag_type</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2prettyjson.html#show_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2prettyjson.show_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows data in a human-readable format.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.gdsconv.txt2prettyjson.usage">
-<code class="sig-prename descclassname">align.gdsconv.txt2prettyjson.</code><code class="sig-name descname">usage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prog</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/gdsconv/txt2prettyjson.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.gdsconv.txt2prettyjson.usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-gdsconv-txt2prettyjson-module">
+<h2>align.gdsconv.txt2prettyjson module<a class="headerlink" href="#align-gdsconv-txt2prettyjson-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.gdsconv">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.gdsconv" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -401,7 +244,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

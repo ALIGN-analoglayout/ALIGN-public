@@ -60,6 +60,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../notes/const.html">Constraints</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../notes/const.html#constraint-options">Constraint options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#symmetricblocks">SymmetricBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#order">Order</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#align">Align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#enclose">Enclose</a></li>
@@ -71,13 +72,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#sametemplate">SameTemplate</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#createalias">CreateAlias</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groupblocks">GroupBlocks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#matchblocks">MatchBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#donotidentify">DoNotIdentify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#blockdistance">BlockDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#horizontaldistance">HorizontalDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#verticaldistance">VerticalDistance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#guardring">GuardRing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#symmetricblocks">SymmetricBlocks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groupcaps">GroupCaps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#netconst">NetConst</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#portlocation">PortLocation</a></li>
@@ -87,14 +86,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#groundports">GroundPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#clockports">ClockPorts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../notes/const.html#donotuselib">DoNotUseLib</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#isdigital">IsDigital</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#autoconstraint">AutoConstraint</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#autogroupcaps">AutoGroupCaps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#fixsourcedrain">FixSourceDrain</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#keepdummyhierarchies">KeepDummyHierarchies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#mergeseriesdevices">MergeSeriesDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#mergeparalleldevices">MergeParallelDevices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#identifyarray">IdentifyArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../notes/const.html#configurecompiler">ConfigureCompiler</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../notes/const.html#example-constraints">Example constraints</a></li>
@@ -218,361 +210,35 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.build_pnr_model">
-<span id="align-pnr-build-pnr-model-module"></span><h2>align.pnr.build_pnr_model module<a class="headerlink" href="#module-align.pnr.build_pnr_model" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.build_pnr_model.PnRdatabase">
-<code class="sig-prename descclassname">align.pnr.build_pnr_model.</code><code class="sig-name descname">PnRdatabase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">topcell</span></em>, <em class="sig-param"><span class="n">vname</span></em>, <em class="sig-param"><span class="n">lefname</span></em>, <em class="sig-param"><span class="n">mapname</span></em>, <em class="sig-param"><span class="n">drname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/build_pnr_model.html#PnRdatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.build_pnr_model.PnRdatabase" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.build_pnr_model.ReadVerilogJson">
-<code class="sig-prename descclassname">align.pnr.build_pnr_model.</code><code class="sig-name descname">ReadVerilogJson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">add_placement_info</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/build_pnr_model.html#ReadVerilogJson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.build_pnr_model.ReadVerilogJson" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.build_pnr_model.semantic">
-<code class="sig-prename descclassname">align.pnr.build_pnr_model.</code><code class="sig-name descname">semantic</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">topcell</span></em>, <em class="sig-param"><span class="n">global_signals</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/build_pnr_model.html#semantic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.build_pnr_model.semantic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-build-pnr-model-module">
+<h2>align.pnr.build_pnr_model module<a class="headerlink" href="#align-pnr-build-pnr-model-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.checker">
-<span id="align-pnr-checker-module"></span><h2>align.pnr.checker module<a class="headerlink" href="#module-align.pnr.checker" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.checker.check_placement">
-<code class="sig-prename descclassname">align.pnr.checker.</code><code class="sig-name descname">check_placement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/checker.html#check_placement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.checker.check_placement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-checker-module">
+<h2>align.pnr.checker module<a class="headerlink" href="#align-pnr-checker-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.checkers">
-<span id="align-pnr-checkers-module"></span><h2>align.pnr.checkers module<a class="headerlink" href="#module-align.pnr.checkers" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.checkers.gen_viewer_json">
-<code class="sig-prename descclassname">align.pnr.checkers.</code><code class="sig-name descname">gen_viewer_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hN</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">pdkdir</span></em>, <em class="sig-param"><span class="n">draw_grid</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">global_route_json</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">json_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">extract</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">input_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">markers</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">toplevel</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/checkers.html#gen_viewer_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.checkers.gen_viewer_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.checkers.rational_scaling">
-<code class="sig-prename descclassname">align.pnr.checkers.</code><code class="sig-name descname">rational_scaling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">mul</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">div</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">errors</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/checkers.html#rational_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.checkers.rational_scaling" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-checkers-module">
+<h2>align.pnr.checkers module<a class="headerlink" href="#align-pnr-checkers-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.cmdline">
-<span id="align-pnr-cmdline-module"></span><h2>align.pnr.cmdline module<a class="headerlink" href="#module-align.pnr.cmdline" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.cmdline.cmdline">
-<code class="sig-prename descclassname">align.pnr.cmdline.</code><code class="sig-name descname">cmdline</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">argv</span></em>, <em class="sig-param"><span class="n">results_dir</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/cmdline.html#cmdline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.cmdline.cmdline" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-cmdline-module">
+<h2>align.pnr.cmdline module<a class="headerlink" href="#align-pnr-cmdline-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.hpwl">
-<span id="align-pnr-hpwl-module"></span><h2>align.pnr.hpwl module<a class="headerlink" href="#module-align.pnr.hpwl" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt id="align.pnr.hpwl.Interval">
-<em class="property">class </em><code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">Interval</code><a class="reference internal" href="../_modules/align/pnr/hpwl.html#Interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.Interval" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt id="align.pnr.hpwl.Interval.add">
-<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#Interval.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.Interval.add" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.Interval.dist">
-<code class="sig-name descname">dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#Interval.dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.Interval.dist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="align.pnr.hpwl.SemiPerimeter">
-<em class="property">class </em><code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">SemiPerimeter</code><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.addPoint">
-<code class="sig-name descname">addPoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.addPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.addPoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.addRect">
-<code class="sig-name descname">addRect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.addRect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.addRect" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.dist">
-<code class="sig-name descname">dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.dist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.isEmpty">
-<code class="sig-name descname">isEmpty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.isEmpty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.isEmpty" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.toList">
-<code class="sig-name descname">toList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.toList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.toList" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="align.pnr.hpwl.SemiPerimeter.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em>, <em class="sig-param"><span class="n">tr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#SemiPerimeter.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.SemiPerimeter.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">calculate_HPWL_from_placement_verilog_d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em>, <em class="sig-param"><span class="n">nets_d</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">skip_globals</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#calculate_HPWL_from_placement_verilog_d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d_bottom_up">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">calculate_HPWL_from_placement_verilog_d_bottom_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">skip_globals</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#calculate_HPWL_from_placement_verilog_d_bottom_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d_bottom_up" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d_top_down">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">calculate_HPWL_from_placement_verilog_d_top_down</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em>, <em class="sig-param"><span class="n">nets_d</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">skip_globals</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#calculate_HPWL_from_placement_verilog_d_top_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.calculate_HPWL_from_placement_verilog_d_top_down" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.compute_topoorder">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">compute_topoorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">modules</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#compute_topoorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.compute_topoorder" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.gen_netlist">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">gen_netlist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#gen_netlist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.gen_netlist" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.hpwl.to_center">
-<code class="sig-prename descclassname">align.pnr.hpwl.</code><code class="sig-name descname">to_center</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/hpwl.html#to_center"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.hpwl.to_center" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-hpwl-module">
+<h2>align.pnr.hpwl module<a class="headerlink" href="#align-pnr-hpwl-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.main">
-<span id="align-pnr-main-module"></span><h2>align.pnr.main module<a class="headerlink" href="#module-align.pnr.main" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.main.check_floating_pins">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">check_floating_pins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#check_floating_pins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.check_floating_pins" title="Permalink to this definition">¶</a></dt>
-<dd><p>exit in case of floating pins in design</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.check_modules">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">check_modules</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#check_modules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.check_modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.clean_if_extra">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">clean_if_extra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">subckt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#clean_if_extra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.clean_if_extra" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.extract_capacitor_constraints">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">extract_capacitor_constraints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pnr_const_ds</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#extract_capacitor_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.extract_capacitor_constraints" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.gen_constraint_files">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">gen_constraint_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">input_dir</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#gen_constraint_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.gen_constraint_files" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.gen_leaf_cell_info">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">gen_leaf_cell_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">pnr_const_ds</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#gen_leaf_cell_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.gen_leaf_cell_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.gen_leaf_collateral">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">gen_leaf_collateral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">leaves</span></em>, <em class="sig-param"><span class="n">primitives</span></em>, <em class="sig-param"><span class="n">primitive_dir</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#gen_leaf_collateral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.gen_leaf_collateral" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.generate_pnr">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">generate_pnr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">topology_dir</span></em>, <em class="sig-param"><span class="n">primitive_dir</span></em>, <em class="sig-param"><span class="n">pdk_dir</span></em>, <em class="sig-param"><span class="n">output_dir</span></em>, <em class="sig-param"><span class="n">subckt</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">primitives</span></em>, <em class="sig-param"><span class="n">nvariants</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">effort</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">extract</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">gds_json</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">PDN_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">router_mode</span><span class="o">=</span><span class="default_value">'top_down'</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">skipGDS</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">steps_to_run</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em>, <em class="sig-param"><span class="n">reference_placement_verilog_json</span></em>, <em class="sig-param"><span class="n">nroutings</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#generate_pnr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.generate_pnr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.modify_pg_conn_subckt">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">modify_pg_conn_subckt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">subckt</span></em>, <em class="sig-param"><span class="n">pp</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#modify_pg_conn_subckt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.modify_pg_conn_subckt" title="Permalink to this definition">¶</a></dt>
-<dd><p>creates a new subcircuit by removing power pins from a subcircuit definition
-and change internal connections within the subcircuit
-nm: new module</p>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.remove_pg_pins">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">remove_pg_pins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></span></em>, <em class="sig-param"><span class="n">subckt</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></span></em>, <em class="sig-param"><span class="n">pg_connections</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#remove_pg_pins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.remove_pg_pins" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes any ports related to power pins. PnR engine cannot connect to subcircuit power pins.
-It can connect to a primitive power pin</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>verilog_d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – spice dict from compiler</p></li>
-<li><p><strong>subckt</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – name of sub-circuit</p></li>
-<li><p><strong>pg_pins</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – list of power pins in subckt to be removed</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.main.write_verilog_json">
-<code class="sig-prename descclassname">align.pnr.main.</code><code class="sig-name descname">write_verilog_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/main.html#write_verilog_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.main.write_verilog_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-main-module">
+<h2>align.pnr.main module<a class="headerlink" href="#align-pnr-main-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.render_placement">
-<span id="align-pnr-render-placement-module"></span><h2>align.pnr.render_placement module<a class="headerlink" href="#module-align.pnr.render_placement" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.render_placement.array_rational_scaling">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">array_rational_scaling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">mul</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">div</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#array_rational_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.array_rational_scaling" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.dump_blocks">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">dump_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fig</span></em>, <em class="sig-param"><span class="n">boxes_and_hovertext</span></em>, <em class="sig-param"><span class="n">leaves_only</span></em>, <em class="sig-param"><span class="n">levels</span></em>, <em class="sig-param"><span class="n">netnames</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#dump_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.dump_blocks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.gen_boxes_and_hovertext">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">gen_boxes_and_hovertext</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">top_cell</span></em>, <em class="sig-param"><span class="n">nets_d</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#gen_boxes_and_hovertext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.gen_boxes_and_hovertext" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.gen_placement_verilog">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">gen_placement_verilog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hN</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">sel</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">verilog_d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#gen_placement_verilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.gen_placement_verilog" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.gen_transformation">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">gen_transformation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blk</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#gen_transformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.gen_transformation" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.round_to_angstroms">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">round_to_angstroms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#round_to_angstroms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.round_to_angstroms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.scalar_rational_scaling">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">scalar_rational_scaling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">mul</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">div</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#scalar_rational_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.scalar_rational_scaling" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.scale_placement_verilog">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">scale_placement_verilog</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em>, <em class="sig-param"><span class="n">invert</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#scale_placement_verilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.scale_placement_verilog" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.render_placement.standalone_overlap_checker">
-<code class="sig-prename descclassname">align.pnr.render_placement.</code><code class="sig-name descname">standalone_overlap_checker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">top_cell</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/render_placement.html#standalone_overlap_checker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.render_placement.standalone_overlap_checker" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-render-placement-module">
+<h2>align.pnr.render_placement module<a class="headerlink" href="#align-pnr-render-placement-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.toplevel">
-<span id="align-pnr-toplevel-module"></span><h2>align.pnr.toplevel module<a class="headerlink" href="#module-align.pnr.toplevel" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt id="align.pnr.toplevel.gen_leaf_bbox_and_hovertext">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">gen_leaf_bbox_and_hovertext</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctn</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#gen_leaf_bbox_and_hovertext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.gen_leaf_bbox_and_hovertext" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.gen_leaf_map">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">gen_leaf_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">gui</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#gen_leaf_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.gen_leaf_map" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.per_placement">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">per_placement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">hN</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em>, <em class="sig-param"><span class="n">gui</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">tagged_bboxes</span></em>, <em class="sig-param"><span class="n">leaf_map</span></em>, <em class="sig-param"><span class="n">placement_verilog_alternatives</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#per_placement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.per_placement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.place">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">place</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">fpath</span></em>, <em class="sig-param"><span class="n">numLayout</span></em>, <em class="sig-param"><span class="n">effort</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span></em>, <em class="sig-param"><span class="n">seed</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span></em>, <em class="sig-param"><span class="n">modules_d</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#place"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.place" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.place_and_route">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">place_and_route</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">fpath</span></em>, <em class="sig-param"><span class="n">numLayout</span></em>, <em class="sig-param"><span class="n">effort</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">router_mode</span></em>, <em class="sig-param"><span class="n">gui</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em>, <em class="sig-param"><span class="n">reference_placement_verilog_json</span></em>, <em class="sig-param"><span class="n">nroutings</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span></em>, <em class="sig-param"><span class="n">seed</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#place_and_route"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.place_and_route" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.process_placements">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">process_placements</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">gui</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em>, <em class="sig-param"><span class="n">reference_placement_verilog_json</span></em>, <em class="sig-param"><span class="n">opath</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#process_placements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.process_placements" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">router_mode</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em>, <em class="sig-param"><span class="n">placements_to_run</span></em>, <em class="sig-param"><span class="n">nroutings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route_bottom_up">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route_bottom_up</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em>, <em class="sig-param"><span class="n">placements_to_run</span></em>, <em class="sig-param"><span class="n">nroutings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route_bottom_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route_bottom_up" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route_no_op">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route_no_op</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em>, <em class="sig-param"><span class="n">placements_to_run</span></em>, <em class="sig-param"><span class="n">nroutings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route_no_op"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route_no_op" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route_single_variant">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route_single_variant</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">drcInfo</span></em>, <em class="sig-param"><span class="n">current_node</span></em>, <em class="sig-param"><span class="n">lidx</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">return_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">noGDS</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">noExtra</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route_single_variant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route_single_variant" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route_top_down">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route_top_down</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em>, <em class="sig-param"><span class="n">placements_to_run</span></em>, <em class="sig-param"><span class="n">nroutings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route_top_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route_top_down" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.route_top_down_aux">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">route_top_down_aux</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">DB</span></em>, <em class="sig-param"><span class="n">drcInfo</span></em>, <em class="sig-param"><span class="n">bounding_box</span></em>, <em class="sig-param"><span class="n">current_node_ort</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">lidx</span></em>, <em class="sig-param"><span class="n">sel</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">adr_mode</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">PDN_mode</span></em>, <em class="sig-param"><span class="n">results_name_map</span></em>, <em class="sig-param"><span class="n">hierarchical_path</span></em>, <em class="sig-param"><span class="n">skipGDS</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#route_top_down_aux"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.route_top_down_aux" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.scale_and_check_placement">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">scale_and_check_placement</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">placement_verilog_d</span></em>, <em class="sig-param"><span class="n">concrete_name</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em>, <em class="sig-param"><span class="n">opath</span></em>, <em class="sig-param"><span class="n">placement_verilog_alternatives</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#scale_and_check_placement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.scale_and_check_placement" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.subset_verilog_d">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">subset_verilog_d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verilog_d</span></em>, <em class="sig-param"><span class="n">nm</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#subset_verilog_d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.subset_verilog_d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.toplevel">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">toplevel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">PDN_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adr_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">results_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">router_mode</span><span class="o">=</span><span class="default_value">'top_down'</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">skipGDS</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">lambda_coeff</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">scale_factor</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">reference_placement_verilog_json</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nroutings</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#toplevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.toplevel" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="align.pnr.toplevel.toplevel_route_only">
-<code class="sig-prename descclassname">align.pnr.toplevel.</code><code class="sig-name descname">toplevel_route_only</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">PDN_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">adr_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">results_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">router_mode</span><span class="o">=</span><span class="default_value">'top_down'</span></em>, <em class="sig-param"><span class="n">gui</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">skipGDS</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">nroutings</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">select_in_ILP</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">use_analytical_placer</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/toplevel.html#toplevel_route_only"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.toplevel.toplevel_route_only" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="align-pnr-toplevel-module">
+<h2>align.pnr.toplevel module<a class="headerlink" href="#align-pnr-toplevel-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr.write_constraint">
-<span id="align-pnr-write-constraint-module"></span><h2>align.pnr.write_constraint module<a class="headerlink" href="#module-align.pnr.write_constraint" title="Permalink to this headline">¶</a></h2>
-<p>Created on Wed Jan 13 14:50:24 2021</p>
-<p>&#64;author: kunal001</p>
-<dl class="py class">
-<dt id="align.pnr.write_constraint.PnRConstraintWriter">
-<em class="property">class </em><code class="sig-prename descclassname">align.pnr.write_constraint.</code><code class="sig-name descname">PnRConstraintWriter</code><a class="reference internal" href="../_modules/align/pnr/write_constraint.html#PnRConstraintWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.write_constraint.PnRConstraintWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt id="align.pnr.write_constraint.PnRConstraintWriter.map_valid_const">
-<code class="sig-name descname">map_valid_const</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_const</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/align/pnr/write_constraint.html#PnRConstraintWriter.map_valid_const"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.pnr.write_constraint.PnRConstraintWriter.map_valid_const" title="Permalink to this definition">¶</a></dt>
-<dd><p>Maps input format to pnr format</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="align-pnr-write-constraint-module">
+<h2>align.pnr.write_constraint module<a class="headerlink" href="#align-pnr-write-constraint-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-align.pnr">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.pnr" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -587,7 +253,7 @@ It can connect to a primitive power pin</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, ALIGN team.</p>
+    <p>&#169; Copyright 2022, ALIGN team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
