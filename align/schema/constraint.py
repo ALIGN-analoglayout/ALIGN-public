@@ -130,7 +130,7 @@ class Order(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Order", "direction": "left_to_right"}
+        {"constraint":"Order", "instances": ['MN0', 'MN1', 'MN2'], "direction": "left_to_right"}
 
     '''
     instances: List[str]
@@ -215,7 +215,7 @@ class Align(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Align", "line": "v_center"}
+        {"constraint":"Align", "instances": ['MN0', 'MN1', 'MN2'], "line": "v_center"}
 
     '''
     instances: List[str]
@@ -285,7 +285,7 @@ class Enclose(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Enclose", "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
+        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
     '''
     instances: Optional[List[str]]
     min_height: Optional[int]
@@ -960,7 +960,9 @@ class SymmetricBlocks(HardConstraint):
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
-        direction (str) : Direction for axis of symmetry.
+        direction (str) : Direction for axis of symmetry. Literal::
+
+            ['V', 'H']
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -970,7 +972,7 @@ class SymmetricBlocks(HardConstraint):
         {
             "constraint" : "SymmetricBlocks",
             "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
-            "direction" : "vertical"
+            "direction" : "V"
         }
 
     """
