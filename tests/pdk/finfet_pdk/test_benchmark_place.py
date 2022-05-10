@@ -55,6 +55,7 @@ def test_b2(name, params):
     name = f'ckt_b2_{name}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -96,6 +97,7 @@ def test_b3(name, params):
     name = f'ckt_b3_{name}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -131,7 +133,6 @@ def test_b3(name, params):
         shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skipif(not BENCHMARK, reason="Exclude from CI")
 @pytest.mark.parametrize(("name", "params"), PARAMS)
 def test_b4(name, params):
     name = f'ckt_{get_test_id()}'

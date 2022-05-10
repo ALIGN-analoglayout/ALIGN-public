@@ -49,9 +49,11 @@ def collect_errors( regression_path):
     df = pd.DataFrame(columns=('name', 'failed before pnr', 'failed during pnr') + tuple(p[0] for p in patterns) + ('other', 'w', 'h', 'area', 'aspect'))
 
     for path in regression_path.iterdir():
+        if not path.is_dir():
+            continue
         pnr = path / '3_pnr'
         if pnr.is_dir():
-            errors_path = pnr / f'{path}_0.errors'
+            errors_path = pnr / f'{str(path).upper()}_0.errors'
             if errors_path.is_file():
                 counts = parse_errors(errors_path)
                 d = {
@@ -62,7 +64,7 @@ def collect_errors( regression_path):
                 for k, v in counts.items():
                     d[k] = v
 
-                json_path = pnr / f'{path}_0.json'
+                json_path = pnr / f'{str(path).upper()}_0.json'
 
                 if json_path.is_file():
                     w, h, area, aspect = get_area( json_path)

@@ -1,5 +1,4 @@
-import pytest
-from align.pdk.finfet import tfr_prim
+from align.pdk.finfet.resistor import ThinFilmResistor
 from .utils import export_to_viewer
 import json
 import textwrap
@@ -8,8 +7,11 @@ from .utils import get_test_id, build_example, run_example
 from . import circuits
 
 
+CLEANUP = True
+
+
 def test_zero():
-    pg = tfr_prim()
+    pg = ThinFilmResistor()
     data = pg.generate(ports=['a', 'b'])
     export_to_viewer("test_tfr_0", data)
 
@@ -19,7 +21,7 @@ def test_res_hier():
     netlist = circuits.tia(name)
     constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    run_example(example, cleanup=CLEANUP, n=1, additional_args=['--flow_stop', '2_primitives'])
 
 
 def test_res_flat():
@@ -35,7 +37,7 @@ def test_res_flat():
     """)
     constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, log_level='DEBUG', additional_args=['--flow_stop', '3_pnr:prep'])
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1, log_level='DEBUG', additional_args=['--flow_stop', '3_pnr:prep'])
 
     name = name.upper()
     with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as f1:
@@ -51,15 +53,15 @@ def test_res_flat():
             modules = {e['name']: e for e in hierarchy['modules']}
             instances = {i['instance_name']: i for i in modules[name]['instances']}
 
-            assert instances['X_XR3']['abstract_template_name'] == instances['X_XR4']['abstract_template_name']
+            assert instances['XR3']['abstract_template_name'] == instances['XR4']['abstract_template_name']
 
             for k, v in instances.items():
                 assert v['abstract_template_name'] in atn, f"Abstract not found: {v['abstract_template_name']}"
-    shutil.rmtree(run_dir)
-    shutil.rmtree(example)
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
-@pytest.mark.skip(reason="For a future PR")
 def test_res_one():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -74,7 +76,7 @@ def test_res_one():
     """)
     constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '1_topology'])
 
     name = name.upper()
     with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as f1:
@@ -105,5 +107,6 @@ def test_res_one():
 
     assert primitives['TFR_PRIM']['base'] == 'TFR'
 
-    shutil.rmtree(run_dir)
-    shutil.rmtree(example)
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)

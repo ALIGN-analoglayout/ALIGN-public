@@ -3,8 +3,9 @@ from ..cell_fabric import gen_gds_json
 from ..cell_fabric import positive_coord
 from ..cell_fabric import gen_lef
 from ..schema.subcircuit import SubCircuit
+from ..schema import constraint
+from ..compiler.util import get_generator
 import copy
-import sys
 import datetime
 import pathlib
 import logging
@@ -13,41 +14,55 @@ import importlib.util
 logger = logging.getLogger(__name__)
 
 
-def get_xcells_pattern(primitive, pattern, x_cells):
-
-    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # TODO: Generalize this (pattern is ignored)
-        x_cells = 2*x_cells + 2
-    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
-        # Dual transistor primitives
-        x_cells = 2*x_cells
-        # TODO: Fix difficulties associated with CC patterns matching this condition
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-    return x_cells, pattern
-
-
-def get_parameters(primitive, parameters, nfin):
-    if parameters is None:
-        parameters = {}
-    if 'model' not in parameters:
-        parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
-    return parameters
-
 # TODO: Pass cell_pin and pattern to this function to begin with
 
-
 def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+
     pdk = Pdk().load(pdkdir / 'layers.json')
+
     generator = get_generator('MOSGenerator', pdkdir)
+
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
-    shared_diff = 0 if any(primitive.name.startswith(f'{x}_') for x in ["LS_S", "CMC_S", "CCP_S"]) else 1
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
-    x_cells, pattern = get_xcells_pattern(primitive.name, pattern, x_cells)
-    parameters = get_parameters(primitive.name, parameters, nfin)
 
+    shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
+    gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
+    input_pattern = None
+    if gen_const:
+        gen_const=gen_const[0]
+    if gen_const:
+        if getattr(gen_const, "parameters", None):
+            print(gen_const)
+            if getattr(gen_const.parameters, "shared_diff", None):
+                shared_diff = gen_const.parameters["shared_diff"]
+            if getattr(gen_const.parameters, "pattern", None):
+                input_pattern = gen_const.parameters["pattern"]
+            if getattr(gen_const.parameters, "bodyswitch", None):
+                bodyswitch = gen_const.parameters["bodyswitch"]
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
+
+    # Default pattern values
+    if not input_pattern:
+        if len(primitive.elements)==1:
+            input_pattern = 'single_device'
+        elif not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+            input_pattern = 'ratio_devices' #e.g. current mirror
+        else:
+            input_pattern = 'cc'
+    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
+    pattern = pattern_map[input_pattern]
+    if len(primitive.elements) ==2:
+        if pattern==1:
+            x_cells = 2*x_cells
+            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+            #TODO do this double during x_cells generation in gen_param.py/add_primitive()
+
+    logger.debug(
+        f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
+    if 'model' not in parameters:
+        parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
         if 'NMOS' in primitive.name:
             uc.addNMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
@@ -55,13 +70,13 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             uc.addPMOSArray(x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
-    assert isinstance(primitive, SubCircuit)
     connections = {pin: [] for pin in primitive.pins}
     for ele in primitive.elements:
         for formal, actual in ele.pins.items():
             connections[actual].append((ele.name, formal))
-    if len(primitive.elements) == 1:
-        pattern = 0
+
+    logger.debug(f'Generate primitive: {block_name} {pattern} {connections}')
+
     return uc, gen(pattern, connections)
 
 
@@ -104,33 +119,11 @@ def generate_Ring(pdkdir, block_name, x_cells, y_cells):
     return uc, ['Body']
 
 
-def get_generator(name, pdkdir):
-    if pdkdir is None:
-        return False
-    pdk_dir_path = pdkdir
-    if isinstance(pdkdir, str):
-        pdk_dir_path = pathlib.Path(pdkdir)
-    pdk_dir_stem = pdk_dir_path.stem
-
-    try:  # is pdk an installed module
-        module = importlib.import_module(pdk_dir_stem)
-    except ImportError:
-        init_file = pdk_dir_path / '__init__.py'
-        if init_file.is_file():  # is pdk a package
-            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[pdk_dir_stem] = module
-            spec.loader.exec_module(module)
-        else:  # is pdk old school (backward compatibility)
-            print(f"check {pdkdir/'primitive.py'}")
-            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-    return getattr(module, name, False) or getattr(module, name.lower(), False)
-
-
 def generate_generic(pdkdir, parameters, netlistdir=None):
     primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
+    if "values" not in parameters or parameters["values"] is None:
+        parameters["values"] = dict()
+    parameters["values"]["real_inst_type"] = parameters["real_inst_type"]
     uc = primitive1()
     uc.generate(
         ports=parameters["ports"],
@@ -177,6 +170,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
+
     if primitive == 'generic':
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
@@ -184,6 +178,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
     elif 'MOS' == primitive.generator['name']:
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+
+
     elif 'CAP' == primitive.generator['name']:
         uc, _ = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

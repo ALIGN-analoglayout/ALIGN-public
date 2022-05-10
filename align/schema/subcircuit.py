@@ -43,7 +43,7 @@ class SubCircuit(Model):
 
     def add_generator(self, gen):
         with set_context(self.parent):
-            self.generator["name"]=gen
+            self.generator["name"] = gen
 
     def __init__(self, *args, **kwargs):
         # make elements optional in __init__
@@ -52,7 +52,7 @@ class SubCircuit(Model):
             kwargs['elements'] = []
         # defer constraint processing for now
         if 'generator' not in kwargs:
-            kwargs['generator']={}
+            kwargs['generator'] = {}
         constraints = []
         if 'constraints' in kwargs:
             constraints = kwargs['constraints']
@@ -115,7 +115,7 @@ class SubCircuit(Model):
         except checker.SolutionNotFoundError as e:
             logger.debug(f'Checker raised error:\n {e}')
             core = [x.json() for x in itertools.chain(self.elements, self.constraints, [constraint]) if self._checker.label(x) in e.labels]
-            logger.error(f'Solution not found due to conflict between:')
+            logger.error('Solution not found due to conflict between:')
             for x in core:
                 logger.error(f'{x}')
             raise  # checker.SolutionNotFoundError(message=e.message, labels=e.labels)

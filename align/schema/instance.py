@@ -1,16 +1,18 @@
 from . import types
-from .types import Union, Dict, Optional, List, set_context
+from .types import Dict, Optional, List, set_context
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 class Instance(types.BaseModel):
 
     model: str
     name: str
-    pins : Dict[str, str]
-    parameters : Optional[Dict[str, str]]
-    abstract_name: Optional[str] # unique name based on model and parameters
+    pins: Dict[str, str]
+    parameters: Optional[Dict[str, str]]
+    abstract_name: Optional[str]  # unique name based on model and parameters
+
     class Config:
         allow_mutation = True
 
@@ -37,7 +39,7 @@ class Instance(types.BaseModel):
     def _get_model(library, name):
         return next((x for x in library if x.name == name), None)
 
-    def add_abs_name(self,abn):
+    def add_abs_name(self, abn):
         with set_context(self.parent):
             self.abstract_name = abn
 
@@ -81,8 +83,7 @@ class Instance(types.BaseModel):
             parameters = {k.upper(): v.upper() for k, v in parameters.items()}
             assert model.parameters and set(parameters.keys()).issubset(model.parameters.keys()), \
                 f"{cls.__name__} parameters must be a subset of {model.__class__.__name__} parameters"
-            parameters = {k: parameters[k] if k in parameters else v \
-                for k, v in model.parameters.items()}
+            parameters = {k: parameters[k] if k in parameters else v for k, v in model.parameters.items()}
         elif model.parameters:
             parameters = model.parameters.copy()
         return parameters

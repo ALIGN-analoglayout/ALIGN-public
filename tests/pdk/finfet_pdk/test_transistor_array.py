@@ -104,9 +104,11 @@ def test_duo_one():
 
 def test_unit_interleave_pattern():
     mg = MOSGenerator()
-    assert [1, 2] == mg.interleave_pattern(1, 2)
-    assert [1, 2, 2, 1] == mg.interleave_pattern(2, 2)
-    assert [1, 2, 1, 2, 1, 2] == mg.interleave_pattern(2, 3)
+    assert [['A', 'B']] == mg.interleave_pattern(1, 2)
+    assert [['A', 'B'],
+            ['B', 'A']] == mg.interleave_pattern(2, 2)
+    assert [['A', 'B', 'A'],
+            ['B', 'A', 'B']] == mg.interleave_pattern(2, 3)
 
 
 def test_unit_validate_array():

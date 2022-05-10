@@ -501,6 +501,7 @@ class GroupBlocks(HardConstraint):
     Args:
       instances (list[str]): List of :obj:`instances`
       name (str): alias for the list of :obj:`instances`
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
 
@@ -508,11 +509,18 @@ class GroupBlocks(HardConstraint):
             "constraint":"GroupBlocks",
             "name": "group1",
             "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
         }
     """
     name: str
     instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
+    generator: Optional[dict]
+    # style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]] added as part of generator
 
     @types.validator('name', allow_reuse=True)
     def group_block_name(cls, value):
@@ -894,6 +902,7 @@ class ConfigureCompiler(SoftConstraint):
         identify_array(bool): true/false
         fix_source_drain(bool): true/false
         remove_dummy_hierarchies(bool): true/false
+        remove_dummy_devices(bool): true/false
         merge_series_devices(bool): true/false
         merge_parallel_devices(bool): true/false
 
@@ -911,6 +920,7 @@ class ConfigureCompiler(SoftConstraint):
     identify_array: bool = True  # Forbids/Allow any array identification
     fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
     remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
+    remove_dummy_devices: bool = True  # Removes dummy transistors
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
     propagate: bool = True  # propagate constraint to all lower hierarchies
@@ -922,7 +932,7 @@ class Generator(SoftConstraint):
     Args:
         name(str): name of genrator e.g., mos/cap/res/ring
         parameters(dict): {
-                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncc)
                             parallel_wires (dict): {net_name:2}
                             body (bool): true/ false
                             }

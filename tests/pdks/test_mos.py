@@ -2,13 +2,24 @@ import pathlib
 import sys
 import pytest
 
-from align.primitive.main import get_xcells_pattern
 
 pdks = []
 for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
     if prim.is_dir() and (prim / 'Align_primitives.py').exists():
         pdks.append(prim)
 
+
+def get_xcells_pattern(primitive, pattern, x_cells):
+    # TODO: remove this name based multiplier for number of cells
+    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
+        # TODO: Generalize this (pattern is ignored)
+        x_cells = 2*x_cells + 2
+    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
+        # Dual transistor primitives
+        x_cells = 2*x_cells
+        # TODO: Fix difficulties associated with CC patterns matching this condition
+        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+    return x_cells, pattern
 
 def check_shorts(cmdlist):
     from Align_primitives import main, gen_parser
