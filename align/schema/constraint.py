@@ -1333,10 +1333,10 @@ class CustomizeRoute(BaseModel):
     shield: bool = False
     match: bool = False
 
-class Route(SoftConstrant):
+class Route(SoftConstraint):
     min_layer: Optional[str]
     max_layer: Optional[str]
-    customize: List[CustomizeRoute]
+    customize: List[CustomizeRoute] = []
 
 
 ConstraintType = Union[
