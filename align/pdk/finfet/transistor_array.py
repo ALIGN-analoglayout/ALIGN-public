@@ -173,7 +173,7 @@ class MOSGenerator(CanvasPDK):
             else:
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=["A","A"])
+            interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=["A"])
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
@@ -354,7 +354,7 @@ class MOSGenerator(CanvasPDK):
                 _stretch_m2_wires()
                 self.drop_via(self.v2)
 
-        if True:
+        if False:
             # Expose pins
             for term in self.terminals:
                 if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
@@ -363,18 +363,20 @@ class MOSGenerator(CanvasPDK):
             self._expose_pins()
 
     def _expose_pins(self):
-        net_layers = dict()
+        net_layers = defaultdict(set)
         for term in self.terminals:
             if term['netName'] is not None and term['layer'].startswith('M'):
-                name = term['netName']
-                if name not in net_layers:
-                    net_layers[name] = set()
-                net_layers[name].add(term['layer'])
+                net_layers[term['netName']].add(term['layer'])
+
         for name, layers in net_layers.items():
-            layer = sorted(layers)[-1]
+            max_layer = max(layers)
             for term in self.terminals:
-                if term['netName'] is not None and term['netName'] == name and term['layer'] == layer:
-                    term['netType'] = 'pin'
+                nm, ly = term['netName'], term['layer']
+                if nm is not None and nm == name:
+                    if ly == max_layer:
+                        term['netType'] = 'pin'
+                    else:
+                        term['netType'] = 'drawing'
 
     @staticmethod
     def validate_array(m, n_row, n_col):
