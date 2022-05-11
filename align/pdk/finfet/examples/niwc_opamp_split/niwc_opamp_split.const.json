@@ -19,9 +19,8 @@
      "symmetrize": true,
      "regions": [
         ["prail"],
-        ["lsa", "lsb"],
-        ["ostagea", "dp", "ostageb"],
-        ["nraila","mtail0", "nrailb"]
+        ["ostagea", "lsa", "dp", "lsb", "ostageb"],
+        ["nraila", "mtail0", "nrailb"]
      ]},
     {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
 ]
