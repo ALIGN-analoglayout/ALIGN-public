@@ -42,11 +42,12 @@ class CapGenerator(DefaultCanvas):
                                         WidthX=self.v2.WidthX, WidthY=self.v2.WidthY,
                                         h_ext=self.v2.h_ext, v_ext=self.v2.v_ext))
 
-    def addCap( self, unit_cap):
+    def addCap( self, length, width):
 
-        x_length = float((math.sqrt(unit_cap/2))*1000)
-        y_length = float((math.sqrt(unit_cap/2))*1000)  
-
+        #x_length = float((math.sqrt(unit_cap/2))*1000)
+        #y_length = float((math.sqrt(unit_cap/2))*1000)  
+        x_length = int(length)
+        y_length = int(width)
         c_m1_p = self.pdk['Cap']['m1Pitch']
         c_m1_w = self.pdk['Cap']['m1Width']
         c_m2_p = self.pdk['Cap']['m2Pitch']
