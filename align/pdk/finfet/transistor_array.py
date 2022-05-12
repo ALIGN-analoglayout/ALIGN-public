@@ -32,7 +32,7 @@ class MOSGenerator(CanvasPDK):
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
 
-        logger.info(f'patterns: {self.patterns} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
+        #logger.info(f'patterns: {self.patterns} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
 
         if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
