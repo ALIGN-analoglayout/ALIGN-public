@@ -1,5 +1,6 @@
 [
     {"constraint": "ConfigureCompiler", "auto_constraint": false, "merge_parallel_devices": false},
+    {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
     {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0", "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": true, "single_device_connect_m1": false}}},
