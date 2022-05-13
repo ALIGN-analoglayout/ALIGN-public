@@ -142,6 +142,8 @@ def test_ru_exclude_m1():
     cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
 
+    cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
+
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
           "constraint": "route",
           "min_layer": "M2",
@@ -161,6 +163,8 @@ def test_ru_exclude_m3():
 
     cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
+
+    cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
           "constraint": "route",
@@ -186,6 +190,8 @@ def test_ru_exclude_per_net():
     cv.addWire(cv.m2, 'B',  9, (9, -1),  (14, 1), netType='pin')
     cv.addWire(cv.m2, 'B',  1, (9, -1),  (14, 1), netType='pin')
 
+    cv.bbox = transformation.Rect(*[0, 0, 16*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
+
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
           "constraint": "route",
           "min_layer": "M1",
@@ -205,11 +211,14 @@ def test_ru_allow_ports_on_excluded_layers():
     name = get_test_id()
     cv = CanvasPDK()
 
-    cv.addWire(cv.m1, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m1, 'A',  1, (1, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, 'B',  1, (9, -1),  (14, 1), netType='pin')
 
+    cv.addWire(cv.m3, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m3, 'B',  9, (9, -1),  (14, 1), netType='pin')
-    cv.addWire(cv.m3, 'B',  1, (9, -1),  (14, 1), netType='pin')
+
+
+    cv.bbox = transformation.Rect(*[0, 0, 10*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
     run_postamble(name, cv, max_errors=0, constraints=[ {
           "constraint": "route",
