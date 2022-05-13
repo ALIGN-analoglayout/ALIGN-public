@@ -216,3 +216,42 @@ def test_ru_allow_ports_on_excluded_layers():
           "min_layer": "M2",
           "max_layer": "M2"
         }])
+
+def test_ru_staggered_m1():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m1, 'A',  3, (2, -1),  (7, 1),  netType='pin')
+    cv.addWire(cv.m1, 'A',  4, (9, -1),  (14, 1), netType='pin')
+
+    cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
+
+    data = run_postamble(name, cv, max_errors=0)
+
+def test_ru_no_extra_routing_on_m1():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m1, 'A',  3, (2, -1),  (7, 1),  netType='pin')
+    cv.addWire(cv.m1, 'A',  3, (9, -1),  (14, 1), netType='pin')
+
+    cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
+
+    constraints = [ {
+        "constraint": "route",
+        "min_layer": "M2",
+        "max_layer": "M3"
+    }]
+
+    data = run_postamble(name, cv, max_errors=0, constraints=constraints)
+
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    found_m3 = False
+    for term in cvr.terminals:
+        if term['netName'] == "A" and term['layer'] == 'M3':
+            found_m3 = True
+
+    assert found_m3, "Need m3 to make the connection."
+
