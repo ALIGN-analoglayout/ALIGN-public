@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from math import sqrt, floor, log10
 from align.compiler.util import get_generator
+from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,20 @@ def limit_pairs(pairs):
         return new_pairs
     else:
         return pairs
+
+
+def construct_sizes_from_exact_patterns(exact_patterns):
+                        
+    legal_size_d = {}
+    
+    for pattern in exact_patterns:                        
+        histo = Counter(c for row in pattern for c in row)
+        num_devices = len(set(c.upper() for c in histo.keys()))
+        k = len(pattern[0])//num_devices, len(pattern)
+        assert k not in legal_size_d
+        legal_size_d[k] = pattern
+
+    return legal_size_d
 
 
 def add_primitive(primitives, block_name, block_args, generator_constraint):
@@ -51,6 +66,10 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                         legal_size_set = set()
                         for d in legal_sizes:
                             legal_size_set.add((d['x'], d['y']))
+                    exact_patterns = generator_parameters.get('exact_patterns')
+                    assert not exact_patterns or legal_size_set is None
+                    if exact_patterns is not None:
+                        legal_size_set = set(construct_sizes_from_exact_patterns(exact_patterns).keys())
 
             for newx, newy in pairs:
                 ok = legal_size_set is None or (newx, newy) in legal_size_set
