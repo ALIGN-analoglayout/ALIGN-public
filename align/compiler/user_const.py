@@ -64,17 +64,22 @@ class ConstraintParser:
                             pair[i] = inst.upper()
 
             do_not_identify = []
+            duplicate_DNI = []
             for const in node.constraints:
                 if const.constraint == "group_blocks":
                     continue
                 if const.constraint == "group_caps":
                     continue
+                if const.constraint == "do_not_identify":
+                    duplicate_DNI.append(const)
                 if hasattr(const, "instances") and len(const.instances) > 1:
                     do_not_identify.extend(const.instances)
                 elif hasattr(const, "pairs"):
                     for pair in const.pairs:
                         do_not_identify.extend(pair)
-
+            for const in duplicate_DNI:
+                #remove duplicate constarints
+                node.constraints.remove(const)
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))
                 logger.debug(f"Following instances will be excluded from subcircuit identification: {do_not_identify}")

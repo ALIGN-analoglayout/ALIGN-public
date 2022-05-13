@@ -179,6 +179,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             match_pair[node1] = node2
             assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
             # match_pair["array_start_point"] = [node1, node2]
+            logger.debug(f"checking arrays from {node1, node2}")
             array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
             array_hier.add_align_block_const()
             array_hier.add_new_array_hier()
