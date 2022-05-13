@@ -102,7 +102,7 @@ class CmdlineParser():
 
         parser.add_argument('--router_mode',
                             type=str,
-                            default='top_down',
+                            default='no_op',
                             choices=['top_down','bottom_up','no_op'],
                             help='Router mode')
 
@@ -156,6 +156,11 @@ class CmdlineParser():
                             choices=['symphony', 'lpsolve'],
                             help='ILP Solver used by placer ')
 
+        parser.add_argument('-b', '--black_box_gds_dir',
+                            type=str,
+                            default=None,
+                            help='Directory with all black boxed cell GDSes')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
@@ -163,6 +168,12 @@ class CmdlineParser():
             logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
+            if arguments.black_box_gds_dir:
+                arguments.flow_stop = '2_primitives'
+                schematic2layout(**vars(arguments))
+                arguments.flow_stop = None
+                arguments.flow_start = '3_pnr'
+                arguments.black_box_gds_dir = None
             return schematic2layout(**vars(arguments))
         except Exception:
             logger.exception("Fatal Error. Cannot proceed")

@@ -102,7 +102,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         tmp_metal.gds_datatype.Label = Labelnum;
         tmp_metal.gds_datatype.Blockage = Blockagenum;
 #endif
-        if (ldir.compare("V") == 0) {
+        if (ldir.compare("V") == 0 || ldir.compare("O") == 0) {
           tmp_metal.direct = 0;
           tmp_metal.grid_unit_x = times * lpitch / ScaleFactor;
           tmp_metal.grid_unit_y = -1;

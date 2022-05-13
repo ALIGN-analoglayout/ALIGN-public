@@ -12,6 +12,7 @@ from align.schema.library import read_lib_json
 from .primitive import generate_primitives
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
+from .gdsconv.gds2primitive import GEN_PRIMITIVE_FROM_GDS
 from .utils.gds2png import generate_png
 from .utils import logmanager
 
@@ -121,9 +122,9 @@ def start_viewer(working_dir, pnr_dir, variant):
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
-                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
+                     flow_stop=None, router_mode='no_op', gui=False, skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                     placer_sa_iterations=10000):
+                     placer_sa_iterations=10000, black_box_gds_dir=None):
 
     steps_to_run = build_steps(flow_start, flow_stop)
 
@@ -180,6 +181,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         with (primitive_dir / '__primitives__.json').open('rt') as fp:
             primitives = json.load(fp)
 
+    if black_box_gds_dir:
+        logger.info(f'generating primitives from GDS files in {black_box_gds_dir}')
+        GEN_PRIMITIVE_FROM_GDS(str(black_box_gds_dir), str(pdk_dir/'layers.json'), str(primitive_dir), str(topology_dir))
     # run PNR tool
     if sub_steps:
         pnr_dir = working_dir / '3_pnr'
@@ -195,8 +199,22 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         results.append((subckt, variants))
 
+        pl_files = set((pnr_dir / 'Results').glob(f'{subckt.upper()}*.scaled_placement_verilog.json'))
+        for plfile in pl_files:
+            os.system(f'hanan_router -r -uu 1 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.lef -p {plfile} -o {pnr_dir}/Results')
+        pfiles = set(primitive_dir.glob('*.gds.json'))
+        for pfile in pfiles:
+            if black_box_gds_dir and (black_box_gds_dir/plfile.stem).is_file():
+                shutil.copy(black_box_gds_dir/plfile.stem, primitive_dir/plfile.stem)
+            else:
+                convert_GDSjson_GDS(pfile, f'{primitive_dir}/{pfile.stem}')
         assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
+        deffiles = set((pnr_dir / 'Results').glob(f'{subckt.upper()}*.def'))
+        for deffile in deffiles:
+            modname = os.path.splitext(os.path.basename(deffile))[0]
+            os.system(f'gen_rt_gds.py -g {primitive_dir} -p {pnr_dir}/Results/{modname}.scaled_placement_verilog.json -d {deffile} -t {modname} -o {working_dir} -l {pnr_dir}/inputs/layers.json -s 2000')
+            logger.info(f"Use KLayout to visualize the python generated GDS: {working_dir}/{modname}.gds")
 
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():

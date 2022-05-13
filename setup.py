@@ -70,7 +70,8 @@ setup(name='align',
           'bin/convert_lef_to_layout_json.py',
           'bin/gen_gds_from_json.py',
           'bin/gen_lef_with_obs.py',
-          'bin/gen_primitive_from_gds.py'
+          'bin/gen_primitive_from_gds.py',
+          'bin/gen_rt_gds.py'
       ],
       install_requires=[
           'networkx>=2.4',
