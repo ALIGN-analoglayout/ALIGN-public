@@ -8,6 +8,8 @@ import shutil
 
 from align.gdsconv.gds2json import convert_GDS_GDSjson
 
+SCALE = 2.e3
+PRECISION = 1
 
 class GDS2_LEF_JSON:
     def __init__(self, layerfile, gdsfile, name):
@@ -49,10 +51,10 @@ class GDS2_LEF_JSON:
         if not self._cell: return
         leffile = self._cellname + '.lef'
         plleffile = self._cellname + '.placement_lef'
-        bbox = self._cell.get_bounding_box() * 1e9
-        dim = [round((bbox[1][0] - bbox[0][0])), round((bbox[1][1] - bbox[0][1]))]
+        bbox = self._cell.get_bounding_box()
+        dim = [round((bbox[1][0] - bbox[0][0]) * SCALE, PRECISION), round((bbox[1][1] - bbox[0][1]) * SCALE, PRECISION)]
         jsondict = dict()
-        jsondict["bbox"] = [round(bbox[i][j]) for i in (0,1) for j in (0,1)]
+        jsondict["bbox"] = [0, 0, dim[0], dim[1]]
         jsondict["globalRoutes"] = []
         jsondict["globalRouteGrid"] = []
         jsondict["terminals"] = []
@@ -60,35 +62,44 @@ class GDS2_LEF_JSON:
              #print(f'Writing LEF file : {leffile}')
             ofs.write(f'MACRO {self._cellname}\n')
             ofs.write(f'  UNITS\n    DATABASE MICRONS UNITS {round(1e-6/self._units)};\n  END UNITS\n')
-            ofs.write(f'  ORIGIN {bbox[0][0]} {bbox[0][1]} ;\n')
-            ofs.write(f'  FOREIGN {self._cellname} {bbox[0][0]} {bbox[0][1]} ;\n')
+            ofs.write(f'  ORIGIN 0 0 ;\n')
+            ofs.write(f'  FOREIGN {self._cellname} 0 0 ;\n')
             ofs.write(f'  SIZE {dim[0]} BY {dim[1]} ;\n')
             polygons = self._cell.get_polygons(True)
             pincache = set()
             for lbl in self._cell.get_labels():
-                if lbl.layer in self._layernames:
-                    lname = self._layernames[lbl.layer]
-                    pos = lbl.position * 1e9
+                lyr = lbl.layer - 100
+                if lbl.layer in self._layernames or lyr in self._layernames:
+                    lname = self._layernames[lbl.layer] if lbl.layer in self._layernames else self._layernames[lyr]
+                    pos = lbl.position * SCALE
                     if lname in self._layers:
                         pinidx = None
                         for idx, k in self._layers[lname].items():
                             if k == 'Pin':
                                 pinidx = idx
                                 break
-                        key = (lbl.layer, pinidx)
-                        if key in polygons:
-                            for poly in polygons[key]:
-                                if len(poly) < 2: continue
-                                box = [round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
-                                       round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9)]
-                                if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
-                                    ofs.write(f'  PIN {lbl.text}\n    DIRECTION INOUT ;\n    USE SIGNAL ;\n    PORT\n')
-                                    ofs.write(f'      LAYER {lname} ;\n')
-                                    ofs.write(f'        RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
-                                    ofs.write(f'    END\n  END {lbl.text}\n')
-                                    pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "pin"}
-                                    jsondict["terminals"].append(pindict)
-                                    pincache.add(str([key, box]))
+                        key1 = (lbl.layer, pinidx)
+                        key2 = (lyr, 0)
+                        key3 = (lyr, 60)
+                        added = False
+                        for key in [key1, key2, key3]:
+                            if key in polygons:
+                                for poly in polygons[key]:
+                                    if len(poly) < 2: continue
+                                    box = [round(min(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(min(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION),
+                                           round(max(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(max(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION)]
+                                    if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
+                                        ofs.write(f'  PIN {lbl.text}\n    DIRECTION INOUT ;\n    USE SIGNAL ;\n    PORT\n')
+                                        ofs.write(f'      LAYER {lname} ;\n')
+                                        ofs.write(f'        RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
+                                        ofs.write(f'    END\n  END {lbl.text}\n')
+                                        pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "pin"}
+                                        jsondict["terminals"].append(pindict)
+                                        pincache.add(str([key, box]))
+                                        added = True
+                                        break
+                            if added: break
+
                         drawidx = None
                         for idx, k in self._layers[lname].items():
                             if k == 'Draw':
@@ -98,8 +109,8 @@ class GDS2_LEF_JSON:
                         if key in polygons:
                             for poly in polygons[key]:
                                 if len(poly) < 2: continue
-                                box = [round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
-                                       round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9)]
+                                box = [round(min(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(min(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION),
+                                       round(max(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(max(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION)]
                                 if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
                                     pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "drawing"}
                                     jsondict["terminals"].append(pindict)
@@ -112,8 +123,8 @@ class GDS2_LEF_JSON:
                 if lname not in self._layers or k[1] not in self._layers[lname] or lname.lower() == 'bbox': continue
                 for poly in polygons[k]:
                     if len(poly) < 2: continue
-                    box = [ round(min(r[0] for r in poly) * 1e9), round(min(r[1] for r in poly) * 1e9),
-                        round(max(r[0] for r in poly) * 1e9), round(max(r[1] for r in poly) * 1e9) ]
+                    box = [ round(min(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(min(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION),
+                            round(max(r[0] - bbox[0][0] for r in poly) * SCALE, PRECISION), round(max(r[1] - bbox[0][1] for r in poly) * SCALE, PRECISION) ]
                     if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('label')):
                         if str([k, box]) not in pincache:
                             ofs.write(f'    LAYER {lname} ;\n      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
