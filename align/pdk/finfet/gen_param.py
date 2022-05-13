@@ -20,7 +20,7 @@ def limit_pairs(pairs):
         return pairs
 
 
-def add_primitive(primitives, block_name, block_args):
+def add_primitive(primitives, block_name, block_args, generator_constraint):
     if block_name in primitives:
         block_args['abstract_template_name'] = block_name
         block_args['concrete_template_name'] = block_name
@@ -41,14 +41,35 @@ def add_primitive(primitives, block_name, block_args):
                 if y == 1:
                     break
             pairs = limit_pairs((pairs))
+
+
+
             for newx, newy in pairs:
-                concrete_name = f'{block_name}_X{newx}_Y{newy}'
-                if concrete_name not in primitives:
-                    primitives[concrete_name] = deepcopy(block_args)
-                    primitives[concrete_name]['x_cells'] = newx
-                    primitives[concrete_name]['y_cells'] = newy
-                    primitives[concrete_name]['abstract_template_name'] = block_name
-                    primitives[concrete_name]['concrete_template_name'] = concrete_name
+
+                ok = True
+                if generator_constraint is not None:
+                    generator_parameters = generator_constraint.parameters
+                    if generator_parameters is not None:
+                        legal_sizes = generator_parameters.get('legal_sizes')
+                        if legal_sizes is not None:
+                            ok = False
+                            for d in legal_sizes:
+                                if newx == d['x'] and newy == d['y']:
+                                    ok = True
+                                    break
+
+
+
+                if not ok:
+                    logger.warn(f"Not adding primitive of size {newx} {newy} {generator_constraint}")
+                else:
+                    concrete_name = f'{block_name}_X{newx}_Y{newy}'
+                    if concrete_name not in primitives:
+                        primitives[concrete_name] = deepcopy(block_args)
+                        primitives[concrete_name]['x_cells'] = newx
+                        primitives[concrete_name]['y_cells'] = newy
+                        primitives[concrete_name]['abstract_template_name'] = block_name
+                        primitives[concrete_name]['concrete_template_name'] = concrete_name
         else:
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
@@ -56,8 +77,19 @@ def add_primitive(primitives, block_name, block_args):
 
 
 def gen_param(subckt, primitives, pdk_dir):
+
+    generator_constraint = None
+    for const in subckt.constraints:
+        if const.constraint == 'generator':
+            assert generator_constraint is None
+            generator_constraint = const
+
+    
+
     block_name = subckt.name
     generator_name = subckt.generator["name"]
+
+
     logger.debug(f"Checking if PDK offers a generator for: {block_name}")
     if get_generator(generator_name.lower(), pdk_dir):
         # ThinFilmResistor, StandardCell
@@ -70,10 +102,11 @@ def gen_param(subckt, primitives, pdk_dir):
                 }
         block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
         logger.debug(f"Black-box primitive: {block_name} {block_args} {attr}")
-        add_primitive(primitives, block_name, block_args)
+        add_primitive(primitives, block_name, block_args, generator_constraint)
     else:  # Transistor
         vt = subckt.elements[0].model
         values = deepcopy(subckt.elements[0].parameters)
+
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
             assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
@@ -119,5 +152,9 @@ def gen_param(subckt, primitives, pdk_dir):
             'y_cells': y,
             'parameters': values
         }
-        add_primitive(primitives, block_name, block_args)
+
+        
+
+        add_primitive(primitives, block_name, block_args, generator_constraint)
+
     return True

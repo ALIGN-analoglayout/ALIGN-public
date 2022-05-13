@@ -4,7 +4,7 @@
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
     {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0", "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": true, "single_device_connect_m1": false}}},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"x": 4, "y": 2}]}}},
     {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "name": "nraila", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
     {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "name": "nrailb", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
     {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
