@@ -92,7 +92,7 @@ class ConstraintTranslator():
         assert self.ckt_data.find(name), f"subckt {name} not found in graph"
         const_list = self.ckt_data.find(name).constraints
         for const in const_list:
-            if hasattr(const, "instances"):
+            if hasattr(const, "instances") and const.constraint!='group_blocks':
                 # checking instances in the constraint and update names
                 if set(const.instances) & set(remove_nodes):
                     replace = True

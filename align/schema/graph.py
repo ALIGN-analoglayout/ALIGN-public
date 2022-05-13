@@ -187,6 +187,11 @@ class Graph(networkx.Graph):
             nodes_str = '_'.join(nodes)
             instance_name = f'X_{nodes_str}'
             assert instance_name not in self.elements
+            with set_context(self.subckt.constraints):
+                gc = [c for c in subckt.constraints if isinstance(c,constraint.Generator)][0]
+                generator_param = {k:v for k,v in gc if k !='constraint'}
+                temp = constraint.GroupBlocks(name=new_subckt.name, instances=nodes, generator=generator_param)
+                self.subckt.constraints.append(temp)
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
@@ -200,10 +205,7 @@ class Graph(networkx.Graph):
             if self.subckt.name:
                 tr = ConstraintTranslator(self.subckt.parent)
                 tr._update_const(self.subckt.name, removal_candidates, instance_name)
-
         return new_subckt_names
-    # TODO: in future use paramaters from generator
-    # HACK can also be moved to end of flow
 
     def create_subckt_instance(self, subckt, match):
         with set_context(self.subckt.parent):
