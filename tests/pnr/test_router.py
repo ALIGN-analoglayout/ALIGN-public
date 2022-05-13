@@ -175,3 +175,44 @@ def test_ru_exclude_m3():
     for term in cvr.terminals:
         assert term['layer'] != 'M3', 'M3 excluded'
 
+
+def test_ru_exclude_per_net():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
+
+    cv.addWire(cv.m2, 'B',  9, (9, -1),  (14, 1), netType='pin')
+    cv.addWire(cv.m2, 'B',  1, (9, -1),  (14, 1), netType='pin')
+
+    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+          "constraint": "route",
+          "min_layer": "M1",
+          "max_layer": "M3",
+          "customize": [{'nets': ["A"], 'min_layer': "M2", 'max_layer': "M3"},
+                        {'nets': ["B"], 'min_layer': "M1", 'max_layer': "M2"}]
+        }])
+
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    for term in cvr.terminals:
+        assert term['netName'] != "A" or term['layer'] != 'M1', 'M1 excluded for net A'
+        assert term['netName'] != "B" or term['layer'] != 'M3', 'M3 excluded for net A'
+
+def test_ru_allow_ports_on_excluded_layers():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m1, 'A',  9, (1, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',  1, (1, -1),  (6, 1), netType='pin')
+
+    cv.addWire(cv.m3, 'B',  9, (9, -1),  (14, 1), netType='pin')
+    cv.addWire(cv.m3, 'B',  1, (9, -1),  (14, 1), netType='pin')
+
+    run_postamble(name, cv, max_errors=0, constraints=[ {
+          "constraint": "route",
+          "min_layer": "M2",
+          "max_layer": "M2"
+        }])
