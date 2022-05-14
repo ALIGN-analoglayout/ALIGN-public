@@ -140,10 +140,14 @@ class Annotate:
             for const in subckt.constraints
             if isinstance(const, constraint.GroupBlocks)
         ]
-        self._remove_group_const(subckt, gb_const)
+        # self._remove_group_const(subckt, gb_const)
         tr = ConstraintTranslator(self.ckt_data)
         for const in gb_const:
-            assert self.ckt_data.find(const.name.upper()) is None, "Already existing subckt with this name, please provide different name to const"
+            if const.template == None:
+                gb_name =  const.name.upper()
+            else:
+                gb_name = const.template.upper()
+            assert self.ckt_data.find(gb_name) is None, "Already existing subckt with this name, please provide different name to const"
             const_inst = [i.upper() for i in const.instances]
             ckt_ele = set([ele.name for ele in subckt.elements])
             assert set(const_inst).issubset(
@@ -153,7 +157,7 @@ class Annotate:
             ac_nets = [
                 ele.pins.values() for ele in subckt.elements if ele.name in const_inst
             ]
-            ac_nets = set([x for y in ac_nets for x in y])
+            ac_nets = set([x for y in ac_nets for x in y]) #Flatten list
             # Filter internal nets but skip internal net connected to port
             ac_nets = [
                 net
@@ -170,11 +174,11 @@ class Annotate:
             clk = list(set(clk) & set(ac_nets))
 
             logger.debug(
-                f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}"
+                f"Grouping instances {const_inst} in subckt {gb_name} pins: {ac_nets}"
             )
             # Create a subckt and add to library
             with set_context(self.ckt_data):
-                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
+                new_subckt = SubCircuit(name=gb_name, pins=ac_nets)
                 if getattr(const, 'generator', None):
                     new_subckt.generator["name"] = const.generator["name"]
                     gen_const = constraint.Generator(**const.generator)
@@ -186,23 +190,26 @@ class Annotate:
                 for e in const_inst:
                     new_subckt.elements.append(subckt.get_element(e))
             # Remove elements from subckt then Add new_subckt instance
-            inst_name = "X_" + const.name.upper() + "_" + "_".join(const_inst)
+            if const.template == None:
+                inst_name = "X_" + "_".join(const_inst)
+            else:
+                inst_name = const.name.upper()
             with set_context(subckt.elements):
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
                 X1 = Instance(
                     name=inst_name,
-                    model=const.name.upper(),
+                    model=gb_name,
                     pins={x: x for x in ac_nets},
                 )
                 subckt.elements.append(X1)
 
             # Translate any constraints defined on the groupblock elements to subckt
             tr._top_to_bottom_translation(
-                name, {inst: inst for inst in const_inst}, const.name
+                name, {inst: inst for inst in const_inst}, gb_name
             )
             # Modify instance names in constraints after modifying groupblock
-            tr._update_const(name, [const.name.upper(), *const_inst], inst_name)
+            tr._update_const(name, [gb_name, *const_inst], inst_name)
         # Removing const with single instances.
         for c in list(self.ckt_data.find(name).constraints):
             tr._check_const_length(self.ckt_data.find(name).constraints, c)
