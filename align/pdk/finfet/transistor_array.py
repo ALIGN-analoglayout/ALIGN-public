@@ -189,8 +189,15 @@ class MOSGenerator(CanvasPDK):
             else:
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            # Probably want to be able to change the singleton pattern
-            interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
+            if self.exact_patterns_d is not None:
+                k = self.n_col, self.n_row
+                assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
+            elif self.pattern_template is not None:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
+            else:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
+
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):

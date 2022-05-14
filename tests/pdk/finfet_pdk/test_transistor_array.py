@@ -110,13 +110,13 @@ def test_unit_interleave_pattern():
     assert [['A', 'B', 'A'],
             ['B', 'A', 'B']] == MOSGenerator.interleave_pattern(2, 3)
 
-    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, patterns=["A"])
+    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, pattern_template=["A"])
 
     assert [['A', 'b', 'A', 'b'],
-            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, patterns=["Ab","Ba"])
+            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["Ab","Ba"])
 
     assert [['A', 'b', 'B', 'a'],
-            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, patterns=["AbBa","BaAb"])
+            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["AbBa","BaAb"])
 
 
 def test_unit_validate_array():
