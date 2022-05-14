@@ -53,7 +53,7 @@ class ConstraintTranslator():
                         ]
                     ):
                         sub_const.append(const)
-                    elif hasattr(const, "instances"):
+                    elif hasattr(const, "instances") and const.constraint!="group_blocks":
                         # checking if sub hierarchy instances are in const defined
                         sconst = {
                             x: [

@@ -175,7 +175,7 @@ class Annotate:
                 gb_name = const.name.upper()+block_arg
             else:
                 gb_name = const.template.upper()+block_arg
-            assert self.ckt_data.find(gb_name) is None, "Already existing subckt with this name, please provide different name to const"
+            assert self.ckt_data.find(gb_name) is None, f"Already existing subckt with name {gb_name}, please provide different name to const"
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {gb_name} pins: {ac_nets}"
             )
