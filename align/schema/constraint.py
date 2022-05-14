@@ -501,6 +501,7 @@ class GroupBlocks(HardConstraint):
     Args:
       instances (list[str]): List of :obj:`instances`
       name (str): alias for the list of :obj:`instances`
+      instance_name (str): instance name for the virtual hierarchy based on the list of :obj:`instances`
       generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
@@ -519,6 +520,7 @@ class GroupBlocks(HardConstraint):
     """
     name: str
     instances: List[str]
+    template: Optional[str]
     generator: Optional[dict]
 
     @types.validator('name', allow_reuse=True)
@@ -528,23 +530,25 @@ class GroupBlocks(HardConstraint):
 
     def translate(self, solver):
         # Non-zero width / height
+        instances = get_instances_from_hacked_dataclasses(self)
         bb = solver.bbox_vars(self.name)
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
-        # Grouping into common bbox
-        for b in solver.iter_bbox_vars(self.instances):
-            yield b.urx <= bb.urx
-            yield b.llx >= bb.llx
-            yield b.ury <= bb.ury
-            yield b.lly >= bb.lly
-        instances = get_instances_from_hacked_dataclasses(self)
-        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
-            yield solver.Or(
-                b.urx <= bb.llx,
-                bb.urx <= b.llx,
-                b.ury <= bb.lly,
-                bb.ury <= b.lly,
-            )
+        # Skip constraints checking during PnR
+        if self.name not in instances:
+            # Grouping into common bbox
+            for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
+                yield b.urx <= bb.urx
+                yield b.llx >= bb.llx
+                yield b.ury <= bb.ury
+                yield b.lly >= bb.lly
+            for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
+                yield solver.Or(
+                    b.urx <= bb.llx,
+                    bb.urx <= b.llx,
+                    b.ury <= bb.lly,
+                    bb.ury <= b.lly,
+                )
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes

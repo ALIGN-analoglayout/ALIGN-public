@@ -119,6 +119,7 @@ def test_dont_const():
     gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
         gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
+        gen_const = [c for c in gen_const if c['constraint'] != "group_blocks"]
         assert len(gen_const) == 3, f"{gen_const}"
     clean_data(name)
 

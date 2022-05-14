@@ -34,7 +34,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         gen_const=gen_const[0]
     if gen_const:
         if getattr(gen_const, "parameters", None):
-            print(gen_const)
             if getattr(gen_const.parameters, "shared_diff", None):
                 shared_diff = gen_const.parameters["shared_diff"]
             if getattr(gen_const.parameters, "pattern", None):

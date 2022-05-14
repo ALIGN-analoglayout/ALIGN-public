@@ -101,6 +101,7 @@ def test_scf():
     assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
     FindConst(updated_cktlib.find("SWITCHED_CAPACITOR_FILTER"))
     gen_const = updated_cktlib.find("SWITCHED_CAPACITOR_FILTER").constraints.dict()["__root__"]
+    gen_const = [const for const in gen_const if const['constraint']!='group_blocks']
     gen_const.sort(key=lambda item: item.get("constraint"))
 
     gold_const_path = (
