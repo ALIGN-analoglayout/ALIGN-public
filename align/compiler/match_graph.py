@@ -11,6 +11,7 @@ import logging
 from ..schema import constraint
 from align.schema.graph import Graph
 from align.schema import ConstraintTranslator
+from .util import gen_group_key
 logger = logging.getLogger(__name__)
 
 
@@ -143,11 +144,6 @@ class Annotate:
         # self._remove_group_const(subckt, gb_const)
         tr = ConstraintTranslator(self.ckt_data)
         for const in gb_const:
-            if const.template == None:
-                gb_name =  const.name.upper()
-            else:
-                gb_name = const.template.upper()
-            assert self.ckt_data.find(gb_name) is None, "Already existing subckt with this name, please provide different name to const"
             const_inst = [i.upper() for i in const.instances]
             ckt_ele = set([ele.name for ele in subckt.elements])
             assert set(const_inst).issubset(
@@ -173,6 +169,13 @@ class Annotate:
             gnd = list(set(gnd) & set(ac_nets))
             clk = list(set(clk) & set(ac_nets))
 
+            #TODO use isomorphism to check for matching group blocks
+            block_arg = gen_group_key({i: subckt.get_element(e) for i, e in enumerate(const_inst)})
+            if const.template == None:
+                gb_name = const.name.upper()+block_arg
+            else:
+                gb_name = const.template.upper()+block_arg
+            assert self.ckt_data.find(gb_name) is None, "Already existing subckt with this name, please provide different name to const"
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {gb_name} pins: {ac_nets}"
             )
