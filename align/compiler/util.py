@@ -163,7 +163,7 @@ def gen_key(param):
 
 def gen_group_key(multi_param):
     param = FlatDict(multi_param)
-    arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
+    arg_str = '_'.join([str(k)+':'+str(param[k]) for k in sorted(param.keys())])
     key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
     return key
 
