@@ -118,6 +118,14 @@ class ConstraintTranslator():
                     elif len(pair) == 1:
                         if pair[0] in remove_nodes:
                             pair[0] = new_inst
+            elif hasattr(const, "pin_current"):
+                updated_pc={}
+                for pin,current in const.pin_current.popitems():
+                    inst_name = pin.split('/')[0]
+                    if inst_name in remove_nodes:
+                        updated_pc[new_inst/pin.split('/')] = current
+                    else:
+                        updated_pc[pin] = current
             elif hasattr(const, "regions"):
                 for i, row in enumerate(const.regions):
                     if set(row) & set(remove_nodes):
