@@ -81,7 +81,7 @@ def gen_param(subckt, primitives, pdk_dir):
         elif 'VALUE' in values:
             size = round(float(values["VALUE"]) * 1E15, 4)
         assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
-        if int(values["L"]) > 1 and int(values["W"]):
+        if "L" in values and "W" in values and int(values["L"]) > 1 and int(values["W"]):
             length = values["L"]
             width = values["W"]
         else:
