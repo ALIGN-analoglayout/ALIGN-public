@@ -378,10 +378,13 @@ def router_driver(*, cap_map, cap_lef_s,
 
         placements_to_run = None
 
-        res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                     router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+        if router_mode != 'no_op':
+            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
-        res_dict.update(res)
+            res_dict.update(res)
+        else:
+            logger.info(f'Using Hanan router on {DB.hierTree[DB.TraverseHierTree()[-1]].name} restricted to {placements_to_run}')
     
     return res_dict
 
