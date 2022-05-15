@@ -15,7 +15,7 @@
 	R2 vb net1 resistor r=rb
 	R1 vs vgnd resistor r=rl
 	R0 vps vd resistor r=rl
-	C2 vs vout_sdc2 capacitor c=cl
-	C1 vd vout_sdc1 capacitor c=cl
-	C0 vin net1 capacitor c=cc
+	C2 vs vout_sdc2 capacitor W=120 L=120
+	C1 vd vout_sdc1 capacitor W=120 L=120
+	C0 vin net1 capacitor W=400n L=100n
 .ends single_to_differential_converter
