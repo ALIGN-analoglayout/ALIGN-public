@@ -8,19 +8,6 @@
           "abs_distance": 0
         },
         {
-          "constraint": "group_blocks",
-          "name": "X_MP7_MP8",
-          "template": "CMC_PMOS",
-          "instances": [
-            "MP7",
-            "MP8"
-          ],
-          "generator": {
-            "name": "mos",
-            "parameters": null
-          }
-        },
-        {
           "constraint": "order",
           "instances": [
             "X_MN0",

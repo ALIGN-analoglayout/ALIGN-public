@@ -121,8 +121,8 @@ class Annotate:
                 subckt.constraints.remove(const)
             assert len(subckt.constraints) == start_count - len(rm_const)
 
-    def _group_block_const(self, name):
-        subckt = self.ckt_data.find(name)
+    def _group_block_const(self, sname):
+        subckt = self.ckt_data.find(sname)
         const_list = subckt.constraints
         pwr = list()
         gnd = list()
@@ -173,8 +173,10 @@ class Annotate:
             block_arg = gen_group_key({i: subckt.get_element(e) for i, e in enumerate(const_inst)})
             if const.template == None:
                 gb_name = const.name.upper()+block_arg
+                inst_name = "X_" + const.name.upper()+"_" +"_".join(const_inst)
             else:
                 gb_name = const.template.upper()+block_arg
+                inst_name = const.name.upper()
             assert self.ckt_data.find(gb_name) is None, f"Already existing subckt with name {gb_name}, please provide different name to const"
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {gb_name} pins: {ac_nets}"
@@ -193,10 +195,6 @@ class Annotate:
                 for e in const_inst:
                     new_subckt.elements.append(subckt.get_element(e))
             # Remove elements from subckt then Add new_subckt instance
-            if const.template == None:
-                inst_name = "X_" + "_".join(const_inst)
-            else:
-                inst_name = const.name.upper()
             with set_context(subckt.elements):
                 for e in const_inst:
                     subckt.elements.remove(subckt.get_element(e))
@@ -209,25 +207,25 @@ class Annotate:
 
             # Translate any constraints defined on the groupblock elements to subckt
             tr._top_to_bottom_translation(
-                name, {inst: inst for inst in const_inst}, gb_name
+                sname, {inst: inst for inst in const_inst}, gb_name
             )
             # Modify instance names in constraints after modifying groupblock
-            tr._update_const(name, [gb_name, *const_inst], inst_name)
+            tr._update_const(sname, [gb_name.replace(block_arg,''), *const_inst], inst_name)
         # Removing const with single instances.
-        for c in list(self.ckt_data.find(name).constraints):
-            tr._check_const_length(self.ckt_data.find(name).constraints, c)
-        logger.debug(f"reduced constraints of design {name} {self.ckt_data.find(name).constraints}")
+        for c in list(self.ckt_data.find(sname).constraints):
+            tr._check_const_length(self.ckt_data.find(sname).constraints, c)
+        logger.debug(f"reduced constraints of design {sname} {self.ckt_data.find(sname).constraints}")
 
-    def _group_cap_const(self, name):
+    def _group_cap_const(self, sname):
         # TODO: merge group cap and group block
-        subckt = self.ckt_data.find(name)
+        subckt = self.ckt_data.find(sname)
         gc_const = [
             const
             for const in subckt.constraints
             if isinstance(const, constraint.GroupCaps) and len(const.instances) > 1
         ]
         if len(gc_const) > 0:
-            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {name}")
+            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {sname}")
         else:
             return
         tr = ConstraintTranslator(self.ckt_data)
@@ -238,7 +236,7 @@ class Annotate:
 
             assert set(const_inst).issubset(
                 set([e.name for e in subckt.elements])
-            ), f"const instances{const_inst} are not in subckt {name}"
+            ), f"const instances{const_inst} are not in subckt {sname}"
             # all nets connected to common centroid cap constraints
             new_pins = {}
             for i, e in enumerate(const_inst):
@@ -267,6 +265,6 @@ class Annotate:
                 subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock
             tr._update_const(
-                name, [const.name.upper(), *const_inst], const.name.upper()
+                sname, [const.name.upper(), *const_inst], const.name.upper()
             )
 
