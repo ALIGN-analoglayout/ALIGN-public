@@ -12,8 +12,8 @@ def test_cc_24():
        mn0 o0 i0 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
        mp1 o1 i1 vccx vccx p w=270e-9 l=20e-9 nfin=6 nf=2
        mn1 o1 i1 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
-       c0 o0 vssx w=240 l=200
-       c1 o1 vssx w=240 l=200
+       c0 o0 vssx 24e-15
+       c1 o1 vssx 24e-15
        .ends {name}
        """)
 
@@ -65,8 +65,8 @@ def test_cc_36():
        mn0 o0 i0 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
        mp1 o1 i1 vccx vccx p w=270e-9 l=20e-9 nfin=6 nf=2
        mn1 o1 i1 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
-       c0 o0 vssx w=360 l=200
-       c1 o1 vssx w=360 l=200
+       c0 o0 vssx 36e-15
+       c1 o1 vssx 36e-15
        .ends {name}
        """)
 
@@ -117,8 +117,8 @@ def test_cc_60():
        mn0 o0 i0 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
        mp1 o1 i1 vccx vccx p w=270e-9 l=20e-9 nfin=6 nf=2
        mn1 o1 i1 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
-       c0 o0 vssx w=600 l=200
-       c1 o1 vssx w=600 l=200
+       c0 o0 vssx 60e-15
+       c1 o1 vssx 60e-15
        .ends {name}
        """)
 
@@ -170,8 +170,8 @@ def test_cc_with_dummies():
        mn0 o0 i0 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
        mp1 o1 i1 vccx vccx p w=270e-9 l=20e-9 nfin=6 nf=2
        mn1 o1 i1 vssx vssx n w=270e-9 l=20e-9 nfin=6 nf=2
-       c0 o0 vssx w=240 l=200
-       c1 o1 vssx w=240 l=200
+       c0 o0 vssx 24e-15
+       c1 o1 vssx 24e-15
        .ends {name}
        """)
 
