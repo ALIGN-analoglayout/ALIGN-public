@@ -195,12 +195,11 @@ class Annotate:
                     pins={x: x for x in ac_nets},
                 )
                 subckt.elements.append(X1)
-            tr = ConstraintTranslator(self.ckt_data, name, const.name, {inst: inst for inst in const_inst})
+            tr = ConstraintTranslator(self.ckt_data, name, const.name,)
             # Translate any constraints defined on the groupblock elements to subckt
-            tr._top_to_bottom_translation()
+            tr._top_to_bottom_translation({inst: inst for inst in const_inst})
             # Modify instance names in constraints after modifying groupblock
-            tr._update_const(inst_name)
-            # Removing const with single instances.
+            tr._update_const(inst_name, {inst: inst for inst in [const.name.upper(), *const_inst]})
             for c in list(self.ckt_data.find(name).constraints):
                 tr._check_const_length(self.ckt_data.find(name).constraints, c)
         logger.debug(f"reduced constraints of design {name} {self.ckt_data.find(name).constraints}")

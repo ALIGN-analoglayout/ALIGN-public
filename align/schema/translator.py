@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConstraintTranslator():
-    def __init__(self, ckt_data, parent_name:str, child_name:str, node_map:dict):
+    def __init__(self, ckt_data, parent_name:str, child_name:str):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -25,7 +25,6 @@ class ConstraintTranslator():
         self.ckt_data = ckt_data
         self.parent_name = parent_name
         self.child_name = child_name
-        self.node_map = node_map
         self.parent = self.ckt_data.find(parent_name)
         self.child = self.ckt_data.find(child_name)
         assert self.child, f"Hierarchy not found, {child_name}"
@@ -33,7 +32,7 @@ class ConstraintTranslator():
         self.parent_const = self.parent.constraints
         self.child_const = self.child.constraints
 
-    def _top_to_bottom_translation(self):
+    def _top_to_bottom_translation(self, node_map):
         """
         Update instance names in the child constraints
         """
@@ -60,21 +59,21 @@ class ConstraintTranslator():
                         # checking if sub hierarchy instances are in const defined
                         _child_const = {
                             x: [
-                                self.node_map[block]
+                                node_map[block]
                                 for block in const.instances
-                                if block in self.node_map.keys()
+                                if block in node_map.keys()
                             ]
                             if x == "instances"
                             else getattr(const, x)
                             for x in const.__fields_set__
                         }
-                        assert "constraint" in _child_const
-                        # logger.debug(f"transferred constraint instances {match_dict} from {const} to {sconst}")
+                        assert "constraint" in _child_const, f"format check failed"
+                        logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
                         self._check_const_length(self.child_const,_child_const)
                 if self.child_const:
                     logger.debug(f"transferred constraints to {self.child_name} {self.child_const}")
 
-    def _update_const(self, new_inst):
+    def _update_const(self, new_inst, node_map):
         """
         Update instance names in the parent constraint
 
@@ -91,9 +90,9 @@ class ConstraintTranslator():
         for const in self.parent_const:
             if hasattr(const, "instances"):
                 # checking instances in the constraint and update names
-                if set(const.instances) & set(self.node_map.keys()):
+                if set(const.instances) & set(node_map.keys()):
                     replace = True
-                    for old_inst in self.node_map.keys():
+                    for old_inst in node_map.keys():
                         if replace:
                             _list_replace(const.instances, old_inst, new_inst)
                             replace = False
@@ -101,19 +100,19 @@ class ConstraintTranslator():
                             const.instances.remove(old_inst)
                     if len(const.instances) == 0:
                         logger.debug(f"remove const belonging to new hierarchy {const}")
-                    # logger.debug(f"updated instances in the constraint:{const}")
+                    logger.debug(f"updated instances in the constraint:{const}")
             elif hasattr(const, "pairs"):
                 for pair in const.pairs:
                     if len(pair) == 2:
-                        if pair[0] in self.node_map.keys() and pair[1] in self.node_map.keys():
+                        if pair[0] in node_map.keys() and pair[1] in node_map.keys():
                             pair[0] = new_inst
                             pair.pop()
-                        elif pair[0] in self.node_map.keys() and pair[1] not in self.node_map.keys():
+                        elif pair[0] in node_map.keys() and pair[1] not in node_map.keys():
                             pair[0] = new_inst
-                        elif pair[1] in self.node_map.keys() and pair[0] not in self.node_map.keys():
+                        elif pair[1] in node_map.keys() and pair[0] not in node_map.keys():
                             pair[1] = new_inst
                     elif len(pair) == 1:
-                        if pair[0] in self.node_map.keys():
+                        if pair[0] in node_map.keys():
                             pair[0] = new_inst
             elif hasattr(const, "pin_current"):
                 logger.info(f"updating charge flow constraints {const.pin_current.keys()}")
@@ -121,10 +120,10 @@ class ConstraintTranslator():
                 remove_pins = []
                 for pin,current in const.pin_current.items():
                     parent_inst_name = pin.split('/')[0].upper()
-                    if parent_inst_name in self.node_map.keys():
-                        logger.info(f"{self.node_map}")
+                    if parent_inst_name in node_map.keys():
+                        logger.info(f"{node_map}")
                         remove_pins.append(pin)
-                        child_inst_name = self.node_map[parent_inst_name]
+                        child_inst_name = node_map[parent_inst_name]
                         new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
                         if new_inst+'/'+new_parent_pin in updated_pc:
                             for id, cur in enumerate(updated_pc[new_inst+'/'+new_parent_pin]):
@@ -132,16 +131,15 @@ class ConstraintTranslator():
                         else:
                             updated_pc[new_inst+'/'+new_parent_pin] = current
 
-                logger.info(f"removing {remove_pins} adding {updated_pc} {self.node_map}")
                 for pin in remove_pins:
                     const.pin_current.pop(pin)
                 for pin, current in updated_pc.items():
                     const.pin_current[pin] = current
             elif hasattr(const, "regions"):
                 for i, row in enumerate(const.regions):
-                    if set(row) & set(self.node_map.keys()):
+                    if set(row) & set(node_map.keys()):
                         replace = True
-                        for old_inst in self.node_map.keys():
+                        for old_inst in node_map.keys():
                             if replace:
                                 _list_replace(const.regions[i], old_inst, new_inst)
                                 replace = False

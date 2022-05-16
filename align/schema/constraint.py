@@ -1304,7 +1304,7 @@ class SymmetricNets(SoftConstraint):
 
 
 class ChargeFlow(SoftConstraint):
-    '''SymmetricNets
+    '''ChargeFlow
     Defines the current flowing through each pin.
     The chargeflow constraints help in improving the placement.
 

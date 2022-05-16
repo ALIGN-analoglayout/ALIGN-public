@@ -191,16 +191,16 @@ class Graph(networkx.Graph):
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
 
-            logger.info(f"adding instance {instance_name} of type {new_subckt.name} in subckt {self.name} {removal_candidates} {match}")
+            logger.debug(f"adding instance {instance_name} of type {new_subckt.name} in subckt {self.name}")
             self.add_instance(
                 name=instance_name,
                 model=new_subckt.name,
                 pins=pin2net_map
             )
             if self.subckt.name:
-                tr = ConstraintTranslator(self.subckt.parent, self.subckt.name, new_subckt.name, {
-                                          k:v for k, v in match.items() if k in removal_candidates})
-                tr._update_const(instance_name)
+                tr = ConstraintTranslator(self.subckt.parent, self.subckt.name, new_subckt.name)
+                tr._update_const(instance_name, {
+                    k: v for k, v in match.items() if k in removal_candidates})
 
         return new_subckt_names
     # TODO: in future use paramaters from generator
