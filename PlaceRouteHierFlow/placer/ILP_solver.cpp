@@ -1,11 +1,9 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-#include "symphony.h"
 #include <iostream>
 #include <malloc.h>
 #include <signal.h>
-#include "CbcModel.hpp"
-#include "OsiClpSolverInterface.hpp"
+#include "ILPSolverIf.h"
 
 ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
 {
@@ -1773,7 +1771,8 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   const unsigned N_area_x = N_var - 2;
   const unsigned N_area_y = N_var - 1;
 
-  const auto infty = sym_get_infinity();
+  ILPSolverIf solverif(SOLVER_ENUM::SYMPHONY);
+  const auto infty = solverif.getInfinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
@@ -2438,11 +2437,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
+    solverif.setTimeLimit(10);
+    solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
+        intvars.data(), objective.data(), sens.data(), rhs.data());
 
     /*//solve the integer program
     static int write_cnt{0};
@@ -2481,24 +2479,20 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names);
       ++write_cnt;
     }*/
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      status = solverif.solve();
     }
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    if (status != 0) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       sighandler = signal(SIGINT, sighandler);
       return false;
     }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    sym_close_environment(env);
+    const double* var = solverif.solution();
     sighandler = signal(SIGINT, sighandler);
     int minx(INT_MAX), miny(INT_MAX);
     //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
@@ -2569,13 +2563,13 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   N_var += place_on_grid_var_count;
   N_var += 2; //Area x and y variables
 
-  OsiClpSolverInterface osiclp;
-  const double infty{osiclp.getInfinity()};
+  ILPSolverIf solverif;
+  const double infty{solverif.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
-  std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
+  std::vector<int> intvars(mydesign.Blocks.size() * 4, TRUE);
   intvars.resize(N_var, FALSE);
   std::vector<char> sens;
   std::vector<double> collb(N_var, 0), colub(N_var, infty);
@@ -3253,14 +3247,9 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
-    osiclp.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+    solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
-        objective.data(), rhslb, rhsub);
-    for (int i = 0; i < intvars.size(); ++i) {
-      if (intvars[i]) {
-        osiclp.setInteger(i);
-      }
-    }
+        objective.data(), rhslb, rhsub, intvars.data());
 
     /*//solve the integer program
     static int write_cnt{0};
@@ -3303,18 +3292,12 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
       ++write_cnt;
     }*/
-    CbcModel model(osiclp);
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      CbcMain0(model);
-      model.setLogLevel(0);
-      model.setMaximumSeconds(300);
-      //model.setNumberHeuristics(0);
-      const char* argv[] = {"", "-log", "0", "-solve"};
-      status = CbcMain1(4, argv, model);
+      status = solverif.solve(1);
     }
-    const double* var = model.bestSolution();
+    const double* var = solverif.solution();
     if (status != 0 || var == nullptr) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
       sighandler = signal(SIGINT, sighandler);
@@ -3431,7 +3414,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (mydesign.Blocks.empty()) return -1;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  if (mydesign.Blocks.size() == 1) {
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
     Blocks[0].x = 0; Blocks[0].y = 0;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
     area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
@@ -3453,9 +3436,53 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     // snap up coordinates to grid
+    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++){
+      if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
+      //if sympair center is not on grid
+      {
+        int first_id = mydesign.SPBlocks[i].sympair[0].first;
+        int second_id = mydesign.SPBlocks[i].sympair[0].second;
+        int first_selected = curr_sp.selected[first_id];
+        int second_selected = curr_sp.selected[second_id];
+        int center_line = ((Blocks[first_id].x + mydesign.Blocks[first_id][first_selected].width / 2) +
+                           (Blocks[second_id].x + mydesign.Blocks[second_id][second_selected].width / 2)) /
+                          2;
+        if (center_line % x_pitch == 0) continue;
+      }
+      for (unsigned int j = 0; j < mydesign.SPBlocks[i].sympair.size(); j++) {
+        int first_id = mydesign.SPBlocks[i].sympair[j].first;
+        int second_id = mydesign.SPBlocks[i].sympair[j].second;
+        if (Blocks[first_id].x>Blocks[second_id].x) {
+          roundup(Blocks[first_id].x, x_pitch);
+          rounddown(Blocks[second_id].x, x_pitch);
+        }else{
+          rounddown(Blocks[first_id].x, x_pitch);
+          roundup(Blocks[second_id].x, x_pitch);
+        }
+      }
+    }
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      roundup(Blocks[i].x, x_pitch);
-      roundup(Blocks[i].y, y_pitch);
+      bool non_zero_xoffset = false, non_zero_yoffset = false;
+      for (auto instance : mydesign.Blocks[i]) {
+        for (auto offset : instance.xoffset) {
+          if (offset != 0) {
+            non_zero_xoffset = true;
+            break;
+          }
+        }
+        if (non_zero_xoffset) break;
+      }
+      if (!non_zero_xoffset) roundup(Blocks[i].x, x_pitch);
+      for (auto instance : mydesign.Blocks[i]) {
+        for (auto offset : instance.yoffset) {
+          if (offset != 0) {
+            non_zero_yoffset = true;
+            break;
+          }
+        }
+        if (non_zero_yoffset) break;
+      }
+      if (!non_zero_yoffset) roundup(Blocks[i].y, y_pitch);
     }
   }
 
@@ -3565,6 +3592,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+    if (neti.floating_pin) HPWL = HPWL_extend = HPWL_extend_net_priority = HPWL_extend_terminal = 0;
   }
 
   // HPWL norm
@@ -3597,7 +3625,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     double temp_sum = 0;
     for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
-    linear_const += temp_sum;
+    if(!neti.floating_pin) linear_const += temp_sum;
   }
 
   if (!mydesign.Nets.empty()) linear_const /= (mydesign.GetMaxBlockHPWLSum() * double(mydesign.Nets.size()));
@@ -4849,7 +4877,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
     for (const auto& ci : ni.connected) {
       if (ci.type == placerDB::Terminal) {
         int tno = ci.iter;
-        int bias = 20;
+        int bias = 0;
         fout << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
@@ -6090,10 +6118,10 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     }
   }
 
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
-  roundup(x, x_pitch);
-  roundup(y, y_pitch);
+  //int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  //int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  //roundup(x, x_pitch);
+  //roundup(y, y_pitch);
 
   placerDB::point LL = {x, y};
   bbox = mydesign.GetPlacedBlockAbsBoundary(i, ort, LL, sel);
@@ -6152,6 +6180,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     }
   }
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    if (node.Terminals[i].netIter == -1) continue;
     auto& tC = node.Terminals.at(i).termContacts;
     tC.clear();
     for (const auto& c : node.Nets[terminal_to_net[i]].connected) {

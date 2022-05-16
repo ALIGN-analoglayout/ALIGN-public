@@ -3,7 +3,7 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
 import pathlib
-from z3.z3types import Z3Exception
+import more_itertools
 logger = logging.getLogger(__name__)
 
 
@@ -17,6 +17,8 @@ def check_placement(placement_verilog_d, scale_factor):
     for module in placement_verilog_d['modules']:
         constraints = module['constraints']
         constraints.checkpoint()
+
+        # logger.info(f'{constraints}')
 
         # The check below is at the mercy of constraint translation
         do_not_identify = []
@@ -41,6 +43,8 @@ def check_placement(placement_verilog_d, scale_factor):
                 )
             )
 
+        # logger.info(f"{bbox=}")
+
         for inst in module['instances']:
             t = inst['transformation']
             ctn = inst['concrete_template_name']
@@ -50,6 +54,9 @@ def check_placement(placement_verilog_d, scale_factor):
                 r = leaf_bboxes[ctn]
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
+
+            # logger.info(f"{inst['instance_name']}: {bbox=}")
+
             with types.set_context(constraints):
                 constraints.append(
                     constraint.AssignBboxVariables(
@@ -61,7 +68,17 @@ def check_placement(placement_verilog_d, scale_factor):
                     )
                 )
 
+        # # TODO: Check SameTemplate In a future PR. Below fails when abstract_template_name's differ
+        # # Validate SameTemplate: Instances of the same template should match in concrete_template_name
+        # instance_to_concrete = {inst["instance_name"]: inst["concrete_template_name"] for inst in module["instances"]}
+        # for const in constraints:
+        #     if isinstance(const, constraint.SameTemplate):
+        #         for i0, i1 in more_itertools.pairwise(const.instances):
+        #             assert instance_to_concrete[i0] == instance_to_concrete[i1],\
+        #                 f"Templates do not match for {i0} and {i1} {instance_to_concrete[i0]} vs {instance_to_concrete[i1]}"
+
         constraints.revert()
+
 
 def _transform_leaf(module, instance, leaf):
     if 'transformation' in leaf:

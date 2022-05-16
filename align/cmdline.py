@@ -1,13 +1,12 @@
 import argparse
 from .main import schematic2layout
 from . import __version__
-
+import os
 from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
 
-import os
 
 class CmdlineParser():
 
@@ -141,6 +140,11 @@ class CmdlineParser():
                             action='store_true',
                             help='Use analytical placer.')
 
+        parser.add_argument('--placer_sa_iterations',
+                            type=int,
+                            default=10000,
+                            help="Iterations used by the placer's SA algorithm.")
+
         parser.add_argument('--seed',
                             type=int,
                             default=0,
@@ -155,6 +159,8 @@ class CmdlineParser():
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
+        if args:
+            logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
             return schematic2layout(**vars(arguments))

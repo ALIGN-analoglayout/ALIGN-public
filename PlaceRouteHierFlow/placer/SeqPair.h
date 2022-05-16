@@ -60,7 +60,8 @@ class OrderedEnumerator {
 class SeqPairEnumerator {
   private:
   vector<int> _posPair, _negPair, _selected;
-  vector<int> _maxSelected;
+  vector<std::pair<int, int>* > _selindex;
+  std::map<int, std::pair<int,int>*> _selmap;
   std::pair<size_t, size_t> _enumIndex;  // first : pos, second : neg
   int _maxSize;
   unsigned _exhausted : 1;
@@ -72,6 +73,7 @@ class SeqPairEnumerator {
 
   public:
   SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter);
+  ~SeqPairEnumerator();
   void Permute();
   const vector<int>& PosPair() const { return _posPair; }
   const vector<int>& NegPair() const { return _negPair; }

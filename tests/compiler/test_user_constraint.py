@@ -278,3 +278,25 @@ def test_symmnet_translation():
     }
     assert symnet_const == modified_symmnet, f"incorrect ports identified for symmnet"
     clean_data(name)
+
+
+def test_groupblock_generator():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b g1 g2 vssx
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 b g2 vssx vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"],   "name": "dp1", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
+    ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    dp1 = cktlib.find('DP1')
+    assert dp1.generator["name"] == 'MOS', f"generator definition error {dp1.generator}"
+    assert dp1.constraints.dict()['__root__'][0] == {'constraint':'generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
+
+    clean_data(name)

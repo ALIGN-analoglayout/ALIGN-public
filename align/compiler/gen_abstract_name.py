@@ -4,21 +4,20 @@ Created on Wed Feb 2 13:12:15 2022
 
 @author: kunal
 """
-from statistics import mode
 from align.schema.types import set_context
 import logging
-import hashlib
 import pathlib
 
 
-from align.schema import SubCircuit, Model, constraint, Library, Instance
-from align.primitive.main import get_generator
+from align.schema import SubCircuit, constraint, Library, Instance
+from .util import gen_key, get_generator
 
 logger = logging.getLogger(__name__)
 
+
 class PrimitiveLibrary():
 
-    def __init__(self, ckt_lib:Library, pdk_dir: pathlib.Path):
+    def __init__(self, ckt_lib: Library, pdk_dir: pathlib.Path):
         pdk_models = get_generator('pdk_models', pdk_dir)
         self.pdk_dir = pdk_dir
         self.plib = Library(loadbuiltins=False, pdk_models=pdk_models)
@@ -54,21 +53,8 @@ class PrimitiveLibrary():
                     self.gen_primitive_def(ele)
         return self.plib
 
-    def _gen_key(self, param):
-        """_gen_key
-        Creates a hex key for combined transistor params
-        Args:
-            param (dict): dictionary of parameters
-        Returns:
-            str: unique hex key
-        """
-        skeys = sorted(param.keys())
-        arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
-        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
-        return key
-
     def group_cap_subcircuit(self, unit_cap):
-        #TODO hack for group cap, need to be fixed
+        # TODO hack for group cap, need to be fixed
         """create subckt corresponding to unit cap
         Args:
             name (str): unique cap name in constraint
@@ -100,7 +86,7 @@ class PrimitiveLibrary():
         if not self.plib.find(name):
             logger.debug(f"creating subcircuit for {element}")
             with set_context(self.plib):
-                new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()), generator={"name":element.model})
+                new_subckt = SubCircuit(name=name, pins=list(element.pins.keys()), generator={"name": element.model})
             with set_context(new_subckt.elements):
                 new_ele = Instance(name=element.name,
                                    model=element.model,
@@ -127,7 +113,7 @@ class PrimitiveLibrary():
             if gen_const and not self.plib.find(generator.name):
                 self.add_primitve(generator.name)
         elif get_generator(element.model, self.pdk_dir):
-            block_arg = self._gen_key(element.parameters)
+            block_arg = gen_key(element.parameters)
             unique_name = f'{model}{block_arg}'
             element.add_abs_name(unique_name)
             self.add_primitve(model)
@@ -138,7 +124,7 @@ class PrimitiveLibrary():
     def add_primitve(self, primitive_name):
         if not self.plib.find(primitive_name):
             primitive = self.ckt_lib.find(primitive_name)
-            #add model for instances in the primitive first
+            # add model for instances in the primitive first
             if isinstance(primitive, SubCircuit):
                 with set_context(self.plib):
                     for e in primitive.elements:
@@ -146,6 +132,3 @@ class PrimitiveLibrary():
                             self.plib.append(self.ckt_lib.find(e.model))
             with set_context(self.plib):
                 self.plib.append(primitive)
-
-
-

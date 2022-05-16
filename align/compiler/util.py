@@ -8,6 +8,9 @@ from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging
 import pathlib
+import hashlib
+import importlib
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +147,41 @@ def get_ports_weight(G):
     return ports_weight
 
 
+def gen_key(param):
+    """_gen_key
+    Creates a hex key for combined transistor params
+    Args:
+        param (dict): dictionary of parameters
+    Returns:
+        str: unique hex key
+    """
+    skeys = sorted(param.keys())
+    arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
+
+
+def create_node_id(G, node1, ports_weight=None):
+    in1 = G.nodes[node1].get("instance")
+    if in1:
+        properties = {'model': in1.model, 'n_pins': len(set(in1.pins.values()))}
+        if in1.parameters:
+            properties.update(in1.parameters)
+        return gen_key(properties)
+    else:
+        nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
+        properties = [G.nodes[nbr].get("instance").model for nbr in nbrs1]
+        if node1 in ports_weight:
+            properties.extend([str(p) for p in ports_weight[node1]])
+        else:
+            lw = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
+            properties.extend([str(p) for p in lw])
+        properties = sorted(properties)
+        arg_str = '_'.join(properties)
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
+
+
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -163,50 +201,44 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
-    nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
-    logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-    if not ports_weight:
-        ports_weight = get_ports_weight(G)
-    if G.nodes[node1].get("instance"):
-        logger.debug(f"checking match between {node1} {node2}")
-        in1 = G.nodes[node1].get("instance")
-        in2 = G.nodes[node2].get("instance")
-        if (
-            in1.model == in2.model
-            and len(set(in1.pins.values())) == len(set(in2.pins.values()))
-            and in1.parameters == in2.parameters
-        ):
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False
-    else:
-        nbrs1_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs1])
-        nbrs2_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs2])
-        if nbrs1_type != nbrs2_type:
-            logger.debug(
-                f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}"
-            )
-            return False
-        if node1 in ports_weight and node2 in ports_weight:
-            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
-                return False
-        else:
-            weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])
-            weight2 = sorted([leaf_weights(G, node2, nbr) for nbr in nbrs2])
-            if weight2 == weight1:
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
-                return False
+    id1 = create_node_id(G, node1, ports_weight=ports_weight)
+    id2 = create_node_id(G, node2, ports_weight=ports_weight)
+    return id1 == id2
 
 
 def get_primitive_spice():
     return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
+
+
+def get_generator(name, pdkdir):
+    if pdkdir is None:
+        return False
+    pdk_dir_path = pdkdir
+    if isinstance(pdkdir, str):
+        pdk_dir_path = pathlib.Path(pdkdir)
+    pdk_dir_stem = pdk_dir_path.stem
+
+    def _find_generator_class(module, name):
+        generator_class = getattr(module, "generator_class", False)
+        if generator_class and generator_class(name):
+            return generator_class(name)
+        else:
+            res = getattr(module, name, False) or getattr(module, name.lower(), False)
+            return res
+
+    try:  # is pdk an installed module
+        module = importlib.import_module(pdk_dir_stem)
+        return _find_generator_class(module, name)
+    except ImportError:
+        init_file = pdk_dir_path / '__init__.py'
+        if init_file.is_file():  # is pdk a package
+            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[pdk_dir_stem] = module
+            spec.loader.exec_module(module)
+            return _find_generator_class(module, name)
+        else:  # is pdk old school (backward compatibility)
+            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)

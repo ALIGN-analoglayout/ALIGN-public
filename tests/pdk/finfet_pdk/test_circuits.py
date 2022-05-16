@@ -1,3 +1,4 @@
+import os
 import pytest
 import json
 import shutil
@@ -5,8 +6,8 @@ import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-CLEANUP = True
-LOG_LEVEL = 'INFO'
+CLEANUP = os.getenv("CLEANUP", True)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 
 def test_cmp_vanilla():
@@ -268,7 +269,7 @@ def test_cs_1():
         """)
     constraints = []
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_cs_2():
@@ -281,4 +282,29 @@ def test_cs_2():
         """)
     constraints = [{"constraint": "MultiConnection", "nets": ["vop"], "multiplier": 2}]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
+
+
+def test_charge_pump_switch():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.charge_pump_switch(name, size=16)
+    constraints = {
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]}
+        ],
+        "switch": [
+            {"constraint": "DoNotIdentify", "instances": ["qp0", "qn0"]}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--router_mode', 'bottom_up'])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+        module = [m for m in hierarchy["modules"] if m["name"] == name][0]
+        assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)

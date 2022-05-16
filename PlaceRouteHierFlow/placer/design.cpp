@@ -18,7 +18,6 @@ design::design() {
   noSymGroup4FullMove = 0;
 }
 
-
 design::design(PnRDB::hierNode& node, const int seed) {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   _rng.seed(seed);
@@ -141,10 +140,12 @@ design::design(PnRDB::hierNode& node, const int seed) {
     tmpnet.weight = it->weight;
     tmpnet.upperBound = it->upperBound;
     tmpnet.lowerBound = it->lowerBound;
+    bool floating_pin = true;
     for (vector<PnRDB::connectNode>::iterator nit = it->connected.begin(); nit != it->connected.end(); ++nit) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type == PnRDB::Block) {
         tmptype = placerDB::Block;
+        if (Blocks[nit->iter2][0].blockPins[nit->iter].center.size()) floating_pin = false;
       } else if (nit->type == PnRDB::Terminal) {
         tmptype = placerDB::Terminal;
       } else {
@@ -154,6 +155,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
       placerDB::Node tmpnode = {tmptype, nit->iter, nit->iter2, nit->alpha};
       tmpnet.connected.push_back(tmpnode);
     }
+    if (floating_pin == true) tmpnet.floating_pin = true;
     this->Nets.push_back(tmpnet);
   }
 
@@ -281,10 +283,37 @@ design::design(PnRDB::hierNode& node, const int seed) {
   for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i]][0].counterpart != order.first[i] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(Blocks[order.first[i]][0].counterpart, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i + 1]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(order.first[i], Blocks[order.first[i + 1]][0].counterpart), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
+          Blocks[order.first[i]][0].counterpart != order.first[i] && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
           Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
         Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (order.second == PnRDB::V) {
+        for (const auto& al : node.Align_blocks) {
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i]) {
+                Ordering_Constraints.push_back(make_pair(make_pair(b, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i+1]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i+1]) {
+                Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], b), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+        }
+      }
     }
   }
   for (const auto& abut : node.Abut_Constraints) {
@@ -293,7 +322,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     }
   }
 
-  //PrintDesign();
+  // PrintDesign();
   // std::cout<<"Leaving design2\n";
   hasAsymBlock = checkAsymmetricBlockExist();
   // std::cout<<"Leaving design\n";
@@ -382,7 +411,6 @@ int design::GetSizeAsymBlock4Move(int mode) {
   return ss;
 }
 
-
 int design::GetSizeSymGroup4FullMove(int mode) {
   // mode-0: check mapIdx of groups for original design
   // mode-1: never check mapIdx for reduced design
@@ -461,7 +489,6 @@ design::design(string blockfile, string netfile, string cfile) {
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
-
 
 //
 
@@ -764,14 +791,13 @@ design::design(string blockfile, string netfile, string cfile) {
 //  }
 //}
 
-
 void design::PrintDesign() {
   auto logger = spdlog::default_logger()->clone("placer.design.PrintDesign");
 
   logger->debug("== Print Design ");
   logger->debug("bias_Vgraph: {0} mixFlag: {1}", bias_Vgraph, mixFlag);
   logger->debug("bias_Hgraph: {0} mixFlag: {1}", bias_Hgraph, mixFlag);
-  //PrintBlocks();
+  // PrintBlocks();
   PrintTerminals();
   PrintNets();
   PrintConstraints();
@@ -945,7 +971,6 @@ int design::GetBlockHeight(int blockid, placerDB::Omark ort, int sel) {
     return Blocks.at(blockid).at(sel).width;
   }
 }
-
 
 placerDB::point design::GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL, int sel) {
   placerDB::point p;
@@ -1218,7 +1243,6 @@ vector<pair<int, int>> design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   // pair<int,int> pp=make_pair(first,second);
   return pp;
 }
-
 
 void design::checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark) {
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");

@@ -124,6 +124,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     _commits = pydantic.PrivateAttr()
     _parent = pydantic.PrivateAttr()
+    _cache = pydantic.PrivateAttr()
 
     @property
     def parent(self):
@@ -180,6 +181,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
         with set_context(self):
             super().__init__(*args, **kwargs)
         self._commits = collections.OrderedDict()
+        self._cache = set()
 
     def _gen_commit_id(self, nchar=8):
         id_ = ''.join(random.choices(
@@ -209,7 +211,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
 
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
-    __root__: typing.Mapping[KeyT, DataT]
+    __root__: typing.Dict[KeyT, DataT]
 
     _parent = pydantic.PrivateAttr()
 
@@ -257,4 +259,3 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __contains__(self, v):
         return self.__root__.__contains__(v)
-        #return v in self.__root__
