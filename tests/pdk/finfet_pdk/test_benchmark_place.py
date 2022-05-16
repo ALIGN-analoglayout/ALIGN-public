@@ -55,6 +55,7 @@ def test_b2(name, params):
     name = f'ckt_b2_{name}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
@@ -96,6 +97,7 @@ def test_b3(name, params):
     name = f'ckt_b3_{name}'
     netlist = circuits.comparator(name)
     constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},

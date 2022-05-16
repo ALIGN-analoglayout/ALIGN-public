@@ -175,6 +175,11 @@ class Annotate:
             # Create a subckt and add to library
             with set_context(self.ckt_data):
                 new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
+                if getattr(const, 'generator', None):
+                    new_subckt.generator["name"] = const.generator["name"]
+                    gen_const = constraint.Generator(**const.generator)
+                    with set_context(subckt.constraints):
+                         new_subckt.constraints.append(gen_const)
                 self.ckt_data.append(new_subckt)
             # Add all instances of groupblock to new subckt
             with set_context(new_subckt.elements):
@@ -191,6 +196,7 @@ class Annotate:
                     pins={x: x for x in ac_nets},
                 )
                 subckt.elements.append(X1)
+
             # Translate any constraints defined on the groupblock elements to subckt
             tr._top_to_bottom_translation(
                 name, {inst: inst for inst in const_inst}, const.name

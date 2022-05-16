@@ -1,0 +1,27 @@
+[
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "merge_parallel_devices": false},
+    {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
+    {"constraint": "PowerPorts", "ports": ["vccx"]},
+    {"constraint": "GroundPorts", "ports": ["vssx"]},
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0", "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": true, "single_device_connect_m1": false}}},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "name": "nraila", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "name": "nrailb", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail", "generator": { "name": "MOS", "parameters": { "patterns": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "name": "lsa", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "name": "lsb", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "name": "ostagea", "generator": { "name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "name": "ostageb", "generator": { "name": "MOS"}},
+    {"constraint": "SameTemplate", "instances": ["lsa", "lsb"]},
+    {"constraint": "SameTemplate", "instances": ["ostagea", "ostageb"]},
+    {"constraint": "SameTemplate", "instances": ["nraila", "nrailb"]},
+    {"constraint": "Floorplan",
+     "order": true,
+     "symmetrize": true,
+     "regions": [
+        ["prail"],
+        ["ostagea", "lsa", "dp", "lsb", "ostageb"],
+        ["nraila", "mtail0", "nrailb"]
+     ]},
+    {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
+]

@@ -1,13 +1,14 @@
 from align.primitive.default.canvas import DefaultCanvas
-from align.cell_fabric.generators import *
-from align.cell_fabric.grid import *
-
+from align.cell_fabric.generators import Region, Wire, Via
+from align.cell_fabric.grid import EnclosureGrid, UncoloredCenterLineGrid, SingleGrid, CenteredGrid, CenterLineGrid
+import collections
 import logging
 logger = logging.getLogger(__name__)
 
+
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch):
+    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
         super().__init__(pdk)
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
@@ -398,6 +399,14 @@ class MOSGenerator(DefaultCanvas):
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1])
+                elif pattern == 4:  # non common centroid
+                    # TODO: Evaluate if this is truly interdigitated. Currently:
+                    # A A A B B B
+                    # A A A B B B
+                    # A A A B B B
+                    self._addMOS(x, y, x_cells, vt_type, names[0 if x < (x_cells//2) else 1], False, **parameters)
+                    if self.bodyswitch == 1:
+                        self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x < (x_cells//2) else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)

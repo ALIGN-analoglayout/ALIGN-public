@@ -17,6 +17,27 @@ Omark, NType = PnR.Omark, PnR.NType
 TransformType = PnR.TransformType
 
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None, noGDS=False, noExtra=False):
+
+    # Hack to read in default layers
+    # This can be removed once default and per net layer restrictions are handled in the router
+
+    ipath = pathlib.Path("./inputs")
+    pnr_constraint_fn = ipath / f'{current_node.name}.pnr.const.json'
+    assert pnr_constraint_fn.exists()
+
+    with pnr_constraint_fn.open("rt") as fp:
+        pnr_constraints_d = json.load(fp=fp)
+
+        min_layer_nm, max_layer_nm = None, None
+        for const in pnr_constraints_d['constraints']:
+            # use the last existing, non-None default
+            if const['const_name'] == 'Route':
+                if 'min_layer' in const:
+                    min_layer_nm = const.get('min_layer')
+                if 'max_layer' in const:
+                    max_layer_nm = const.get('max_layer')
+
+
     DB.ExtractPinsToPowerPins(current_node)
     
     h_skip_factor = DB.getDrc_info().Design_info.h_skip_factor
@@ -24,6 +45,17 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
 
     signal_routing_metal_l = DB.getDrc_info().Design_info.signal_routing_metal_l
     signal_routing_metal_u = DB.getDrc_info().Design_info.signal_routing_metal_u
+
+    def convert_layer_to_int(nm, num):
+        if nm is not None:
+            if nm in DB.getDrc_info().Metalmap:
+                return DB.getDrc_info().Metalmap[nm]
+            else:
+                logger.error(f"Metal layer '{nm}' not in Metalmap")
+        return num
+
+    signal_routing_metal_l = convert_layer_to_int(min_layer_nm, signal_routing_metal_l)
+    signal_routing_metal_u = convert_layer_to_int(max_layer_nm, signal_routing_metal_u)
 
     curr_route = PnR.Router()
 
@@ -374,7 +406,8 @@ def router_driver(*, cap_map, cap_lef_s,
                            placement_verilog_d=scaled_placement_verilog_d.dict(),
                            select_in_ILP=False, place_using_ILP=False, seed=0,
                            use_analytical_placer=False, ilp_solver='symphony',
-                           primitives=primitives)
+                           primitives=primitives,
+                           placer_sa_iterations=10000)
 
         placements_to_run = None
 

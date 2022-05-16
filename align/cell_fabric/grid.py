@@ -1,10 +1,8 @@
-from . import transformation
 import copy
-import collections
 import operator
-
 import logging
 logger = logging.getLogger(__name__)
+
 
 class Grid:
     def __init__( self):
@@ -38,22 +36,17 @@ class Grid:
     def period( self):
         return self.grid[-1][0] - self.grid[0][0]
 
-    def inverseBounds( self, physical):
-        (q,r) = divmod(physical - self.grid[0][0], self.period)
-        last_lt = None
-        ge = None
-        for (idx,(c,_)) in enumerate(self.grid):
-            if c - self.grid[0][0] < r:
-                last_lt = idx
-            else:
-                ge = idx
-                break
-        assert ge is not None
-        if physical < self.value( (q,ge), check=False)[0]:
-            assert last_lt is not None
-            return ((q,last_lt), (q,ge))
-        else:
-            return ((q,ge), (q,ge))
+    def inverseBounds(self, physical):
+        offset = self.grid[0][0]
+        (q, r) = divmod(physical - offset, self.period)
+        monotonic_grid = [(i, v[0]) for i, v in enumerate(self.grid)]
+        monotonic_grid.sort(key=lambda x: x[1])
+        for i, (idx, val) in enumerate(monotonic_grid):
+            if val - offset == r:
+                return ((q, idx), (q, idx))
+            elif val - offset > r:
+                idx_prev = monotonic_grid[i-1][0]
+                return ((q, idx_prev), (q, idx))
 
     def snapToLegal(self, idx, direction):
         assert len(idx) == 2
@@ -80,12 +73,14 @@ class Grid:
         c += whole*self.period
         return (c,attrs)
 
+
 class CenteredGrid(Grid):
     def __init__( self, *, pitch, offset=0):
         super().__init__()
         self.addGridLine( offset,                     False)
         self.addGridLine( offset + pitch//2,          True)
         self.addGridLine( offset + pitch,             False)
+
 
 class CenterLineGrid(Grid):
 
@@ -98,6 +93,7 @@ class CenterLineGrid(Grid):
         # width and color both need to be the same
         assert self.grid[0][1] == self.grid[-1][1]
 
+
 class UncoloredCenterLineGrid(CenterLineGrid):
 
     def __init__( self, *, pitch, width, offset=0, repeat=1):
@@ -105,7 +101,6 @@ class UncoloredCenterLineGrid(CenterLineGrid):
         for i in range(repeat+1):
             self.addCenterLine( offset+i*pitch, width)
         self.semantic()
-
 
 
 class ColoredCenterLineGrid(CenterLineGrid):
@@ -121,17 +116,20 @@ class ColoredCenterLineGrid(CenterLineGrid):
             self.addCenterLine( offset+idx*pitch, width, color=color)
         self.semantic()
 
+
 class EnclosureGrid(Grid):
-    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=False):
+    def __init__(self, *, clg=None, pitch, offset=0, stoppoint, check=False):
         if check and 2*stoppoint > pitch:
-            logger.debug( f"Enclosure grid stop point ({stoppoint}) is more than half the pitch ({pitch}) causing the physical coordinate to be non-monotonic with the grid ordering")
+            logger.debug(f"Enclosure grid stop point ({stoppoint}) is more than half the pitch ({pitch}) causing the physical coordinate to be non-monotonic with the grid ordering")
+
         super().__init__()
-        self.addGridLine( offset,                     False)
-        self.addGridLine( offset + stoppoint,         True)
-        self.addGridLine( offset + pitch//2,          False)
-        self.addGridLine( offset + pitch - stoppoint, True)
-        self.addGridLine( offset + pitch,             False)
+        self.addGridLine(offset,                     False)
+        self.addGridLine(offset + stoppoint,         True)
+        self.addGridLine(offset + pitch//2,          False)
+        self.addGridLine(offset + pitch - stoppoint, True)
+        self.addGridLine(offset + pitch,             False)
         self.semantic()
+
 
 class SingleGrid(Grid):
     def __init__( self, *, clg=None, pitch, offset=0, repeat=1):

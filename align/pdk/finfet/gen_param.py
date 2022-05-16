@@ -1,46 +1,9 @@
-import sys
-import pathlib
 import logging
-import importlib.util
 from copy import deepcopy
 from math import sqrt, floor, log10
+from align.compiler.util import get_generator
 
 logger = logging.getLogger(__name__)
-
-
-def get_generator(name, pdkdir):
-    if pdkdir is None:
-        return False
-    pdk_dir_path = pdkdir
-    if isinstance(pdkdir, str):
-        pdk_dir_path = pathlib.Path(pdkdir)
-    pdk_dir_stem = pdk_dir_path.stem
-
-    try:  # is pdk an installed module
-        module = importlib.import_module(pdk_dir_stem)
-    except ImportError:
-        init_file = pdk_dir_path / '__init__.py'
-        if init_file.is_file():  # is pdk a package
-            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[pdk_dir_stem] = module
-            spec.loader.exec_module(module)
-        else:  # is pdk old school (backward compatibility)
-            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-    return getattr(module, name, False) or getattr(module, name.lower(), False)
-
-
-def generate_generic(pdkdir, parameters, netlistdir=None):
-    primitive1 = get_generator(parameters["real_inst_type"], pdkdir)
-    uc = primitive1()
-    uc.generate(
-        ports=parameters["ports"],
-        netlist_parameters=parameters["values"],
-        netlistdir=netlistdir
-    )
-    return uc, parameters["ports"]
 
 
 def limit_pairs(pairs):
@@ -59,10 +22,11 @@ def limit_pairs(pairs):
 
 def add_primitive(primitives, block_name, block_args):
     if block_name in primitives:
+        block_args['abstract_template_name'] = block_name
+        block_args['concrete_template_name'] = block_name
         if not primitives[block_name] == block_args:
-            logger.warning(f"Distinct devices mapped to the same primitive {block_name}: \
-                             existing: {primitives[block_name]}\
-                             new: {block_args}")
+            assert False, f"Distinct devices mapped to the same primitive {block_name}:\
+                            existing: {primitives[block_name]} new: {block_args}"
     else:
         logger.debug(f"Found primitive {block_name} with {block_args}")
         if 'x_cells' in block_args and 'y_cells' in block_args:
@@ -93,29 +57,23 @@ def add_primitive(primitives, block_name, block_args):
 
 def gen_param(subckt, primitives, pdk_dir):
     block_name = subckt.name
-    vt = subckt.elements[0].model
-    values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]
-    logger.debug(f"Getting generator parameters for: {block_name}")
-    if get_generator(block_name.lower(), pdk_dir):
-        # Subcircuit defined in netlist DIG22INV  primitive
+    logger.debug(f"Checking if PDK offers a generator for: {block_name}")
+    if get_generator(generator_name.lower(), pdk_dir):
+        # ThinFilmResistor, StandardCell
+        values = dict()
+        if len(subckt.elements) > 0:
+            values = deepcopy(subckt.elements[0].parameters)
         attr = {'ports': list(subckt.pins),
-                'values': values if values else None,
+                'values': values,
                 'real_inst_type': block_name.lower()
                 }
         block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
+        logger.debug(f"Black-box primitive: {block_name} {block_args} {attr}")
         add_primitive(primitives, block_name, block_args)
-    elif get_generator(generator_name.lower(), pdk_dir):
-        # TFR primitives, existing generators without subcircuit definition in netlist
-        attr = {'ports': list(subckt.pins),
-                'values': values if values else None,
-                'real_inst_type': subckt.elements[0].model.lower()
-                }
-        block_args = {"parameters": deepcopy(attr), "primitive": 'generic'}
-        logger.debug(f"creating generic primitive {block_name} {block_args}")
-        add_primitive(primitives, block_name, block_args)
-    else:
+    else:  # Transistor
+        vt = subckt.elements[0].model
+        values = deepcopy(subckt.elements[0].parameters)
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
             assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
