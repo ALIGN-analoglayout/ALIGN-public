@@ -195,7 +195,7 @@ class Annotate:
                     pins={x: x for x in ac_nets},
                 )
                 subckt.elements.append(X1)
-            tr = ConstraintTranslator(self.ckt_data, name, const.name,)
+            tr = ConstraintTranslator(self.ckt_data, name, const.name)
             # Translate any constraints defined on the groupblock elements to subckt
             tr._top_to_bottom_translation({inst: inst for inst in const_inst})
             # Modify instance names in constraints after modifying groupblock
@@ -216,7 +216,6 @@ class Annotate:
             logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {name}")
         else:
             return
-        tr = ConstraintTranslator(self.ckt_data)
         for const in gc_const:
             for i in range(len(const.instances)):
                 const.instances[i] = const.instances[i].upper()
@@ -252,7 +251,8 @@ class Annotate:
                 )
                 subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock
+            tr = ConstraintTranslator(self.ckt_data, name)
             tr._update_const(
-                name, [const.name.upper(), *const_inst], const.name.upper()
+                const.name.upper(), {inst: inst for inst in [const.name.upper(), *const_inst]}
             )
 

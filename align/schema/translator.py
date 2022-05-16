@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConstraintTranslator():
-    def __init__(self, ckt_data, parent_name:str, child_name:str):
+    def __init__(self, ckt_data, parent_name:str, child_name:str=None):
         """
         Args:
             ckt_data (dict): all subckt graph, names and port
@@ -24,13 +24,14 @@ class ConstraintTranslator():
         """
         self.ckt_data = ckt_data
         self.parent_name = parent_name
-        self.child_name = child_name
         self.parent = self.ckt_data.find(parent_name)
-        self.child = self.ckt_data.find(child_name)
-        assert self.child, f"Hierarchy not found, {child_name}"
         assert self.parent, f"Hierarchy not found, {parent_name}"
         self.parent_const = self.parent.constraints
-        self.child_const = self.child.constraints
+        self.child_name = child_name
+        if child_name:
+            self.child = self.ckt_data.find(child_name)
+            assert self.child, f"Hierarchy not found, {child_name}"
+            self.child_const = self.child.constraints
 
     def _top_to_bottom_translation(self, node_map):
         """
@@ -124,7 +125,10 @@ class ConstraintTranslator():
                         logger.info(f"{node_map}")
                         remove_pins.append(pin)
                         child_inst_name = node_map[parent_inst_name]
-                        new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
+                        if self.child_name:
+                            new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
+                        else:
+                            raise NotImplementedError("Groupcap does not have child hieararchy")
                         if new_inst+'/'+new_parent_pin in updated_pc:
                             for id, cur in enumerate(updated_pc[new_inst+'/'+new_parent_pin]):
                                 updated_pc[new_inst+'/'+new_parent_pin][id] = cur + current[id]
