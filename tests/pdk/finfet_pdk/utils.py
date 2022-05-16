@@ -46,7 +46,7 @@ def export_to_viewer(fn, c):
 
 
 def compare_with_golden(fn, c):
-
+    my_dir = pathlib.Path(__file__).resolve().parent
     data = _canvas_to_data(c)
 
     export_to_viewer(fn, data)
