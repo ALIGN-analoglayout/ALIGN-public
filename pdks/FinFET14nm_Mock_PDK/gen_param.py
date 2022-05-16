@@ -75,19 +75,22 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {block_name}"
+        #assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {block_name}"
         if "C" in values:
             size = round(float(values["C"]) * 1E15, 4)
         elif 'VALUE' in values:
             size = round(float(values["VALUE"]) * 1E15, 4)
-        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
-        if "L" in values and "W" in values and int(values["L"]) > 1 and int(values["W"]):
+
+        assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"
+
+        if "L" in values and "W" in values:
+            assert int(values["L"]) > 1 and int(values["W"]), f" L and W must be defined"
             length = values["L"]
             width = values["W"]
         else:
             # HACK for unit cap used in common centroid and support older SPICE
-            length = 100
-            width = int(size*10)
+            length = int((math.sqrt(size/2))*1000)
+            width = int((math.sqrt(size/2))*1000)
 
         # TODO: use float in name
         logger.debug(f"Generating capacitor for:{block_name}, {size}")
