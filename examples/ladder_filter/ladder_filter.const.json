@@ -1,0 +1,5 @@
+[
+    {"constraint": "ConfigureCompiler", "auto_constraint": false},
+    {"constraint": "PowerPorts", "ports": ["vdd"]},
+    {"constraint": "GroundPorts", "ports": ["vss"]}
+]
