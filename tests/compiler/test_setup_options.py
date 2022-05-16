@@ -13,7 +13,7 @@ config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
 
 
-def test_ota_six():
+def test_ota_six_basic():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = ota_six(name)
     constraints = [
