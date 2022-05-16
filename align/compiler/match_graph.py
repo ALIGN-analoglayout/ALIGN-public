@@ -141,7 +141,6 @@ class Annotate:
             if isinstance(const, constraint.GroupBlocks)
         ]
         self._remove_group_const(subckt, gb_const)
-        tr = ConstraintTranslator(self.ckt_data)
         for const in gb_const:
             assert self.ckt_data.find(const.name.upper()) is None, "Already existing subckt with this name, please provide different name to const"
             const_inst = [i.upper() for i in const.instances]
@@ -191,15 +190,14 @@ class Annotate:
                     pins={x: x for x in ac_nets},
                 )
                 subckt.elements.append(X1)
+            tr = ConstraintTranslator(self.ckt_data, name, const.name, {inst: inst for inst in const_inst})
             # Translate any constraints defined on the groupblock elements to subckt
-            tr._top_to_bottom_translation(
-                name, {inst: inst for inst in const_inst}, const.name
-            )
+            tr._top_to_bottom_translation()
             # Modify instance names in constraints after modifying groupblock
-            tr._update_const(name, [const.name.upper(), *const_inst], inst_name)
-        # Removing const with single instances.
-        for c in list(self.ckt_data.find(name).constraints):
-            tr._check_const_length(self.ckt_data.find(name).constraints, c)
+            tr._update_const(inst_name)
+            # Removing const with single instances.
+            for c in list(self.ckt_data.find(name).constraints):
+                tr._check_const_length(self.ckt_data.find(name).constraints, c)
         logger.debug(f"reduced constraints of design {name} {self.ckt_data.find(name).constraints}")
 
     def _group_cap_const(self, name):
