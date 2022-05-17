@@ -56,7 +56,7 @@ class ILP_solver {
   static void lpsolve_logger(lprec* lp, void* userhandle, char* buf);
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
-  enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE};
+  enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE, CBC};
   int use_ilp_solver = SYMPHONY;
 
   int roundupint (const double& x) const {
@@ -71,7 +71,6 @@ class ILP_solver {
   bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
-    //if (use_ilp_solver == SYMPHONY) 
     bool no_place_on_grid{true};
     for(unsigned int i=0;i<mydesign.Blocks.size();i++){
       if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
@@ -80,7 +79,7 @@ class ILP_solver {
         break;
       }
     }
-    if (no_place_on_grid) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    if (no_place_on_grid && use_ilp_solver == SYMPHONY) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
     return FrameSolveILPCbc(mydesign, curr_sp, drcInfo, flushlb, prev);
     //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }

@@ -2562,15 +2562,17 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   }
   N_var += place_on_grid_var_count;
   N_var += 2; //Area x and y variables
+  const unsigned N_area_x = N_var - 2;
+  const unsigned N_area_y = N_var - 1;
 
   ILPSolverIf solverif;
-  const double infty{solverif.getInfinity()};
+  const auto infty = solverif.getInfinity();
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
-  std::vector<int> intvars(mydesign.Blocks.size() * 4, TRUE);
-  intvars.resize(N_var, FALSE);
+  std::vector<int> intvars(mydesign.Blocks.size() * 4, 1);
+  intvars.resize(N_var, 0);
   std::vector<char> sens;
   std::vector<double> collb(N_var, 0), colub(N_var, infty);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -2628,10 +2630,10 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
         collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
-    collb[N_var - 1] = -infty;
-    collb[N_var - 2] = -infty;
-    colub[N_var - 1] = 0;
-    colub[N_var - 2] = 0;
+    collb[N_area_y] = -infty;
+    collb[N_area_x] = -infty;
+    colub[N_area_y] = 0;
+    colub[N_area_x] = 0;
   }
 
   Pdatatype hyper;
@@ -2656,7 +2658,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
   //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
   //  objective.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_width : -estimated_width) / 2);
-    //}
+  //}
   // estimate height
   for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
     if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
@@ -2667,13 +2669,13 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
   //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
   //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
   //  objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
-    //}
+  //}
   if (flushbl) {
-    objective[N_var - 1] = estimated_width;
-    objective[N_var - 2] = estimated_height;
+    objective[N_area_y] = estimated_width;
+    objective[N_area_x] = estimated_height;
   } else {
-    objective[N_var - 1] = -estimated_width;
-    objective[N_var - 2] = -estimated_height;
+    objective[N_area_y] = -estimated_width;
+    objective[N_area_x] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -3188,30 +3190,30 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
       const auto& blk = mydesign.Blocks[i][curr_sp.selected[i]];
       if (flushbl) {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.width);
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.height);
       } else {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
       }
@@ -3247,6 +3249,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
+    solverif.setTimeLimit(10);
     solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
@@ -3261,10 +3264,10 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     if (write_cnt < 10) {
       char* names[N_var];
       std::vector<std::string> namesvec(N_var);
-      namesvec[N_var - 2]     = "area_x\0";
-      names[N_var - 2] = &(namesvec[N_var - 2][0]);
-      namesvec[N_var - 1]     = "area_y\0";
-      names[N_var - 1] = &(namesvec[N_var - 1][0]);
+      namesvec[N_area_x]     = "area_x\0";
+      names[N_area_x] = &(namesvec[N_area_x][0]);
+      namesvec[N_area_y]     = "area_y\0";
+      names[N_area_y] = &(namesvec[N_area_y][0]);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         int ind = i * 4;
         namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
@@ -3288,14 +3291,13 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
         names[ind + 3] = &(namesvec[ind + 3][0]);
       }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names);
       ++write_cnt;
     }*/
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = solverif.solve(1);
+      status = solverif.solve();
     }
     const double* var = solverif.solution();
     if (status != 0 || var == nullptr) {
