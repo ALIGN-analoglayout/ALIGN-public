@@ -1,5 +1,19 @@
 [
     {"constraint": "ConfigureCompiler", "auto_constraint": false},
     {"constraint": "PowerPorts", "ports": ["vdd"]},
-    {"constraint": "GroundPorts", "ports": ["vss"]}
+    {"constraint": "GroundPorts", "ports": ["vss"]},
+    {"constraint": "GroupBlocks", "instances": ["xi7", "c2"], "name": "ota_feedback_1"},
+    {"constraint": "GroupBlocks", "instances": ["xi2", "c16"], "name": "ota_feedback_2"},
+    {"constraint": "GroupBlocks", "instances": ["xi4", "c17"], "name": "ota_feedback_3"},
+    {"constraint": "GroupBlocks", "instances": ["xi5", "c18"], "name": "ota_feedback_4"},
+    {"constraint": "GroupBlocks", "instances": ["xi6", "c19"], "name": "ota_feedback_5"},
+    {"constraint": "GroupBlocks", "instances": ["c4", "xi10", "xi12"], "name": "co1"},
+    {"constraint": "GroupBlocks", "instances": ["c7", "xi13", "xi14"], "name": "co3"},
+    {"constraint": "GroupBlocks", "instances": ["c12", "xi23", "xi24"], "name": "co5"},
+    {"constraint": "GroupBlocks", "instances": ["c13", "xi25", "xi26"], "name": "co7"},
+    {"constraint": "GroupBlocks", "instances": ["c20", "xi27", "xi28", "xi30", "xi29"], "name": "cl"},
+    {"constraint": "GroupBlocks", "instances": ["c8", "xi15", "xi16"], "name": "co2"},
+    {"constraint": "GroupBlocks", "instances": ["c9", "xi18", "xi17"], "name": "co4"},
+    {"constraint": "GroupBlocks", "instances": ["c10", "xi19", "xi20"], "name": "co6"},
+    {"constraint": "GroupBlocks", "instances": ["c11", "xi22", "xi21"], "name": "co8"}
 ]
