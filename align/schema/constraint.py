@@ -500,8 +500,8 @@ class GroupBlocks(HardConstraint):
 
     Args:
       instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
-      instance_name (str): instance name for the virtual hierarchy based on the list of :obj:`instances`
+      template (str): Optional template name for the group (virtual hiearchy).
+      name (str): Instance name for the group.
       generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
@@ -517,6 +517,9 @@ class GroupBlocks(HardConstraint):
                             }
                         }
         }
+
+    Note: To keep backward compatibility with previous version, in case template name is not provided, name is used as template name and  instance name is generated based on the combination of "name" and the list of instance names (e.g. X_GROUP1_MN0_MN1_MN3 for the example below).
+    Both name and template definition are required in case you want to use duplicate template names across multiple groups.
     """
     name: str
     instances: List[str]
