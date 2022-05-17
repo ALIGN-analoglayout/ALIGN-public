@@ -1,0 +1,18 @@
+[
+    {"constraint": "ConfigureCompiler", "auto_constraint": false},
+    {"constraint": "PowerPorts", "ports": ["vdd"]},
+    {"constraint": "GroundPorts", "ports": ["vss"]},
+    {"constraint": "GroupBlocks", "instances": ["mp0"], "name": "bottom1"},
+    {"constraint": "GroupBlocks", "instances": ["xi0"], "name": "vco_unit0"},
+    {"constraint": "GroupBlocks", "instances": ["xi1"], "name": "vco_unit1"},
+    {"constraint": "GroupBlocks", "instances": ["xi2"], "name": "vco_unit2"},
+    {"constraint": "GroupBlocks", "instances": ["xi3"], "name": "vco_unit3"},
+    {"constraint": "Floorplan",
+     "order": true,
+     "symmetrize": true,
+     "regions": [
+        ["vco_unit2", "vco_unit3"],
+        ["vco_unit1", "vco_unit0"],
+        ["bottom1"]
+     ]}
+]
