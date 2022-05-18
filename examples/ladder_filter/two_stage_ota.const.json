@@ -1,0 +1,17 @@
+[
+    {"constraint": "ConfigureCompiler", "auto_constraint": false},
+    {"constraint": "PowerPorts", "ports": ["vdd"]},
+    {"constraint": "GroundPorts", "ports": ["vss"]},
+    {"constraint": "GroupBlocks", "instances": ["mp0","mp1"], "name": "pmos_cm"},
+    {"constraint": "GroupBlocks", "instances": ["mn0","mn1"], "name": "nmos_dp"},
+    {"constraint": "GroupBlocks", "instances": ["mn3"], "name": "nmos_bias"},
+    {"constraint": "GroupBlocks", "instances": ["mn6"], "name": "nmos_tail"},
+    {"constraint": "GroupBlocks", "instances": ["mn7"], "name": "nmos_csamp"},
+    {"constraint": "GroupBlocks", "instances": ["mp2"], "name": "pmos_csamp"},
+    {"constraint": "SymmetricBlocks", "direction": "V",
+        "pairs": [["pmos_cm"], ["nmos_dp"], ["nmos_tail"]]},
+    {"constraint": "Order", "direction": "top_to_bottom", "instances": ["pmos_cm", "nmos_dp", "nmos_tail"]},
+    {"constraint": "AlignInOrder", "line": "bottom", "instances": ["pmos_cm", "pmos_csamp"]},
+    {"constraint": "AlignInOrder", "line": "bottom", "instances": ["nmos_dp", "nmos_csamp"]},
+    {"constraint": "AlignInOrder", "line": "bottom", "instances": ["nmos_tail", "nmos_bias"]}
+]
