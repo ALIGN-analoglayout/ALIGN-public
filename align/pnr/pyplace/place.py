@@ -9,15 +9,18 @@ from logger import logger
 from netlist import Netlist
 
 ap = argparse.ArgumentParser()
-ap.add_argument( "-l", "--lef", type=str, default="", help='<filename.lef>')
-ap.add_argument( "-m", "--map", type=str, default="", help='<filename.map>')
 ap.add_argument( "-v", "--verilog", type=str, default="", help='<filename.verilog.json>')
+ap.add_argument( "-l", "--primitives_list", type=str, default="", help='<__primitives__.json>')
+ap.add_argument( "-p", "--primitives_dir", type=str, default="", help='<directory with all concrete_primitive.json>')
 args = ap.parse_args()
-print(f"lef : {args.lef}")
-print(f"map : {args.map}")
 print(f"verilog : {args.verilog}")
+print(f"primitives list : {args.primitives_list}")
+print(f"primitives dir : {args.primitives_dir}")
 
 nl = Netlist()
-nl.loadData(args.verilog,args.map, args.lef)
+nl.loadPrimitives(args.primitives_list, args.primitives_dir)
+nl.loadVerilog(args.verilog)
+
+
 nl.print()
 nl.place()

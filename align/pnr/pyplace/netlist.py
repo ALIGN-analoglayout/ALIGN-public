@@ -1,227 +1,315 @@
+import numpy
+import gdspy
 import json
-import geom
-from logger import logger
-from pnrmacro import parseLef
-import pulp
+import argparse
+import os
+import mip
+import logging
+import sys
+import math
+import pathlib
 
-class Net:
-    def __init__(self, name = "", isglobal = False):
-        self._name     = name
-        self._isGlobal = isglobal
-        self._pins     = set()
-
-class Instance:
-    def __init__(self, name = "", isleaf = True, master = ""):
-        self._name   = name
-        self._master = master
-        self._isLeaf = isLeaf
-        self._nets   = dict()
+logging.basicConfig(level='ERROR')
 
 
-class SymmConstr:
-    def __init__(self, pairs = list(), direction = ''):
-        self._selfsym   = list()
-        self._sympairs  = list()
-        self._direction = direction
-        for p in pairs:
-            if len(p) == 1:
-                self._selfsym.append(p[0])
-            elif len(p) == 2:
-                self._sympairs.append((p[0], p[1]))
+class Point:
+    def __init__(self, x = 0, y = 0):
+        self._x = x
+        self._y = y
+    def __str__(self):
+        return f'({self._x}, {self._y})'
+
+    def transform(self, tr, w, h):
+        x, y = tr._or._x + self._x, tr._or._y + self._y
+        if tr._sX < 0: x -= w
+        if tr._sY < 0: y -= h
+        return Point(x, y)
+
+    def moveto(self, x, y):
+        self._x = x
+        self._y = y
+
+    def moveby(self, dx, dy):
+        self._x += dx
+        self._y += dy
+
+class Rect:
+    def __init__(self, ll = Point(math.inf, math.inf), ur = Point(-math.inf, -math.inf)):
+        self._ll = ll
+        self._ur = ur
+
+    def __str__(self): return f'[{self._ll}--{self._ur}]'
+
+    def fix(self):
+        if self._ll._x > self._ur._x:
+            self._ll._x, self._ur._x = self._ur._x, self._ll._x
+        if self._ll._y > self._ur._y:
+            self._ll._y, self._ur._y = self._ur._y, self._ll._y
+
+    def transform(self, tr, w, h):
+        ll = self._ll.transform(tr, w, h)
+        ur = self._ur.transform(tr, w, h)
+        r = Rect(ll, ur)
+        r.fix()
+        return r
+
+    def merge(self, r):
+        self._ll._x = min(self._ll._x, r._ll._x)
+        self._ll._y = min(self._ll._y, r._ll._y)
+        self._ur._x = max(self._ur._x, r._ur._x)
+        self._ur._y = max(self._ur._y, r._ur._y)
+
+    def xmin(self): return self._ll._x
+    def ymin(self): return self._ll._y
+    def xmax(self): return self._ur._x
+    def ymax(self): return self._ur._y
+
+    def width(self): return self._ur._x - self._ll._x
+
+    def height(self): return self._ur._y - self._ll._y
+
+    def moveby(self, dx, dy):
+        self._ll.moveby(dx, dy)
+        self._ur.moveby(dx, dy)
+
+    def moveto(self, x, y):
+        self._ur.moveby(x - self._ll._x, y - self._ll._y)
+        self._ll.moveto(x, y)
+
+    def overlapinx(self, r, strict = False):
+        if strict:
+            return self._ll._x < r._ur._x and self._ur._x > r._ll._x
+        return self._ll._x <= r._ur._x and self._ur._x >= r._ll._x
+
+    def overlapiny(self, r, strict = False):
+        if strict:
+            return self._ll._y < r._ur._y and self._ur._y > r._ll._y
+        return self._ll._y <= r._ur._y and self._ur._y >= r._ll._y
+
+    def overlap(self, r, strict = False):
+        return self.overlapinx(r, strict) and self.overlapiny(r, strict)
 
 
-class OrderConstr:
-    def __init__(self, instances = list(), direction = '', abut = False):
+
+class Transform:
+    def __init__(self, oX = 0, oY = 0, sX = 1, sY = 1):
+        self._or = Point(oX, oY) 
+        self._sX = sX
+        self._sY = sY
+    def __str__(self):
+        return f'({self._or} {self._sX} {self._sY})'
+
+
+class Constraint:
+    def __init__(self, name = "", instances = list(), attr = dict()):
+        self._name = name
         self._instances = instances
-        self._direction = direction
-        self._abut      = abut
+        self._attr = attr
 
+class Pin:
+    def __init__(self, name = "", shapes = dict()):
+        self._name = name
+        self._shapes = shapes
+        self._bbox = Rect()
+        for (h,rects) in shapes.items():
+            for r in rects:
+                self._bbox.merge(r)
 
-class AlignConstr:
-    def __init__(self, instances = list(), line = ''):
-        self._instances = instances
-        self._line      = line
+    def addShape(self, layer, shape):
+        if layer not in self._shapes:
+            self._shapes[layer] = [shape]
+        else:
+            self._shapes[layer] = [shape]
+        self._bbox.merge(shape)
 
-
-class SameTemplateConstr:
-    def __init__(self, instances = list()):
-        self._instances = instances
-
-
-class Constr:
-    def __init__(self):
-        self._symm     = list()
-        self._symm     = list()
-        self._order    = list()
-        self._align    = list()
-        self._sametmpl = list()
-        self._hdist    = 0
-        self._vdist    = 0
-        self._power    = list()
-        self._ground   = list()
-        self._clk      = list()
-
-    def loadConstr(self, constraints):
-        for c in constraints:
-            ctype = c.get("constraint")
-            if ctype:
-                if ctype == "power_ports":
-                    for p in c["ports"]:
-                        self._power.append(p)
-                elif ctype == "ground_ports":
-                    for p in c["ports"]:
-                        self._ground.append(p)
-                elif ctype == "clock_ports":
-                    for p in c["ports"]:
-                        self._clk.append(p)
-                elif ctype == "horizontal_distance":
-                    self._hdist = c["abs_distance"]
-                elif ctype == "vertical_distance":
-                    self._vdist = c["abs_distance"]
-                elif ctype == "symmetric_blocks":
-                    self._symm.append(SymmConstr(c["pairs"], c["direction"]))
-                elif ctype == "order":
-                    self._order.append(OrderConstr(c["instances"], c["direction"], c["abut"]))
-                elif ctype == "align":
-                    self._align.append(AlignConstr(c["instances"], c["line"]))
-                elif ctype == "same_template":
-                    self._sametmpl.append(AlignConstr(c["instances"]))
-                        
-    def __repr__(self):
-        return " sym : " + str(len(self._symm)) + " order : " + str(len(self._order)) \
-            + " align : " + str(len(self._align)) + " sametmpl : " + str(len(self._sametmpl))
+    def print(self):
+        print(f"    pin name : {self._name}, bbox : {self._bbox}")
+        for (l, rs) in self._shapes.items():
+            print(f'      layer : {l}')
+            for r in rs:
+                print(f"        shape : {r}")
+        
 
 class Module:
-    class Variant:
-        def __init__(self):
-            self._coords = dict()
-            self._bbox   = Rect()
-            self._netbox = dict()
-
-    def __init__(self, name = "", params = list(), depth = -1):
+    def __init__(self, name = "", leaf = False):
         self._name      = name
-        self._ports     = params
-        self._depth     = depth
-        self._nets      = dict()
         self._instances = dict()
-        self._constr    = Constr()
+        self._added     = False
+        self._leaf      = leaf
+        self._constraints = dict()
+        self._pins      = set()
         self._variants  = list()
         self._placed    = False
+        self._nets      = dict()
 
-    def __repr__(self):
-        return self._name + ' ' + repr(self._ports) + repr(self._constr)
+    def width(self):
+        return self._bbox.width()
+    def height(self):
+        return self._bbox.height()
 
-    def loadInstance(self, inst):
-        iname = inst.get("instance_name")
-        if iname:
-            self._instances[iname] = (inst["abstract_template_name"], None)
-        for fa in inst["fa_map"]:
-            faa = fa.get("actual")
-            if faa not in self._nets:
-                self._nets[faa] = [(inst["instance_name"],fa["formal"])]
-            else:
-                self._nets[faa].append((inst["instance_name"],fa["formal"]))
+    def inorder(self, inst1, inst2):
+        if "order" in self._constraints:
+            for cons in self._constraints["order"]:
+                if inst1 in cons._instances and inst2 in cons._instances:
+                    return True
+        return False
 
-    def placeUsingILP(self):
-        return None
+    def ishoralign(self, inst1, inst2):
+        if "align" in self._constraints:
+            for cons in self._constraints["align"]:
+                if cons._attr["line"] in ("h_bottom", "h_top", "h_center"):
+                    if inst1 in cons._instances and inst2 in cons._instances:
+                        return True
+        return False
 
-    def place(self, N = 1):
-        if not self._placed:
-            for k, i in self._instances.items():
-                if i[1] and not i[1]._placed:
-                        i[1].place(N)
-            self._placed = True
-            self._variants = self.placeUsingILP()
-            logger.info(f'placed {self._name}')
+    def isveralign(self, inst1, inst2):
+        if "align" in self._constraints:
+            for cons in self._constraints["align"]:
+                if cons._attr["line"] in ("v_left", "v_right", "v_center"):
+                    if inst1 in cons._instances and inst2 in cons._instances:
+                        return True
+        return False
+
+    def print(self):
+        print(f"module : name : {self._name}, leaf : {self._leaf}, pins : {self._pins}")
+        for v in self._variants:
+            v.print()
+        for (name, inst) in self._instances.items():
+            inst.print()
+        for (name, net) in self._nets.items():
+            net.print()
+
+
+    def place(self):
+        for (iname, inst) in self._instances.items():
+            if not inst._modu._placed:
+                inst._modu.place()
+        print("placing module : ", self._name)
+        self._placed = True
+
+
+
+class Variant():
+    def __init__(self, cname = "", modu = None, leaf = False):
+        self._modu = modu
+        self._name = cname
+        self._bbox = Rect()
+        self._pins = dict()
+        self._instances = dict()
+
+    def addPinShape(self, pinName, layer, shape):
+        if pinName not in self._pins:
+            self._pins[pinName] = Pin(pinName, {layer : [shape]})
+        else:
+            self._pins[pinName].addShape(layer, shape)
+
+    def print(self):
+        print(f'  variant name : {self._name}, bbox : {self._bbox}')
+        for (name,p) in self._pins.items():
+            p.print()
+
+
+class Instance:
+    def __init__(self, name = "", modu = None, tr = None, loc = Point(0, 0), bbox = None):
+        self._name = name
+        self._modu = modu
+        self._tr   = tr
+        self._loc  = loc
+        self._bbox = bbox
+
+    def print(self):
+        print(f'  instance : {self._name}, module : {self._modu._name}, numvariants : {len(self._modu._variants)}')
+
+
+class Net:
+    def __init__(self, name = ""):
+        self._name = name
+        self._pins = list()
+    def addPin(self, instName, pinName):
+        self._pins.append((instName, pinName))
+    def print(self):
+        print(f"    net : {self._name}")
+        for p in self._pins:
+            print(f"      pin : {p[0]}/{p[1]}")
 
 
 class Netlist:
     def __init__(self):
-        self._modules        = dict()
-        self._global_signals = set()
-        self._macro_map      = dict()
-        self._depth_list     = list()
-        self._macros         = dict()
-        self._topmodule      = None
+        self._modules = dict()
 
     def print(self):
-        for m, v in self._modules.items():
-            logger.debug(f"module : {v._name}")
-            logger.debug(f"\t\tports : {v._ports}")
-            logger.debug(f"\t\tinstances : {v._instances}")
-            logger.debug(f"\t\tnets : {v._nets}")
-            logger.debug(f"\t\tdepth : {v._depth}")
-        logger.debug(f'global signals : {self._global_signals}')
-        logger.debug('map :')
-        for m, v in self._macro_map.items():
-            logger.debug(f'\t\t{m} : {v}')
-        for k in range(len(self._depth_list)):
-            logger.debug(f'\t\t{k} : {self._depth_list[k]}')
+        for (name,m) in self._modules.items():
+            m.print()
 
-    def build(self):
-        for j, m in self._modules.items():
-            for k, i in m._instances.items():
-                mod = self._modules.get(i[0])
-                if mod:
-                    m._instances[k] = (i[0], mod)
+    def loadPrimitives(self, primlist, pdir):
+        primitives = dict()
+        with open(primlist) as fs:
+            pl = json.load(fs)
+            for (pname, data) in pl.items():
+                if "abstract_template_name" in data and "concrete_template_name" in data:
+                    absname = data["abstract_template_name"]
+                    if (data["concrete_template_name"] == pname):
+                        if (absname not in primitives):
+                            primitives[absname] = [data["concrete_template_name"]]
+                        else:
+                            primitives[absname].append(data["concrete_template_name"])
+        print(f'primitives : {primitives}')
 
-        def calcdepth(mod):
-            maxdepth = -1
-            for k, i in mod._instances.items():
-                if i[1]:
-                    if i[1]._depth < 0:
-                        calcdepth(i[1])
-                    maxdepth = max(maxdepth, i[1]._depth)
-                else:
-                    assert (i[0] in self._macro_map)
-            mod._depth = maxdepth + 1
-        for j, m in self._modules.items():
-            calcdepth(m)
+        primdir = pathlib.Path(pdir).resolve()
+        if not primdir.is_dir():
+            logger.error(f"Primitives directory {primdir} doesn't exist. Please enter a valid directory path")
+            raise FileNotFoundError(2, 'No such primitives directory.', primdir)
 
-        for j, m in self._modules.items():
-            if len(self._depth_list) < m._depth + 1:
-                for k in range(len(self._depth_list), m._depth + 1):
-                    self._depth_list.append(list())
-            self._depth_list[m._depth].append(m)
-        if len(self._depth_list) and self._depth_list[-1]:
-            self._topmodule = self._depth_list[-1][0]
+        for (absname, cnames) in primitives.items():
+            if absname not in self._modules:
+                self._modules[absname] = Module(absname, leaf = True)
+            currmodu = self._modules[absname]
+            for cname in cnames:
+                with (primdir / f'{cname}.json').open('rt') as fs:
+                    pdata = json.load(fs)
+                    currvar = Variant(cname, currmodu)
+                    if "bbox" in pdata:
+                        bbox = pdata["bbox"]
+                        if len(bbox) == 4: currvar._bbox = Rect(Point(bbox[0], bbox[1]), Point(bbox[2], bbox[3]))
+                    if "terminals" in pdata:
+                        for t in pdata["terminals"]:
+                            if "netName" in t and t["netName"] != None and "netType" in t and t["netType"] == "pin":
+                                pinName = t["netName"]
+                                currmodu._pins.add(pinName)
+                                if "layer" in t and "rect" in t and len(t["rect"]) == 4:
+                                    box = t["rect"]
+                                    currvar.addPinShape(pinName, t["layer"], Rect(Point(box[0], box[1]), Point(box[2], box[3])))
+                    currmodu._variants.append(currvar)
+                                
 
-    def loadData(self, verilogFile = "", mapFile = "", lefFile = ""):
-        self._macros = parseLef(lefFile)
-        if verilogFile != "":
-            with open(verilogFile) as fp:
-                ver = json.load(fp)
-                for m in ver.get("modules"):
-                    modu = Module(m["name"], m["parameters"])
-                    modu._constr.loadConstr(m.get("constraints"))
-                    for inst in m.get("instances"):
-                        modu.loadInstance(inst)
-                    self._modules[modu._name] = modu
-                for signal in ver.get("global_signals"):
-                    act = signal.get("actual")
-                    if act:
-                        self._global_signals.add(signal["actual"])
-        if mapFile != "":
-            with open(mapFile) as fp:
-                lines = fp.readlines()
-                for line in lines:
-                    line = line.strip()
-                    sp = line.split()
-                    if len(sp) >= 2:
-                        var = sp[1]
-                        poss = max(var.find("/"), 0)
-                        posp = var.find(".")
-                        if (posp >= 0):
-                            var = sp[1][poss:posp]
-                        m = self._macros.get(var)
-                        if m:
-                            if sp[0] in self._macro_map:
-                                self._macro_map[sp[0]].append(m)
-                            else:
-                                self._macro_map[sp[0]] = [m]
-        self.build()
+    def loadVerilog(self, vfile):
+        with open(vfile) as fp:
+            pldata = json.load(fp)
+            if "modules" in pldata:
+                for m in pldata.get("modules"):
+                    mname = m.get("name")
+                    if mname:
+                        if mname not in self._modules:
+                            self._modules[mname] = Module(mname)
+                        modu = self._modules[mname]
+                        if "bbox" in m:
+                            bbox = m.get("bbox")
+                            modu._bbox = Rect(Point(bbox[0], bbox[1]), Point(bbox[2], bbox[3]))
+                        for i in m.get("instances"):
+                            iname = i.get("abstract_template_name")
+                            if iname not in self._modules:
+                                self._modules[iname] = Module(iname)
+                            imodu = self._modules[iname]
+                            instName = i.get("instance_name")
+                            modu._instances[instName] = Instance(name = instName, modu = imodu)
+                            for fa in i.get("fa_map"):
+                                netName = fa["actual"]
+                                if netName not in modu._nets:
+                                    modu._nets[netName] = Net(netName)
+                                modu._nets[netName].addPin(instName, fa["formal"])
+                                
 
-    def place(self, N = 1):
-        if self._topmodule:
-            self._topmodule.place(N)
-
+    def place(self):
+        for (mname, m) in self._modules.items():
+            if not m._placed:
+                m.place()
