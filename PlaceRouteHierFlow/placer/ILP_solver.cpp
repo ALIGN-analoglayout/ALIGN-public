@@ -2523,7 +2523,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   return true;
 }
 
-bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev, const int num_threads) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPCbc");
 
@@ -3297,7 +3297,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = solverif.solve();
+      status = solverif.solve(num_threads);
     }
     const double* var = solverif.solution();
     if (status != 0 || var == nullptr) {

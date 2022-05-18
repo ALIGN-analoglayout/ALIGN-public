@@ -39,6 +39,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
     hyper.use_ILP_placer = place_using_ILP
+    hyper.NUM_THREADS = 8
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
