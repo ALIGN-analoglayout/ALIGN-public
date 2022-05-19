@@ -35,6 +35,20 @@ def construct_sizes_from_exact_patterns(exact_patterns):
     return legal_size_d
 
 
+def check_legal(x, y, legal_sizes):
+    if legal_sizes is None:
+        return True
+    
+    for d in legal_sizes:
+        for tag, val in [('x', x), ('y', y)]:
+            if not (tag in d and d[tag] == val):
+                break
+        else:
+            return True
+
+    return False
+
+
 def add_primitive(primitives, block_name, block_args, generator_constraint):
     if block_name in primitives:
         block_args['abstract_template_name'] = block_name
@@ -58,21 +72,18 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
             pairs = limit_pairs((pairs))
 
             legal_size_set = None
+            legal_sizes = None
             if generator_constraint is not None:
                 generator_parameters = generator_constraint.parameters
                 if generator_parameters is not None:
                     legal_sizes = generator_parameters.get('legal_sizes')
-                    if legal_sizes is not None:
-                        legal_size_set = set()
-                        for d in legal_sizes:
-                            legal_size_set.add((d['x'], d['y']))
                     exact_patterns = generator_parameters.get('exact_patterns')
                     assert not exact_patterns or legal_size_set is None
                     if exact_patterns is not None:
                         legal_size_set = set(construct_sizes_from_exact_patterns(exact_patterns).keys())
 
             for newx, newy in pairs:
-                ok = legal_size_set is None or (newx, newy) in legal_size_set
+                ok = legal_size_set is None or (newx, newy) in legal_size_set or check_legal(newx, newy, legal_sizes)
 
                 if legal_size_set is not None:
                     if (newx, newy) not in legal_size_set:

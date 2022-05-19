@@ -4,7 +4,7 @@
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
     {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0", "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": true, "single_device_connect_m1": false}}},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp", "generator": { "name": "MOS", "parameters": { "pattern_template": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"x": 2, "y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp", "generator": { "name": "MOS", "parameters": { "pattern_template": ["AbBa", "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"y": 4}]}}},
     {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "name": "nraila", "generator": { "name": "MOS",
                    "parameters": { "pattern_template": ["AbBa",
 		                                        "BaAb"], "PARTIAL_ROUTING": true}}},
