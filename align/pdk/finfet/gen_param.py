@@ -86,8 +86,8 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                 else:
                     ok = legal_size_set is None or (newx, newy) in legal_size_set
 
-                if legal_size_set is not None:
-                    if (newx, newy) not in legal_size_set:
+                if legal_sizes is not None or legal_size_set is not None:
+                    if ok:
                         logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
                     else:
                         logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
