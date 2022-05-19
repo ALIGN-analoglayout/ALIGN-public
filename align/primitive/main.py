@@ -138,7 +138,6 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
         if isinstance(primitive, SubCircuit):
             generate_primitive_param(primitive, primitives, pdk_dir)
     for block_name, block_args in primitives.items():
-        logger.info(f"Generating primitive {block_name} {block_args}")
         if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
             primitive_def = primitive_lib.find(block_args['abstract_template_name'])
             assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"

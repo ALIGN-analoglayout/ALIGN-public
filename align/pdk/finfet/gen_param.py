@@ -36,12 +36,10 @@ def construct_sizes_from_exact_patterns(exact_patterns):
 
 
 def check_legal(x, y, legal_sizes):
-    if legal_sizes is None:
-        return True
-    
+    assert legal_sizes is not None
     for d in legal_sizes:
         for tag, val in [('x', x), ('y', y)]:
-            if not (tag in d and d[tag] == val):
+            if tag in d and d[tag] != val:
                 break
         else:
             return True
@@ -83,13 +81,16 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                         legal_size_set = set(construct_sizes_from_exact_patterns(exact_patterns).keys())
 
             for newx, newy in pairs:
-                ok = legal_size_set is None or (newx, newy) in legal_size_set or check_legal(newx, newy, legal_sizes)
+                if legal_sizes is not None: # legal_sizes
+                    ok = check_legal(newx, newy, legal_sizes)
+                else:
+                    ok = legal_size_set is None or (newx, newy) in legal_size_set
 
                 if legal_size_set is not None:
                     if (newx, newy) not in legal_size_set:
-                        logger.warn(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
+                        logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
                     else:
-                        logger.info(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
+                        logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
                 
                 if ok:
                     concrete_name = f'{block_name}_X{newx}_Y{newy}'
