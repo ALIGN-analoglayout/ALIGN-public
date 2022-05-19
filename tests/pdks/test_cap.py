@@ -18,21 +18,23 @@ def check_shorts(cmdlist):
     assert len(uc.drc.errors) == 0, uc.drc.errors
 
 
-def build_test(pdk, b, *, n):
+def build_test(pdk, b, *, w, l):
     sys.path.insert(0, str(pdk))
     # print(str(pdk))
-    check_shorts(['-b', b, '-n', f"{n}"])
+    check_shorts(['-b', b, '-w', f"{w}", '-l',f"{l}"])
     sys.path.pop(0)
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_cap_smoke(pdk):
-    n = 4
-    build_test(pdk, f'cap_{4}', n=4)
+    l = 200
+    w = 200
+    build_test(pdk, f'cap_{w}_{l}', w=w, l=l)
 
 
 @pytest.mark.nightly
-@pytest.mark.parametrize("n", range(4, 32, 2), ids=lambda x: f'n{x}')
+@pytest.mark.parametrize("l", range(200, 1000, 400), ids=lambda x: f'n{x}')
+@pytest.mark.parametrize("w", range(200, 1000, 400), ids=lambda x: f'n{x}')
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
-def test_cap_full(pdk, n):
-    build_test(pdk, f'cap_{n}', n=n)
+def test_cap_full(pdk, l, w):
+    build_test(pdk, f'cap_{w}_{l}', w=w, l=l)

@@ -80,14 +80,14 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     return uc, gen(pattern, connections)
 
 
-def generate_Cap(pdkdir, block_name, unit_cap):
+def generate_Cap(pdkdir, block_name, length, width):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('CapGenerator', pdkdir)
 
     uc = generator(pdk)
 
-    uc.addCap(unit_cap)
+    uc.addCap(length, width)
 
     return uc, ['PLUS', 'MINUS']
 
@@ -181,7 +181,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
 
     elif 'CAP' == primitive.generator['name']:
-        uc, _ = generate_Cap(pdkdir, block_name, value)
+        uc, _ = generate_Cap(pdkdir, block_name, value[0], value[1])
         uc.setBboxFromBoundary()
     elif 'RES' == primitive.generator['name']:
         uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
