@@ -1,6 +1,9 @@
 import pytest
 from align.pdk.finfet import MOSGenerator
+from align.pdk.finfet.gen_param import check_legal
+
 from .utils import get_test_id, export_to_viewer
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -98,6 +101,18 @@ def test_duo_one():
     export_to_viewer(get_test_id(), c)
     if c.drc.num_errors > 0 or len(c.rd.opens) > 0 or len(c.rd.shorts) > 0:
         assert False, f'{get_test_id()}'
+
+
+def test_check_legal():
+    assert check_legal( 1, 1, [{'y': 1}])
+    assert check_legal( 1, 1, [{'x': 1}])
+    assert check_legal( 1, 1, [{}])
+    assert not check_legal( 1, 1, [{'y': 2}])
+    assert not check_legal( 1, 1, [{'x': 2}])
+    assert not check_legal( 1, 1, [{'x': 2, 'y': 1}])
+    assert not check_legal( 1, 1, [{'x': 1, 'y': 2}])
+    assert check_legal( 1, 1, [{'x': 1, 'y': 1}])
+    assert check_legal( 1, 1, [{'x': 1, 'y': 2}, {'x': 2, 'y': 1}, {'x': 1, 'y': 1}])
 
 
 # Unit tests ###

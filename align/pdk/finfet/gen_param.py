@@ -67,7 +67,6 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                     pairs.add((m//y, y))
                 if y == 1:
                     break
-            pairs = limit_pairs((pairs))
 
             legal_size_set = None
             legal_sizes = None
@@ -76,9 +75,12 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                 if generator_parameters is not None:
                     legal_sizes = generator_parameters.get('legal_sizes')
                     exact_patterns = generator_parameters.get('exact_patterns')
-                    assert not exact_patterns or legal_size_set is None
+                    assert exact_patterns is None or legal_sizes is None
                     if exact_patterns is not None:
                         legal_size_set = set(construct_sizes_from_exact_patterns(exact_patterns).keys())
+
+            if legal_size_set is None and legal_sizes is None:
+                pairs = limit_pairs((pairs)) # call limit_pairs if there aren't constraints
 
             for newx, newy in pairs:
                 if legal_sizes is not None: # legal_sizes
