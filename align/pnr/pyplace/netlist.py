@@ -1,13 +1,9 @@
-import numpy
-import gdspy
 import json
-import argparse
-import os
-import mip
 import logging
-import sys
 import math
 import pathlib
+from collections import OrderedDict
+
 
 logging.basicConfig(level='ERROR')
 
@@ -236,10 +232,13 @@ class Net:
 class Netlist:
     def __init__(self):
         self._modules = dict()
+        self._hpitch = 0
+        self._vpitch = 0
 
     def print(self):
         for (name,m) in self._modules.items():
             m.print()
+        print(f'vpitch : {self._vpitch} hpitch : {self._hpitch}')
 
     def loadPrimitives(self, primlist, pdir):
         primitives = dict()
@@ -253,7 +252,6 @@ class Netlist:
                             primitives[absname] = [data["concrete_template_name"]]
                         else:
                             primitives[absname].append(data["concrete_template_name"])
-        print(f'primitives : {primitives}')
 
         primdir = pathlib.Path(pdir).resolve()
         if not primdir.is_dir():
@@ -307,6 +305,20 @@ class Netlist:
                                 if netName not in modu._nets:
                                     modu._nets[netName] = Net(netName)
                                 modu._nets[netName].addPin(instName, fa["formal"])
+
+    def loadLayers(self, layersfile):
+        with open(layersfile) as fp:
+            ldata = json.load(fp, object_pairs_hook=OrderedDict)
+            if "Abstraction" in ldata:
+                for layerData in ldata["Abstraction"]:
+                    if "Layer" in layerData and layerData["Layer"][0] == "M":
+                        if "Direction" in layerData:
+                            if layerData["Direction"] == "V" and self._vpitch <= 0:
+                                self._vpitch = layerData["Pitch"]
+                            if layerData["Direction"] == "H" and self._hpitch <= 0:
+                                self._hpitch = layerData["Pitch"]
+                    if self._vpitch > 0 and self._hpitch > 0 : break
+
                                 
 
     def place(self):
