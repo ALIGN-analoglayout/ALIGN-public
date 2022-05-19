@@ -16,14 +16,14 @@ class MOSGenerator(DefaultCanvas):
         self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
-        self.shared_diff = shared_diff
+        self.shared_diff = 1
         self.stack = stack
         self.bodyswitch = bodyswitch
         self.gateDummy = 2
         self.gate = 2*gate if self.stack ==1 else gate*self.stack
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
-        self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
+        self.lFin = 8 ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
         assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
         assert fin > 1, "number of fins in the transistor must be more than 1" 
         assert gateDummy > 0
@@ -90,12 +90,12 @@ class MOSGenerator(DefaultCanvas):
         stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset= 0),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=(self.gateDummy)*self.pdk['Poly']['Pitch']*self.shared_diff, stoppoint=stoppoint, check=True)))
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=self.gateDummy*self.pdk['Poly']['Pitch']*self.shared_diff-self.pdk['Poly']['Pitch'], stoppoint=stoppoint, check=True)))
           
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset= 0),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=(self.gateDummy)*self.pdk['Poly']['Pitch']*self.shared_diff, stoppoint=stoppoint, check=True)))
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=self.gateDummy*self.pdk['Poly']['Pitch']*self.shared_diff-self.pdk['Poly']['Pitch'], stoppoint=stoppoint, check=True)))
 
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
@@ -147,7 +147,7 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.pl, None, i+self.gatesPerUnitCell*x+self.gateDummy,   (y,1), (y+1,-1))
 
         # Source, Drain, Gate Connections
-        grid_y0 = y*self.m2PerUnitCell + 1
+        grid_y0 = y*self.m2PerUnitCell + 4
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
@@ -175,7 +175,7 @@ class MOSGenerator(DefaultCanvas):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         gate_track = 0
-        diff_track = 1
+        diff_track = 4
         body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
         for (net, conn) in connections.items():
             contactsx = {(track, pin) for inst, pins in self._xpins.items()
@@ -254,7 +254,7 @@ class MOSGenerator(DefaultCanvas):
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
-        gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
+        gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2 - 1
         self._xpins[name]['B'].append(gate_x)
         ### FEOL layers
         self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
@@ -267,11 +267,11 @@ class MOSGenerator(DefaultCanvas):
         self.addVia( self.va, f'{fullname}:B', gate_x, -1*body_v0_track)
 
         if parameters['model'] == 'NMOS':
-            self.addRegion( self.pselect, None, (2, -1), (y+1)* self.finsPerUnitCell+self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), (y+1)* self.finsPerUnitCell+self.lFin//2+2)
-            self.addRegion( self.pselect, None, (2, -1), -self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), -self.lFin//2+2)
+            self.addRegion( self.pselect, None, (1, -1), (y+1)* self.finsPerUnitCell+self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell+self.lFin//2+2)
+            self.addRegion( self.pselect, None, (1, -1), -self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), -self.lFin//2+2)
         else:
-            self.addRegion( self.nselect, None, (2, -1), (y+1)*self.finsPerUnitCell+self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), (y+1)* self.finsPerUnitCell+self.lFin//2+2)
-            self.addRegion( self.nselect, None, (2, -1), -self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), -self.lFin//2+2)
+            self.addRegion( self.nselect, None, (1, -1), (y+1)*self.finsPerUnitCell+self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell+self.lFin//2+2)
+            self.addRegion( self.nselect, None, (1, -1), -self.lFin//2-2, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), -self.lFin//2+2)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
 
