@@ -70,7 +70,8 @@ setup(name='align',
           'bin/convert_lef_to_layout_json.py',
           'bin/gen_gds_from_json.py',
           'bin/gen_lef_with_obs.py',
-          'bin/gen_primitive_from_gds.py'
+          'bin/gen_primitive_from_gds.py',
+          'bin/pl_gui.py'
       ],
       install_requires=[
           'networkx>=2.4',
@@ -87,6 +88,8 @@ setup(name='align',
           'pandas',
           'werkzeug==2.0.0',
           'dash',
+          'mip',
+          'pysimplegui',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
           'flatdict'
