@@ -1,6 +1,10 @@
+#define CATCH_INFINITE_LOOP
+
 #include "SeqPair.h"
 
 #include <exception>
+#include <set>
+#include <unordered_set>
 
 #include "spdlog/spdlog.h"
 
@@ -74,7 +78,7 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
   _seq.clear();
   _indegree.clear();
   _adj.clear();
-  logger->debug("num sequences {0} {1} {2}", _sequences.size(), constraints.size(), (_valid ? 1 : 0));
+  // logger->debug("num sequences {0} {1} {2}", _sequences.size(), constraints.size(), (_valid ? 1 : 0));
   /*string str;
   for (auto& it : _sequences) {
     str.clear();
@@ -83,11 +87,6 @@ OrderedEnumerator::OrderedEnumerator(const vector<int>& seq, const vector<pair<p
     }
     logger->info("seq : {0} {1}", pos, str);
   }*/
-}
-
-bool OrderedEnumerator::NextPermutation(vector<int>& seq) {
-  if (_cnt < _sequences.size()) seq = _sequences[_cnt];
-  return (++_cnt < _sequences.size());
 }
 
 SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, const size_t maxIter)
@@ -121,14 +120,32 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
   _negPair = _posPair;
+  _selected.resize(casenl.Blocks.size(), 0);
+  if (_posEnumerator.valid()) {
+    _posEnumerator.NextPermutation(_posPair, 0);
+    _negEnumerator.NextPermutation(_negPair, 0);
+    logger->debug("max enum : {0}", _maxEnum);
+  }
 
-  _selected.resize(casenl.GetSizeofBlocks(), 0);
-  _maxSelected.reserve(casenl.GetSizeofBlocks());
   _maxSize = 0;
+  _selmap.clear();
   for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
     auto s = static_cast<int>(casenl.Blocks.at(i).size());
     _maxSize = std::max(_maxSize, s);
-    _maxSelected.push_back(s);
+    _selmap[static_cast<int>(i)] = nullptr;
+  }
+
+  for (const auto& group : casenl.Same_Template_Constraints) {
+    auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(*group.begin()).size()));
+    _selindex.push_back(pairint);
+    for (const auto& i : group) _selmap[i] = pairint;
+  }
+  for (auto& it : _selmap) {
+    if (it.second == nullptr) {
+      auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(it.first).size()));
+      _selindex.push_back(pairint);
+      it.second = pairint;
+    }
   }
   //_hflip = 0;
   //_vflip = 0;
@@ -138,14 +155,14 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
 
 const bool SeqPairEnumerator::IncrementSelected() {
   // auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.IncrementSelected");
-  if (_maxSize <= 1) return false;
-  int i = _selected.size() - 1;
+  if (_maxSize <= 1 || _selindex.size() < 1) return false;
+  int i = _selindex.size() - 1;
   int rem = 1;
   while (i >= 0) {
     auto ui = static_cast<unsigned>(i);
-    _selected[ui] += rem;
-    if (_selected[ui] >= _maxSelected[ui]) {
-      _selected[ui] = 0;
+    _selindex[ui]->first += rem;
+    if (_selindex[ui]->first >= _selindex[ui]->second) {
+      _selindex[ui]->first = 0;
       rem = 1;
     } else {
       rem = 0;
@@ -153,7 +170,16 @@ const bool SeqPairEnumerator::IncrementSelected() {
     }
     --i;
   }
+  for (auto& it : _selmap) _selected[it.first] = _selmap[it.first]->first;
+
   return rem ? false : true;
+}
+
+SeqPairEnumerator::~SeqPairEnumerator()
+{
+  for (auto& i : _selindex) delete i;
+  _selindex.clear();
+  _selmap.clear();
 }
 
 /*vector<int> SeqPairEnumerator::GetFlip(const bool hor) const
@@ -179,23 +205,26 @@ const bool SeqPairEnumerator::IncrementSelected() {
 }*/
 
 void SeqPairEnumerator::Permute() {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
+  // auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.Permute");
   // if (!EnumFlip())
+  if (_exhausted) return;
   if (!IncrementSelected()) {
     if (_enumIndex.second >= _maxEnum - 1) {
       _enumIndex.second = 0;
       ++_enumIndex.first;
-      std::sort(_negPair.begin(), _negPair.end());
-      if (_posEnumerator.valid())
-        _posEnumerator.NextPermutation(_posPair);
-      else
+      if (_posEnumerator.valid()) {
+        _posEnumerator.NextPermutation(_posPair, _enumIndex.first);
+        _negEnumerator.NextPermutation(_negPair, _enumIndex.second);
+      } else {
+        std::sort(_negPair.begin(), _negPair.end());
         std::next_permutation(std::begin(_posPair), std::end(_posPair));
+      }
     } else {
+      ++_enumIndex.second;
       if (_negEnumerator.valid())
-        _negEnumerator.NextPermutation(_negPair);
+        _negEnumerator.NextPermutation(_negPair, _enumIndex.second);
       else
         std::next_permutation(std::begin(_negPair), std::end(_negPair));
-      ++_enumIndex.second;
     }
   }
   if (_enumIndex.first >= _maxEnum) _exhausted = true;
@@ -239,106 +268,6 @@ SeqPair::SeqPair(const SeqPair& sp) {
   this->symAxis = sp.symAxis;
   this->selected = sp.selected;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
-}
-
-SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SeqPair");
-
-  this->posPair = reducedSP.posPair;
-  this->negPair = reducedSP.negPair;
-  this->orient.resize(originNL.GetSizeofBlocks(), placerDB::N);
-  this->symAxis.resize(originNL.GetSizeofSBlocks(), placerDB::V);
-  this->selected.resize(originNL.GetSizeofBlocks(), 0);
-  if (!_seqPairEnum) this->_seqPairEnum = reducedSP._seqPairEnum;
-  // A. For those common symmetry groups in both original and reduced designs
-  // 1. first, convert all the axis nodes of reduced design in sequence pairs
-  // into axis nodes of original design
-  std::set<int> commonSBs;
-  // std::cout<<"work on axis nodes\n";
-  for (vector<placerDB::SymmBlock>::iterator it = reducedNL.SBlocks.begin(); it != reducedNL.SBlocks.end(); ++it) {
-    // std::cout<<"work on axis "<<it-reducedNL.SBlocks.begin()<<std::endl;
-    // for each symmetry group of reduced design,
-    // find the corresponding group in original design
-    int reducedsbIdx = it - reducedNL.SBlocks.begin();
-    int sbIdx = reducedNL.GetMappedSymmBlockIdx(reducedsbIdx);
-    if (sbIdx == -1) {
-      logger->debug("Placer-Error: cannot find similar symmetry group in original design");
-      continue;
-    }
-    // modify positive sequence
-    commonSBs.insert(sbIdx);
-    for (vector<int>::iterator ppit = this->posPair.begin(); ppit != this->posPair.end(); ++ppit) {
-      if ((*ppit) == it->dnode) {
-        *ppit = originNL.SBlocks.at(sbIdx).dnode;
-        break;
-      }
-    }
-    // modify negative sequence
-    for (vector<int>::iterator npit = this->negPair.begin(); npit != this->negPair.end(); ++npit) {
-      if ((*npit) == it->dnode) {
-        *npit = originNL.SBlocks.at(sbIdx).dnode;
-        break;
-      }
-    }
-    this->symAxis.at(sbIdx) = reducedSP.symAxis.at(reducedsbIdx);
-  }
-  // 2. second, convert all other nodes of reduced design in sequence pairs
-  // into nodes of original design
-  // std::cout<<"work on sp nodes\n";
-  for (vector<int>::iterator it = this->posPair.begin(); it != this->posPair.end(); ++it) {
-    // std::cout<<"work on "<<*it<<" @ "<<it-this->posPair.begin()<<std::endl;
-    if (*it < reducedNL.GetSizeofBlocks()) {
-      int newi = reducedNL.GetMappedBlockIdx(*it);
-      if (newi != -1) {
-        this->orient.at(newi) = reducedSP.orient.at(*it);
-        *it = newi;
-      } else {
-        logger->debug("Placer-Error: cannot covert block in positive sequence");
-      }
-    }
-  }
-  for (vector<int>::iterator it = this->negPair.begin(); it != this->negPair.end(); ++it) {
-    // std::cout<<"work on "<<*it<<" @ "<<it-this->negPair.begin()<<std::endl;
-    if (*it < reducedNL.GetSizeofBlocks()) {
-      int newi = reducedNL.GetMappedBlockIdx(*it);
-      if (newi != -1) {
-        *it = newi;
-      } else {
-        logger->debug("Placer-Error: cannot covert block in negative sequence");
-      }
-    }
-  }
-  // 3. third, add other nodes in the original design into sequence pairs
-  // std::cout<<"work on other sp nodes\n";
-  for (int i = 0; i < (int)originNL.SBlocks.size(); ++i) {
-    if (commonSBs.find(i) == commonSBs.end()) {  // not common SB
-      // Potential bug: some blocks might belong to one original symmetry group but not in reduced symmetry group (e.g. a single self-symmetry block)
-      // in this case its symmetry group cannot be inserted as new one
-      // need fix in future [wbxu]
-      logger->debug("InsertNewSBlock(originNL, {0})", i);
-      InsertNewSBlock(originNL, i);
-    } else {  // common SB
-      logger->debug("InsertCommonSBlock(originNL, reducedNL, {0})", i);
-      InsertCommonSBlock(originNL, reducedNL, i);
-    }
-  }
-  // 4. add other nodes
-  // std::cout<<"work on other nodes\n";
-  // std::cout<<"size "<<originNL.GetSizeofBlocks()<<std::endl;
-  for (int i = 0; i < originNL.GetSizeofBlocks(); ++i) {
-    // std::cout<<i<<endl;
-    if (originNL.GetBlockSymmGroup(i) == -1 && originNL.GetMappedBlockIdx(i) == -1) {
-      posPair.push_back(i);
-      negPair.push_back(i);
-      orient.at(i) = placerDB::N;
-    }
-  }
-  // std::cout<<"work on selected mark\n";
-  // 5. update selected mark
-  for (int i = 0; i < reducedNL.GetSizeofBlocks(); ++i) {
-    // std::cout<<i<<" map "<<reducedNL.GetMappedBlockIdx(i)<<" sel " <<reducedSP.GetBlockSelected(i)<<std::endl;
-    selected.at(reducedNL.GetMappedBlockIdx(i)) = reducedSP.GetBlockSelected(i);
-  }
 }
 
 void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
@@ -448,199 +377,6 @@ void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
   }
 }
 
-void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx) {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.InsertCommonSBlock");
-
-  std::vector<placerDB::SymmBlock> tempSB = originNL.SplitSymmBlock(reducedNL, originIdx);
-  placerDB::SymmBlock comm = tempSB.at(0);
-  placerDB::SymmBlock diff = tempSB.at(1);
-  std::set<int> existingPairNode;
-  logger->debug("InsertCommonSBlock\nComm SB");
-  for (vector<pair<int, int>>::iterator it = comm.sympair.begin(); it != comm.sympair.end(); ++it) {
-    existingPairNode.insert(it->first);
-    existingPairNode.insert(it->second);
-    logger->debug("sympair {0} vs {1}", it->first, it->second);
-  }
-  for (vector<pair<int, placerDB::Smark>>::iterator it = comm.selfsym.begin(); it != comm.selfsym.end(); ++it) {
-    logger->debug("selfsym {0} @ {1}", it->first, it->second);
-  }
-  logger->debug("Diff SB");
-  for (vector<pair<int, int>>::iterator it = diff.sympair.begin(); it != diff.sympair.end(); ++it) {
-    logger->debug("sympair {0} vs {1}", it->first, it->second);
-  }
-  for (vector<pair<int, placerDB::Smark>>::iterator it = diff.selfsym.begin(); it != diff.selfsym.end(); ++it) {
-    logger->debug("selfsym {0} @ {1}", it->first, it->second);
-  }
-  int anode = originNL.SBlocks.at(originIdx).dnode;
-  int anode_pos = -1, anode_neg = -1;
-  int L_pos = -1, R_pos = this->posPair.size(), L_neg = -1, R_neg = this->negPair.size();
-  for (int i = 0; i < (int)this->posPair.size(); ++i) {
-    if (this->posPair.at(i) == anode) {
-      anode_pos = i;
-      break;
-    }
-  }
-  for (int i = 0; i < (int)this->negPair.size(); ++i) {
-    if (this->negPair.at(i) == anode) {
-      anode_neg = i;
-      break;
-    }
-  }
-  if (anode_pos == -1 || anode_neg == -1) {
-    logger->debug("Placer-Error: cannot find axis node in seq pair");
-  }
-  for (int i = 0; i < anode_pos; ++i) {
-    if (existingPairNode.find(this->posPair.at(i)) != existingPairNode.end()) {
-      if (i > L_pos) {
-        L_pos = i;
-      }
-    }
-  }
-  for (int i = anode_pos + 1; i < (int)this->posPair.size(); ++i) {
-    if (existingPairNode.find(this->posPair.at(i)) != existingPairNode.end()) {
-      if (i < R_pos) {
-        R_pos = i;
-        break;
-      }
-    }
-  }
-  for (int i = 0; i < anode_neg; ++i) {
-    if (existingPairNode.find(this->negPair.at(i)) != existingPairNode.end()) {
-      if (i > L_neg) {
-        L_neg = i;
-      }
-    }
-  }
-  for (int i = anode_neg + 1; i < (int)this->negPair.size(); ++i) {
-    if (existingPairNode.find(this->negPair.at(i)) != existingPairNode.end()) {
-      if (i < R_neg) {
-        R_neg = i;
-        break;
-      }
-    }
-  }
-  logger->debug("posPair: axis {0} left {1} right {2}", anode_pos, L_pos, R_pos);
-  logger->debug("negPair: axis {0} left {1} right {2}", anode_neg, L_neg, R_neg);
-  vector<int> new_posPair, new_negPair;
-  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-  // Positive sequence
-  // 1. push new sympair a nodes
-  if (!diff.sympair.empty()) {
-    for (vector<pair<int, int>>::iterator it = diff.sympair.begin(); it != diff.sympair.end(); ++it) {
-      new_posPair.push_back(it->first);
-    }
-  }
-  // 2. push original nodes before L_pos
-  for (int i = 0; i <= L_pos; ++i) {
-    new_posPair.push_back(this->posPair.at(i));
-  }
-  // 3. push original nodes between L_pos and R_pos
-  for (int i = L_pos + 1; i < R_pos; ++i) {
-    new_posPair.push_back(this->posPair.at(i));
-  }
-  // 4. push new selfsym nodes
-  if (!diff.selfsym.empty()) {
-    for (vector<pair<int, placerDB::Smark>>::iterator it = diff.selfsym.begin(); it != diff.selfsym.end(); ++it) {
-      new_posPair.push_back(it->first);
-    }
-  }
-  // 5. push orignal nodes after R_pos
-  for (int i = R_pos; i < (int)this->posPair.size(); ++i) {
-    new_posPair.push_back(this->posPair.at(i));
-  }
-  // 6. push new sympair b nodes
-  if (!diff.sympair.empty()) {
-    // for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
-    for (vector<pair<int, int>>::reverse_iterator it = diff.sympair.rbegin(); it != diff.sympair.rend(); ++it) {
-      new_posPair.push_back(it->second);
-    }
-  }
-  // Negative sequence
-  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-  if (this->symAxis.at(originIdx) == placerDB::V) {
-    // 1. push new sympair a nodes
-    if (!diff.sympair.empty()) {
-      for (vector<pair<int, int>>::iterator it = diff.sympair.begin(); it != diff.sympair.end(); ++it) {
-        new_negPair.push_back(it->first);
-        this->orient.at(it->first) = placerDB::N;
-      }
-    }
-    // 2. push original nodes before L_neg
-    for (int i = 0; i <= L_neg; ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 3. push new selfsym nodes
-    if (!diff.selfsym.empty()) {
-      // for(vector< pair<int, placerDB::Smark> >::iterator it=diff.selfsym.end()-1; it!=diff.selfsym.begin(); --it) {
-      for (vector<pair<int, placerDB::Smark>>::reverse_iterator it = diff.selfsym.rbegin(); it != diff.selfsym.rend(); ++it) {
-        new_negPair.push_back(it->first);
-        this->orient.at(it->first) = placerDB::N;
-      }
-    }
-    // 4. push original nodes between L_neg and R_neg
-    for (int i = L_neg + 1; i < R_neg; ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 5. push orignal nodes after R_neg
-    for (int i = R_neg; i < (int)this->negPair.size(); ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 6. push new sympair b nodes
-    if (!diff.sympair.empty()) {
-      // for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
-      for (vector<pair<int, int>>::reverse_iterator it = diff.sympair.rbegin(); it != diff.sympair.rend(); ++it) {
-        new_negPair.push_back(it->second);
-        this->orient.at(it->second) = placerDB::FN;
-      }
-    }
-  } else if (this->symAxis.at(originIdx) == placerDB::H) {
-    // 1. push new sympair b nodes
-    if (!diff.sympair.empty()) {
-      for (vector<pair<int, int>>::iterator it = diff.sympair.begin(); it != diff.sympair.end(); ++it) {
-        new_negPair.push_back(it->second);
-        this->orient.at(it->second) = placerDB::FS;
-      }
-    }
-    // 2. push original nodes before L_neg
-    for (int i = 0; i <= L_neg; ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 3. push original nodes between L_neg and R_neg
-    for (int i = L_neg + 1; i < R_neg; ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 4. push new selfsym nodes
-    if (!diff.selfsym.empty()) {
-      for (vector<pair<int, placerDB::Smark>>::iterator it = diff.selfsym.begin(); it != diff.selfsym.end(); ++it) {
-        new_negPair.push_back(it->first);
-        this->orient.at(it->first) = placerDB::N;
-      }
-    }
-    // 5. push orignal nodes after R_neg
-    for (int i = R_neg; i < (int)this->negPair.size(); ++i) {
-      new_negPair.push_back(this->negPair.at(i));
-    }
-    // 6. push new sympair a nodes
-    if (!diff.sympair.empty()) {
-      // for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
-      for (vector<pair<int, int>>::reverse_iterator it = diff.sympair.rbegin(); it != diff.sympair.rend(); ++it) {
-        new_negPair.push_back(it->first);
-        this->orient.at(it->first) = placerDB::N;
-      }
-    }
-  } else {
-    logger->debug("Placer-Error: incorrect axis");
-  }
-  this->posPair = new_posPair;
-  this->negPair = new_negPair;
-}
-
 void SeqPair::CompactSeq() {
   vector<int> temp_p;
 
@@ -679,6 +415,8 @@ void SeqPair::CompactSeq() {
 }
 
 SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.SeqPair");
+
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
@@ -787,13 +525,14 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     }
   }
 
-  KeepOrdering(caseNL);
+  bool ok = KeepOrdering(caseNL);
+  // logger->info("KeepOrdering end: {0}", ok);
+
   SameSelected(caseNL);
 
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
 
   if (_seqPairEnum->valid()) {
-    auto logger = spdlog::default_logger()->clone("placer.SeqPair.SetEnumerate");
     logger->info("Enumerated search");
   } else {
     _seqPairEnum.reset();
@@ -801,7 +540,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 }
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
+  // auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
   this->posPair = sp.posPair;
   this->negPair = sp.negPair;
   this->orient = sp.orient;
@@ -811,45 +550,41 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   return *this;
 }
 
-void SeqPair::PrintSeqPair(const design& des) const {
-  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
-
-  logger->debug("=== Sequence Pair ===");
-  std::string tmpstr;
-  for (const auto& it : posPair)
-    if (it < des.Blocks.size()) tmpstr += (des.Blocks[it][0].name + " ");
-  logger->debug("Positive pair: {0}", tmpstr);
-
-  tmpstr = "";
-  for (const auto& it : negPair)
-    if (it < des.Blocks.size()) tmpstr += (des.Blocks[it][0].name + " ");
-  logger->debug("Negative pair: {0}", tmpstr);
+void SeqPair::PrintVec(const std::string& tag, const std::vector<int>& vec) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintVec");
+  if (logger->should_log(spdlog::level::trace)) {
+    std::string tmpstr;
+    for (const auto& it : vec) tmpstr += (std::to_string(it) + " ");
+    logger->trace("{0} {1}", tag, tmpstr);
+  }
 }
 
 void SeqPair::PrintSeqPair() {
   auto logger = spdlog::default_logger()->clone("placer.SeqPair.PrintSeqPair");
 
-  logger->debug("=== Sequence Pair ===");
-  std::string tmpstr;
-  for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Positive pair: {0}", tmpstr);
+  if (logger->should_log(spdlog::level::debug)) {
+    logger->debug("=== Sequence Pair ===");
+    std::string tmpstr;
+    for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Positive pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Negative pair: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : negPair) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Negative pair: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Orientation: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : orient) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Orientation: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
-  logger->debug("Symmetry axis: {0}", tmpstr);
+    tmpstr = "";
+    for (const auto& it : symAxis) tmpstr += (it ? "H " : "V ");
+    logger->debug("Symmetry axis: {0}", tmpstr);
 
-  tmpstr = "";
-  for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
-  logger->debug("Selected: {0}", tmpstr);
-  // cout<<endl;
+    tmpstr = "";
+    for (const auto& it : selected) tmpstr += (std::to_string(it) + " ");
+    logger->debug("Selected: {0}", tmpstr);
+    // cout<<endl;
+  }
 }
 
 void SeqPair::SameSelected(design& caseNL) {
@@ -864,180 +599,6 @@ int SeqPair::GetBlockSelected(int blockNo) {
     return (selected.at(blockNo));
   }
   return -1;
-}
-
-vector<int> SeqPair::GetBlockIndex(int blockNo) {
-  vector<int> blockIdx;
-  for (int i = 0; i < (int)posPair.size(); ++i) {
-    if (posPair.at(i) == blockNo) {
-      blockIdx.push_back(i);
-      break;
-    }
-  }
-  for (int i = 0; i < (int)negPair.size(); ++i) {
-    if (negPair.at(i) == blockNo) {
-      blockIdx.push_back(i);
-      break;
-    }
-  }
-  return (blockIdx);
-}
-
-vector<int> SeqPair::GetRightBlock(int blockNo) {
-  vector<int> blockIdx = GetBlockIndex(blockNo);
-  vector<int> Rblock;
-  for (int i = blockIdx.at(0) + 1; i < (int)posPair.size(); ++i) {
-    for (int j = blockIdx.at(1) + 1; j < (int)negPair.size(); ++j) {
-      if (posPair.at(i) == negPair.at(j)) {
-        Rblock.push_back(posPair.at(i));
-        // cout<<"Push "<<posPair.at(i)<<endl;
-        break;
-      }
-    }
-  }
-  return (Rblock);
-}
-
-vector<int> SeqPair::GetLeftBlock(int blockNo) {
-  vector<int> blockIdx = GetBlockIndex(blockNo);
-  vector<int> Lblock;
-  for (int i = 0; i < blockIdx.at(0); ++i) {
-    for (int j = 0; j < blockIdx.at(1); ++j) {
-      if (posPair.at(i) == negPair.at(j)) {
-        Lblock.push_back(posPair.at(i));
-        break;
-      }
-    }
-  }
-  return (Lblock);
-}
-
-vector<int> SeqPair::GetAboveBlock(int blockNo) {
-  vector<int> blockIdx = GetBlockIndex(blockNo);
-  vector<int> Ablock;
-  for (int i = 0; i < blockIdx.at(0); ++i) {
-    for (int j = blockIdx.at(1) + 1; j < (int)negPair.size(); ++j) {
-      if (posPair.at(i) == negPair.at(j)) {
-        Ablock.push_back(posPair.at(i));
-        break;
-      }
-    }
-  }
-  return (Ablock);
-}
-
-vector<int> SeqPair::GetBelowBlock(int blockNo) {
-  vector<int> blockIdx = GetBlockIndex(blockNo);
-  vector<int> Bblock;
-  for (int i = blockIdx.at(0) + 1; i < (int)posPair.size(); ++i) {
-    for (int j = 0; j < blockIdx.at(1); ++j) {
-      if (posPair.at(i) == negPair.at(j)) {
-        Bblock.push_back(posPair.at(i));
-        break;
-      }
-    }
-  }
-  return (Bblock);
-}
-
-placerDB::Omark SeqPair::GetBlockOrient(int blockNo) { return orient.at(blockNo); }
-
-void SeqPair::ChangeOrient(int blockNo, placerDB::Omark ort) { orient.at(blockNo) = ort; }
-
-void SeqPair::AdjustOrient(int blockNo, placerDB::Omark ort) {
-  switch (orient.at(blockNo)) {
-    case placerDB::N:
-      if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FN || ort == placerDB::FS) orient.at(blockNo) = ort;
-      break;
-    case placerDB::S:
-      if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FN || ort == placerDB::FS) orient.at(blockNo) = ort;
-      break;
-    case placerDB::FN:
-      if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FN || ort == placerDB::FS) orient.at(blockNo) = ort;
-      break;
-    case placerDB::FS:
-      if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FN || ort == placerDB::FS) orient.at(blockNo) = ort;
-      break;
-    case placerDB::E:
-      if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FE || ort == placerDB::FW) orient.at(blockNo) = ort;
-      break;
-    case placerDB::W:
-      if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FE || ort == placerDB::FW) orient.at(blockNo) = ort;
-      break;
-    case placerDB::FE:
-      if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FE || ort == placerDB::FW) orient.at(blockNo) = ort;
-      break;
-    case placerDB::FW:
-      if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FE || ort == placerDB::FW) orient.at(blockNo) = ort;
-      break;
-    default:
-      break;
-  }
-}
-
-void SeqPair::FlipOrient(int blockNo) {
-  switch (orient.at(blockNo)) {
-    case placerDB::N:
-      orient.at(blockNo) = placerDB::FN;
-      break;
-    case placerDB::S:
-      orient.at(blockNo) = placerDB::FS;
-      break;
-    case placerDB::E:
-      orient.at(blockNo) = placerDB::FE;
-      break;
-    case placerDB::W:
-      orient.at(blockNo) = placerDB::FW;
-      break;
-    case placerDB::FN:
-      orient.at(blockNo) = placerDB::N;
-      break;
-    case placerDB::FS:
-      orient.at(blockNo) = placerDB::S;
-      break;
-    case placerDB::FE:
-      orient.at(blockNo) = placerDB::E;
-      break;
-    case placerDB::FW:
-      orient.at(blockNo) = placerDB::W;
-      break;
-    default:
-      break;
-  }
-}
-
-void SeqPair::SwitchSingleSequence(int b1, int b2, bool flag) {
-  vector<int> oldPair;
-  if (flag) {
-    oldPair = posPair;
-    this->posPair.clear();
-    for (int i = 0; i < (int)oldPair.size(); ++i) {
-      if (oldPair.at(i) == b1) {
-        posPair.push_back(b2);
-      } else if (oldPair.at(i) == b2) {
-        posPair.push_back(b1);
-      } else {
-        posPair.push_back(oldPair.at(i));
-      }
-    }
-  } else {
-    oldPair = negPair;
-    this->negPair.clear();
-    for (int i = 0; i < (int)oldPair.size(); ++i) {
-      if (oldPair.at(i) == b1) {
-        negPair.push_back(b2);
-      } else if (oldPair.at(i) == b2) {
-        negPair.push_back(b1);
-      } else {
-        negPair.push_back(oldPair.at(i));
-      }
-    }
-  }
-}
-
-void SeqPair::SwitchDoubleSequence(int b1, int b2) {
-  SwitchSingleSequence(b1, b2, true);
-  SwitchSingleSequence(b1, b2, false);
 }
 
 vector<int> SeqPair::FindShortSeq(design& caseNL, vector<int>& seq, int idx) {
@@ -1063,56 +624,6 @@ int SeqPair::GetVertexIndexinSeq(vector<int>& seq, int v) {
   return idx;
 }
 
-bool SeqPair::FastInitialScan(design& caseNL) {
-  // return true if any violation found, otherwise return false
-  // Current feature: only support scan of symmetry constraints
-  // Future supports: will support scan of general placement constraints
-  bool mark = true;
-  for (int b = 0; b < (int)caseNL.GetSizeofSBlocks() && mark; ++b) {
-    // for each symmetry group
-    placerDB::Smark axis = symAxis.at(b);
-    vector<int> posQ = FindShortSeq(caseNL, posPair, b);
-    vector<int> negQ = FindShortSeq(caseNL, negPair, b);
-    for (int i = 0; i < (int)posQ.size() && mark; ++i) {
-      for (int j = i + 1; j < (int)posQ.size() && mark; ++j) {
-        // V: posSeq_i < posSeq_j <==> negSeq_counter(j) < negSeq_counter(i)
-        // H: posSeq_i < posSeq_j <==> negSeq_counter(i) < negSeq_counter(j)
-        int negi = GetVertexIndexinSeq(negQ, caseNL.GetBlockCounterpart(posQ.at(i)));
-        int negj = GetVertexIndexinSeq(negQ, caseNL.GetBlockCounterpart(posQ.at(j)));
-        if (axis == placerDB::V) {
-          if (negj > negi) {
-            mark = false;
-          }
-        } else if (axis == placerDB::H) {
-          if (negj < negi) {
-            mark = false;
-          }
-        }
-        // cout<<"Check "<<posQ[i]<<"-"<<caseNL.GetBlockCounterpart( posQ.at(i) )<<" vs "<<posQ[j]<<"-"<<caseNL.GetBlockCounterpart( posQ.at(j) )<<" in posQ
-        // "<<mark<<endl;
-      }
-    }
-    for (int i = 0; i < (int)negQ.size() && mark; ++i) {
-      for (int j = i + 1; j < (int)negQ.size() && mark; ++j) {
-        int posi = GetVertexIndexinSeq(posQ, caseNL.GetBlockCounterpart(negQ.at(i)));
-        int posj = GetVertexIndexinSeq(posQ, caseNL.GetBlockCounterpart(negQ.at(j)));
-        if (axis == placerDB::V) {
-          if (posj > posi) {
-            mark = false;
-          }
-        } else if (axis == placerDB::H) {
-          if (posj < posi) {
-            mark = false;
-          }
-        }
-        // cout<<"Check "<<negQ[i]<<"-"<<caseNL.GetBlockCounterpart( negQ.at(i) )<<" vs "<<negQ[j]<<"-"<<caseNL.GetBlockCounterpart( negQ.at(j) )<<" in negQ
-        // "<<mark<<endl;
-      }
-    }
-  }
-  return !mark;
-}
-
 placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) { return symAxis.at(SBidx); }
 
 bool SeqPair::ChangeSelectedBlock(design& caseNL) {
@@ -1135,119 +646,614 @@ bool SeqPair::ChangeSelectedBlock(design& caseNL) {
   return true;
 }
 
-void SeqPair::KeepOrdering(design& caseNL) {
-  // ids of blocks which have order constraints
-  // set<int> block_id_with_order;
-  // for (auto order : caseNL.Ordering_Constraints) {
-  // block_id_with_order.insert(order.first.first);
-  // block_id_with_order.insert(order.first.second);
-  //}
-  // places of block_id_with_order in pair
-  // vector<int> pos_idx, neg_idx;
+/**
+bool SeqPair::ValidateSelect(design & caseNL){
+  //two sym pair blocks have conflict with place on grid
+  // for(auto sympairblock:caseNL.SPBlocks){
+  //   for(auto sympair:sympairblock.sympair){
+  //     if(caseNL.Blocks[sympair.first][selected[sympair.first]].ypitch>1 && caseNL.Blocks[sympair.second][selected[sympair.second]].ypitch>1){
+  //       if(caseNL.Blocks[sympair.first][selected[sympair.first]].ypitch>1 && caseNL.Blocks[sympair.second][selected[sympair.second]].ypitch>1)
+  //     }
+  //   }
+  // }
+  return true;
+}**/
+bool SeqPair::KeepOrdering(design& caseNL) {
+  auto logger = spdlog::default_logger()->clone("placer.SeqPair.KeepOrdering");
 
-  // for (unsigned int i = 0; i < posPair.size(); i++) {
-  // if (block_id_with_order.find(posPair[i]) != block_id_with_order.end()) pos_idx.push_back(i);
-  // if (block_id_with_order.find(negPair[i]) != block_id_with_order.end()) neg_idx.push_back(i);
-  //}
+  {
+#ifdef CATCH_INFINITE_LOOP
+    std::unordered_set<std::vector<int>, VectorHasher> visitedPosPair = {posPair};
+#endif
 
-  // vector<int> pos_order(block_id_with_order.size()), neg_order(block_id_with_order.size());
-  // for (unsigned int i = 0; i < block_id_with_order.size(); i++) {
-  // pos_order[i] = posPair[pos_idx[i]];
-  // neg_order[i] = negPair[neg_idx[i]];
-  //}
-  bool pos_keep_order = true, neg_keep_order = true;
-  // unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  // std::default_random_engine e(seed);
-  // generate a pos order
-  do {
-    int first_it, second_it;
-    pos_keep_order = true;
+    bool pos_keep_order;
+
+    std::vector<int> blocks2sort;                // the block with ordering constraints
+    map<int, int> blocks_original_position_map;  // the blocks position map in the seqpair
+    vector<int> blocks_original_position;
+    std::vector<int> blockid_after_sort;
+    map<int, vector<int>> adj;
+    map<int, int> ind;
+    std::queue<int> q;
     for (const auto& order : caseNL.Ordering_Constraints) {
-      first_it = find(posPair.begin(), posPair.end(), order.first.first) - posPair.begin();
-      second_it = find(posPair.begin(), posPair.end(), order.first.second) - posPair.begin();
-      if (first_it - second_it > 0) {
-        pos_keep_order = false;
-        int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-        int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
-        auto it = posPair.begin();
-        if (first_counterpart == -1) {
-          posPair.erase(it + first_it);
-          it = posPair.insert(it + second_it, order.first.first);
-          // move first to before second
-        } else if (second_couterpart == -1) {
-          it = posPair.insert(it + first_it + 1, order.first.second);
-          it = posPair.begin();
-          posPair.erase(it + second_it);
-          // move second to after first
-        } else {
-          swap(posPair.at(first_it), posPair.at(second_it));
-        }
-        break;
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.first);  // store blocks to sort
+      }
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.second);
       }
     }
-    // if (!pos_keep_order) {
-    // swap(pos_order.at(first_it), pos_order.at(second_it));
-    // shuffle(pos_order.begin(), pos_order.end(), e);
-    //}
-  } while (!pos_keep_order);
-  // generate a neg order
-  do {
-    int first_it, second_it;
-    neg_keep_order = true;
+    // adj.resize(blocks2sort.size());
+    for (const auto& b : blocks2sort) adj[b].resize(0);
+    for (const auto& b : blocks2sort) ind[b] = 0;
+    for (const auto& b : blocks2sort) {
+      blocks_original_position_map[b] = find(posPair.begin(), posPair.end(), b) - posPair.begin();
+      blocks_original_position.push_back(find(posPair.begin(), posPair.end(), b) - posPair.begin());
+    }
     for (const auto& order : caseNL.Ordering_Constraints) {
-      first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
-      second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
-      if (first_it - second_it < 0) {
-        if (order.second == placerDB::V) {
+      int first_it = order.first.first;
+      int second_it = order.first.second;
+      if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+        adj[first_it].push_back(second_it);
+        ind[second_it]++;
+      }
+    }
+    // align block
+    for (const auto& al : caseNL.Align_blocks) {
+      if (al.horizon == 1) {
+        int center = -1;
+        vector<pair<int, int>> tosort;
+        for (const auto& b : al.blocks) {
+          if (caseNL.Blocks[b][0].counterpart == b)
+            center = b;
+          else {
+            if (caseNL.Blocks[b][0].counterpart != -1) {
+              tosort.push_back(make_pair(b, blocks_original_position_map[b]));
+            }
+          }
+        }
+        if (center == -1) continue;
+        for (const auto& b : al.blocks) {
+          if (caseNL.Blocks[b][0].counterpart != -1 && find(al.blocks.begin(), al.blocks.end(), caseNL.Blocks[b][0].counterpart) == al.blocks.end()) {
+            tosort.push_back(make_pair(caseNL.Blocks[b][0].counterpart, blocks_original_position_map[caseNL.Blocks[b][0].counterpart]));
+          }
+        }
+        vector<int> aftersort;
+        sort(tosort.begin(), tosort.end(), [](pair<int, int> a, pair<int, int> b) { return a.second < b.second; });
+        for (auto p : tosort) {
+          int counterpart = caseNL.Blocks[p.first][0].counterpart;
+          if (find(aftersort.begin(), aftersort.end(), p.first) == aftersort.end() &&
+              find(aftersort.begin(), aftersort.end(), counterpart) == aftersort.end()) {
+            aftersort.push_back(p.first);
+          }
+        }
+        aftersort.push_back(center);
+        for (int i = aftersort.size() - 2; i >= 0; i--) {
+          aftersort.push_back(caseNL.Blocks[aftersort[i]][0].counterpart);
+        }
+        for (unsigned int i = 0; i < aftersort.size() - 1; i++) {
+          if (find(adj[aftersort[i]].begin(), adj[aftersort[i]].end(), aftersort[i + 1]) == adj[aftersort[i]].end() &&
+              find(adj[aftersort[i + 1]].begin(), adj[aftersort[i + 1]].end(), aftersort[i]) == adj[aftersort[i + 1]].end()) {
+            adj[aftersort[i]].push_back(aftersort[i + 1]);
+            ind[aftersort[i + 1]]++;
+          }
+        }
+      }
+    }
+    for (unsigned int i = 0; i < blocks2sort.size(); i++) {
+      int it = blocks2sort[i];
+      if (ind[it] == 0) q.push(it);
+    }
+    while (!q.empty()) {
+      int v = q.front();
+      q.pop();
+      blockid_after_sort.push_back(v);
+      std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
+      for (auto& it : adj[v]) {
+        ind[it]--;
+        if (ind[it] == 0) q.push(it);
+      }
+    }
+    sort(blocks_original_position.begin(), blocks_original_position.end());
+    for (unsigned int i = 0; i < blockid_after_sort.size(); i++) {
+      posPair[blocks_original_position[i]] = blockid_after_sort[i];
+    }
+    // put unordered pair beside one of the self symmetry block
+    for (auto& group : caseNL.SPBlocks) {
+      if (group.axis_dir == placerDB::V) {
+        for (auto& pair : group.sympair) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end() &&
+              find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end() && group.selfsym.size()) {
+            int pivot = std::rand() % group.selfsym.size();
+            int it_pivot = find(posPair.begin(), posPair.end(), group.selfsym[pivot].first) - posPair.begin();
+            int first_it = pair.first;
+            int second_it = pair.second;
+            auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
+            auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
+            if (it1 > it2) {
+              swap(it1, it2);
+              swap(first_it, second_it);
+            }
+            auto it = posPair.begin();
+            if (it_pivot > it2) {
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+              posPair.erase(it + it2);
+              posPair.erase(it + it1);
+            } else if (it_pivot > it1) {
+              posPair.erase(it + it2);
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+              posPair.erase(it + it1);
+            } else {
+              posPair.erase(it + it2);
+              posPair.erase(it + it1);
+              it = posPair.insert(it + it_pivot + 1, second_it);
+              it = posPair.begin();
+              it = posPair.insert(it + it_pivot, first_it);
+              it = posPair.begin();
+            }
+          }
+        }
+      }
+    }
+    for (auto& abut : caseNL.Abut_Constraints) {
+      if (abut.second == placerDB::V) {
+        int first_it = abut.first.first;
+        int second_it = abut.first.second;
+        auto it1 = find(posPair.begin(), posPair.end(), abut.first.first) - posPair.begin();
+        auto it2 = find(posPair.begin(), posPair.end(), abut.first.second) - posPair.begin();
+        if (it1 > it2) {
+          swap(it1, it2);
+          swap(first_it, second_it);
+        }
+        if (it2 - it1 > 0) {
+          if (caseNL.Blocks[first_it][0].counterpart == first_it && caseNL.Blocks[second_it][0].counterpart == second_it) {
+            // two self sym blocks
+            int front_block_it = it1;
+            int back_block_it = it2;
+            for (unsigned int i = it1 + 1; i < it2; i++) {
+              if (posPair[i] < caseNL.Blocks.size() && front_block_it + 1 < back_block_it) {
+                if (caseNL.Blocks[posPair[i]][0].counterpart != -1 && caseNL.Blocks[posPair[i]][0].counterpart != posPair[i]) {
+                  if (i < find(posPair.begin(), posPair.end(), caseNL.Blocks[posPair[i]][0].counterpart) - posPair.begin()) {
+                    front_block_it = i;
+                    back_block_it = find(posPair.begin(), posPair.end(), caseNL.Blocks[posPair[i]][0].counterpart) - posPair.begin();
+                  }
+                }
+              }
+            }
+            if (front_block_it < back_block_it && front_block_it != it1 && back_block_it != it2) {
+              auto it = posPair.begin();
+              if (it2 < front_block_it) {
+                it = posPair.insert(it + back_block_it, second_it);
+                it = posPair.begin();
+                it = posPair.insert(it + front_block_it + 1, first_it);
+                it = posPair.begin();
+                posPair.erase(it + it2);
+                posPair.erase(it + it1);
+              } else if (it2 < back_block_it) {
+                if (it1 < front_block_it) {
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                } else {
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it2);
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                }
+              } else {
+                if (it1 < front_block_it) {
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                } else if (it1 < back_block_it) {
+                  posPair.erase(it + it2);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                } else {
+                  posPair.erase(it + it2);
+                  posPair.erase(it + it1);
+                  it = posPair.insert(it + back_block_it, second_it);
+                  it = posPair.begin();
+                  it = posPair.insert(it + front_block_it + 1, first_it);
+                  it = posPair.begin();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    do {
+#ifdef CATCH_INFINITE_LOOP
+      logger->trace("====Fixup pos order====");
+      PrintVec("Before:", posPair);
+#endif
+
+      int first_it, second_it;
+      pos_keep_order = true;
+      for (const auto& order : caseNL.Ordering_Constraints) {
+        first_it = find(posPair.begin(), posPair.end(), order.first.first) - posPair.begin();
+        second_it = find(posPair.begin(), posPair.end(), order.first.second) - posPair.begin();
+        assert(first_it != posPair.end() - posPair.begin());
+        assert(second_it != posPair.end() - posPair.begin());
+        if (first_it - second_it > 0) {
+          logger->trace("Fixup pos: {0} at pos {1} is after {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
+          pos_keep_order = false;
+          int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
+          int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
+          auto it = posPair.begin();
+          if (first_counterpart == -1) {
+            posPair.erase(it + first_it);
+            it = posPair.insert(it + second_it, order.first.first);
+            // move first to before second
+          } else if (second_counterpart == -1) {
+            it = posPair.insert(it + first_it + 1, order.first.second);
+            it = posPair.begin();
+            posPair.erase(it + second_it);
+            // move second to after first
+          } else {
+            swap(posPair.at(first_it), posPair.at(second_it));
+          }
+
+          break;
+        }
+      }
+#ifdef CATCH_INFINITE_LOOP
+      PrintVec("After: ", posPair);
+      if (!pos_keep_order && visitedPosPair.find(posPair) != visitedPosPair.end()) {
+        // logger->critical("Infinite loop in posPair loop.");
+        return false;
+      } else {
+        visitedPosPair.insert(posPair);
+      }
+#endif
+    } while (!pos_keep_order);
+  }
+  {
+    bool neg_keep_order;
+
+#ifdef CATCH_INFINITE_LOOP
+    std::unordered_set<std::vector<int>, VectorHasher> visitedNegPair = {negPair};
+#endif
+    std::vector<int> blocks2sort;                // the block with ordering constraints
+    map<int, int> blocks_original_position_map;  // the blocks position map in the seqpair
+    vector<int> blocks_original_position;
+    std::vector<int> blockid_after_sort;
+    map<int, vector<int>> adj;
+    map<int, int> ind;
+    std::queue<int> q;
+    for (const auto& order : caseNL.Ordering_Constraints) {
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.first) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.first);  // store blocks to sort
+      }
+      if (find(blocks2sort.begin(), blocks2sort.end(), order.first.second) == blocks2sort.end()) {
+        blocks2sort.push_back(order.first.second);
+      }
+    }
+    for (auto& group : caseNL.SPBlocks) {
+      for (auto& pair : group.sympair) {
+        if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) {
+          blocks2sort.push_back(pair.first);  // store blocks to sort
+        }
+        if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) {
+          blocks2sort.push_back(pair.second);  // store blocks to sort
+        }
+      }
+      for (const auto& self : group.selfsym) {
+        if (find(blocks2sort.begin(), blocks2sort.end(), self.first) == blocks2sort.end()) {
+          blocks2sort.push_back(self.first);  // store blocks to sort
+        }
+      }
+    }
+    for (const auto& b : blocks2sort) adj[b].resize(0);
+    for (const auto& b : blocks2sort) ind[b] = 0;
+    for (const auto& b : blocks2sort) {
+      blocks_original_position_map[b] = find(negPair.begin(), negPair.end(), b) - negPair.begin();
+      blocks_original_position.push_back(find(negPair.begin(), negPair.end(), b) - negPair.begin());
+    }
+    for (const auto& order : caseNL.Ordering_Constraints) {
+      if (order.second == placerDB::H) {
+        int first_it = order.first.first;
+        int second_it = order.first.second;
+        if (find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+          adj[first_it].push_back(second_it);
+          ind[second_it]++;
+        }
+      } else {
+        int first_it = order.first.first;
+        int second_it = order.first.second;
+        if (find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+          adj[second_it].push_back(first_it);
+          ind[first_it]++;
+        }
+      }
+    }
+    // check align_blocks
+    for (const auto& alignblock : caseNL.Align_blocks) {
+      if (alignblock.horizon) {
+        for (unsigned int i = 0; i < alignblock.blocks.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[i]) == blocks2sort.end()) continue;
+          for (unsigned int j = i + 1; j < alignblock.blocks.size(); j++) {
+            if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
+            auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
+            auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
+            int first_it = alignblock.blocks[i];
+            int second_it = alignblock.blocks[j];
+            if (it1 > it2) {
+              swap(it1, it2);
+              swap(first_it, second_it);
+            }
+            if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+              adj[first_it].push_back(second_it);
+              ind[second_it]++;
+            }
+          }
+        }
+      } else {
+        for (unsigned int i = 0; i < alignblock.blocks.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[i]) == blocks2sort.end()) continue;
+          for (unsigned int j = i + 1; j < alignblock.blocks.size(); j++) {
+            if (find(blocks2sort.begin(), blocks2sort.end(), alignblock.blocks[j]) == blocks2sort.end()) continue;
+            auto it1 = find(posPair.begin(), posPair.end(), alignblock.blocks[i]);
+            auto it2 = find(posPair.begin(), posPair.end(), alignblock.blocks[j]);
+            int first_it = alignblock.blocks[i];
+            int second_it = alignblock.blocks[j];
+            if (it1 > it2) {
+              swap(it1, it2);
+              swap(first_it, second_it);
+            }
+            if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+              adj[second_it].push_back(first_it);
+              ind[first_it]++;
+            }
+          }
+        }
+      }
+    }
+    // check sympair
+    for (const auto& group : caseNL.SPBlocks) {
+      if (group.axis_dir == placerDB::V) {
+        for (unsigned int i = 0; i < group.sympair.size(); i++) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), group.sympair[i].second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), group.sympair[i].first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), group.sympair[i].second) - posPair.begin();
+          int first_it = group.sympair[i].first;
+          int second_it = group.sympair[i].second;
+          if (it1 > it2) {
+            swap(it1, it2);
+            swap(first_it, second_it);
+          }
+          if (it1 < it2 && find(adj[first_it].begin(), adj[first_it].end(), second_it) == adj[first_it].end()) {
+            adj[first_it].push_back(second_it);
+            ind[second_it]++;
+          }
+          for (unsigned int j = i + 1; j < group.sympair.size(); j++) {
+            auto it1j = find(posPair.begin(), posPair.end(), group.sympair[j].first) - posPair.begin();
+            auto it2j = find(posPair.begin(), posPair.end(), group.sympair[j].second) - posPair.begin();
+            int first_itj = group.sympair[j].first;
+            int second_itj = group.sympair[j].second;
+            if (it1j > it2j) {
+              swap(it1j, it2j);
+              swap(first_itj, second_itj);
+            }
+            if (it1 < it1j && it1 < it2j && it1j < it2 && it2j < it2) {
+              // pairj inside pairi
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it1 < it1j && it1 < it2j && it2 < it1j && it2 < it2j) {
+              // pair i above pair j
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), first_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[first_itj].begin(), adj[first_itj].end(), second_it) == adj[first_itj].end()) {
+                adj[first_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), first_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(first_it);
+                ind[first_it]++;
+              }
+              if (find(adj[second_itj].begin(), adj[second_itj].end(), second_it) == adj[second_itj].end()) {
+                adj[second_itj].push_back(second_it);
+                ind[second_it]++;
+              }
+            } else if (it1 > it1j && it1 > it2j && it2 > it1j && it2 > it2j) {
+              // pair i below pair j
+              if (find(adj[first_it].begin(), adj[first_it].end(), first_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[first_it].begin(), adj[first_it].end(), second_itj) == adj[first_it].end()) {
+                adj[first_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), first_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(first_itj);
+                ind[first_itj]++;
+              }
+              if (find(adj[second_it].begin(), adj[second_it].end(), second_itj) == adj[second_it].end()) {
+                adj[second_it].push_back(second_itj);
+                ind[second_itj]++;
+              }
+            }
+          }
+          for (auto self : group.selfsym) {
+            auto it = find(posPair.begin(), posPair.end(), self.first) - posPair.begin();
+            int self_it = self.first;
+            if (it < it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+            } else if (it > it1 && it > it2 && find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it > it1 && it < it2 && find(adj[first_it].begin(), adj[first_it].end(), self_it) == adj[first_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), second_it) == adj[self_it].end()) {
+              adj[first_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(second_it);
+              ind[second_it]++;
+            } else if (it < it1 && it > it2 && find(adj[second_it].begin(), adj[second_it].end(), self_it) == adj[second_it].end() &&
+                       find(adj[self_it].begin(), adj[self_it].end(), first_it) == adj[self_it].end()) {
+              adj[second_it].push_back(self_it);
+              ind[self_it]++;
+              adj[self_it].push_back(first_it);
+              ind[first_it]++;
+            }
+          }
+        }
+      } else {
+        for (auto pair : group.sympair) {
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.first) == blocks2sort.end()) continue;
+          if (find(blocks2sort.begin(), blocks2sort.end(), pair.second) == blocks2sort.end()) continue;
+          auto it1 = find(posPair.begin(), posPair.end(), pair.first) - posPair.begin();
+          auto it2 = find(posPair.begin(), posPair.end(), pair.second) - posPair.begin();
+          int first_it = pair.first;
+          int second_it = pair.second;
+          if (it1 > it2) {
+            swap(it1, it2);
+            swap(first_it, second_it);
+          }
+          if (it1 < it2 && find(adj[second_it].begin(), adj[second_it].end(), first_it) == adj[second_it].end()) {
+            adj[second_it].push_back(first_it);
+            ind[first_it]++;
+          }
+        }
+      }
+    }
+    for (unsigned int i = 0; i < blocks2sort.size(); i++) {
+      int it = blocks2sort[i];
+      if (ind[it] == 0) q.push(it);
+    }
+    while (!q.empty()) {
+      int v = q.front();
+      q.pop();
+      blockid_after_sort.push_back(v);
+      std::random_shuffle(adj[v].begin(), adj[v].end(), [](int i) { return std::rand() % i; });
+      for (auto& it : adj[v]) {
+        ind[it]--;
+        if (ind[it] == 0) q.push(it);
+      }
+    }
+    sort(blocks_original_position.begin(), blocks_original_position.end());
+    for (unsigned int i = 0; i < blockid_after_sort.size(); i++) {
+      negPair[blocks_original_position[i]] = blockid_after_sort[i];
+    }
+    // generate a neg order
+    do {
+#ifdef CATCH_INFINITE_LOOP
+      logger->trace("====Fixup neg order====");
+      PrintVec("Before:", negPair);
+#endif
+      int first_it, second_it;
+      neg_keep_order = true;
+      for (const auto& order : caseNL.Ordering_Constraints) {
+        first_it = find(negPair.begin(), negPair.end(), order.first.first) - negPair.begin();
+        second_it = find(negPair.begin(), negPair.end(), order.first.second) - negPair.begin();
+        assert(first_it != negPair.end() - negPair.begin());
+        assert(second_it != negPair.end() - negPair.begin());
+        if (first_it - second_it < 0) {
+          logger->trace("Fixup neg: {0} at pos {1} is before {2} at pos {3}", order.first.first, first_it, order.first.second, second_it);
+          if (order.second == placerDB::V) {
+            neg_keep_order = false;
+            int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
+            int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
+            auto it = negPair.begin();
+            logger->trace("Order: {0} {1}", order.first.first, order.first.second);
+            logger->trace("Counterparts: {0} {1}", first_counterpart, second_counterpart);
+            if (first_counterpart == -1 || first_counterpart == order.first.first) {
+              // move first to after second
+              it = negPair.insert(it + second_it + 1, order.first.first);
+              it = negPair.begin();
+              negPair.erase(it + first_it);
+            } else if (second_counterpart == -1) {
+              // mvoe second to before first
+              negPair.erase(it + second_it);
+              it = negPair.insert(it + first_it, order.first.second);
+            } else {
+              swap(negPair.at(first_it), negPair.at(second_it));
+            }
+            break;
+          }
+        } else if (order.second == placerDB::H) {
           neg_keep_order = false;
           int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-          int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
+          int second_counterpart = caseNL.Blocks[order.first.second][0].counterpart;
           auto it = negPair.begin();
           if (first_counterpart == -1) {
-            // move first to after second
-            it = negPair.insert(it + second_it + 1, order.first.first);
+            // mvoe second to after first
+            it = negPair.insert(it + first_it + 1, order.first.second);
             it = negPair.begin();
-            negPair.erase(it + first_it);
-          } else if (second_couterpart == -1) {
-            // mvoe second to before first
             negPair.erase(it + second_it);
-            it = negPair.insert(it + first_it, order.first.second);
+          } else if (second_counterpart == -1) {
+            // move first to before second
+            negPair.erase(it + first_it);
+            it = negPair.insert(it + second_it, order.first.first);
           } else {
             swap(negPair.at(first_it), negPair.at(second_it));
           }
           break;
         }
-      } else if (order.second == placerDB::H) {
-        neg_keep_order = false;
-        int first_counterpart = caseNL.Blocks[order.first.first][0].counterpart;
-        int second_couterpart = caseNL.Blocks[order.first.second][0].counterpart;
-        auto it = negPair.begin();
-        if (first_counterpart == -1) {
-          // move first to before second
-          negPair.erase(it + first_it);
-          it = negPair.insert(it + second_it, order.first.first);
-        } else if (second_couterpart == -1) {
-          // mvoe second to after first
-          it = negPair.insert(it + first_it + 1, order.first.second);
-          it = negPair.begin();
-          negPair.erase(it + second_it);
-        } else {
-          swap(negPair.at(first_it), negPair.at(second_it));
-        }
-        break;
       }
-    }
-    // if (!neg_keep_order) {
-    // swap(neg_order.at(first_it), neg_order.at(second_it));
-    // shuffle(neg_order.begin(), neg_order.end(), e);
-    //}
-  } while (!neg_keep_order);
-  // write order back to pospair and negpair
+#ifdef CATCH_INFINITE_LOOP
+      PrintVec("After: ", negPair);
+      if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
+        // logger->critical("Infinite loop in negPair loop.");
+        return false;
+      } else {
+        visitedNegPair.insert(negPair);
+      }
+#endif
 
-  // for (unsigned int i = 0; i < pos_idx.size(); i++) {
-  // posPair[pos_idx[i]] = pos_order[i];
-  // negPair[neg_idx[i]] = neg_order[i];
-  //}
+      if (!neg_keep_order && visitedNegPair.find(negPair) != visitedNegPair.end()) {
+        logger->critical("Infinite loop in negPair loop.");
+        return false;
+      } else {
+        visitedNegPair.insert(negPair);
+      }
+
+    } while (!neg_keep_order);
+  }
+  return true;
 }
 
 inline size_t SeqPair::Factorial(const size_t& t) {
@@ -1663,7 +1669,7 @@ bool SeqPair::PerturbationNew(design& caseNL) {
   bool retval{true};
   int trial_cnt{0};
   do {
-    if (_seqPairEnum) {
+    if (_seqPairEnum && _seqPairEnum->valid()) {
       posPair = _seqPairEnum->PosPair();
       negPair = _seqPairEnum->NegPair();
       selected = _seqPairEnum->Selected();
@@ -1730,113 +1736,20 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         fail++;
       }
     }
-    KeepOrdering(caseNL);
+    bool ok = KeepOrdering(caseNL);
+    // logger->info("KeepOrdering end: {0}", ok);
+
     SameSelected(caseNL);
-    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL));
+    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
+    if (logger->should_log(spdlog::level::debug)) {
+      std::string tmpstr, tmpstrn, tmpstrs;
+      for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
+      for (const auto& it : negPair) tmpstrn += (std::to_string(it) + " ");
+      for (const auto& it : selected) tmpstrs += (std::to_string(it) + " ");
+      logger->debug("block : {0} sa_print_seq_pair [Positive pair: {1} Negative pair : {2} Selected : {3}]", caseNL.name, tmpstr, tmpstrn, tmpstrs);
+    }
   } while (retval && ++trial_cnt < max_trial_cnt);
   return !retval;
-}
-
-void SeqPair::Perturbation(design& caseNL) {
-  /* initialize random seed: */
-  // srand(time(NULL));
-  int choice;
-  bool mark = false;
-  // cout<<"Perturbation?"<<endl;
-  while (!mark) {
-    if (!caseNL.designHasAsymBlock() && caseNL.GetSymGroupSize() == 1) {
-      choice = caseNL.rand() % 3;
-      // cout<<"Perturbation choice "<<choice<<endl;
-      switch (choice) {
-        case 0:
-          mark = SwapTwoBlocksofSameGroup(caseNL);
-          break;
-        case 1:
-          mark = ChangeSymmetryBlockOrient(caseNL);
-          break;
-        case 2:
-          mark = SwapMultiBlocksofSameGroup(caseNL);
-          break;
-        // case 2: mark=RotateSymmetryGroup(caseNL); break;
-        default:
-          mark = SwapTwoBlocksofSameGroup(caseNL);
-      }
-    } else if (!caseNL.designHasAsymBlock()) {
-      choice = caseNL.rand() % 3;
-      // cout<<"Perturbation choice "<<choice<<endl;
-      switch (choice) {
-        case 0:
-          mark = SwapTwoBlocksofSameGroup(caseNL);
-          break;
-        case 1:
-          mark = SwapTwoSymmetryGroup(caseNL);
-          break;
-        case 2:
-          mark = ChangeSymmetryBlockOrient(caseNL);
-          break;
-        // case 3: mark=RotateSymmetryGroup(caseNL); break;
-        default:
-          mark = SwapTwoBlocksofSameGroup(caseNL);
-      }
-    } else if (!caseNL.designHasSymGroup()) {
-      choice = caseNL.rand() % 4;
-      // cout<<"Perturbation choice "<<choice<<endl;
-      switch (choice) {
-        case 0:
-          mark = MoveAsymmetricBlockposPair(caseNL);
-          break;
-        case 1:
-          mark = MoveAsymmetricBlocknegPair(caseNL);
-          break;
-        case 2:
-          mark = MoveAsymmetricBlockdoublePair(caseNL);
-          break;
-        case 3:
-          mark = ChangeAsymmetricBlockOrient(caseNL);
-          break;
-        default:
-          mark = MoveAsymmetricBlockdoublePair(caseNL);
-      }
-    } else {
-      choice = caseNL.rand() % 7;
-      // cout<<"Perturbation choice "<<choice<<endl;
-      switch (choice) {
-        case 0:
-          mark = MoveAsymmetricBlockposPair(caseNL);
-          break;
-        case 1:
-          mark = MoveAsymmetricBlocknegPair(caseNL);
-          break;
-        case 2:
-          mark = MoveAsymmetricBlockdoublePair(caseNL);
-          break;
-        case 3:
-          mark = SwapTwoBlocksofSameGroup(caseNL);
-          break;
-        case 4:
-          mark = SwapTwoSymmetryGroup(caseNL);
-          break;
-        case 5:
-          mark = ChangeAsymmetricBlockOrient(caseNL);
-          break;
-        case 6:
-          mark = ChangeSymmetryBlockOrient(caseNL);
-          break;
-        // case 7: mark=RotateSymmetryGroup(caseNL); break;
-        default:
-          mark = MoveAsymmetricBlockdoublePair(caseNL);
-      }
-    }
-  }
-  // int sgsize=caseNL.GetSizeofSBlocks();
-  // if(sgsize==0) {
-  //  // no symmetry group
-  //} else if(sgsize==1) {
-  //  // one symmetry group
-  //} else if(sgsize>1) {
-  //  // more than one symmetry group
-  //} else {
-  //}
 }
 
 void SeqPair::TestSwap() {
@@ -2164,1036 +2077,3 @@ bool SeqPair::MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anod
   seq = newseq;
   return true;
 }
-
-bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
-  /* initialize random seed: */
-  // srand(time(NULL));
-  if (!caseNL.checkAsymmetricBlockExist()) {
-    return false;
-  }
-  int anode = caseNL.rand() % caseNL.GetSizeofBlocks();
-  while (caseNL.GetBlockSymmGroup(anode) >= 0) {
-    anode = caseNL.rand() % caseNL.GetSizeofBlocks();
-  }  // randomly choose an asymmetric block
-  if (caseNL.mixFlag && caseNL.GetMappedBlockIdx(anode) != -1) {
-    return false;
-  }
-  bool mark = false;
-  placerDB::Omark curr_ort = orient.at(anode);
-  placerDB::Omark ort;
-  // cout<<endl<<"Change orientation of asymmetric block "<<anode<<endl;
-  // Currently we try to keep the orientation for fin alignment
-  // and prevent to change the orientation arbitrarily
-  while (!mark) {
-    ort = placerDB::Omark(caseNL.rand() % 8);
-    switch (curr_ort) {
-      case placerDB::N:
-        if (ort == placerDB::S || ort == placerDB::FN || ort == placerDB::FS) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::S:
-        if (ort == placerDB::N || ort == placerDB::FN || ort == placerDB::FS) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::FN:
-        if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FS) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::FS:
-        if (ort == placerDB::N || ort == placerDB::S || ort == placerDB::FN) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::E:
-        if (ort == placerDB::W || ort == placerDB::FE || ort == placerDB::FW) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::W:
-        if (ort == placerDB::E || ort == placerDB::FE || ort == placerDB::FW) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::FE:
-        if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FW) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      case placerDB::FW:
-        if (ort == placerDB::E || ort == placerDB::W || ort == placerDB::FE) {
-          orient.at(anode) = ort;
-          mark = true;
-        }
-        break;
-      default:
-        break;
-    }
-  }
-  return mark;
-}
-
-bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
-  // Known limitation: due to the restricition of verical symmetry, we do not change
-  // the orientation of block into E/W/FE/FW
-  /* initialize random seed: */
-  // srand(time(NULL));
-  int sgid;
-  if (caseNL.GetSizeofSBlocks() > 1) {
-    sgid = caseNL.rand() % caseNL.GetSizeofSBlocks();
-  } else if (caseNL.GetSizeofSBlocks() == 1) {
-    sgid = 0;
-  } else {
-    return false;
-  }
-  // cout<<endl<<"Change orientation of cell in symmetry group "<<sgid<<endl;
-  placerDB::Smark new_axis, self_axis;
-  new_axis = symAxis.at(sgid);
-  vector<int> Blist = caseNL.GetRealBlockListfromSymmGroup(sgid);  // already consider mixFlag in GetRealBlockListfromSymmGroup
-  if (Blist.empty()) {
-    return false;
-  }
-  int tar;
-  if ((int)Blist.size() == 1) {
-    tar = Blist.at(0);
-  } else {
-    tar = Blist.at(caseNL.rand() % (int)Blist.size());
-  }
-  // Change orientation of cells in symmetry group
-  if (caseNL.SBlocks.at(sgid).selfsym.empty()) {
-    //			sympair-sympair
-    // 	new axis V	N/S/E/W/FN/FS/FE/FW-FN/FS/FE/FW/N/S/E/W
-    // 	new axis H	N/S/E/W/FN/FS/FE/FW-FS/FN/FW/FE/S/N/W/E
-    if (new_axis == placerDB::V) {
-      int sa = caseNL.rand() % 4;
-      switch (sa) {
-        case 0:
-          orient.at(tar) = placerDB::N;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-          break;
-        case 1:
-          orient.at(tar) = placerDB::S;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-          break;
-        case 2:
-          orient.at(tar) = placerDB::FN;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::N;
-          break;
-        case 3:
-          orient.at(tar) = placerDB::FS;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::S;
-          break;
-        case 4:
-          orient.at(tar) = placerDB::E;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FE;
-          break;
-        case 5:
-          orient.at(tar) = placerDB::W;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FW;
-          break;
-        case 6:
-          orient.at(tar) = placerDB::FE;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::E;
-          break;
-        case 7:
-          orient.at(tar) = placerDB::FW;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::W;
-          break;
-        default:
-          orient.at(tar) = placerDB::N;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-      }
-    } else if (new_axis == placerDB::H) {
-      int sa = caseNL.rand() % 4;
-      switch (sa) {
-        case 0:
-          orient.at(tar) = placerDB::N;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-          break;
-        case 1:
-          orient.at(tar) = placerDB::S;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-          break;
-        case 2:
-          orient.at(tar) = placerDB::FN;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::S;
-          break;
-        case 3:
-          orient.at(tar) = placerDB::FS;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::N;
-          break;
-        case 4:
-          orient.at(tar) = placerDB::E;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FW;
-          break;
-        case 5:
-          orient.at(tar) = placerDB::W;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FE;
-          break;
-        case 6:
-          orient.at(tar) = placerDB::FE;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::W;
-          break;
-        case 7:
-          orient.at(tar) = placerDB::FW;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::E;
-          break;
-        default:
-          orient.at(tar) = placerDB::N;
-          orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-      }
-    }
-  } else {
-    //					sympair-sympair		selfsym
-    // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-    // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-    // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-    // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-    self_axis = caseNL.SBlocks.at(sgid).selfsym.at(0).second;
-    if (self_axis == placerDB::V && new_axis == placerDB::V) {
-      // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-      if (caseNL.GetBlockCounterpart(tar) == -1) {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::E;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::W;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FE;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FW;
-            break;
-          default:
-            orient.at(tar) = placerDB::E;
-        }
-      } else {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::E;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FE;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::W;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FW;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FE;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::E;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FW;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::W;
-            break;
-          default:
-            orient.at(tar) = placerDB::E;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FE;
-        }
-      }
-    } else if (self_axis == placerDB::V && new_axis == placerDB::H) {
-      // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-      if (caseNL.GetBlockCounterpart(tar) == -1) {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::N;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::S;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FN;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FS;
-            break;
-          default:
-            orient.at(tar) = placerDB::N;
-        }
-      } else {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::N;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::S;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FN;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::S;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FS;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::N;
-            break;
-          default:
-            orient.at(tar) = placerDB::N;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::H) {
-      // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-      if (caseNL.GetBlockCounterpart(tar) == -1) {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::E;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::W;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FE;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FW;
-            break;
-          default:
-            orient.at(tar) = placerDB::E;
-        }
-      } else {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::E;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FW;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::W;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FE;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FE;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::W;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FW;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::E;
-            break;
-          default:
-            orient.at(tar) = placerDB::E;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FW;
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::V) {
-      // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-      if (caseNL.GetBlockCounterpart(tar) == -1) {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::N;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::S;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FN;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FS;
-            break;
-          default:
-            orient.at(tar) = placerDB::N;
-        }
-      } else {
-        int sa = caseNL.rand() % 4;
-        switch (sa) {
-          case 0:
-            orient.at(tar) = placerDB::N;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-            break;
-          case 1:
-            orient.at(tar) = placerDB::S;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FS;
-            break;
-          case 2:
-            orient.at(tar) = placerDB::FN;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::N;
-            break;
-          case 3:
-            orient.at(tar) = placerDB::FS;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::S;
-            break;
-          default:
-            orient.at(tar) = placerDB::N;
-            orient.at(caseNL.GetBlockCounterpart(tar)) = placerDB::FN;
-        }
-      }
-    }
-  }
-  return true;
-}
-
-bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
-  /* initialize random seed: */
-  // srand(time(NULL));
-  int sgid;
-  if (caseNL.GetSizeofSBlocks() > 1) {
-    sgid = caseNL.rand() % caseNL.GetSizeofSBlocks();
-  } else if (caseNL.GetSizeofSBlocks() == 1) {
-    sgid = 0;
-  } else {
-    return false;
-  }
-  // cout<<endl<<"Change orientation of symmetry group "<<sgid<<endl;
-  if (caseNL.mixFlag && caseNL.GetMappedSymmBlockIdx(sgid) != -1) {
-    return false;
-  }
-  placerDB::Smark new_axis, self_axis;
-  new_axis = symAxis.at(sgid);
-  // Change orientation of cells in symmetry group
-  if (caseNL.SBlocks.at(sgid).selfsym.empty()) {
-    //			sympair-sympair
-    // 	new axis V	N/S/E/W/FN/FS/FE/FW-FN/FS/FE/FW/N/S/E/W
-    // 	new axis H	N/S/E/W/FN/FS/FE/FW-FS/FN/FW/FE/S/N/W/E
-    if (new_axis == placerDB::V) {
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 8;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 4:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 5:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 6:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            case 7:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-          }
-        }
-      }
-    } else if (new_axis == placerDB::H) {
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 8;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 4:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 5:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 6:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            case 7:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-          }
-        }
-      }
-    }
-  } else {
-    //					sympair-sympair		selfsym
-    // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-    // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-    // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-    // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-    self_axis = caseNL.SBlocks.at(sgid).selfsym.at(0).second;
-    if (self_axis == placerDB::V && new_axis == placerDB::V) {
-      // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::E;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::W;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FE;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FW;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::E;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::V && new_axis == placerDB::H) {
-      // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::N;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::S;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FN;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FS;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::N;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::H) {
-      // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::E;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::W;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FE;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FW;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::E;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::V) {
-      // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::N;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::S;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FN;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FS;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::N;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-          }
-        }
-      }
-    }
-  }
-  return true;
-}
-
-bool SeqPair::RotateSymmetryGroup(design& caseNL) {
-  /* initialize random seed: */
-  // srand(time(NULL));
-  int sgid;
-  if (caseNL.GetSizeofSBlocks() > 1) {
-    sgid = caseNL.rand() % caseNL.GetSizeofSBlocks();
-  } else if (caseNL.GetSizeofSBlocks() == 1) {
-    sgid = 0;
-  } else {
-    return false;
-  }
-  if (caseNL.mixFlag && caseNL.GetMappedSymmBlockIdx(sgid) != -1) {
-    return false;
-  }
-  // cout<<endl<<"Rotate symmetry group "<<sgid<<endl;
-  placerDB::Smark old_axis, new_axis = placerDB::V, self_axis;
-  old_axis = symAxis.at(sgid);
-  if (old_axis == placerDB::V) {
-    new_axis = placerDB::H;
-  } else if (old_axis == placerDB::H) {
-    new_axis = placerDB::V;
-  }
-  symAxis.at(sgid) = new_axis;
-  // Change orientation of cells in symmetry group
-  if (caseNL.SBlocks.at(sgid).selfsym.empty()) {
-    //			sympair-sympair
-    // 	new axis V	N/S/E/W/FN/FS/FE/FW-FN/FS/FE/FW/N/S/E/W
-    // 	new axis H	N/S/E/W/FN/FS/FE/FW-FS/FN/FW/FE/S/N/W/E
-    if (new_axis == placerDB::V) {
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 8;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 4:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 5:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 6:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            case 7:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-          }
-        }
-      }
-    } else if (new_axis == placerDB::H) {
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 8;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 4:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 5:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 6:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            case 7:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-          }
-        }
-      }
-    }
-  } else {
-    //					sympair-sympair		selfsym
-    // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-    // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-    // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-    // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-    self_axis = caseNL.SBlocks.at(sgid).selfsym.at(0).second;
-    if (self_axis == placerDB::V && new_axis == placerDB::V) {
-      // 			new axis V	E/W/FE/FW-FE/FW/E/W	E/W/FE/FW
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::E;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::W;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FE;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FW;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::E;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FE;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::V && new_axis == placerDB::H) {
-      // selfsym axis V	new axis H	N/S/FN/FS-FS/FN/S/N	N/S/FN/FS
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::N;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::S;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FN;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FS;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::N;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FS;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::H) {
-      // 			new axis H	E/W/FE/FW-FW/FE/W/E	E/W/FE/FW
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::E;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::W;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FE;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FW;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::E;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::W;
-              orient.at(pit->second) = placerDB::FE;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FE;
-              orient.at(pit->second) = placerDB::W;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FW;
-              orient.at(pit->second) = placerDB::E;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::E;
-              orient.at(pit->second) = placerDB::FW;
-          }
-        }
-      }
-    } else if (self_axis == placerDB::H && new_axis == placerDB::V) {
-      // selfsym axis H	new axis V	N/S/FN/FS-FN/FS/N/S	N/S/FN/FS
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = caseNL.SBlocks.at(sgid).selfsym.begin(); sit != caseNL.SBlocks.at(sgid).selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(sit->first) = placerDB::N;
-              break;
-            case 1:
-              orient.at(sit->first) = placerDB::S;
-              break;
-            case 2:
-              orient.at(sit->first) = placerDB::FN;
-              break;
-            case 3:
-              orient.at(sit->first) = placerDB::FS;
-              break;
-            default:
-              orient.at(sit->first) = placerDB::N;
-          }
-        }
-      }
-      for (vector<pair<int, int>>::iterator pit = caseNL.SBlocks.at(sgid).sympair.begin(); pit != caseNL.SBlocks.at(sgid).sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks() && pit->second < (int)caseNL.GetSizeofBlocks()) {
-          int sa = caseNL.rand() % 4;
-          switch (sa) {
-            case 0:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-              break;
-            case 1:
-              orient.at(pit->first) = placerDB::S;
-              orient.at(pit->second) = placerDB::FS;
-              break;
-            case 2:
-              orient.at(pit->first) = placerDB::FN;
-              orient.at(pit->second) = placerDB::N;
-              break;
-            case 3:
-              orient.at(pit->first) = placerDB::FS;
-              orient.at(pit->second) = placerDB::S;
-              break;
-            default:
-              orient.at(pit->first) = placerDB::N;
-              orient.at(pit->second) = placerDB::FN;
-          }
-        }
-      }
-    }
-  }
-  // Reverse order of symmetry group in negative sequence
-  vector<int> Slist = caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgid);
-  vector<int> Spos = GetVerticesIndexinSeq(this->negPair, Slist);
-  vector<int> newNP = this->negPair;
-  int Slength = (int)Spos.size();
-  for (int i = 0; i < Slength; ++i) {
-    newNP.at(Spos.at(i)) = this->negPair.at(Spos.at(Slength - 1 - i));
-  }
-  this->negPair = newNP;
-  return true;
-}
-
-/*vector<int> SeqPair::GetFlip(const bool hor) const
-{
-  if (_seqPairEnum) {
-    return _seqPairEnum->GetFlip(hor);
-  }
-  vector<int> ret;
-  return ret;
-}*/

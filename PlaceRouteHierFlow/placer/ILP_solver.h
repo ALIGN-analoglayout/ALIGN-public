@@ -16,9 +16,8 @@
 #include <vector>
 
 #include "../PnRDB/datatype.h"
-#include "Aplace.h"
-#include "ConstGraph.h"
 #include "Pdatatype.h"
+#include "PlacerHyperparameters.h"
 #include "SeqPair.h"
 #include "design.h"
 #include "lp_lib.h"
@@ -33,6 +32,10 @@ using std::stack;
 using std::string;
 using std::vector;
 
+class ILP_solver;
+
+using SolutionMap=std::map<double, std::pair<SeqPair, ILP_solver>>;
+
 class ILP_solver {
   friend class Placer;
 
@@ -44,6 +47,7 @@ class ILP_solver {
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, area_ilp = 0., HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
+  double HPWL_extend_net_priority = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
@@ -60,14 +64,27 @@ class ILP_solver {
     return ((fabs(x-ix) > 0.5) ? ((ix < 0) ? ix - 1 : ix + 1) : ix);
   };
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
-  bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
-  bool FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  inline void rounddown(int& v, const int pitch) { v = pitch * (v / pitch); }
+  bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
   bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
-  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
+  bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
+  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
   {
-    if (use_ilp_solver == SYMPHONY) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
-    return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
+    //if (use_ilp_solver == SYMPHONY) 
+    bool no_place_on_grid{true};
+    for(unsigned int i=0;i<mydesign.Blocks.size();i++){
+      if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
+          !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
+        no_place_on_grid = false;
+        break;
+      }
+    }
+    if (no_place_on_grid) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
+    return FrameSolveILPCbc(mydesign, curr_sp, drcInfo, flushlb, prev);
+    //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
   }
+  std::vector<std::set<int>> GetCC(const design& mydesign) const;
   public:
   double cost = 0;
   double constraint_penalty = 0;
@@ -76,14 +93,18 @@ class ILP_solver {
   ILP_solver(design& mydesign, int ilps = SYMPHONY);
   ILP_solver(const ILP_solver& solver);
   ILP_solver& operator=(const ILP_solver& solver);
+  int xdim() const { return UR.x - LL.x; }
+  int ydim() const { return UR.y - LL.y; }
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
-  double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo);
+  double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
+  SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
+  double UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp);
   double CalculateCost(const design& mydesign) const;
   double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
-  void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
+  //void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point>>& temp_contact);
   void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
   void updateTerminalCenterAnalytical(design& mydesign);
@@ -109,6 +130,22 @@ class ExtremeBlocksOfNet {
     bool InTopExtreme(const int neti, const int i) const { return _topExtreme.size() > neti && _topExtreme[neti].find(i) != _topExtreme[neti].end(); }
     bool InBottomExtreme(const int neti, const int i) const { return _botExtreme.size() > neti && _botExtreme[neti].find(i) != _botExtreme[neti].end(); }
 
+};
+
+class TimeMeasure {
+  private:
+    std::chrono::nanoseconds& _rt;
+    std::chrono::high_resolution_clock::time_point _begin;
+  public:
+    TimeMeasure(std::chrono::nanoseconds& rt) : _rt(rt)
+    {
+      _begin = std::chrono::high_resolution_clock::now();
+    }
+    ~TimeMeasure()
+    {
+      auto _end = std::chrono::high_resolution_clock::now();
+      _rt += std::chrono::duration_cast<std::chrono::nanoseconds>(_end - _begin);
+    }
 };
 
 #endif

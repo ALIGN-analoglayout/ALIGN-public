@@ -55,21 +55,10 @@ class MNASimulation {
   // void ConstructI();
   double SolveIR_drop(int Rsize);
   boost_matrix Return_Voltage() { return V; };
-  int MapPoint(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set1, int x, int y,
-               int layer);
-  int MaxY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
-  int MaxX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
-  int MapY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
-  int MapX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
   void Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double *dp, std::string outputfile);
-  void Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices);
   void Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double *dp,
                 std::string outputfile);
-  void Map(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,
-           std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
   void Map_new(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,
-               std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
-  void Map_old(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,
                std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
   void ReadCurrent(std::vector<std::vector<double>> &currentstore, std::string inputfile);
   // added by yg
@@ -86,18 +75,10 @@ class MNASimulation {
   void Print_Devices(std::vector<MDB::device> &temp_devices);
   double Return_Worst_Voltage() { return result; };
   void Test_superlu();
-  void AddingI(std::vector<MDB::metal_point> &I_point_v, std::vector<MDB::metal_point> &I_point_g,
-               std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double current);
   void AddingPower(std::vector<MDB::metal_point> &power_points, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set,
                    std::vector<MDB::device> &Power_Grid_devices, double power);
   void FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number,
                        std::vector<MDB::metal_point> &power_points);
-  void FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number,
-                           std::vector<MDB::metal_point> &power_points);
-  int find_nearest(double x, vector<int> &x_v);
-  std::string Index_Postion(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, int index);
-  std::string Index_Postion_New(int index, bool start_end);
-  void WriteOut_Spice(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set);
 };
 
 #endif

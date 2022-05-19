@@ -384,11 +384,11 @@ class Canvas:
         self.trStack = [transformation.Transformation()]
         self.rd = None
         self.drc = None
-        self.layer_stack = [( "via1", ("M1", "M2")),
-                            ( "via2", ("M3", "M2"))]
         self.gds_layer_map = gds_layer_map
         self.bbox = None
-        if self.pdk is not None:
+        if self.pdk is None:
+            self.layer_stack = [("via1", ("M1", "M2")), ("via2", ("M3", "M2"))]
+        else:
             self._initialize_layer_stack()
 
     def pushTr( self, tr):
@@ -413,6 +413,9 @@ class Canvas:
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates(nets_allowed_to_be_open=nets_allowed_to_be_open)}
+
+        if hasattr(self, 'metadata'):
+            data['metadata'] = self.metadata
 
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}

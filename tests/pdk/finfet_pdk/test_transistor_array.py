@@ -103,14 +103,24 @@ def test_duo_one():
 # Unit tests ###
 
 def test_unit_interleave_pattern():
-    mg = MOSGenerator()
-    assert [1, 2] == mg.interleave_pattern(1, 2)
-    assert [1, 2, 2, 1] == mg.interleave_pattern(2, 2)
-    assert [1, 2, 1, 2, 1, 2] == mg.interleave_pattern(2, 3)
+    # Static method
+    assert [['A', 'B']] == MOSGenerator.interleave_pattern(1, 2)
+    assert [['A', 'B'],
+            ['B', 'A']] == MOSGenerator.interleave_pattern(2, 2)
+    assert [['A', 'B', 'A'],
+            ['B', 'A', 'B']] == MOSGenerator.interleave_pattern(2, 3)
+
+    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, patterns=["A"])
+
+    assert [['A', 'b', 'A', 'b'],
+            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, patterns=["Ab","Ba"])
+
+    assert [['A', 'b', 'B', 'a'],
+            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, patterns=["AbBa","BaAb"])
 
 
 def test_unit_validate_array():
-    mg = MOSGenerator()
-    assert (1, 1) == mg.validate_array(1, 1, 1)
-    assert (1, 2) == mg.validate_array(2, 1, 2)
-    assert (1, 2) == mg.validate_array(2, 2, 2)
+    # Static method
+    assert (1, 1) == MOSGenerator.validate_array(1, 1, 1)
+    assert (1, 2) == MOSGenerator.validate_array(2, 1, 2)
+    assert (1, 2) == MOSGenerator.validate_array(2, 2, 2)
