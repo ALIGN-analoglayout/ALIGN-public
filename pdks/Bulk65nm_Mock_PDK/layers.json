@@ -666,6 +666,15 @@
             "PcWidth": 100,
             "PcExt": 0
         },
+	{
+            "Layer": "Layer1",
+            "GdsLayerNo": 700,
+            "GdsDatatype": {
+                "Draw": 0
+            },
+	    "Offset": 90,
+	    "Active_enclosure": 50
+        },
         {
             "Layer": "Bbox",
             "GdsLayerNo": 100,
