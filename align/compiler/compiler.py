@@ -120,6 +120,8 @@ def compiler_output(
     """
     top_ckt = ckt_data.find(design_name)
     assert top_ckt, f"design {top_ckt} not found in database"
+    result_dir.mkdir(exist_ok=True)
+
     with open(result_dir/"__primitives_library__.json", "w") as f:
         json.dump(primitives.dict()["__root__"], f, indent=2)
 
@@ -158,7 +160,6 @@ def compiler_output(
                  "formal": f"supply{i}",
                  "actual": nm}
             )
-    result_dir.mkdir(exist_ok=True)
     logger.debug(f"Writing results in dir: {result_dir} {ckt_data}")
     with (result_dir / f"{design_name.upper()}.verilog.json").open("wt") as fp:
         json.dump(verilog_tbl, fp=fp, indent=2)
