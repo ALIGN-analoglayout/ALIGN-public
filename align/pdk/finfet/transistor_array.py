@@ -6,6 +6,8 @@ from collections import defaultdict
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
+from .gen_param import construct_sizes_from_exact_patterns 
+
 import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
@@ -18,21 +20,31 @@ class MOSGenerator(CanvasPDK):
 
         super().__init__()
 
-        self.patterns = None
+        self.pattern_template = None
         self.PARTIAL_ROUTING = False
         self.single_device_connect_m1 = True
+        self.exact_patterns = None
+        self.exact_patterns_d = None
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
-                    self.patterns = const.parameters.get('patterns')
+                    self.pattern_template = const.parameters.get('pattern_template')
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
                     self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
+                    self.exact_patterns = const.parameters.get('exact_patterns')
+
+                    if self.exact_patterns is not None:
+                        self.exact_patterns_d = construct_sizes_from_exact_patterns(self.exact_patterns)
+
+                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes'])
+                    for k in const.parameters.keys():
+                        assert k in legal_keys, (k, legal_keys)
 
 
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
 
-        #logger.info(f'patterns: {self.patterns} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
+        #logger.info(f'pattern_template: {self.pattern_template} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
 
         if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
@@ -168,12 +180,24 @@ class MOSGenerator(CanvasPDK):
 
         # Define the interleaving array (aka array logic)
         if is_dual:
-            if self.patterns is not None:
-                interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=self.patterns)                
+            if self.exact_patterns_d is not None:
+                k = self.n_col//2, self.n_row
+                assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
+            elif self.pattern_template is not None:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
             else:
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            interleave_array = self.interleave_pattern(self.n_row, self.n_col, patterns=["A"])
+            if self.exact_patterns_d is not None:
+                k = self.n_col, self.n_row
+                assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
+            elif self.pattern_template is not None:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
+            else:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
+
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
@@ -395,7 +419,7 @@ class MOSGenerator(CanvasPDK):
 
 
     @staticmethod
-    def interleave_pattern(n_row, n_col, *, patterns=["AB","BA"]):
+    def interleave_pattern(n_row, n_col, *, pattern_template=["AB","BA"]):
         """
         (lower case means flipped around the y-axis (mirrored in x))
             A B
@@ -407,5 +431,5 @@ class MOSGenerator(CanvasPDK):
             A b B a
             B a A b
         """
-        assert len(patterns) > 0
-        return [list(islice(cycle(patterns[y%len(patterns)]), n_col)) for y in range(n_row)]
+        assert len(pattern_template) > 0
+        return [list(islice(cycle(pattern_template[y%len(pattern_template)]), n_col)) for y in range(n_row)]

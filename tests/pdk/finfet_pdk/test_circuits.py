@@ -1,3 +1,5 @@
+from collections import defaultdict
+import re
 import os
 import pytest
 import json
@@ -9,6 +11,8 @@ from . import circuits
 CLEANUP = os.getenv("CLEANUP", True)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+import logging
+logger = logging.getLogger(__name__)
 
 def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
@@ -304,6 +308,82 @@ def test_charge_pump_switch():
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
         assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
+def test_niwc_opamp_split():
+    # Tests legal size and exact_patterns restrictions
+
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.niwc_opamp_split(name)
+    constraints = [
+    {"constraint": "ConfigureCompiler", "auto_constraint": False, "merge_parallel_devices": False},
+    {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
+    {"constraint": "PowerPorts", "ports": ["vccx"]},
+    {"constraint": "GroundPorts", "ports": ["vssx"]},
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0",
+     "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": True, "single_device_connect_m1": False, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp",
+     "generator": { "name": "MOS", "parameters": { "exact_patterns": [["AbBa",
+                                                                       "BaAb",
+                                                                       "BaAb",
+								       "AbBa"]], "PARTIAL_ROUTING": True}}},
+    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "name": "nraila", "generator": { "name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                        "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "name": "nrailb",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+ 		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "name": "lsa", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "name": "lsb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "name": "ostagea", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "name": "ostageb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "SameTemplate", "instances": ["lsa", "lsb"]},
+    {"constraint": "SameTemplate", "instances": ["ostagea", "ostageb"]},
+    {"constraint": "SameTemplate", "instances": ["nraila", "nrailb"]},
+    {"constraint": "Floorplan",
+     "order": True,
+     "symmetrize": True,
+     "regions": [
+        ["prail"],
+        ["ostagea", "lsa", "dp", "lsb", "ostageb"],
+        ["nraila", "mtail0", "nrailb"]
+     ]},
+    {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
+]
+
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
+
+    pat = re.compile(r"^(.*)_X(\d+)_Y(\d+)$")
+
+    size_tbl = defaultdict(list)
+
+    for file in (run_dir / "2_primitives").glob('*.json'):
+        if file.suffixes == [".json"]:
+            m = pat.match(file.stem)
+            if m:
+                nm = m.groups()[0]
+                x = int(m.groups()[1])
+                y = int(m.groups()[2])
+                size_tbl[nm].append((x,y))
+
+    assert size_tbl['DP'] == [(2,4)]
+    assert size_tbl['MTAIL0'] == [(4, 8)]
+    assert size_tbl['PRAIL'] == [(4, 8)]
+    assert size_tbl['LSA'] == [(1, 4)]
+    assert size_tbl['LSB'] == [(1, 4)]
+    assert size_tbl['OSTAGEA'] == [(1, 4)]
+    assert size_tbl['OSTAGEB'] == [(1, 4)]
+    assert size_tbl['NRAILA'] == [(1, 8)]
+    assert size_tbl['NRAILB'] == [(1, 8)]
 
     if CLEANUP:
         shutil.rmtree(run_dir)
