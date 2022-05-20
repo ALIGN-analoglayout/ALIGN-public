@@ -90,9 +90,9 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
 
                 if legal_sizes is not None or legal_size_set is not None:
                     if ok:
-                        logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
-                    else:
                         logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
+                    else:
+                        logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
                 
                 if ok:
                     concrete_name = f'{block_name}_X{newx}_Y{newy}'
