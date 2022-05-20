@@ -10,7 +10,7 @@ class MOSGenerator(DefaultCanvas):
 
     def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch):
         super().__init__(pdk)
-        self.finsPerUnitCell = height
+        self.finsPerUnitCell = 36
         assert self.finsPerUnitCell % 4 == 0
         assert (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])%self.pdk['M2']['Pitch']==0
         self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
@@ -18,6 +18,7 @@ class MOSGenerator(DefaultCanvas):
         ######### Derived Parameters ############
         self.shared_diff = 1
         self.stack = stack
+        self.mos_fin = fin
         self.bodyswitch = bodyswitch
         self.gateDummy = 2
         self.gate = 2*gate if self.stack ==1 else gate*self.stack
@@ -25,11 +26,11 @@ class MOSGenerator(DefaultCanvas):
         self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = 8 ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
         assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
-        assert fin > 1, "number of fins in the transistor must be more than 1" 
+        assert self.mos_fin > 1, "number of fins in the transistor must be more than 1" 
         assert gateDummy > 0
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
         activeOffset = self.unitCellHeight//2 - self.pdk['Fin']['Pitch']//2
-        self.activeWidth =  self.pdk['Fin']['Pitch']*fin
+        self.activeWidth =  self.pdk['Fin']['Pitch']*self.mos_fin
         activePitch = self.unitCellHeight
         RVTWidth = self.activeWidth + 2*self.pdk['Active']['active_enclosure']
 
@@ -125,7 +126,8 @@ class MOSGenerator(DefaultCanvas):
         self.subinsts[fullname].parameters.update(parameters)
 
         def _connect_diffusion(i, pin):
-            self.addWire( self.m1, None, i, (grid_y0-m1_length//2, -1), (grid_y0+m1_length//2, 1))
+            D_short = 2 if pin == 'D' else 0
+            self.addWire( self.m1, None, i, (grid_y0+D_short, -1), (grid_y1, 1))
             for j in range(1,self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', i, (y, j))
             self._xpins[name][pin].append(i)
@@ -137,9 +139,13 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.active_diff, None, y, 0, self.gate*x_cells+1)
         else:
             pass
-        self.addWire( self.layer1, None, x,   (y,1), (y+1,-1))
+        Nselect_y0 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 - (1+self.mos_fin)//2-2
+        Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2+1
+        self.addWire( self.layer1, None, x,   (y,1), (y+1,-1)) 
+        self.addRegion( self.pselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y0-4)
+        self.addRegion( self.pselect, None, (1, -1), Nselect_y1, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1+4)
         if parameters['model'] == 'NMOS':
-            if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell-6) 
+            if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1) 
         else:
             if x == x_cells-1: self.addRegion( self.pselect, None, (1, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell-6)
 
@@ -147,10 +153,9 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.pl, None, i+self.gatesPerUnitCell*x+self.gateDummy,   (y,1), (y+1,-1))
 
         # Source, Drain, Gate Connections
-        grid_y0 = y*self.m2PerUnitCell + self.m2PerUnitCell//2
-        m1_length = ceil(self.activeWidth/self.pdk['M2']['Pitch'])
-        print(m1_length)
-        grid_y1 = (y+1)*self.m2PerUnitCell-5
+        grid_y0 = ((Nselect_y0-4)*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
+        grid_y1 = ((Nselect_y1+4)*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
+        #grid_y2 = (y+1)*self.m2PerUnitCell-5
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
@@ -175,10 +180,13 @@ class MOSGenerator(DefaultCanvas):
 
     def _connectDevicePins(self, y, y_cells, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
-        grid_y1 = (y+1)*self.m2PerUnitCell-5
+        #grid_y1 = (y+1)*self.m2PerUnitCell-5
+        Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2+1
+        grid_y1 = ((Nselect_y1+4)*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         gate_track = 0
-        diff_track = self.m2PerUnitCell // 2 - ceil(self.activeWidth/self.pdk['M2']['Pitch'])-1
-        print(diff_track)
+        #diff_track = self.m2PerUnitCell // 2 - ceil(self.activeWidth/self.pdk['M2']['Pitch'])-1
+        diff_track = 5
+        #print(diff_track)
         body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
         for (net, conn) in connections.items():
             contactsx = {(track, pin) for inst, pins in self._xpins.items()
@@ -261,8 +269,7 @@ class MOSGenerator(DefaultCanvas):
         self._xpins[name]['B'].append(gate_x)
         ### FEOL layers
         self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
-        self.addWire( self.activeb, None, -1*body_v0_track, (x,1), (x+1,-1))
-        self.addWire( self.pb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
+        #self.addWire( self.activeb, None, -1*body_v0_track, (x,1), (x+1,-1)) 
         ##Via and routing
         self.addWire( self.m1, None, gate_x, ((y+1)*h + body_v0_track-1, -1), ((y+1)*h + body_v0_track+1, 1))
         self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + body_v0_track)
