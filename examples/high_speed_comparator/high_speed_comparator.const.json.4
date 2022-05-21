@@ -4,26 +4,26 @@
     {"constraint": "ClockPorts", "ports": ["clk"]},
     {"constraint":"HorizontalDistance", "abs_distance":0},
     {"constraint":"VerticalDistance",   "abs_distance":0},
-    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
-    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "name": "ccn"},
-    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
-    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "name": "inv_n"},
-    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
+    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "instance_name": "xdp"},
+    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "instance_name": "xccn"},
+    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "instance_name": "xccp"},
+    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "instance_name": "inv_n"},
+    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "instance_name": "inv_p"},
     {"constraint": "SymmetricBlocks",
         "direction" : "V",
-        "pairs": [["mn0"], ["dp"], ["ccn"], ["ccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
+        "pairs": [["mn0"], ["xdp"], ["xccn"], ["xccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["inv_n", "inv_p"]]
     },
     {"constraint": "Order",
         "direction" : "top_to_bottom",
-        "instances": ["mn0", "dp", "ccn", "ccp"]
+        "instances": ["mn0", "xdp", "xccn", "xccp"]
     },
     {"constraint": "align",
         "line" : "h_bottom",
-        "instances": ["mp9", "mp7", "dp", "mp8", "mp10"]
+        "instances": ["mp9", "mp7", "xdp", "mp8", "mp10"]
     },
     {"constraint": "align",
         "line" : "h_bottom",
-        "instances": ["inv_n", "ccp", "inv_p"]
+        "instances": ["inv_n", "xccp", "inv_p"]
     }
     {"constraint": "PortLocation",
         "ports": ["von", "vop"],
