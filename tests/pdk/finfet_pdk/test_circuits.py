@@ -251,7 +251,7 @@ def test_two_stage_ota():
         {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "instance_name": "xdp"},
         {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "instance_name": "xscp"},
         {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp1"], "instance_name": "xdp2"},
-        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "instance_name": "sc2"},
+        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "instance_name": "xsc2"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xsc2", "xdp2", "xscp", "xdp", "xscn"], "abut": True},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xsc2"], ["xdp2"], ["xscp"], ["xdp"], ["xscn"]]}
     ]
