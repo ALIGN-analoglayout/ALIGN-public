@@ -116,13 +116,12 @@ class ConstraintTranslator():
                         if pair[0] in node_map.keys():
                             pair[0] = new_inst
             elif hasattr(const, "pin_current"):
-                logger.info(f"updating charge flow constraints {const.pin_current.keys()}")
+                logger.debug(f"updating charge flow constraints {const.pin_current.keys()}")
                 updated_pc={}
                 remove_pins = []
                 for pin,current in const.pin_current.items():
                     parent_inst_name = pin.split('/')[0].upper()
                     if parent_inst_name in node_map.keys():
-                        logger.info(f"{node_map}")
                         remove_pins.append(pin)
                         child_inst_name = node_map[parent_inst_name]
                         if self.child_name:

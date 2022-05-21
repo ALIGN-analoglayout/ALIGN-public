@@ -1327,13 +1327,12 @@ class ChargeFlow(SoftConstraint):
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
         return value
-
+    #TODO add pin validators
     @types.validator('pin_current', allow_reuse=True)
     def pairs_validator(cls, pin_current, values):
-        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         for pin, current in pin_current.items():
-            assert cls._validator_ctx().parent.parent.get_element(pin.split('/')[0]), f"element {pin} not found in design"
-            assert pin.split('/')[1] in cls._validator_ctx().parent.parent.get_element(pin.split('/')[0]).pins, f"element does not have {pin}"
+            assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
             assert len(current) == len(values['time']), 'Must contain at least one instance'
         return pin_current
 
