@@ -132,12 +132,13 @@ def compiler_output(
             continue
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const:
+            with open(result_dir/ f"{subckt.name}.const.json", "w") as f:
+                json.dump(subckt.constraints.dict()["__root__"], f, indent=2)
+            exclude_const(subckt)
             # Create modified netlist
             logger.debug(f"call verilog writer for block: {subckt.name}")
             wv = WriteVerilog(subckt, ckt_data)
             verilog_tbl["modules"].append(wv.gen_dict())
-            with open(result_dir/ f"{subckt.name}.const.json", "w") as f:
-                json.dump(subckt.constraints.dict()["__root__"], f, indent=2)
 
     power_ports = list()
     ground_ports = list()
@@ -168,3 +169,12 @@ def compiler_output(
     results_path = result_dir/design_name.upper()
     logger.debug(f"OUTPUT verilog json netlist at: {results_path}.verilog.json")
     logger.debug(f"OUTPUT const file at: {results_path}.pnr.const.json")
+
+
+def exclude_const(subckt):
+    #Exclude constraints not to be exposed to PnR
+    exclude_const_list = ['do_not_identify', 'group_blocks', 'do_not_use_lib', 'configure_compiler']
+    remove_const = [c for c in subckt.constraints if c.constraint in exclude_const_list]
+    logger.debug(f"removing annotation only constraints {remove_const}")
+    for const in remove_const:
+        subckt.constraints.remove(const)

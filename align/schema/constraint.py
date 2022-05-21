@@ -537,21 +537,19 @@ class GroupBlocks(HardConstraint):
         bb = solver.bbox_vars(self.name)
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
-        # Skip constraints checking during PnR
-        if self.name not in instances:
-            # Grouping into common bbox
-            for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
-                yield b.urx <= bb.urx
-                yield b.llx >= bb.llx
-                yield b.ury <= bb.ury
-                yield b.lly >= bb.lly
-            for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
-                yield solver.Or(
-                    b.urx <= bb.llx,
-                    bb.urx <= b.llx,
-                    b.ury <= bb.lly,
-                    bb.ury <= b.lly,
-                )
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes

@@ -53,7 +53,7 @@ class Annotate:
     def annotate(self):
         """
         Main function to creates hierarchies in the block.
-        Iterativily goes through all subckts in the netlist.
+        Iteratively goes through all subckts in the netlist.
         Reduce graph to a list of nodes.
         Returns:
             list: all updated circuit list
@@ -184,7 +184,7 @@ class Annotate:
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_inst]
                 group_block_name = Graph(parent_subckt).replace_matching_subgraph(
                         child_subckt_graph, skip_insts)[0]
-                assert group_block_name, f"a primitive name same as {group_block_name} does not match primitive features"
+                assert group_block_name, f"a primitive name same as {group_block_name} does not match group features"
                 if const.template.upper() in self.matched_dict.keys():
                     self.matched_dict[const.template.upper()].append(group_block_name)
                 else:
@@ -232,16 +232,16 @@ class Annotate:
             tr._check_const_length(parent_subckt.constraints, c)
         logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
 
-    def _group_cap_const(self, subckt_name):
+    def _group_cap_const(self, parent_subckt_name):
         # TODO: merge group cap and group block
-        subckt = self.ckt_data.find(subckt_name)
+        parent_subckt = self.ckt_data.find(parent_subckt_name)
         gc_const = [
             const
-            for const in subckt.constraints
+            for const in parent_subckt.constraints
             if isinstance(const, constraint.GroupCaps) and len(const.instances) > 1
         ]
         if len(gc_const) > 0:
-            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {subckt_name}")
+            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {parent_subckt_name}")
         else:
             return
         tr = ConstraintTranslator(self.ckt_data)
@@ -251,12 +251,12 @@ class Annotate:
             const_inst = [i for i in const.instances]
 
             assert set(const_inst).issubset(
-                set([e.name for e in subckt.elements])
-            ), f"const instances{const_inst} are not in subckt {subckt_name}"
+                set([e.name for e in parent_subckt.elements])
+            ), f"const instances{const_inst} are not in subckt {parent_subckt_name}"
             # all nets connected to common centroid cap constraints
             new_pins = {}
             for i, e in enumerate(const_inst):
-                sc_pins = subckt.get_element(e).pins  # single cap pins
+                sc_pins = parent_subckt.get_element(e).pins  # single cap pins
                 new_pins.update({k + str(i): v for k, v in sc_pins.items()})
             cc_name = "CAP_CC_" + "_".join([str(x) for x in const.num_units])
             if not self.ckt_data.find(const.name.upper()):
@@ -269,18 +269,18 @@ class Annotate:
                 if not self.ckt_data.find(cc_name):
                     self.ckt_data.append(new_subckt)
 
-            with set_context(subckt.elements):
+            with set_context(parent_subckt.elements):
                 for e in const_inst:
-                    subckt.elements.remove(subckt.get_element(e))
+                    parent_subckt.elements.remove(parent_subckt.get_element(e))
                 logger.debug(f"pins {new_pins} {new_subckt.pins}")
                 X1 = Instance(
                     name=const.name.upper(),
                     model=cc_name,
                     pins=new_pins
                 )
-                subckt.elements.append(X1)
+                parent_subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock
             tr._update_const(
-                subckt_name, [const.name.upper(), *const_inst], const.name.upper()
+                parent_subckt_name, [const.name.upper(), *const_inst], const.name.upper()
             )
 
