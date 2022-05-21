@@ -52,9 +52,9 @@ class Annotate:
 
     def annotate(self):
         """
-        Main function to creates hierarchies in the block
-        iterativily goes through all subckts in the netlist
-        Reduce graph to a list of nodes
+        Main function to creates hierarchies in the block.
+        Iterativily goes through all subckts in the netlist.
+        Reduce graph to a list of nodes.
         Returns:
             list: all updated circuit list
         """
@@ -102,9 +102,14 @@ class Annotate:
                        subckt.name in do_not_use_lib or \
                        (subckt.name in self.matched_dict and ckt.name in self.matched_dict[subckt.name]):  # to stop searching INVB in INVB_1
                         continue
-                    new_subckts = netlist_graph.replace_matching_subgraph(
-                        Graph(subckt), skip_nodes
-                    )
+                    if len(subckt.elements) >1:
+                        new_subckts = netlist_graph.replace_matching_subgraph(
+                            Graph(subckt), skip_nodes
+                        )
+                    else:
+                        new_subckts = netlist_graph.replace_matching_subgraph(
+                            Graph(subckt)
+                        )
                     if subckt.name in self.matched_dict:
                         self.matched_dict[subckt.name].extend(new_subckts)
                     else:
@@ -179,6 +184,7 @@ class Annotate:
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_inst]
                 group_block_name = Graph(parent_subckt).replace_matching_subgraph(
                         child_subckt_graph, skip_insts)[0]
+                assert group_block_name, f"a primitive name same as {group_block_name} does not match primitive features"
                 if const.template.upper() in self.matched_dict.keys():
                     self.matched_dict[const.template.upper()].append(group_block_name)
                 else:

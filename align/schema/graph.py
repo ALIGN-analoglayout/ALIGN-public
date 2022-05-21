@@ -104,7 +104,7 @@ class Graph(networkx.Graph):
         # Thus sorting based on key,value pair
         matches = sorted(matcher.subgraph_isomorphisms_iter(), key=lambda k: [(x, y)for x, y in k.items()])
         for match in matches:
-            if any(k in skip for k,v in match.items()):
+            if skip and any(k in skip for k in match.keys()):
                 logger.debug(f"skipping skip nodes {skip} {match}")
                 continue
             if not any(self._is_element(self.nodes[node]) and any(node in x for x in correct_matches) for node in match):
@@ -196,9 +196,9 @@ class Graph(networkx.Graph):
                     generator_param = {k: v for k, v in gc[0] if k != 'constraint'}
                 else:
                     generator_param = None
-                if len(nodes)>1:
+                if len(nodes)>=1:
                     temp = constraint.GroupBlocks(name=instance_name, template=subckt.name, instances=nodes, generator=generator_param)
-                    logger.info(f"adding a generator parameter {temp} for {self.subckt.name}")
+                    logger.debug(f"adding a generator parameter {temp} for {self.subckt.name}")
                     if temp not in self.subckt.constraints:
                         self.subckt.constraints.append(temp)
 

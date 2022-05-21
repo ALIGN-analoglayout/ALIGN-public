@@ -271,7 +271,8 @@ def test_symmnet_translation():
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
     FindConst(cktlib.find(name))
-    symnet_const = cktlib.find(name).constraints.dict()["__root__"][2]
+    all_const = cktlib.find(name).constraints.dict()["__root__"]
+    symnet_const = [const for const in all_const if const["constraint"]=="symmetric_nets"][0]
     modified_symmnet = {
         "constraint": "symmetric_nets",
         "direction": "V",

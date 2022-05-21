@@ -37,7 +37,6 @@ def test_cmp_reuse():
         verilog_json = json.load(fp)
         modules = {module['name']: module for module in verilog_json['modules']}
         constraints_2 = modules[name_2]["constraints"]
-
     assert len(constraints_1) == len(constraints_2)
     assert all(c in constraints_2 for c in constraints_1)
 

@@ -240,7 +240,12 @@ def constraint_generator(ckt_data):
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const and not "ARRAY_HIER_" in subckt.name.upper():
             FindConst(subckt)
+        remove_non_reusable_const(subckt)
 
+def remove_non_reusable_const(subckt):
+    remove_const = [c for c in subckt.constraints if isinstance(c, constraint.DoNotIdentify)]
+    for const in remove_const:
+        subckt.constraints.remove(const)
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
@@ -342,10 +347,11 @@ class process_input_const:
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
             for k, v in replace_const:
-                self.iconst.remove(k)
-                self.iconst.append(v)
-                self.user_constrained_list.append(v.net1)
-                self.user_constrained_list.append(v.net2)
+                if k!=v: # removing constraint does not remove it from cache and z3 solver, duplicate const is not allowed in solver
+                    self.iconst.remove(k)
+                    self.iconst.append(v)
+                    self.user_constrained_list.append(v.net1)
+                    self.user_constrained_list.append(v.net2)
             for symb in new_symmblock_const:
                 #avoid subsets
                 if not any(set(map(tuple, symb.pairs)).issubset(set(map(tuple, const.pairs)))
