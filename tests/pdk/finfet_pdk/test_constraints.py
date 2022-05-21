@@ -29,7 +29,10 @@ def test_cmp_reuse():
         modules = {module['name']: module for module in verilog_json['modules']}
         constraints_1 = modules[name_1]["constraints"]
 
-    example_2 = build_example(name_2, netlist_2, constraints_1)
+    with (run_dir_1 / '1_topology' / f'{name_1.upper()}.const.json').open('rt') as fp:
+        reusable_const = json.load(fp)
+
+    example_2 = build_example(name_2, netlist_2, reusable_const)
     ckt_dir_2, run_dir_2 = run_example(example_2, n=1, cleanup=False, log_level=LOG_LEVEL, additional_args=["--flow_stop", "1_topology"])
 
     name_2 = name_2.upper()
