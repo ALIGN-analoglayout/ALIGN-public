@@ -1,16 +1,30 @@
 [
     {"constraint": "ConfigureCompiler", "auto_constraint": false, "merge_parallel_devices": false},
+    {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp", "generator": { "instance_name": "MOS", "parameters": { "style": "RADHARD"}}},
-    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "generator": { "instance_name": "MOS", "parameters": { "style": "RADHARD"}}},
-
-    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb", "generator": { "instance_name": "MOS", "parameters": { "style": "RADHARD"}}},
-    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail", "generator": { "instance_name": "MOS", "parameters": { "style": "RADHARD"}}},
-    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa", "generator": { "instance_name": "MOS"}},
-    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "generator": { "instance_name": "MOS"}},
-    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "generator": { "instance_name": "MOS"}},
-    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb", "generator": { "instance_name": "MOS"}},
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "instance_name": "xmtail0",
+     "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": true, "single_device_connect_m1": false, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp",
+     "generator": { "name": "MOS", "parameters": { "exact_patterns": [["AbBa",
+                                                                       "BaAb",
+                                                                       "BaAb",
+								       "AbBa"]], "PARTIAL_ROUTING": true}}},
+    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "generator": { "name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                        "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+ 		                                       "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                       "BaAb"], "PARTIAL_ROUTING": true, "legal_sizes": [{"y": 8}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
     {"constraint": "SameTemplate", "instances": ["xlsa", "xlsb"]},
     {"constraint": "SameTemplate", "instances": ["xostagea", "xostageb"]},
     {"constraint": "SameTemplate", "instances": ["xnraila", "xnrailb"]},
@@ -20,7 +34,7 @@
      "regions": [
         ["xprail"],
         ["xostagea", "xlsa", "xdp", "xlsb", "xostageb"],
-        ["xnraila","mtail", "xnrailb"]
+        ["xnraila","xmtail0", "xnrailb"]
      ]},
     {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
 ]

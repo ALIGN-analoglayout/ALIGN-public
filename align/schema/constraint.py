@@ -1339,6 +1339,19 @@ class DoNotRoute(SoftConstraint):
     _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
 
 
+class CustomizeRoute(BaseModel):
+    nets: List[str]
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    shield: bool = False
+    match: bool = False
+
+class Route(SoftConstraint):
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    customize: List[CustomizeRoute] = []
+
+
 ConstraintType = Union[
     # ALIGN Internal DSL
     Order, Align, Floorplan,
@@ -1375,7 +1388,8 @@ ConstraintType = Union[
     ClockPorts,
     DoNotUseLib,
     ConfigureCompiler,
-    NetPriority
+    NetPriority,
+    Route
 ]
 
 

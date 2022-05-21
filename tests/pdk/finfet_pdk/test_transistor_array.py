@@ -1,6 +1,9 @@
 import pytest
 from align.pdk.finfet import MOSGenerator
+from align.pdk.finfet.gen_param import check_legal
+
 from .utils import get_test_id, export_to_viewer
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -100,19 +103,39 @@ def test_duo_one():
         assert False, f'{get_test_id()}'
 
 
+def test_check_legal():
+    assert check_legal( 1, 1, [{'y': 1}])
+    assert check_legal( 1, 1, [{'x': 1}])
+    assert check_legal( 1, 1, [{}])
+    assert not check_legal( 1, 1, [{'y': 2}])
+    assert not check_legal( 1, 1, [{'x': 2}])
+    assert not check_legal( 1, 1, [{'x': 2, 'y': 1}])
+    assert not check_legal( 1, 1, [{'x': 1, 'y': 2}])
+    assert check_legal( 1, 1, [{'x': 1, 'y': 1}])
+    assert check_legal( 1, 1, [{'x': 1, 'y': 2}, {'x': 2, 'y': 1}, {'x': 1, 'y': 1}])
+
+
 # Unit tests ###
 
 def test_unit_interleave_pattern():
-    mg = MOSGenerator()
-    assert [['A', 'B']] == mg.interleave_pattern(1, 2)
+    # Static method
+    assert [['A', 'B']] == MOSGenerator.interleave_pattern(1, 2)
     assert [['A', 'B'],
-            ['B', 'A']] == mg.interleave_pattern(2, 2)
+            ['B', 'A']] == MOSGenerator.interleave_pattern(2, 2)
     assert [['A', 'B', 'A'],
-            ['B', 'A', 'B']] == mg.interleave_pattern(2, 3)
+            ['B', 'A', 'B']] == MOSGenerator.interleave_pattern(2, 3)
+
+    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, pattern_template=["A"])
+
+    assert [['A', 'b', 'A', 'b'],
+            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["Ab","Ba"])
+
+    assert [['A', 'b', 'B', 'a'],
+            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["AbBa","BaAb"])
 
 
 def test_unit_validate_array():
-    mg = MOSGenerator()
-    assert (1, 1) == mg.validate_array(1, 1, 1)
-    assert (1, 2) == mg.validate_array(2, 1, 2)
-    assert (1, 2) == mg.validate_array(2, 2, 2)
+    # Static method
+    assert (1, 1) == MOSGenerator.validate_array(1, 1, 1)
+    assert (1, 2) == MOSGenerator.validate_array(2, 1, 2)
+    assert (1, 2) == MOSGenerator.validate_array(2, 2, 2)
