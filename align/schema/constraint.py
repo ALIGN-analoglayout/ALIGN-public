@@ -25,8 +25,9 @@ def get_instances_from_hacked_dataclasses(constraint):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
-    names = {x.name for x in constraint.parent if hasattr(x, 'name')}
-    return set.union(instances, names)
+    names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')} #group block
+    names2 = {x.name for x in constraint.parent if hasattr(x, 'name')} #group_cap, alias
+    return set.union(instances, names1, names2)
 
 
 def validate_instances(cls, value):
@@ -500,15 +501,15 @@ class GroupBlocks(HardConstraint):
 
     Args:
       instances (list[str]): List of :obj:`instances`
-      template (str): Optional template name for the group (virtual hiearchy).
-      name (str): Instance name for the group.
+      template_name (str): Optional template name for the group (virtual hiearchy).
+      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
       generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
 
         {
             "constraint":"GroupBlocks",
-            "name": "group1",
+            "instance_name": "X_MN0_MN1_MN3",
             "instances": ["MN0", "MN1", "MN3"]
             "generator": {name: 'MOS',
                         'parameters':
@@ -516,25 +517,27 @@ class GroupBlocks(HardConstraint):
                             "pattern": "cc",
                             }
                         }
+            "template_name": "DP1"
         }
 
-    Note: To keep backward compatibility with previous version, in case template name is not provided, name is used as template name and  instance name is generated based on the combination of "name" and the list of instance names (e.g. X_GROUP1_MN0_MN1_MN3 for the example below).
-    Both name and template definition are required in case you want to use duplicate template names across multiple groups.
+    Note: If not provided a unique template name will be auto generated. Template_names are added with a post_script during the flow using a UUID based on all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
     """
-    name: str
+    instance_name: str
     instances: List[str]
-    template: Optional[str]
+    template_name: Optional[str]
     generator: Optional[dict]
 
-    @types.validator('name', allow_reuse=True)
+    @types.validator('instance_name', allow_reuse=True)
     def group_block_name(cls, value):
         assert value, 'Cannot be an empty string'
+        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
         return value.upper()
+
 
     def translate(self, solver):
         # Non-zero width / height
         instances = get_instances_from_hacked_dataclasses(self)
-        bb = solver.bbox_vars(self.name)
+        bb = solver.bbox_vars(self.instance_name)
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
         # Grouping into common bbox
@@ -1012,7 +1015,7 @@ class SymmetricBlocks(HardConstraint):
         if len(cls._validator_ctx().parent.parent.elements) == 0:
             # skips the check while reading user constraints
             return value
-        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances]) > 0:

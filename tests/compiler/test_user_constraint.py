@@ -53,6 +53,9 @@ def test_group_block_hsc(dir_name):
     #TODO file changes in separate branch
     gen_const = [const for const in gen_const if const['constraint'] != 'group_blocks']
     gen_const.sort(key=lambda item: item.get("constraint"))
+    for i,const in enumerate(gen_const):
+        if const['constraint'] == 'do_not_identify':
+            gen_const[i]['instances'] = sorted(const['instances'])
     print(gen_const)
     gold_const_path = (
         pathlib.Path(__file__).resolve().parent.parent
@@ -63,6 +66,8 @@ def test_group_block_hsc(dir_name):
     with open(gold_const_path, "r") as const_fp:
         gold_const = json.load(const_fp)
         gold_const.sort(key=lambda item: item.get("constraint"))
+
+
     assert gold_const == gen_const
 
 
@@ -295,12 +300,12 @@ def test_groupblock_generator():
         .ends {name}
     """
     )
-    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"],   "name": "dp1", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"],   "instance_name": "x_dp1_mn1_mn2", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
     ]
     example = build_example(name, netlist, constraints)
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
-    dp1 = [sckt for sckt in cktlib if sckt.name.startswith('DP1')][0]
+    dp1 = [sckt for sckt in cktlib if 'DP1' in sckt.name][0]
     assert dp1.generator["name"] == 'MOS', f"generator definition error {dp1.generator}"
     assert dp1.constraints.dict()['__root__'][0] == {'constraint':'generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
 

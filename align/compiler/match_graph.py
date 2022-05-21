@@ -176,23 +176,23 @@ class Annotate:
 
             #TODO use isomorphism to check for matching group blocks
             block_arg = gen_group_key({str(i): parent_subckt.get_element(e) for i, e in enumerate(const_inst)})
-            if const.template == None:
-                group_block_name = const.name.upper()+block_arg
-                inst_name = "X_" + const.name.upper()+"_" +"_".join(const_inst)
-            elif const.template.upper() in self.lib_names:
-                child_subckt_graph = Graph([l for l in self.lib if l.name==const.template.upper()][0])
+            if const.template_name == None:
+                group_block_name = const.instance_name.upper()+block_arg
+                inst_name = const.instance_name.upper()
+            elif const.template_name.upper() in self.lib_names:
+                child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_inst]
                 group_block_name = Graph(parent_subckt).replace_matching_subgraph(
                         child_subckt_graph, skip_insts)[0]
                 assert group_block_name, f"a primitive name same as {group_block_name} does not match group features"
-                if const.template.upper() in self.matched_dict.keys():
-                    self.matched_dict[const.template.upper()].append(group_block_name)
+                if const.template_name.upper() in self.matched_dict.keys():
+                    self.matched_dict[const.template_name.upper()].append(group_block_name)
                 else:
-                     self.matched_dict[const.template.upper()]=[group_block_name]
+                     self.matched_dict[const.template_name.upper()]=[group_block_name]
                 continue
             else:
-                group_block_name = const.template.upper()+block_arg
-                inst_name = const.name.upper()
+                group_block_name = const.template_name.upper()+block_arg
+                inst_name = const.instance_name.upper()
             assert self.ckt_data.find(group_block_name) is None, f"Already existing subckt with name {group_block_name}, please provide different name to const"
             logger.debug(
                 f"Grouping instances {const_inst} in subckt {group_block_name} pins: {ac_nets}"

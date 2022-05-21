@@ -197,7 +197,7 @@ class Graph(networkx.Graph):
                 else:
                     generator_param = None
                 if len(nodes)>=1:
-                    temp = constraint.GroupBlocks(name=instance_name, template=subckt.name, instances=nodes, generator=generator_param)
+                    temp = constraint.GroupBlocks(instance_name=instance_name, template_name=subckt.name, instances=nodes, generator=generator_param)
                     logger.debug(f"adding a generator parameter {temp} for {self.subckt.name}")
                     if temp not in self.subckt.constraints:
                         self.subckt.constraints.append(temp)
