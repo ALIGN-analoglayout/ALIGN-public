@@ -174,10 +174,10 @@ def test_ota_six():
     netlist = circuits.ota_six(name)
     constraints = [
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "tail"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "diffpair"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "load"},
-        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["load"], ["diffpair"], ["tail"]]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xtail"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload"},
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
@@ -247,13 +247,13 @@ def test_two_stage_ota():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2.0},
-        {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "name": "scn"},
+        {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "instance_name": "xscn"},
         {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "instance_name": "xdp"},
-        {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "name": "scp"},
-        {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp1"], "name": "dp2"},
-        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "name": "sc2"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["sc2", "dp2", "scp", "xdp", "scn"], "abut": True},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["sc2"], ["dp2"], ["scp"], ["xdp"], ["scn"]]}
+        {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "instance_name": "xscp"},
+        {"constraint": "GroupBlocks", "instances": ["xmp3", "xmp1"], "instance_name": "xdp2"},
+        {"constraint": "GroupBlocks", "instances": ["xmn5", "xmn3"], "instance_name": "sc2"},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xsc2", "xdp2", "xscp", "xdp", "xscn"], "abut": True},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xsc2"], ["xdp2"], ["xscp"], ["xdp"], ["xscn"]]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)

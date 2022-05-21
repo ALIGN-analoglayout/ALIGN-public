@@ -29,12 +29,12 @@ def test_cc_24():
         {
             "constraint": "GroupBlocks",
             "instances": ["mp0", "mn0"],
-            "name": "inv0"
+            "instance_name": "xinv0"
         },
         {
             "constraint": "GroupBlocks",
             "instances": ["mp1", "mn1"],
-            "name": "inv1"
+            "instance_name": "xinv1"
         },
         {
             "constraint": "GroupCaps",
@@ -47,7 +47,7 @@ def test_cc_24():
         {
             "constraint": "SymmetricBlocks",
             "direction": "V",
-            "pairs": [["inv0", "inv1"], ["c0_c1"]]
+            "pairs": [["xinv0", "xinv1"], ["c0_c1"]]
         }
     ]
 

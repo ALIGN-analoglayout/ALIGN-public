@@ -125,7 +125,7 @@ def test_ota_on_grid_h(place_on_grid_h):
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xg1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xg3", "xg2", "xg1"]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP)
@@ -141,7 +141,7 @@ def test_ota_on_grid_v(place_on_grid_v):
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xg1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xg3", "xg2", "xg1"]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP)

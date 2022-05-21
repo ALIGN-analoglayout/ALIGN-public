@@ -87,7 +87,7 @@ def test_ota_six_pr(partial_routing):
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xg1"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xg3", "xg2", "xg1"]},
         {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
