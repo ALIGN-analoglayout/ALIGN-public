@@ -122,9 +122,9 @@ def test_ota_on_grid_h(place_on_grid_h):
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xg1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
@@ -138,9 +138,9 @@ def test_ota_on_grid_v(place_on_grid_v):
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "g1"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "g2"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "g3"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xg1"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["g3", "g2", "g1"]}
     ]
     example = build_example(name, netlist, constraints)
@@ -152,18 +152,18 @@ def cmp_constraints(name):
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
         {"constraint": "SymmetricBlocks", "direction": "V",
-            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+            "pairs": [["xccp"], ["xccn"], ["xdp"], ["mn0"], ["xinvn", "xinvp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
