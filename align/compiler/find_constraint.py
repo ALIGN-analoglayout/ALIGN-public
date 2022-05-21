@@ -240,12 +240,7 @@ def constraint_generator(ckt_data):
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const and not "ARRAY_HIER_" in subckt.name.upper():
             FindConst(subckt)
-        remove_non_reusable_const(subckt)
 
-def remove_non_reusable_const(subckt):
-    remove_const = [c for c in subckt.constraints if isinstance(c, constraint.DoNotIdentify)]
-    for const in remove_const:
-        subckt.constraints.remove(const)
 
 def FindConst(subckt):
     logger.debug(f"Searching constraints for block {subckt.name}")
