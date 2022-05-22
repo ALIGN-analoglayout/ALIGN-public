@@ -1311,6 +1311,39 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
+class ChargeFlow(SoftConstraint):
+    '''ChargeFlow
+    Defines the current flowing through each pin.
+    The chargeflow constraints help in improving the placement.
+
+    Args:
+        time (list) : List of time intervals
+        pin_current (dict) : current for each pin at different time intervals
+    Example ::
+
+        {
+            "constraint" : "ChargeFlow",
+            "time" : [0,1.2,2.4]
+            "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
+        }
+     '''
+
+    time: List[float]
+    pin_current: dict
+
+    @types.validator('time', allow_reuse=True)
+    def time_list_validator(cls, value):
+        assert len(value) >= 1, 'Must contain at least one time stamp'
+        return value
+    #TODO add pin validators
+    @types.validator('pin_current', allow_reuse=True)
+    def pairs_validator(cls, pin_current, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        for pin, current in pin_current.items():
+            assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
+            assert len(current) == len(values['time']), 'Must contain at least one instance'
+        return pin_current
+
 class MultiConnection(SoftConstraint):
     '''MultiConnection
     Defines multiple parallel wires for a net.
@@ -1389,7 +1422,8 @@ ConstraintType = Union[
     DoNotUseLib,
     ConfigureCompiler,
     NetPriority,
-    Route
+    Route,
+    ChargeFlow
 ]
 
 

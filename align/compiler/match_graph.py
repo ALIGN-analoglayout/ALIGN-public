@@ -146,8 +146,7 @@ class Annotate:
             for const in parent_subckt.constraints
             if isinstance(const, constraint.GroupBlocks)
         ]
-        # self._remove_group_const(subckt, gb_const)
-        tr = ConstraintTranslator(self.ckt_data)
+
         for const in gb_const:
             const_inst = [i.upper() for i in const.instances]
             ckt_ele = set([ele.name for ele in parent_subckt.elements])
@@ -220,17 +219,18 @@ class Annotate:
                     pins={x: x for x in ac_nets},
                 )
                 parent_subckt.elements.append(X1)
-
+            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name, group_block_name)
             # Translate any constraints defined on the groupblock elements to subckt
             tr._top_to_bottom_translation(
-                parent_subckt_name, {inst: inst for inst in const_inst}, group_block_name
+                {inst: inst for inst in const_inst}
             )
             # Modify instance names in constraints after modifying groupblock
-            tr._update_const(parent_subckt_name, [group_block_name.replace(block_arg,''), *const_inst], inst_name)
-        # Removing const with single instances.
-        for c in list(parent_subckt.constraints):
-            tr._check_const_length(parent_subckt.constraints, c)
+            tr._update_const(inst_name, {inst: inst for inst in [group_block_name.replace(block_arg,''), *const_inst]})
+            # Removing const with single instances.
+            for c in list(parent_subckt.constraints):
+                tr._check_const_length(parent_subckt.constraints, c)
         logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
+
 
     def _group_cap_const(self, parent_subckt_name):
         # TODO: merge group cap and group block
@@ -244,7 +244,6 @@ class Annotate:
             logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {parent_subckt_name}")
         else:
             return
-        tr = ConstraintTranslator(self.ckt_data)
         for const in gc_const:
             for i in range(len(const.instances)):
                 const.instances[i] = const.instances[i].upper()
@@ -280,7 +279,8 @@ class Annotate:
                 )
                 parent_subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock
+            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name)
             tr._update_const(
-                parent_subckt_name, [const.name.upper(), *const_inst], const.name.upper()
+                const.name.upper(), {inst: inst for inst in [const.name.upper(), *const_inst]}
             )
 

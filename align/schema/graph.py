@@ -212,8 +212,10 @@ class Graph(networkx.Graph):
                 pins=pin2net_map
             )
             if self.subckt.name:
-                tr = ConstraintTranslator(self.subckt.parent)
-                tr._update_const(self.subckt.name, removal_candidates, instance_name)
+                tr = ConstraintTranslator(self.subckt.parent, self.subckt.name, new_subckt.name)
+                tr._update_const(instance_name, {
+                    k: v for k, v in match.items() if k in removal_candidates})
+
         return new_subckt_names
 
     def create_subckt_instance(self, subckt, match):

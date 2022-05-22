@@ -15,9 +15,12 @@ try:
 except ImportError:
     plt = None
 
-align_home = os.getenv('ALIGN_HOME')
+align_home = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 
-my_dir = pathlib.Path(__file__).resolve().parent
+if 'ALIGN_WORK_DIR' in os.environ:
+    my_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve()
+else:
+    my_dir = align_home / 'tests' / 'tmp'
 
 pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
 
@@ -43,7 +46,7 @@ def export_to_viewer(fn, c):
 
 
 def compare_with_golden(fn, c):
-
+    my_dir = pathlib.Path(__file__).resolve().parent
     data = _canvas_to_data(c)
 
     export_to_viewer(fn, data)
