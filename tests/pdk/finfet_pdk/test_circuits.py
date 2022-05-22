@@ -324,38 +324,38 @@ def test_niwc_opamp_split():
     {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
-    {"constraint": "GroupBlocks", "instances": ["mtail"], "name": "mtail0",
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "instance_name": "xmtail0",
      "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": True, "single_device_connect_m1": False, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp",
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp",
      "generator": { "name": "MOS", "parameters": { "exact_patterns": [["AbBa",
                                                                        "BaAb",
                                                                        "BaAb",
 								       "AbBa"]], "PARTIAL_ROUTING": True}}},
-    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "name": "nraila", "generator": { "name": "MOS",
+    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "generator": { "name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
 		                                        "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "name": "nrailb",
+    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb",
      "generator": {"name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
  		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail",
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail",
      "generator": {"name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
 		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "name": "lsa", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "name": "lsb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "name": "ostagea", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "name": "ostageb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "SameTemplate", "instances": ["lsa", "lsb"]},
-    {"constraint": "SameTemplate", "instances": ["ostagea", "ostageb"]},
-    {"constraint": "SameTemplate", "instances": ["nraila", "nrailb"]},
+    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "SameTemplate", "instances": ["xlsa", "xlsb"]},
+    {"constraint": "SameTemplate", "instances": ["xostagea", "xostageb"]},
+    {"constraint": "SameTemplate", "instances": ["xnraila", "xnrailb"]},
     {"constraint": "Floorplan",
      "order": True,
      "symmetrize": True,
      "regions": [
-        ["prail"],
-        ["ostagea", "lsa", "dp", "lsb", "ostageb"],
-        ["nraila", "mtail0", "nrailb"]
+        ["xprail"],
+        ["xostagea", "xlsa", "xdp", "xlsb", "xostageb"],
+        ["xnraila", "xmtail0", "xnrailb"]
      ]},
     {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
 ]
@@ -363,7 +363,7 @@ def test_niwc_opamp_split():
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
 
-    pat = re.compile(r"^(.*)_X(\d+)_Y(\d+)$")
+    pat = re.compile(r"^(.*)_(\d+)_X(\d+)_Y(\d+)$")
 
     size_tbl = defaultdict(list)
 
@@ -372,19 +372,19 @@ def test_niwc_opamp_split():
             m = pat.match(file.stem)
             if m:
                 nm = m.groups()[0]
-                x = int(m.groups()[1])
-                y = int(m.groups()[2])
+                x = int(m.groups()[2])
+                y = int(m.groups()[3])
                 size_tbl[nm].append((x,y))
 
-    assert size_tbl['DP'] == [(2,4)]
-    assert size_tbl['MTAIL0'] == [(4, 8)]
-    assert size_tbl['PRAIL'] == [(4, 8)]
-    assert size_tbl['LSA'] == [(1, 4)]
-    assert size_tbl['LSB'] == [(1, 4)]
-    assert size_tbl['OSTAGEA'] == [(1, 4)]
-    assert size_tbl['OSTAGEB'] == [(1, 4)]
-    assert size_tbl['NRAILA'] == [(1, 8)]
-    assert size_tbl['NRAILB'] == [(1, 8)]
+    assert size_tbl['XDP'] == [(2,4)]
+    assert size_tbl['XMTAIL0'] == [(4, 8)]
+    assert size_tbl['XPRAIL'] == [(4, 8)]
+    assert size_tbl['XLSA'] == [(1, 4)]
+    assert size_tbl['XLSB'] == [(1, 4)]
+    assert size_tbl['XOSTAGEA'] == [(1, 4)]
+    assert size_tbl['XOSTAGEB'] == [(1, 4)]
+    assert size_tbl['XNRAILA'] == [(1, 8)]
+    assert size_tbl['XNRAILB'] == [(1, 8)]
 
     if CLEANUP:
         shutil.rmtree(run_dir)
