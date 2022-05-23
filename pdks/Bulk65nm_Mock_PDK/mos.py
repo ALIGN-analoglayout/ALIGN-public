@@ -148,7 +148,7 @@ class MOSGenerator(DefaultCanvas):
         if parameters['model'] == 'NMOS':
             if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1) 
         else:
-            if x == x_cells-1: self.addRegion( self.pselect, None, (1, -1), y* self.finsPerUnitCell+6, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), (y+1)* self.finsPerUnitCell-6)
+            if x == x_cells-1: self.addRegion( self.pselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1)
 
         for i in range(self.gate):
             self.addWire( self.pl, None, i+self.gatesPerUnitCell*x+self.gateDummy,   (y,1), (y+1,-1))
@@ -320,41 +320,35 @@ class MOSGenerator(DefaultCanvas):
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, x_cells, vt_type, names[0], False, **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0])
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], False,  **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], **parameters)
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, x_cells, vt_type, names[((x % 2) + (y % 2)) % 2], False,  **parameters)   
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2], **parameters)
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1], **parameters)
                 elif pattern == 5: # Rad-Hard interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, x_cells, vt_type, names[((x % 2) + (y % 2)) % 2], x%2,  **parameters)   
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2], **parameters)
                 elif pattern == 6: # Rad-Hard CC
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
-                    self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x%2,  **parameters)   
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], **parameters)
+                    self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x%2,  **parameters)
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
@@ -363,15 +357,10 @@ class MOSGenerator(DefaultCanvas):
     def addNMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
-        #####   Nselect Placement   #####
-        #self.addRegion( self.nselect, None, (2, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), y_cells* self.finsPerUnitCell)
-        #if self.bodyswitch==1:self.addRegion( self.pselect, None, (2, -1), y_cells* self.finsPerUnitCell, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
 
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
-        #self.addRegion( self.pselect, None, (2, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), y_cells* self.finsPerUnitCell)
-        #if self.bodyswitch==1:self.addRegion( self.nselect, None, (2, -1), y_cells* self.finsPerUnitCell, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-2, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
-        self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell)
