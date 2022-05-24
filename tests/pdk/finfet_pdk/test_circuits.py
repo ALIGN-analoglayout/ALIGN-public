@@ -410,4 +410,4 @@ def test_opamp_poor():
             ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
