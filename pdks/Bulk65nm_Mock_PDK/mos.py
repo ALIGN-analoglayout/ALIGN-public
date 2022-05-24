@@ -42,7 +42,7 @@ class MOSGenerator(DefaultCanvas):
 
         stoppoint = (self.unitCellHeight-self.activeWidth)//2 - self.pdk['Layer1']['Active_enclosure']
         self.layer1 = self.addGen( Wire( 'layer1', 'Layer1', 'v',
-                                     clg=UncoloredCenterLineGrid( pitch= self.gatesPerUnitCell*self.pdk['Poly']['Pitch'], width= self.pdk['Poly']['Pitch']+2*self.pdk['Layer1']['Offset'], offset= (self.gateDummy)*self.pdk['Poly']['Pitch']),
+                                     clg=UncoloredCenterLineGrid( pitch= self.pdk['M1']['Pitch'], width= self.pdk['Poly']['Pitch']+2*self.pdk['Layer1']['Offset'], offset=0),
                                      spg=EnclosureGrid( pitch=self.unitCellHeight, offset=-self.pdk['Fin']['Pitch']//2, stoppoint=stoppoint, check=True)))
 
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
@@ -88,15 +88,22 @@ class MOSGenerator(DefaultCanvas):
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.activeWidth, offset=activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
         
-        stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
-        self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset= 0),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=self.gateDummy*self.pdk['Poly']['Pitch']*self.shared_diff-self.pdk['Poly']['Pitch'], stoppoint=stoppoint, check=True)))
+        #stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
+        #self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
+        #                                 clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset= 0),
+        #                                 spg=EnclosureGrid( pitch=unitCellLength, offset=self.gateDummy*self.pdk['Poly']['Pitch']*self.shared_diff-self.pdk['Poly']['Pitch'], stoppoint=stoppoint, check=True)))
           
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset= 0),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=self.gateDummy*self.pdk['Poly']['Pitch']*self.shared_diff-self.pdk['Poly']['Pitch'], stoppoint=stoppoint, check=True)))
+
+
+        self.activeb = self.addGen( Via( 'activeb', 'Active',
+                                    h_clg=self.m2.clg,
+                                    v_clg=self.m1.clg,
+                                    WidthX=self.pdk['Active']['activebWidth_H'],
+                                    WidthY=self.pdk['Active']['activebWidth']))
 
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
@@ -129,7 +136,8 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.m1, None, i, (grid_y0, -1), (grid_y1, 1))
             if pin == 'S':
                 self._addBodyContact(x, x_cells, i, Nselect_y0, grid_y0, 'M1_bottom', **parameters)
-                self._addBodyContact(x, x_cells, i, Nselect_y1, grid_y1, 'M1_top', **parameters)           
+                self._addBodyContact(x, x_cells, i, Nselect_y1, grid_y1, 'M1_top', **parameters)
+                self.addWire( self.layer1, None, i,   (y,1), (y+1,-1))
             for j in range(1,self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', i, (y, j))
             self._xpins[name][pin].append(i)
@@ -143,8 +151,6 @@ class MOSGenerator(DefaultCanvas):
             pass
         Nselect_y0 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 - (1+self.mos_fin)//2-2
         Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2+1
-        self.addWire( self.layer1, None, x,   (y,1), (y+1,-1))
-        if x == x_cells-1: self.addWire( self.layer1, None, x+1,   (y,1), (y+1,-1))
         if parameters['model'] == 'NMOS':
             if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1) 
         else:
@@ -269,8 +275,7 @@ class MOSGenerator(DefaultCanvas):
         body_layer = self.pselect if parameters['model'] == 'NMOS' else self.nselect 
         self.addRegion( body_layer, None, (1, -1), Nselect_loc, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_loc1)
         self.addVia( self.va, None, body_x, grid_loc)
-        self.addWire( self.activeb, None, grid_loc, (x,1), (x+1,-1))
-        if x == x_cells-1: self.addWire( self.activeb, None, grid_loc, (x+1,1), (x+2,-1))
+        self.addVia( self.activeb, None, body_x, grid_loc)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
 
