@@ -185,7 +185,7 @@ class MOSGenerator(DefaultCanvas):
         Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2+1
         grid_y1 = ((Nselect_y1+4)*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         gate_track = 0
-        diff_track = self.m2PerUnitCell // 2 - self.activeWidth//self.pdk['M2']['Pitch']+2
+        diff_track = self.m2PerUnitCell // 2 - self.activeWidth//self.pdk['M2']['Pitch']
         #diff_track = center_track - 1 
         #print(diff_track)
         body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
