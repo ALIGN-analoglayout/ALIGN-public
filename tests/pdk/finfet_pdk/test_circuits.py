@@ -313,6 +313,7 @@ def test_charge_pump_switch():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+
 def test_niwc_opamp_split():
     # Tests legal size and exact_patterns restrictions
 
@@ -388,3 +389,25 @@ def test_niwc_opamp_split():
     if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
+
+def test_opamp_poor():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.opamp_poor(name)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
+        {"constraint": "SameTemplate", "instances": ["iloadl<0>", "iloadl<1>", "iloadr<0>", "iloadr<1>"]},
+        {"constraint": "SameTemplate", "instances": ["idiffl<0>", "idiffl<1>", "idiffr<0>", "idiffr<1>"]},
+        {"constraint": "SameTemplate", "instances": ["ibias<0>", "ibias<1>", "ibias<2>", "ibias<3>", "ibias<4>", "itail", "i1"]},
+        {"constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["iloadl<0>", "iloadr<0>"],
+                ["iloadr<1>", "iloadl<1>"],
+                ["idiffl<0>", "idiffr<0>"],
+                ["idiffr<1>", "idiffl<1>"],
+                ["ibias<0>", "ibias<1>", "ibias<2>", "itail", "ibias<3>", "ibias<4>"]
+            ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
