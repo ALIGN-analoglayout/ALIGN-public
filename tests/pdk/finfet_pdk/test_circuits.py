@@ -410,4 +410,15 @@ def test_opamp_poor():
             ]}
     ]
     example = build_example(name, netlist, constraints)
+    # TODO: increase n after #1083 is fixed
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+
+
+def test_comparator_analog():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.comparator_analog(name)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)

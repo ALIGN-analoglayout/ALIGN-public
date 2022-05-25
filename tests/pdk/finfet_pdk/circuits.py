@@ -334,3 +334,33 @@ def opamp_poor(name):
     .END
     """)
     return netlist
+
+
+def comparator_analog(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vminus vplus vout en vccx vssx
+    invp1 enn en  vccx vccx p m=1 nf=2 w=180e-9
+    invn1 enn en  vssx vssx n m=1 nf=2 w=180e-9
+    invp2 enp enn vccx vccx p m=1 nf=2 w=180e-9
+    invn2 enp enn vssx vssx n m=1 nf=2 w=180e-9
+    mpbias pbias pbias vccx vccx p stack=4  m=4 nf=1 w=360e-9
+    nres1  pbias enp   vmid vssx n stack=12 m=1 nf=1 w=360e-9
+    nres0  vmid  hi    vssx vssx n stack=40 m=1 nf=1 w=360e-9
+    mp_hi  hi    vssx  vccx vccx p m=1 nf=4 w=360e-9
+    decap0 vssx vminus vssx vssx n m=24 nf=4 w=360e-9
+    decap1 vccx pbias  vccx vccx p m=18 nf=4 w=360e-9
+    ptail vcm pbias vccx vccx p stack=4 m=48 nf=1 w=360e-9
+    pinp vo1p vminus vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    pinn vo1n vplus  vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    nldl vo1p vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    nldr vo1n vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    p2 vout pbias vccx vccx p stack=4 m=8 nf=1 w=360e-9
+    n2 vout vo1n  vssx vssx n stack=2 m=4 nf=1 w=180e-9
+    sw_pullup_enb vout  enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pbias_en   pbias enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en  vo1n  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en1 vo1p  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    .ends {name}
+    .END
+    """)
+    return netlist
