@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # TODO: Pass cell_pin and pattern to this function to begin with
 
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch, onlybody):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
 
@@ -29,7 +29,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
-    input_pattern = None
     if gen_const:
         gen_const=gen_const[0]
     if gen_const:
@@ -42,16 +41,18 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                 bodyswitch = gen_const.parameters["bodyswitch"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
-    # Default pattern values
-    if not input_pattern:
-        if len(primitive.elements)==1:
-            input_pattern = 'single_device'
-        elif not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
-            input_pattern = 'ratio_devices' #e.g. current mirror
-        else:
-            input_pattern = 'cc'
-    pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
-    pattern = pattern_map[input_pattern]
+    if pattern == None:
+        input_pattern = None
+        # Default pattern values
+        if not input_pattern:
+            if len(primitive.elements)==1:
+                input_pattern = 'single_device'
+            elif not all(ele.parameters==primitive.elements[0].parameters for ele in primitive.elements):
+                input_pattern = 'ratio_devices' #e.g. current mirror
+            else:
+                input_pattern = 'cc'
+        pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
+        pattern = pattern_map[input_pattern]
     if len(primitive.elements) ==2:
         if pattern==1:
             x_cells = 2*x_cells
@@ -162,9 +163,9 @@ def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: path
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=None, value=12, vt_type='RVT', stack=1, parameters=None,
                        pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
-                       abstract_template_name=None, concrete_template_name=None):
+                       abstract_template_name=None, concrete_template_name=None, onlybody = False):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
@@ -176,7 +177,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name']:
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
-                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
+                                       pattern, vt_type, stack, parameters, pinswitch, bodyswitch, onlybody)
 
 
     elif 'CAP' == primitive.generator['name']:
