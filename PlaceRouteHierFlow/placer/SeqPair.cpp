@@ -592,11 +592,13 @@ void SeqPair::SameSelected(design& caseNL) {
     int id = selected[*group.begin()];
     for (const auto& i : group) selected[i] = id;
   }
+  /**
   for(const auto& group:caseNL.SPBlocks){
     for(const auto& p:group.sympair){
       selected[p.second] = selected[p.first];
     }
   }
+  **/
 }
 
 int SeqPair::GetBlockSelected(int blockNo) {
