@@ -39,7 +39,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                 input_pattern = gen_const.parameters["pattern"]
             if getattr(gen_const.parameters, "bodyswitch", None):
                 bodyswitch = gen_const.parameters["bodyswitch"]
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, onlybody, primitive_constraints=primitive.constraints)
 
     if pattern == None:
         input_pattern = None
@@ -59,8 +59,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
             #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
-    logger.debug(
-        f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
+    logger.debug(f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive.name else 'PMOS'
     def gen(pattern, routing):
@@ -149,6 +148,10 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
                                 pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
         if hasattr(uc, 'metadata'):
             primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
+    sckt = SubCircuit(name='NMOS_TAP', pins=['B'], generator={'name':'MOS'})
+    generate_primitive("NMOS_TAP", sckt,  ** block_args, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
+    sckt = SubCircuit(name='PMOS_TAP', pins=['B'], generator={'name':'MOS'})
+    generate_primitive("PMOS_TAP", sckt,  ** block_args, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
     return primitives
 
 

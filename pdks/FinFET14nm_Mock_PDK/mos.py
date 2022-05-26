@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
+    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, onlybody, **kwargs):
         super().__init__(pdk)
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
@@ -17,14 +17,15 @@ class MOSGenerator(DefaultCanvas):
         self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
-        self.shared_diff = shared_diff
-        self.stack = stack
-        self.bodyswitch = bodyswitch
-        self.gateDummy = gateDummy
-        self.gate = (2*gate)*self.stack
+        self.shared_diff      = shared_diff
+        self.stack            = stack
+        self.bodyswitch       = bodyswitch
+        self.onlybody         = onlybody
+        self.gateDummy        = gateDummy
+        self.gate             = (2*gate)*self.stack
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
-        self.finDummy = (self.finsPerUnitCell-fin)//2
-        self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
+        self.finDummy         = (self.finsPerUnitCell-fin)//2
+        self.lFin             = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
         assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
         assert fin > 1, "number of fins in the transistor must be more than 1"
         assert gateDummy > 0
@@ -418,13 +419,22 @@ class MOSGenerator(DefaultCanvas):
 
     def addNMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
-        self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
-        #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        if self.onlybody:
+            self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
+            self._addBodyContact(0, 0, 1, 0, "NMOS_B")
+            self.addRegion( self.nselect, None, (0, -1), 0, (self.gatesPerUnitCell, -1), self.finsPerUnitCell+self.lFin)
+        else:
+            self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
+            #####   Nselect Placement   #####
+            self.addRegion( self.nselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
 
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
-        self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
+        if self.onlybody:
+            self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
+            self._addBodyContact(0, 0, 1, 0, "PMOS_B")
+        else:
+            self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
         self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
