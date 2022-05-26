@@ -132,7 +132,7 @@ def compiler_output(
             continue
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const:
-            with open(result_dir/ f"{subckt.name}.const.json", "w") as f:
+            with open(result_dir / f"{subckt.name.lower()}.const.json", "w") as f:
                 json.dump(subckt.constraints.dict()["__root__"], f, indent=2)
             exclude_const(subckt)
             # Create modified netlist

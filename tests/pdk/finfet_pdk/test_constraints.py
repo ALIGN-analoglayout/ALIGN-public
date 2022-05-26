@@ -4,7 +4,7 @@ import shutil
 from .utils import get_test_id, build_example, run_example
 from . import circuits
 
-CLEANUP = os.getenv("CLEANUP", True)
+CLEANUP = False if os.getenv("CLEANUP", None) else True
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 
@@ -29,7 +29,7 @@ def test_cmp_reuse():
         modules = {module['name']: module for module in verilog_json['modules']}
         constraints_1 = modules[name_1]["constraints"]
 
-    with (run_dir_1 / '1_topology' / f'{name_1.upper()}.const.json').open('rt') as fp:
+    with (run_dir_1 / '1_topology' / f'{name_1.lower()}.const.json').open('rt') as fp:
         reusable_const = json.load(fp)
 
     example_2 = build_example(name_2, netlist_2, reusable_const)

@@ -7,12 +7,12 @@ import shutil
 import textwrap
 from .utils import get_test_id, build_example, run_example
 from . import circuits
-
-CLEANUP = os.getenv("CLEANUP", True)
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-
 import logging
 logger = logging.getLogger(__name__)
+
+CLEANUP = False if os.getenv("CLEANUP", None) else True
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
 
 def test_cmp_vanilla():
     name = f'ckt_{get_test_id()}'
