@@ -16,7 +16,7 @@ class MOSGenerator(DefaultCanvas):
         self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
-        self.shared_diff = 1
+        self.shared_diff = 0
         self.stack = stack
         self.mos_fin = fin
         self.bodyswitch = bodyswitch
@@ -48,7 +48,7 @@ class MOSGenerator(DefaultCanvas):
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
                                       spg=SingleGrid( offset=0, pitch=unitCellLength)))
-
+ 
         stoppoint = ((self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset'])*(1-self.shared_diff)
         self.active = self.addGen( Wire( 'active', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.activeWidth, offset=activeOffset),
@@ -149,10 +149,10 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.active_diff, None, y, 0, self.gate*x_cells+1)
         else:
             pass
-        Nselect_y0 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 - (1+self.mos_fin)//2-2
-        Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2+1
+        Nselect_y0 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 - (1+self.mos_fin)//2-1
+        Nselect_y1 = y* self.finsPerUnitCell+self.finsPerUnitCell//2 + (1+self.mos_fin)//2
         if parameters['model'] == 'NMOS':
-            if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1) 
+            if x == x_cells-1: self.addRegion( self.nselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1)
         else:
             if x == x_cells-1: self.addRegion( self.pselect, None, (1, -1), Nselect_y0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff-1, -1), Nselect_y1)
 
