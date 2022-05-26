@@ -153,25 +153,6 @@
             },
             "const_name": "SymmNet",
             "axis_dir": "V"
-        },
-        {
-            "pairs": [
-                {
-                    "type": "selfsym",
-                    "block": "X_DP_MN1_MN2"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_CCN_MN3_MN4"
-                },
-                {
-                    "type": "sympair",
-                    "block1": "X_MP7",
-                    "block2": "X_MP8"
-                }
-            ],
-            "const_name": "SymmBlock",
-            "axis_dir": "V"
         }
     ]
 }

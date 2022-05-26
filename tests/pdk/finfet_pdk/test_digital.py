@@ -1,6 +1,6 @@
 import textwrap
 from align.compiler.util import get_generator
-from .utils import pdk_dir, get_test_id, build_example, run_example, export_to_viewer
+from .utils import PDK_DIR, get_test_id, build_example, run_example, export_to_viewer
 import shutil
 import json
 
@@ -9,7 +9,7 @@ CLEANUP = True
 
 def test_dig22inv():
     name = "dig22inv"
-    primitive_generator = get_generator(name, pdk_dir)
+    primitive_generator = get_generator(name, PDK_DIR)
     data = primitive_generator().generate(ports=['A', 'O', 'VCCX', 'VSSX'])
     export_to_viewer("dig22inv", data)
 
