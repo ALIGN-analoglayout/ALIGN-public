@@ -26,7 +26,7 @@ if 'ALIGN_WORK_DIR' in os.environ:
 else:
     WORK_DIR = MY_DIR / "pdk_finfet"
 
-WORK_DIR.mkdir(exist_ok=True)
+WORK_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def _canvas_to_data(c):
