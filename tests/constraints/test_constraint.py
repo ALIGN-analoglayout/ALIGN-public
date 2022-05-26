@@ -81,7 +81,6 @@ def test_do_not_identify():
     run_example(example)
 
 
-@pytest.mark.skip("Failing placement constraint check")
 def test_order_abut():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
