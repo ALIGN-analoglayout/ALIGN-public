@@ -18,7 +18,7 @@ design::design() {
   noSymGroup4FullMove = 0;
 }
 
-design::design(PnRDB::hierNode& node, const int seed) {
+design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
@@ -30,6 +30,8 @@ design::design(PnRDB::hierNode& node, const int seed) {
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
   Same_Template_Constraints = node.Same_Template_Constraints;
+  grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
+  grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks

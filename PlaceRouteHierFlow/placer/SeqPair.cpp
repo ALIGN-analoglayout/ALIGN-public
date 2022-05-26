@@ -1280,6 +1280,15 @@ bool SeqPair::CheckSymm(design& caseNL) {
     posPosition[posPair[i]] = i;
     negPosition[negPair[i]] = i;
   }
+  //check abut&sympair at the same time
+  for (const auto& abut: caseNL.Abut_Constraints){
+    if(abut.second == placerDB::H && caseNL.Blocks[abut.first.first][0].counterpart==abut.first.second){
+      int first_id = abut.first.first, second_id = abut.first.second;
+      if ((caseNL.Blocks[first_id][selected[first_id]].width + caseNL.Blocks[second_id][selected[second_id]].width) % (4*caseNL.grid_unit_x)) {
+        return false;
+      }
+    }
+  }
   for (const auto& sb : caseNL.SBlocks) {
     // self symm blocks should be (above/below for vertical axis) or (left/right for horizontal axis)
     // self symm blocks to the (left/right for vertical axis) or (above/below) for horizontal) is a violation
