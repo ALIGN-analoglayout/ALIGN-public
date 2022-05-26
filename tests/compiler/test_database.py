@@ -344,7 +344,7 @@ def test_preprocessing_SD():
     clean_data(name)
 
 
-def test_subckt_generator():
+def test_subckt_generator_digital():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
     .subckt dig22inv a o vccx vssx
