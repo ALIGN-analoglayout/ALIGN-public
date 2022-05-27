@@ -338,9 +338,10 @@ class MOSGenerator(DefaultCanvas):
         gu = self.gatesPerUnitCell
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
-        self.addWire( self.m1, None, gate_x, ((y+1-onlybody)*h+self.lFin//4-1, -1), ((y+1-onlybody)*h+self.lFin//4+1, 1))
+        self.addWire( self.m1, (None if onlybody == 0 else 'B'), gate_x, ((y+1-onlybody)*h+self.lFin//4-1, -1), \
+            ((y+1-onlybody)*h+self.lFin//4+1, 1), netType=('pin' if onlybody == 1 else 'drawing'))
         self.addWire( self.LISDb, None, gate_x, ((y+1-onlybody)*h+3, -1), ((y+1-onlybody)*h+self.lFin//2-3, 1))
-        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1-onlybody)*h + self.lFin//4)
+        self.addVia( self.va, (f'{fullname}:B' if onlybody == 0 else 'B'), gate_x, (y+1-onlybody)*h + self.lFin//4)
 
         if self.shared_diff == 0:
             self.addWire( self.activeb, None, y - onlybody, (x,1), (x+1,-1))
