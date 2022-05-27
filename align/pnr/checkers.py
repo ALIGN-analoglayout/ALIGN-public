@@ -34,7 +34,7 @@ def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json
     generator = get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1,0)
 
     with open(cnv.pdk.layerfile, "rt") as fp:
         scale_factor = json.load(fp)["ScaleFactor"]

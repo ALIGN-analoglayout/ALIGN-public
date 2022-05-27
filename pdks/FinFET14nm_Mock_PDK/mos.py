@@ -330,7 +330,7 @@ class MOSGenerator(DefaultCanvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, i, (minx, -1), (maxx, 1))
 
-    def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
+    def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1', onlybody = 0):
         fullname = f'{name}_X{x}_Y{y}'
         if yloc is not None:
             y = yloc
@@ -338,15 +338,15 @@ class MOSGenerator(DefaultCanvas):
         gu = self.gatesPerUnitCell
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
-        self.addWire( self.m1, None, gate_x, ((y+1)*h+self.lFin//4-1, -1), ((y+1)*h+self.lFin//4+1, 1))
-        self.addWire( self.LISDb, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
-        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + self.lFin//4)
+        self.addWire( self.m1, None, gate_x, ((y+1-onlybody)*h+self.lFin//4-1, -1), ((y+1-onlybody)*h+self.lFin//4+1, 1))
+        self.addWire( self.LISDb, None, gate_x, ((y+1-onlybody)*h+3, -1), ((y+1-onlybody)*h+self.lFin//2-3, 1))
+        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1-onlybody)*h + self.lFin//4)
 
         if self.shared_diff == 0:
-            self.addWire( self.activeb, None, y, (x,1), (x+1,-1))
-            self.addWire( self.pb, None, y, (x,1), (x+1,-1))
-            for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
-                self.addWire( self.fin, None, self.finsPerUnitCell*y+i, x, x+1)
+            self.addWire( self.activeb, None, y - onlybody, (x,1), (x+1,-1))
+            self.addWire( self.pb, None, y - onlybody, (x,1), (x+1,-1))
+            for i in range(self.finsPerUnitCell + onlybody, self.finsPerUnitCell+self.lFin):
+                self.addWire( self.fin, None, self.finsPerUnitCell*(y-onlybody)+i, x, x+1)
         else:
             self.addWire( self.activeb_diff, None, y, 0, self.gate*x_cells+1)
             self.addWire( self.pb_diff, None, y, (x,1), (x+1,-1))
@@ -421,8 +421,8 @@ class MOSGenerator(DefaultCanvas):
 
         if self.onlybody:
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
-            self._addBodyContact(0, 0, 1, 0, "NMOS_B")
-            self.addRegion( self.nselect, None, (0, -1), 0, (self.gatesPerUnitCell, -1), self.finsPerUnitCell+self.lFin)
+            self._addBodyContact(0, 0, 0, 0, "NMOS_B", 1)
+            self.addRegion( self.nselect, None, (0, -1), 0, (self.gatesPerUnitCell, -1), self.lFin)
         else:
             self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
             #####   Nselect Placement   #####
@@ -432,10 +432,11 @@ class MOSGenerator(DefaultCanvas):
 
         if self.onlybody:
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
-            self._addBodyContact(0, 0, 1, 0, "PMOS_B")
+            self._addBodyContact(0, 0, 0, 0, "PMOS_B", 1)
+            self.addRegion( self.pselect, None, (0, -1), 0, (self.gatesPerUnitCell, -1), self.lFin)
+            self.addRegion( self.nwell, None, (0, -1), 0, (self.gatesPerUnitCell, -1), self.lFin)
         else:
             self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
-
-        #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
-        self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+            #####   Pselect and Nwell Placement   #####
+            self.addRegion( self.pselect, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+            self.addRegion( self.nwell, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)

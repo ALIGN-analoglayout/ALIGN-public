@@ -27,7 +27,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gateDummy = 3  # Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
 
-    shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
+    shared_diff = 0 if onlybody or ((len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"])) else 1
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
     if gen_const:
         gen_const=gen_const[0]
@@ -149,9 +149,9 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
         if hasattr(uc, 'metadata'):
             primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
     sckt = SubCircuit(name='NMOS_TAP', pins=['B'], generator={'name':'MOS'})
-    generate_primitive("NMOS_TAP", sckt,  ** block_args, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
+    generate_primitive("NMOS_TAP", sckt,  parameters=sckt.parameters, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
     sckt = SubCircuit(name='PMOS_TAP', pins=['B'], generator={'name':'MOS'})
-    generate_primitive("PMOS_TAP", sckt,  ** block_args, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
+    generate_primitive("PMOS_TAP", sckt,  parameters=sckt.parameters, pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, onlybody = True)
     return primitives
 
 
@@ -167,7 +167,7 @@ def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: path
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=None, value=12, vt_type='RVT', stack=1, parameters=None,
-                       pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
+                       pinswitch=0, bodyswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
                        abstract_template_name=None, concrete_template_name=None, onlybody = False):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
