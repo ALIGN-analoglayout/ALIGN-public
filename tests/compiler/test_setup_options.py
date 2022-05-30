@@ -13,7 +13,7 @@ config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
 
 
-def test_ota_six():
+def test_ota_six_basic():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = ota_six(name)
     constraints = [
@@ -23,7 +23,7 @@ def test_ota_six():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set(['CKT_OTA', "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
+    all_modules = set(['CKT_OTA_SIX', "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
     available_modules = set(
         ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
     )
@@ -119,7 +119,8 @@ def test_dont_const():
     gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
         gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
-        assert len(gen_const) == 3, f"{gen_const}"
+        gen_const = [c for c in gen_const if c['constraint'] != "group_blocks"]
+        assert len(gen_const) == 2, f"{gen_const}"
     clean_data(name)
 
 

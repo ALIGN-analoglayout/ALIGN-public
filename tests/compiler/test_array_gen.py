@@ -148,7 +148,7 @@ def test_array_limit():
     FindConst(cktlib.find(name))
     all_modules = {module.name for module in cktlib if isinstance(module, SubCircuit) and len(module.elements)>1 }
     assert all_modules == {name.upper()}
-    align_const = cktlib.find(name).constraints.dict()['__root__'][1]
+    align_const = cktlib.find(name).constraints.dict()['__root__'][-1]
     assert set(align_const["instances"]) == {"X_MN1", "X_MN2", "X_MN3", "X_MN4", "X_MN5", "X_MN6",
                                          "X_MN7", "X_MN8", "X_MN9", "X_MN10", "X_MN11", "X_MN12"}
     clean_data(name)

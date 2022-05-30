@@ -193,7 +193,7 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
         logger.debug(f"No pair found from {node1} {node2}")
         return
     match_pairs[(node1, node2)] = pair
-    logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
+    logger.debug(f"updated match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     return
 
 
@@ -257,8 +257,8 @@ def FindConst(subckt):
     logger.debug(f"Stop_points : {stop_points}")
 
     pp = process_input_const(subckt)
+    #TODO make it a set instead of list
     written_symmblocks = pp.process_all()
-
     if not auto_constraint:
         return
 
@@ -286,6 +286,7 @@ class process_input_const:
 
     def process_all(self):
         self.process_symmnet()
+        #do not identify captures all instance names from constraints
         self.process_do_not_identify()
         return self.user_constrained_list
 
@@ -341,12 +342,16 @@ class process_input_const:
                         new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
             for k, v in replace_const:
-                self.iconst.remove(k)
-                self.iconst.append(v)
-                self.user_constrained_list.append(v.net1)
-                self.user_constrained_list.append(v.net2)
+                if k!=v: # removing constraint does not remove it from cache and z3 solver, duplicate const is not allowed in solver
+                    self.iconst.remove(k)
+                    self.iconst.append(v)
+                    self.user_constrained_list.append(v.net1)
+                    self.user_constrained_list.append(v.net2)
             for symb in new_symmblock_const:
-                self.iconst.append(symb)
+                #avoid subsets
+                if not any(set(map(tuple, symb.pairs)).issubset(set(map(tuple, const.pairs)))
+                    for const in self.iconst if isinstance(const, constraint.SymmetricBlocks)):
+                    self.iconst.append(symb)
 
 
 class add_symmetry_const:
@@ -383,7 +388,7 @@ class add_symmetry_const:
             add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
-    def pre_fiter(self, key, value):
+    def pre_filter(self, key, value):
         smb_1d = set()
         assert isinstance(key, str), f'invlid instance {key}'
         assert isinstance(value, str), f'invlid instance {value}'
@@ -412,7 +417,7 @@ class add_symmetry_const:
         pairsj = list()
         insts_in_single_symmetry = set()
         for key, value in pairs:
-            if self.pre_fiter(key, value):
+            if self.pre_filter(key, value):
                 continue
             if {key, value} & insts_in_single_symmetry:
                 continue
@@ -432,7 +437,7 @@ class add_symmetry_const:
 
     def filter_symnet_const(self, pairs: list):
         for key, value in pairs:
-            if self.pre_fiter(key, value):
+            if self.pre_filter(key, value):
                 continue
             if not self.G.nodes[key].get("instance"):
                 if key != value:
@@ -463,7 +468,7 @@ class add_symmetry_const:
 
 
 def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
-    logger.debug(f"filterd symmetry pairs: {pairsj}")
+    logger.debug(f"filtered symmetry pairs: {pairsj}")
     if len(pairsj) > 1 or (pairsj and len(pairsj[0]) == 2):
         try:
             with set_context(iconst):
