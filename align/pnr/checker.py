@@ -142,6 +142,9 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
     placement = dict()
     placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d_copy['leaves']}
     placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d_copy['modules']}
+
+    print(placement)
+
     flat_leaves = _flatten_leaves(placement, concrete_name)
 
     constrained_cns = dict()
