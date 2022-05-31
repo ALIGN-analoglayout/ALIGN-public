@@ -180,6 +180,7 @@ class design {
   vector<MatchBlock> Match_blocks;
   int bias_Hgraph;
   int bias_Vgraph;
+  int grid_unit_x = 1, grid_unit_y = 1;
   bool mixFlag;
   // above is added by yg
 
@@ -210,7 +211,7 @@ class design {
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
-  design(PnRDB::hierNode& node, const int seed = 0);
+  design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed = 0);
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();

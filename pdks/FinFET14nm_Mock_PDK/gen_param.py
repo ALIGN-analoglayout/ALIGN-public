@@ -75,23 +75,29 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        assert float(values["VALUE"]) or float(values["C"]), f"unidentified size {values} for {block_name}"
-        if "C" in values:
-            size = round(float(values["C"]) * 1E15, 4)
-        elif 'VALUE' in values:
-            size = round(float(values["VALUE"]) * 1E15, 4)
-        assert size <= design_config["max_size_cap"], f"caps larger that {design_config['max_size_cap']}fF are not supported"
+        
+        size = round(float(values["VALUE"]) * 1E15, 4)
+
+        assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"
+
+        if "L" in values and "W" in values:
+            length = round(float(values["L"]) * 1E9, 4)
+            width = round(float(values["W"]) * 1E9, 4)
+        else:
+            # HACK for unit cap used in common centroid and support older SPICE
+            length = int((sqrt(size/2))*1000)
+            width = int((sqrt(size/2))*1000)
 
         # TODO: use float in name
         logger.debug(f"Generating capacitor for:{block_name}, {size}")
         block_args = {
             'primitive': generator_name,
-            'value':  float(size)
+            'value':  [int(length), int(width)]
         }
         add_primitive(primitives, block_name, block_args)
 
     elif generator_name == 'RES':
-        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {name}"
+        assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
         if "R" in values:
             size = round(float(values["R"]), 2)
         elif 'VALUE' in values:
@@ -124,18 +130,18 @@ def gen_param(subckt, primitives, pdk_dir):
                 f"unrecognized NFIN of device {key}:{mvalues[key]['NFIN']} in {block_name}"
             assert unit_size_mos >= int(mvalues[key]["NFIN"]), \
                 f"NFIN of device {key} in {block_name} should not be grater than {unit_size_mos}"
-            nfin = int(mvalues[key]["NFIN"])
-        name_arg = 'NFIN'+str(nfin)
+            width = int(mvalues[key]["NFIN"])
+        name_arg = 'NFIN'+str(width)
 
         if 'NF' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {name}"
-                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {name}"
+                assert int(mvalues[key]["NF"]), f"unrecognized NF of device {key}:{mvalues[key]['NF']} in {block_name}"
+                assert int(mvalues[key]["NF"]) % 2 == 0, f"NF must be even for device {key}:{mvalues[key]['NF']} in {block_name}"
             name_arg = name_arg+'_NF'+str(int(mvalues[device_name]["NF"]))
 
         if 'M' in mvalues[device_name].keys():
             for key in mvalues:
-                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {name}"
+                assert int(mvalues[key]["M"]), f"unrecognized M of device {key}:{mvalues[key]['M']} in {block_name}"
                 if "PARALLEL" in mvalues[key].keys() and int(mvalues[key]['PARALLEL']) > 1:
                     mvalues[key]["PARALLEL"] = int(mvalues[key]['PARALLEL'])
                     mvalues[key]['M'] = int(mvalues[key]['M'])*int(mvalues[key]['PARALLEL'])
@@ -145,25 +151,23 @@ def gen_param(subckt, primitives, pdk_dir):
         logger.debug(f"Generating lef for {block_name}")
         if isinstance(size, int):
             for key in mvalues:
-                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {name} {mvalues}"
+                assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {block_name} {mvalues}"
                 size_device = int(mvalues[key]["NF"])*int(mvalues[key]["M"])
                 size = size + size_device
             no_units = ceil(size / (2*len(mvalues)))  # Factor 2 is due to NF=2 in each unit cell; needs to be generalized
-            if any(x in block_name for x in ['DP', '_S']) and floor(sqrt(no_units/3)) >= 1:
-                square_y = floor(sqrt(no_units/3))
-            else:
-                square_y = floor(sqrt(no_units))
+            square_y = floor(sqrt(no_units))
             while no_units % square_y != 0:
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
-
-        if 'SCM' in block_name:
-            if int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != \
-                    int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
-                square_y = 1
-                yval = square_y
-                xval = int(no_units / square_y)
+        def total_device_size(v):
+            return int(v["NFIN"])*int(v['NF'])*int(v["M"])
+        if len(device_name_all) == 2:
+            unequal_devices = (total_device_size(mvalues[device_name_all[0]]) !=
+                               total_device_size(mvalues[device_name_all[1]]))
+            if  unequal_devices:
+                yval = 1
+                xval = int(size/2)
 
         block_args = {
             'primitive': generator_name,
@@ -176,15 +180,12 @@ def gen_param(subckt, primitives, pdk_dir):
             block_args['stack'] = int(mvalues[device_name]["STACK"])
         if vt:
             block_args['vt_type'] = vt[0]
-
-        if 'SCM' in block_name and int(mvalues[device_name_all[0]]["NFIN"])*int(mvalues[device_name_all[0]]["NF"])*int(mvalues[device_name_all[0]]["M"]) != int(mvalues[device_name_all[1]]["NFIN"])*int(mvalues[device_name_all[1]]["NF"])*int(mvalues[device_name_all[1]]["M"]):
+        # TODO: remove name based hack
+        if len(device_name_all)==2 and unequal_devices:
+            # Only support single row for different sized devices
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
         else:
             add_primitive(primitives, block_name, block_args)
     return True
-
-
-
-

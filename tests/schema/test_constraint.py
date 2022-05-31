@@ -175,6 +175,12 @@ def test_SymmetricBlocks_along_coord(db):
             db.append(constraint.AssignBboxVariables(bbox_name='M3', llx=10, urx=40, lly=50, ury=60))
 
 
+def test_Route(db):
+    with set_context(db):
+        db.append(constraint.Route(max_layer="M5", min_layer="M1"))
+        db.append(constraint.Route(max_layer="M5", min_layer="M1", customize=[constraint.CustomizeRoute(nets=["a", "b"], min_layer="M2", max_layer="M3", shield=True, match=True)]))
+
+
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments

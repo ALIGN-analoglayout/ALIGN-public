@@ -258,3 +258,109 @@ def charge_pump_switch(name, size=16):
     .END
     """)
     return netlist
+
+
+def niwc_opamp_split(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vtail vbn vbp1 vbp2 vin vip out vccx vssx
+    m1 cas1 vin tail vssx n w=360e-9 m=8 nf=1 stack=4
+    m2 cas2 vip tail vssx n w=360e-9 m=8 nf=1 stack=4
+    mtail tail vtail vssx vssx n w=360e-9 m=32 nf=1 stack=8
+    m7a y x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m7b y x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m8a z x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m8b z x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m5a x   vbn y vssx n w=360e-9 m=4 nf=1 stack=4
+    m5b x   vbn y vssx n w=360e-9 m=4 nf=1 stack=4
+    m6a out vbn z vssx n w=360e-9 m=4 nf=1 stack=4
+    m6b out vbn z vssx n w=360e-9 m=4 nf=1 stack=4
+    m3a x vbp1 cas1 vccx p w=360e-9 m=4 nf=1 stack=4
+    m3b x vbp1 cas1 vccx p w=360e-9 m=4 nf=1 stack=4
+    m4a x vbp1 cas2 vccx p w=360e-9 m=4 nf=1 stack=4
+    m4b x vbp1 cas2 vccx p w=360e-9 m=4 nf=1 stack=4
+    m11 cas1 vbp2 vccx vccx p w=360e-9 m=32 nf=1 stack=8
+    m12 cas2 vbp2 vccx vccx p w=360e-9 m=32 nf=1 stack=8
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def opamp_poor(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt ps4 d g s b
+    .param m=1
+    i0 d0 g s  b p m=1 w=180e-9 m=1 nf=1
+    i1 d1 g d0 b p m=1 w=180e-9 m=1 nf=1
+    i2 d2 g d1 b p m=1 w=180e-9 m=1 nf=1
+    i3 d  g d2 b p m=1 w=180e-9 m=1 nf=1
+    .ends
+    .subckt ns4 d g s b
+    .param m=1
+    i0 d0 g s  b n m=1 w=180e-9 m=1 nf=1
+    i1 d1 g d0 b n m=1 w=180e-9 m=1 nf=1
+    i2 d2 g d1 b n m=1 w=180e-9 m=1 nf=1
+    i3 d  g d2 b n m=1 w=180e-9 m=1 nf=1
+    .ends
+    .subckt cascode_p d g s b
+    i0 d0 g s  b ps4  m=2
+    i1 d  g d0 b plvt w=720e-9 m=1 nf=8
+    .ends
+    .subckt cascode_n d g s b
+    i1 d  g d0 b nlvt w=720e-9 m=1 nf=8
+    i0 d0 g s  b ns4  m=2
+    .ends
+    .subckt {name} vplus vminus vout fbin fbout ibias vccx vssx
+    iloadl<0> voutb voutb vccx vccx cascode_p
+    iloadl<1> voutb voutb vccx vccx cascode_p
+    iloadr<0> vout  vout  vccx vccx cascode_p
+    iloadr<1> vout  vout  vccx vccx cascode_p
+
+    idiffl<0> voutb vplus  vtail vssx cascode_n
+    idiffl<1> voutb vplus  vtail vssx cascode_n
+    idiffr<0> vout  vminus vtail vssx cascode_n
+    idiffr<1> vout  vminus vtail vssx cascode_n
+
+    ibias<0> ibias ibias  vssx vssx cascode_n
+    ibias<1> ibias ibias  vssx vssx cascode_n
+    ibias<2> ibias ibias  vssx vssx cascode_n
+    ibias<3> ibias ibias  vssx vssx cascode_n
+    ibias<4> ibias ibias  vssx vssx cascode_n
+    itail    vtail ibias  vssx vssx cascode_n
+
+    i0 fbout fbin  vccx vssx n w=720e-9 m=1 nf=8
+    i1 fbout ibias vssx vssx cascode_n
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def comparator_analog(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vminus vplus vout en vccx vssx
+    invp1 enn en  vccx vccx p m=1 nf=2 w=180e-9
+    invn1 enn en  vssx vssx n m=1 nf=2 w=180e-9
+    invp2 enp enn vccx vccx p m=1 nf=2 w=180e-9
+    invn2 enp enn vssx vssx n m=1 nf=2 w=180e-9
+    mpbias pbias pbias vccx vccx p stack=4  m=4 nf=1 w=360e-9
+    nres1  pbias enp   vmid vssx n stack=12 m=1 nf=1 w=360e-9
+    nres0  vmid  hi    vssx vssx n stack=40 m=1 nf=1 w=360e-9
+    mp_hi  hi    vssx  vccx vccx p m=1 nf=4 w=360e-9
+    decap0 vssx vminus vssx vssx n m=24 nf=4 w=360e-9
+    decap1 vccx pbias  vccx vccx p m=18 nf=4 w=360e-9
+    ptail vcm pbias vccx vccx p stack=4 m=48 nf=1 w=360e-9
+    pinp vo1p vminus vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    pinn vo1n vplus  vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    nldl vo1p vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    nldr vo1n vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    p2 vout pbias vccx vccx p stack=4 m=8 nf=1 w=360e-9
+    n2 vout vo1n  vssx vssx n stack=2 m=4 nf=1 w=180e-9
+    sw_pullup_enb vout  enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pbias_en   pbias enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en  vo1n  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en1 vo1p  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    .ends {name}
+    .END
+    """)
+    return netlist
