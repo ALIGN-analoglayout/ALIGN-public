@@ -1338,11 +1338,32 @@ class ChargeFlow(SoftConstraint):
     #TODO add pin validators
     @types.validator('pin_current', allow_reuse=True)
     def pairs_validator(cls, pin_current, values):
-        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        const = cls._validator_ctx()
+        instance_names = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        insts = dict()
+        elem = False
+        if hasattr(const.parent.parent, 'elements'):
+            insts = {x.name : x for x in const.parent.parent.elements}
+            elem = True
+        elif hasattr(const.parent.parent, 'instances'):
+            insts = {x.instance_name : x for x in const.parent.parent.instances}
+        new_pin_current = dict()
         for pin, current in pin_current.items():
-            assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
+            if type(current) is dict: #during secondary pass the pin currents are already mapped to nets; can be skipped
+                new_pin_current = pin_current
+                break
+            assert pin.split('/')[0].upper() in instance_names, f"element {pin} not found in design"
             assert len(current) == len(values['time']), 'Must contain at least one instance'
-        return pin_current
+            instname = pin.split('/')[0].upper()
+            pinname = pin.split('/')[1].upper()
+            if instname in insts:
+                inst = insts[instname]
+                if ((elem and inst.name == instname) or (not elem and inst.instance_name == instname))\
+                                         and pinname in inst.pins:
+                    if inst.pins[pinname] not in new_pin_current:
+                        new_pin_current[inst.pins[pinname]] = dict()
+                    new_pin_current[inst.pins[pinname]][pin.upper()] = current
+        return new_pin_current
 
 class MultiConnection(SoftConstraint):
     '''MultiConnection

@@ -119,25 +119,32 @@ class ConstraintTranslator():
                 logger.debug(f"updating charge flow constraints {const.pin_current.keys()}")
                 updated_pc={}
                 remove_pins = []
-                for pin,current in const.pin_current.items():
-                    parent_inst_name = pin.split('/')[0].upper()
-                    if parent_inst_name in node_map.keys():
-                        remove_pins.append(pin)
-                        child_inst_name = node_map[parent_inst_name]
-                        if self.child_name:
-                            new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
-                        else:
-                            raise NotImplementedError("Groupcap does not have child hieararchy")
-                        if new_inst+'/'+new_parent_pin in updated_pc:
-                            for id, cur in enumerate(updated_pc[new_inst+'/'+new_parent_pin]):
-                                updated_pc[new_inst+'/'+new_parent_pin][id] = cur + current[id]
-                        else:
-                            updated_pc[new_inst+'/'+new_parent_pin] = current
+                for net, pc in const.pin_current.items():
+                    for pin,current in pc.items():
+                        parent_inst_name = pin.split('/')[0].upper()
+                        if parent_inst_name in node_map.keys():
+                            remove_pins.append(pin)
+                            child_inst_name = node_map[parent_inst_name]
+                            if self.child_name:
+                                new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
+                            else:
+                                raise NotImplementedError("Groupcap does not have child hieararchy")
+                            if net not in updated_pc: updated_pc[net] = dict()
+                            if new_inst+'/'+new_parent_pin in updated_pc[net]:
+                                for id, cur in enumerate(updated_pc[net][new_inst+'/'+new_parent_pin]):
+                                    updated_pc[net][new_inst+'/'+new_parent_pin][id] = cur + current[id]
+                            else:
+                                updated_pc[net][new_inst+'/'+new_parent_pin] = current
+
 
                 for pin in remove_pins:
-                    const.pin_current.pop(pin)
-                for pin, current in updated_pc.items():
-                    const.pin_current[pin] = current
+                    for net in const.pin_current:
+                        if pin in const.pin_current[net]:
+                            const.pin_current[net].pop(pin)
+                            break
+                for net in updated_pc:
+                    for pin, current in updated_pc[net].items():
+                        const.pin_current[net][pin] = current
             elif hasattr(const, "regions"):
                 for i, row in enumerate(const.regions):
                     if set(row) & set(node_map.keys()):

@@ -148,6 +148,41 @@ class PnRConstraintWriter:
                 for (b1, b2) in itertools.combinations(const['blocks'], 2):
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
+            
+            elif const["const_name"] == 'ChargeFlow':
+                time = None
+                if 'time' in const:
+                    time = const['time']
+                if 'pin_current' in const:
+                    if 'branch_current' not in const: const['branch_current'] = dict()
+                    for net in const['pin_current']:
+                        pc = const['pin_current'][net]
+                        ppcurrents = dict()
+                        for i in range(len(time)):
+                            srccurr = dict()
+                            snkcurr = dict()
+                            sumc = 0.
+                            for pin, current in pc.items():
+                                if current[i] >= 0:
+                                    srccurr[pin] = current[i]
+                                    sumc += current[i]
+                                else:
+                                    snkcurr[pin] = current[i]
+                            for snk in snkcurr:
+                                for src in srccurr:
+                                    if (src, snk) not in ppcurrents:
+                                        ppcurrents[(src, snk)] = [0 for i in range(len(time))]
+                                    ppcurrents[(src, snk)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
+                        rmsc = dict()
+                        for (src, snk) in ppcurrents:
+                            rmsc[f'{src},{snk}'] = sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) / 2 for i in range(len(time) -1)]) / (time[-1] - time[0])
+                        const['branch_current'][net] = rmsc
+                if 'time' in const: const.pop('time')
+                if 'pin_current' in const: const.pop('pin_current')
+
+
+
+                            
 
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
         return {'constraints': pnr_const}
