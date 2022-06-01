@@ -25,7 +25,7 @@ class MOSGenerator(DefaultCanvas):
         self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
-        assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
+        assert self.finDummy >= 8, f"number of fins/width {fin} in the transistor must be less than unit cell height {self.finsPerUnitCell -2*8}"
         assert fin > 1, "number of fins in the transistor must be more than 1" 
         assert gateDummy > 0
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
