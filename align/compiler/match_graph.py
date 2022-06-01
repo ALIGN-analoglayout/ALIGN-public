@@ -94,7 +94,7 @@ class Annotate:
 
     def create_hierarchy(self,ckt, skip_nodes=None):
         netlist_graph = Graph(ckt)
-        skip_constrained = self._is_skip(ckt)+skip_nodes if skip_nodes else self._is_skip(ckt)
+        skip_constrained = (self._is_skip(ckt) + skip_nodes) if skip_nodes else self._is_skip(ckt)
         logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
         logger.debug(
             f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
@@ -126,8 +126,9 @@ class Annotate:
             all_matched_subckts.extend(new_subckts)
         return all_matched_subckts
 
-    def create_canonical_primitive(self, parent_subckt, insts, const):
+    def create_canonical_primitive(self, parent_subckt, const):
         parent_graph = Graph(parent_subckt)
+        insts = [e for e in parent_subckt.elements if e.name in const.instances]
         def pin_id(pins):
             id = []
             repeat = {}
@@ -153,7 +154,6 @@ class Annotate:
         all_pins = {pin: "P"+str(i) for i, pin in enumerate(new_nets)}
         subckt_pins = [net for net in new_nets if (not set(parent_graph.neighbors(net)).issubset(
             set(inst.name for inst in inst_names.values()))) or net in parent_subckt.pins]
-        # assert ac_nets == subckt_pins, f" neighbous mismatch {subckt_pins} {ac_nets} {inst_pins}"
         new_insts = []
         for new_inst_name, old_inst in inst_names.items():
             new_insts.append({"name": new_inst_name,
@@ -165,7 +165,7 @@ class Annotate:
         param = FlatDict({"_":all_properties})
         arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
-        new_subckt_name = 'primitive'+key
+        new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
             logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
@@ -203,6 +203,7 @@ class Annotate:
         # Removing const with single instances.
         for c in list(parent_subckt.constraints):
             tr._check_const_length(parent_subckt.constraints, c)
+
     def _group_block_const(self, parent_subckt_name):
         parent_subckt = self.ckt_data.find(parent_subckt_name)
         const_list = parent_subckt.constraints
@@ -287,7 +288,7 @@ class Annotate:
                 rename_inst(auto_generated_name, const.instance_name.upper())
                 continue
             else:
-                self.create_canonical_primitive(parent_subckt, [e for e in parent_subckt.elements if e.name in const_insts], const)
+                self.create_canonical_primitive(parent_subckt, const)
                 # group_block_name = const.template_name.upper()+block_arg
                 # inst_name = const.instance_name.upper()
             # assert self.ckt_data.find(group_block_name) is None, f"Already existing subckt with name {group_block_name}, please provide different name to const"
