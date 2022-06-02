@@ -10,27 +10,31 @@ for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
 my_dir = pathlib.Path(__file__).resolve().parent / 'tmp'
 
 
-def get_xcells_pattern(primitive, pattern, x_cells):
-    # TODO: remove this name based multiplier for number of cells
-    if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # TODO: Generalize this (pattern is ignored)
-        x_cells = 2*x_cells + 2
-    elif any(primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
-        # Dual transistor primitives
-        x_cells = 2*x_cells
-        # TODO: Fix difficulties associated with CC patterns matching this condition
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-    return x_cells, pattern
-
-def check_shorts(cmdlist):
+def check_shorts(cmdlist, constraints):
     from Align_primitives import main, gen_parser
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
     uc = main(args)
-    assert len(uc.rd.shorts) == 0, uc.rd.shorts
+    assert len(uc.rd.shorts) == 0, uc.rd.shorts  # rd = RemoveDuplicates
     assert len(uc.rd.opens) == 0, uc.rd.opens
     assert len(uc.rd.different_widths) == 0, uc.rd.different_widths
-    assert len(uc.rd.subinsts) == get_xcells_pattern(args.primitive, args.pattern, args.Xcells)[0] * args.Ycells, uc.rd.subinsts
+    assert len(uc.rd.subinsts) == 2*args.Xcells* args.Ycells, uc.rd.subinsts
+    if constraints[0]["parameters"].get("pattern", None) == "cc":
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("pattern", None) == "ncc":
+        assert uc.rd.subinsts.keys() != set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("pattern", None) == "id":
+        assert uc.rd.subinsts.keys() != set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("shared_diff", None) == True:
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("shared_diff", None) == False:
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("parallel_wires", None):
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("body", None) == True:
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
+    elif constraints[0]["parameters"].get("body", None) == False:
+        assert uc.rd.subinsts.keys() == set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1', 'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
     assert all(len(x.pins) == 4 for x in uc.rd.subinsts.values()), uc.rd.subinsts
     assert len(uc.drc.errors) == 0, uc.drc.errors
 
@@ -42,7 +46,7 @@ def build_test(pdk, prim, *, n, X, Y, constraints):
     my_dir.mkdir(parents=True, exist_ok=True)
     with open(my_dir / f'{prim}.const.json', 'w') as fp:
         fp.write(json.dumps(constraints, indent=2))
-    check_shorts(['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}" , '-c' , f"{my_dir}"])
+    check_shorts(['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}" , '-c' , f"{my_dir}"], constraints)
     sys.path.pop(0)
 
 
@@ -63,24 +67,5 @@ def test_mos_smoke(const):
     y = 2
     nfins = 12
     prim = 'DP_NMOS'
-    build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
-
-
-@pytest.mark.nightly
-@pytest.mark.parametrize("y", range(4, 5), ids=lambda x: f'Y{x}')
-@pytest.mark.parametrize("x", range(4, 5), ids=lambda x: f'X{x}')
-@pytest.mark.parametrize("nfins", [12], ids=lambda x: f'n{x}')
-@pytest.mark.parametrize("typ", ["NMOS", "PMOS"])
-@pytest.mark.parametrize("pstr", [
-    "{}_4T",
-    "DCL_{}",
-    "SCM_{}",
-    "CMC_{}",
-    "DP_{}"],
-    ids=lambda x: x.replace('_{}', ''))
-@pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
-@pytest.mark.parametrize("const", supported_const)
-def test_mos_full(pdk, pstr, typ, nfins, x, y, const):
-    prim = pstr.format(typ)
     build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
 

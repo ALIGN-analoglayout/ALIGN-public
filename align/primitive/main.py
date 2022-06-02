@@ -31,15 +31,15 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
     input_pattern = None
     if gen_const:
-        gen_const=gen_const[0]
+        gen_const=gen_const[-1]
     if gen_const:
         if getattr(gen_const, "parameters", None):
             if getattr(gen_const.parameters, "shared_diff", None):
                 shared_diff = gen_const.parameters["shared_diff"]
             if getattr(gen_const.parameters, "pattern", None):
                 input_pattern = gen_const.parameters["pattern"]
-            if getattr(gen_const.parameters, "bodyswitch", None):
-                bodyswitch = gen_const.parameters["bodyswitch"]
+            if getattr(gen_const.parameters, "body", None):
+                bodyswitch = gen_const.parameters["body"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
     # Default pattern values
