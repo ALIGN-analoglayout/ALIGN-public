@@ -174,15 +174,13 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' == primitive.generator['name']:
+    elif 'MOS' == primitive.generator['name'].upper():
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-
-
-    elif 'CAP' == primitive.generator['name']:
+    elif 'CAP' == primitive.generator['name'].upper():
         uc, _ = generate_Cap(pdkdir, block_name, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'RES' == primitive.generator['name']:
+    elif 'RES' == primitive.generator['name'].upper():
         uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
