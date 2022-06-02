@@ -932,6 +932,7 @@ class ConfigureCompiler(SoftConstraint):
     remove_dummy_devices: bool = True  # Removes dummy transistors
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
+    same_template: bool = True # generates identical layouts for all existing hierarchies in the input netlist
     propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
