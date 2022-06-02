@@ -307,7 +307,7 @@ def test_charge_pump_switch():
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
+        assert len(module["constraints"]) == 5, f"Where are the two auto-generated array constraints? {module['constraints']}"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
