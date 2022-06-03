@@ -944,7 +944,7 @@ class Generator(SoftConstraint):
                             pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncc)
                             shared_diff (bool): true/false
                             body (bool): true/ false
-                            height (int): max height of a unit cell (including 16 dummy fins)
+                            height (int): max height/nfin of a unit cell (including 16 dummy fins)
                             parallel_wires: {"net1":2, "net2":2} #to be implemented
                             }
 
