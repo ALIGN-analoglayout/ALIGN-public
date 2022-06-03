@@ -7,7 +7,7 @@ pdks = []
 for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
     if prim.is_dir() and (prim / 'Align_primitives.py').exists():
         pdks.append(prim)
-my_dir = pathlib.Path(__file__).resolve().parent
+my_dir = pathlib.Path(__file__).resolve().parent / "tmp"
 
 
 def check_shorts(cmdlist, constraints):
@@ -77,14 +77,22 @@ supported_const = [{"constraint": "Generator", "name": "MOS", "parameters": {"pa
                    {"constraint": "Generator", "name": "MOS", "parameters": {"height": 24}},
                    {"constraint": "Generator", "name": "MOS", "parameters": {"height": 36}}
                    ]
-@pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 @pytest.mark.parametrize("const", supported_const)
-def test_mos_finfet_const(pdk, const):
+def test_mos_finfet_const(const):
+    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks'/ 'FinFET14nm_Mock_PDK'
     x = 2
     y = 2
     nfins = 12
     prim = 'DP_NMOS'
-    if 'FinFET14nm_Mock_PDK' in pdk:
-        build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
-    if 'Bulk65nm_Mock_PDK' in pdk and supported_const.index(const)<3:
-        build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
+    build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
+
+
+
+@pytest.mark.parametrize("const", supported_const[0:3])
+def test_mos_bulk_const(const):
+    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks'/ 'Bulk65nm_Mock_PDK'
+    x = 2
+    y = 2
+    nfins = 12
+    prim = 'DP_NMOS'
+    build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
