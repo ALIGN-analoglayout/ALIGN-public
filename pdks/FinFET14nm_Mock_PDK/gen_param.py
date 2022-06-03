@@ -75,7 +75,7 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        
+
         size = round(float(values["VALUE"]) * 1E15, 4)
 
         assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"
@@ -128,8 +128,8 @@ def gen_param(subckt, primitives, pdk_dir):
         for key in mvalues:
             assert int(mvalues[key]["NFIN"]), \
                 f"unrecognized NFIN of device {key}:{mvalues[key]['NFIN']} in {block_name}"
-            assert unit_size_mos >= int(mvalues[key]["NFIN"]), \
-                f"NFIN of device {key} in {block_name} should not be grater than {unit_size_mos}"
+            # assert unit_size_mos >= int(mvalues[key]["NFIN"]), \
+            #     f"NFIN of device {key} in {block_name} should not be grater than {unit_size_mos}"
             width = int(mvalues[key]["NFIN"])
         name_arg = 'NFIN'+str(width)
 

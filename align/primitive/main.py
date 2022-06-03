@@ -32,14 +32,18 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     input_pattern = None
     if gen_const:
         gen_const=gen_const[-1]
+    logger.debug(f"gen const {gen_const}")
     if gen_const:
         if getattr(gen_const, "parameters", None):
-            if getattr(gen_const.parameters, "shared_diff", None):
+            if "shared_diff" in gen_const.parameters.keys():
                 shared_diff = gen_const.parameters["shared_diff"]
-            if getattr(gen_const.parameters, "pattern", None):
+                logger.info(f"setting shared_diff {shared_diff}")
+            if "pattern" in gen_const.parameters.keys():
                 input_pattern = gen_const.parameters["pattern"]
-            if getattr(gen_const.parameters, "body", None):
+            if "body" in gen_const.parameters.keys():
                 bodyswitch = gen_const.parameters["body"]
+            if "height" in gen_const.parameters.keys():
+                height = gen_const.parameters["height"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
     # Default pattern values
@@ -53,10 +57,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
     if len(primitive.elements) ==2:
-        if pattern==1:
-            x_cells = 2*x_cells
-            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-            #TODO do this double during x_cells generation in gen_param.py/add_primitive()
+        x_cells = 2*x_cells
+        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
     logger.debug(
         f"primitive pattern {primitive.name} {primitive.elements} {pattern}")

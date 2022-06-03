@@ -12,6 +12,7 @@ from align.compiler.user_const import ConstraintParser
 def main(args):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
     primitive_def = read_primitive_spice(args)
+
     return generate_primitive(
         args.block_name,
         primitive_def,
@@ -68,7 +69,6 @@ def read_primitive_spice(args):
 
     with open(primitive_spice) as f:
         lines = f.read()
-
     parser.parse(lines)
     primitive_def = parser.library.find(args.primitive.upper())
     primitive_def.add_generator('MOS')
