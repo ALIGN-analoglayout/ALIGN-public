@@ -390,6 +390,44 @@ def test_niwc_opamp_split():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+def test_niwc_opamp_split_reuse():
+    # Tests legal size and exact_patterns restrictions
+
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.niwc_opamp_split(name)
+    constraints = [
+  {"constraint": "ConfigureCompiler", "auto_constraint": False, "merge_parallel_devices": False},
+  {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
+  {"constraint": "PowerPorts", "ports": ["vccx"]},
+  {"constraint": "GroundPorts", "ports": ["vssx"]},
+  {"constraint": "group_blocks", "instance_name": "X_M7A_M8A", "instances": ["M7A", "M8A"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M7B_M8B", "instances": ["M7B", "M8B"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M11_M12", "instances": ["M11", "M12"], "template_name": "CMC_PMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M5A_M6A", "instances": ["M5A", "M6A"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M5B_M6B", "instances": ["M5B", "M6B"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M1_M2", "instances": ["M1", "M2"], "template_name": "DP_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_MTAIL", "instances": ["MTAIL"], "template_name": "NMOS_3T", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M3A_M4A", "instances": ["M3A", "M4A"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "group_blocks", "instance_name": "X_M3B_M4B", "instances": ["M3B", "M4B"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "symmetric_blocks", "direction": "V",
+   "pairs": [
+       ["X_M5A_M6A", "X_M5B_M6B"]
+   ]
+  },
+  {"constraint": "symmetric_blocks", "direction": "V",
+   "pairs": [
+       ["X_M7A_M8A", "X_M7B_M8B"]
+   ]
+  }
+]
+
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
 
 def test_opamp_poor():
     name = f'ckt_{get_test_id()}'
