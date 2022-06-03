@@ -80,7 +80,6 @@ supported_const = [{"constraint": "Generator", "name": "MOS", "parameters": {"pa
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 @pytest.mark.parametrize("const", supported_const)
 def test_mos_finfet_const(pdk, const):
-    pdk = pathlib.Path('/mnt/d/research_work/ALIGN/mywork/ALIGN-public/pdks/FinFET14nm_Mock_PDK')
     x = 2
     y = 2
     nfins = 12
