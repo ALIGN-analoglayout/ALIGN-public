@@ -3,12 +3,8 @@ import sys
 import pytest
 import json
 
-pdks = []
-for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
-    if prim.is_dir() and (prim / 'Align_primitives.py').exists():
-        pdks.append(prim)
-my_dir = pathlib.Path(__file__).resolve().parent / "tmp"
 
+my_dir = pathlib.Path(__file__).resolve().parent / "tmp"
 
 def check_shorts(cmdlist, constraints):
     from Align_primitives import main, gen_parser
