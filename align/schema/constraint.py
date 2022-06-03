@@ -945,6 +945,7 @@ class Generator(SoftConstraint):
                             shared_diff (bool): true/false
                             body (bool): true/ false
                             height (int): max height of a unit cell (including 16 dummy fins)
+                            parallel_wires: {"net1":2, "net2":2} #to be implemented
                             }
 
     Example: ::
