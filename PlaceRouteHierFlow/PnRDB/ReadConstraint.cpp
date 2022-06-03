@@ -623,15 +623,13 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       }
       node.DoNotRoute = DoNotRoute;
     } else if(constraint["const_name"] == "Route"){
-      PnRDB::Min_Max_Routing_Layer temp_routing;
-      for(auto nets: constraint["const_name"]["customize"]){//if the key does not exist, should assign NULL	
-          temp_routing.global_min_layer = constraint["const_name"]["min_layer"];
-          temp_routing.global_max_layer = constraint["const_name"]["max_layer"];
-          temp_routing.net_min_layer = constraint["const_name"]["min_layer"];
-          temp_routing.net_max_layer = constraint["const_name"]["max_layer"];
-          temp_routing.net_min_layer = nets["min_layer"];
-          temp_routing.net_max_layer = nets["max_layer"];
-          for(auto net_name: nets["nets"]){
+      for(auto netset: constraint["customize"]){//if the key does not exist, should assign NULL	
+	  PnRDB::Min_Max_Routing_Layer temp_routing;
+          temp_routing.global_min_layer = constraint["min_layer"];
+          temp_routing.global_max_layer = constraint["max_layer"];
+          temp_routing.net_min_layer = netset["min_layer"];
+          temp_routing.net_max_layer = netset["max_layer"];
+          for(auto net_name: netset["nets"]){
               temp_routing.net_name = net_name;
               node.Routing_Layers.push_back(temp_routing);
           }
