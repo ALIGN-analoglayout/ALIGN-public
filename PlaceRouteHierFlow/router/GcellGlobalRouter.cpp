@@ -544,6 +544,13 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
       }
     }
 
+    // new_added for per net metal layer setting, remove this part if an error happens
+    int l_metal = Nets[i].min_routing_layer; //
+    int h_metal = Nets[i].max_routing_layer; //
+    if(l_metal==-1) l_metal=0; //
+    if(h_metal==-1) h_metal=drc_info.Metal_info.size()-1; //
+    GGgraph.CreateAdjacentList_New(Gcell, l_metal, h_metal); // 
+
     GGgraph.setterminals(Nets[i].terminals);
     GGgraph.setTerminals(Nets[i].connectedTile);
 

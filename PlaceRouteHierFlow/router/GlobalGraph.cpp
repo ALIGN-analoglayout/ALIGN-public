@@ -310,6 +310,27 @@ std::vector<std::pair<int, int> > GlobalGraph::Get_MST_Edges(std::vector<std::ve
   return temp_MST_Edges;
 };
 
+void GlobalGraph::select_layers(int l_metal, int h_metal){
+
+  for(auto it: graph){
+     for(auto l: it.metal_layer){
+        if(l<l_metal or l>h_metal){
+           it.active = false;
+        }
+     }
+  }
+
+};
+
+void GlobalGraph::refresh_layers(){
+
+  for(auto it: graph){
+     for(auto l: it.metal_layer){
+         it.active = true;
+     }
+  }
+};
+
 void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
   Node tempNode;
   Edge tempEdge;
@@ -330,8 +351,77 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
     // Node tempNode;
     tempNode.list.clear();
     tempNode.src = i;
+    tempNode.metal_layer = grid.tiles_total[i].metal;
     // Edge tempEdge;
 
+    update_node(i, grid.tiles_total[i].north);
+    update_node(i, grid.tiles_total[i].south);
+    update_node(i, grid.tiles_total[i].east);
+    update_node(i, grid.tiles_total[i].west);
+    update_node(i, grid.tiles_total[i].up);
+    update_node(i, grid.tiles_total[i].down);
+
+    graph.push_back(tempNode);
+  }
+
+  source = graph.size();
+  dest = source + 1;
+
+  Node tempNodeS;
+  tempNodeS.src = source;
+  graph.push_back(tempNodeS);
+
+  Node tempNodeD;
+  tempNodeD.src = dest;
+  graph.push_back(tempNodeD);
+};
+
+
+void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal) {
+
+  graph.clear();
+  Node tempNode;
+  Edge tempEdge;
+
+  auto update_node = [&](int p, std::vector<RouterDB::tileEdge> &temp_vector) {
+    for (unsigned int q = 0; q < temp_vector.size(); q++) {
+      if(temp_vector[q].next==-1) continue;
+      bool active = true;
+      for(int index=0;index< grid.tiles_total[temp_vector[q].next].metal.size();index++){
+        int layer = grid.tiles_total[temp_vector[q].next].metal[index];
+        if(layer<l_metal or layer>h_metal){
+          active = false;
+        }
+      }
+      if (active == false){
+         continue;
+      }      
+      if (temp_vector[q].capacity > 0 && temp_vector[q].next != -1) {
+        tempEdge.dest = temp_vector[q].next;
+        tempEdge.weight =
+            (double)abs(grid.tiles_total[p].y - grid.tiles_total[temp_vector[q].next].y) + abs(grid.tiles_total[p].x - grid.tiles_total[temp_vector[q].next].x);
+        tempEdge.capacity = temp_vector[q].capacity;
+        tempNode.list.push_back(tempEdge);
+      }
+    }
+  };
+
+  for (unsigned int i = 0; i < grid.tiles_total.size(); i++) {
+    // Node tempNode;
+    tempNode.list.clear();
+    tempNode.src = i;
+    tempNode.metal_layer = grid.tiles_total[i].metal;
+    // Edge tempEdge;
+    bool active = true;
+    for(int index=0;index< tempNode.metal_layer.size();index++){
+      int layer = tempNode.metal_layer[index];
+      if(layer<l_metal or layer>h_metal){
+        active = false;
+      }
+    }
+    if (active == false){
+       continue;
+    }
     update_node(i, grid.tiles_total[i].north);
     update_node(i, grid.tiles_total[i].south);
     update_node(i, grid.tiles_total[i].east);
