@@ -81,25 +81,24 @@ def test_do_not_identify():
     run_example(example)
 
 
-@pytest.mark.skip("Failing placement constraint check")
 def test_order_abut():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["VCCX"]},
         {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SymmetricBlocks", "direction": "V",
-            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "mp9", "mp7", "mn0"]},
+            "pairs": [["xccp"], ["xccn"], ["xdp"], ["mn0"], ["xinvn", "xinvp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
         {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5},
-        {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["invn", "invp"]}
+        {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["xinvn", "xinvp"]}
     ]
     example = build_example(name, netlist, constraints)
 

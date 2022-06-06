@@ -34,7 +34,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         gen_const=gen_const[0]
     if gen_const:
         if getattr(gen_const, "parameters", None):
-            print(gen_const)
             if getattr(gen_const.parameters, "shared_diff", None):
                 shared_diff = gen_const.parameters["shared_diff"]
             if getattr(gen_const.parameters, "pattern", None):
@@ -80,14 +79,14 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     return uc, gen(pattern, connections)
 
 
-def generate_Cap(pdkdir, block_name, unit_cap):
+def generate_Cap(pdkdir, block_name, length, width):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('CapGenerator', pdkdir)
 
     uc = generator(pdk)
 
-    uc.addCap(unit_cap)
+    uc.addCap(length, width)
 
     return uc, ['PLUS', 'MINUS']
 
@@ -139,7 +138,6 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
         if isinstance(primitive, SubCircuit):
             generate_primitive_param(primitive, primitives, pdk_dir)
     for block_name, block_args in primitives.items():
-        logger.debug(f"Generating primitive {block_name}")
         if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
             primitive_def = primitive_lib.find(block_args['abstract_template_name'])
             assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
@@ -159,7 +157,8 @@ def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: path
     spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
     modules = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modules)
-    assert modules.gen_param(subckt, primitives, pdk_dir), f"unabble to generate primitive {subckt}"
+    rc = modules.gen_param(subckt, primitives, pdk_dir)
+    assert rc, f"unable to generate primitive {subckt}"
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
@@ -181,7 +180,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
 
     elif 'CAP' == primitive.generator['name']:
-        uc, _ = generate_Cap(pdkdir, block_name, value)
+        uc, _ = generate_Cap(pdkdir, block_name, value[0], value[1])
         uc.setBboxFromBoundary()
     elif 'RES' == primitive.generator['name']:
         uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
@@ -192,10 +191,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON(fp)
-    if 'cap' in primitive:
-        blockM = 1
-    else:
-        blockM = 0
+
+    blockM = 1 if 'cap' in primitive else 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')

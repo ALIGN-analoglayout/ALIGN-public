@@ -46,7 +46,7 @@ def test_basic_models():
     assert len(ckt_parser.library) == 5
     shutil.rmtree(dummy_pdk_dir)
 
-def test_subckt_generator():
+def test_subckt_generator_dummy():
     mydir = pathlib.Path(__file__).resolve().parent
     name = f'ckt_{get_test_id()}'.upper()
     dummy_pdk_dir = mydir / name
