@@ -9,6 +9,7 @@ import pprint
 import logging
 from ..schema import constraint
 import itertools
+import math
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -26,6 +27,12 @@ class PnRConstraintWriter:
 
         # Start mapping
         pnr_const = []
+        pwrgndclkports = set()
+        for input_const in all_const:
+            if input_const.constraint in ['power_ports', 'ground_ports', 'clock_ports']:
+                for k in input_const.ports: pwrgndclkports.add(k)
+        maxrmsc = -1.
+            
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
@@ -156,6 +163,7 @@ class PnRConstraintWriter:
                 if 'pin_current' in const:
                     if 'branch_current' not in const: const['branch_current'] = dict()
                     for net in const['pin_current']:
+                        if net in pwrgndclkports: continue
                         pc = const['pin_current'][net]
                         ppcurrents = dict()
                         for i in range(len(time)):
@@ -170,19 +178,27 @@ class PnRConstraintWriter:
                                     snkcurr[pin] = current[i]
                             for snk in snkcurr:
                                 for src in srccurr:
-                                    if (src, snk) not in ppcurrents:
+                                    if (src, snk) not in ppcurrents and (snk, src) not in ppcurrents:
                                         ppcurrents[(src, snk)] = [0 for i in range(len(time))]
-                                    ppcurrents[(src, snk)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
+                                    if (src, snk) in ppcurrents:
+                                        ppcurrents[(src, snk)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
+                                    elif (snk, src) in ppcurrents:
+                                        ppcurrents[(snk, src)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
                         rmsc = dict()
                         for (src, snk) in ppcurrents:
-                            rmsc[f'{src},{snk}'] = sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) / 2 for i in range(len(time) -1)]) / (time[-1] - time[0])
-                        const['branch_current'][net] = rmsc
+                            rmsc[f'{src},{snk}'] = math.sqrt(sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) ** 2 / 4 for i in range(len(time) -1)]) / (time[-1] - time[0]))
+                        if len(rmsc): 
+                            const['branch_current'][net] = rmsc
+                            maxrmsc = max(maxrmsc, max([v for k,v in rmsc.items()]))
                 if 'time' in const: const.pop('time')
                 if 'pin_current' in const: const.pop('pin_current')
 
-
-
-                            
+        if maxrmsc > 0.:
+            for const in pnr_const:
+                if 'branch_current' in const:
+                    for net, ppairs in const['branch_current'].items():
+                        for k in ppairs:
+                            ppairs[k] /= maxrmsc
 
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
         return {'constraints': pnr_const}
