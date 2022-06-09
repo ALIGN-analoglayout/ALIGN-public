@@ -42,8 +42,16 @@ def test_group_block_hsc(dir_name):
     )
     updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
     annotate_library(updated_cktlib, prim_lib)
-    plibs = {"DP", "CCN", "CCP", "INV_P", "INV_N", "DP_NMOS_B", "CCP_S_NMOS_B"}
-    assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
+    HSC = updated_cktlib.find("HIGH_SPEED_COMPARATOR")
+    if dir_name in ["high_speed_comparator_orderblock"]:
+        assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
+                                                    'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
+                                                    'X_INV_P_MP12_MN14', 'X_MP10_MP9', 'X_MN0', 'X_MP7_MP8'}
+    else:
+        assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
+                                                    'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
+                                                    'X_INV_P_MP12_MN14', 'X_MP10', 'X_MP9', 'X_MN0', 'X_MP7', 'X_MP8'}
+    # assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
     result_path = out_path / dir_name
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
@@ -300,12 +308,13 @@ def test_groupblock_generator():
         .ends {name}
     """
     )
-    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"],   "instance_name": "x_dp1_mn1_mn2", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"], "instance_name": "x_dp1_mn1_mn2", "template_name":"DP", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
     ]
     example = build_example(name, netlist, constraints)
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
-    dp1 = [sckt for sckt in cktlib if 'DP1' in sckt.name][0]
+    assert len([sckt for sckt in cktlib if 'DP' in sckt.name]) ==1 , f"no groupblock primitive found {[subckt.name for subckt in cktlib]}"
+    dp1 = [sckt for sckt in cktlib if 'DP' in sckt.name][0]
     assert dp1.generator["name"] == 'MOS', f"generator definition error {dp1.generator}"
     assert dp1.constraints.dict()['__root__'][0] == {'constraint':'generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
 

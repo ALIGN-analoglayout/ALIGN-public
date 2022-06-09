@@ -19,7 +19,7 @@ class PnRConstraintWriter:
     def __init__(self):
         pass
 
-    def map_valid_const(self, all_const):
+    def map_valid_const(self, all_const, module):
         """
         Maps input format to pnr format
         """
@@ -156,15 +156,25 @@ class PnRConstraintWriter:
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
             
-            elif const["const_name"] == 'ChargeFlow':
-                time = None
-                if 'time' in const:
-                    time = const['time']
-                if 'pin_current' in const:
-                    if 'branch_current' not in const: const['branch_current'] = dict()
-                    for net in const['pin_current']:
-                        if net in pwrgndclkports: continue
-                        pc = const['pin_current'][net]
+            elif const["const_name"] == 'ChargeFlow' and 'pin_current' in const and 'time' in const:
+                time = const['time']
+                nets = dict()
+                if "instances" in module:
+                    for inst in module['instances']:
+                        instname = inst['instance_name'] if 'instance_name' in inst else ""
+                        if "fa_map" in inst:
+                            for fa in inst["fa_map"]:
+                                net = fa["actual"] 
+                                if net in pwrgndclkports: continue
+                                if net not in nets: nets[net] = set()
+                                nets[net].add(instname + '/' + fa["formal"])
+                if 'branch_current' not in const: const['branch_current'] = dict()
+                for net, pins in nets.items():
+                    pc = dict()
+                    for pin in pins:
+                        if pin in const['pin_current']:
+                            pc[pin] = const['pin_current'][pin]
+                    if len(pc):
                         ppcurrents = dict()
                         for i in range(len(time)):
                             srccurr = dict()
@@ -190,8 +200,8 @@ class PnRConstraintWriter:
                         if len(rmsc): 
                             const['branch_current'][net] = rmsc
                             maxrmsc = max(maxrmsc, max([v for k,v in rmsc.items()]))
-                if 'time' in const: const.pop('time')
-                if 'pin_current' in const: const.pop('pin_current')
+                const.pop('time')
+                const.pop('pin_current')
 
         if maxrmsc > 0.:
             for const in pnr_const:

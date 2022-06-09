@@ -174,7 +174,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' == primitive.generator['name']:
+    elif 'MOS' == primitive.generator['name'].upper():
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
 
