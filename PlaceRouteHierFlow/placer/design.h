@@ -206,6 +206,8 @@ class design {
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  map<string, map<std::tuple<int, int, int, int>, double> > CFValues;
+  int CFdist_type;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};

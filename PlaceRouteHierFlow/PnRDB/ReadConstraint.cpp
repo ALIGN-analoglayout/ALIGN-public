@@ -622,6 +622,23 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
          DoNotRoute.push_back(net);
       }
       node.DoNotRoute = DoNotRoute;
+    } else if (constraint["const_name"] == "ChargeFlow") {
+      if (constraint.find("scaled_rms_charge_flow") != constraint.end()) {
+        auto& cfdata = constraint["scaled_rms_charge_flow"];
+        for (const auto& net : cfdata.items()) {
+          auto& cfdatanet = net.value();
+          for (const auto& pinpair : cfdatanet.items()) {
+            auto pp = static_cast<std::string>(pinpair.key());
+            auto pos = pp.find(',');
+            if (pos != std::string::npos) {
+              node.CFValues[net.key()].push_back(std::make_tuple(pp.substr(0, pos), pp.substr(pos + 1), pinpair.value()));
+            }
+          }
+        }
+      }
+      if (constraint.find("dist_type") != constraint.end()) {
+        node.CFdist_type = (constraint["dist_type"] == "Manhattan") ? 0 : 1;
+      }
     }
   }
 }
