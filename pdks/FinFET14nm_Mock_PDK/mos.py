@@ -389,11 +389,11 @@ class MOSGenerator(DefaultCanvas):
             for x in range(x_cells):
                 if exact_patterns: # Exact pattern from user
                     row_pattern = exact_patterns[y][x]
-                    names = {'A':'M1', 'a':'M1', 'B':'M2', 'b':'M2', 'C':'M3', 'c':'M3', 'D':'M4', 'd':'M4'}
+                    names_updated = {'A':names[0], 'a':names[0], 'B':names[1], 'b':names[1]}
                     reflect = row_pattern.islower()
-                    self._addMOS(x, y, x_cells, vt_type, names[row_pattern],  reflect, **parameters)
-                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[row_pattern])
-                if pattern == 0: # None (single transistor)
+                    self._addMOS(x, y, x_cells, vt_type, names_updated[row_pattern],  False, **parameters)
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names_updated[row_pattern])
+                elif pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, x_cells, vt_type, names[0], False, **parameters)

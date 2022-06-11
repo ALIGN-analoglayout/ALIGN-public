@@ -30,6 +30,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
     input_pattern = None
+    exact_patterns = None
     if gen_const:
         gen_const=gen_const[0]
     if gen_const:
@@ -40,6 +41,8 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                 input_pattern = gen_const.parameters["pattern"]
             if getattr(gen_const.parameters, "bodyswitch", None):
                 bodyswitch = gen_const.parameters["bodyswitch"]
+            if "exact_patterns" in gen_const.parameters.keys():
+                exact_patterns = gen_const.parameters["exact_patterns"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
     # Default pattern values
@@ -52,7 +55,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
-    if len(primitive.elements) ==2:
+    if len(primitive.elements) == 2 and not exact_patterns:
         if pattern==1:
             x_cells = 2*x_cells
             pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated

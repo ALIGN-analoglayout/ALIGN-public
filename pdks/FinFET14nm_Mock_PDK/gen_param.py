@@ -198,7 +198,7 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         # TODO: remove name based hack
-        if (len(device_name_all)==2 and unequal_devices):
+        if (len(device_name_all)==2 and unequal_devices) or exact_patterns:
             # Only support single row for different sized devices
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
