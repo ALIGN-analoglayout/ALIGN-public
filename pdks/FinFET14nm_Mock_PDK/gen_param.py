@@ -18,7 +18,8 @@ def limit_pairs(pairs):
     else:
         return pairs
 
-def add_primitive(primitives, block_name, block_args):
+def add_primitive(primitives, block_name, block_args, generator_constraint):
+
     if block_name in primitives:
         block_args['abstract_template_name'] = block_name
         block_args['concrete_template_name'] = block_name
@@ -55,6 +56,13 @@ def add_primitive(primitives, block_name, block_args):
 
 
 def gen_param(subckt, primitives, pdk_dir):
+
+    generator_constraint = None
+    for const in subckt.constraints:
+        if const.constraint == 'generator':
+            assert generator_constraint is None
+            generator_constraint = const
+
     block_name = subckt.name
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
@@ -149,6 +157,7 @@ def gen_param(subckt, primitives, pdk_dir):
             size = 0
 
         logger.debug(f"Generating lef for {block_name}")
+    
         if isinstance(size, int):
             for key in mvalues:
                 assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {block_name} {mvalues}"
@@ -168,6 +177,14 @@ def gen_param(subckt, primitives, pdk_dir):
             if  unequal_devices:
                 yval = 1
                 xval = int(size/2)
+    
+        if generator_constraint is not None:
+                generator_parameters = generator_constraint.parameters
+                if generator_parameters is not None:
+                    exact_patterns = generator_parameters.get('exact_patterns')
+                    if exact_patterns is not None:
+                        yval = len(exact_patterns[0])
+                        xval = len(exact_patterns[0][0]) 
 
         block_args = {
             'primitive': generator_name,
@@ -181,11 +198,11 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         # TODO: remove name based hack
-        if len(device_name_all)==2 and unequal_devices:
+        if (len(device_name_all)==2 and unequal_devices):
             # Only support single row for different sized devices
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
         else:
-            add_primitive(primitives, block_name, block_args)
+            add_primitive(primitives, block_name, block_args, generator_constraint)
     return True
