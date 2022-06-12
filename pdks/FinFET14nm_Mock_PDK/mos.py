@@ -380,9 +380,9 @@ class MOSGenerator(DefaultCanvas):
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
-                    exact_patterns = const.parameters.get('exact_patterns')
-                    exact_patterns = exact_patterns[0]
-        #print(x_cells, y_cells)
+                    if const.parameters.get('exact_patterns'): 
+                        exact_patterns = const.parameters.get('exact_patterns')
+                        exact_patterns = exact_patterns[0]
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
            

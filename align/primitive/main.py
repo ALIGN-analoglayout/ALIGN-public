@@ -55,10 +55,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
-    if len(primitive.elements) == 2 and not exact_patterns:
-        if pattern==1:
-            x_cells = 2*x_cells
-            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+    if len(primitive.elements) == 2:
+        x_cells = 2*x_cells
+        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
             #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
     logger.debug(

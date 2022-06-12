@@ -24,8 +24,13 @@ def construct_sizes_from_exact_patterns(exact_patterns):
                         
     legal_size_d = {}
     
-    for pattern in exact_patterns:                        
-        k = len(pattern[0]), len(pattern)
+    for pattern in exact_patterns:
+        histo = Counter(c for row in pattern for c in row)
+        num_devices = len(set(c.upper() for c in histo.keys()))
+        if num_devices == 2:
+            k = len(pattern[0])//2, len(pattern)
+        else:
+            k = len(pattern[0]), len(pattern)
         assert k not in legal_size_d
         legal_size_d[k] = pattern
 
@@ -227,13 +232,13 @@ def gen_param(subckt, primitives, pdk_dir):
                 yval = 1
                 xval = int(size/2)
     
-        if generator_constraint is not None:
+        '''if generator_constraint is not None:
                 generator_parameters = generator_constraint.parameters
                 if generator_parameters is not None:
                     exact_patterns = generator_parameters.get('exact_patterns')
                     if exact_patterns is not None:
                         yval = len(exact_patterns[0])
-                        xval = len(exact_patterns[0][0]) 
+                        xval = len(exact_patterns[0][0])''' 
 
         block_args = {
             'primitive': generator_name,
