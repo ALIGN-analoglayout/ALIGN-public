@@ -156,7 +156,7 @@ def gen_param(subckt, primitives, pdk_dir):
             'primitive': generator_name,
             'value':  [int(length), int(width)]
         }
-        add_primitive(primitives, block_name, block_args)
+        add_primitive(primitives, block_name, block_args, generator_constraint)
 
     elif generator_name == 'RES':
         assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
@@ -173,7 +173,7 @@ def gen_param(subckt, primitives, pdk_dir):
             'primitive': generator_name,
             'value': (height, float(size))
         }
-        add_primitive(primitives, block_name, block_args)
+        add_primitive(primitives, block_name, block_args, generator_constraint)
 
     else:
         assert 'MOS' == generator_name, f'{generator_name} is not recognized'
