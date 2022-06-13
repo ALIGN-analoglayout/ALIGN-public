@@ -3,6 +3,7 @@ from align.cell_fabric.generators import Region, Wire, Via
 from align.cell_fabric.grid import EnclosureGrid, UncoloredCenterLineGrid, SingleGrid, CenteredGrid, CenterLineGrid
 import collections
 from math import floor
+import string
 import logging
 logger = logging.getLogger(__name__)
 
@@ -389,7 +390,11 @@ class MOSGenerator(DefaultCanvas):
             for x in range(x_cells):
                 if exact_patterns: # Exact pattern from user
                     row_pattern = exact_patterns[y][x]
-                    names_updated = {'A':names[0], 'a':names[0], 'B':names[1], 'b':names[1]}
+                    names_mapping = list(string.ascii_uppercase)
+                    names_updated = {}
+                    for i in range(len(names)): 
+                        names_updated[names_mapping[i]] = names[i]
+                        names_updated[names_mapping[i].lower()] = names[i]
                     reflect = row_pattern.islower()
                     self._addMOS(x, y, x_cells, vt_type, names_updated[row_pattern],  False, **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names_updated[row_pattern])

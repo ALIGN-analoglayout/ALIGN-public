@@ -232,13 +232,13 @@ def gen_param(subckt, primitives, pdk_dir):
                 yval = 1
                 xval = int(size/2)
     
-        '''if generator_constraint is not None:
+        if generator_constraint is not None:
                 generator_parameters = generator_constraint.parameters
                 if generator_parameters is not None:
                     exact_patterns = generator_parameters.get('exact_patterns')
                     if exact_patterns is not None:
                         yval = len(exact_patterns[0])
-                        xval = len(exact_patterns[0][0])''' 
+                        xval = len(exact_patterns[0][0]) if len(device_name_all) !=2 else len(exact_patterns[0][0])//2 
 
         block_args = {
             'primitive': generator_name,
