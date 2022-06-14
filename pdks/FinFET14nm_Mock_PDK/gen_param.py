@@ -137,7 +137,7 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        
+
         size = round(float(values["VALUE"]) * 1E15, 4)
 
         assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"

@@ -32,15 +32,18 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     input_pattern = None
     exact_patterns = None
     if gen_const:
-        gen_const=gen_const[0]
+        gen_const=gen_const[-1]
+    logger.debug(f"gen const {gen_const}")
     if gen_const:
         if getattr(gen_const, "parameters", None):
-            if getattr(gen_const.parameters, "shared_diff", None):
+            if "shared_diff" in gen_const.parameters.keys():
                 shared_diff = gen_const.parameters["shared_diff"]
-            if getattr(gen_const.parameters, "pattern", None):
+            if "pattern" in gen_const.parameters.keys():
                 input_pattern = gen_const.parameters["pattern"]
-            if getattr(gen_const.parameters, "bodyswitch", None):
-                bodyswitch = gen_const.parameters["bodyswitch"]
+            if "body" in gen_const.parameters.keys():
+                bodyswitch = gen_const.parameters["body"]
+            if "height" in gen_const.parameters.keys():
+                height = gen_const.parameters["height"]
             if "exact_patterns" in gen_const.parameters.keys():
                 exact_patterns = gen_const.parameters["exact_patterns"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
@@ -55,10 +58,10 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
             input_pattern = 'cc'
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
-    if len(primitive.elements) == 2:
+    if len(primitive.elements) ==2:
         x_cells = 2*x_cells
         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-            #TODO do this double during x_cells generation in gen_param.py/add_primitive()
+        #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
     logger.debug(
         f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
@@ -176,15 +179,13 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' == primitive.generator['name']:
+    elif 'MOS' == primitive.generator['name'].upper():
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-
-
-    elif 'CAP' == primitive.generator['name']:
+    elif 'CAP' == primitive.generator['name'].upper():
         uc, _ = generate_Cap(pdkdir, block_name, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'RES' == primitive.generator['name']:
+    elif 'RES' == primitive.generator['name'].upper():
         uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
