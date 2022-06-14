@@ -227,14 +227,14 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       if (match_const.blockid2 == -1) logger->error("ReadConstraint: MatchBlock: couldn't find block2: {0}", block_second);
       if (match_const.blockid1 != -1 && match_const.blockid2 != -1) node.Match_blocks.push_back(match_const);
     } else if (constraint["const_name"] == "bias_graph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Hgraph = distance;
       node.bias_Vgraph = distance;
     } else if (constraint["const_name"] == "bias_Hgraph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Hgraph = distance;
     } else if (constraint["const_name"] == "bias_Vgraph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Vgraph = distance;
     } else if (constraint["const_name"] == "ShieldNet") {
       string shield_net = constraint["net_name"];
