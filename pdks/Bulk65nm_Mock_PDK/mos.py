@@ -13,6 +13,12 @@ class MOSGenerator(DefaultCanvas):
 
     def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
         self.primitive_constraints = kwargs.get('primitive_constraints', [])
+        exact_width = None
+        for const in self.primitive_constraints:
+            if const.constraint == 'generator':
+                if const.parameters is not None:
+                    if const.parameters.get('exact_width'): 
+                        exact_width = const.parameters.get('exact_width')
 
         super().__init__(pdk)
         self.finsPerUnitCell = 40
@@ -35,7 +41,7 @@ class MOSGenerator(DefaultCanvas):
         assert gateDummy > 0
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
         activeOffset = self.unitCellHeight//2 - self.pdk['Fin']['Pitch']//2
-        self.activeWidth =  self.pdk['Fin']['Pitch']*self.mos_fin
+        self.activeWidth =  exact_width if exact_width else self.pdk['Fin']['Pitch']*self.mos_fin
         activePitch = self.unitCellHeight
         RVTWidth = self.activeWidth + 2*self.pdk['Active']['active_enclosure']
 
