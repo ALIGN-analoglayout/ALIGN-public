@@ -372,6 +372,12 @@ class MOSGenerator(DefaultCanvas):
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
+                elif pattern == 4:  # non common centroid
+                    # TODO: Evaluate if this is truly interdigitated. Currently:
+                    # A A A B B B
+                    # A A A B B B
+                    # A A A B B B
+                    self._addMOS(x, y, x_cells, vt_type, names[0 if x < (x_cells//2) else 1], False, **parameters)
                 elif pattern == 5: # Rad-Hard interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
