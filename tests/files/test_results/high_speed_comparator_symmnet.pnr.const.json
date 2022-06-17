@@ -83,12 +83,12 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIN_D"
+                        "pin": "P1"
                     },
                     {
                         "type": "pin",
                         "name": "X_CCN_MN3_MN4",
-                        "pin": "VIN_D"
+                        "pin": "P3"
                     },
                     {
                         "type": "pin",
@@ -103,12 +103,12 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIP_D"
+                        "pin": "P4"
                     },
                     {
                         "type": "pin",
                         "name": "X_CCN_MN3_MN4",
-                        "pin": "VIP_D"
+                        "pin": "P4"
                     },
                     {
                         "type": "pin",
@@ -127,7 +127,7 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIN"
+                        "pin": "P2"
                     },
                     {
                         "type": "terminal",
@@ -142,7 +142,7 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIP"
+                        "pin": "P5"
                     },
                     {
                         "type": "terminal",
