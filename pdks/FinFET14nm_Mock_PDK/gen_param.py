@@ -225,6 +225,7 @@ def gen_param(subckt, primitives, pdk_dir):
             xval = int(no_units / square_y)
         def total_device_size(v):
             return int(v["NFIN"])*int(v['NF'])*int(v["M"])
+        unequal_devices = None
         if len(device_name_all) == 2:
             unequal_devices = (total_device_size(mvalues[device_name_all[0]]) !=
                                total_device_size(mvalues[device_name_all[1]]))
