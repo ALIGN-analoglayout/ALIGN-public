@@ -30,6 +30,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
     input_pattern = None
+    exact_patterns = None
     if gen_const:
         gen_const=gen_const[-1]
     logger.debug(f"gen const {gen_const}")
@@ -43,6 +44,8 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                 bodyswitch = gen_const.parameters["body"]
             if "height" in gen_const.parameters.keys():
                 height = gen_const.parameters["height"]
+            if "exact_patterns" in gen_const.parameters.keys():
+                exact_patterns = gen_const.parameters["exact_patterns"]
     uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
 
     # Default pattern values
