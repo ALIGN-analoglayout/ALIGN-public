@@ -19,6 +19,12 @@ def pytest_addoption(parser):
     parser.addoption(
         "--skipGDS", action="store_true", default=False, help="Skip GDS for nightly run (Use with --runnightly)"
     )
+    parser.addoption(
+        "--placer_sa_iterations", type=int, default=10000, help="Set the number of SA iterations for the placer (Use with --runnightly)"
+    )
+    parser.addoption(
+        "--nvariants", type=int, default=1, help="Number of placements candidates to (attempt to) generate (Use with --runnightly)"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -43,4 +49,10 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("router_mode", [router_mode])
     if "skipGDS" in metafunc.fixturenames:
         metafunc.parametrize("skipGDS", [True])
+    if "placer_sa_iterations" in metafunc.fixturenames:
+        placer_sa_iterations = metafunc.config.getoption("--placer_sa_iterations")
+        metafunc.parametrize("placer_sa_iterations", [placer_sa_iterations])
+    if "nvariants" in metafunc.fixturenames:
+        nvariants = metafunc.config.getoption("--nvariants")
+        metafunc.parametrize("nvariants", [nvariants])
 

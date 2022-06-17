@@ -9,6 +9,7 @@ from ..schema import SubCircuit, Model
 import logging
 import pathlib
 import hashlib
+from flatdict import FlatDict
 import importlib
 import sys
 
@@ -160,6 +161,11 @@ def gen_key(param):
     key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
     return key
 
+def gen_group_key(multi_param):
+    param = FlatDict(multi_param)
+    arg_str = '_'.join([str(k)+':'+str(param[k]) for k in sorted(param.keys())])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
 
 def create_node_id(G, node1, ports_weight=None):
     in1 = G.nodes[node1].get("instance")
@@ -223,7 +229,8 @@ def get_generator(name, pdkdir):
         if generator_class and generator_class(name):
             return generator_class(name)
         else:
-            return getattr(module, name, False) or getattr(module, name.lower(), False)
+            res = getattr(module, name, False) or getattr(module, name.lower(), False)
+            return res
 
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)

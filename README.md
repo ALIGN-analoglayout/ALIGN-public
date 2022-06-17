@@ -69,7 +69,7 @@ $ python -m pip install pip --upgrade
 ```
 
 ### Step 3a: Install ALIGN as a USER
-If you already have a working installation of Python 3.7 or Python 3.8, the easiest way to install ALIGN is:
+If you already have a working installation of Python 3.8 or above, the easiest way to install ALIGN is:
 ```console
 $ pip install -v .
 ```
@@ -87,6 +87,7 @@ For ALIGN (C++) Extension developers:
 ```console
 $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
+$ pip install -v --no-build-isolation -e . --no-deps --install-option='-DBUILD_TESTING=ON'
 ```
 The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
@@ -121,9 +122,9 @@ To run tests similar to the checkin and merge-to-master CI runs run:
 cd $ALIGN_HOME
 # Checkin
 pytest -vv
-CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 -- tests/integration/
+CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 --placer_sa_iterations 100 -- tests/integration/
 # Merge to master
-CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 -- tests/integration/ tests/pdks
+CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 --placer_sa_iterations 100 -- tests/integration/ tests/pdks
 ```
 
 ### Step 4: Run ALIGN

@@ -25,8 +25,9 @@ def get_instances_from_hacked_dataclasses(constraint):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
-    names = {x.name for x in constraint.parent if hasattr(x, 'name')}
-    return set.union(instances, names)
+    names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')} #group block
+    names2 = {x.name for x in constraint.parent if hasattr(x, 'name')} #group_cap, alias
+    return set.union(instances, names1, names2)
 
 
 def validate_instances(cls, value):
@@ -130,7 +131,7 @@ class Order(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Order", "direction": "left_to_right"}
+        {"constraint":"Order", "instances": ['MN0', 'MN1', 'MN2'], "direction": "left_to_right"}
 
     '''
     instances: List[str]
@@ -215,7 +216,7 @@ class Align(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Align", "line": "v_center"}
+        {"constraint":"Align", "instances": ['MN0', 'MN1', 'MN2'], "line": "v_center"}
 
     '''
     instances: List[str]
@@ -285,7 +286,7 @@ class Enclose(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Enclose", "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
+        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
     '''
     instances: Optional[List[str]]
     min_height: Optional[int]
@@ -500,37 +501,51 @@ class GroupBlocks(HardConstraint):
 
     Args:
       instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
+      template_name (str): Optional template name for the group (virtual hiearchy).
+      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
 
         {
             "constraint":"GroupBlocks",
-            "name": "group1",
+            "instance_name": "X_MN0_MN1_MN3",
             "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
+            "template_name": "DP1"
         }
-    """
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
-    @types.validator('name', allow_reuse=True)
+    Note: If not provided a unique template name will be auto generated. Template_names are added with a post_script during the flow using a UUID based on all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
+    """
+    instance_name: str
+    instances: List[str]
+    template_name: Optional[str]
+    generator: Optional[dict]
+
+    @types.validator('instance_name', allow_reuse=True)
     def group_block_name(cls, value):
         assert value, 'Cannot be an empty string'
+        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
         return value.upper()
+
 
     def translate(self, solver):
         # Non-zero width / height
-        bb = solver.bbox_vars(self.name)
+        instances = get_instances_from_hacked_dataclasses(self)
+        bb = solver.bbox_vars(self.instance_name)
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
         # Grouping into common bbox
-        for b in solver.iter_bbox_vars(self.instances):
+        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
             yield b.ury <= bb.ury
             yield b.lly >= bb.lly
-        instances = get_instances_from_hacked_dataclasses(self)
         for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
             yield solver.Or(
                 b.urx <= bb.llx,
@@ -878,7 +893,7 @@ class DoNotUseLib(SoftConstraint):
         {
             "constraint": "DoNotUseLib",
             "libraries": ["DP_NMOS", "INV"],
-            "propagate": False
+            "propagate": false
         }
     '''
     libraries: List[str]
@@ -888,15 +903,17 @@ class DoNotUseLib(SoftConstraint):
 class ConfigureCompiler(SoftConstraint):
     '''
     Compiler default optimization flags
+
     Args:
-        is_digital(bool): true/false
-        auto_constraint(bool): true/false
-        identify_array(bool): true/false
-        fix_source_drain(bool): true/false
-        remove_dummy_hierarchies(bool): true/false
-        remove_dummy_devices(bool): true/false
-        merge_series_devices(bool): true/false
-        merge_parallel_devices(bool): true/false
+        is_digital(bool): true/false , stops any annotation or constraint generation
+        auto_constraint(bool): true/false , stops auto-symmetry-constraint identification
+        identify_array(bool): true/false , stops array identification
+        fix_source_drain(bool): true/false , ensures (drain of NMOS/ source of PMOS) is at higher potential.
+        remove_dummy_hierarchies(bool): true/false , Removes any single instance hierarchies.
+        remove_dummy_devices(bool): true/false , Removes dummy devices in the design.
+        merge_series_devices(bool): true/false , stack series devices
+        merge_parallel_devices(bool): true/false , merge parallel devices
+        propagate(bool): true/false , propagates these constarints to lower hierarchies
 
     Example: ::
 
@@ -924,9 +941,11 @@ class Generator(SoftConstraint):
     Args:
         name(str): name of genrator e.g., mos/cap/res/ring
         parameters(dict): {
-                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncs)
-                            parallel_wires (dict): {net_name:2}
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncc)
+                            shared_diff (bool): true/false
                             body (bool): true/ false
+                            height (int): max height/nfin of a unit cell (including 16 dummy fins)
+                            parallel_wires: {"net1":2, "net2":2} #to be implemented
                             }
 
     Example: ::
@@ -947,8 +966,10 @@ class Generator(SoftConstraint):
 
 class DoNotIdentify(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
-    Auto generated constraint based on all intances which are constrained
+    Stop any auto-grouping of provided instances
+    Automatically adds instances from all constraint
+
+    WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
 
@@ -962,7 +983,9 @@ class SymmetricBlocks(HardConstraint):
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
-        direction (str) : Direction for axis of symmetry.
+        direction (str) : Direction for axis of symmetry. Literal::
+
+            ['V', 'H']
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -972,7 +995,7 @@ class SymmetricBlocks(HardConstraint):
         {
             "constraint" : "SymmetricBlocks",
             "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
-            "direction" : "vertical"
+            "direction" : "V"
         }
 
     """
@@ -994,7 +1017,7 @@ class SymmetricBlocks(HardConstraint):
         if len(cls._validator_ctx().parent.parent.elements) == 0:
             # skips the check while reading user constraints
             return value
-        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances]) > 0:
@@ -1290,6 +1313,39 @@ class SymmetricNets(SoftConstraint):
     direction: Literal['H', 'V']
 
 
+class ChargeFlow(SoftConstraint):
+    '''ChargeFlow
+    Defines the current flowing through each pin.
+    The chargeflow constraints help in improving the placement.
+
+    Args:
+        time (list) : List of time intervals
+        pin_current (dict) : current for each pin at different time intervals
+    Example ::
+
+        {
+            "constraint" : "ChargeFlow",
+            "time" : [0,1.2,2.4]
+            "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
+        }
+     '''
+
+    time: List[float]
+    pin_current: dict
+
+    @types.validator('time', allow_reuse=True)
+    def time_list_validator(cls, value):
+        assert len(value) >= 1, 'Must contain at least one time stamp'
+        return value
+    #TODO add pin validators
+    @types.validator('pin_current', allow_reuse=True)
+    def pairs_validator(cls, pin_current, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        for pin, current in pin_current.items():
+            assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
+            assert len(current) == len(values['time']), 'Must contain at least one instance'
+        return pin_current
+
 class MultiConnection(SoftConstraint):
     '''MultiConnection
     Defines multiple parallel wires for a net.
@@ -1316,6 +1372,19 @@ class DoNotRoute(SoftConstraint):
     nets: List[str]
 
     _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
+
+
+class CustomizeRoute(BaseModel):
+    nets: List[str]
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    shield: bool = False
+    match: bool = False
+
+class Route(SoftConstraint):
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    customize: List[CustomizeRoute] = []
 
 
 ConstraintType = Union[
@@ -1354,7 +1423,9 @@ ConstraintType = Union[
     ClockPorts,
     DoNotUseLib,
     ConfigureCompiler,
-    NetPriority
+    NetPriority,
+    Route,
+    ChargeFlow
 ]
 
 

@@ -38,7 +38,7 @@ class PnRConstraintWriter:
                 del const['instances']
 
             # Exclude constraints not to be exposed to PnR
-            if const['const_name'] in ['DoNotIdentify', 'DoNotUseLib', 'ConfigureCompiler']:
+            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler']:
                 continue
 
             # Exclude constraints that need to be to multiple constraints
