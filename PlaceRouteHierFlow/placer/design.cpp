@@ -372,6 +372,15 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     }
     maxBlockHPWLSum += (width + height);
   }
+
+  if (!node.pin_location.empty()) {
+    for (int i = 0; i < (int)Nets.size(); ++i) {
+      auto it = node.pin_location.find(Nets[i].name);
+      if (it != node.pin_location.end()) {
+        pin_location[i] = it->second;
+      }
+    }
+  }
 }
 
 int design::rand() {

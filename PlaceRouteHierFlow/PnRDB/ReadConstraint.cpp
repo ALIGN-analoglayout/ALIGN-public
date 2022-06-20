@@ -622,6 +622,22 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
          DoNotRoute.push_back(net);
       }
       node.DoNotRoute = DoNotRoute;
+    } else if (constraint["const_name"] == "TopLevelFloorplan") {
+      std::set<std::string> pinnames;
+      for (auto& pin : node.blockPins) pinnames.insert(pin.name);
+      for (auto& net : node.Nets) pinnames.insert(net.name);
+      auto itc = constraint.find("pin_location");
+      if (itc != constraint.end()) {
+        for (auto& it : itc->items()) {
+          if (pinnames.find(it.key()) != pinnames.end()) {
+            auto box = it.value();
+            node.pin_location[it.key()] = PnRDB::bbox(static_cast<double>(box[0]) * unitScale,
+                static_cast<double>(box[1]) * unitScale,
+                static_cast<double>(box[2]) * unitScale,
+                static_cast<double>(box[3]) * unitScale);
+          }
+        }
+      }
     }
   }
 }

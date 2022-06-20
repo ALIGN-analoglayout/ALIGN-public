@@ -206,6 +206,7 @@ class design {
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  std::map<int, PnRDB::bbox> pin_location;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};

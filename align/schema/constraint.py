@@ -639,7 +639,6 @@ class AlignInOrder(UserConstraint):
                 abut=self.abut
             )
 
-
 class Floorplan(UserConstraint):
     '''
     Row-based layout floorplan from top to bottom
@@ -702,6 +701,28 @@ class Floorplan(UserConstraint):
                 logger.debug(f'Symmetric blocks:\n{pairs}')
                 yield SymmetricBlocks(pairs=pairs, direction='V')
 
+
+class TopLevelFloorplan(SoftConstraint):
+    '''
+    Top-level floorplan of the design using bounding box of the module and
+    boxes for pins.
+
+    Example: 
+        {"constraint":"TopLevelFloorplan", "boundary": [width, height], "pin_location":{"A":[<A_xmin>, <A_ymin>, <A_xmax>, <A_ymax>]}}"
+    '''
+    boundary: Optional[List[float]]
+    pin_location: dict
+
+    @types.validator('boundary', allow_reuse=True)
+    def boundary_list_validator(cls, value):
+        assert len(value) == 2, 'Must specify both width and height'
+        return value
+    
+    @types.validator('pin_location', allow_reuse=True)
+    def pin_loc_validator(cls, pin_location, values):
+        for pin, bbox in pin_location.items():
+            assert len(bbox) == 4, 'pin bounding box should have four values'
+        return {k.upper():v for k,v in pin_location.items()}
 
 #
 # list of 'SoftConstraint'
@@ -1425,7 +1446,8 @@ ConstraintType = Union[
     ConfigureCompiler,
     NetPriority,
     Route,
-    ChargeFlow
+    ChargeFlow,
+    TopLevelFloorplan
 ]
 
 

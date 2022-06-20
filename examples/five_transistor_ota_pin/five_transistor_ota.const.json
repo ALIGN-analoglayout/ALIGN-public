@@ -1,0 +1,5 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VDD"]},
+    {"constraint": "GroundPorts", "ports": ["VSS"]},
+    {"constraint": "TopLevelFloorplan", "boundary": [10,10], "pin_location": {"von":[5, 8, 5.1, 8.1]} }
+]

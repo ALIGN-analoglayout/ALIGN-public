@@ -42,7 +42,7 @@ class PnRConstraintWriter:
                 continue
 
             # Exclude constraints that need to be to multiple constraints
-            if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection', 'PlaceCloser'):
+            if not const['const_name'] in ('NetPriority', 'NetConst', 'PortLocation', 'MultiConnection', 'PlaceCloser', 'TopLevelFloorplan'):
                 pnr_const.append(const)
 
             # Constraint-specific field transformations
@@ -148,6 +148,14 @@ class PnRConstraintWriter:
                 for (b1, b2) in itertools.combinations(const['blocks'], 2):
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
+
+            elif const["const_name"] == 'TopLevelFloorplan':
+                if 'boundary' in const:
+                    extra = {'const_name' : 'Boundary', 'max_width': const['boundary'][0], 'max_height': const['boundary'][1]}
+                    pnr_const.append(extra)
+                    del const['boundary']
+                pnr_const.append(const)
+                    
 
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
         return {'constraints': pnr_const}
