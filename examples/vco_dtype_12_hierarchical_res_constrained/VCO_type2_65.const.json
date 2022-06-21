@@ -7,7 +7,7 @@
 			"XI1<3>",
 			"XI1<4>"
 		],
-		"name": "top"
+		"instance_name": "xtop"
 	},
 	{
 		"constraint": "GroupBlocks",
@@ -17,7 +17,7 @@
 			"XI1<6>",
 			"XI1<5>"
 		],
-		"name": "bot"
+		"instance_name": "xbot"
 	},
 	{
 		"constraint": "Order",
@@ -43,8 +43,8 @@
 		"constraint": "Order",
 		"direction": "top_to_bottom",
 		"instances": [
-			"top",
-			"bot"
+			"xtop",
+			"xbot"
 		]
 	}
 ]

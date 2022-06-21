@@ -2,9 +2,12 @@ import os
 import math
 import json
 from itertools import cycle, islice
+from collections import defaultdict
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
+from .gen_param import construct_sizes_from_exact_patterns 
+
 import logging
 logger = logging.getLogger(__name__)
 logger_func = logger.debug
@@ -17,16 +20,31 @@ class MOSGenerator(CanvasPDK):
 
         super().__init__()
 
-        self.style = None
+        self.pattern_template = None
         self.PARTIAL_ROUTING = False
+        self.single_device_connect_m1 = True
+        self.exact_patterns = None
+        self.exact_patterns_d = None
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
-                    self.style = const.parameters.get('style')
+                    self.pattern_template = const.parameters.get('pattern_template')
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
+                    self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
+                    self.exact_patterns = const.parameters.get('exact_patterns')
+
+                    if self.exact_patterns is not None:
+                        self.exact_patterns_d = construct_sizes_from_exact_patterns(self.exact_patterns)
+
+                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes'])
+                    for k in const.parameters.keys():
+                        assert k in legal_keys, (k, legal_keys)
+
 
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
+
+        #logger.info(f'pattern_template: {self.pattern_template} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
 
         if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
@@ -150,8 +168,8 @@ class MOSGenerator(CanvasPDK):
             # Alternate m2 tracks for device A and device B for improved matching
             tx_2 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_2)
         elif self.PARTIAL_ROUTING:
-
-            track_pattern_1 = {'G': [6]}
+            if self.single_device_connect_m1:
+                track_pattern_1 = {'G': [6]}
 
         tx_1 = MOS().mos(self.transistor_array.unit_transistor, track_pattern=track_pattern_1)
 
@@ -162,13 +180,24 @@ class MOSGenerator(CanvasPDK):
 
         # Define the interleaving array (aka array logic)
         if is_dual:
-            if self.style is not None and self.style == 'RADHARD':
-                interleave_array = self.interleave_pattern_radhard(self.n_row, self.n_col)
+            if self.exact_patterns_d is not None:
+                k = self.n_col//2, self.n_row
+                assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
+            elif self.pattern_template is not None:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
             else:
-                assert self.style is None, f"Unknown MOSGenerator style: '{style}'"
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
-            interleave_array = ['A'*self.n_col]*self.n_row
+            if self.exact_patterns_d is not None:
+                k = self.n_col, self.n_row
+                assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
+            elif self.pattern_template is not None:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
+            else:
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
+
 
         cnt_tap = 0
         def add_tap(row, obj, tbl, flip_x):
@@ -219,29 +248,27 @@ class MOSGenerator(CanvasPDK):
             self.route()
             self.terminals = self.removeDuplicates()
         else:
-            if not is_dual:
+            if self.single_device_connect_m1 and not is_dual:
                 self.join_wires(self.m1)
             self.join_wires(self.m2)
             self.terminals = self.removeDuplicates(silence_errors=True)
 
-            # Find connected entities and generate a unique pin name
-            def find_update_term(layer, rect, new_name):
-                for term in self.terminals:
-                    if term['layer'] == layer and term['rect'] == rect:
-                        term['netName'] = new_name
-                        term['netType'] = 'pin'
-            counters = {}
-            for net_opens in self.rd.opens:
-                net_name = net_opens[0]
-                for open_group in net_opens[1]:
-                    if net_name not in counters:
-                        counters[net_name] = 0
+            replacements = {}
+
+            counters = defaultdict(int)
+            for net_name, open_groups in self.rd.opens:
+                for open_group in open_groups:
                     counters[net_name] += 1
-                    new_name = net_name + '__' + str(counters[net_name])
+                    new_name = f'{net_name}__{counters[net_name]}'
                     assert 'partially_routed_pins' in self.metadata
                     self.metadata['partially_routed_pins'][new_name] = net_name
-                    for term in open_group:
-                        find_update_term(term[0], term[1], new_name)
+                    for layer, rect in open_group:
+                        replacements[(layer, tuple(rect))] = new_name
+
+            for term in self.terminals:
+                new_name = replacements.get((term['layer'], tuple(term['rect'])))
+                if new_name is not None:
+                    term.update({'netName': new_name, 'netType': 'pin'})
 
             # Expose pins
             self._expose_pins()
@@ -351,7 +378,7 @@ class MOSGenerator(CanvasPDK):
                 _stretch_m2_wires()
                 self.drop_via(self.v2)
 
-        if True:
+        if False:
             # Expose pins
             for term in self.terminals:
                 if term['netName'] is not None and term['layer'] in ['M2', 'M3']:
@@ -360,18 +387,20 @@ class MOSGenerator(CanvasPDK):
             self._expose_pins()
 
     def _expose_pins(self):
-        net_layers = dict()
+        net_layers = defaultdict(set)
         for term in self.terminals:
             if term['netName'] is not None and term['layer'].startswith('M'):
-                name = term['netName']
-                if name not in net_layers:
-                    net_layers[name] = set()
-                net_layers[name].add(term['layer'])
+                net_layers[term['netName']].add(term['layer'])
+
         for name, layers in net_layers.items():
-            layer = sorted(layers)[-1]
+            max_layer = max(layers)
             for term in self.terminals:
-                if term['netName'] is not None and term['netName'] == name and term['layer'] == layer:
-                    term['netType'] = 'pin'
+                nm, ly = term['netName'], term['layer']
+                if nm is not None and nm == name:
+                    if ly == max_layer:
+                        term['netType'] = 'pin'
+                    else:
+                        term['netType'] = 'drawing'
 
     @staticmethod
     def validate_array(m, n_row, n_col):
@@ -388,22 +417,19 @@ class MOSGenerator(CanvasPDK):
                 elif m % y == 0:
                     return y, m//y
 
+
     @staticmethod
-    def interleave_pattern_radhard(n_row, n_col):
+    def interleave_pattern(n_row, n_col, *, pattern_template=["AB","BA"]):
         """
-        n_col is only even (lower case means flipped around the y-axis (mirrored in x))
+        (lower case means flipped around the y-axis (mirrored in x))
+            A B
+            B A
+        or
+            A a B b
+            B b A b
+        or (radhad)
             A b B a
             B a A b
         """
-        assert n_col >= 2
-        assert n_col % 2 == 0
-        return [list(islice(cycle("AbBa" if y % 2 == 0 else "BaAb"), n_col)) for y in range(n_row)]
-
-    @staticmethod
-    def interleave_pattern(n_row, n_col):
-        """
-        n_col can be even or odd
-            A B A B
-            B A B A
-        """
-        return [list(islice(cycle("ABAB" if y % 2 == 0 else "BABA"), n_col)) for y in range(n_row)]
+        assert len(pattern_template) > 0
+        return [list(islice(cycle(pattern_template[y%len(pattern_template)]), n_col)) for y in range(n_row)]

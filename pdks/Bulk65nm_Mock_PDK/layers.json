@@ -663,8 +663,8 @@
             "GdsDatatype": {
                 "Draw": 0
             },
-            "PcWidth": 32,
-            "PcExt": 2
+            "PcWidth": 100,
+            "PcExt": 0
         },
         {
             "Layer": "Bbox",

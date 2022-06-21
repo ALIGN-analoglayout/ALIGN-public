@@ -1,11 +1,13 @@
 .subckt CASCODED_CMC_PMOS DA GA DB S
-M0 DA GA SA S PMOS w=27e-9 l=20e-9 nfin=120
+* @: SymmetricBlocks(pairs=[['M0','M1'], ['M2','M3']], direction='V')
+M0 DA GA SA S PMOS w=27e-9 l=20e-9 nfin=60
 M1 DB GA SB S PMOS w=27e-9 l=20e-9 nfin=60
 M2 SA DB S S PMOS w=27e-9 l=20e-9 nfin=10
-M3 SB DB S S PMOS w=27e-9 l=20e-9 nfin=5
+M3 SB DB S S PMOS w=27e-9 l=20e-9 nfin=10
 .ends CASCODED_CMC_PMOS
 
 .subckt CASCODED_CMC_NMOS DA GA DB S
+* @: SymmetricBlocks(pairs=[['M0','M1'], ['M2','M3']], direction='V')
 M0 DA GA SA S NMOS w=27e-9 l=20e-9 nfin=24
 M1 DB GA SB S NMOS w=27e-9 l=20e-9 nfin=24
 M2 SA DA S S NMOS w=27e-9 l=20e-9 nfin=30
@@ -66,6 +68,7 @@ M2 DC DA SC B PMOS w=w l=90n
 
 .subckt DP_PAIR_PMOS DA DB DC DD GB S
 *UT austin VCM5
+* @: SymmetricBlocks(pairs=[['M0','M1'], ['M2','M3']], direction='V')
 M0 DC DC S B PMOS w=w l=90n
 M1 DA DC S B PMOS w=w l=90n
 M2 DB GB S B PMOS w=w l=90n
@@ -124,20 +127,24 @@ M4 DE DA S S PMOS w=w l=90n
 .ends CMB_PMOS_4
 
 .subckt INV i zn SN SP
+* @: SymmetricBlocks(pairs=[['M0'], ['M1']], direction='V')
 M0 zn i SN SN NMOS w=w0 l=l0
 M1 zn i SP SP PMOS w=w1 l=l0
 .ends INV
 
 .subckt INV_B i zn SN SP PB
+* @: SymmetricBlocks(pairs=[['M0'], ['M1']], direction='V')
 M0 zn i SN SN NMOS w=w0 l=l0
 M1 zn i SP PB PMOS w=w1 l=l0
 .ends INV_B
 
 .subckt stage2_inv VI VO SN SP
-MM0 VM VI SN SN NMOS l=60n w=1u
-MM1 VM VI SP SP PMOS l=60n w=1u
-MM2 VO VM SN SN NMOS l=60n w=1u
-MM3 VO VM SP SP PMOS l=60n w=1u
+* @: SymmetricBlocks(pairs=[['M0'], ['M1']], direction='V')
+* @: SymmetricBlocks(pairs=[['M2'], ['M3']], direction='V')
+M0 VM VI SN SN NMOS l=60n w=1u
+M1 VM VI SP SP PMOS l=60n w=1u
+M2 VO VM SN SN NMOS l=60n w=1u
+M3 VO VM SP SP PMOS l=60n w=1u
 .ends stage2_inv
 *TBF: had to remove m=1 because in base model m=1 is not there. How to allow user to change base model?
 
