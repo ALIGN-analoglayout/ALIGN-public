@@ -350,8 +350,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     maxhierheight += maxblkheight;
   }
   for (auto& it : mydesign.pin_location) {
-    maxhierwidth  = std::max(maxhierwidth,  it.second.UR.x);
-    maxhierheight = std::max(maxhierheight, it.second.UR.y);
+    maxhierwidth  = std::max(maxhierwidth,  it.second.LL.x);
+    maxhierheight = std::max(maxhierheight, it.second.LL.y);
   }
 
   if (flushbl) {

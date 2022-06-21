@@ -1,5 +1,5 @@
 [
     {"constraint": "PowerPorts", "ports": ["VDD"]},
     {"constraint": "GroundPorts", "ports": ["VSS"]},
-    {"constraint": "TopLevelFloorplan", "boundary": [30,30], "pin_location": {"vop":[5, 8, 5.1, 8.1], "vbias":[0,0,0.1,0.1]} }
+    {"constraint": "TopLevelFloorplan", "boundary": [10.0, 10.0], "pin_location": {"vop":[4.8, 4.2, 4.9, 4.3], "vbias":[0,0,0.1,0.1]} }
 ]
