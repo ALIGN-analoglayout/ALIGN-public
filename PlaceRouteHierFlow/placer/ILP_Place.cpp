@@ -279,16 +279,17 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     }
   }
 
+  const unsigned NumPinMin{mydesign.pin_location.empty() ? 2 : 1};
   std::map<std::pair<int, int>, std::tuple<int, int, int>> pin_idx_map;
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-    if (mydesign.Nets[i].connected.size() < 2) continue;
+    if (mydesign.Nets[i].connected.size() < NumPinMin) continue;
     int cnt{0};
     for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
       if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
         ++cnt;
       }
     }
-    if (cnt <2) continue;
+    if (cnt < NumPinMin) continue;
     for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
       if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
         const int block_id = mydesign.Nets[i].connected[j].iter2;
@@ -1551,7 +1552,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   // pin_j_xmin = block_y_xmin + flip_j * (w_j - pin_xmax - pin_xmin) + pin_xmin
   // -do- for ymin
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-    if (mydesign.Nets[i].connected.size() < 2) continue;
+    if (mydesign.Nets[i].connected.size() < NumPinMin) continue;
 
     int cnt{0};
     for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
@@ -1559,7 +1560,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         ++cnt;
       }
     }
-    if (cnt <2) continue;
+    if (cnt < NumPinMin) continue;
 
     int ind = int(N_block_vars_max + i * 4);
     for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
@@ -1651,14 +1652,6 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     int indnet = it.first * 4 + N_block_vars_max;
     int indpin = cntpl * 4 + N_pin_loc_min;
     ++cntpl;
-    //if (mydesign.Nets[it.first].connected.size() < 2) continue;
-    //int cnt{0};
-    //for (unsigned int j = 0; j < mydesign.Nets[it.first].connected.size(); j++) {
-    //  if (mydesign.Nets[it.first].connected[j].type == placerDB::Block) {
-    //    ++cnt;
-    //  }
-    //}
-    //if (cnt <2) continue;
     auto pincenter = it.second.center();
     for (unsigned int j = 0; j < mydesign.Nets[it.first].connected.size(); j++) {
       if (mydesign.Nets[it.first].connected[j].type == placerDB::Block) {
@@ -1737,8 +1730,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     rhs.push_back(pincenter.y);
     rowtype.push_back('T');*/
 
-    objective[indpin]     = 1e4; objective[indpin + 1] = 1e4;
-    objective[indpin + 2] = 1e4; objective[indpin + 3] = 1e4;
+    objective[indpin]     = 10; objective[indpin + 1] = 10;
+    objective[indpin + 2] = 10; objective[indpin + 3] = 10;
     collb[indpin]     = 0; colub[indpin]     = maxhierwidth; 
     collb[indpin + 1] = 0; colub[indpin + 1] = maxhierheight;
     collb[indpin + 2] = 0; colub[indpin + 2] = maxhierwidth; 
