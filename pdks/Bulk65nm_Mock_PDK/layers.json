@@ -701,13 +701,6 @@
                 "Draw": 0
             }
         },
-	{
-            "Layer": "Test",
-            "GdsLayerNo": 777,
-            "GdsDatatype": {
-                "Draw": 0
-            }
-        },
         {
             "Layer": "Cap",
             "m1Pitch": 200,
