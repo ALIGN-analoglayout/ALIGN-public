@@ -4831,7 +4831,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   }
 
   // plot blocks
-  fout << "\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0" << endl << endl;
+  fout << "\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0, \'-\' with lines linestyle 2" << endl << endl;
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     vector<placerDB::point> newp = mydesign.Blocks[i][curr_sp.selected[i]].boundary.polygon;
     fout << "# block " << mydesign.Blocks[i][curr_sp.selected[i]].name << " select " << curr_sp.selected[i] << " bsize " << newp.size() << endl;
@@ -4918,6 +4918,14 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
         fout << "\t" << pins.at(0).x << "\t" << pins.at(0).y << endl << endl;
       }
     }
+  }
+  fout << "\nEOF" << endl;
+  // plot top level pins if specified
+  for (auto& it : mydesign.pin_location) {
+    fout << "\n#Pin: " << it.first << '\n';
+    fout << "\t" << it.second.LL.x << "\t" << it.second.LL.y << endl;
+    fout << "\t" << it.second.UR.x << "\t" << it.second.UR.y << endl;
+    fout << "\t" << it.second.LL.x << "\t" << it.second.LL.y << endl << endl;
   }
   fout << "\nEOF" << endl;
   fout << endl << "pause -1 \'Press any key\'";

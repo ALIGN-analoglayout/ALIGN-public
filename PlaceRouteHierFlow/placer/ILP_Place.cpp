@@ -260,7 +260,9 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   const unsigned N_area_max         = N_aspect_ratio_max + 2;
   //const unsigned N_area_max         = N_net_vars_max + 2;
   //const unsigned N_slack_vars_max   = N_area_max + (numsol > 1 ? mydesign.Blocks.size() : 0);
-  unsigned N_var{N_area_max};
+  const unsigned N_pin_loc_min = N_area_max;
+  const unsigned N_pin_loc_max = N_area_max + (4 * mydesign.pin_location.size());
+  unsigned N_var{N_pin_loc_max};
 
   unsigned count_blocks{0};
   for (const auto& blk : mydesign.Blocks) {
@@ -346,6 +348,10 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     maxhierwidth  += maxblkwidth;
     maxhierheight += maxblkheight;
   }
+  for (auto& it : mydesign.pin_location) {
+    maxhierwidth  = std::max(maxhierwidth,  it.second.UR.x);
+    maxhierheight = std::max(maxhierheight, it.second.UR.y);
+  }
 
   if (flushbl) {
     for (int i = 0; i < Blocks.size(); ++i) {
@@ -416,19 +422,12 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     }
     if (cnt <2) continue;
     int ind = int(N_block_vars_max + i * 4);
-    auto itpinloc = mydesign.pin_location.find(i);
-    if (itpinloc == mydesign.pin_location.end()) {
-      objective[ind]     = -hyper.LAMBDA;
-      objective[ind + 1] = -hyper.LAMBDA;
-      objective[ind + 2] = hyper.LAMBDA;
-      objective[ind + 3] = hyper.LAMBDA;
-    } else {
-      objective[ind]     = -1e8 * hyper.LAMBDA;
-      objective[ind + 1] = -1e8 * hyper.LAMBDA;
-      objective[ind + 2] = 1e8 * hyper.LAMBDA;
-      objective[ind + 3] = 1e8 * hyper.LAMBDA;
-    }
+    objective[ind]     = -hyper.LAMBDA;
+    objective[ind + 1] = -hyper.LAMBDA;
+    objective[ind + 2] = hyper.LAMBDA;
+    objective[ind + 3] = hyper.LAMBDA;
   }
+
   if (flushbl) {
     objective[N_area_max - 1] = 1. * mydesign.Nets.size();
     objective[N_area_max - 2] = 1. * mydesign.Nets.size();
@@ -1646,27 +1645,104 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       }
     }
 
-    auto itpinloc = mydesign.pin_location.find(i);
-    if (itpinloc != mydesign.pin_location.end()) {
-      auto& pinbox = itpinloc->second;
-      rowindofcol[ind].push_back(rhs.size());
-      constrvalues[ind].push_back(1);
-      sens.push_back('L');
-      rhs.push_back(pinbox.LL.x);
-      rowindofcol[ind + 1].push_back(rhs.size());
-      constrvalues[ind + 1].push_back(1);
-      sens.push_back('L');
-      rhs.push_back(pinbox.LL.y);
-      rowindofcol[ind + 2].push_back(rhs.size());
-      constrvalues[ind + 2].push_back(1);
-      sens.push_back('G');
-      rhs.push_back(pinbox.UR.x);
-      rowindofcol[ind + 3].push_back(rhs.size());
-      constrvalues[ind + 3].push_back(1);
-      sens.push_back('G');
-      rhs.push_back(pinbox.UR.y);
-      rowtype.push_back('T');
+  }
+  int cntpl{0};
+  for (auto& it : mydesign.pin_location) {
+    int indnet = it.first * 4 + N_block_vars_max;
+    int indpin = cntpl * 4 + N_pin_loc_min;
+    ++cntpl;
+    //if (mydesign.Nets[it.first].connected.size() < 2) continue;
+    //int cnt{0};
+    //for (unsigned int j = 0; j < mydesign.Nets[it.first].connected.size(); j++) {
+    //  if (mydesign.Nets[it.first].connected[j].type == placerDB::Block) {
+    //    ++cnt;
+    //  }
+    //}
+    //if (cnt <2) continue;
+    auto pincenter = it.second.center();
+    for (unsigned int j = 0; j < mydesign.Nets[it.first].connected.size(); j++) {
+      if (mydesign.Nets[it.first].connected[j].type == placerDB::Block) {
+        const int block_id = mydesign.Nets[it.first].connected[j].iter2;
+        const int pin_id = mydesign.Nets[it.first].connected[j].iter;
+        auto it = pin_idx_map.find(std::make_pair(block_id, pin_id));
+        if (it == pin_idx_map.end()) continue;
+        int llx = std::get<0>(it->second),     lly = std::get<0>(it->second) + 1;
+        int urx = std::get<0>(it->second) + 2, ury = std::get<0>(it->second) + 3;
+        {
+          rowindofcol[block_id * 6].push_back(rhs.size());
+          rowindofcol[llx].push_back(rhs.size());
+          rowindofcol[indpin].push_back(rhs.size());
+          rowindofcol[indpin + 1].push_back(rhs.size());
+          constrvalues[block_id * 6].push_back(1);
+          constrvalues[llx].push_back(1);
+          constrvalues[indpin].push_back(1);
+          constrvalues[indpin + 1].push_back(-1);
+          if (std::get<1>(it->second) != INT_MIN) {
+            rowindofcol[block_id * 6 + 2].push_back(rhs.size());
+            constrvalues[block_id * 6 + 2].push_back(std::get<1>(it->second));
+          } else {
+            rowindofcol[std::get<0>(it->second) + 6].push_back(rhs.size());
+            constrvalues[std::get<0>(it->second) + 6].push_back(1);
+          }
+          sens.push_back('E');
+          rhs.push_back(pincenter.x);
+          rowtype.push_back('T');
+        }
+        {
+          rowindofcol[block_id * 6 + 1].push_back(rhs.size());
+          rowindofcol[lly].push_back(rhs.size());
+          rowindofcol[indpin + 2].push_back(rhs.size());
+          rowindofcol[indpin + 3].push_back(rhs.size());
+          constrvalues[block_id * 6 + 1].push_back(1);
+          constrvalues[lly].push_back(1);
+          constrvalues[indpin + 2].push_back(1);
+          constrvalues[indpin + 3].push_back(-1);
+          if (std::get<2>(it->second) != INT_MIN) {
+            rowindofcol[block_id * 6 + 3].push_back(rhs.size());
+            constrvalues[block_id * 6 + 3].push_back(std::get<2>(it->second));
+          } else {
+            rowindofcol[std::get<0>(it->second) + 7].push_back(rhs.size());
+            constrvalues[std::get<0>(it->second) + 7].push_back(1);
+          }
+          sens.push_back('E');
+          rhs.push_back(pincenter.y);
+          rowtype.push_back('T');
+        }
+        break;
+      }
     }
+    /*// abs value of |pin.center.x - net.hpwl.center.x|
+    rowindofcol[indpin].push_back(rhs.size());
+    rowindofcol[indpin + 1].push_back(rhs.size());
+    rowindofcol[indnet].push_back(rhs.size());
+    rowindofcol[indnet + 2].push_back(rhs.size());
+    constrvalues[indpin].push_back(1);
+    constrvalues[indpin + 1].push_back(-1);
+    constrvalues[indnet].push_back(0.5);
+    constrvalues[indnet + 2].push_back(0.5);
+    sens.push_back('E');
+    rhs.push_back(pincenter.x);
+    rowtype.push_back('T');
+
+    // abs value of |pin.center.y - net.hpwl.center.y|
+    rowindofcol[indpin + 2].push_back(rhs.size());
+    rowindofcol[indpin + 3].push_back(rhs.size());
+    rowindofcol[indnet + 1].push_back(rhs.size());
+    rowindofcol[indnet + 3].push_back(rhs.size());
+    constrvalues[indpin + 2].push_back(1);
+    constrvalues[indpin + 3].push_back(-1);
+    constrvalues[indnet + 1].push_back(0.5);
+    constrvalues[indnet + 3].push_back(0.5);
+    sens.push_back('E');
+    rhs.push_back(pincenter.y);
+    rowtype.push_back('T');*/
+
+    objective[indpin]     = 1e4; objective[indpin + 1] = 1e4;
+    objective[indpin + 2] = 1e4; objective[indpin + 3] = 1e4;
+    collb[indpin]     = 0; colub[indpin]     = maxhierwidth; 
+    collb[indpin + 1] = 0; colub[indpin + 1] = maxhierheight;
+    collb[indpin + 2] = 0; colub[indpin + 2] = maxhierwidth; 
+    collb[indpin + 3] = 0; colub[indpin + 3] = maxhierheight;
   }
   double ydimsaved{0.};
   for (unsigned iterilp = 0; iterilp < numsol; ++iterilp) {
@@ -1772,6 +1848,15 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
         namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
       }
+      int cntpl{0};
+      for (auto& it : mydesign.pin_location) {
+        int ind = cntpl * 4 + N_pin_loc_min;
+        namesvec[ind]     = (mydesign.Nets[it.first].name + "_pin_x_p\0");
+        namesvec[ind + 1] = (mydesign.Nets[it.first].name + "_pin_x_n\0");
+        namesvec[ind + 2] = (mydesign.Nets[it.first].name + "_pin_y_p\0");
+        namesvec[ind + 3] = (mydesign.Nets[it.first].name + "_pin_y_n\0");
+        ++cntpl;
+      }
 
       for (auto& it : buf_indx_map) {
         namesvec[it.second] = (mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.second][0].name + "_buf\0");
@@ -1866,10 +1951,10 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
           }
         }
       }
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        Blocks[i].x -= minx;
-        Blocks[i].y -= miny;
-      }
+      //for (int i = 0; i < mydesign.Blocks.size(); i++) {
+      //  Blocks[i].x -= minx;
+      //  Blocks[i].y -= miny;
+      //}
       // calculate HPWL from ILP solution
       for (int i = 0; i < mydesign.Nets.size(); ++i) {
         int ind = int(N_block_vars_max + i * 4);
