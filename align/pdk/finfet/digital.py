@@ -11,7 +11,7 @@ class StandardCell(CanvasPDK):
     def generate(self, ports, netlist_parameters=None, layout_parameters=None, *args, **kwargs):
 
         ch = 7
-        cw = len(ports)-2
+        cw = len(ports)-1
         x1 = cw*self.pdk['Poly']['Pitch']
         y1 = ch*self.pdk['M2']['Pitch']
         bbox = [0, 0, x1, y1]
