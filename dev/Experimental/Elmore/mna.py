@@ -21,7 +21,7 @@ class MNA:
         self.xa = None
         self.g = []
 
-        self.C = [0]*self.n
+        self.C = defaultdict(int)
         self.D = defaultdict(int)
 
 
@@ -35,8 +35,11 @@ class MNA:
         self.f = sla.splu(self.a)
 
     def solve(self):
-        m = self.a.shape[0]
-        self.b = np.array(self.C + [0]*(m - self.n))
+        m = self.m
+        self.b = np.array([0]*m)
+        for k,v in self.C.items():
+            self.b[k] = v
+
         self.x = self.f.solve(self.b)
 
         self.d = np.array([0]*m)
@@ -77,7 +80,7 @@ class MNA:
     def add_r(self, i, j, r):
         assert i < self.n and j < self.n
 
-        m = self.a.shape[0]
+        m = self.m
         self.a.resize((m+1, m+1))
 
         if i >= 0:
@@ -90,7 +93,6 @@ class MNA:
         self.a[m, m] = -r
 
     def add_c(self, i, c):
-        assert 0 <= i < self.n
         self.C[i] += c
 
     def add_d(self, i, d):
