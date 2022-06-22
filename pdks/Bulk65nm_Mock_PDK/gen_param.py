@@ -186,10 +186,7 @@ def gen_param(subckt, primitives, pdk_dir):
         device_name = next(iter(mvalues))
 
         for key in mvalues:
-            assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}"
-            assert int(
-                float(mvalues[key]["W"])*1E+9) % design_config["Fin_pitch"] == 0, \
-                f"Width of device {key} {int(float(mvalues[key]['W'])*1E+9)} in {block_name} should be multiple of fin pitch:{design_config['Fin_pitch']}"
+            assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}" 
             width = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
         name_arg = 'W'+str(width)
 

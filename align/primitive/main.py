@@ -46,7 +46,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                 height = gen_const.parameters["height"]
             if "exact_patterns" in gen_const.parameters.keys():
                 exact_patterns = gen_const.parameters["exact_patterns"]
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_parameters=parameters, primitive_constraints=primitive.constraints)
 
     # Default pattern values
     if not input_pattern:
