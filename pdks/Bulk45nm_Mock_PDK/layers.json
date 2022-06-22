@@ -8,11 +8,11 @@
             "RVT"
         ],
         "top_signal_routing_layer": "M5",
-        "bottom_signal_routing_layer": "M1",
+        "bottom_signal_routing_layer": "M2",
         "top_power_grid_layer": "M6",
         "bottom_power_grid_layer": "M5",
         "top_power_routing_layer": "M6",
-        "bottom_power_routing_layer": "M1",
+        "bottom_power_routing_layer": "M2",
         "top_clock_routing_layer": "M9",
         "bottom_clock_routing_layer": "M2",
         "top_port_routing_layer": "M9",
