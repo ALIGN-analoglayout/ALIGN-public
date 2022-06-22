@@ -14,6 +14,13 @@ def test_dig22inv():
     export_to_viewer("dig22inv", data)
 
 
+def test_dig22nor():
+    name = "dig22inv"
+    primitive_generator = get_generator(name, PDK_DIR)
+    data = primitive_generator().generate(ports=['A', 'B', 'O', 'VCCX', 'VSSX'])
+    export_to_viewer("dig22nor", data)
+
+
 def test_dig_primitive():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\

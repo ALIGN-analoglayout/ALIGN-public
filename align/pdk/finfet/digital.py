@@ -10,12 +10,9 @@ class StandardCell(CanvasPDK):
 
     def generate(self, ports, netlist_parameters=None, layout_parameters=None, *args, **kwargs):
 
-        assert len(ports) == 4
-
         ch = 7
-        cw = 3
-
-        x1 = (cw+1)*self.pdk['Poly']['Pitch']
+        cw = len(ports)-2
+        x1 = cw*self.pdk['Poly']['Pitch']
         y1 = ch*self.pdk['M2']['Pitch']
         bbox = [0, 0, x1, y1]
         t = {'layer': 'Boundary', 'netName': None, 'rect': bbox, 'netType': 'drawing'}
@@ -24,15 +21,15 @@ class StandardCell(CanvasPDK):
 
         b_idx = (2, -1)
         e_idx = (5, 1)
-        self.addWire(self.m1o, 'A', 1, b_idx, e_idx, netType="pin")
-        self.addWire(self.m1o, 'O', 2, b_idx, e_idx, netType="pin")
+        for i in range(len(ports)-2):
+            p = ports[i]
+            self.addWire(self.m1o, p, i, b_idx, e_idx, netType="pin")
 
-        b_idx = (0, -1)
-        e_idx = (cw, 1)
+        b_idx = (-1, 1)
+        e_idx = (cw-1, 3)
         self.addWire(self.m2o, 'VCCX', ch, b_idx, e_idx, netType="pin")
         self.addWire(self.m2o, 'VSSX', 0,  b_idx, e_idx, netType="pin")
-
-        for i in range(4):
+        for i in range(len(ports)-2):
             self.addWire(self.m1o, None, i, (6, -1), (7, 1), netType='blockage')
             self.addWire(self.m1o, None, i, (0, -1), (1, 1), netType='blockage')
 

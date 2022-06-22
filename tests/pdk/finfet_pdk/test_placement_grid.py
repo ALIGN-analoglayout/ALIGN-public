@@ -11,7 +11,8 @@ from align.schema.constraint import OffsetsScalings, PlaceOnGrid
 monkeypatch.setattr on MOSGenerator does not work probably due to reloading the module in get_generator
 """
 
-CLEANUP = True
+CLEANUP = False if os.getenv("CLEANUP", None) else True
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 
 @pytest.fixture
@@ -199,3 +200,68 @@ def test_cs_on_grid_v(place_on_grid_v_half):
     constraints = []
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP)
+
+
+@pytest.mark.skip(reason="This test is too slow. For a future PR.")
+def test_one_to_four():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o vccx vssx
+    .ends
+    .subckt {name} vi vo vccx vssx
+    xi0 vi vo vccx vssx dig22inv
+    xi1 vi vo vccx vssx dig22inv
+    xi2 vi vo vccx vssx dig22inv
+    xi3 vi vo vccx vssx dig22inv
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "auto_constraint": False,
+            "propagate": True,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": True,
+            "remove_dummy_hierarchies": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, n=1)
+
+
+@pytest.mark.skip(reason="This test is too slow. For a future PR.")
+def test_one_to_four_missing_power():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o vcc vssx
+    .ends
+    .subckt {name} vi vo vcccx vssx
+    xi0 vi vo vcccx vssx dig22inv
+    xi1 vi vo vcccx vssx dig22inv
+    xi2 vi vo vcccx vssx dig22inv
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "auto_constraint": False,
+            "propagate": True,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": True,
+            "remove_dummy_hierarchies": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level="INFO", n=1)
