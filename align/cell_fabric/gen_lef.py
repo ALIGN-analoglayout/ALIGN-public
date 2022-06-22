@@ -4,12 +4,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_layers, Scale_factor, m1pitch, m2pitch, mode='routing'):
+def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_layers, Scale_factor, m2pitch, m3pitch, mode='routing'):
 
     bbox = layout_d['bbox']
 
     assert (bbox[3]-bbox[1]) % m2pitch == 0, f"Cell height not a multiple of the grid {bbox}"
-    assert (bbox[2]-bbox[0]) % m1pitch == 0, f"Cell width not a multiple of the grid {bbox}"
+    assert (bbox[2]-bbox[0]) % m3pitch == 0, f"Cell width not a multiple of the grid {bbox}"
 
     fp.write("MACRO %s\n" % out_lef)
     fp.write("  UNITS \n")
@@ -52,7 +52,7 @@ def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_laye
             if obj['layer'] == 'M1' or obj['layer'] == 'M3':
                 cx = (obj['rect'][0]+obj['rect'][2])//2
                 # Pin does not need to be on grid when block will be placed at an offset
-                logger.debug(f"{out_lef} M1 pin is not on grid {cx} {cx%m1pitch}")
+                logger.debug(f"{out_lef} M1 pin is not on grid {cx} {cx%m3pitch}")
 
         fp.write("    END\n")
         fp.write("  END %s\n" % pin)
@@ -85,8 +85,8 @@ def json_lef(input_json, out_lef, bodyswitch, blockM, p, *, mode='routing'):
         j1 = json.load(fp1)
     Scale_factor = j1["ScaleFactor"]
 
-    m1pitch = p['M1']['Pitch']
     m2pitch = p['M2']['Pitch']
+    m3pitch = p['M3']['Pitch']
 
     with open(input_json, "rt") as fp:
         layout_d = json.load(fp)
@@ -97,4 +97,4 @@ def json_lef(input_json, out_lef, bodyswitch, blockM, p, *, mode='routing'):
         output_file_name = out_lef + '.lef'
         
     with (input_json.parents[0] / output_file_name).open("wt") as fp:
-        lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, exclude_layers=exclude_layers, Scale_factor=Scale_factor, m1pitch=m1pitch, m2pitch=m2pitch, mode=mode)
+        lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, exclude_layers=exclude_layers, Scale_factor=Scale_factor, m2pitch=m2pitch, m3pitch=m3pitch, mode=mode)
