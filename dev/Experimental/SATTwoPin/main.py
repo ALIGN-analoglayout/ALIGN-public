@@ -1,8 +1,9 @@
 from tally.tally import *
 
 class Grid:
-    def __init__(self, s, n, m, nets):
-        self.s, self.n, self.m, self.nets = s, n, m, nets
+    def __init__(self, n, m, nets):
+        self.s = Tally()
+        self.n, self.m, self.nets = n, m, nets
 
         # n = 4, m = 3
         #
@@ -25,9 +26,8 @@ class Grid:
         self.h_rasters = {}
         self.v_rasters = {}
         for net in nets:
-            self.h_rasters[net] = [ [ s.add_var() for j in range(m-1)] for i in range(n)]
-            self.v_rasters[net] = [ [ s.add_var() for j in range(m)] for i in range(n-1)]
-
+            self.h_rasters[net] = [ [ self.s.add_var() for j in range(m-1)] for i in range(n)]
+            self.v_rasters[net] = [ [ self.s.add_var() for j in range(m)] for i in range(n-1)]
 
         self.tallys = {}
 
@@ -122,52 +122,48 @@ class Grid:
                             continue
                         ch = ' '
                         if ii == 0 and jj == 0:
-                            lst = []
-                            lst.extend(h_edge_on(i, j))
-                            lst.extend(h_edge_on(i, j-1))
-                            lst.extend(v_edge_on(i, j))
-                            lst.extend(v_edge_on(i-1, j))
-
-                            lst_s = set(lst)
-                            assert len(lst_s) <= 1
-
-                            if len(lst_s) == 1:
-                                ch = lst[0]
+                            s = set()
+                            s.update(h_edge_on(i, j))
+                            s.update(h_edge_on(i, j-1))
+                            s.update(v_edge_on(i, j))
+                            s.update(v_edge_on(i-1, j))
+                            assert len(s) <= 1
+                            if len(s) == 1:
+                                ch = list(s)[0]
 
                         elif ii == 0 and jj > 0:
-                            lst = h_edge_on(i, j)
-                            lst_s = set(lst)
-                            assert len(lst_s) <= 1
-                            if len(lst_s):
-                                ch = lst[0]
+                            s = set()
+                            s.update(h_edge_on(i, j))
+                            assert len(s) <= 1
+                            if len(s) == 1:
+                                ch = list(s)[0]
 
                         elif ii > 0 and jj == 0:
-                            lst = v_edge_on(i, j)
-                            lst_s = set(lst)
-                            assert len(lst_s) <= 1
-                            if len(lst_s):
-                                ch = lst[0]
+                            s = set()
+                            s.update(v_edge_on(i, j))
+                            assert len(s) <= 1
+                            if len(s) == 1:
+                                ch = list(s)[0]
 
                         print(ch, end='')
                 print('')
 
 def main(n, m, problem):
 
-    s = Tally()
-
-    g = Grid(s, n, m, [net for net, _, _ in problem])
+    g = Grid(n, m, [net for net, _, _ in problem])
 
     for net, src, tgt in problem:
         g.gen_route_constraints( net, src, tgt)
 
     g.gen_overlap_constraints()
 
-    s.solve()
+    g.s.solve()
 
-    assert s.state == 'SAT'
+    assert g.s.state == 'SAT'
 
+    print("="*(m*6-5))
     g.show()
-
+    print("="*(m*6-5))
 
 if __name__ == "__main__":
     main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))])
