@@ -437,7 +437,7 @@ class MOSGenerator(DefaultCanvas):
         M3_tracks_start = ceil(self.pdk['M1']['Pitch']/self.pdk['M3']['Pitch'])
 
         self.addRegion( self.nselect, None, -M3_tracks_start, 0, M3_tracks_end, y_cells* self.finsPerUnitCell)
-        if self.bodyswitch==1:self.addRegion( self.pselect, None, -M3_tracks_start, y_cells* self.finsPerUnitCell, -M3_tracks_end, y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
+        if self.bodyswitch==1:self.addRegion( self.pselect, None, -M3_tracks_start, y_cells* self.finsPerUnitCell, M3_tracks_end, y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
  
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
