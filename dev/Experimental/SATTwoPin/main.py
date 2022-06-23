@@ -97,48 +97,6 @@ class Grid:
                 self.s.emit_at_most_one([self.tallys[net][i][j][0] for net in self.nets])
 
 
-    def show_net(self, net):
-        def h_edge_on( i, j):
-            return 0 <= i < self.n and 0 <= j < self.m-1 and self.s.h[self.h_rasters[net][i][j]]
-
-        def v_edge_on( i, j):
-            return 0 <= i < self.n-1 and 0 <= j < self.m and self.s.h[self.v_rasters[net][i][j]]
-
-        for i in range(self.n):
-            for ii in range(4):
-                if i == self.n-1 and ii > 0:
-                    continue
-                for j in range(self.m):
-                    for jj in range(6):
-                        if j == self.m-1 and jj > 0:
-                            continue
-                        ch = ' '
-                        if ii == 0 and jj == 0:
-                            count = 0
-                            if h_edge_on(i, j):
-                                count += 1
-                            if h_edge_on(i, j-1):
-                                count += 1
-                            if v_edge_on(i, j):
-                                count += 1
-                            if v_edge_on(i-1, j):
-                                count += 1
-
-                            assert count in [0, 1, 2]
-
-
-                            if count > 0:
-                                ch = net # '+'
-                        elif ii == 0 and jj > 0:
-                            if h_edge_on(i, j):
-                                ch = net # '-'
-                        elif ii > 0 and jj == 0:
-                            if v_edge_on(i, j):
-                                ch = net # '|'
-
-                        print(ch, end='')
-                print('')
-
     def show(self):
         def h_edge_on( i, j):
             lst = []
@@ -209,20 +167,6 @@ def main(n, m, problem):
     assert s.state == 'SAT'
 
     g.show()
-
-    for net in g.nets:
-        for i in range(g.n):
-            for j in range(g.m):
-                vars =  g.tallys[net][i][j]
-
-                values = [g.s.h[v] for v in vars]
-
-                for x, y in zip(values[:-1], values[1:]):
-                    if not x and y:
-                        print('Bad:', net, i, j, vars, values)
-
-
-
 
 
 if __name__ == "__main__":
