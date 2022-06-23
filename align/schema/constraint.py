@@ -42,7 +42,7 @@ def validate_ports(cls, value):
     constraint = cls._validator_ctx()
     if constraint.parent and constraint.parent.parent:
         obj = constraint.parent.parent
-        # VerilogJson modules do not always have power pins due to removal hack.
+        # VerilogJson modules do not always have power pins due to power pin removal hack.
         # isinstance avoided due to circular import
         if hasattr(obj, "pins"):
             pins = obj.pins
