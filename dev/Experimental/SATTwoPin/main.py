@@ -92,29 +92,9 @@ class Grid:
 
 
     def gen_overlap_constraints(self):
-
         for i in range(self.n):
             for j in range(self.m):
-
-                all_nets = []
-
-                for net in self.nets:
-                    h_edges = []
-                    for jj in [j-1, j]:
-                        if 0 <= jj < self.m-1:
-                            h_edges.append(self.h_rasters[net][i][jj])
-                    v_edges = []
-                    for ii in [i-1, i]:
-                        if 0 <= ii < self.n-1:
-                            v_edges.append(self.v_rasters[net][ii][j])
-
-                    all_nets.append(self.s.add_var())
-                    self.s.emit_or(h_edges + v_edges, all_nets[-1])
-
-
-                self.s.emit_at_most_one(all_nets)
-
-
+                self.s.emit_at_most_one([self.tallys[net][i][j][0] for net in self.nets])
 
 
     def show_net(self, net):
@@ -240,19 +220,17 @@ def main(n, m, problem):
                 for x, y in zip(values[:-1], values[1:]):
                     if not x and y:
                         print('Bad:', net, i, j, vars, values)
-                        
-                    #assert x or not y, (net, i, j, vars, values)
 
 
 
 
 
 if __name__ == "__main__":
-    #main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))])
+    main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))])
 
     """
   01234567
---------
+ +--------
 0|  1  8  
 1|     5
 2|12 6  78
