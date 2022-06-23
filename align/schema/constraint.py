@@ -40,13 +40,14 @@ def validate_instances(cls, value):
 
 def validate_ports(cls, value):
     constraint = cls._validator_ctx()
-    obj = constraint.parent.parent
-    # VerilogJson modules do not always have power pins due to removal hack.
-    # isinstance avoided due to circular import
-    if hasattr(obj, "pins"):
-        pins = obj.pins
-        for v in value:
-            assert v in pins, f"Port {v} not found in subcircuit {obj.name.lower()}"
+    if constraint.parent and constraint.parent.parent:
+        obj = constraint.parent.parent
+        # VerilogJson modules do not always have power pins due to removal hack.
+        # isinstance avoided due to circular import
+        if hasattr(obj, "pins"):
+            pins = obj.pins
+            for v in value:
+                assert v in pins, f"Port {v} not found in subcircuit {obj.name.lower()}"
     return value
 
 
