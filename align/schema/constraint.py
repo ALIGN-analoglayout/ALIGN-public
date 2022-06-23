@@ -4,7 +4,6 @@ import itertools as plain_itertools
 import re
 import logging
 
-
 from . import types
 from .types import BaseModel, Union, Optional, Literal, List, set_context
 
@@ -25,8 +24,8 @@ def get_instances_from_hacked_dataclasses(constraint):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
-    names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')} #group block
-    names2 = {x.name for x in constraint.parent if hasattr(x, 'name')} #group_cap, alias
+    names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')}  # group block
+    names2 = {x.name for x in constraint.parent if hasattr(x, 'name')}  # group_cap, alias
     return set.union(instances, names1, names2)
 
 
@@ -37,6 +36,19 @@ def validate_instances(cls, value):
     for x in value:  # explicit loop to point out the not found instance
         assert x in instances or x.upper() in instances, f"Instance {x} not found in the circuit"
     return [x.upper() for x in value]
+
+
+def validate_ports(cls, value):
+    constraint = cls._validator_ctx()
+    if constraint.parent and constraint.parent.parent:
+        obj = constraint.parent.parent
+        # VerilogJson modules do not always have power pins due to power pin removal hack.
+        # isinstance avoided due to circular import
+        if hasattr(obj, "pins"):
+            pins = obj.pins
+            for v in value:
+                assert v in pins, f"Port {v} not found in subcircuit {obj.name.lower()}"
+    return value
 
 
 def upper_case(cls, value):
@@ -520,7 +532,9 @@ class GroupBlocks(HardConstraint):
             "template_name": "DP1"
         }
 
-    Note: If not provided a unique template name will be auto generated. Template_names are added with a post_script during the flow using a UUID based on all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
+    Note: If not provided a unique template name will be auto generated.
+    Template_names are added with a post_script during the flow using a UUID based on
+    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
     """
     instance_name: str
     instances: List[str]
@@ -532,7 +546,6 @@ class GroupBlocks(HardConstraint):
         assert value, 'Cannot be an empty string'
         assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
         return value.upper()
-
 
     def translate(self, solver):
         # Non-zero width / height
@@ -835,6 +848,7 @@ class PowerPorts(SoftConstraint):
     ports: List[str]
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+    _ports = types.validator('ports', allow_reuse=True)(validate_ports)
 
 
 class GroundPorts(SoftConstraint):
@@ -857,6 +871,7 @@ class GroundPorts(SoftConstraint):
     ports: List[str]
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+    _ports = types.validator('ports', allow_reuse=True)(validate_ports)
 
 
 class ClockPorts(SoftConstraint):
@@ -1337,7 +1352,8 @@ class ChargeFlow(SoftConstraint):
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
         return value
-    #TODO add pin validators
+
+    # TODO add pin validators
     @types.validator('pin_current', allow_reuse=True)
     def pairs_validator(cls, pin_current, values):
         instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
@@ -1345,6 +1361,7 @@ class ChargeFlow(SoftConstraint):
             assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
             assert len(current) == len(values['time']), 'Must contain at least one instance'
         return pin_current
+
 
 class MultiConnection(SoftConstraint):
     '''MultiConnection
@@ -1380,6 +1397,7 @@ class CustomizeRoute(BaseModel):
     max_layer: Optional[str]
     shield: bool = False
     match: bool = False
+
 
 class Route(SoftConstraint):
     min_layer: Optional[str]
