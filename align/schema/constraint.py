@@ -3,7 +3,7 @@ import more_itertools as itertools
 import itertools as plain_itertools
 import re
 import logging
-
+from .subcircuit import SubCircuit
 
 from . import types
 from .types import BaseModel, Union, Optional, Literal, List, set_context
@@ -41,9 +41,11 @@ def validate_instances(cls, value):
 
 def validate_ports(cls, value):
     constraint = cls._validator_ctx()
-    subckt = constraint.parent.parent
-    for v in value:
-        assert v in subckt.pins, f"Port {v} not found in subcircuit {constraint.parent.parent.name.lower()}"
+    obj = constraint.parent.parent
+    if isinstance(obj, SubCircuit):  # VerilogJson modules do not always have power pins due to removal hack.
+        pins = obj.pins
+        for v in value:
+            assert v in pins, f"Port {v} not found in subcircuit {constraint.parent.parent.name.lower()}"
     return value
 
 
