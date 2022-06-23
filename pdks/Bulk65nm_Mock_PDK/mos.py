@@ -130,20 +130,20 @@ class MOSGenerator(DefaultCanvas):
         stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
         offset_active_body = (self.lFin//2)*self.pdk['Fin']['Pitch']+self.unitCellHeight-self.pdk['Fin']['Pitch']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Active']['activebWidth'], offset= offset_active_body),
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.activeb_diff = self.addGen( Wire( 'activeb_diff', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Active']['activebWidth'], offset=offset_active_body),
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         self.pb_diff = self.addGen( Wire( 'pb_diff', 'Pb', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pb']['pbWidth'], offset= offset_active_body),
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset=0),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pb']['pbWidth'], offset= offset_active_body),
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset=0),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
 
@@ -336,16 +336,17 @@ class MOSGenerator(DefaultCanvas):
             y = yloc
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
+        body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
-        self._xpins[name]['B'].append(gate_x)
+        self._xpins[name]['B'].append(gate_x)        
         if self.shared_diff == 0:
-            self.addWire( self.activeb, None, y, (x,1), (x+1,-1))
-            self.addWire( self.pb, None, y, (x,1), (x+1,-1))
+            self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
+            self.addWire( self.pb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
         else:
-            self.addWire( self.activeb_diff, None, y, 0, self.gate*x_cells+1)
-            self.addWire( self.pb_diff, None, y, (x,1), (x+1,-1))
-        self.addWire( self.m1_updated, None, gate_x, ((y+1)*h+self.lFin//4-1, -1), ((y+1)*h+self.lFin//4+1, 1))
-        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + self.lFin//4)
+            self.addWire( self.activeb_diff, None, (y+1)*h + body_v0_track, 0, self.gate*x_cells+1)
+            self.addWire( self.pb_diff, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
+        self.addWire( self.m1_updated, None, gate_x, ((y+1)*h + body_v0_track-1, -1), ((y+1)*h + body_v0_track+1, 1))
+        self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + body_v0_track)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
