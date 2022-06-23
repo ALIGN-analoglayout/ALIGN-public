@@ -57,7 +57,7 @@ class MOSGenerator(DefaultCanvas):
                                      clg=UncoloredCenterLineGrid( pitch= self.pdk['Poly']['Pitch'], width= self.pdk['Poly']['Width'], offset= self.pdk['Poly']['Offset']),
                                      spg=EnclosureGrid( pitch=self.unitCellHeight, offset=self.pdk['M2']['Offset'], stoppoint=stoppoint, check=True)))
 
-       self.m1_updated = self.addGen( Wire( 'm1_updated ', 'M1', 'v',
+        self.m1_updated = self.addGen( Wire( 'm1_updated ', 'M1', 'v',
                                      clg=UncoloredCenterLineGrid( pitch=self.pdk['M1']['Pitch'], width=self.pdk['M1']['Width']),
                                      spg=EnclosureGrid( pitch=self.pdk['M2']['Pitch'], stoppoint=self.pdk['V1']['VencA_L'] +self.pdk['M2']['Width']//2, check=False)))
 
