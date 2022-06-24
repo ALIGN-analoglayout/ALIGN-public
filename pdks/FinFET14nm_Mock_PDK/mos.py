@@ -2,7 +2,7 @@ from align.primitive.default.canvas import DefaultCanvas
 from align.cell_fabric.generators import Region, Wire, Via
 from align.cell_fabric.grid import EnclosureGrid, UncoloredCenterLineGrid, SingleGrid, CenteredGrid, CenterLineGrid
 import collections
-from math import floor
+from math import floor, ceil
 import string
 import logging
 logger = logging.getLogger(__name__)
