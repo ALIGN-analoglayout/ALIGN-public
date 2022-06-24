@@ -40,7 +40,8 @@ class MOSGenerator(DefaultCanvas):
                         self.exact_patterns = const.parameters.get('exact_patterns')
                         self.exact_patterns = self.exact_patterns[0]
                     if const.parameters.get('height'):
-                        height = const.parameters.get('height') 
+                        height = const.parameters.get('height')
+
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
         assert (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])%self.pdk['M2']['Pitch']==0
@@ -414,6 +415,13 @@ class MOSGenerator(DefaultCanvas):
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x_left <= x < x_right else 1], False,  **parameters)
                     if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x_left <= x < x_right else 1])
+                elif pattern == 4:  # non common centroid
+                    # TODO: Evaluate if this is truly interdigitated. Currently:
+                    # A A A B B B
+                    # A A A B B B
+                    # A A A B B B
+                    self._addMOS(x, y, x_cells, vt_type, names[0 if x < (x_cells//2) else 1], False, **parameters)
+                    if self.bodyswitch == 1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x < (x_cells//2) else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
