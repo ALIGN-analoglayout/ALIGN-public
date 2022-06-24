@@ -17,6 +17,7 @@ class MOSGenerator(DefaultCanvas):
         exact_width = None
         exact_length = None
         length_diff = 0
+        dynamic_space = 0
         if self.primitive_parameters:
             device_names = [*self.primitive_parameters.keys()]
             exact_width = self.primitive_parameters[device_names[0]]['W']
@@ -24,8 +25,9 @@ class MOSGenerator(DefaultCanvas):
             exact_length = self.primitive_parameters[device_names[0]]['L'] 
             exact_length = round(float(exact_length)*1E9)  ### Length in nanometers
             length_diff = exact_length - self.pdk['Poly']['Width']
+            dynamic_space = 20 if length_diff >= 100 else 0 
             self.pdk['Poly']['Width'] = exact_length
-            self.pdk['Poly']['Pitch'] = self.pdk['Poly']['Pitch'] + length_diff
+            self.pdk['Poly']['Pitch'] = self.pdk['Poly']['Pitch'] + length_diff + dynamic_space
             self.pdk['Poly']['Offset'] = self.pdk['Poly']['Pitch']//2
             self.pdk['M1']['Pitch'] = self.pdk['Poly']['Pitch']
 
@@ -116,7 +118,7 @@ class MOSGenerator(DefaultCanvas):
 
         offset_active_h = self.gateDummy* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset']
         pitch_active_h = (self.gatesPerUnitCell-1)*self.pdk['Poly']['Pitch']
-        stoppoint = -self.pdk['Active']['poly_enclosure'] - length_diff//2
+        stoppoint = -self.pdk['Active']['poly_enclosure'] - length_diff//2 - dynamic_space//2
         self.active_diff = self.addGen( Wire( 'active_diff', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
                                          spg=EnclosureGrid( pitch=pitch_active_h, offset=offset_active_h, stoppoint=stoppoint, check=True)))
