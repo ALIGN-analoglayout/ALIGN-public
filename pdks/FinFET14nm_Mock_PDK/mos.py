@@ -3,6 +3,7 @@ from align.cell_fabric.generators import Region, Wire, Via
 from align.cell_fabric.grid import EnclosureGrid, UncoloredCenterLineGrid, SingleGrid, CenteredGrid, CenterLineGrid
 import collections
 from math import floor
+import string
 import logging
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,8 @@ logger = logging.getLogger(__name__)
 class MOSGenerator(DefaultCanvas):
 
     def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
+        self.primitive_constraints = kwargs.get('primitive_constraints', [])
+
         super().__init__(pdk)
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
@@ -374,11 +377,28 @@ class MOSGenerator(DefaultCanvas):
                     x_left = x_cells//2 - (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
                     x_right = x_cells//2 + (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
          ##########################
+        exact_patterns = None
+        for const in self.primitive_constraints:
+            if const.constraint == 'generator':
+                if const.parameters is not None:
+                    if const.parameters.get('exact_patterns'): 
+                        exact_patterns = const.parameters.get('exact_patterns')
+                        exact_patterns = exact_patterns[0]
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
-
+           
             for x in range(x_cells):
-                if pattern == 0: # None (single transistor)
+                if exact_patterns: # Exact pattern from user
+                    row_pattern = exact_patterns[y][x]
+                    names_mapping = list(string.ascii_uppercase)
+                    names_updated = {}
+                    for i in range(len(names)): 
+                        names_updated[names_mapping[i]] = names[i]
+                        names_updated[names_mapping[i].lower()] = names[i]
+                    reflect = row_pattern.islower()
+                    self._addMOS(x, y, x_cells, vt_type, names_updated[row_pattern],  False, **parameters)
+                    if self.bodyswitch==1:self._addBodyContact(x, y, x_cells, y_cells - 1, names_updated[row_pattern])
+                elif pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, x_cells, vt_type, names[0], False, **parameters)

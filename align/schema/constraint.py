@@ -943,8 +943,10 @@ class Generator(SoftConstraint):
         name(str): name of genrator e.g., mos/cap/res/ring
         parameters(dict): {
                             pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncc)
-                            parallel_wires (dict): {net_name:2}
+                            shared_diff (bool): true/false
                             body (bool): true/ false
+                            height (int): max height/nfin of a unit cell (including 16 dummy fins)
+                            parallel_wires: {"net1":2, "net2":2} #to be implemented
                             }
 
     Example: ::

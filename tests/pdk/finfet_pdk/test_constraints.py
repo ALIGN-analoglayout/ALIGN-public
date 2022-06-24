@@ -3,6 +3,7 @@ import json
 import shutil
 from .utils import get_test_id, build_example, run_example
 from . import circuits
+import textwrap
 
 CLEANUP = False if os.getenv("CLEANUP", None) else True
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -48,3 +49,38 @@ def test_cmp_reuse():
         shutil.rmtree(run_dir_1)
         shutil.rmtree(ckt_dir_2)
         shutil.rmtree(run_dir_2)
+
+
+def test_same_template_group_block():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} vin vip von vop nbs vccx vssx
+        mp0 von von vccx vccx p w=180e-9 nf=4 m=2
+        mp1 vop von vccx vccx p w=180e-9 nf=4 m=2
+        mn0 von vip vmp  vssx nlvt w=180e-9 nf=4 m=2
+        mn1 vmp vip vcm  vssx n    w=180e-9 nf=4 m=2
+        mn2 vop vin vmn  vssx nlvt w=180e-9 nf=4 m=2
+        mn3 vmn vin vcm  vssx n    w=180e-9 nf=4 m=2
+        mn4 vcm nbs vssx vssx n    w=180e-9 nf=4 m=2
+        .ends {name}
+        """)
+    constraints = [
+        {"constraint": "GroupBlocks", "instances": ["mn0", "mn1"], "instance_name": "xdiff_left"},
+        {"constraint": "GroupBlocks", "instances": ["mn2", "mn3"], "instance_name": "xdiff_right"},
+        {"constraint": "SameTemplate", "instances": ["xdiff_left", "xdiff_right"]}
+        ]
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL, additional_args=["--flow_stop", "1_topology"])
+
+    name = name.upper()
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        modules = {module['name']: module for module in verilog_json['modules']}
+        instances = modules[name]["instances"]
+        atn_l = [inst["abstract_template_name"] for inst in instances if inst["instance_name"] == "XDIFF_LEFT"][0]
+        atn_r = [inst["abstract_template_name"] for inst in instances if inst["instance_name"] == "XDIFF_RIGHT"][0]
+        assert atn_l == atn_r, f"Template names do not match: {atn_l=} vs {atn_r=}"
+
+    if CLEANUP:
+        shutil.rmtree(ckt_dir)
+        shutil.rmtree(run_dir)
