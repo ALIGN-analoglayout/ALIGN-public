@@ -25,7 +25,7 @@ class MOSGenerator(DefaultCanvas):
             exact_length = self.primitive_parameters[device_names[0]]['L'] 
             exact_length = round(float(exact_length)*1E9)  ### Length in nanometers
             length_diff = exact_length - self.pdk['Poly']['Width']
-            dynamic_space = 20 if length_diff >= 100 else 0 
+            dynamic_space = 20 if length_diff >= 100 else 0 ### This changes poly pitch based on Lg dependent DRCs 
             self.pdk['Poly']['Width'] = exact_length
             self.pdk['Poly']['Pitch'] = self.pdk['Poly']['Pitch'] + length_diff + dynamic_space
             self.pdk['Poly']['Offset'] = self.pdk['Poly']['Pitch']//2
@@ -134,19 +134,18 @@ class MOSGenerator(DefaultCanvas):
         self.HVT_diff = self.addGen( Wire( 'HVT_diff', 'Hvt', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
                                          spg=EnclosureGrid( pitch=pitch_active_h, offset=offset_active_h, stoppoint=stoppoint, check=True)))
+
+        self.activeb_diff = self.addGen( Wire( 'activeb_diff', 'Active', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
+                                         spg=EnclosureGrid( pitch=pitch_active_h, offset=offset_active_h, stoppoint=stoppoint, check=True)))
+        self.pb_diff = self.addGen( Wire( 'pb_diff', 'Pb', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset= 0),
+                                         spg=EnclosureGrid( pitch=pitch_active_h, offset=offset_active_h, stoppoint=stoppoint, check=True)))
          
         stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset= 0),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
-         
-        self.activeb_diff = self.addGen( Wire( 'activeb_diff', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
-
-        self.pb_diff = self.addGen( Wire( 'pb_diff', 'Pb', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset= 0),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))) 
 
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
@@ -349,8 +348,8 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
             self.addWire( self.pb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
         else:
-            self.addWire( self.activeb_diff, None, (y+1)*h + body_v0_track, 0, self.gate*x_cells+1)
-            self.addWire( self.pb_diff, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
+            self.addWire( self.activeb_diff, None, (y+1)*h + body_v0_track, (self.gate*x,1), (self.gate*x+1,-1))
+            self.addWire( self.pb_diff, None, (y+1)*h + body_v0_track, (self.gate*x,1), (self.gate*x+1,-1))
         self.addWire( self.m1_updated, None, gate_x, ((y+1)*h + body_v0_track-1, -1), ((y+1)*h + body_v0_track+1, 1))
         self.addVia( self.va, f'{fullname}:B', gate_x, (y+1)*h + body_v0_track)
 
