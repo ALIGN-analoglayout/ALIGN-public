@@ -25,7 +25,10 @@ class MOSGenerator(DefaultCanvas):
             exact_width = int(float(exact_width)*1E9)  ### Width in nanometers
             exact_length = self.primitive_parameters[device_names[0]]['L'] 
             exact_length = round(float(exact_length)*1E9)  ### Length in nanometers
+            assert exact_length % 2 ==0, f"Transistor gate length {exact_length} must be even"
+            assert exact_width % 2 ==0, f"Transistor width {exact_width} must be even"
             length_diff = exact_length - self.pdk['Poly']['Width']
+            assert length_diff >= 0, f"Transistor gate length {exact_length} must be greater than the minimum gate length {self.pdk['Poly']['Width']}"
             dynamic_space = 20 if length_diff >= 100 else 0 ### This changes poly pitch based on Lg dependent DRCs
             self.pdk['Poly']['Width'] = exact_length
             self.pdk['Poly']['Pitch'] = self.pdk['Poly']['Pitch'] + length_diff + dynamic_space
