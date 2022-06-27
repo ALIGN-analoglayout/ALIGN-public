@@ -19,7 +19,8 @@ def test_cmp_vanilla():
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]}
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "ConfigureCompiler", "SameTemplate": False}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL)
@@ -303,15 +304,20 @@ def test_charge_pump_switch():
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '1:Topology', '--router_mode', 'bottom_up'])
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'bottom_up'])
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
         same_template = [c for c in module["constraints"] if c["constraint"] == "same_template"]
-        assert len(same_template) == 1, "Duplicate same_template constraints"
+        assert len(same_template) == 2, "Duplicate same_template constraints"
         align_in_order = [c for c in module["constraints"] if c["constraint"] == "align_in_order"]
         assert len(align_in_order) == 1, "align_in_order not found"
+
+    with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
+        charge_pump_const = json.load(fp)
+        same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
+        assert len(same_template) == 1, "Duplicate same_template constraints"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -332,7 +338,7 @@ def test_charge_pump_switch_small():
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '1:Topology', '--router_mode', 'bottom_up'])
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '1_Topology', '--router_mode', 'bottom_up'])
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
