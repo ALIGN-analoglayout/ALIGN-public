@@ -19,8 +19,7 @@ def test_cmp_vanilla():
     netlist = circuits.comparator(name)
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "ConfigureCompiler", "same_template": False}
+        {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL)
