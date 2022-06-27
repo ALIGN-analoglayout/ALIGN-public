@@ -20,7 +20,7 @@ def test_cmp_vanilla():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "ConfigureCompiler", "SameTemplate": False}
+        {"constraint": "ConfigureCompiler", "same_template": False}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL)
