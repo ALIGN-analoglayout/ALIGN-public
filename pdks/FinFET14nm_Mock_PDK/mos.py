@@ -2,7 +2,7 @@ from align.primitive.default.canvas import DefaultCanvas
 from align.cell_fabric.generators import Region, Wire, Via
 from align.cell_fabric.grid import EnclosureGrid, UncoloredCenterLineGrid, SingleGrid, CenteredGrid, CenterLineGrid
 import collections
-from math import floor
+from math import floor, ceil
 import string
 import logging
 logger = logging.getLogger(__name__)
@@ -12,8 +12,19 @@ class MOSGenerator(DefaultCanvas):
 
     def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
         self.primitive_constraints = kwargs.get('primitive_constraints', [])
-
         super().__init__(pdk)
+
+        self.exact_patterns = None
+        height = max(height, 4*ceil((fin+16)/4))
+        for const in self.primitive_constraints:
+            if const.constraint == 'generator':
+                if const.parameters is not None:
+                    if const.parameters.get('exact_patterns'): 
+                        self.exact_patterns = const.parameters.get('exact_patterns')
+                        self.exact_patterns = self.exact_patterns[0]
+                    if const.parameters.get('height'):
+                        height = const.parameters.get('height')
+
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
         assert (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])%self.pdk['M2']['Pitch']==0
@@ -150,9 +161,10 @@ class MOSGenerator(DefaultCanvas):
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
         v0pitch = self.pdk['V0']['WidthY'] + self.pdk['V0']['SpaceY']
         v0Offset = activeOffset - activeWidth//2 + self.pdk['V0']['VencA_L'] + self.pdk['V0']['WidthY']//2
-        v0_number = floor((activeWidth-2*self.pdk['V0']['VencA_L']-self.pdk['V0']['WidthY'])/v0pitch + 1)
+        v0_number = floor((activeWidth-2*self.pdk['V0']['VencA_L']-self.pdk['V0']['WidthY'])/v0pitch)
+        v0_number = max(v0_number, 1)
         assert v0_number > 0, "V0 can not be placed in the active region"
-        v0_number = v0_number if v0_number < 4 else v0_number - 1 ## To avoid voilation of V0 enclosure by M1 DRC
+        #v0_number = v0_number if v0_number < 4 else v0_number - 1 ## To avoid voilation of V0 enclosure by M1 DRC
         for i in range(v0_number):
             self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
@@ -376,20 +388,14 @@ class MOSGenerator(DefaultCanvas):
                 else:
                     x_left = x_cells//2 - (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
                     x_right = x_cells//2 + (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
-         ##########################
-        exact_patterns = None
-        for const in self.primitive_constraints:
-            if const.constraint == 'generator':
-                if const.parameters is not None:
-                    if const.parameters.get('exact_patterns'): 
-                        exact_patterns = const.parameters.get('exact_patterns')
-                        exact_patterns = exact_patterns[0]
+         ########################## 
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
            
             for x in range(x_cells):
-                if exact_patterns: # Exact pattern from user
-                    row_pattern = exact_patterns[y][x]
+
+                if self.exact_patterns: # Exact pattern from user
+                    row_pattern = self.exact_patterns[y][x]
                     names_mapping = list(string.ascii_uppercase)
                     names_updated = {}
                     for i in range(len(names)): 
@@ -429,8 +435,7 @@ class MOSGenerator(DefaultCanvas):
                     # A A A B B B
                     # A A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if x < (x_cells//2) else 1], False, **parameters)
-                    if self.bodyswitch == 1:
-                        self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x < (x_cells//2) else 1])
+                    if self.bodyswitch == 1:self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if x < (x_cells//2) else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, y_cells, connections)
