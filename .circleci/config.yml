@@ -25,7 +25,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4 # number of vCPUs (2)
+      MAX_JOBS: 2 # number of vCPUs (2)
 
     steps:
       - run:
@@ -95,7 +95,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4
+      MAX_JOBS: 2
       BUILD_PLATFORM: manylinux_2_24_x86_64
 
     steps:
@@ -155,7 +155,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4
+      MAX_JOBS: 2
 
     steps:
       - run:

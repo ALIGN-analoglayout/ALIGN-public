@@ -3,7 +3,6 @@
     "ScaleFactor": 1,
     "design_info": {
         "vt_type": [
-            "SLVT",
             "HVT",
             "LVT",
             "RVT"
@@ -21,7 +20,7 @@
         "power_rail_frequency": 2,
         "Hspace": 0,
         "Vspace": 0,
-	"Fin_pitch": 100,
+	"Fin_pitch": 70,
         "unit_size_mos": 12,
         "max_size_mos": 48,
         "unit_size_cap": 12,
@@ -36,12 +35,12 @@
                 "Draw": 0
             },
             "Direction": "V",
-            "Pitch": 260,
-            "Width": 60,
+            "Pitch": 180,
+            "Width": 40,
             "MinL": 500,
             "MaxL": null,
             "EndToEnd": 90,
-            "Offset": 130,
+            "Offset": 90,
             "UnitC": {
                 "L_3Sigma": 0.16,
                 "Mean": 0.2,
@@ -65,7 +64,7 @@
                 "Draw": 0
             },
             "Direction": "H",
-            "Pitch": 100,
+            "Pitch": 70,
             "Width": 14,
             "MinL": 100,
             "MaxL": null,
@@ -83,11 +82,11 @@
             },
             "Direction": "V",
             "Color": [],
-            "Pitch": 260,
-            "Width": 90,
-            "MinL": 500,
+            "Pitch": 180,
+            "Width": 70,
+            "MinL": 200,
             "MaxL": null,
-            "EndToEnd": 90,
+            "EndToEnd": 60,
             "Offset": 0,
             "UnitC": {
                 "L_3Sigma": 0.16,
@@ -115,12 +114,12 @@
                 null,
                 "M1"
             ],
-            "SpaceX": 106,
-            "SpaceY": 106,
-            "WidthX": 90,
-            "WidthY": 90,
-            "VencA_L": 50,
-            "VencA_H": 50,
+            "SpaceX": 80,
+            "SpaceY": 80,
+            "WidthX": 60,
+            "WidthY": 60,
+            "VencA_L": 20,
+            "VencA_H": 20,
             "VencP_L": 0,
             "VencP_H": 0,
             "R": {
@@ -140,11 +139,11 @@
             },
             "Direction": "H",
             "Color": [],
-            "Pitch": 200,
-            "Width": 100,
+            "Pitch": 140,
+            "Width": 70,
             "MinL": 400,
             "MaxL": null,
-            "EndToEnd": 100,
+            "EndToEnd": 60,
             "Offset": 0,
             "UnitC": {
                 "L_3Sigma": 0.16,
@@ -175,12 +174,12 @@
                 "M1",
                 "M2"
             ],
-            "SpaceX": 136,
-            "SpaceY": 136,
-            "WidthX": 90,
-            "WidthY": 90,
-            "VencA_L": 50,
-            "VencA_H": 50,
+            "SpaceX": 80,
+            "SpaceY": 80,
+            "WidthX": 60,
+            "WidthY": 60,
+            "VencA_L": 20,
+            "VencA_H": 20,
             "VencP_L": 0,
             "VencP_H": 0,
             "R": {
@@ -200,11 +199,11 @@
             },
             "Direction": "V",
             "Color": [],
-            "Pitch": 260,
-            "Width": 100,
+            "Pitch": 180,
+            "Width": 70,
             "MinL": 400,
             "MaxL": null,
-            "EndToEnd": 100,
+            "EndToEnd": 60,
             "Offset": 0,
             "UnitC": {
                 "L_3Sigma": 0.16,
@@ -232,12 +231,12 @@
                 "M2",
                 "M3"
             ],
-            "SpaceX": 136,
-            "SpaceY": 136,
-            "WidthX": 90,
-            "WidthY": 90,
-            "VencA_L": 50,
-            "VencA_H": 50,
+            "SpaceX": 80,
+            "SpaceY": 80,
+            "WidthX": 60,
+            "WidthY": 60,
+            "VencA_L": 20,
+            "VencA_H": 20,
             "VencP_L": 0,
             "VencP_H": 0,
             "R": {
@@ -604,7 +603,8 @@
 	    "active_enclosure": 42,
             "activebWidth": 168,
             "activebWidth_H": 180,
-	    "activePolyExTracks": 2
+	    "activePolyExTracks": 2,
+	    "poly_enclosure": 140
         },
         {
             "Layer": "Nselect",
@@ -663,7 +663,7 @@
             "GdsDatatype": {
                 "Draw": 0
             },
-            "PcWidth": 100,
+            "PcWidth": 80,
             "PcExt": 0
         },
         {
