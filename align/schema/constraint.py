@@ -352,8 +352,8 @@ class Enclose(HardConstraint):
 
 class Spread(HardConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along
-    `direction` if two instances overlap in other direction
+    Spread `instances` by forcing minimum spacing along `direction`
+    if a pair of instances overlap in the orthogonal direction
 
     Args:
         instances (list[str]): List of `instances`
@@ -375,7 +375,7 @@ class Spread(HardConstraint):
     '''
 
     instances: List[str]
-    direction: Optional[Literal['horizontal', 'vertical']]
+    direction: Literal['horizontal', 'vertical']
     distance: int  # in nm
 
     @types.validator('instances', allow_reuse=True)
@@ -385,22 +385,17 @@ class Spread(HardConstraint):
 
     def translate(self, solver):
 
-        def cc(b1, b2, c='x'):
-            d = 'y' if c == 'x' else 'x'
+        def cc(b1, b2, d='x'):
+            od = 'y' if d == 'x' else 'x'
             return solver.Implies(
-                solver.And(  # overlap orthogonal to c
-                    getattr(b1, f'ur{d}') > getattr(b2, f'll{d}'),
-                    getattr(b2, f'ur{d}') > getattr(b1, f'll{d}'),
+                solver.And(  # overlap in orthogonal direction od
+                    getattr(b1, f'ur{od}') > getattr(b2, f'll{od}'),
+                    getattr(b2, f'ur{od}') > getattr(b1, f'll{od}'),
                 ),
-                solver.Abs(  # distance in c coords
-                    (
-                        getattr(b1, f'll{c}')
-                        + getattr(b1, f'ur{c}')
-                    ) - (
-                        getattr(b2, f'll{c}')
-                        + getattr(b2, f'ur{c}')
-                    )
-                ) >= self.distance * 2
+                solver.And(  # distance between sidewalls in direction d
+                    solver.Abs(getattr(b1, f'll{d}') - getattr(b2, f'ur{d}')) >= self.distance,
+                    solver.Abs(getattr(b2, f'll{d}') - getattr(b1, f'ur{d}')) >= self.distance,
+                )
             )
 
         bvars = solver.iter_bbox_vars(self.instances)
@@ -410,10 +405,7 @@ class Spread(HardConstraint):
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                yield solver.Or(
-                    cc(b1, b2, 'x'),
-                    cc(b1, b2, 'y')
-                )
+                assert False, "Please speficy direction"
 
 
 class AssignBboxVariables(HardConstraint):
