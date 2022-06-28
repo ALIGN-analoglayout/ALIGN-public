@@ -2437,7 +2437,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    solverif.setTimeLimit(10);
+    solverif.setTimeLimit(10 * Blocks.size());
     solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), sens.data(), rhs.data());
@@ -3247,6 +3247,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
+    solverif.setTimeLimit(10 * Blocks.size());
     solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
