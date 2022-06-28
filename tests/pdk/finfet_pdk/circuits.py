@@ -348,7 +348,7 @@ def comparator_analog(name):
     nres0  vmid  hi    vssx vssx n stack=40 m=1 nf=1 w=360e-9
     mp_hi  hi    vssx  vccx vccx p m=1 nf=4 w=360e-9
     decap0 vssx vminus vssx vssx n m=24 nf=4 w=360e-9
-    decap1 vccx pbias  vccx vccx p m=18 nf=4 w=360e-9
+    decap1 vccx pbias  vccx vccx p m=24 nf=4 w=360e-9
     ptail vcm pbias vccx vccx p stack=4 m=48 nf=1 w=360e-9
     pinp vo1p vminus vcm vccx p stack=2 m=48 nf=1 w=180e-9
     pinn vo1n vplus  vcm vccx p stack=2 m=48 nf=1 w=180e-9
