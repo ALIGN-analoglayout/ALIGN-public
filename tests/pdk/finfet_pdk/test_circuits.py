@@ -458,7 +458,32 @@ def test_comparator_analog():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator_analog(name)
     constraints = [
-        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
+        {"constraint": "GroupBlocks", "instances": ["pinp", "pinn"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["nldl", "nldr"], "instance_name": "xcm"},
+        {"constraint": "GroupBlocks", "instances": ["invp1", "invp1"], "instance_name": "xinv0"},
+        {"constraint": "GroupBlocks", "instances": ["invp2", "invp2"], "instance_name": "xinv1"},
+        {"constraint": "DoNotIdentify", "instances": ["sw_pbias_en", "sw_pullup_enb", "sw_pulldn_en", "sw_pulldn_en1"]},
+        {"constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["decap0"],
+                ["mpbias", "ptail", "p2", "sw_pbias_en"],
+                ["xdp", "sw_pullup_enb"],
+                ["xcm", "n2", "sw_pulldn_en", "sw_pulldn_en1"],
+                ["decap1"],
+                ["mp_hi", "nres1", "nres0"],
+            ]},
+        {"constraint": "Floorplan",
+            "order": True,
+            "symmetrize": True,
+            "regions": [
+                ["decap0"],
+                ["ptail"],
+                ["xdp"],
+                ["xcm"],
+                ["decap1"]
+            ]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
