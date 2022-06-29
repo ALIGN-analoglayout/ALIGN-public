@@ -43,12 +43,13 @@ def check_shorts(pdk, cmdlist):
 
 def build_test(pdk, prim, *, n, X, Y):
     b = f"{prim}_n{n}_X{X}_Y{Y}"
-    check_shorts(pdk, ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}"])
+    cwd = pathlib.Path(os.getcwd())
+    check_shorts(pdk, ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}", '-o', f"{cwd}"])
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_mos_smoke(pdk):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     x = 2
@@ -72,7 +73,7 @@ def test_mos_smoke(pdk):
     ids=lambda x: x.replace('_{}', ''))
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_mos_full(pdk, pstr, typ, nfins, x, y):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     prim = pstr.format(typ)

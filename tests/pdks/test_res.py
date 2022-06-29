@@ -25,12 +25,13 @@ def check_shorts(pdk, cmdlist):
 
 
 def build_test(pdk, b, *, X, Y, n, r):
-    check_shorts(pdk, ['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}'])
+    cwd = pathlib.Path(os.getcwd())
+    check_shorts(pdk, ['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}', '-o', f"{cwd}"])
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_res_smoke(pdk):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     x = 2
@@ -47,7 +48,7 @@ def test_res_smoke(pdk):
 @pytest.mark.parametrize("x", range(1, 4), ids=lambda x: f'X{x}')
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_res(pdk, x, y, n, r):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     build_test(pdk, f'res_X{x}_Y{y}_h{n}_r{r}', X=x, Y=y, n=n, r=r)

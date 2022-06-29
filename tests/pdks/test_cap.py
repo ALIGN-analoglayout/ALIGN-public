@@ -27,12 +27,13 @@ def check_shorts(pdk, cmdlist):
 
 
 def build_test(pdk, b, *, w, l):
-    check_shorts(pdk, ['-b', b, '-w', f"{w}", '-l', f"{l}"])
+    cwd = pathlib.Path(os.getcwd())
+    check_shorts(pdk, ['-b', b, '-w', f"{w}", '-l', f"{l}", '-o', f"{cwd}"])
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_cap_smoke(pdk):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     l = 200
@@ -45,7 +46,7 @@ def test_cap_smoke(pdk):
 @pytest.mark.parametrize("w", range(200, 1000, 400), ids=lambda x: f'w{x}')
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_cap_full(pdk, l, w):
-    test_dir = WORK_DIR / "cap_smoke" / get_test_id()
+    test_dir = WORK_DIR / get_test_id()
     test_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(test_dir)
     build_test(pdk, f'cap_{w}_{l}', w=w, l=l)
