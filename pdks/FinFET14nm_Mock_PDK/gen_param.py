@@ -231,7 +231,7 @@ def gen_param(subckt, primitives, pdk_dir):
                                total_device_size(mvalues[device_name_all[1]]))
             if  unequal_devices:
                 yval = 1
-                xval = int(size/2)
+                xval = int(no_units)
     
         if generator_constraint is not None:
                 generator_parameters = generator_constraint.parameters
