@@ -622,6 +622,22 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
          DoNotRoute.push_back(net);
       }
       node.DoNotRoute = DoNotRoute;
+    } else if (constraint["const_name"] == "Spread") {
+      PnRDB::SpreadConstraint s;
+      s.horizon = (constraint["direction"] == "horizontal") ? 1 : 0;
+      s.distance = static_cast<int>(constraint["distance"]) * 2;
+      for (auto block : constraint["blocks"]) {
+        bool found{false};
+        for (int i = 0; i < (int)node.Blocks.size(); i++) {
+          if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
+            s.blocks.insert(i);
+            found = true;
+            break;
+          }
+        }
+        if (!found) logger->error("Block {0} in Spread not found in netlist", block);
+      }
+      node.SpreadConstraints.push_back(s);
     }
   }
 }
