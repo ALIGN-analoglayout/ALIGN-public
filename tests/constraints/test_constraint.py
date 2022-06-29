@@ -288,8 +288,8 @@ def test_spread():
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xi0", "xi1", "xi2"]},
-        {"constraint": "Spread", "instances": ["xi0", "xi1"], "direction": "horizontal", "distance": 100},
-        {"constraint": "Spread", "instances": ["xi1", "xi2"], "direction": "horizontal", "distance": 200}
+        {"constraint": "Spread", "instances": ["xi0", "xi1"], "direction": "horizontal", "distance": 200},
+        {"constraint": "Spread", "instances": ["xi1", "xi2"], "direction": "horizontal", "distance": 300}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=False)
