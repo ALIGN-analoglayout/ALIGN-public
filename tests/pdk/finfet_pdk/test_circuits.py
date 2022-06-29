@@ -529,4 +529,4 @@ def test_analog_mux_4to1():
             ]
     }
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, max_errors=4)
