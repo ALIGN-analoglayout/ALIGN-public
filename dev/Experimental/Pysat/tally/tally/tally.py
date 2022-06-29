@@ -229,9 +229,9 @@ class Tally:
       self.emit_always( z)
 
 
-  def emit_tally( self, inps, outs):
-    for o in outs[len(inps):]:
-       self.emit_never( o)
+  def emit_tally_aux( self, inps, outs):
+    # Don't work if this assert fails
+    assert len(outs) <= len(inps)
 
     while True:
       if len(inps) == 0:
@@ -247,6 +247,7 @@ class Tally:
           outs0,outs1 = outs[:-1],outs[-1:]
         sub_outs = [ self.add_var() for out in outs0]
         sub_ands = [ self.add_var() for out in sub_outs[:-1]]
+
         assert len(sub_outs) == len(sub_ands) + 1
         # zip autotruncates
         for (x,z) in zip(sub_outs, sub_ands + outs1):
@@ -258,6 +259,15 @@ class Tally:
 
         inps = inps[:-1]
         outs = sub_outs
+
+  def emit_tally( self, inps, outs):
+    if len(outs) > len(inps):
+      for o in outs[len(inps):]:
+        self.emit_never( o)
+      self.emit_tally_aux(inps, outs[:len(inps)])
+    else:
+      self.emit_tally_aux(inps, outs)
+
 
   @staticmethod
   def neg( var):
