@@ -487,3 +487,46 @@ def test_comparator_analog():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+
+
+def test_analog_mux_4to1():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.analog_mux_4to1(name)
+    constraints = {
+        "passgate": [
+            {"constraint": "GroupBlocks", "instances": ["qp1"], "instance_name": "xqp1",
+                "generator": {"name": "MOS", "parameters": {"PARTIAL_ROUTING": True, "add_tap": False, "legal_sizes": [{"y": 1}]}}},
+            {"constraint": "GroupBlocks", "instances": ["qn1"], "instance_name": "xqn1",
+                "generator": {"name": "MOS", "parameters": {"PARTIAL_ROUTING": True, "add_tap": False, "legal_sizes": [{"y": 1}]}}},
+            {"constraint": "Floorplan", "regions": [["xqp1"], ["xqn1"]]}
+            ],
+        "decoder_2to4": [
+            {"constraint": "Floorplan", "order": True, "regions": [
+                ["inv08", "inv09"],
+                ["nand0", "inv00"],
+                ["nand1", "inv01"],
+                ["nand2", "inv02"],
+                ["nand3", "inv03"]
+                ]}
+            ],
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "auto_constraint": False,
+                "propagate": True,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": True,
+                "remove_dummy_hierarchies": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+            {"constraint": "SameTemplate", "instances": ["pg0", "pg1", "pg2", "pg3"]},
+            {"constraint": "AlignInOrder", "line": "left", "instances": ["pg0", "pg1", "pg2", "pg3"], "abut": True},
+            {"constraint": "AlignInOrder", "line": "bottom", "instances": ["i0", "pg3"]}
+            ]
+    }
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)

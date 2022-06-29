@@ -364,3 +364,37 @@ def comparator_analog(name):
     .END
     """)
     return netlist
+
+
+def analog_mux_4to1(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o1 vccx vssx
+    .ends
+    .subckt dig22nand a b o1 vccx vssx
+    .ends
+    .subckt decoder_2to4 o0 o0b o1 o1b o2 o2b o3 o3b vccx vssx x0 x1
+    inv08 x0 net21 vccx vssx dig22inv
+    inv09 x1 net16 vccx vssx dig22inv
+    inv00 o0b o0 vccx vssx dig22inv
+    inv01 o1b o1 vccx vssx dig22inv
+    inv02 o2b o2 vccx vssx dig22inv
+    inv03 o3b o3 vccx vssx dig22inv
+    nand0 net21 net16 o0b vccx vssx dig22nand
+    nand1 x0 net16 o1b vccx vssx dig22nand
+    nand2 net21 x1 o2b vccx vssx dig22nand
+    nand3 x0 x1 o3b vccx vssx dig22nand
+    .ends
+    .subckt passgate en enb pgin pgout vccx vssx
+    qp1 pgin enb pgout vccx p m=16 nf=2 w=360e-9
+    qn1 pgin en  pgout vssx n m=16 nf=2 w=360e-9
+    .ends
+    .subckt {name} in0 in1 in2 in3 muxout vccx vssx x0 x1
+    i0 net7 net8 net5 net6 net3 net4 net1 net2 vccx vssx x0 x1 decoder_2to4
+    pg0 net7 net8 in0 muxout vccx vssx passgate
+    pg1 net5 net6 in1 muxout vccx vssx passgate
+    pg2 net3 net4 in2 muxout vccx vssx passgate
+    pg3 net1 net2 in3 muxout vccx vssx passgate
+    .ends {name}
+    .END
+    """)
+    return netlist
