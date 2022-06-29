@@ -1,52 +1,21 @@
 [
-    {"constraint": "PowerPorts", "ports": ["VCC"]},
-    {"constraint": "GroundPorts", "ports": ["VSS"]},
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+    {"constraint": "PowerPorts", "ports": ["vcc"]},
+    {"constraint": "GroundPorts", "ports": ["vss"]},
     {"constraint": "ClockPorts", "ports": ["clk"]},
-    {"constraint":"HorizontalDistance", "abs_distance":0},
-    {"constraint":"VerticalDistance",   "abs_distance":0},
     {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "instance_name": "xdp"},
-    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "instance_name": "xccn"},
+    {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"],   "instance_name": "xccn"},
     {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "instance_name": "xccp"},
     {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "instance_name": "xinv_n"},
     {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "instance_name": "xinv_p"},
-    {"constraint": "SymmetricBlocks",
-        "direction" : "V",
-        "pairs": [["mn0"], ["xdp"], ["xccn"], ["xccp"], ["mp7", "mp8"], ["mp9", "mp10"], ["xinv_n", "xinv_p"]]
-    },
-    {"constraint": "Order",
-        "direction" : "top_to_bottom",
-        "instances": ["mn0", "xdp", "xccn", "xccp"]
-    },
-    {"constraint": "align",
-        "line" : "h_bottom",
-        "instances": ["mp9", "mp7", "xdp", "mp8", "mp10"]
-    },
-    {"constraint": "align",
-        "line" : "h_bottom",
-        "instances": ["xinv_n", "xccp", "xinv_p"]
-    },
-    {
-        "constraint": "SymmetricNets",
-        "direction": "V",
-        "net1": "vin",
-        "pins1": ["mn1/G"],
-        "net2": "vip",
-        "pins2": ["mn2/G"]
-    },
-    {
-        "constraint": "SymmetricNets",
-        "direction": "V",
-        "net1": "vin_d",
-        "pins1": ["mn1/D","mn3/S","mp7/D"],
-        "net2": "vip_d",
-        "pins2": ["mn2/D","mn4/S","mp8/D"]
-    },
-    {
-        "constraint": "SymmetricNets",
-        "direction": "V",
-        "net1": "vin_o",
-        "pins1": ["mn3/D", "mn4/G", "mp5/D", "mp6/G", "mp9/D", "mp12/G", "mn14/G"],
-        "net2": "vip_o",
-        "pins2": ["mn3/G", "mn4/D", "mp5/G", "mp6/D", "mp10/D", "mp11/G", "mn13/G"]
+    {"constraint": "SameTemplate", "instances": ["xinv_n", "xinv_p"]},
+    {"constraint": "DoNotIdentify", "instances": ["mp7", "mp8", "mp9", "mp10"]},
+    {"constraint": "Floorplan", "order": true, "symmetrize": true,
+        "regions": [
+            ["xinv_n", "xccp", "xinv_p"],
+            ["xccn"],
+            ["mp9", "mp7", "xdp", "mp8", "mp10"],
+            ["mn0"]
+        ]
     }
 ]
