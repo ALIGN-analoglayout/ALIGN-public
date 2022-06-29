@@ -18,6 +18,28 @@ class PnRConstraintWriter:
     def __init__(self):
         pass
 
+    def merge_sametemplate_const(self, all_const, pnr_const):
+        same_template = []
+        for input_const in constraint.expand_user_constraints(all_const):
+            # Create dict for PnR constraint and rename constraint to const_name
+            const = input_const.dict(exclude={'constraint'}, exclude_unset=False)
+            const['const_name'] = input_const.__class__.__name__
+
+            if const['const_name'] =='SameTemplate':
+                flag=1
+                for insts in same_template:
+                    if flag and set(const['instances']) & insts:
+                        insts.update(const['instances'])
+                        flag =0
+                if flag:
+                    same_template.append(set(const['instances']))
+        if same_template:
+            logger.debug(f"merging same template constraints {same_template}")
+        for insts in same_template:
+            pnr_const.append({'const_name':'SameTemplate',
+                             'blocks':list(insts)})
+
+
     def map_valid_const(self, all_const):
         """
         Maps input format to pnr format
@@ -38,7 +60,7 @@ class PnRConstraintWriter:
                 del const['instances']
 
             # Exclude constraints not to be exposed to PnR
-            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler']:
+            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler', 'SameTemplate']:
                 continue
 
             # Exclude constraints that need to be to multiple constraints
@@ -148,7 +170,7 @@ class PnRConstraintWriter:
                 for (b1, b2) in itertools.combinations(const['blocks'], 2):
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
-
+        self.merge_sametemplate_const(all_const, pnr_const)
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
         return {'constraints': pnr_const}
 
