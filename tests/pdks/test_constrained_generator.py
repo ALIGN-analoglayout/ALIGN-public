@@ -1,13 +1,17 @@
+import os
 import pathlib
-import sys
 import pytest
+from .utils import get_test_id, WORK_DIR
+import importlib
 import json
 
 
-my_dir = pathlib.Path(__file__).resolve().parent / "tmp"
-
-def check_shorts(cmdlist, constraints):
-    from Align_primitives import main, gen_parser
+def check_shorts(pdk, cmdlist, constraints):
+    spec = importlib.util.spec_from_file_location("Align_primitives", pdk / 'Align_primitives.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    main = getattr(module, "main")
+    gen_parser = getattr(module, "gen_parser")
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
     if constraints[0]["parameters"].get("height", None) == 24:
@@ -19,7 +23,7 @@ def check_shorts(cmdlist, constraints):
     assert len(uc.rd.shorts) == 0, uc.rd.shorts  # rd = RemoveDuplicates
     assert len(uc.rd.opens) == 0, uc.rd.opens
     assert len(uc.rd.different_widths) == 0, uc.rd.different_widths
-    assert len(uc.rd.subinsts) == 2*args.Xcells* args.Ycells, uc.rd.subinsts
+    assert len(uc.rd.subinsts) == 2 * args.Xcells * args.Ycells, uc.rd.subinsts
     common_centroid = set(['M1_X0_Y0', 'M2_X1_Y0', 'M2_X2_Y0', 'M1_X3_Y0', 'M2_X0_Y1',
                       'M1_X1_Y1', 'M1_X2_Y1', 'M2_X3_Y1'])
     if constraints[0]["parameters"].get("pattern", None) == "cc":
@@ -52,30 +56,31 @@ def check_shorts(cmdlist, constraints):
 
 
 def build_test(pdk, prim, *, n, X, Y, constraints):
-    sys.path.insert(0, str(pdk))
     b = f"{prim}_n{n}_X{X}_Y{Y}"
-    #print(f'Testing {b} ...')
-    my_dir.mkdir(parents=True, exist_ok=True)
-    with open(my_dir / f'{prim}.const.json', 'w') as fp:
+    cwd = pathlib.Path(os.getcwd())
+    with open(cwd / f'{prim}.const.json', 'w') as fp:
         fp.write(json.dumps(constraints, indent=2))
-    check_shorts(['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}" , '-c' , f"{my_dir}"], constraints)
-
-    sys.path.pop(0)
+    check_shorts(pdk, ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}", '-c', f"{cwd}", '-o', f"{cwd}"], constraints)
 
 
 supported_const = [{"constraint": "Generator", "name": "MOS", "parameters": {"pattern": "cc"}},
-                    {"constraint": "Generator", "name": "MOS", "parameters": {"pattern": "ncc"}},
-                    {"constraint": "Generator", "name": "MOS", "parameters": {"pattern": "id"}},
-                    {"constraint": "Generator", "name": "MOS", "parameters": {"shared_diff": True}},
-                    {"constraint": "Generator", "name": "MOS", "parameters": {"shared_diff": False}},
-                    {"constraint": "Generator", "name": "MOS", "parameters": {"body": True}},
+                   {"constraint": "Generator", "name": "MOS", "parameters": {"pattern": "ncc"}},
+                   {"constraint": "Generator", "name": "MOS", "parameters": {"pattern": "id"}},
+                   {"constraint": "Generator", "name": "MOS", "parameters": {"shared_diff": True}},
+                   {"constraint": "Generator", "name": "MOS", "parameters": {"shared_diff": False}},
+                   {"constraint": "Generator", "name": "MOS", "parameters": {"body": True}},
                    {"constraint": "Generator", "name": "MOS", "parameters": {"body": False}},
                    {"constraint": "Generator", "name": "MOS", "parameters": {"height": 24}},
                    {"constraint": "Generator", "name": "MOS", "parameters": {"height": 36}}
                    ]
+
+
 @pytest.mark.parametrize("const", supported_const)
 def test_mos_finfet_const(const):
-    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks'/ 'FinFET14nm_Mock_PDK'
+    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'
+    test_dir = WORK_DIR / "mos_finfet" / get_test_id()
+    test_dir.mkdir(parents=True, exist_ok=True)
+    os.chdir(test_dir)
     x = 2
     y = 2
     nfins = 12
@@ -83,10 +88,12 @@ def test_mos_finfet_const(const):
     build_test(pdk, prim, n=nfins, X=x, Y=y, constraints=[const])
 
 
-
 @pytest.mark.parametrize("const", supported_const[0:3])
 def test_mos_bulk_const(const):
-    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks'/ 'Bulk65nm_Mock_PDK'
+    pdk = pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'Bulk65nm_Mock_PDK'
+    test_dir = WORK_DIR / "mos_bulk" / get_test_id()
+    test_dir.mkdir(parents=True, exist_ok=True)
+    os.chdir(test_dir)
     x = 2
     y = 2
     nfins = 12

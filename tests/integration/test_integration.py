@@ -8,7 +8,8 @@ run_flat = {'linear_equalizer',
             'single_to_differential_converter'}
 
 skip_pdks = {'Bulk65nm_Mock_PDK',
-             'Nonuniform_mock_pdk'}
+             'Nonuniform_mock_pdk',
+             'Bulk45nm_Mock_PDK'}
 
 skip_dirs = {'Sanitized_model3x_MDLL_TOP',
              'OTA_FF_2s_v3e',
