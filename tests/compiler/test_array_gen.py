@@ -208,7 +208,7 @@ def test_end_search_at_inst_convergence():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    primitives = PrimitiveLibrary(ckt_lib, pdk_path).gen_primitive_collateral()
+    _ = PrimitiveLibrary(ckt_lib, pdk_path).gen_primitive_collateral()
 
     ckt = ckt_lib.find(name)
     assert ckt, f"No ckt {name} found in library"
@@ -265,6 +265,6 @@ def test_align_in_order():
     with set_context(ckt.constraints):
         x = constraint.AlignInOrder(direction="horizontal", instances=array1)
         y = constraint.SameTemplate(instances=array1)
-    assert ckt.constraints[2] == y
-    assert ckt.constraints[3] == x
+    assert ckt.constraints[3] == y
+    assert ckt.constraints[4] == x
     clean_data(name)
