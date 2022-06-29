@@ -316,14 +316,14 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
         for (const auto& al : node.Align_blocks) {
           if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i]) != al.blocks.end()) {
             for (auto b : al.blocks) {
-              if (b != order.first[i]) {
+              if (b != order.first[i] && Blocks[order.first[i]][0].height >= Blocks[b][0].height) {
                 Ordering_Constraints.push_back(make_pair(make_pair(b, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
               }
             }
           }
           if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i+1]) != al.blocks.end()) {
             for (auto b : al.blocks) {
-              if (b != order.first[i+1]) {
+              if (b != order.first[i+1] && Blocks[order.first[i+1]][0].height >= Blocks[b][0].height) {
                 Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], b), order.second == PnRDB::H ? placerDB::H : placerDB::V));
               }
             }
