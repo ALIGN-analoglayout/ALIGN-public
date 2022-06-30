@@ -797,6 +797,27 @@ class SameTemplate(SoftConstraint):
     """
     instances: List[str]
 
+    @types.validator("instances", allow_reuse=True)
+    def pairs_validator(cls, value):
+
+        assert len(value) >= 2, "SameTemplate constraint requires at least two instances"
+
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        value = validate_instances(cls, value)
+
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return value
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
+            return value
+        i0 = value[0]
+        for i1 in value:
+            assert cls._validator_ctx().parent.parent.get_element(i0).parameters == \
+                    cls._validator_ctx().parent.parent.get_element(i1).parameters, \
+                    f"Parameters of {i0} and {i1} must match for SameTemplate in subckt {cls._validator_ctx().parent.parent.name}"
+        return value
+
 
 class CreateAlias(SoftConstraint):
     """CreateAlias
@@ -1017,6 +1038,9 @@ class SymmetricBlocks(HardConstraint):
     """
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+
+    # CHECK PAIR ARE DIFFERENT INSTANCES!!!
+    # AN INSTANCE CAN ONLY APPEAR ONCE!!!
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):

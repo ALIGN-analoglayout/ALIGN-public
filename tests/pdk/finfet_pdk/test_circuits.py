@@ -313,7 +313,7 @@ def test_charge_pump_switch():
         align_in_order = [c for c in module["constraints"] if c["constraint"] == "align_in_order"]
         assert len(align_in_order) == 1, "align_in_order not found"
 
-    with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
+    with (run_dir / "3_pnr" / "inputs" / f"{name}.pnr.const.json").open("rt") as fp:
         charge_pump_const = json.load(fp)
         same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
         assert len(same_template) == 1, "Duplicate same_template constraints"
@@ -595,13 +595,22 @@ def test_folded_cascode():
             "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xdp",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
-        {"constraint": "SameTemplate", "instances": ["qn5<0>", "qn5<1>", "qn6<0>", "qn6<1>"]},
+        {"constraint": "GroupBlocks", "instances": ["qp5<0>"], "instance_name": "xqp5<0>",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp5<1>"], "instance_name": "xqp5<1>",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp6<0>"], "instance_name": "xqp6<0>",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp6<1>"], "instance_name": "xqp6<1>",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "SameTemplate", "instances": ["xqp5<0>", "xqp5<1>"]},
+        {"constraint": "SameTemplate", "instances": ["xqp6<0>", "xqp6<1>"]},
         {
             "constraint": "Floorplan",
             "order": True,
             "symmetrize": True,
             "regions": [
-                ["qp5<0>", "qp6<0>", "qp6<1>", "qp5<1>"],
+                ["xqp5<0>", "xqp6<0>", "xqp6<1>", "xqp5<1>"],
                 ["xqn6"],
                 ["xqn4"],
                 ["xqp2"],
@@ -611,4 +620,4 @@ def test_folded_cascode():
         }
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level="DEBUG", n=1)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
