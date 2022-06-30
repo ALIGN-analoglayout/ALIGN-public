@@ -1,5 +1,4 @@
 import abc
-from flask import g
 import more_itertools as itertools
 import itertools as plain_itertools
 import re
