@@ -586,13 +586,13 @@ def test_folded_cascode():
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
         {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xc1",
-            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xc2",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xc3",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xc4",
-            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xdp",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "SameTemplate", "instances": ["qn5<0>", "qn5<1>", "qn6<0>", "qn6<1>"]},
@@ -611,4 +611,4 @@ def test_folded_cascode():
         }
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=False, log_level=LOG_LEVEL, n=1)
+    run_example(example, cleanup=False, log_level="DEBUG", n=1)

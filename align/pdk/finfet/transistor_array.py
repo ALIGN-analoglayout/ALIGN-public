@@ -6,7 +6,8 @@ from collections import defaultdict
 from align.cell_fabric import transformation
 from align.schema.transistor import Transistor, TransistorArray
 from . import CanvasPDK, MOS
-from .gen_param import construct_sizes_from_exact_patterns 
+from .gen_param import construct_sizes_from_exact_patterns
+from align.schema.constraint import PlaceOnGrid, OffsetsScalings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class MOSGenerator(CanvasPDK):
         self.exact_patterns = None
         self.exact_patterns_d = None
         self.add_tap = True
+        self.place_on_grid = None
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
@@ -34,19 +36,19 @@ class MOSGenerator(CanvasPDK):
                     self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
                     self.exact_patterns = const.parameters.get('exact_patterns')
                     self.add_tap = const.parameters.get('add_tap', True)
-
+                    self.place_on_grid = const.parameters.get('place_on_grid', False)
                     if self.exact_patterns is not None:
                         self.exact_patterns_d = construct_sizes_from_exact_patterns(self.exact_patterns)
 
-                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes', 'add_tap'])
+                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes',
+                                      'add_tap', 'place_on_grid'])
                     for k in const.parameters.keys():
                         assert k in legal_keys, (k, legal_keys)
-
 
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
 
-        #logger.info(f'pattern_template: {self.pattern_template} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
+        # logger.info(f'pattern_template: {self.pattern_template} PARTIAL_ROUTING: {self.PARTIAL_ROUTING} single_device_connect_m1: {self.single_device_connect_m1}')
 
         if self.PARTIAL_ROUTING:
             if not hasattr(self, 'metadata'):
@@ -57,6 +59,13 @@ class MOSGenerator(CanvasPDK):
         place_on_grid = os.getenv('PLACE_ON_GRID', None)
         if place_on_grid is not None:
             place_on_grid = json.loads(place_on_grid)
+        elif self.place_on_grid:
+            row_height = 7*self.pdk['M2']['Pitch']
+            place_on_grid = dict()
+            place_on_grid['constraints'] = [
+                PlaceOnGrid(direction='H', pitch=2*row_height, ored_terms=[OffsetsScalings(offsets=[0], scalings=[1, -1])]).dict()
+                ]
+        if place_on_grid is not None:
             if not hasattr(self, 'metadata'):
                 self.metadata = dict()
             self.metadata['constraints'] = place_on_grid['constraints']
