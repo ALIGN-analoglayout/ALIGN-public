@@ -585,13 +585,13 @@ def test_folded_cascode():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
-        {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xc1",
+        {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xqp4",
             "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
-        {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xc2",
+        {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xqp2",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
-        {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xc3",
+        {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xqn4",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
-        {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xc4",
+        {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xqn6",
             "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
         {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xdp",
             "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
@@ -602,10 +602,10 @@ def test_folded_cascode():
             "symmetrize": True,
             "regions": [
                 ["qp5<0>", "qp6<0>", "qp6<1>", "qp5<1>"],
-                ["xc4"],
-                ["xc3"],
-                ["xc2"],
-                ["xc1"],
+                ["xqn6"],
+                ["xqn4"],
+                ["xqp2"],
+                ["xqp4"],
                 ["xdp"]
             ]
         }
