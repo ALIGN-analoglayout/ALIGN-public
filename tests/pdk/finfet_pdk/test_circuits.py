@@ -566,3 +566,49 @@ def test_analog_mux_4to1():
     }
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, max_errors=4)
+
+
+def test_folded_cascode():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.folded_cascode(name)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "auto_constraint": False,
+            "propagate": True,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": True,
+            "remove_dummy_hierarchies": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xc1",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xc2",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xc3",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xc4",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xdp",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "SameTemplate", "instances": ["qn5<0>", "qn5<1>", "qn6<0>", "qn6<1>"]},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "symmetrize": True,
+            "regions": [
+                ["qp5<0>", "qp6<0>", "qp6<1>", "qp5<1>"],
+                ["xc4"],
+                ["xc3"],
+                ["xc2"],
+                ["xc1"],
+                ["xdp"]
+            ]
+        }
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False, log_level=LOG_LEVEL, n=1)
