@@ -801,7 +801,8 @@ class SameTemplate(SoftConstraint):
     @types.validator("instances", allow_reuse=True)
     def instances_validator(cls, instances):
 
-        assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
+        # logger.debug(f"SameTemplate {instances=}")
+        # assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
 
         _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
         instances = validate_instances(cls, instances)

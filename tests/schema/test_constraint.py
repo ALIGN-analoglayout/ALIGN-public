@@ -128,8 +128,6 @@ def test_Floorplan(db):
 def test_SameTemplate(db):
     with set_context(db):
         with pytest.raises(ValidationError):
-            db.append(constraint.SameTemplate(instances=['M1']))
-        with pytest.raises(ValidationError):
             db.append(constraint.SameTemplate(instances=['MMM1', 'M2']))
         with pytest.raises(ValidationError):
             db.append(constraint.SameTemplate(instances=['M1', 'M7']))
