@@ -1,12 +1,12 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
+import random
+
 
 
 class Lee:
     def __init__(self, n, m):
         self.n, self.m = n, m
-
         self.paths = {}
-
 
     def add_path(self, nm, path):
         self.paths[nm] = path
@@ -27,24 +27,11 @@ class Lee:
                     assert i0 + 1 == i1
                     v_edges[((i0,j0),(i1,j1))].add(nm)
 
-        print(h_edges)
-        print(v_edges)
-
         def h_edge_on( i, j):
-            lst = set()
-            if 0 <= i < self.n and 0 <= j < self.m-1:
-                nets = h_edges[((i,j),(i,j+1))]
-                lst.update(nets)
-            #print('h_edge_on', i, j, lst)
-            return lst
+            return h_edges[((i,j),(i,j+1))]
 
         def v_edge_on( i, j):
-            lst = set()
-            if 0 <= i < self.n-1 and 0 <= j < self.m:
-                nets = v_edges[((i,j),(i+1,j))]
-                lst.update(nets)
-            #print('v_edge_on', i, j, lst)
-            return lst
+            return v_edges[((i,j),(i+1,j))]
 
         for i in range(self.n):
             for ii in range(4):
@@ -61,23 +48,31 @@ class Lee:
                             s.update(h_edge_on(i, j-1))
                             s.update(v_edge_on(i, j))
                             s.update(v_edge_on(i-1, j))
-                            assert len(s) <= 1
+                            #assert len(s) <= 1
                             if len(s) == 1:
                                 ch = list(s)[0]
+                            elif len(s) > 1:
+                                ch = '*'
 
                         elif ii == 0 and jj > 0:
                             s = set()
                             s.update(h_edge_on(i, j))
-                            assert len(s) <= 1
+                            #assert len(s) <= 1
                             if len(s) == 1:
                                 ch = list(s)[0]
+                            elif len(s) > 1:
+                                ch = '*'
+
 
                         elif ii > 0 and jj == 0:
                             s = set()
                             s.update(v_edge_on(i, j))
-                            assert len(s) <= 1
+                            #assert len(s) <= 1
                             if len(s) == 1:
                                 ch = list(s)[0]
+                            elif len(s) > 1:
+                                ch = '*'
+
 
                         print(ch, end='')
                 print('')
@@ -164,38 +159,61 @@ class Lee:
         else:
             return None, None
 
-def main(n, m, lst, obstacles=None):
-    print("="*80)
 
-    a = Lee(n, m)
+    def route_all(self, lst):
 
-    obstacles = set()
+        all_ok = True
 
-    for _, src, tgt in lst:
-        obstacles.add(src)
-        obstacles.add(tgt)
+        print("="*80)
 
-    for nm, src, tgt in lst:
-        obstacles.remove(src)
-        obstacles.remove(tgt)
+        obstacles = set()
 
-        path_s, path_l = a.bfs( nm, src, tgt, obstacles=obstacles)
-
-        if path_l is None:
+        for _, src, tgt in lst:
             obstacles.add(src)
             obstacles.add(tgt)
-        else:
-            obstacles.update(path_l)
 
-            a.add_path(nm, path_l)
+        for nm, src, tgt in lst:
+            obstacles.remove(src)
+            obstacles.remove(tgt)
 
-        print(nm, src, tgt, path_s)
+            path_s, path_l = self.bfs( nm, src, tgt, obstacles=obstacles)
 
-    a.show()
+            if path_l is None:
+                obstacles.add(src)
+                obstacles.add(tgt)
+                all_ok = False
+            else:
+                obstacles.update(path_l)
+                self.add_path(nm, path_l)
+
+            print(nm, src, tgt, path_s, path_l)
+
+        return all_ok
+
+    def total_wire_length(self):
+        return sum(len(path) for net, path in self.paths.items())
+        
+
+def main(n, m, lst, obstacles=None):
+    total_runs = 100
+    count = 0
+    histo = Counter()
+    for _ in range(total_runs):
+        samp = random.sample(lst, len(lst))
+        a = Lee(n, m)
+        ok = a.route_all(samp)
+        if ok:
+            print('Wire Length:', a.total_wire_length())
+            count += 1
+            histo[a.total_wire_length()] += 1
+
+        a.show()
+    print(f'Successfull routed {count} of {total_runs} times.')
+    print(f'Wirelength histogram:', list(sorted(histo.items())))
 
 if __name__ == "__main__":
     if True:
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], {(0,3),(1,3),(2,3),(3,3),(4,3),(5,3),(6,3),(7,3),(8,3),(9,3)})
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))])
 
     """
   01234567
