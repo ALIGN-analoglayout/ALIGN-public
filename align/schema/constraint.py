@@ -1042,9 +1042,6 @@ class SymmetricBlocks(HardConstraint):
     pairs: List[List[str]]
     direction: Literal['H', 'V']
 
-    # CHECK PAIR ARE DIFFERENT INSTANCES!!!
-    # AN INSTANCE CAN ONLY APPEAR ONCE!!!
-
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
         _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
