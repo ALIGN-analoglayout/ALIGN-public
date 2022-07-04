@@ -8,7 +8,7 @@
     "abs_distance": 0
   },
   {
-    "constraint": "order",
+    "constraint": "Order",
     "instances": [
       "X_MN0",
       "X_DP_MN1_MN2",

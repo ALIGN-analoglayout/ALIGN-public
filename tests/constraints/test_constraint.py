@@ -287,7 +287,7 @@ def test_spread():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "Floorplan", "order": "true", "regions": [["xi0", "xi1"], ["xi2"]]},
+        {"constraint": "Floorplan", "Order": "true", "regions": [["xi0", "xi1"], ["xi2"]]},
         {"constraint": "Spread", "instances": ["xi0", "xi1"], "direction": "horizontal", "distance": 200},
         {"constraint": "Spread", "instances": ["xi0", "xi2"], "direction": "vertical",   "distance": 630}
     ]

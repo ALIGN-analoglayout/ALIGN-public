@@ -131,7 +131,7 @@ def test_cmp_fp2_regions():
         {"constraint": "DoNotIdentify", "instances": ["mn11", "mn12", "mp13", "mp14"]},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
+        {"constraint": "Floorplan", "Order": True, "symmetrize": True, "regions": [
             ["mp7", "mp9", "mp10", "mp8"],
             ["mp13", "xccp", "mp14"],
             ["mn11", "xccn", "mn12"],
@@ -181,7 +181,7 @@ def test_ota_six():
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xtail"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload"},
-        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
+        {"constraint": "Floorplan", "Order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
@@ -388,7 +388,7 @@ def test_niwc_opamp_split():
     {"constraint": "SameTemplate", "instances": ["xostagea", "xostageb"]},
     {"constraint": "SameTemplate", "instances": ["xnraila", "xnrailb"]},
     {"constraint": "Floorplan",
-     "order": True,
+     "Order": True,
      "symmetrize": True,
      "regions": [
         ["xprail"],
@@ -476,7 +476,7 @@ def test_opamp_poor():
         {"constraint": "SameTemplate", "instances": ["idiffl<0>", "idiffl<1>", "idiffr<0>", "idiffr<1>"]},
         {"constraint": "SameTemplate", "instances": ["ibias<0>", "ibias<1>", "ibias<2>", "ibias<3>", "ibias<4>", "itail", "i1"]},
         {"constraint": "Floorplan",
-            "order": True,
+            "Order": True,
             "regions": [
                 ["iloadl<0>", "iloadr<0>"],
                 ["iloadr<1>", "iloadl<1>"],
@@ -501,7 +501,7 @@ def test_comparator_analog():
         {"constraint": "GroupBlocks", "instances": ["invp2", "invp2"], "instance_name": "xinv1"},
         {"constraint": "DoNotIdentify", "instances": ["sw_pbias_en", "sw_pullup_enb", "sw_pulldn_en", "sw_pulldn_en1"]},
         {"constraint": "Floorplan",
-            "order": True,
+            "Order": True,
             "regions": [
                 ["decap0"],
                 ["mpbias", "ptail", "p2", "sw_pbias_en"],
@@ -511,7 +511,7 @@ def test_comparator_analog():
                 ["mp_hi", "nres1", "nres0"],
             ]},
         {"constraint": "Floorplan",
-            "order": True,
+            "Order": True,
             "symmetrize": True,
             "regions": [
                 ["decap0"],
@@ -537,7 +537,7 @@ def test_analog_mux_4to1():
             {"constraint": "Floorplan", "regions": [["xqp1"], ["xqn1"]]}
             ],
         "decoder_2to4": [
-            {"constraint": "Floorplan", "order": True, "regions": [
+            {"constraint": "Floorplan", "Order": True, "regions": [
                 ["inv08", "inv09"],
                 ["nand0", "inv00"],
                 ["nand1", "inv01"],
