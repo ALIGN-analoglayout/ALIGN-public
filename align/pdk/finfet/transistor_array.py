@@ -25,6 +25,7 @@ class MOSGenerator(CanvasPDK):
         self.single_device_connect_m1 = True
         self.exact_patterns = None
         self.exact_patterns_d = None
+        self.add_tap = True
         for const in self.primitive_constraints:
             if const.constraint == 'generator':
                 if const.parameters is not None:
@@ -32,11 +33,12 @@ class MOSGenerator(CanvasPDK):
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
                     self.single_device_connect_m1 = const.parameters.get('single_device_connect_m1', True)
                     self.exact_patterns = const.parameters.get('exact_patterns')
+                    self.add_tap = const.parameters.get('add_tap', True)
 
                     if self.exact_patterns is not None:
                         self.exact_patterns_d = construct_sizes_from_exact_patterns(self.exact_patterns)
 
-                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes'])
+                    legal_keys = set(['pattern_template', 'PARTIAL_ROUTING', 'single_device_connect_m1', 'exact_patterns', 'legal_sizes', 'add_tap'])
                     for k in const.parameters.keys():
                         assert k in legal_keys, (k, legal_keys)
 
@@ -199,21 +201,22 @@ class MOSGenerator(CanvasPDK):
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
 
 
-        cnt_tap = 0
-        def add_tap(row, obj, tbl, flip_x):
-            nonlocal cnt_tap
-            row.append([obj, f't{cnt_tap}', tbl, flip_x])
-            cnt_tap += 1
+        cnt_obj = 0
+        def add_obj(row, obj, tbl, flip_x):
+            nonlocal cnt_obj
+            row.append([obj, f't{cnt_obj}', tbl, flip_x])
+            cnt_obj += 1
 
         rows = []
 
         # tap row
-        row = []
-        add_tap(row, fill, {}, 1)
-        for _ in range(self.n_col):
-            add_tap(row, tp, tap_map, 1)
-        rows.append(row)
-        add_tap(row, fill, {}, 1)
+        if self.add_tap:
+            row = []
+            add_obj(row, fill, {}, 1)
+            for _ in range(self.n_col):
+                add_obj(row, tp, tap_map, 1)
+            rows.append(row)
+            add_obj(row, fill, {}, 1)
 
         tr = {'A': (1,  1),
               'a': (1, -1),
@@ -222,7 +225,7 @@ class MOSGenerator(CanvasPDK):
 
         for y in range(self.n_row):
             row = []
-            add_tap(row, fill, {}, 1)
+            add_obj(row, fill, {}, 1)
             for x in range(self.n_col):
                 port_idx, flip_x = tr[interleave_array[y][x]]
 
@@ -238,7 +241,7 @@ class MOSGenerator(CanvasPDK):
                 #row.append([tx, f'm{y*self.n_col+x}', pin_map, flip_x])
                 row.append([tx, f'm{y}_{x}', pin_map, flip_x])
 
-            add_tap(row, fill, {}, 1)
+            add_obj(row, fill, {}, 1)
             rows.append(row)
 
         # Stamp the instances
