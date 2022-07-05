@@ -308,15 +308,15 @@ def test_charge_pump_switch():
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        same_template = [c for c in module["constraints"] if c["constraint"] == "same_template"]
-        assert len(same_template) == 2, "Duplicate same_template constraints"
-        align_in_order = [c for c in module["constraints"] if c["constraint"] == "align_in_order"]
-        assert len(align_in_order) == 1, "align_in_order not found"
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 2, "Duplicate SameTemplate constraints"
+        align_in_order = [c for c in module["constraints"] if c["constraint"] == "AlignInOrder"]
+        assert len(align_in_order) == 1, "AlignInOrder not found"
 
     with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
         charge_pump_const = json.load(fp)
         same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
-        assert len(same_template) == 1, "Duplicate same_template constraints"
+        assert len(same_template) == 1, "Duplicate SameTemplate constraints"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -342,8 +342,8 @@ def test_charge_pump_switch_small():
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        same_template = [c for c in module["constraints"] if c["constraint"] == "same_template"]
-        assert len(same_template) == 1, "same_template constraint not found!"
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 1, "SameTemplate constraint not found!"
 
     if CLEANUP:
         shutil.rmtree(run_dir)

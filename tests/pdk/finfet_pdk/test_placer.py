@@ -409,7 +409,7 @@ def test_hang_4():
             "merge_series_devices": False, "merge_parallel_devices": False
         },
         {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
-        {"constraint": "Floorplan", "Order": True, "symmetrize": True, "regions": [
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
             ["mp1"],
             ["mp3", "mp2", "mp4", "mp5", "mp6"],
             ["mp7", "mp8", "mp9", "mp10"],
@@ -441,7 +441,7 @@ def test_sub_1():
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
         {"constraint": "DoNotIdentify", "instances": ["mn0", "mn1", "mn2", "mp0", "mp1", "mp2"]},
-        {"constraint": "Floorplan", "Order": True, "regions": [
+        {"constraint": "Floorplan", "order": True, "regions": [
             ["mn0", "mn1", "mn2"],
             ["mp0", "mp1", "mp2"]
         ]},
