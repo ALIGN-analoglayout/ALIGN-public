@@ -43,14 +43,9 @@ def test_group_block_hsc(dir_name):
     updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
     annotate_library(updated_cktlib, prim_lib)
     HSC = updated_cktlib.find("HIGH_SPEED_COMPARATOR")
-    if dir_name in ["high_speed_comparator_orderblock"]:
-        assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
-                                                    'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
-                                                    'X_INV_P_MP12_MN14', 'X_MP10_MP9', 'X_MN0', 'X_MP7_MP8'}
-    else:
-        assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
-                                                    'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
-                                                    'X_INV_P_MP12_MN14', 'X_MP10', 'X_MP9', 'X_MN0', 'X_MP7', 'X_MP8'}
+    assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
+                                                'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
+                                                'X_INV_P_MP12_MN14', 'X_MP10', 'X_MP9', 'X_MN0', 'X_MP7', 'X_MP8'}
     # assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
     result_path = out_path / dir_name
     if result_path.exists() and result_path.is_dir():

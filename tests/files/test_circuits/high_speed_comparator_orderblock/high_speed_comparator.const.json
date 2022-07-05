@@ -9,5 +9,21 @@
     {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["mn0", "x_dp_mn1_mn2", "x_ccn_mn3_mn4", "x_ccp_mp5_mp6"]
+    },
+    {
+        "constraint": "Order",
+        "direction": "left_to_right",
+        "instances": [
+            "mp9",
+            "mp10"
+        ]
+    },
+    {
+        "constraint": "Order",
+        "direction": "left_to_right",
+        "instances": [
+            "mp7",
+            "mp8"
+        ]
     }
 ]
