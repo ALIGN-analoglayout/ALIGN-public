@@ -1,6 +1,7 @@
 from collections import defaultdict, Counter
 import random
 import render
+import argparse
 
 
 class Lee:
@@ -152,11 +153,10 @@ class Lee:
         return sum(len(path) for net, path in self.paths.items())
         
 
-def main(n, m, lst, obstacles=None):
-    total_runs = 100
+def main(n, m, lst, num_trials):
     count = 0
     histo = Counter()
-    for _ in range(total_runs):
+    for _ in range(num_trials):
         samp = random.sample(lst, len(lst))
         a = Lee(n, m)
         ok = a.route_all(samp)
@@ -166,14 +166,21 @@ def main(n, m, lst, obstacles=None):
             histo[a.total_wire_length()] += 1
 
         a.show()
-    print(f'Successfull routed {count} of {total_runs} times.')
+    print(f'Successfull routed {count} of {num_trials} times.')
     print(f'Wirelength histogram:', list(sorted(histo.items())))
 
 if __name__ == "__main__":
-    if True:
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))])
 
-    """
+    parser = argparse.ArgumentParser(description="Lee Router")
+    parser.add_argument("-m", "--model", type=str, default="ten_nets_8x8")
+    parser.add_argument("-n", "--num_trials", type=int, default=100)
+
+    args = parser.parse_args()
+
+    if args.model == "two_nets_10x10":
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials)
+
+        """
   01234567
  +--------
 0|  1  8  
@@ -186,7 +193,7 @@ if __name__ == "__main__":
 7|  3  a
 """
 
-    if True:
+    elif args.model == "ten_nets_8x8":
         main(8, 8, [
 
         ("2", (3, 0), (2, 1)),
@@ -200,10 +207,10 @@ if __name__ == "__main__":
         ("a", (7, 5), (6, 7)),
         ("3", (5, 0), (7, 2)),
         ("1", (2, 0), (0, 2)),
-        ])
+        ], num_trials=args.num_trials)
 
 
-    if True:
+    elif args.model == "ten_nets_24x24":
         main(24, 24, [
         ("1", (6, 0), (0, 6)),
         ("2", (9, 0), (6, 3)),
@@ -215,4 +222,7 @@ if __name__ == "__main__":
         ("8", (0, 15), (6, 21)),
         ("9", (9, 15), (18, 18)),
         ("a", (21, 15), (18, 21))
-        ])
+        ], num_trials=args.num_trials)
+
+    else:
+        assert False, f"Unknown model: {args.model}"
