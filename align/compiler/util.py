@@ -77,14 +77,13 @@ def get_base_model(subckt, node):
 
 
 def get_leaf_connection(subckt, net):
-    # assert net in subckt.nets, f""
     conn = []
     if net in subckt.nets:
         graph = Graph(subckt)
         for nbr in graph.neighbors(net):
             for pin in graph.get_edge_data(net, nbr)["pin"]:
                 s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-                if isinstance(s, SubCircuit):
+                if isinstance(s, SubCircuit) and s.name != subckt.name:
                     conn.extend(get_leaf_connection(s, pin))
                 else:
                     conn.append(pin)
