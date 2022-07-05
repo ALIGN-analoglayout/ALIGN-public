@@ -1,10 +1,10 @@
 [
   {
-    "constraint": "horizontal_distance",
+    "constraint": "HorizontalDistance",
     "abs_distance": 0
   },
   {
-    "constraint": "vertical_distance",
+    "constraint": "VerticalDistance",
     "abs_distance": 0
   },
   {
@@ -19,7 +19,7 @@
     "abut": false
   },
   {
-    "constraint": "do_not_identify",
+    "constraint": "DoNotIdentify",
     "instances": [
       "X_CCN_MN3_MN4",
       "X_CCP_MP5_MP6",
@@ -28,7 +28,7 @@
     ]
   },
   {
-    "constraint": "symmetric_blocks",
+    "constraint": "SymmetricBlocks",
     "pairs": [
       [
         "X_INV_N_MP11_MN13",
@@ -44,7 +44,7 @@
     "direction": "V"
   },
   {
-    "constraint": "symmetric_nets",
+    "constraint": "SymmetricNets",
     "direction": "V",
     "net1": "VIN_O",
     "net2": "VIP_O",
@@ -58,7 +58,7 @@
     ]
   },
   {
-    "constraint": "symmetric_nets",
+    "constraint": "SymmetricNets",
     "direction": "V",
     "net1": "VON",
     "net2": "VOP",
