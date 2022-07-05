@@ -56,7 +56,7 @@ class ConstraintTranslator():
                         ]
                     ):
                         self.child_const.append(const)
-                    elif hasattr(const, "instances") and const.constraint!="group_blocks":
+                    elif hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
                         # checking if sub hierarchy instances are in const defined
                         _child_const = {
                             x: [
@@ -89,7 +89,7 @@ class ConstraintTranslator():
 
         logger.debug(f"update constraints of {self.parent_name} with {new_inst}")
         for const in self.parent_const:
-            if hasattr(const, "instances") and const.constraint!='group_blocks':
+            if hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
                 # checking instances in the constraint and update names
                 if set(const.instances) & set(node_map.keys()):
                     replace = True
