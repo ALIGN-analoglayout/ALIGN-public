@@ -24,7 +24,7 @@ def cap_placer_driver(*, toplevel_args_d, results_dir):
     for module in verilog_d['modules']:
         tbl = { instance['instance_name'] : instance['abstract_template_name'] for instance in module['instances'] }
         for constraint in module['constraints']:
-            if constraint.constraint == 'group_caps':
+            if constraint.constraint == 'GroupCaps':
                 required_caps.add(tbl[constraint.name.upper()])
 
     logger.debug(f'Required capacitors: {required_caps}')
