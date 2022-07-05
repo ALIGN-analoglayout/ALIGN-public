@@ -14,34 +14,36 @@ logger = logging.getLogger(__name__)
 
 
 class ConstraintTranslator():
-    def __init__(self, ckt_data, parent_name:str, child_name:str=None):
+    def __init__(self, ckt_data, parent_name: str, child: str = None):
         """
+        Translate input constraints to hierarchial netlist
         Args:
             ckt_data (dict): all subckt graph, names and port
             parent_name (str): name of parent hierarchy
             child_name (str): name of child hierarchy
-            node_map (dict): dict of mapping from parent instance names to child instance names
         """
         self.ckt_data = ckt_data
         self.parent_name = parent_name
         self.parent = self.ckt_data.find(parent_name)
         assert self.parent, f"Hierarchy not found, {parent_name}"
         self.parent_const = self.parent.constraints
-        self.child_name = child_name
-        if child_name:
-            self.child = self.ckt_data.find(child_name)
-            assert self.child, f"Hierarchy not found, {child_name}"
+        if child:
+            self.child = child
+            self.child_name = child.name
             self.child_const = self.child.constraints
 
     def _top_to_bottom_translation(self, node_map):
         """
         Update instance names in the child constraints
+
+        Args:
+            node_map (dict): dict of mapping from parent instance names to child instance names
+
         """
 
         logger.debug(
-            f"transfering constraints from top subckt: {self.parent_name} to bottom subckt: {self.child_name} "
+            f"transferring constraints from top subckt: {self.parent_name} to bottom subckt: {self.child_name} "
         )
-
 
         if not self.child_const:
             with set_context(self.child_const):
@@ -70,9 +72,25 @@ class ConstraintTranslator():
                         }
                         assert "constraint" in _child_const, f"format check failed"
                         logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
-                        self._check_const_length(self.child_const,_child_const)
-                if self.child_const:
-                    logger.debug(f"transferred constraints to {self.child_name} {self.child_const}")
+                        self._add_const(self.child_const, _child_const)
+
+        for const in list(self.parent_const):
+            if hasattr(const, "pin_current"):
+                logger.debug(f"transferring charge flow constraints {const.pin_current.keys()}")
+                pin_map = {}
+                for pin in const.pin_current.keys():
+                    parent_inst_name = pin.split('/')[0].upper()
+                    parent_pin = pin.split('/')[1].upper()
+                    if parent_inst_name in node_map.keys():
+                        child_inst_name = node_map[parent_inst_name]
+                        assert parent_pin in self.child.get_element(child_inst_name).pins
+                        pin_map[pin] = child_inst_name+'/'+ parent_pin
+                _child_const = {x: {pin_map[pin]:current for pin, current in getattr(const,x).items() if pin in pin_map}
+                                if x== "pin_current" else getattr(const, x) for x in const.__fields_set__}
+                self._add_const(self.child_const, _child_const)
+
+        if self.child_const:
+            logger.debug(f"transferred constraints to {self.child_name} {self.child_const}")
 
     def _update_const(self, new_inst, node_map):
         """
@@ -117,9 +135,9 @@ class ConstraintTranslator():
                             pair[0] = new_inst
             elif hasattr(const, "pin_current"):
                 logger.debug(f"updating charge flow constraints {const.pin_current.keys()}")
-                updated_pc={}
+                updated_pc = {}
                 remove_pins = []
-                for pin,current in const.pin_current.items():
+                for pin, current in const.pin_current.items():
                     parent_inst_name = pin.split('/')[0].upper()
                     if parent_inst_name in node_map.keys():
                         remove_pins.append(pin)
@@ -151,7 +169,7 @@ class ConstraintTranslator():
 
         logger.debug(f"updated constraints of {self.parent_name} {self.parent_const}")
 
-    def _check_const_length(self, const_list, const):
+    def _add_const(self, const_list, const):
         is_append = False
         with set_context(const_list):
             if hasattr(const, "instances") and len(const.instances) > 0:
