@@ -41,7 +41,7 @@ class PnRConstraintWriter:
                              'blocks':list(insts)})
 
 
-    def map_valid_const(self, all_const):
+    def map_valid_const(self, all_const, module):
         """
         Maps input format to pnr format
         """
@@ -54,7 +54,7 @@ class PnRConstraintWriter:
             if input_const.constraint in ['power_ports', 'ground_ports', 'clock_ports']:
                 for k in input_const.ports: pwrgndclkports.add(k)
         maxrmsc = -1.
-            
+
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
@@ -176,7 +176,7 @@ class PnRConstraintWriter:
             elif const["const_name"] == 'PlaceCloser':
                 for (b1, b2) in itertools.combinations(const['blocks'], 2):
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
-                    pnr_const.append(extra)            
+                    pnr_const.append(extra)
             elif const["const_name"] == 'ChargeFlow' and 'pin_current' in const and 'time' in const:
                 time = const['time']
                 nets = dict()
@@ -185,7 +185,7 @@ class PnRConstraintWriter:
                         instname = inst['instance_name'] if 'instance_name' in inst else ""
                         if "fa_map" in inst:
                             for fa in inst["fa_map"]:
-                                net = fa["actual"] 
+                                net = fa["actual"]
                                 if net in pwrgndclkports: continue
                                 if net not in nets: nets[net] = set()
                                 nets[net].add(instname + '/' + fa["formal"])
@@ -218,7 +218,7 @@ class PnRConstraintWriter:
                         rmsc = dict()
                         for (src, snk) in ppcurrents:
                             rmsc[f'{src},{snk}'] = math.sqrt(sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) ** 2 / 4 for i in range(len(time) -1)]) / (time[-1] - time[0]))
-                        if len(rmsc): 
+                        if len(rmsc):
                             const['branch_current'][net] = rmsc
                             maxrmsc = max(maxrmsc, max([v for k,v in rmsc.items()]))
                 const.pop('time')
