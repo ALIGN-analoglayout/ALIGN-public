@@ -54,7 +54,7 @@ def test_group_block_hsc(dir_name):
     FindConst(updated_cktlib.find("HIGH_SPEED_COMPARATOR"))
     gen_const = updated_cktlib.find("HIGH_SPEED_COMPARATOR").constraints.dict()["__root__"]
     #TODO file changes in separate branch
-    gen_const = [const for const in gen_const if not const.constraint=='GroupBlocks']
+    gen_const = [const for const in gen_const if not const['constraint']=='GroupBlocks']
     gen_const.sort(key=lambda item: item.get("constraint"))
     for i,const in enumerate(gen_const):
         if const['constraint'] == 'DoNotIdentify':
@@ -280,7 +280,7 @@ def test_symmnet_translation():
     annotate_library(cktlib, prim_lib)
     FindConst(cktlib.find(name))
     all_const = cktlib.find(name).constraints.dict()["__root__"]
-    symnet_const = [const for const in all_const if not const.constraint=='SymmetricNets'][0]
+    symnet_const = [const for const in all_const if const['constraint']=='SymmetricNets'][0]
     modified_symmnet = {
         "constraint": "SymmetricNets",
         "direction": "V",

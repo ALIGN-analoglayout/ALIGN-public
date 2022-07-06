@@ -191,7 +191,7 @@ class Graph(networkx.Graph):
             instance_name = f'X_{nodes_str}'
             assert instance_name not in self.elements
             with set_context(self.subckt.constraints):
-                gc = [c for c in subckt.constraints if c.constraint=="Generator"]
+                gc = [c for c in subckt.constraints if isinstance(c,constraint.Generator)]
                 if gc:
                     generator_param = {k: v for k, v in gc[0] if k != 'constraint'}
                 else:
