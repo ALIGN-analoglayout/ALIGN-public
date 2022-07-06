@@ -1,14 +1,14 @@
 [
   {
-    "constraint": "horizontal_distance",
+    "constraint": "HorizontalDistance",
     "abs_distance": 0
   },
   {
-    "constraint": "vertical_distance",
+    "constraint": "VerticalDistance",
     "abs_distance": 0
   },
   {
-    "constraint": "order",
+    "constraint": "Order",
     "instances": [
       "X_MN0",
       "X_DP_MN1_MN2",
@@ -19,46 +19,48 @@
     "abut": false
   },
   {
-    "constraint": "do_not_identify",
+    "constraint": "Order",
+    "instances": [
+      "X_MP9",
+      "X_MP10"
+    ],
+    "direction": "left_to_right",
+    "abut": false
+  },
+  {
+    "constraint": "Order",
+    "instances": [
+      "X_MP7",
+      "X_MP8"
+    ],
+    "direction": "left_to_right",
+    "abut": false
+  },
+  {
+    "constraint": "DoNotIdentify",
     "instances": [
       "X_CCN_MN3_MN4",
       "X_CCP_MP5_MP6",
       "X_DP_MN1_MN2",
-      "X_MN0"
+      "X_MN0",
+      "X_MP10",
+      "X_MP7",
+      "X_MP8",
+      "X_MP9"
     ]
   },
   {
-    "constraint": "symmetric_blocks",
+    "constraint": "SymmetricBlocks",
     "pairs": [
       [
         "X_INV_N_MP11_MN13",
         "X_INV_P_MP12_MN14"
-      ],
-      [
-        "X_MP10_MP9"
-      ],
-      [
-        "X_MP7_MP8"
       ]
     ],
     "direction": "V"
   },
   {
-    "constraint": "symmetric_nets",
-    "direction": "V",
-    "net1": "VIN_O",
-    "net2": "VIP_O",
-    "pins1": [
-      "X_INV_P_MP12_MN14/P2",
-      "X_MP10_MP9/DB"
-    ],
-    "pins2": [
-      "X_INV_N_MP11_MN13/P2",
-      "X_MP10_MP9/DA"
-    ]
-  },
-  {
-    "constraint": "symmetric_nets",
+    "constraint": "SymmetricNets",
     "direction": "V",
     "net1": "VON",
     "net2": "VOP",

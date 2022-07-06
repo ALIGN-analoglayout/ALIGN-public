@@ -21,9 +21,9 @@ def limit_pairs(pairs):
         return pairs
 
 def construct_sizes_from_exact_patterns(exact_patterns):
-                        
+
     legal_size_d = {}
-    
+
     for pattern in exact_patterns:
         histo = Counter(c for row in pattern for c in row)
         num_devices = len(set(c.upper() for c in histo.keys()))
@@ -95,7 +95,7 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                         logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
                     else:
                         logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
-                
+
                 if ok:
                     concrete_name = f'{block_name}_X{newx}_Y{newy}'
                     if concrete_name not in primitives:
@@ -108,12 +108,12 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
-            
+
 def gen_param(subckt, primitives, pdk_dir):
 
     generator_constraint = None
     for const in subckt.constraints:
-        if const.constraint == 'generator':
+        if const.constraint == 'Generator':
             assert generator_constraint is None
             generator_constraint = const
 
@@ -137,7 +137,7 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        
+
         size = round(float(values["VALUE"]) * 1E15, 4)
 
         assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"
@@ -186,7 +186,7 @@ def gen_param(subckt, primitives, pdk_dir):
         device_name = next(iter(mvalues))
 
         for key in mvalues:
-            assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}" 
+            assert mvalues[key]["W"] != str, f"unrecognized size of device {key}:{mvalues[key]['W']} in {block_name}"
             width = int(float(mvalues[key]["W"])*1E+9/design_config["Fin_pitch"])
         name_arg = 'W'+str(width)
 

@@ -12,7 +12,7 @@ class MOSGenerator(DefaultCanvas):
 
     def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, **kwargs):
         self.primitive_constraints = kwargs.get('primitive_constraints', [])
-        self.primitive_parameters = kwargs.get('primitive_parameters')            
+        self.primitive_parameters = kwargs.get('primitive_parameters')
         super().__init__(pdk)
 
         exact_width = None
@@ -23,7 +23,7 @@ class MOSGenerator(DefaultCanvas):
             device_names = [*self.primitive_parameters.keys()]
             exact_width = self.primitive_parameters[device_names[0]]['W']
             exact_width = int(float(exact_width)*1E9)  ### Width in nanometers
-            exact_length = self.primitive_parameters[device_names[0]]['L'] 
+            exact_length = self.primitive_parameters[device_names[0]]['L']
             exact_length = round(float(exact_length)*1E9)  ### Length in nanometers
             assert exact_length % 2 ==0, f"Transistor gate length {exact_length} must be even"
             assert exact_width % 2 ==0, f"Transistor width {exact_width} must be even"
@@ -38,9 +38,9 @@ class MOSGenerator(DefaultCanvas):
         self.exact_patterns = None
         height = max(height, 4*ceil((fin+16)/4))
         for const in self.primitive_constraints:
-            if const.constraint == 'generator':
+            if const.constraint == 'Generator':
                 if const.parameters is not None:
-                    if const.parameters.get('exact_patterns'): 
+                    if const.parameters.get('exact_patterns'):
                         self.exact_patterns = const.parameters.get('exact_patterns')
                         self.exact_patterns = self.exact_patterns[0]
                     if const.parameters.get('height'):
@@ -61,7 +61,7 @@ class MOSGenerator(DefaultCanvas):
         self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = height ### This defines numebr of fins for tap cells; Should we define it in the layers.json?
         assert self.finDummy >= 8, f"number of fins/width {fin} in the transistor must be less than unit cell height {self.finsPerUnitCell -2*8}"
-        assert fin > 1, "number of fins in the transistor must be more than 1" 
+        assert fin > 1, "number of fins in the transistor must be more than 1"
         assert gateDummy > 0
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
         activeOffset = self.unitCellHeight//2 -self.pdk['Fin']['Pitch']//2
@@ -113,7 +113,7 @@ class MOSGenerator(DefaultCanvas):
         self.pc = self.addGen( Wire( 'pc', 'Pc', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pc']['PcWidth'], offset=self.pdk['M2']['Pitch']),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=offset*self.shared_diff, stoppoint=stoppoint-offset*self.shared_diff, check=True)))
- 
+
         self.nselect = self.addGen( Region( 'nselect', 'Nselect',
                                             v_grid=UncoloredCenterLineGrid( offset= 0, pitch= self.pdk['M3']['Pitch'], width= self.pdk['M3']['Width']),
                                             h_grid=self.fin.clg))
@@ -298,7 +298,7 @@ class MOSGenerator(DefaultCanvas):
                     else:
                         current_track = y * self.m2PerUnitCell + len(connections) * j + diff_track
                         diff_track = diff_track + 1
-                    self.addWireAndViaSet(net, self.m2_updated, self.v1_x, current_track, contacts) 
+                    self.addWireAndViaSet(net, self.m2_updated, self.v1_x, current_track, contacts)
                     self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 #direction = 1 if current_track > center_track else -1
@@ -330,7 +330,7 @@ class MOSGenerator(DefaultCanvas):
                 if len(contacts) == 1: # Create m2 terminal
                     i = next(iter(contacts))
                     minx, maxx = _get_wire_terminators(conn[i])
-                    self.addWire(self.m2_updated, net, i, (minx, -1), (maxx, 1), netType = 'pin') 
+                    self.addWire(self.m2_updated, net, i, (minx, -1), (maxx, 1), netType = 'pin')
                 else: # create m3 terminal(s)
                     self.addWireAndViaSet(net, self.m3, self.v2, current_track, contacts, netType = 'pin')
                     if max(contacts) - min(contacts) < 2:
@@ -343,7 +343,7 @@ class MOSGenerator(DefaultCanvas):
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
-                        if self.pdk['M3']['Pitch'] >= self.pdk['M1']['Pitch']: 
+                        if self.pdk['M3']['Pitch'] >= self.pdk['M1']['Pitch']:
                             self.addWire(self.m2, net, i, (minx, -1), (maxx, 1))
                         else:
                             self.addWire( self.m2_updated, net, i, (0, 1), (M1_tracks, -1))
@@ -356,10 +356,10 @@ class MOSGenerator(DefaultCanvas):
         gu = self.gatesPerUnitCell
         body_v0_track = (self.lFin*self.pdk['Fin']['Pitch'])//(2*self.pdk['M2']['Pitch'])
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
-        self._xpins[name]['B'].append(gate_x)        
+        self._xpins[name]['B'].append(gate_x)
         if self.shared_diff == 0:
-            self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
-            self.addWire( self.pb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1)) 
+            self.addWire( self.activeb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
+            self.addWire( self.pb, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
         else:
             self.addWire( self.activeb_diff, None, (y+1)*h + body_v0_track, 0, self.gate*x_cells+1)
             self.addWire( self.pb_diff, None, (y+1)*h + body_v0_track, (x,1), (x+1,-1))
@@ -397,7 +397,7 @@ class MOSGenerator(DefaultCanvas):
                     row_pattern = self.exact_patterns[y][x]
                     names_mapping = list(string.ascii_uppercase)
                     names_updated = {}
-                    for i in range(len(names)): 
+                    for i in range(len(names)):
                         names_updated[names_mapping[i]] = names[i]
                         names_updated[names_mapping[i].lower()] = names[i]
                     reflect = row_pattern.islower()
@@ -451,7 +451,7 @@ class MOSGenerator(DefaultCanvas):
 
         self.addRegion( self.nselect, None, -M3_tracks_start, 0, M3_tracks_end, y_cells* self.finsPerUnitCell)
         if self.bodyswitch==1:self.addRegion( self.pselect, None, -M3_tracks_start, y_cells* self.finsPerUnitCell, M3_tracks_end, y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
- 
+
     def addPMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, vt_type, connections, **parameters)
@@ -463,5 +463,5 @@ class MOSGenerator(DefaultCanvas):
         self.addRegion( self.pselect, None, -M3_tracks_start, 0, M3_tracks_end, y_cells* self.finsPerUnitCell)
         if self.bodyswitch==1:self.addRegion( self.nselect, None, -M3_tracks_start, y_cells* self.finsPerUnitCell, M3_tracks_end, y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
         self.addRegion( self.nwell, None, -M3_tracks_start, 0, M3_tracks_end, y_cells* self.finsPerUnitCell+self.bodyswitch*self.lFin)
-        
+
 

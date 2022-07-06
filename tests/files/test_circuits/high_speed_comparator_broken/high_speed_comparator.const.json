@@ -6,19 +6,19 @@
     {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "instance_name": "x_ccp_mp5_mp6"},
     {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "instance_name": "x_inv_n_mp11_mn13"},
     {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "instance_name": "x_inv_p_mp12_mn14"},
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["mn0", "x_dp_mn1_mn2"]
     },
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["x_dp_mn1_mn2", "x_ccn_mn3_mn4"]
     },
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["x_ccn_mn3_mn4", "x_ccp_mp5_mp6"]
     },
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["x_ccp_mp5_mp6", "mn0"]
     }

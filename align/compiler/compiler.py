@@ -173,7 +173,7 @@ def compiler_output(
 
 def exclude_const(subckt):
     #Exclude constraints not to be exposed to PnR
-    exclude_const_list = ['do_not_identify', 'group_blocks', 'do_not_use_lib', 'configure_compiler']
+    exclude_const_list = ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler']
     remove_const = [c for c in subckt.constraints if c.constraint in exclude_const_list]
     logger.debug(f"removing annotation only constraints {remove_const}")
     for const in remove_const:

@@ -308,15 +308,15 @@ def test_charge_pump_switch():
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        same_template = [c for c in module["constraints"] if c["constraint"] == "same_template"]
-        assert len(same_template) == 2, "Duplicate same_template constraints"
-        align_in_order = [c for c in module["constraints"] if c["constraint"] == "align_in_order"]
-        assert len(align_in_order) == 1, "align_in_order not found"
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 2, "Duplicate SameTemplate constraints"
+        align_in_order = [c for c in module["constraints"] if c["constraint"] == "AlignInOrder"]
+        assert len(align_in_order) == 1, "AlignInOrder not found"
 
     with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
         charge_pump_const = json.load(fp)
         same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
-        assert len(same_template) == 1, "Duplicate same_template constraints"
+        assert len(same_template) == 1, "Duplicate SameTemplate constraints"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -342,8 +342,8 @@ def test_charge_pump_switch_small():
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        same_template = [c for c in module["constraints"] if c["constraint"] == "same_template"]
-        assert len(same_template) == 1, "same_template constraint not found!"
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 1, "SameTemplate constraint not found!"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -438,21 +438,21 @@ def test_niwc_opamp_split_reuse():
   {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
   {"constraint": "PowerPorts", "ports": ["vccx"]},
   {"constraint": "GroundPorts", "ports": ["vssx"]},
-  {"constraint": "group_blocks", "instance_name": "X_M7A_M8A", "instances": ["M7A", "M8A"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M7B_M8B", "instances": ["M7B", "M8B"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M11_M12", "instances": ["M11", "M12"], "template_name": "CMC_PMOS", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M5A_M6A", "instances": ["M5A", "M6A"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M5B_M6B", "instances": ["M5B", "M6B"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M1_M2", "instances": ["M1", "M2"], "template_name": "DP_NMOS_B", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_MTAIL", "instances": ["MTAIL"], "template_name": "NMOS_3T", "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M3A_M4A", "instances": ["M3A", "M4A"], "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "group_blocks", "instance_name": "X_M3B_M4B", "instances": ["M3B", "M4B"], "generator": {"name": "mos", "parameters": None}},
-  {"constraint": "symmetric_blocks", "direction": "V",
+  {"constraint": "GroupBlocks", "instance_name": "X_M7A_M8A", "instances": ["M7A", "M8A"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M7B_M8B", "instances": ["M7B", "M8B"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M11_M12", "instances": ["M11", "M12"], "template_name": "CMC_PMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M5A_M6A", "instances": ["M5A", "M6A"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M5B_M6B", "instances": ["M5B", "M6B"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M1_M2", "instances": ["M1", "M2"], "template_name": "DP_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_MTAIL", "instances": ["MTAIL"], "template_name": "NMOS_3T", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M3A_M4A", "instances": ["M3A", "M4A"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M3B_M4B", "instances": ["M3B", "M4B"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "SymmetricBlocks", "direction": "V",
    "pairs": [
        ["X_M5A_M6A", "X_M5B_M6B"]
    ]
   },
-  {"constraint": "symmetric_blocks", "direction": "V",
+  {"constraint": "SymmetricBlocks", "direction": "V",
    "pairs": [
        ["X_M7A_M8A", "X_M7B_M8B"]
    ]

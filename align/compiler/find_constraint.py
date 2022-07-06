@@ -311,8 +311,8 @@ class process_input_const:
                     self.user_constrained_list,
                     None,
                     True)
-                assert s1, f"no connections found to net {const.net1}, fix user const"
-                assert s2, f"no connections found to net {const.net2}, fix user const"
+                assert s1, f"no connections found to net {const.net1} in subcircuit {self.subckt}, fix user const"
+                assert s2, f"no connections found to net {const.net2} in subcircuit {self.subckt}, fix user const"
                 with set_context(self.iconst):
                     replace_const.append(
                         (
