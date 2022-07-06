@@ -1337,7 +1337,6 @@ class SymmetricNets(SoftConstraint):
                     assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
                 else:
                     validate_ports(cls, [pin])
-
         return pins1
 
     @types.validator('pins2', allow_reuse=True)

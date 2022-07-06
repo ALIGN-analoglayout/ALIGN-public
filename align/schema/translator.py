@@ -112,7 +112,7 @@ class ConstraintTranslator():
                 if set(const.instances) & set(node_map.keys()):
                     replace = True
                     for old_inst in node_map.keys():
-                        if replace:
+                        if replace and not new_inst in const.instances:
                             _list_replace(const.instances, old_inst, new_inst)
                             replace = False
                         elif old_inst in const.instances:
@@ -156,6 +156,20 @@ class ConstraintTranslator():
                     const.pin_current.pop(pin)
                 for pin, current in updated_pc.items():
                     const.pin_current[pin] = current
+            elif hasattr(const, "pins1") and const.pins1:
+                replace_pins = {}
+                for pin in const.pins1 + const.pins2:
+                    if '/' in pin:
+                        new_pin = self._get_pin_map(pin, node_map, new_inst)
+                        if new_pin:
+                            replace_pins[pin]=new_pin
+                for k, v in replace_pins.items():
+                    for i in range(len(const.pins1)):
+                        if k==const.pins1[i]:
+                            const.pins1[i]=v
+                        if k == const.pins2[i]:
+                            const.pins2[i] = v
+
             elif hasattr(const, "regions"):
                 for i, row in enumerate(const.regions):
                     if set(row) & set(node_map.keys()):
@@ -168,6 +182,19 @@ class ConstraintTranslator():
                                 const.regions[i].remove(old_inst)
 
         logger.debug(f"updated constraints of {self.parent_name} {self.parent_const}")
+
+    def _get_pin_map(self, pin, node_map, new_inst):
+        parent_inst_name, port = pin.split('/')
+        if parent_inst_name in node_map.keys():
+            child_inst_name = node_map[parent_inst_name]
+            if self.child_name:
+                new_parent_pin = self.child.get_element(child_inst_name).pins[port]
+            else:
+                raise NotImplementedError("Groupcap does not have child hieararchy")
+            new_pin = new_inst+'/'+new_parent_pin
+        else:
+            new_pin = None
+        return new_pin
 
     def _add_const(self, const_list, const):
         is_append = False
