@@ -81,13 +81,13 @@ def test_scalings(place_on_grid_h):
         assert 'constraints' in primitive['metadata']
         golden = [
             {
-                "constraint": "place_on_grid",
+                "constraint": "PlaceOnGrid",
                 "direction": "H",
                 "pitch": 12600,
                 "ored_terms": [{"offsets": [0], "scalings": [1, -1]}]
             },
             {
-                "constraint": "place_on_grid",
+                "constraint": "PlaceOnGrid",
                 "direction": "V",
                 "pitch": 1080,
                 "ored_terms": [{"offsets": [540], "scalings": [1, -1]}]
@@ -110,7 +110,7 @@ def test_check_metadata(place_on_grid_h):
             continue
         with (filename).open('rt') as fp:
             primitive = json.load(fp)
-            assert primitive['metadata']['constraints'][0]['constraint'] == 'place_on_grid', filename.stem
+            assert primitive['metadata']['constraints'][0]['constraint'] == 'PlaceOnGrid', filename.stem
             assert primitive['metadata']['constraints'][0]['direction'] == 'H', filename.stem
     shutil.rmtree(run_dir)
     shutil.rmtree(ckt_dir)
