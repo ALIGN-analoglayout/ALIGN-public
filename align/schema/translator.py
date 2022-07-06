@@ -22,7 +22,6 @@ class ConstraintTranslator():
             parent_name (str): name of parent hierarchy
             child_name (str): name of child hierarchy
         """
-        logger.debug(f"ckt const {ckt_data} parent {parent_name} child {child}")
         self.ckt_data = ckt_data
         self.parent_name = parent_name
         self.parent = self.ckt_data.find(parent_name)
@@ -196,7 +195,7 @@ class ConstraintTranslator():
         if parent_inst_name in node_map.keys():
             child_inst_name = node_map[parent_inst_name]
             if self.child_name: #no child during renaming
-                assert self.child.get_element(child_inst_name), f"child does not have instance {node_map} {parent_inst_name} {self.child_name}{self.child.elements}"
+                assert self.child.get_element(child_inst_name), f"child does not have instance {child_inst_name}"
                 new_parent_pin = self.child.get_element(child_inst_name).pins[port]
             else:
                 raise NotImplementedError("Groupcap does not have child hieararchy")

@@ -233,7 +233,6 @@ class Annotate:
             assert set(const_insts).issubset(
                 ckt_ele
             ), f"Constraint instances: {const_insts} not in subcircuit {parent_subckt.name} with elements {ckt_ele}"
-            logger.debug(f"resolving constraints {const}, circuit elements {ckt_ele}")
             if const.template_name and const.template_name.upper() in self.lib_names:
                 child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_insts]
