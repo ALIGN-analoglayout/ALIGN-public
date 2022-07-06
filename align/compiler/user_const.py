@@ -73,6 +73,10 @@ class ConstraintParser:
                 elif hasattr(const, "pairs"):
                     for pair in const.pairs:
                         do_not_identify.extend(pair)
+                elif hasattr(const, "pins1") and const.pins1:
+                    do_not_identify.extend([pin.split('/')[0] for pin in const.pins1 if '/' in pin])
+                    do_not_identify.extend([pin.split('/')[0] for pin in const.pins2 if '/' in pin])
+
 
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))
