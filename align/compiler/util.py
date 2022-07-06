@@ -114,7 +114,7 @@ def leaf_weights(G, node, nbr):
             conn_type = set(get_leaf_connection(s, p))
         else:
             conn_type = G.get_edge_data(node, nbr)["pin"]
-    return conn_type
+    return set(sorted(conn_type))
 
 
 def reduced_neighbors(G, node, nbr):
@@ -167,11 +167,11 @@ def gen_group_key(multi_param):
     return key
 
 def create_node_id(G, node1, ports_weight=None):
-    in1 = G.nodes[node1].get("instance")
-    if in1:
-        properties = {'model': in1.model, 'n_pins': len(set(in1.pins.values()))}
-        if in1.parameters:
-            properties.update(in1.parameters)
+    instance = G.nodes[node1].get("instance")
+    if instance:
+        properties = {'model': instance.model, 'n_pins': len(set(instance.pins.values()))}
+        if instance.parameters:
+            properties.update(instance.parameters)
         return gen_key(properties)
     else:
         nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
@@ -179,8 +179,8 @@ def create_node_id(G, node1, ports_weight=None):
         if node1 in ports_weight:
             properties.extend([str(p) for p in ports_weight[node1]])
         else:
-            lw = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
-            properties.extend([str(p) for p in lw])
+            leaf_wt = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
+            properties.extend([str(p) for p in leaf_wt])
         properties = sorted(properties)
         arg_str = '_'.join(properties)
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
