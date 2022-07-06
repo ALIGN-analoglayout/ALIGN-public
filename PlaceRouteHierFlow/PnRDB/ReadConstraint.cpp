@@ -649,7 +649,7 @@ void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, c
   if(jedb.contains("metadata")){
     json constraints = jedb["metadata"]["constraints"];
     for (auto constraint : constraints) {
-      if (constraint["constraint"] == "place_on_grid"){
+      if (constraint["constraint"] == "PlaceOnGrid"){
         string s = constraint["direction"];
         if (constraint["direction"] == "H") {  // horizontal metal
           for(auto offset:constraint["ored_terms"][0]["offsets"]){

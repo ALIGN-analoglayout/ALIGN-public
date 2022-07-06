@@ -29,7 +29,7 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
     json constraint = concrete["constraints"][0];
-    if (constraint["constraint"] != "place_on_grid") continue;
+    if (constraint["constraint"] != "PlaceOnGrid") continue;
     unsigned int start = 0;
     unsigned int slash = s.find_last_of('_');
     if (slash != string::npos) {
@@ -251,7 +251,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
     curr_sp.cacheSeq(designData);
 
-    
+
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
       break;
