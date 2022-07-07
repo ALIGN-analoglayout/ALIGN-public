@@ -62,6 +62,10 @@ jobs:
 
   build-test-cktgen:
     executor: docker-executor
+    filters:
+      branches:
+        only:
+          - master
     steps:
       - checkout
       - setup_remote_docker
