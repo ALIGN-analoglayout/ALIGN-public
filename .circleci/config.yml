@@ -244,7 +244,7 @@ workflows:
               pdk:
                 - "Finfet"
               ci-level:
-                - "merge"
+                - "checkin"
               nightly-dirs:
                 - "tests/integration tests/pdks"
       - build-wheel:
