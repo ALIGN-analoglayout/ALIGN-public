@@ -3676,15 +3676,17 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
       if (track_Y > ur.y) {
         track_Y = ur.y;
       }
+      int track_y1 = track_y;
+      int track_Y1 = track_Y;
 
       // without offset, xl <= a*x <= xu
       // with offset, xl <= a*x + b <= xu, then xl - b <= a*x <= xu -b, finally a*x + b should be grid point
       // that is the reason why the box need to -b, after that all the point + b
       // this method works for a single layer, what about muliple layer? b have bl and bu.
-      track_x = track_x - drc_info.Metal_info.at(i).offset;
-      track_X = track_X - drc_info.Metal_info.at(i).offset;
-      track_y = track_y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
-      track_Y = track_Y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
+      //track_x = track_x - drc_info.Metal_info.at(i).offset;
+      //track_X = track_X - drc_info.Metal_info.at(i).offset;
+      //track_y = track_y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
+      //track_Y = track_Y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
 
       if (drc_info.Metal_info.at(i).direct == 0) {  // vertical
         if (x1 != x2) {
@@ -3693,111 +3695,157 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
         }
         int curlayer_unit = x_unit.at(i);  // current layer direction: vertical
         int nexlayer_unit;                 // neighboring layer direction: horizontal
-        int LLx = int(ceil(double(track_x) / curlayer_unit)) * curlayer_unit;
+        int nexlayer_unit1;
+        int LLx = int(ceil(double(track_x - drc_info.Metal_info.at(i).offset) / curlayer_unit)) * curlayer_unit;
         // (LL.x%curlayer_unit==0)?(LL.x):( (LL.x/curlayer_unit)*curlayer_unit<LL.x ? (LL.x/curlayer_unit+1)*curlayer_unit : (LL.x/curlayer_unit)*curlayer_unit
         // ); // X lower boudary
         int LLy;       // Y lower boundary
+        int LLy1;      // another Y lower boundary
+        int layers; // -1 lower, 0 both, 1 upper 
         if (i == 0) {  // if lowest layer
-          nexlayer_unit = y_unit.at(i + 1);
-          LLy = int(ceil(double(track_y) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          nexlayer_unit1 = y_unit.at(i + 1);
+          LLy1 = int(ceil(double(track_y - drc_info.Metal_info.at(i+1).offset) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          layers = 1;
           //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
           //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
         } else if (i == this->layerNo - 1) {  // if highest layer
-          nexlayer_unit = y_unit.at(i - 1);
-          LLy = int(ceil(double(track_y) / y_unit.at(i - 1))) * y_unit.at(i - 1);
+          nexlayer_unit1 = y_unit.at(i - 1);
+          LLy = int(ceil(double(track_y - drc_info.Metal_info.at(i-1).offset) / y_unit.at(i - 1))) * y_unit.at(i - 1);
           //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
           //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
+          layers = -1;
         } else {  // if middle layer
-          nexlayer_unit = gcd(y_unit.at(i - 1), y_unit.at(i + 1));
-          int LLy_1 = int(ceil(double(track_y) / y_unit.at(i - 1))) * y_unit.at(i - 1);
+          //nexlayer_unit = gcd(y_unit.at(i - 1), y_unit.at(i + 1));
+          nexlayer_unit = y_unit.at(i - 1);
+          nexlayer_unit1 = y_unit.at(i + 1);
+          int LLy_1 = int(ceil(double(track_y- drc_info.Metal_info.at(i-1).offset) / y_unit.at(i - 1))) * y_unit.at(i - 1);
           //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
           //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
-          int LLy_2 = int(ceil(double(track_y) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          int LLy_2 = int(ceil(double(track_y - drc_info.Metal_info.at(i+1).offset) / y_unit.at(i + 1))) * y_unit.at(i + 1);
           //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
           //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
-          LLy = (LLy_1 < LLy_2) ? LLy_1 : LLy_2;
+          LLy = LLy_1; //lower layer
+          LLy1 = LLy_2;//higher layer
+          //LLy = (LLy_1 < LLy_2) ? LLy_1 : LLy_2;
+          layers = 0; // both
         }
-        for (int X = LLx; X <= track_X; X += curlayer_unit) {
+        for (int X = LLx; X <= track_X - drc_info.Metal_info.at(i).offset; X += curlayer_unit) {
           int nb_start = -1;
           // Power = !Power;
-          for (int Y = LLy; Y <= track_Y; Y += nexlayer_unit) {
-            RouterDB::vertex tmpv;
-            bool pmark = false;
-            if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
-              pmark = true;
-            } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
-              pmark = true;
-            } else {
-              if (Y % y_unit.at(i - 1) == 0) {
-                tmpv.gridmetal.push_back(i - 1);
-                pmark = true;
-              }
-              if (Y % y_unit.at(i + 1) == 0) {
-                tmpv.gridmetal.push_back(i + 1);
-                pmark = true;
-              }
+          set<int> temp_y;
+          if(layers==-1){// this is for lower layer
+
+            for(int Y= LLy; Y<track_Y - drc_info.Metal_info.at(i-1).offset; Y += nexlayer_unit){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_y.insert(Y+ drc_info.Metal_info.at(i-1).offset);
             }
-            if (!pmark) {
-              continue;
+
+          }else if(layers==1){//this is for lower layer
+
+            for(int Y= LLy1; Y<track_Y - drc_info.Metal_info.at(i+1).offset; Y += nexlayer_unit1){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_y.insert(Y+ drc_info.Metal_info.at(i+1).offset);
             }
-            if (X < this->GridLL.x) {
-              this->GridLL.x = X;
+
+          }else if(layers==0){//this is for both layer
+
+            for(int Y= LLy; Y<track_Y - drc_info.Metal_info.at(i-1).offset; Y += nexlayer_unit){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_y.insert(Y+ drc_info.Metal_info.at(i-1).offset);
             }
-            if (Y < this->GridLL.y) {
-              this->GridLL.y = Y;
+
+            for(int Y= LLy1; Y<track_Y - drc_info.Metal_info.at(i+1).offset; Y += nexlayer_unit1){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_y.insert(Y+ drc_info.Metal_info.at(i+1).offset);
             }
-            if (X > this->GridUR.x) {
-              this->GridUR.x = X;
-            }
-            if (Y > this->GridUR.y) {
-              this->GridUR.y = Y;
-            }
-            tmpp.x = X;
-            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
-            tmpv.y = Y;
-            tmpv.x = X;
-            tmpv.metal = i;
-            // if(Power){
-            // tmpv.power = 1;
-            //}else{
-            // tmpv.power = 0;
-            //}
-            tmpv.active = true;
-            tmpv.index = this->vertices_total.size();
-            tmpv.up = -1;
-            tmpv.down = -1;
-            tmpv.north.clear();
-            tmpv.south.clear();
-            tmpv.east.clear();
-            tmpv.west.clear();
-            if (nb_start == -1) {
+
+          }else{
+             std::cout<<"Bug for setting up metal layers"<<std::endl;
+          }
+
+          // then insert grid
+          for(auto it: temp_y){
+             RouterDB::vertex tmpv;
+             tmpv.y = it;
+             tmpv.x = X;
+             tmpv.metal = i;
+             tmpv.active = true;
+             tmpv.index = this->vertices_total.size();
+             tmpv.up = -1;
+             tmpv.down = -1;
+             tmpv.north.clear();
+             tmpv.south.clear();
+             tmpv.east.clear();
+             tmpv.west.clear();
+             if (nb_start == -1) {
               nb_start = tmpv.index;
-            } else {
-              bool mark = false;
-              int w;
-              for (w = tmpv.index - 1; w >= nb_start; w--) {
-                if (this->vertices_total.at(w).x == tmpv.x) {
-                  if (tmpv.y - this->vertices_total.at(w).y >= y_min.at(i)) {
-                    mark = true;
-                    break;
-                  }
-                } else {
-                  break;
-                }
-              }
-              if (mark) {
-                tmpv.south.push_back(w);
-                this->vertices_total.at(w).north.push_back(tmpv.index);
-              }
-            }
-            this->vertices_total.push_back(tmpv);
-            this->vertices_total_map.at(i).insert(
-                std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
+             } else {
+               bool mark = false;
+               int w;
+               for (w = tmpv.index - 1; w >= nb_start; w--) {
+                 if (this->vertices_total.at(w).x == tmpv.x) {
+                   if (tmpv.y - this->vertices_total.at(w).y >= y_min.at(i)) {
+                     mark = true;
+                     break;
+                   }
+                 } else {
+                   break;
+                 }
+               }
+               if (mark) {
+                 tmpv.south.push_back(w);
+                 this->vertices_total.at(w).north.push_back(tmpv.index);
+               }
+             }
+             this->vertices_total.push_back(tmpv);
+             this->vertices_total_map.at(i).insert(
+                std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]           
           }
         }
-
       } else if (drc_info.Metal_info.at(i).direct == 1) {  // horizontal
         if (y1 != y2) {
           logger->error("Router-Error: horizontal tiles not found");
@@ -3806,108 +3854,158 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
 
         int curlayer_unit = y_unit.at(i);  // current layer direction: horizontal
         int nexlayer_unit;                 // neighboring layer direction: vertical
-        int LLy = int(ceil(double(track_y) / curlayer_unit)) * curlayer_unit;
+        int nexlayer_unit1;
+        int layers;
+        int LLy = int(ceil(double(track_y- drc_info.Metal_info.at(i).offset) / curlayer_unit)) * curlayer_unit;
         //(LL.y%curlayer_unit==0)?(LL.y):( (LL.y/curlayer_unit)*curlayer_unit<LL.y ? (LL.y/curlayer_unit+1)*curlayer_unit : (LL.y/curlayer_unit)*curlayer_unit
         //); // Y lower boudary
         int LLx;       // X lower boundary
+        int LLx1;      // another Y lower boundary
         if (i == 0) {  // if lowest layer
-          nexlayer_unit = x_unit.at(i + 1);
-          LLx = int(ceil(double(track_x) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          nexlayer_unit1 = x_unit.at(i + 1);
+          LLx1 = int(ceil(double(track_x- drc_info.Metal_info.at(i+1).offset) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          layers = 1;
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
           //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
         } else if (i == this->layerNo - 1) {  // if highest layer
           nexlayer_unit = x_unit.at(i - 1);
-          LLx = int(ceil(double(track_x) / x_unit.at(i - 1))) * x_unit.at(i - 1);
+          LLx = int(ceil(double(track_x- drc_info.Metal_info.at(i-1).offset) / x_unit.at(i - 1))) * x_unit.at(i - 1);
           //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
           //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
+          layers = -1;
         } else {  // if middle layer
-          nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
-          int LLx_1 = int(ceil(double(track_x) / x_unit.at(i - 1))) * x_unit.at(i - 1);
+          //nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
+          nexlayer_unit = x_unit.at(i - 1);
+          nexlayer_unit1 = x_unit.at(i + 1);
+          int LLx_1 = int(ceil(double(track_x- drc_info.Metal_info.at(i-1).offset) / x_unit.at(i - 1))) * x_unit.at(i - 1);
           //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
           //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
-          int LLx_2 = int(ceil(double(track_x) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          int LLx_2 = int(ceil(double(track_x- drc_info.Metal_info.at(i+1).offset) / x_unit.at(i + 1))) * x_unit.at(i + 1);
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
           //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
-          LLx = (LLx_1 < LLx_2) ? LLx_1 : LLx_2;
+          LLx = LLx_1;
+          LLx1 = LLx_2;
+          layers = 0;
+          //LLx = (LLx_1 < LLx_2) ? LLx_1 : LLx_2;
         }
-        for (int Y = LLy; Y <= track_Y; Y += curlayer_unit) {
+
+
+        for (int Y = LLy; Y <= track_Y- drc_info.Metal_info.at(i).offset; Y += curlayer_unit) {
           int nb_start = -1;
           // Power=!Power;
-          for (int X = LLx; X <= track_X; X += nexlayer_unit) {
-            RouterDB::vertex tmpv;
-            bool pmark = false;
-            if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
-              pmark = true;
-            } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
-              pmark = true;
-            } else {
-              if (X % x_unit.at(i - 1) == 0) {
-                tmpv.gridmetal.push_back(i - 1);
-                pmark = true;
-              }
-              if (X % x_unit.at(i + 1) == 0) {
-                tmpv.gridmetal.push_back(i + 1);
-                pmark = true;
-              }
+          set<int> temp_x;
+
+          if(layers==-1){// this is for lower layer
+
+            for(int X = LLx; X <= track_X - drc_info.Metal_info.at(i-1).offset; X += nexlayer_unit){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_x.insert(X+ drc_info.Metal_info.at(i-1).offset);
             }
-            if (!pmark) {
-              continue;
+
+          }else if(layers==1){//this is for lower layer
+
+            for(int X = LLx1; X <= track_X - drc_info.Metal_info.at(i+1).offset; X += nexlayer_unit1){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_x.insert(X+ drc_info.Metal_info.at(i+1).offset);
             }
-            if (X < this->GridLL.x) {
-              this->GridLL.x = X;
+
+          }else if(layers==0){//this is for both layer
+
+            for(int X = LLx; X <= track_X - drc_info.Metal_info.at(i-1).offset; X += nexlayer_unit){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_x.insert(X+ drc_info.Metal_info.at(i-1).offset);
             }
-            if (Y < this->GridLL.y) {
-              this->GridLL.y = Y;
+
+            for(int X = LLx1; X <= track_X - drc_info.Metal_info.at(i+1).offset; X += nexlayer_unit1){
+               if (X < this->GridLL.x) {
+                  this->GridLL.x = X;
+               }
+               if (Y < this->GridLL.y) {
+                  this->GridLL.y = Y;
+               }
+               if (X > this->GridUR.x) {
+                  this->GridUR.x = X;
+               }
+               if (Y > this->GridUR.y) {
+                  this->GridUR.y = Y;
+               } 
+               temp_x.insert(X+ drc_info.Metal_info.at(i+1).offset);
             }
-            if (X > this->GridUR.x) {
-              this->GridUR.x = X;
-            }
-            if (Y > this->GridUR.y) {
-              this->GridUR.y = Y;
-            }
-            tmpp.x = X;
-            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
-            tmpv.y = Y;
-            tmpv.x = X;
-            tmpv.metal = i;
-            // if(Power){
-            // tmpv.power = 1;
-            //}else{
-            // tmpv.power = 0;
-            //}
-            tmpv.active = true;
-            tmpv.index = this->vertices_total.size();
-            tmpv.up = -1;
-            tmpv.down = -1;
-            tmpv.north.clear();
-            tmpv.south.clear();
-            tmpv.east.clear();
-            tmpv.west.clear();
-            if (nb_start == -1) {
-              nb_start = tmpv.index;
-            } else {
-              bool mark = false;
-              int w;
-              for (w = tmpv.index - 1; w >= nb_start; w--) {
-                if (this->vertices_total.at(w).y == tmpv.y) {
-                  if (tmpv.x - this->vertices_total.at(w).x >= x_min.at(i)) {
-                    mark = true;
-                    break;
-                  }
-                } else {
-                  break;
-                }
-              }
-              if (mark) {
-                tmpv.west.push_back(w);
-                this->vertices_total.at(w).east.push_back(tmpv.index);
-              }
-            }
-            this->vertices_total.push_back(tmpv);
-            this->vertices_total_map.at(i).insert(
-                std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
+
+          }else{
+             std::cout<<"Bug for setting up metal layers"<<std::endl;
+          }
+
+          // then insert grid
+          for(auto it: temp_x){
+             RouterDB::vertex tmpv;
+             tmpv.y = Y;
+             tmpv.x = it;
+             tmpv.metal = i;
+             tmpv.active = true;
+             tmpv.index = this->vertices_total.size();
+             tmpv.up = -1;
+             tmpv.down = -1;
+             tmpv.north.clear();
+             tmpv.south.clear();
+             tmpv.east.clear();
+             tmpv.west.clear();
+             if (nb_start == -1) {
+               nb_start = tmpv.index;
+             } else {
+               bool mark = false;
+               int w;
+               for (w = tmpv.index - 1; w >= nb_start; w--) {
+                 if (this->vertices_total.at(w).y == tmpv.y) {
+                   if (tmpv.x - this->vertices_total.at(w).x >= x_min.at(i)) {
+                     mark = true;
+                     break;
+                   }
+                 } else {
+                   break;
+                 }
+               }
+               if (mark) {
+                 tmpv.west.push_back(w);
+                 this->vertices_total.at(w).east.push_back(tmpv.index);
+               }
+             }
+             this->vertices_total.push_back(tmpv);
+             this->vertices_total_map.at(i).insert(
+                 std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]  
           }
         }
       } else {
