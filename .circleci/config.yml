@@ -62,10 +62,6 @@ jobs:
 
   build-test-cktgen:
     executor: docker-executor
-    filters:
-      branches:
-        only:
-          - master
     steps:
       - checkout
       - setup_remote_docker
@@ -186,6 +182,10 @@ workflows:
   commit:
     jobs:
       - build-test-cktgen
+          filters:
+            branches:
+              only:
+                - master
       - build-wheel:
           name: "build-wheel-cp38-manylinux_2_24"
           filters:
