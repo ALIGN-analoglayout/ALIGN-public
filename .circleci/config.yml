@@ -181,8 +181,7 @@ workflows:
   version: 2.1
   commit:
     jobs:
-      - build-test-cktgen
-          name: "build-test-cktgen"
+      - build-test-cktgen:
           filters:
             branches:
               only:
