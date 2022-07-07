@@ -182,6 +182,11 @@ workflows:
   commit:
     jobs:
       - build-test-cktgen
+          name: "build-test-cktgen"
+          filters:
+            branches:
+              only:
+                - master
       - build-wheel:
           name: "build-wheel-cp38-manylinux_2_24"
           filters:
