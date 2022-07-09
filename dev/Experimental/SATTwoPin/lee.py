@@ -150,8 +150,18 @@ class Lee:
         return all_ok
 
     def total_wire_length(self):
-        return sum(len(path) for net, path in self.paths.items())
+        return sum(len(path)-1 for net, path in self.paths.items())
         
+
+
+def held_karp(n, m, lst):
+    ...
+    
+
+
+
+
+
 
 def main(n, m, lst, num_trials):
     count = 0
@@ -161,9 +171,11 @@ def main(n, m, lst, num_trials):
         a = Lee(n, m)
         ok = a.route_all(samp)
         if ok:
-            print('Wire Length:', a.total_wire_length())
+            print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()}')
             count += 1
             histo[a.total_wire_length()] += 1
+        else:
+            print(f'Only routed {len(a.paths)} of {len(lst)} nets.')
 
         a.show()
     print(f'Successfull routed {count} of {num_trials} times.')
@@ -222,6 +234,17 @@ if __name__ == "__main__":
         ("8", (0, 15), (6, 21)),
         ("9", (9, 15), (18, 18)),
         ("a", (21, 15), (18, 21))
+        ], num_trials=args.num_trials)
+
+    elif args.model == "river_8x8":
+        main(8, 8, [
+        ("0", (7, 0), (0, 7)),
+        ("1", (7, 1), (1, 7)),
+        ("2", (7, 2), (2, 7)),
+        ("3", (7, 3), (3, 7)),
+        ("4", (7, 4), (4, 7)),
+        ("5", (7, 5), (5, 7)),
+        ("6", (7, 6), (6, 7)),
         ], num_trials=args.num_trials)
 
     else:
