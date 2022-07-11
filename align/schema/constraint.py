@@ -65,8 +65,9 @@ class SoftConstraint(types.BaseModel):
     constraint: str
 
     def __init__(self, *args, **kwargs):
-        constraint = pattern.sub(
-            '_', self.__class__.__name__).lower()
+        # constraint = pattern.sub(
+        #     '__', self.__class__.__name__).lower()
+        constraint = self.__class__.__name__
         if 'constraint' not in kwargs or kwargs['constraint'] == self.__class__.__name__:
             kwargs['constraint'] = constraint
         else:

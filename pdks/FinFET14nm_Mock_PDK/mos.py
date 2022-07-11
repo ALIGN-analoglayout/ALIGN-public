@@ -17,9 +17,9 @@ class MOSGenerator(DefaultCanvas):
         self.exact_patterns = None
         height = max(height, 4*ceil((fin+16)/4))
         for const in self.primitive_constraints:
-            if const.constraint == 'generator':
+            if const.constraint == 'Generator':
                 if const.parameters is not None:
-                    if const.parameters.get('exact_patterns'): 
+                    if const.parameters.get('exact_patterns'):
                         self.exact_patterns = const.parameters.get('exact_patterns')
                         self.exact_patterns = self.exact_patterns[0]
                     if const.parameters.get('height'):
@@ -388,17 +388,17 @@ class MOSGenerator(DefaultCanvas):
                 else:
                     x_left = x_cells//2 - (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
                     x_right = x_cells//2 + (int(parameters[device_name_all[0]]["NF"])*int(parameters[device_name_all[0]]["M"]))//2
-         ########################## 
+         ##########################
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
-           
+
             for x in range(x_cells):
 
                 if self.exact_patterns: # Exact pattern from user
                     row_pattern = self.exact_patterns[y][x]
                     names_mapping = list(string.ascii_uppercase)
                     names_updated = {}
-                    for i in range(len(names)): 
+                    for i in range(len(names)):
                         names_updated[names_mapping[i]] = names[i]
                         names_updated[names_mapping[i].lower()] = names[i]
                     reflect = row_pattern.islower()

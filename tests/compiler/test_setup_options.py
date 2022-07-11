@@ -1,6 +1,6 @@
 import pathlib
 import json
-from align.schema import SubCircuit
+from align.schema import SubCircuit, constraint
 from align.compiler.compiler import compiler_input, generate_hierarchy, annotate_library
 from utils import ota_six, ota_six_flip, clean_data, build_example, get_test_id, ring_oscillator
 
@@ -99,7 +99,7 @@ def test_ring_osc_sametemplate():
     annotate_library(ckt_lib, prim_lib)
     ring_osc =  ckt_lib.find(name.upper())
     assert ring_osc, f"no subcircuit found {name.upper()}"
-    assert ring_osc.constraints[2].dict() == {"constraint": "same_template", "instances":["XI0", "XI1", "XI2", "XI3", "XI4"]}
+    assert ring_osc.constraints[2].dict() == {"constraint": "SameTemplate", "instances":["XI0", "XI1", "XI2", "XI3", "XI4"]}
     clean_data(name)
 
 def test_dont_use_lib_cell():
@@ -134,7 +134,7 @@ def test_dont_const():
     gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
         gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
-        gen_const = [c for c in gen_const if c['constraint'] != "group_blocks"]
+        gen_const = [c for c in gen_const if not isinstance(c, constraint.GroupBlocks)]
         assert len(gen_const) == 2, f"{gen_const}"
     clean_data(name)
 

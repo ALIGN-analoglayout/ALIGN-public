@@ -32,7 +32,7 @@ def test_basic_lib():
     with set_context(dp_const):
         x = constraint.SymmetricBlocks(direction="V", pairs=[["M1", "M2"]])
     assert x in dp_const
-    assert dp_const[1].constraint == "symmetric_blocks"
+    assert isinstance(dp_const[1], constraint.SymmetricBlocks)
     assert dp_const[1].pairs == [["M1", "M2"]]
 
 

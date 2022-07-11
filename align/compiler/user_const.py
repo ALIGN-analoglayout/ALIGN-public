@@ -65,9 +65,8 @@ class ConstraintParser:
 
             do_not_identify = []
             for const in node.constraints:
-                if const.constraint == "group_blocks":
-                    continue
-                if const.constraint == "group_caps":
+                if isinstance(const, constraint.GroupBlocks) or \
+                    isinstance(const, constraint.GroupCaps):
                     continue
                 if hasattr(const, "instances") and len(const.instances) > 1:
                     do_not_identify.extend(const.instances)

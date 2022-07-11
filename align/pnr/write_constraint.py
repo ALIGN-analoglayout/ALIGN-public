@@ -51,7 +51,7 @@ class PnRConstraintWriter:
         pnr_const = []
         pwrgndclkports = set()
         for input_const in all_const:
-            if input_const.constraint in ['power_ports', 'ground_ports', 'clock_ports']:
+            if input_const.constraint in ['PowerPorts', 'GroundPorts', 'ClockPorts']:
                 for k in input_const.ports: pwrgndclkports.add(k)
         maxrmsc = -1.
 
