@@ -155,6 +155,7 @@ def test_ru_exclude_m1():
     for term in cvr.terminals:
         assert term['layer'] != 'M1', 'M1 excluded'
 
+
 def test_ru_exclude_m3():
     name = get_test_id()
     cv = CanvasPDK()
@@ -175,3 +176,26 @@ def test_ru_exclude_m3():
     for term in cvr.terminals:
         assert term['layer'] != 'M3', 'M3 excluded'
 
+
+def test_ru_m1vt_h():
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (8, 1), netType='blockage')
+    cv.addWire(cv.m1, 'A',   1, (2, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',   3, (2, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (8, 1), netType='blockage')
+    for y in range(2, 7):
+        cv.addVia(cv.vt, 'A', 1, y)
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_m1vt_v():
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (12, 1), netType='blockage')
+    cv.addWire(cv.m1, 'B',   2, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m1, 'B',   2, (8, -1),  (11, 1), netType='pin')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (12, 1), netType='blockage')
+    for y in range(1, 5):
+        cv.addVia(cv.vt, 'B', 2, y)
+    run_postamble(name, cv, max_errors=0)
