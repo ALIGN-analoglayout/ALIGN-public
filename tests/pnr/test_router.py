@@ -199,3 +199,23 @@ def test_ru_m1vt_v():
     for y in range(1, 5):
         cv.addVia(cv.vt, 'B', 2, y)
     run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_m1m2_v():
+    ''' Connect by stretching m1 tracks, not with m3 '''
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (9, 1), netType='blockage')
+    cv.addWire(cv.m1, 'A',   1, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',   3, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m2, 'A',   4, (1, -1),  (3, 1), netType='pin')
+    cv.drop_via(cv.v1)
+    cv.addWire(cv.m1, 'A',   1, (6, -1),  (9, 1), netType='pin')
+    cv.addWire(cv.m1, None,  8, (0, -1),  (9, 1), netType='blockage')
+    data = run_postamble(name, cv, max_errors=0)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    for term in cvr.terminals:
+        assert term['layer'] != 'M3', 'Why use M3 but not M1?'
