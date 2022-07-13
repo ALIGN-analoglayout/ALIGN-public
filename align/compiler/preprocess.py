@@ -399,7 +399,7 @@ def remove_dummy_devices(subckt):
             remove_inst.append(inst)
 
     G = Graph(subckt)
-    if len(subckt.elements)>0 and len(subckt.elements) == len(remove_inst):
+    if len(subckt.elements)>1 and len(subckt.elements) == len(remove_inst):
         assert False, f"subcircuit {subckt.name} has all dummy devices, please remove this hiearchy or turn off remove_dummy_devices feature"
     logger.debug(f"removed dummy devices {[inst.name for inst in remove_inst]}")
     for inst in remove_inst:
