@@ -225,7 +225,7 @@ workflows:
               pdk:
                 - "Finfet"
               ci-level:
-                - "merge"
+                - "checkin"
               max-errors:
                 - "1"
       - test-integration:
