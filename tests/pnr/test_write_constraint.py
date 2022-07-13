@@ -15,7 +15,7 @@ def mock_circuit():
     with types.set_context(library):
         subckt = SubCircuit(
             name='high_speed_comparator',
-            pins=['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss'])
+            pins=['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss', 'vinn', 'vinp', 'voutn', 'voutp'])
         dummy_sub = SubCircuit(
             name='dummy',
             pins=['D', 'G', 'S', 'B'])

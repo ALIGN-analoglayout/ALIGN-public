@@ -55,6 +55,9 @@ def upper_case(cls, value):
     return [v.upper() for v in value]
 
 
+def upper_case_str(cls, value):
+    return value.upper()
+
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
     return value
@@ -1320,6 +1323,34 @@ class SymmetricNets(SoftConstraint):
     pins1: Optional[List]
     pins2: Optional[List]
     direction: Literal['H', 'V']
+
+    #TODO check net names
+    _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
+    _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+    @types.validator('pins1', allow_reuse=True)
+    def pins1_validator(cls, pins1):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins1:
+            pins1 = [pin.upper() for pin in pins1]
+            for pin in pins1:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+        return pins1
+
+    @types.validator('pins2', allow_reuse=True)
+    def pins2_validator(cls, pins2, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins2:
+            pins2 = [pin.upper() for pin in pins2]
+            for pin in pins2:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+        return pins2
 
 
 class ChargeFlow(SoftConstraint):
