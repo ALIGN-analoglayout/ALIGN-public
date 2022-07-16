@@ -1,4 +1,4 @@
-.subckt telescopic_ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp vdd 0
+.subckt telescopic_ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp id vdd 0
 .param no_of_fin = 10
 m1 id id 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=8 nf=4
 m2 net10 id 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=8 nf=4

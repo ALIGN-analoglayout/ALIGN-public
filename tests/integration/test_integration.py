@@ -8,32 +8,16 @@ run_flat = {'linear_equalizer',
             'single_to_differential_converter'}
 
 skip_pdks = {'Bulk65nm_Mock_PDK',
-             'Nonuniform_mock_pdk'}
+             'Nonuniform_mock_pdk',
+             'Bulk45nm_Mock_PDK'}
 
-skip_dirs = {'Sanitized_model3x_MDLL_TOP',
-             'OTA_FF_2s_v3e',
-             'five_transistor_ota_Bulk',
-             'Sanitized_Coarse_SAR_Logic',
-             'ADC_CORE',
-             'GF65_DLL_sanitized',
-             'Sanitized_CDAC_SW_Coarse',
-             'CTDTDSM_V3',
-             'single_SAR',
-             'Sanitized_civiR_DLDO_TOP',
-             'Sanitized_LevelCrossingDetector',
-             'Sanitized_CK_Divider8',
+skip_dirs = {'five_transistor_ota_Bulk',
              'mimo_bulk'}
 
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
 pdks = [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() if pdk.is_dir() and pdk.name not in skip_pdks]
-
-
-@pytest.fixture
-def placer_max_iter(monkeypatch):
-    # Reduce number of iterations to speed up tests
-    monkeypatch.setattr(align.pnr.placer, "PLACER_SA_MAX_ITER", 100)
 
 
 def gen_examples():
@@ -43,7 +27,7 @@ def gen_examples():
     examples = [p.parents[0] for p in examples_dir.rglob('*.sp') if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
     if ci_level == 'merge':
-        circle_ci_skip = "not SAR and not Sanitized_EdgeComparator and not DLL and not single_to_differential_converter and not COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW and not CTD and not BUFFER_VREFP and not BUFFER_VREFP2 and not CTDSM_CORE_NEW and not BUFFER_VCM and not vco_dtype_12_hierarchical and not Sanitized_Coarse_Comp_CK and not COMP_GM_STAGE_0415 and not linear_equalizer and not test_vga and not Gm1_v5_Practice and not powertrain_binary and not SW_Cres_v3_5 and not ldo_error_amp and not telescopic_ota_guard_ring"
+        circle_ci_skip = "not single_to_differential_converter and not vco_dtype_12_hierarchical and not linear_equalizer and not test_vga and not powertrain_binary and and not telescopic_ota_guard_ring"
         exclude_strings = [nm for nm in circle_ci_skip.split(' ') if nm not in ["and", "or", "not"]]
 
         additional_skip_dirs = set()
@@ -83,7 +67,7 @@ def gen_examples():
 @pytest.mark.nightly
 @pytest.mark.parametrize("design_dir", gen_examples(), ids=lambda x: x.name)
 @pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
-def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_max_iter):
+def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_sa_iterations, nvariants):
     uid = os.environ.get('PYTEST_CURRENT_TEST')
     uid = uid.split(' ')[0].split(':')[-1].replace('[', '_').replace(']', '').replace('-', '_')
     run_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / uid
@@ -96,9 +80,13 @@ def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, place
             '-flat',  str(1 if nm in run_flat else 0), '-l', 'WARNING', '-v', 'INFO']
     args.extend(['--router_mode', router_mode])
 
+    args.extend(['--placer_sa_iterations', str(placer_sa_iterations)])
+    args.extend(['--nvariants', str(nvariants)])
+
     if skipGDS:
         args.extend(['--skipGDS'])
     else:
+        # SMB Do we really need this?
         args.extend(['--regression'])
 
     results = align.CmdlineParser().parse_args(args)

@@ -2,17 +2,17 @@ import argparse
 import pathlib
 import logging
 import json
-import os
-from align import primitive
 
 from align.primitive import generate_primitive
 from align.schema.parser import SpiceParser
 from align.compiler.util import get_primitive_spice
+from align.compiler.user_const import ConstraintParser
 
 
 def main(args):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
     primitive_def = read_primitive_spice(args)
+
     return generate_primitive(
         args.block_name,
         primitive_def,
@@ -34,6 +34,7 @@ def main(args):
 def gen_parser():
     parser = argparse.ArgumentParser(description="Inputs for Cell Generation")
     parser.add_argument("-i", "--input_spice", type=str, required=False, default=None)
+    parser.add_argument("-c", "--constraint_dir", type=str, required=False, default=None)
     parser.add_argument("-p", "--primitive", type=str, required=True)
     parser.add_argument("-b", "--block_name", type=str, required=True)
     parser.add_argument("-u", "--height", type=int, required=False, default=28)
@@ -71,6 +72,10 @@ def read_primitive_spice(args):
     parser.parse(lines)
     primitive_def = parser.library.find(args.primitive.upper())
     primitive_def.add_generator('MOS')
+    if args.constraint_dir:
+        assert pathlib.Path(args.constraint_dir).exists(), f"constraint dir {args.constraint_dir} does not exist"
+        const_parse = ConstraintParser(args.pdkdir, pathlib.Path(args.constraint_dir))
+        const_parse.annotate_user_constraints(primitive_def)
     assert primitive_def, f"No such primitive definition found {args.primitive}"
     return primitive_def
 

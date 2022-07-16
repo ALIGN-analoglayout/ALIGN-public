@@ -29,7 +29,7 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
     json constraint = concrete["constraints"][0];
-    if (constraint["constraint"] != "place_on_grid") continue;
+    if (constraint["constraint"] != "PlaceOnGrid") continue;
     unsigned int start = 0;
     unsigned int slash = s.find_last_of('_');
     if (slash != string::npos) {
@@ -70,7 +70,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
   logger->debug("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(), drcInfo);
   int idx = 0;
   //pad nodeVec to match the number of concretes in JSON file
   for (const auto& m : modules) {
@@ -251,7 +251,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
 
     curr_sp.cacheSeq(designData);
 
-    
+
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
       break;
@@ -276,6 +276,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   curr_sol.cost = curr_cost;
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
+
   // Simulated annealing
   double T = hyper.T_INT;
   double delta_cost;
@@ -425,7 +426,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
 #endif
   int mode = 0;
   // Read design netlist and constraints
-  design designData(nodeVec.back(), hyper.SEED);
+  design designData(nodeVec.back(), drcInfo, hyper.SEED);
   _rng.seed(hyper.SEED);
   //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
@@ -475,7 +476,7 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
 #endif
   // int mode=0;
   // Read design netlist and constraints
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(),drcInfo);
   // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   // SeqPair curr_sp(designData);
@@ -506,5 +507,4 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
   // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
   //}
 }
-
 

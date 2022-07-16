@@ -18,8 +18,7 @@ design::design() {
   noSymGroup4FullMove = 0;
 }
 
-
-design::design(PnRDB::hierNode& node, const int seed) {
+design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
@@ -31,6 +30,8 @@ design::design(PnRDB::hierNode& node, const int seed) {
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
   Same_Template_Constraints = node.Same_Template_Constraints;
+  grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
+  grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks
@@ -279,15 +280,54 @@ design::design(PnRDB::hierNode& node, const int seed) {
     this->Port_Location.back().tid = it->tid;
     this->Port_Location.back().pos = placerDB::Bmark(it->pos);
   }
+  // Add spread constraints
+  for (const auto& it : node.SpreadConstraints) {
+    for (auto itb1 = it.blocks.begin(); itb1 != it.blocks.end(); ++itb1) {
+      for (auto itb2 = std::next(itb1); itb2 != it.blocks.end(); ++itb2) {
+        if (it.horizon) {
+          hSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        } else {
+          vSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        }
+      }
+    }
+  }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i]][0].counterpart != order.first[i] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(Blocks[order.first[i]][0].counterpart, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i + 1]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(order.first[i], Blocks[order.first[i + 1]][0].counterpart), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
+          Blocks[order.first[i]][0].counterpart != order.first[i] && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
           Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
         Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (order.second == PnRDB::V) {
+        for (const auto& al : node.Align_blocks) {
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i] && Blocks[order.first[i]][0].height >= Blocks[b][0].height) {
+                Ordering_Constraints.push_back(make_pair(make_pair(b, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i+1]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i+1] && Blocks[order.first[i+1]][0].height >= Blocks[b][0].height) {
+                Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], b), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+        }
+      }
     }
   }
   for (const auto& abut : node.Abut_Constraints) {
@@ -296,7 +336,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     }
   }
 
-  //PrintDesign();
+  // PrintDesign();
   // std::cout<<"Leaving design2\n";
   hasAsymBlock = checkAsymmetricBlockExist();
   // std::cout<<"Leaving design\n";
@@ -385,7 +425,6 @@ int design::GetSizeAsymBlock4Move(int mode) {
   return ss;
 }
 
-
 int design::GetSizeSymGroup4FullMove(int mode) {
   // mode-0: check mapIdx of groups for original design
   // mode-1: never check mapIdx for reduced design
@@ -464,7 +503,6 @@ design::design(string blockfile, string netfile, string cfile) {
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
-
 
 //
 
@@ -767,14 +805,13 @@ design::design(string blockfile, string netfile, string cfile) {
 //  }
 //}
 
-
 void design::PrintDesign() {
   auto logger = spdlog::default_logger()->clone("placer.design.PrintDesign");
 
   logger->debug("== Print Design ");
   logger->debug("bias_Vgraph: {0} mixFlag: {1}", bias_Vgraph, mixFlag);
   logger->debug("bias_Hgraph: {0} mixFlag: {1}", bias_Hgraph, mixFlag);
-  //PrintBlocks();
+  // PrintBlocks();
   PrintTerminals();
   PrintNets();
   PrintConstraints();
@@ -891,6 +928,13 @@ void design::PrintConstraints() {
       logger->debug(" {0} ", *it2);
     }
   }
+  logger->debug("=== SpreadConstraints Constraints ===");
+  for (auto it : hSpread) {
+    logger->debug("@h ({0},{1}) {2}", it.first.first, it.first.second, it.second);
+  }
+  for (auto it : vSpread) {
+    logger->debug("@v ({0},{1}) {2}", it.first.first, it.first.second, it.second);
+  }
 }
 
 void design::PrintTerminals() {
@@ -948,7 +992,6 @@ int design::GetBlockHeight(int blockid, placerDB::Omark ort, int sel) {
     return Blocks.at(blockid).at(sel).width;
   }
 }
-
 
 placerDB::point design::GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL, int sel) {
   placerDB::point p;
@@ -1221,7 +1264,6 @@ vector<pair<int, int>> design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   // pair<int,int> pp=make_pair(first,second);
   return pp;
 }
-
 
 void design::checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark) {
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");

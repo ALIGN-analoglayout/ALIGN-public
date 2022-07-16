@@ -133,3 +133,45 @@ def test_ru_6():
     cv.addWire(cv.m2, 'B',  1, (12, -1), (14, 1), netType='pin')
 
     run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_exclude_m1():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
+
+    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+          "constraint": "Route",
+          "min_layer": "M2",
+          "max_layer": "M3",
+          "customize": []
+        }])
+
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    for term in cvr.terminals:
+        assert term['layer'] != 'M1', 'M1 excluded'
+
+def test_ru_exclude_m3():
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
+
+    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+          "constraint": "Route",
+          "min_layer": "M1",
+          "max_layer": "M2",
+          "customize": []
+        }])
+
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    for term in cvr.terminals:
+        assert term['layer'] != 'M3', 'M3 excluded'
+
