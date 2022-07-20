@@ -295,19 +295,55 @@ def test_charge_pump_switch():
     constraints = {
         name: [
             {"constraint": "PowerPorts", "ports": ["vccx"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]}
+            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "ConfigureCompiler", "same_template": True}
         ],
         "switch": [
             {"constraint": "DoNotIdentify", "instances": ["qp0", "qn0"]}
         ]
     }
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--router_mode', 'bottom_up'])
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'bottom_up'])
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
         module = [m for m in hierarchy["modules"] if m["name"] == name][0]
-        assert len(module["constraints"]) == 4, f"Where are the two auto-generated array constraints? {module['constraints']}"
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 2, "Duplicate SameTemplate constraints"
+        align_in_order = [c for c in module["constraints"] if c["constraint"] == "AlignInOrder"]
+        assert len(align_in_order) == 1, "AlignInOrder not found"
+
+    with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
+        charge_pump_const = json.load(fp)
+        same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
+        assert len(same_template) == 1, "Duplicate SameTemplate constraints"
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
+
+def test_charge_pump_switch_small():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.charge_pump_switch(name, size=4)
+    constraints = {
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "ConfigureCompiler", "same_template": True}
+        ],
+        "switch": [
+            {"constraint": "DoNotIdentify", "instances": ["qp0", "qn0"]}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '1_Topology', '--router_mode', 'bottom_up'])
+    name = name.upper()
+    with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
+        hierarchy = json.load(fp)
+        module = [m for m in hierarchy["modules"] if m["name"] == name][0]
+        same_template = [c for c in module["constraints"] if c["constraint"] == "SameTemplate"]
+        assert len(same_template) == 1, "SameTemplate constraint not found!"
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -324,28 +360,30 @@ def test_niwc_opamp_split():
     {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
-    {"constraint": "GroupBlocks", "instances": ["mtail"], "instance_name": "xmtail0",
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "instance_name": "xmtail0", "template_name":"mtail0",
      "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": True, "single_device_connect_m1": False, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp",
+        {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp", "template_name":"dp",
      "generator": { "name": "MOS", "parameters": { "exact_patterns": [["AbBa",
                                                                        "BaAb",
                                                                        "BaAb",
 								       "AbBa"]], "PARTIAL_ROUTING": True}}},
-    {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "generator": { "name": "MOS",
+        {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "template_name":"nraila", "generator": {"name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
 		                                        "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb",
+        {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb", "template_name":"nrailb",
      "generator": {"name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
  		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail",
+        {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail", "template_name":"prail",
      "generator": {"name": "MOS",
                    "parameters": {"pattern_template": ["AbBa",
 		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
-    {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb", "generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa",
+            "template_name":"lsa", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "template_name":"lsb","generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "template_name":"ostagea","generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb",
+            "template_name":"ostageb", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
     {"constraint": "SameTemplate", "instances": ["xlsa", "xlsb"]},
     {"constraint": "SameTemplate", "instances": ["xostagea", "xostageb"]},
     {"constraint": "SameTemplate", "instances": ["xnraila", "xnrailb"]},
@@ -376,15 +414,53 @@ def test_niwc_opamp_split():
                 y = int(m.groups()[3])
                 size_tbl[nm].append((x,y))
 
-    assert size_tbl['XDP'] == [(2,4)]
-    assert size_tbl['XMTAIL0'] == [(4, 8)]
-    assert size_tbl['XPRAIL'] == [(4, 8)]
-    assert size_tbl['XLSA'] == [(1, 4)]
-    assert size_tbl['XLSB'] == [(1, 4)]
-    assert size_tbl['XOSTAGEA'] == [(1, 4)]
-    assert size_tbl['XOSTAGEB'] == [(1, 4)]
-    assert size_tbl['XNRAILA'] == [(1, 8)]
-    assert size_tbl['XNRAILB'] == [(1, 8)]
+    assert size_tbl['DP'] == [(2,4)]
+    assert size_tbl['MTAIL0'] == [(4, 8)]
+    assert size_tbl['PRAIL'] == [(4, 8)]
+    assert size_tbl['LSA'] == [(1, 4)]
+    assert size_tbl['LSB'] == [(1, 4)]
+    assert size_tbl['OSTAGEA'] == [(1, 4)]
+    assert size_tbl['OSTAGEB'] == [(1, 4)]
+    assert size_tbl['NRAILA'] == [(1, 8)]
+    assert size_tbl['NRAILB'] == [(1, 8)]
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
+def test_niwc_opamp_split_reuse():
+    # Tests legal size and exact_patterns restrictions
+
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.niwc_opamp_split(name)
+    constraints = [
+  {"constraint": "ConfigureCompiler", "auto_constraint": False, "merge_parallel_devices": False},
+  {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
+  {"constraint": "PowerPorts", "ports": ["vccx"]},
+  {"constraint": "GroundPorts", "ports": ["vssx"]},
+  {"constraint": "GroupBlocks", "instance_name": "X_M7A_M8A", "instances": ["M7A", "M8A"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M7B_M8B", "instances": ["M7B", "M8B"], "template_name": "CMC_NMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M11_M12", "instances": ["M11", "M12"], "template_name": "CMC_PMOS", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M5A_M6A", "instances": ["M5A", "M6A"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M5B_M6B", "instances": ["M5B", "M6B"], "template_name": "CMC_S_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M1_M2", "instances": ["M1", "M2"], "template_name": "DP_NMOS_B", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_MTAIL", "instances": ["MTAIL"], "template_name": "NMOS_3T", "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M3A_M4A", "instances": ["M3A", "M4A"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "GroupBlocks", "instance_name": "X_M3B_M4B", "instances": ["M3B", "M4B"], "generator": {"name": "mos", "parameters": None}},
+  {"constraint": "SymmetricBlocks", "direction": "V",
+   "pairs": [
+       ["X_M5A_M6A", "X_M5B_M6B"]
+   ]
+  },
+  {"constraint": "SymmetricBlocks", "direction": "V",
+   "pairs": [
+       ["X_M7A_M8A", "X_M7B_M8B"]
+   ]
+  }
+]
+
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:place'])
 
     if CLEANUP:
         shutil.rmtree(run_dir)
@@ -418,7 +494,75 @@ def test_comparator_analog():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator_analog(name)
     constraints = [
-        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
+        {"constraint": "GroupBlocks", "instances": ["pinp", "pinn"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["nldl", "nldr"], "instance_name": "xcm"},
+        {"constraint": "GroupBlocks", "instances": ["invp1", "invp1"], "instance_name": "xinv0"},
+        {"constraint": "GroupBlocks", "instances": ["invp2", "invp2"], "instance_name": "xinv1"},
+        {"constraint": "DoNotIdentify", "instances": ["sw_pbias_en", "sw_pullup_enb", "sw_pulldn_en", "sw_pulldn_en1"]},
+        {"constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["decap0"],
+                ["mpbias", "ptail", "p2", "sw_pbias_en"],
+                ["xdp", "sw_pullup_enb"],
+                ["xcm", "n2", "sw_pulldn_en", "sw_pulldn_en1"],
+                ["decap1"],
+                ["mp_hi", "nres1", "nres0"],
+            ]},
+        {"constraint": "Floorplan",
+            "order": True,
+            "symmetrize": True,
+            "regions": [
+                ["decap0"],
+                ["ptail"],
+                ["xdp"],
+                ["xcm"],
+                ["decap1"]
+            ]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+
+
+def test_analog_mux_4to1():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.analog_mux_4to1(name)
+    constraints = {
+        "passgate": [
+            {"constraint": "GroupBlocks", "instances": ["qp1"], "instance_name": "xqp1",
+                "generator": {"name": "MOS", "parameters": {"PARTIAL_ROUTING": True, "add_tap": False, "legal_sizes": [{"y": 1}]}}},
+            {"constraint": "GroupBlocks", "instances": ["qn1"], "instance_name": "xqn1",
+                "generator": {"name": "MOS", "parameters": {"PARTIAL_ROUTING": True, "add_tap": False, "legal_sizes": [{"y": 1}]}}},
+            {"constraint": "Floorplan", "regions": [["xqp1"], ["xqn1"]]}
+            ],
+        "decoder_2to4": [
+            {"constraint": "Floorplan", "order": True, "regions": [
+                ["inv08", "inv09"],
+                ["nand0", "inv00"],
+                ["nand1", "inv01"],
+                ["nand2", "inv02"],
+                ["nand3", "inv03"]
+                ]}
+            ],
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "auto_constraint": False,
+                "propagate": True,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": True,
+                "remove_dummy_hierarchies": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+            {"constraint": "SameTemplate", "instances": ["pg0", "pg1", "pg2", "pg3"]},
+            {"constraint": "AlignInOrder", "line": "left", "instances": ["pg0", "pg1", "pg2", "pg3"], "abut": True},
+            {"constraint": "AlignInOrder", "line": "bottom", "instances": ["i0", "pg3"]}
+            ]
+    }
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, max_errors=4)

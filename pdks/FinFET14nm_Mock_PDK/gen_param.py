@@ -2,6 +2,8 @@ import json
 import logging
 from math import sqrt, floor, ceil, log10
 from copy import deepcopy
+from collections import Counter
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +20,35 @@ def limit_pairs(pairs):
     else:
         return pairs
 
-def add_primitive(primitives, block_name, block_args):
+def construct_sizes_from_exact_patterns(exact_patterns):
+
+    legal_size_d = {}
+
+    for pattern in exact_patterns:
+        histo = Counter(c for row in pattern for c in row)
+        num_devices = len(set(c.upper() for c in histo.keys()))
+        if num_devices == 2:
+            k = len(pattern[0])//2, len(pattern)
+        else:
+            k = len(pattern[0]), len(pattern)
+        assert k not in legal_size_d
+        legal_size_d[k] = pattern
+
+    return legal_size_d
+
+def check_legal(x, y, legal_sizes):
+    assert legal_sizes is not None
+    for d in legal_sizes:
+        for tag, val in [('x', x), ('y', y)]:
+            if tag in d and d[tag] != val:
+                break
+        else:
+            return True
+
+    return False
+
+def add_primitive(primitives, block_name, block_args, generator_constraint):
+
     if block_name in primitives:
         block_args['abstract_template_name'] = block_name
         block_args['concrete_template_name'] = block_name
@@ -39,22 +69,54 @@ def add_primitive(primitives, block_name, block_args):
                     pairs.add((m//y, y))
                 if y == 1:
                     break
-            pairs = limit_pairs((pairs))
+
+            legal_size_set = None
+            legal_sizes = None
+            if generator_constraint is not None:
+                generator_parameters = generator_constraint.parameters
+                if generator_parameters is not None:
+                    legal_sizes = generator_parameters.get('legal_sizes')
+                    exact_patterns = generator_parameters.get('exact_patterns')
+                    assert exact_patterns is None or legal_sizes is None
+                    if exact_patterns is not None:
+                        legal_size_set = set(construct_sizes_from_exact_patterns(exact_patterns).keys())
+
+            if legal_size_set is None and legal_sizes is None:
+                pairs = limit_pairs((pairs)) # call limit_pairs if there aren't constraints
+
             for newx, newy in pairs:
-                concrete_name = f'{block_name}_X{newx}_Y{newy}'
-                if concrete_name not in primitives:
-                    primitives[concrete_name] = deepcopy(block_args)
-                    primitives[concrete_name]['x_cells'] = newx
-                    primitives[concrete_name]['y_cells'] = newy
-                    primitives[concrete_name]['abstract_template_name'] = block_name
-                    primitives[concrete_name]['concrete_template_name'] = concrete_name
+                if legal_sizes is not None: # legal_sizes
+                    ok = check_legal(newx, newy, legal_sizes)
+                else:
+                    ok = legal_size_set is None or (newx, newy) in legal_size_set
+
+                if legal_sizes is not None or legal_size_set is not None:
+                    if ok:
+                        logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
+                    else:
+                        logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
+
+                if ok:
+                    concrete_name = f'{block_name}_X{newx}_Y{newy}'
+                    if concrete_name not in primitives:
+                        primitives[concrete_name] = deepcopy(block_args)
+                        primitives[concrete_name]['x_cells'] = newx
+                        primitives[concrete_name]['y_cells'] = newy
+                        primitives[concrete_name]['abstract_template_name'] = block_name
+                        primitives[concrete_name]['concrete_template_name'] = concrete_name
         else:
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
 
-
 def gen_param(subckt, primitives, pdk_dir):
+
+    generator_constraint = None
+    for const in subckt.constraints:
+        if const.constraint == 'Generator':
+            assert generator_constraint is None
+            generator_constraint = const
+
     block_name = subckt.name
     vt = subckt.elements[0].model
     values = subckt.elements[0].parameters
@@ -75,7 +137,7 @@ def gen_param(subckt, primitives, pdk_dir):
             mvalues[ele.name] = ele.parameters
 
     if generator_name == 'CAP':
-        
+
         size = round(float(values["VALUE"]) * 1E15, 4)
 
         assert size <= design_config["max_size_cap"], f"caps larger than {design_config['max_size_cap']}fF are not supported"
@@ -94,7 +156,7 @@ def gen_param(subckt, primitives, pdk_dir):
             'primitive': generator_name,
             'value':  [int(length), int(width)]
         }
-        add_primitive(primitives, block_name, block_args)
+        add_primitive(primitives, block_name, block_args, generator_constraint)
 
     elif generator_name == 'RES':
         assert float(values["VALUE"]) or float(values["R"]), f"unidentified size {values['VALUE']} for {block_name}"
@@ -111,7 +173,7 @@ def gen_param(subckt, primitives, pdk_dir):
             'primitive': generator_name,
             'value': (height, float(size))
         }
-        add_primitive(primitives, block_name, block_args)
+        add_primitive(primitives, block_name, block_args, generator_constraint)
 
     else:
         assert 'MOS' == generator_name, f'{generator_name} is not recognized'
@@ -149,6 +211,7 @@ def gen_param(subckt, primitives, pdk_dir):
             size = 0
 
         logger.debug(f"Generating lef for {block_name}")
+
         if isinstance(size, int):
             for key in mvalues:
                 assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {block_name} {mvalues}"
@@ -162,12 +225,21 @@ def gen_param(subckt, primitives, pdk_dir):
             xval = int(no_units / square_y)
         def total_device_size(v):
             return int(v["NFIN"])*int(v['NF'])*int(v["M"])
+        unequal_devices = None
         if len(device_name_all) == 2:
             unequal_devices = (total_device_size(mvalues[device_name_all[0]]) !=
                                total_device_size(mvalues[device_name_all[1]]))
             if  unequal_devices:
                 yval = 1
-                xval = int(size/2)
+                xval = int(no_units)
+
+        if generator_constraint is not None:
+                generator_parameters = generator_constraint.parameters
+                if generator_parameters is not None:
+                    exact_patterns = generator_parameters.get('exact_patterns')
+                    if exact_patterns is not None:
+                        yval = len(exact_patterns[0])
+                        xval = len(exact_patterns[0][0]) if len(device_name_all) !=2 else len(exact_patterns[0][0])//2
 
         block_args = {
             'primitive': generator_name,
@@ -181,11 +253,11 @@ def gen_param(subckt, primitives, pdk_dir):
         if vt:
             block_args['vt_type'] = vt[0]
         # TODO: remove name based hack
-        if len(device_name_all)==2 and unequal_devices:
+        if (len(device_name_all)==2 and unequal_devices):
             # Only support single row for different sized devices
             primitives[block_name] = block_args
             primitives[block_name]['abstract_template_name'] = block_name
             primitives[block_name]['concrete_template_name'] = block_name
         else:
-            add_primitive(primitives, block_name, block_args)
+            add_primitive(primitives, block_name, block_args, generator_constraint)
     return True
