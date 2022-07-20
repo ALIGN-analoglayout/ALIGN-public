@@ -10,11 +10,11 @@ def show(n, m, h_edge_on, v_edge_on):
         return ch
 
     for i in range(n):
-        for ii in range(4):
+        for ii in range(2):
             if i == n-1 and ii > 0:
                 continue
             for j in range(m):
-                for jj in range(6):
+                for jj in range(3):
                     if j == m-1 and jj > 0:
                         continue
                     ch = ' '

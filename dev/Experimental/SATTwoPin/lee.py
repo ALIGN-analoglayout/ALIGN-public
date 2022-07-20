@@ -3,6 +3,7 @@ import random
 import render
 import argparse
 
+import heapq
 
 class Lee:
     def __init__(self, n, m):
@@ -37,12 +38,106 @@ class Lee:
         render.show(self.n, self.m, h_edge_on, v_edge_on)
 
 
+    def path2str(self, path):
+        s = []
+        for u, v in zip(path[:-1], path[1:]):
+            if u[0] == v[0]: # horizontal
+                if u[1]+1 == v[1]: # right
+                    s.append('R')
+                elif u[1]-1 == v[1]: # left
+                    s.append('L')
+                else:
+                    assert False
+            elif u[1] == v[1]: # vertical
+                if u[0]+1 == v[0]: # down
+                    s.append('D')
+                elif u[0]-1 == v[0]: # up
+                    s.append('U')
+                else:
+                    assert False
+
+        return ''.join(s)
+
+    def astar(self, nm, src, tgt, obstacles=None):
+
+        if obstacles is None:
+            obstacles_s = set()
+        else:
+            obstacles_s = obstacles
+        
+        def adjacent_states(u):
+            i, j = u
+            for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
+                if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
+                    yield (ii, jj), 1
+
+
+        def heuristic(v):
+            return sum(abs(tgt[i] - v[i]) for i in range(2))
+
+        dist = {src : 0}
+
+        came_from = {src : None}
+
+        q = [(0, src)]
+
+        heapq.heapify(q)
+
+
+        count = 0
+        found = False
+
+
+
+        while q:
+            count += 1
+
+            _, u = heapq.heappop(q)
+
+            if u == tgt:
+                found = True
+                break
+
+            for v, weight in adjacent_states(u):
+                alt = dist[u] + weight
+                if v not in dist or alt < dist[v]:
+                    dist[v] = alt
+                    priority = alt + heuristic(v)
+                    heapq.heappush(q, (priority, v))
+                    came_from[v] = u
+
+        if found:
+
+            assert tgt in dist
+
+            u = tgt
+            path = [u]
+            while u != src:
+                u = came_from[u]
+                path.append(u)
+
+            path.reverse()
+
+            return self.path2str(path), path
+        else:
+            return None, None
+        
+            
+
+
+
     def bfs(self, nm, src, tgt, obstacles=None):
 
         if obstacles is None:
             obstacles_s = set()
         else:
             obstacles_s = obstacles
+
+        def adjacent_states(u):
+            i, j = u
+            for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
+                if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
+                    yield (ii, jj), 1
 
 
         reached = {}
@@ -53,12 +148,11 @@ class Lee:
         count = 0
         while frontier:
             new_frontier = set()
-            for i, j in frontier:
-                for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
-                    if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
-                        new_frontier.add((ii, jj))
-                        if (ii, jj) == tgt:
-                            found = True
+            for u in frontier:
+                for v, _ in adjacent_states(u):
+                    new_frontier.add(v)
+                    if v == tgt:
+                        found = True
 
             for u in frontier:
                 reached[u] = count
@@ -93,33 +187,16 @@ class Lee:
                 else:
                     assert False
 
+            path.reverse()
 
-            path = list(reversed(path))
-            s = []
-
-            for u, v in zip(path[:-1], path[1:]):
-                if u[0] == v[0]: # horizontal
-                    if u[1]+1 == v[1]: # right
-                        s.append('R')
-                    elif u[1]-1 == v[1]: # left
-                        s.append('L')
-                    else:
-                        assert False
-                elif u[1] == v[1]: # vertical
-                    if u[0]+1 == v[0]: # down
-                        s.append('D')
-                    elif u[0]-1 == v[0]: # up
-                        s.append('U')
-                    else:
-                        assert False
-
-
-            return ''.join(s), path
+            return self.path2str(path), path
         else:
             return None, None
 
 
-    def route_all(self, lst):
+    def route_all(self, lst, alg='bfs'):
+
+        fn = self.bfs if alg == 'bfs' else self.astar
 
         all_ok = True
 
@@ -135,7 +212,7 @@ class Lee:
             obstacles.remove(src)
             obstacles.remove(tgt)
 
-            path_s, path_l = self.bfs( nm, src, tgt, obstacles=obstacles)
+            path_s, path_l = fn( nm, src, tgt, obstacles=obstacles)
 
             if path_l is None:
                 obstacles.add(src)
@@ -153,23 +230,13 @@ class Lee:
         return sum(len(path)-1 for net, path in self.paths.items())
         
 
-
-def held_karp(n, m, lst):
-    ...
-    
-
-
-
-
-
-
-def main(n, m, lst, num_trials):
+def main(n, m, lst, num_trials, alg='bfs'):
     count = 0
     histo = Counter()
     for _ in range(num_trials):
         samp = random.sample(lst, len(lst))
         a = Lee(n, m)
-        ok = a.route_all(samp)
+        ok = a.route_all(samp, alg=alg)
         if ok:
             print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()}')
             count += 1
@@ -186,11 +253,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Lee Router")
     parser.add_argument("-m", "--model", type=str, default="ten_nets_8x8")
     parser.add_argument("-n", "--num_trials", type=int, default=100)
+    parser.add_argument("-a", "--alg", type=str, default='bfs')
 
     args = parser.parse_args()
 
     if args.model == "two_nets_10x10":
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials)
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg)
 
         """
   01234567
@@ -206,10 +274,11 @@ if __name__ == "__main__":
 """
 
     elif args.model == "ten_nets_8x8":
+
         main(8, 8, [
-
+        ("1", (2, 0), (0, 2)),
         ("2", (3, 0), (2, 1)),
-
+        ("3", (5, 0), (7, 2)),
         ("4", (6, 1), (5, 5)),
         ("5", (5, 4), (1, 5)),
         ("6", (2, 3), (4, 6)),
@@ -217,9 +286,22 @@ if __name__ == "__main__":
         ("8", (0, 5), (2, 7)),
         ("9", (3, 5), (6, 6)),
         ("a", (7, 5), (6, 7)),
-        ("3", (5, 0), (7, 2)),
-        ("1", (2, 0), (0, 2)),
-        ], num_trials=args.num_trials)
+        ], num_trials=args.num_trials, alg=args.alg)
+
+
+    elif args.model == "ten_nets_16x16":
+        main(16, 16, [
+        ("1", (4, 0), (0, 4)),
+        ("2", (6, 0), (4, 2)),
+        ("3", (10, 0), (14, 4)),
+        ("4", (12, 2), (10, 10)),
+        ("5", (10, 8), (2, 10)),
+        ("6", (4, 6), (8, 12)),
+        ("7", (6, 8), (4, 12)),
+        ("8", (0, 10), (4, 14)),
+        ("9", (6, 10), (12, 12)),
+        ("a", (14, 10), (12, 14)),
+        ], num_trials=args.num_trials, alg=args.alg)
 
 
     elif args.model == "ten_nets_24x24":
@@ -234,7 +316,7 @@ if __name__ == "__main__":
         ("8", (0, 15), (6, 21)),
         ("9", (9, 15), (18, 18)),
         ("a", (21, 15), (18, 21))
-        ], num_trials=args.num_trials)
+        ], num_trials=args.num_trials, alg=args.alg)
 
     elif args.model == "river_8x8":
         main(8, 8, [
@@ -245,7 +327,7 @@ if __name__ == "__main__":
         ("4", (7, 4), (4, 7)),
         ("5", (7, 5), (5, 7)),
         ("6", (7, 6), (6, 7)),
-        ], num_trials=args.num_trials)
+        ], num_trials=args.num_trials, alg=args.alg)
 
     else:
         assert False, f"Unknown model: {args.model}"
