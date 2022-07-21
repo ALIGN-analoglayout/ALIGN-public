@@ -200,8 +200,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         results.append((subckt, variants))
 
         pl_files = set((pnr_dir / 'Results').glob(f'{subckt.upper()}*.scaled_placement_verilog.json'))
-        for plfile in pl_files:
-            os.system(f'hanan_router -r -uu 1 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.lef -p {plfile} -o {pnr_dir}/Results')
+        #for plfile in pl_files:
+        #    os.system(f'hanan_router -r -uu 1 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.lef -p {plfile} -o {pnr_dir}/Results')
         pfiles = set(primitive_dir.glob('*.gds.json'))
         for pfile in pfiles:
             if black_box_gds_dir and (black_box_gds_dir/plfile.stem).is_file():

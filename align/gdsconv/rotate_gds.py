@@ -51,7 +51,7 @@ class Module:
             s += f' [{str(i)} {i._modu._name}]'
         return s
     def add(self):
-        print(f'working on cell {self._name}')
+        if self._added: return
         for i in self._instances:
             if i._modu:
                 if not i._modu._added:
@@ -69,6 +69,7 @@ class Module:
                 if not self._cell:
                     self._cell = gdspy.Cell(self._name)
                 self._cell.add(ref)
+        print(f'working on cell {self._name}')
         self._added = True
 
 modules = dict()
@@ -119,27 +120,30 @@ for j,m in modules.items():
         if modu:
             i._modu = modu
 
-gdslib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
+#gdslib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
 top_cell=None
 for j,m in modules.items():
     m.add()
     if j == args.top_cell:
         top_cell = m._cell
-    gdslib.add(m._cell)
+    #gdslib.add(m._cell)
 if top_cell:
-    writer = gdspy.GdsWriter((args.top_cell + '.gds'), unit=1.0e-6, precision=1.0e-9)
+    writer = gdspy.GdsWriter((args.top_cell + '_r' + str(args.rotate) + '.gds'), unit=1.0e-6, precision=1.0e-9)
     top_cell.flatten()
-    outlib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
-    cell = gdspy.Cell(args.top_cell + '_r')
-    b = top_cell.get_bounding_box()
-    h = b[1][1] - b[0][1]
-    w = b[1][0] - b[0][0]
-    for p in top_cell.get_polygonsets():
-        r = p.rotate(args.rotate * numpy.pi/180)
-        if args.rotate == 180: r = r.translate(w, h)
-        elif args.rotate == 90: r = r.translate(h, 0)
-        elif args.rotate == 270: r = r.translate(0, w)
-        cell.add(r)
-    writer.write_cell(cell)
+    if args.rotate == 0:
+        writer.write_cell(top_cell)
+    else:
+        outlib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
+        cell = gdspy.Cell(args.top_cell + '_r' + str(args.rotate))
+        b = top_cell.get_bounding_box()
+        h = b[1][1] - b[0][1]
+        w = b[1][0] - b[0][0]
+        for p in top_cell.get_polygonsets():
+            r = p.rotate(-args.rotate * numpy.pi/180)
+            if args.rotate == 180: r = r.translate(w, h)
+            elif args.rotate == 90: r = r.translate(h, 0)
+            elif args.rotate == 270: r = r.translate(0, w)
+            cell.add(r)
+        writer.write_cell(cell)
     writer.close()
 #gdspy.LayoutViewer(pattern={'default': 8}, library=gdslib, depth=10)
