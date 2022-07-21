@@ -58,7 +58,7 @@ class Lee:
 
         return ''.join(s)
 
-    def astar(self, nm, src, tgt, obstacles=None):
+    def _astar(self, nm, src, tgt, obstacles=None, heuristic=(lambda v: 0)):
 
         if obstacles is None:
             obstacles_s = set()
@@ -71,9 +71,6 @@ class Lee:
                 if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
                     yield (ii, jj), 1
 
-
-        def heuristic(v):
-            return sum(abs(tgt[i] - v[i]) for i in range(2))
 
         dist = {src : 0}
 
@@ -98,7 +95,15 @@ class Lee:
                 found = True
                 break
 
+            w = came_from[u]
             for v, weight in adjacent_states(u):
+                if w is not None:
+                    if v[0] == u[0] and u[0] == w[0] or \
+                       v[1] == u[1] and u[1] == w[1]:
+                        pass
+                    else:
+                        weight += 10
+
                 alt = dist[u] + weight
                 if v not in dist or alt < dist[v]:
                     dist[v] = alt
@@ -121,9 +126,16 @@ class Lee:
             return self.path2str(path), path
         else:
             return None, None
-        
-            
 
+    def dijkstra(self, nm, src, tgt, obstacles=None):
+        return self._astar(nm, src, tgt, obstacles=obstacles)
+
+
+    def astar(self, nm, src, tgt, obstacles=None):
+        def heuristic(v):
+            return sum(abs(tgt[i] - v[i]) for i in range(2))
+
+        return self._astar(nm, src, tgt, obstacles=obstacles, heuristic=heuristic)
 
 
     def bfs(self, nm, src, tgt, obstacles=None):
@@ -144,12 +156,17 @@ class Lee:
 
         frontier = { src }
 
+        came_from = {src : None}
+
+
         found = False
         count = 0
         while frontier:
             new_frontier = set()
             for u in frontier:
                 for v, _ in adjacent_states(u):
+                    if v not in new_frontier and v not in reached:
+                        came_from[v] = u
                     new_frontier.add(v)
                     if v == tgt:
                         found = True
@@ -175,17 +192,8 @@ class Lee:
             u = tgt
             path = [u]
             while u != src:
-                i, j = u
-                for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
-                    if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
-                        v = ii, jj
-                        if v in reached:
-                            if reached[v]+1 == reached[u]:
-                                u = v
-                                path.append(u)
-                                break
-                else:
-                    assert False
+                u = came_from[u]
+                path.append(u)
 
             path.reverse()
 
@@ -196,7 +204,7 @@ class Lee:
 
     def route_all(self, lst, alg='bfs'):
 
-        fn = self.bfs if alg == 'bfs' else self.astar
+        fn = self.bfs if alg == 'bfs' else (self.astar if alg == 'astar' else self.dijkstra)
 
         all_ok = True
 
