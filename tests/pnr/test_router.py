@@ -143,7 +143,7 @@ def test_ru_exclude_m1():
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M3",
           "customize": []
@@ -163,7 +163,7 @@ def test_ru_exclude_m3():
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M2",
           "customize": []

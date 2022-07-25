@@ -2028,7 +2028,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width);
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
           }
         } else {
           // i is above j
@@ -2042,7 +2042,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height);
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
           }
         }
       } else {
@@ -2058,7 +2058,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height);
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
           }
         } else {
           // i is right of j
@@ -2072,7 +2072,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width);
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
           }
         }
       }
@@ -2437,7 +2437,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    solverif.setTimeLimit(10);
+    solverif.setTimeLimit(Blocks.size());
     solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         intvars.data(), objective.data(), sens.data(), rhs.data());
@@ -2820,7 +2820,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width);
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
           }
         } else {
           // i is above j
@@ -2834,7 +2834,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height);
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
           }
         }
       } else {
@@ -2850,7 +2850,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height);
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
           }
         } else {
           // i is right of j
@@ -2864,7 +2864,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width);
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
           }
         }
       }
@@ -3247,6 +3247,7 @@ bool ILP_solver::FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp
           break;
       }
     }
+    solverif.setTimeLimit(10 * Blocks.size());
     solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());

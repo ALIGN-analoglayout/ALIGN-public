@@ -125,7 +125,7 @@ class Graph(networkx.Graph):
         subckt_const = subgraph.subckt.constraints
         with set_context(self.subckt.constraints):
             for const in subckt_const:
-                if const.constraint == 'symmetric_blocks':
+                if isinstance(const,constraint.SymmetricBlocks):
                     t = [[self._get_key(ele, match) for ele in pair] for pair in const.pairs]
                     d = const.direction
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
@@ -133,7 +133,7 @@ class Graph(networkx.Graph):
                         self.subckt.constraints.append(x)
                     assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
                     self.subckt.constraints.remove(x)
-                elif const.constraint == 'symmetric_nets':
+                elif isinstance(const, constraint.SymmetricNets):
                     pair = [self._get_key(const.net1, match), self._get_key(const.net2, match)]
                     nbrs1, nbrs2 = self.all_neighbors_dist(pair)
                     assert nbrs1 == nbrs2, f"neighbors mismatch {nbrs1} {nbrs2}"
@@ -160,8 +160,8 @@ class Graph(networkx.Graph):
     def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
         new_subckt_names = []
-        for match in matches:
 
+        for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"

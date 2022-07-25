@@ -244,7 +244,7 @@ def test_gen_netlist_matrix():
       "constraints": [
         {
           "abut": false,
-          "constraint": "order",
+          "constraint": "Order",
           "direction": "top_to_bottom",
           "instances": [
             "u0",
@@ -366,7 +366,7 @@ def test_gen_netlist_matrix():
       "constraints": [
         {
           "abut": false,
-          "constraint": "order",
+          "constraint": "Order",
           "direction": "left_to_right",
           "instances": [
             "u0",

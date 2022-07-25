@@ -22,10 +22,10 @@ def limit_pairs(pairs):
 
 
 def construct_sizes_from_exact_patterns(exact_patterns):
-                        
+
     legal_size_d = {}
-    
-    for pattern in exact_patterns:                        
+
+    for pattern in exact_patterns:
         histo = Counter(c for row in pattern for c in row)
         num_devices = len(set(c.upper() for c in histo.keys()))
         k = len(pattern[0])//num_devices, len(pattern)
@@ -93,7 +93,7 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                         logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
                     else:
                         logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
-                
+
                 if ok:
                     concrete_name = f'{block_name}_X{newx}_Y{newy}'
                     if concrete_name not in primitives:
@@ -112,7 +112,7 @@ def gen_param(subckt, primitives, pdk_dir):
 
     generator_constraint = None
     for const in subckt.constraints:
-        if const.constraint == 'generator':
+        if const.constraint == 'Generator':
             assert generator_constraint is None
             generator_constraint = const
 
@@ -181,8 +181,6 @@ def gen_param(subckt, primitives, pdk_dir):
             'y_cells': y,
             'parameters': values
         }
-
-        
 
         add_primitive(primitives, block_name, block_args, generator_constraint)
 

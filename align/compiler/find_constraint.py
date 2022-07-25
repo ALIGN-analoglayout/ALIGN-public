@@ -301,45 +301,59 @@ class process_input_const:
         new_symmblock_const = list()
         for const in self.iconst:
             if isinstance(const, constraint.SymmetricNets):
-                # if not getattr(const, 'pins1', None):
-                # TODO: const with pin information should be handled separately
-                logger.debug(f"adding pins to user symmnet constraint {const}")
-                pairs, s1, s2 = symmnet_device_pairs(
-                    self.G,
-                    const.net1.upper(),
-                    const.net2.upper(),
-                    self.user_constrained_list,
-                    None,
-                    True)
-                assert s1, f"no connections found to net {const.net1}, fix user const"
-                assert s2, f"no connections found to net {const.net2}, fix user const"
-                with set_context(self.iconst):
-                    replace_const.append(
-                        (
-                            const,
-                            constraint.SymmetricNets(
-                                direction=const.direction,
-                                net1=const.net1.upper(),
-                                net2=const.net2.upper(),
-                                pins1=s1,
-                                pins2=s2,
-                            ),
+                if not getattr(const, 'pins1', None):
+                    logger.debug(f"adding pins to user symmnet constraint {const}")
+                    pairs, s1, s2 = symmnet_device_pairs(
+                        self.G,
+                        const.net1.upper(),
+                        const.net2.upper(),
+                        self.user_constrained_list,
+                        None,
+                        True)
+                    assert s1, f"no connections found to net {const.net1} in subcircuit {self.subckt}, fix user const"
+                    assert s2, f"no connections found to net {const.net2} in subcircuit {self.subckt}, fix user const"
+                    with set_context(self.iconst):
+                        replace_const.append(
+                            (
+                                const,
+                                constraint.SymmetricNets(
+                                    direction=const.direction,
+                                    net1=const.net1.upper(),
+                                    net2=const.net2.upper(),
+                                    pins1=s1,
+                                    pins2=s2,
+                                ),
+                            )
                         )
-                    )
-                    pairsj = list()
-                    for key, value in pairs.items():
-                        if key in s1:
-                            continue
-                        if key != value and {key, value} not in self.user_constrained_list:
-                            self.user_constrained_list.append({key, value})
-                            pairsj.append([key, value])
-                        elif key not in self.user_constrained_list:
-                            self.user_constrained_list.append(key)
-                            pairsj.append([key])
-                    if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
-                        # Do not generate symmetry constraint for a single instance
+                else: # existing pin information
+                    pin_pairs = {}
+                    remove_duplicate = []
+                    for i in range(len(const.pins1)):
+                        logger.info(f"{i} {pin_pairs}")
+                        if const.pins1[i] in pin_pairs.keys():
+                            remove_duplicate.append(i)
+                        elif not const.pins1[i] in self.subckt.pins:
+                            pin_pairs[const.pins1[i]] = const.pins2[i]
+                    for index in sorted(remove_duplicate, reverse=True):
+                        del const.pins1[index]
+                        del const.pins2[index]
+                    logger.info(f"updated symmetry net const: {const}")
+                    pairs = {k.split("/")[0]: v.split("/")[0] for k,v in pin_pairs.items()}
+                pairsj = list()
+                for key, value in pairs.items():
+                    if key in self.subckt.pins:
+                        continue #net name is same as port name
+                    if key != value and {key, value} not in self.user_constrained_list:
+                        self.user_constrained_list.append({key, value})
+                        pairsj.append([key, value])
+                    elif key not in self.user_constrained_list:
+                        self.user_constrained_list.append(key)
+                        pairsj.append([key])
+                if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
+                    # Do not generate symmetry constraint for a single instance
+                    with set_context(self.iconst):
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
-                        new_symmblock_const.append(symmBlock)
+                    new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
             for k, v in replace_const:
                 if k!=v: # removing constraint does not remove it from cache and z3 solver, duplicate const is not allowed in solver

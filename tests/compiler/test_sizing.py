@@ -61,8 +61,8 @@ def test_sizing3(ckt):
     assert ckt.elements[3]
     assert len(ckt.elements) == 5, f"{[ele.name for ele in ckt.elements]}"
     assert ckt.get_element("X_MN2_MN3")
-    assert ckt.parent.find("DP_NMOS_B_56389919") #Check hash is consistent
-    assert ckt.parent.find("DP_NMOS_B_56389919").elements[0].parameters["W"] == "3.6E-07"
+    assert ckt.parent.find("DP_NMOS_B_77995687"), f"Check hash is consistent? {[subckt.name for subckt in ckt.parent if 'DP_NMOS_B' in subckt.name]}"
+    assert ckt.parent.find("DP_NMOS_B_77995687").elements[0].parameters["W"] == "3.6E-07"
     assert ele(ckt, "X_XI1").parameters["STACK"] == "3"
     assert ele(ckt, "X_XI1").model == "PSVT"
 
