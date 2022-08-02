@@ -9,6 +9,8 @@ class Lee:
     def __init__(self, n, m):
         self.n, self.m = n, m
         self.paths = {}
+        self.via_cost = 10
+
 
     def add_path(self, nm, path):
         self.paths[nm] = path
@@ -22,12 +24,17 @@ class Lee:
             for p0, p1 in zip(path[:-1], path[1:]):
                 i0, i1 = min(p0[0], p1[0]), max(p0[0], p1[0])
                 j0, j1 = min(p0[1], p1[1]), max(p0[1], p1[1])
-                if i0 == i1: # h_edge
+                k0, k1 = min(p0[2], p1[2]), max(p0[2], p1[2])
+                if k0 != k1: # via
+                    assert k0 + 1 == k1
+                elif i0 == i1: # h_edge
                     assert j0 + 1 == j1
                     h_edges[((i0,j0),(i1,j1))].add(nm)
                 elif j0 == j1: # v_edge
                     assert i0 + 1 == i1
                     v_edges[((i0,j0),(i1,j1))].add(nm)
+                else:
+                    assert False, (p0, p1)
 
         def h_edge_on( i, j):
             return h_edges[((i,j),(i,j+1))]
@@ -41,7 +48,15 @@ class Lee:
     def path2str(self, path):
         s = []
         for u, v in zip(path[:-1], path[1:]):
-            if u[0] == v[0]: # horizontal
+            if u[2] != v[2]: # via
+                assert u[0] == v[0] and u[1] == v[1]
+                if u[2]+1 == v[2]: # up
+                    s.append('+')
+                elif u[2]-1 == v[2]: # down
+                    s.append('-')
+                else:
+                    assert False
+            elif u[0] == v[0]: # horizontal
                 if u[1]+1 == v[1]: # right
                     s.append('R')
                 elif u[1]-1 == v[1]: # left
@@ -55,6 +70,8 @@ class Lee:
                     s.append('U')
                 else:
                     assert False
+            else:
+                assert False
 
         return ''.join(s)
 
@@ -66,64 +83,56 @@ class Lee:
             obstacles_s = obstacles
         
         def adjacent_states(u):
-            i, j = u
-            for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
-                if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
-                    yield (ii, jj), 1
+            i, j, k = u
+
+            if k == 0: # horizontal
+                next_states = [(i,j-1,0),(i,j+1,0),(i,j,1)]
+            elif k == 1: # vertical
+                next_states = [(i-1,j,1),(i+1,j,1),(i,j,0)]
+            else:
+                assert False
+
+            for ii, jj, kk in next_states:
+                if 0 <= ii < self.n and 0 <= jj < self.m and 0 <= kk < 2 and (ii, jj) not in obstacles_s:
+                    yield (ii, jj, kk), (self.via_cost if kk != k else 1)
 
 
-        dist = {src : 0}
+        src0 = src[0], src[1], 0
+        src1 = src[0], src[1], 1
 
-        came_from = {src : None}
+        tgt0 = tgt[0], tgt[1], 0
+        tgt1 = tgt[0], tgt[1], 1
 
-        q = [(0, src)]
+        dist = {src0 : 0, src1 : 0}
+
+        came_from = {src0 : None, src1 : None}
+
+        q = [(0, src0), (0,src1)]
 
         heapq.heapify(q)
 
-
-        count = 0
         found = False
-
-
-
         print(f'Working on {nm}...')
 
         while q:
+            _, u = heapq.heappop(q)
 
-            count += 1
-
-            p, u = heapq.heappop(q)
-
-            print(f'Top: {(p, u)}')
-
-            if u == tgt:
+            if u == tgt0 or u == tgt1:
                 found = True
                 break
 
             w = came_from[u]
             for v, weight in adjacent_states(u):
-                if w is not None:
-                    if v[0] == u[0] and u[0] == w[0] or \
-                       v[1] == u[1] and u[1] == w[1]:
-                        pass
-                    else:
-                        weight += 10
-
                 alt = dist[u] + weight
                 if v not in dist or alt < dist[v]:
                     dist[v] = alt
                     priority = alt + heuristic(v)
-                    print(f'Enqueueing {(priority, v)}')
                     heapq.heappush(q, (priority, v))
                     came_from[v] = u
 
         if found:
-
-            assert tgt in dist
-
-            u = tgt
             path = [u]
-            while u != src:
+            while u != src0 and u != src1:
                 u = came_from[u]
                 path.append(u)
 
@@ -143,74 +152,9 @@ class Lee:
 
         return self._astar(nm, src, tgt, obstacles=obstacles, heuristic=heuristic)
 
-
-    def bfs(self, nm, src, tgt, obstacles=None):
-
-        if obstacles is None:
-            obstacles_s = set()
-        else:
-            obstacles_s = obstacles
-
-        def adjacent_states(u):
-            i, j = u
-            for ii, jj in [(i-1,j), (i+1,j), (i,j-1), (i, j+1)]:
-                if 0 <= ii < self.n and 0 <= jj < self.m and (ii, jj) not in obstacles_s:
-                    yield (ii, jj), 1
-
-
-        reached = {}
-
-        frontier = { src }
-
-        came_from = {src : None}
-
-
-        found = False
-        count = 0
-        while frontier:
-            new_frontier = set()
-            for u in frontier:
-                for v, _ in adjacent_states(u):
-                    if v not in new_frontier and v not in reached:
-                        came_from[v] = u
-                    new_frontier.add(v)
-                    if v == tgt:
-                        found = True
-
-            for u in frontier:
-                reached[u] = count
-
-            count += 1
-
-            if found:
-                reached[tgt] = count
-                break
-
-            frontier = set()
-            for u in new_frontier:
-                if u not in reached:
-                    frontier.add(u)
-
-            #print( f'count: {count} |frontier|: {len(frontier)} |reached|: {len(reached)}')
-
-    
-        if found:
-            u = tgt
-            path = [u]
-            while u != src:
-                u = came_from[u]
-                path.append(u)
-
-            path.reverse()
-
-            return self.path2str(path), path
-        else:
-            return None, None
-
-
     def route_all(self, lst, alg='bfs'):
 
-        fn = self.bfs if alg == 'bfs' else (self.astar if alg == 'astar' else self.dijkstra)
+        fn = self.astar if alg == 'astar' else self.dijkstra
 
         all_ok = True
 
@@ -233,28 +177,22 @@ class Lee:
                 obstacles.add(tgt)
                 all_ok = False
             else:
-                obstacles.update(path_l)
+                obstacles.update([(tup[0], tup[1]) for tup in path_l])
                 self.add_path(nm, path_l)
 
             print(nm, src, tgt, path_s, path_l)
 
         return all_ok
 
-    def total_wire_length(self, bend_cost=10):
+    def total_wire_length(self):
         s = 0
         for _, path in self.paths.items():
-            assert len(path) >= 2
-            ss = 1
-            x0, y0 = path[0]
-            x1, y1 = path[1]
-            for x2, y2 in path[2:]:
-                ss += 1
-                if x0 == x1 and x1 == x2 or y0 == y1 and y1 == y2:
-                    pass
-                else:
-                    ss += bend_cost
-                x0, y0 = x1, y1
-                x1, y1 = x2, y2
+            ss = 0
+            assert len(path) >= 1
+            i0, j0, k0 = path[0]
+            for i1, j1, k1 in path[1:]:
+                ss += self.via_cost if k0 != k1 else 1
+                i0, j0, k0 = i1, j1, k1 
             s += ss
         return s
         
@@ -281,10 +219,12 @@ def main(n, m, lst, num_trials, alg='bfs'):
 def test_total_wire_length():
     a = Lee(4, 4)
 
-    a.paths['0'] = [(0,0), (0,1), (1,1)]
+    a.paths['0'] = [(0,0,0), (0,1,0), (0,1,1), (1,1,1)]
+    a.via_cost = 10
+    assert a.total_wire_length() == 12
 
-    assert a.total_wire_length(bend_cost=0) == 2
-    assert a.total_wire_length(bend_cost=10) == 12
+    a.via_cost = 0
+    assert a.total_wire_length() == 2
 
 
 if __name__ == "__main__":
