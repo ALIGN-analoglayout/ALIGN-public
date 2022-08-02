@@ -121,7 +121,6 @@ class Lee:
                 found = True
                 break
 
-            w = came_from[u]
             for v, weight in adjacent_states(u):
                 alt = dist[u] + weight
                 if v not in dist or alt < dist[v]:
@@ -132,15 +131,14 @@ class Lee:
 
         if found:
             path = [u]
-            while u != src0 and u != src1:
-                u = came_from[u]
+            while (u := came_from[u]) is not None:
                 path.append(u)
 
             path.reverse()
 
-            return self.path2str(path), path
+            return path
         else:
-            return None, None
+            return None
 
     def dijkstra(self, nm, src, tgt, obstacles=None):
         return self._astar(nm, src, tgt, obstacles=obstacles)
@@ -148,7 +146,16 @@ class Lee:
 
     def astar(self, nm, src, tgt, obstacles=None):
         def heuristic(v):
-            return sum(abs(tgt[i] - v[i]) for i in range(2))
+            delta_i = abs(tgt[0] - v[0])
+            delta_j = abs(tgt[1] - v[1])
+
+            res = delta_i + delta_j
+            
+            if v[2] == 0 and delta_i != 0 or \
+               v[2] == 1 and delta_j != 0:
+                res += 10
+
+            return res
 
         return self._astar(nm, src, tgt, obstacles=obstacles, heuristic=heuristic)
 
@@ -170,7 +177,7 @@ class Lee:
             obstacles.remove(src)
             obstacles.remove(tgt)
 
-            path_s, path_l = fn( nm, src, tgt, obstacles=obstacles)
+            path_l = fn( nm, src, tgt, obstacles=obstacles)
 
             if path_l is None:
                 obstacles.add(src)
@@ -180,7 +187,7 @@ class Lee:
                 obstacles.update([(tup[0], tup[1]) for tup in path_l])
                 self.add_path(nm, path_l)
 
-            print(nm, src, tgt, path_s, path_l)
+            print(nm, src, tgt, self.path2str(path_l) if path_l is not None else None)
 
         return all_ok
 
@@ -197,7 +204,7 @@ class Lee:
         return s
         
 
-def main(n, m, lst, num_trials, alg='bfs'):
+def main(n, m, lst, num_trials, alg='astar'):
     count = 0
     histo = Counter()
     for _ in range(num_trials):
@@ -232,7 +239,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Lee Router")
     parser.add_argument("-m", "--model", type=str, default="ten_nets_8x8")
     parser.add_argument("-n", "--num_trials", type=int, default=100)
-    parser.add_argument("-a", "--alg", type=str, default='bfs')
+    parser.add_argument("-a", "--alg", type=str, default='astar')
 
     args = parser.parse_args()
 
