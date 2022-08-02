@@ -86,10 +86,15 @@ class Lee:
 
 
 
+        print(f'Working on {nm}...')
+
         while q:
+
             count += 1
 
-            _, u = heapq.heappop(q)
+            p, u = heapq.heappop(q)
+
+            print(f'Top: {(p, u)}')
 
             if u == tgt:
                 found = True
@@ -108,6 +113,7 @@ class Lee:
                 if v not in dist or alt < dist[v]:
                     dist[v] = alt
                     priority = alt + heuristic(v)
+                    print(f'Enqueueing {(priority, v)}')
                     heapq.heappush(q, (priority, v))
                     came_from[v] = u
 
@@ -234,8 +240,23 @@ class Lee:
 
         return all_ok
 
-    def total_wire_length(self):
-        return sum(len(path)-1 for net, path in self.paths.items())
+    def total_wire_length(self, bend_cost=10):
+        s = 0
+        for _, path in self.paths.items():
+            assert len(path) >= 2
+            ss = 1
+            x0, y0 = path[0]
+            x1, y1 = path[1]
+            for x2, y2 in path[2:]:
+                ss += 1
+                if x0 == x1 and x1 == x2 or y0 == y1 and y1 == y2:
+                    pass
+                else:
+                    ss += bend_cost
+                x0, y0 = x1, y1
+                x1, y1 = x2, y2
+            s += ss
+        return s
         
 
 def main(n, m, lst, num_trials, alg='bfs'):
@@ -255,6 +276,16 @@ def main(n, m, lst, num_trials, alg='bfs'):
         a.show()
     print(f'Successfull routed {count} of {num_trials} times.')
     print(f'Wirelength histogram:', list(sorted(histo.items())))
+
+
+def test_total_wire_length():
+    a = Lee(4, 4)
+
+    a.paths['0'] = [(0,0), (0,1), (1,1)]
+
+    assert a.total_wire_length(bend_cost=0) == 2
+    assert a.total_wire_length(bend_cost=10) == 12
+
 
 if __name__ == "__main__":
 
