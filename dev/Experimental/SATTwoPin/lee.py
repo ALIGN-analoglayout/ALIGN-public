@@ -12,6 +12,8 @@ class Lee:
         self.paths = {}
         self.via_cost = 10
 
+        self.sum_of_counts = 0
+
 
     def add_path(self, nm, path):
         self.paths[nm] = path
@@ -113,7 +115,10 @@ class Lee:
 
         heapq.heapify(q)
 
+        count = 0
+
         while q:
+            count += 1
             _, u = heapq.heappop(q)
 
             if u == tgt0 or u == tgt1:
@@ -121,6 +126,9 @@ class Lee:
                 while (u := came_from[u]) is not None:
                     path.append(u)
                 path.reverse()
+
+                self.sum_of_counts += count
+
                 return path
 
             for v, weight in adjacent_states(u):
@@ -145,15 +153,19 @@ class Lee:
 
             res = delta_i + delta_j
             
-            if v[2] == 0 and delta_i != 0 or \
-               v[2] == 1 and delta_j != 0:
-                res += 10
+            # k=1 is horizontal
+            if v[2] == 1 and delta_i != 0 or \
+               v[2] == 0 and delta_j != 0:
+                res += self.via_cost
+
+            # causes failures
+            #res += random.randrange(0, 11)
 
             return res
 
         return self._astar(nm, src, tgt, obstacles=obstacles, heuristic=heuristic)
 
-    def route_all(self, lst, alg='bfs'):
+    def route_all(self, lst, alg='astar', check=False):
 
         fn = self.astar if alg == 'astar' else self.dijkstra
 
@@ -172,6 +184,14 @@ class Lee:
             obstacles.remove(tgt)
 
             path_l = fn( nm, src, tgt, obstacles=obstacles)
+            if check:
+                path_l_ref = self.dijkstra( nm, src, tgt, obstacles=obstacles)
+                assert (path_l is None) == (path_l_ref is None)
+
+                if path_l is not None:
+                    pl, pl_ref = self.path_length(path_l), self.path_length(path_l_ref)
+                    #print(f'Checking path lengths: {alg} {pl} dijkstra {pl_ref}')
+                    assert pl == pl_ref
 
             if path_l is None:
                 obstacles.add(src)
@@ -185,28 +205,28 @@ class Lee:
 
         return all_ok
 
+    def path_length(self, path):
+        ss = 0
+        assert len(path) >= 1
+        i0, j0, k0 = path[0]
+        for i1, j1, k1 in path[1:]:
+            ss += self.via_cost if k0 != k1 else 1
+            i0, j0, k0 = i1, j1, k1 
+        return ss
+
     def total_wire_length(self):
-        s = 0
-        for _, path in self.paths.items():
-            ss = 0
-            assert len(path) >= 1
-            i0, j0, k0 = path[0]
-            for i1, j1, k1 in path[1:]:
-                ss += self.via_cost if k0 != k1 else 1
-                i0, j0, k0 = i1, j1, k1 
-            s += ss
-        return s
+        return sum(self.path_length(path) for _, path in self.paths.items())
         
 
-def main(n, m, lst, num_trials, alg='astar'):
+def main(n, m, lst, num_trials, alg='astar', check=False):
     count = 0
     histo = Counter()
     for _ in range(num_trials):
         samp = random.sample(lst, len(lst))
         a = Lee(n, m)
-        ok = a.route_all(samp, alg=alg)
+        ok = a.route_all(samp, alg=alg, check=check)
         if ok:
-            print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()}')
+            print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
             count += 1
             histo[a.total_wire_length()] += 1
         else:
@@ -235,6 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num_trials", type=int, default=100)
     parser.add_argument("-a", "--alg", type=str, default='astar')
     parser.add_argument("-s", "--seed", type=int, default=0)
+    parser.add_argument("-c", "--check", action='store_true')
 
     args = parser.parse_args()
 
@@ -288,10 +309,10 @@ if __name__ == "__main__":
 
         factor = (n_i+7) // 8
 
-        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg)        
+        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg, check=args.check)        
 
     elif args.model == "two_nets_10x10":
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg)
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg, check=args.check)
 
     elif args.model == "river_8x8":
         main(8, 8, [
@@ -302,7 +323,43 @@ if __name__ == "__main__":
         ("4", (7, 4), (4, 7)),
         ("5", (7, 5), (5, 7)),
         ("6", (7, 6), (6, 7)),
-        ], num_trials=args.num_trials, alg=args.alg)
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+
+    elif args.model == "synthetic_4x20":
+        main(4, 20, [
+        ("a", (1, 0), (3, 2)),
+        ("A", (2, 1), (0, 3)),
+        ("b", (1, 4), (3, 6)),
+        ("B", (2, 5), (0, 7)),
+        ("c", (1, 8), (3, 10)),
+        ("C", (2, 9), (0, 11)),
+        ("d", (1, 12), (3, 14)),
+        ("D", (2, 13), (0, 15)),
+        ("e", (1, 16), (3, 18)),
+        ("E", (2, 17), (0, 19)),
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+
+    elif args.model == "synthetic_4x16":
+        main(4, 16, [
+        ("a", (1, 0), (3, 2)),
+        ("A", (2, 1), (0, 3)),
+        ("b", (1, 4), (3, 6)),
+        ("B", (2, 5), (0, 7)),
+        ("c", (1, 8), (3, 10)),
+        ("C", (2, 9), (0, 11)),
+        ("d", (1, 12), (3, 14)),
+        ("D", (2, 13), (0, 15)),
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+
+    elif args.model == "synthetic_4x12":
+        main(4, 12, [
+        ("a", (1, 0), (3, 2)),
+        ("A", (2, 1), (0, 3)),
+        ("b", (1, 4), (3, 6)),
+        ("B", (2, 5), (0, 7)),
+        ("c", (1, 8), (3, 10)),
+        ("C", (2, 9), (0, 11)),
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
 
     else:
         assert False, f"Unknown model: {args.model}"
