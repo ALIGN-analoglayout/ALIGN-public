@@ -2,6 +2,7 @@ from collections import defaultdict, Counter
 import random
 import render
 import argparse
+import re
 
 import heapq
 
@@ -85,10 +86,11 @@ class Lee:
         def adjacent_states(u):
             i, j, k = u
 
-            if k == 0: # horizontal
-                next_states = [(i,j-1,0),(i,j+1,0),(i,j,1)]
-            elif k == 1: # vertical
-                next_states = [(i-1,j,1),(i+1,j,1),(i,j,0)]
+            if k == 0: # vertical
+                next_states = [(i-1,j,0),(i+1,j,0),(i,j,1)]
+
+            elif k == 1: # horizontal
+                next_states = [(i,j-1,1),(i,j+1,1),(i,j,0)]
             else:
                 assert False
 
@@ -107,19 +109,19 @@ class Lee:
 
         came_from = {src0 : None, src1 : None}
 
-        q = [(0, src0), (0,src1)]
+        q = [(0, src0), (0, src1)]
 
         heapq.heapify(q)
-
-        found = False
-        print(f'Working on {nm}...')
 
         while q:
             _, u = heapq.heappop(q)
 
             if u == tgt0 or u == tgt1:
-                found = True
-                break
+                path = [u]
+                while (u := came_from[u]) is not None:
+                    path.append(u)
+                path.reverse()
+                return path
 
             for v, weight in adjacent_states(u):
                 alt = dist[u] + weight
@@ -129,16 +131,8 @@ class Lee:
                     heapq.heappush(q, (priority, v))
                     came_from[v] = u
 
-        if found:
-            path = [u]
-            while (u := came_from[u]) is not None:
-                path.append(u)
+        return None
 
-            path.reverse()
-
-            return path
-        else:
-            return None
 
     def dijkstra(self, nm, src, tgt, obstacles=None):
         return self._astar(nm, src, tgt, obstacles=obstacles)
@@ -240,13 +234,13 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", type=str, default="ten_nets_8x8")
     parser.add_argument("-n", "--num_trials", type=int, default=100)
     parser.add_argument("-a", "--alg", type=str, default='astar')
+    parser.add_argument("-s", "--seed", type=int, default=0)
 
     args = parser.parse_args()
 
-    if args.model == "two_nets_10x10":
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg)
+    random.seed(args.seed)
 
-        """
+    """
   01234567
  +--------
 0|  1  8  
@@ -259,9 +253,7 @@ if __name__ == "__main__":
 7|  3  a
 """
 
-    elif args.model == "ten_nets_8x8":
-
-        main(8, 8, [
+    ten_nets = [
         ("1", (2, 0), (0, 2)),
         ("2", (3, 0), (2, 1)),
         ("3", (5, 0), (7, 2)),
@@ -272,37 +264,34 @@ if __name__ == "__main__":
         ("8", (0, 5), (2, 7)),
         ("9", (3, 5), (6, 6)),
         ("a", (7, 5), (6, 7)),
-        ], num_trials=args.num_trials, alg=args.alg)
+    ]
 
+    simple_nets = [
+        ("3", (5, 0), (7, 2)),
+        ("4", (6, 1), (5, 5)),
+    ]
 
-    elif args.model == "ten_nets_16x16":
-        main(16, 16, [
-        ("1", (4, 0), (0, 4)),
-        ("2", (6, 0), (4, 2)),
-        ("3", (10, 0), (14, 4)),
-        ("4", (12, 2), (10, 10)),
-        ("5", (10, 8), (2, 10)),
-        ("6", (4, 6), (8, 12)),
-        ("7", (6, 8), (4, 12)),
-        ("8", (0, 10), (4, 14)),
-        ("9", (6, 10), (12, 12)),
-        ("a", (14, 10), (12, 14)),
-        ], num_trials=args.num_trials, alg=args.alg)
+    def scale(nets, scale=1):
+        for net, src, tgt in nets:
+            yield net, tuple(x*scale for x in src), tuple(x*scale for x in tgt)
 
+    p = re.compile(r'^(ten_nets|simple)_(\d+)x(\d+)$')
 
-    elif args.model == "ten_nets_24x24":
-        main(24, 24, [
-        ("1", (6, 0), (0, 6)),
-        ("2", (9, 0), (6, 3)),
-        ("3", (15, 0), (21, 6)),
-        ("4", (18, 3), (15, 15)),
-        ("5", (15, 12), (3, 15)),
-        ("6", (6, 9), (12, 18)),
-        ("7", (9, 12), (6, 18)),
-        ("8", (0, 15), (6, 21)),
-        ("9", (9, 15), (18, 18)),
-        ("a", (21, 15), (18, 21))
-        ], num_trials=args.num_trials, alg=args.alg)
+    m = p.match(args.model)
+
+    if m:
+        subs = m.groups()
+        n_i = int(subs[1])
+        n_j = int(subs[2])
+        assert n_i == n_j
+        nets = ten_nets if subs[0] == 'ten_nets' else simple_nets
+
+        factor = (n_i+7) // 8
+
+        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg)        
+
+    elif args.model == "two_nets_10x10":
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg)
 
     elif args.model == "river_8x8":
         main(8, 8, [
