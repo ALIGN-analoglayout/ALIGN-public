@@ -218,12 +218,40 @@ class Lee:
         return sum(self.path_length(path) for _, path in self.paths.items())
         
 
-def main(n, m, lst, num_trials, alg='astar', check=False):
+def determine_order(nets):
+    counts = []
+
+    for net0, src0, tgt0 in nets:
+        bbox = min(src0[0], tgt0[0]), min(src0[1], tgt0[1]), max(src0[0], tgt0[0]), max(src0[1], tgt0[1]), 
+
+        count = 0
+
+        for net1, src1, tgt1 in nets:
+            if net0 == net1:
+                continue
+
+            if bbox[0] <= src1[0] <= bbox[2] and bbox[1] <= src1[1] <= bbox[3]:
+                count += 1
+
+            if bbox[0] <= tgt1[0] <= bbox[2] and bbox[1] <= tgt1[1] <= bbox[3]:
+                count += 1
+
+        counts.append(count)
+
+    ordering = list(sorted(zip(counts,nets)))
+    print(ordering)
+
+    return [b for _, b in ordering]
+
+def main(n, m, lst, num_trials, alg='astar', check=False, order=False):
     count = 0
     histo = Counter()
-    for _ in range(num_trials):
-        samp = random.sample(lst, len(lst))
+
+    def route(samp):
+        nonlocal count
+
         a = Lee(n, m)
+
         ok = a.route_all(samp, alg=alg, check=check)
         if ok:
             print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
@@ -233,7 +261,20 @@ def main(n, m, lst, num_trials, alg='astar', check=False):
             print(f'Only routed {len(a.paths)} of {len(lst)} nets.')
 
         a.show()
-    print(f'Successfull routed {count} of {num_trials} times.')
+
+    if order:
+        samp = determine_order(lst)
+        route(samp)
+        if count == 1:
+            print(f'Successfully routed using the ordering heuristic.')
+        else:
+            print(f'Routing failed when using the ordering heuristic.')
+    else:
+        for _ in range(num_trials):
+            samp = random.sample(lst, len(lst))
+            route(samp)
+        print(f'Successfully routed {count} of {num_trials} times.')
+
     print(f'Wirelength histogram:', list(sorted(histo.items())))
 
 
@@ -256,6 +297,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alg", type=str, default='astar')
     parser.add_argument("-s", "--seed", type=int, default=0)
     parser.add_argument("-c", "--check", action='store_true')
+    parser.add_argument("-o", "--order", action='store_true')
 
     args = parser.parse_args()
 
@@ -309,10 +351,10 @@ if __name__ == "__main__":
 
         factor = (n_i+7) // 8
 
-        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg, check=args.check)        
+        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)        
 
     elif args.model == "two_nets_10x10":
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg, check=args.check)
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
 
     elif args.model == "river_8x8":
         main(8, 8, [
@@ -323,7 +365,7 @@ if __name__ == "__main__":
         ("4", (7, 4), (4, 7)),
         ("5", (7, 5), (5, 7)),
         ("6", (7, 6), (6, 7)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
 
     elif args.model == "synthetic_4x20":
         main(4, 20, [
@@ -337,7 +379,7 @@ if __name__ == "__main__":
         ("D", (2, 13), (0, 15)),
         ("e", (1, 16), (3, 18)),
         ("E", (2, 17), (0, 19)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
 
     elif args.model == "synthetic_4x16":
         main(4, 16, [
@@ -349,7 +391,7 @@ if __name__ == "__main__":
         ("C", (2, 9), (0, 11)),
         ("d", (1, 12), (3, 14)),
         ("D", (2, 13), (0, 15)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
 
     elif args.model == "synthetic_4x12":
         main(4, 12, [
@@ -359,7 +401,7 @@ if __name__ == "__main__":
         ("B", (2, 5), (0, 7)),
         ("c", (1, 8), (3, 10)),
         ("C", (2, 9), (0, 11)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check)
+        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
 
     else:
         assert False, f"Unknown model: {args.model}"
