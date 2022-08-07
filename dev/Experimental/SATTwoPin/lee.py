@@ -230,10 +230,10 @@ def determine_order(nets):
             if net0 == net1:
                 continue
 
-            if bbox[0] <= src1[0] <= bbox[2] and bbox[1] <= src1[1] <= bbox[3]:
+            if bbox[0] < src1[0] < bbox[2] and bbox[1] < src1[1] < bbox[3]:
                 count += 1
 
-            if bbox[0] <= tgt1[0] <= bbox[2] and bbox[1] <= tgt1[1] <= bbox[3]:
+            if bbox[0] < tgt1[0] < bbox[2] and bbox[1] < tgt1[1] < bbox[3]:
                 count += 1
 
         counts.append(count)
