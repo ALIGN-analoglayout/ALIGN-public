@@ -71,10 +71,11 @@ def test_power_train_thermo():
     name = name.upper()
     with (run_dir / "1_topology" / f"{name}.verilog.json").open("rt") as fp:
         hierarchy = json.load(fp)
-        modules = {m["name"] for m in hierarchy["modules"]}
-
-    # shutil.rmtree(run_dir)
-    # shutil.rmtree(ckt_dir)
+        modules = {m["name"]:m for m in hierarchy["modules"]}
+        constraints = {const["constraint"] for const in modules[name]["constraints"]}
+        assert "symmetric_blocks" not in constraints
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
 def test_power_train_thermo_2():
@@ -92,3 +93,5 @@ def test_power_train_thermo_2():
         modules = {m["name"]: m for m in hierarchy["modules"]}
         constraints = {const["constraint"] for const in modules[name]["constraints"]}
         assert "symmetric_blocks" not in constraints
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
