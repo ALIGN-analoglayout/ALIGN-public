@@ -168,7 +168,7 @@ class Annotate:
         new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
             new_subckt = self.ckt_data.find(new_subckt_name)
-            logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
+            logger.debug(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
             # Create a subckt and add to library
             with set_context(self.ckt_data):

@@ -64,13 +64,13 @@ class ConstraintParser:
                             pair[i] = inst.upper()
 
             do_not_identify = []
-            duplicate_DNI = []
+            # duplicate_DNI = []
             for const in node.constraints:
                 if isinstance(const, constraint.GroupBlocks) or \
                     isinstance(const, constraint.GroupCaps):
                     continue
-                if const.constraint == "do_not_identify":
-                    duplicate_DNI.append(const)
+                # if const.constraint == "do_not_identify":
+                #     duplicate_DNI.append(const)
                 if hasattr(const, "instances") and len(const.instances) > 1:
                     do_not_identify.extend(const.instances)
                 elif hasattr(const, "pairs"):

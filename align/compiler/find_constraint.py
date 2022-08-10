@@ -336,7 +336,6 @@ class process_input_const:
                     pin_pairs = {}
                     remove_duplicate = []
                     for i in range(len(const.pins1)):
-                        logger.info(f"{i} {pin_pairs}")
                         if const.pins1[i] in pin_pairs.keys():
                             remove_duplicate.append(i)
                         elif not const.pins1[i] in self.subckt.pins:

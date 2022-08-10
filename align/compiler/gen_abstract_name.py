@@ -119,7 +119,7 @@ class PrimitiveLibrary():
             self.add_primitve(model)
             self.create_subckt(element, unique_name)
         else:
-            assert False, f"Unmatched generator for this instance {element}, please fix netlist "
+            assert False, f"Unmatched generator for this instance {element} in {self.pdk_dir}, please fix netlist "
 
     def add_primitve(self, primitive_name):
         if not self.plib.find(primitive_name):
