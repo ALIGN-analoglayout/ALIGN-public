@@ -1359,20 +1359,27 @@ class ChargeFlow(SoftConstraint):
     The chargeflow constraints help in improving the placement.
 
     Args:
+        dist_type (str) : 'Euclidean' or 'Manhattan' distance between pins,
         time (list) : List of time intervals
         pin_current (dict) : current for each pin at different time intervals
     Example ::
 
         {
             "constraint" : "ChargeFlow",
-            "time" : [0,1.2,2.4]
+            "dist_type" : [0,1.2,2.4],
+            "time" : [0,1.2,2.4],
             "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
         }
      '''
 
+    dist_type: Optional[Literal['Euclidean', 'Manhattan']] = 'Manhattan'
     time: List[float]
     pin_current: dict
 
+    @types.validator('dist_type', allow_reuse=True)
+    def dist_type_validator(cls, value):
+        assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
+        return value
     @types.validator('time', allow_reuse=True)
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
