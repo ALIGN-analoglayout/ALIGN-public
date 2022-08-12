@@ -75,7 +75,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
         return
     elif len(nbrs1) > 10:
         assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
-        # match_pair["array_start_point"] = [node1, node2]
+        # Reset constraints if array hierarchy is generated
         array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
         array_hier.add_align_block_const()
         if array_hier.add_new_array_hier():
@@ -129,7 +129,6 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                     ports_weight,
                 )
                 if new_pair:
-                    # new_pair[nbr1]=nbr2
                     all_match_pairs_local[(nbr1, nbr2)] = new_pair
             all_match_pairs_local = {
                 k: v for k, v in all_match_pairs_local.items() if len(v) > 0
@@ -138,7 +137,6 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
                 match_pair.update(
                     all_match_pairs_local[list(all_match_pairs_local.keys())[0]]
                 )
-                # logger.debug(f"found inline pair: {pprint.pformat(match_pair, indent=4)}")
             else:
                 for nbr1 in new_sp:
                     if (nbr1, nbr1) not in match_pairs.keys():
@@ -181,7 +179,8 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1] = node2
             assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
-            # match_pair["array_start_point"] = [node1, node2]
+            # Identify arrays
+            # Reset constraints if array hierarchy is generated
             logger.debug(f"checking arrays from {node1, node2}")
             array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
             array_hier.add_align_block_const()
@@ -276,10 +275,6 @@ def FindConst(subckt):
     # Search symmetry constraints
     match_pairs = FindSymmetry(subckt, stop_points)
     logger.debug(f"match pairs {match_pairs}")
-    # Generate hiearchies based on array identification
-    # array_hier = process_arrays(subckt, match_pairs)
-    # array_hier.add_align_block_const()
-    # array_hier.add_new_array_hier()
     match_pairs = {k: v for k, v in match_pairs.items() if len(v) > 1}
     # Add symmetry constraints
     skip_const = written_symmblocks.copy()
