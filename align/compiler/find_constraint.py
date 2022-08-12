@@ -76,12 +76,11 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     elif len(nbrs1) > 10:
         assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
         # match_pair["array_start_point"] = [node1, node2]
-        _subckt = G.subckt
-        array_hier = process_arrays(_subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+        array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
         array_hier.add_align_block_const()
         if array_hier.add_new_array_hier():
             #update graph
-            FindConst(_subckt.parent.find(_subckt.name))
+            FindConst(G.subckt)
         logger.debug(f"high fanout nets are start point for arrays: (net, neighbors){node1, nbrs1}")
         traversed.add(node1)
         return
@@ -184,12 +183,10 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
             # match_pair["array_start_point"] = [node1, node2]
             logger.debug(f"checking arrays from {node1, node2}")
-            _subckt = G.subckt
-            array_hier = process_arrays(_subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+            array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
             array_hier.add_align_block_const()
             if array_hier.add_new_array_hier():
-                #update graph
-                FindConst(_subckt.parent.find(_subckt.name))
+                FindConst(G.subckt) #reset const
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")

@@ -107,7 +107,7 @@ def leaf_weights(G, node, nbr):
     else:
         assert node and node in subckt.nets, f"net {node} not in {subckt.name}"
         n = subckt.get_element(nbr)
-        assert n, f"neighbor {nbr} of net {node} not found {[ele.name for ele in subckt.elements]} {subckt.nets} {list(G.neighbors(node))} {G.nodes()} {list(Graph(subckt).neighbors(node))}"
+        assert n, f"neighbor {nbr} of net {node} not found in {[ele.name for ele in subckt.elements]}"
         s = subckt.parent.find(n.model)
         assert (node in n.pins.values()), f"net {node} not connected to {n.name}, {n.pins}"
         p = list(n.pins.keys())[list(n.pins.values()).index(node)]
