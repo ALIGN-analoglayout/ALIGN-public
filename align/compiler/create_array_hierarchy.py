@@ -224,13 +224,13 @@ class process_arrays:
                     else:
                         # TODO: Create a virtual hierarchy rather than Align
                         self.iconst.append(constraint.AlignInOrder(direction="horizontal", instances=h_blocks))
-
         logger.debug(f"AlignBlock const update {self.iconst}")
 
 
     def add_new_array_hier(self):
         logger.debug(f"New hierarchy instances: {self.new_hier_instances}")
         sub_hier_elements = set()
+        subckt_modified = False
         for key, array_2D in self.new_hier_instances.items():
             logger.debug(f"new hier instances: {array_2D}")
             all_inst = [inst for template in array_2D for inst in template
@@ -244,13 +244,15 @@ class process_arrays:
                 logger.debug(f"not enough elements to create a hierarchy")
                 continue
             new_array_hier_name = "ARRAY_HIER_" + key
-            create_new_hiearchy(self.dl, self.name, new_array_hier_name, all_inst)
+            subckt_modified=create_new_hiearchy(self.dl, self.name, new_array_hier_name, all_inst)
             all_template_names = list()
             for template in array_2D:
                 template_name = self.get_new_subckt_name("ARRAY_TEMPLATE")
                 create_new_hiearchy(self.dl, new_array_hier_name, template_name, template)
                 all_template_names.append(template_name)
             self.add_array_placement_constraints(new_array_hier_name, all_template_names)
+        return True if subckt_modified else False
+
 
     def add_array_placement_constraints(self, hier, modules):
         # TODO make it sizing aware
@@ -332,3 +334,4 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
             abstract_name=child_name
         )
         parent.elements.append(X1)
+    return True if len(pes)>1 else False

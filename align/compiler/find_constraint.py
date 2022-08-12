@@ -61,6 +61,7 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     """
     logger.debug(f"comparing {node1}, {node2}, traversed {traversed}")
     # remove body connections
+    G = Graph(G.subckt)
     nbrs1 = sorted(set(G.neighbors(node1)) - traversed)
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if reduced_neighbors(G, node1, nbr)]))
     nbrs2 = sorted(set(G.neighbors(node2)) - traversed)
@@ -75,9 +76,12 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
     elif len(nbrs1) > 10:
         assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch"
         # match_pair["array_start_point"] = [node1, node2]
-        array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+        _subckt = G.subckt
+        array_hier = process_arrays(_subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
         array_hier.add_align_block_const()
-        array_hier.add_new_array_hier()
+        if array_hier.add_new_array_hier():
+            #update graph
+            FindConst(_subckt.parent.find(_subckt.name))
         logger.debug(f"high fanout nets are start point for arrays: (net, neighbors){node1, nbrs1}")
         traversed.add(node1)
         return
@@ -180,9 +184,12 @@ def compare_nodes(G, match_pairs, match_pair, traversed, node1, node2, ports_wei
             assert not match_pair.get("array_start_point", False), f"incorrect symmetry branch {match_pair} {node1, node2}"
             # match_pair["array_start_point"] = [node1, node2]
             logger.debug(f"checking arrays from {node1, node2}")
-            array_hier = process_arrays(G.subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
+            _subckt = G.subckt
+            array_hier = process_arrays(_subckt, {(node1, node2): {"array_start_point": [node1, node2]}})
             array_hier.add_align_block_const()
-            array_hier.add_new_array_hier()
+            if array_hier.add_new_array_hier():
+                #update graph
+                FindConst(_subckt.parent.find(_subckt.name))
         else:
             match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
@@ -214,7 +221,7 @@ def FindSymmetry(subckt, stop_points: set):
         starts with power, ground and clock signals adds based on traversal.
     Returns
     -------
-    None.
+    match_pairs : dict.
 
     """
     graph = Graph(subckt)
