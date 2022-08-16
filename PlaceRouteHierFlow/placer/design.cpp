@@ -384,6 +384,36 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     }
     maxBlockHPWLSum += (width + height);
   }
+  std::map<std::string, std::pair<int, int> > pinName2Index;
+  if (!node.CFValues.empty()) {
+    CFdist_type = node.CFdist_type;
+    for (auto& net : Nets) {
+      if (node.CFValues.find(net.name) == node.CFValues.end()) continue;
+      for (auto& conn : net.connected) {
+        if (conn.type == placerDB::Block) {
+          if (Blocks[conn.iter2].size() > 0 && Blocks[conn.iter2][0].blockPins.size() > conn.iter) {
+            pinName2Index[Blocks[conn.iter2][0].name + '/' + Blocks[conn.iter2][0].blockPins[conn.iter].name] = std::make_pair(conn.iter2, conn.iter);
+          }
+        }
+      }
+    }
+
+    for (auto& it : node.CFValues) {
+      for (int i = 0; i < (int)Nets.size(); ++i) {
+        auto cfit = CFValues.find(Nets[i].name);
+        if (cfit == CFValues.end() && Nets[i].name == it.first) {
+          for (auto& pp : it.second) {
+            auto itp1 = pinName2Index.find(std::get<0>(pp));
+            auto itp2 = pinName2Index.find(std::get<1>(pp));
+            if (itp1 != pinName2Index.end() && itp2 != pinName2Index.end()) {
+              CFValues[Nets[i].name][std::make_tuple(itp1->second.first, itp1->second.second,
+                  itp2->second.first, itp2->second.second)] = std::get<2>(pp);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 int design::rand() {
