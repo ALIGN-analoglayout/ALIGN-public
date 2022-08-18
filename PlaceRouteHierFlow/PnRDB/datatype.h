@@ -42,6 +42,7 @@ struct AlignBlock;
 struct Abument;
 struct MatchBlock;
 struct SpreadConstraint;
+struct ClockNetConstraint;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
@@ -490,6 +491,7 @@ struct hierNode {
   map<string, vector<std::tuple<string, string, double> > > CFValues;
   int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
   vector<SpreadConstraint> SpreadConstraints;
+  vector<ClockNetConstraint> ClockNetConstraints;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -551,6 +553,11 @@ struct SpreadConstraint {
   std::set<int> blocks;
   int horizon;
   int distance;
+};
+
+struct ClockNetConstraint {
+  std::string driver;
+  std::set<std::string> receivers;
 };
 
 struct PortPos {

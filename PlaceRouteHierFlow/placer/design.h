@@ -183,7 +183,7 @@ class design {
   bool mixFlag;
   // above is added by yg
   std::map<std::pair<int, int>, int> hSpread, vSpread;
-
+  std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> clockNets;
 
   // void readBlockFile(string blockfile);
   // void readNetFile(string netfile);

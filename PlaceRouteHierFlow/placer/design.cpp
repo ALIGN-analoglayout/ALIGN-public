@@ -292,6 +292,37 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       }
     }
   }
+  // Add clock net constraints
+  for (const auto& it : node.ClockNetConstraints) {
+    auto findPin = [&] (const std::string& blk) -> std::pair<int, int> {
+      auto pos = blk.rfind('/');
+      std::string bname, pin;
+      if (pos != std::string::npos && pos < it.driver.size()) {
+        bname = blk.substr(0, pos - 1);
+        pin = blk.substr(pos+1);
+      }
+      for (int i = 0; i < Blocks.size(); ++i) {
+        if (Blocks[i][0].name == bname) {
+          for (int j = 0; j < Blocks[i][0].blockPins.size(); ++j) {
+            if (pin == Blocks[i][0].blockPins[j].name) {
+              return std::make_pair(i, j);
+            }
+          }
+          break;
+        }
+      }
+      return std::make_pair(-1, -1);
+    };
+    std::pair<int, int> driver = findPin(it.driver);
+    if (driver.first >= 0) {
+      for (auto& r : it.receivers) {
+        auto rcvr = findPin(r);
+        if (rcvr.first >= 0) {
+          clockNets[driver].push_back(rcvr);
+        }
+      }
+    }
+  }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {

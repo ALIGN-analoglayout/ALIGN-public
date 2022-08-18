@@ -655,6 +655,13 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         if (!found) logger->error("Block {0} in Spread not found in netlist", block);
       }
       node.SpreadConstraints.push_back(s);
+    } else if (constraint["const_name"] == "ClockNet") {
+      PnRDB::ClockNetConstraint c;
+      c.driver = constraint["driver"];
+      for (auto r : constraint["receivers"]) {
+        c.receivers.insert(static_cast<std::string>(r));
+      }
+      node.ClockNetConstraints.push_back(c);
     }
   }
 }
