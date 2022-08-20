@@ -78,13 +78,8 @@ class Lee:
 
         return ''.join(s)
 
-    def _astar(self, nm, src, tgt, obstacles=None, heuristic=(lambda v: 0)):
+    def _astar(self, nm, src, tgt, obstacles, heuristic=(lambda v: 0)):
 
-        if obstacles is None:
-            obstacles_s = set()
-        else:
-            obstacles_s = obstacles
-        
         def adjacent_states(u):
             i, j, k = u
 
@@ -97,7 +92,7 @@ class Lee:
                 assert False
 
             for ii, jj, kk in next_states:
-                if 0 <= ii < self.n and 0 <= jj < self.m and 0 <= kk < 2 and (ii, jj) not in obstacles_s:
+                if 0 <= ii < self.n and 0 <= jj < self.m and 0 <= kk < 2 and (ii, jj) not in obstacles:
                     yield (ii, jj, kk), (self.via_cost if kk != k else 1)
 
 
@@ -142,11 +137,11 @@ class Lee:
         return None
 
 
-    def dijkstra(self, nm, src, tgt, obstacles=None):
-        return self._astar(nm, src, tgt, obstacles=obstacles)
+    def dijkstra(self, nm, src, tgt, obstacles):
+        return self._astar(nm, src, tgt, obstacles)
 
 
-    def astar(self, nm, src, tgt, obstacles=None):
+    def astar(self, nm, src, tgt, obstacles):
         def heuristic(v):
             delta_i = abs(tgt[0] - v[0])
             delta_j = abs(tgt[1] - v[1])
@@ -163,7 +158,7 @@ class Lee:
 
             return res
 
-        return self._astar(nm, src, tgt, obstacles=obstacles, heuristic=heuristic)
+        return self._astar(nm, src, tgt, obstacles, heuristic=heuristic)
 
     def route_all(self, lst, alg='astar', check=False):
 
@@ -183,9 +178,9 @@ class Lee:
             obstacles.remove(src)
             obstacles.remove(tgt)
 
-            path_l = fn( nm, src, tgt, obstacles=obstacles)
+            path_l = fn( nm, src, tgt, obstacles)
             if check:
-                path_l_ref = self.dijkstra( nm, src, tgt, obstacles=obstacles)
+                path_l_ref = self.dijkstra( nm, src, tgt, obstacles)
                 assert (path_l is None) == (path_l_ref is None)
 
                 if path_l is not None:
@@ -198,7 +193,7 @@ class Lee:
                 obstacles.add(tgt)
                 all_ok = False
             else:
-                obstacles.update([(tup[0], tup[1]) for tup in path_l])
+                obstacles.update([tup[:2] for tup in path_l])
                 self.add_path(nm, path_l)
 
             print(nm, src, tgt, self.path2str(path_l) if path_l is not None else None)
@@ -230,11 +225,9 @@ def determine_order(nets):
             if net0 == net1:
                 continue
 
-            if bbox[0] < src1[0] < bbox[2] and bbox[1] < src1[1] < bbox[3]:
-                count += 1
-
-            if bbox[0] < tgt1[0] < bbox[2] and bbox[1] < tgt1[1] < bbox[3]:
-                count += 1
+            for pnt in (src1, tgt1):
+                if bbox[0] < pnt[0] < bbox[2] and bbox[1] < pnt[1] < bbox[3]:
+                    count += 1
 
         counts.append(count)
 
