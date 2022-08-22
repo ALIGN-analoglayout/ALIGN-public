@@ -1,0 +1,6 @@
+[
+    {"constraint": "PowerPorts", "ports": ["VDD"]},
+    {"constraint": "GroundPorts", "ports": ["VSS"]},
+    {"constraint": "DoNotIdentify", "instances": ["MN0", "MN1", "MN2", "MN3", "MN4"]},
+    {"constraint": "ConfigureCompiler", "propagate": true, "auto_constraint": false, "merge_parallel_devices": false, "merge_series_devices": false}
+]
