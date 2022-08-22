@@ -301,12 +301,12 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
         bname = blk.substr(0, pos);
         pin = blk.substr(pos+1);
       }
-      logger->info("block : {0} {1}", bname, pin);
+      //logger->info("block : {0} {1}", bname, pin);
       for (int i = 0; i < Blocks.size(); ++i) {
         if (Blocks[i][0].name == bname) {
           for (int j = 0; j < Blocks[i][0].blockPins.size(); ++j) {
             if (pin == Blocks[i][0].blockPins[j].name) {
-              logger->info("clock block : {0} {1} {2}", Blocks[i][0].name, i, j);
+              //logger->info("clock block : {0} {1} {2}", Blocks[i][0].name, i, j);
               return std::make_pair(i, j);
             }
           }

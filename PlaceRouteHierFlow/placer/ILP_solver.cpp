@@ -1768,7 +1768,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   }
   N_var += place_on_grid_var_count;
   const unsigned N_clock_net_start{N_var};
-  N_var += (2 * mydesign.clockNets.size());
+  N_var += (4 * mydesign.clockNets.size());
   N_var += 2; //Area x and y variables
   const unsigned N_area_x = N_var - 2;
   const unsigned N_area_y = N_var - 1;
@@ -1895,9 +1895,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight;
   }
   for (unsigned int i = 0; i < mydesign.clockNets.size(); i++) {
-    int ind = N_clock_net_start + i * 2;
-    objective.at(ind) = hyper.LAMBDA * 10;
-    objective.at(ind + 1) = hyper.LAMBDA * 10;
+    int ind = N_clock_net_start + i * 4;
+    objective.at(ind) = hyper.LAMBDA * 100;
+    objective.at(ind + 1) = hyper.LAMBDA * 100;
+    objective.at(ind + 2) = hyper.LAMBDA * 100;
+    objective.at(ind + 3) = hyper.LAMBDA * 100;
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -2328,60 +2330,68 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
 
   int clknetitr{0};
   for (const auto& clknetit : mydesign.clockNets) {
-    unsigned ind{2 * clknetitr + N_clock_net_start};
-    rowindofcol[ind].push_back(rhs.size());
-    rowindofcol[ind + 1].push_back(rhs.size());
-    constrvalues[ind].push_back(-1);
-    constrvalues[ind + 1].push_back(-1);
-    int rhsum{0};
-    { // driver
-      const int block_id = clknetit.first.first;
-      const int pin_id = clknetit.first.second;
-      const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
-      int pin_x = blk.width / 2;
-      int pin_y = blk.height / 2;
-      if (blk.blockPins.size() > pin_id) {
-        pin_x = (blk.blockPins[pin_id].bbox.LL.x + blk.blockPins[pin_id].bbox.UR.x);
-        pin_y = (blk.blockPins[pin_id].bbox.LL.y + blk.blockPins[pin_id].bbox.UR.y);
+    unsigned ind{4 * clknetitr + N_clock_net_start};
+    for (auto yitr : {0, 1}) {
+      rowindofcol[ind + 2 * yitr].push_back(rhs.size());
+      rowindofcol[ind + 2 * yitr + 1].push_back(rhs.size());
+      constrvalues[ind + 2 * yitr].push_back(-1);
+      constrvalues[ind + 2 * yitr + 1].push_back(-1);
+      int rhsum{0};
+      { // driver
+        const int block_id = clknetit.first.first;
+        const int pin_id = clknetit.first.second;
+        const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
+        int pin_x = blk.width / 2;
+        int pin_y = blk.height / 2;
+        if (blk.blockPins.size() > pin_id) {
+          pin_x = (blk.blockPins[pin_id].bbox.LL.x + blk.blockPins[pin_id].bbox.UR.x);
+          pin_y = (blk.blockPins[pin_id].bbox.LL.y + blk.blockPins[pin_id].bbox.UR.y);
+        }
+        double deltax = 1.*(blk.width  - pin_x);
+        double deltay = 1.*(blk.height - pin_y);
+        if (yitr == 0) {
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(-1);
+          constrvalues[block_id * 4 + 2].push_back(-deltax);
+          rhsum += pin_x/2;
+        } else {
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(-1);
+          constrvalues[block_id * 4 + 3].push_back(-deltay);
+          rhsum += pin_y/2;
+        }
       }
-      double deltax = 1.*(blk.width  - pin_x);
-      double deltay = 1.*(blk.height - pin_y);
-      rowindofcol[block_id * 4].push_back(rhs.size());
-      rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-      constrvalues[block_id * 4].push_back(-1);
-      constrvalues[block_id * 4 + 2].push_back(-deltax);
-      rhsum += pin_x/2;
-      rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-      rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-      constrvalues[block_id * 4 + 1].push_back(-1);
-      constrvalues[block_id * 4 + 3].push_back(-deltay);
-      rhsum += pin_y/2;
-    }
-    for (const auto& rcvr : clknetit.second) {
-      const int block_id = rcvr.first;
-      const int pin_id = rcvr.second;
-      const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
-      int pin_x = blk.width / 2;
-      int pin_y = blk.height / 2;
-      if (blk.blockPins.size() > pin_id) {
-        pin_x = (blk.blockPins[pin_id].bbox.LL.x + blk.blockPins[pin_id].bbox.UR.x);
-        pin_y = (blk.blockPins[pin_id].bbox.LL.y + blk.blockPins[pin_id].bbox.UR.y);
+      for (const auto& rcvr : clknetit.second) {
+        const int block_id = rcvr.first;
+        const int pin_id = rcvr.second;
+        const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
+        int pin_x = blk.width / 2;
+        int pin_y = blk.height / 2;
+        if (blk.blockPins.size() > pin_id) {
+          pin_x = (blk.blockPins[pin_id].bbox.LL.x + blk.blockPins[pin_id].bbox.UR.x);
+          pin_y = (blk.blockPins[pin_id].bbox.LL.y + blk.blockPins[pin_id].bbox.UR.y);
+        }
+        double deltax = 1.*(blk.width  - pin_x);
+        double deltay = 1.*(blk.height - pin_y);
+        if (yitr == 0) {
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(1.0/ clknetit.second.size());
+          constrvalues[block_id * 4 + 2].push_back(deltax / clknetit.second.size());
+          rhsum += -pin_x / (2 * clknetit.second.size());
+        } else {
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(1.0/ clknetit.second.size());
+          constrvalues[block_id * 4 + 3].push_back(deltay / clknetit.second.size());
+          rhsum += -pin_y / (2 * clknetit.second.size());
+        }
       }
-      double deltax = 1.*(blk.width  - pin_x);
-      double deltay = 1.*(blk.height - pin_y);
-      rowindofcol[block_id * 4].push_back(rhs.size());
-      rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-      constrvalues[block_id * 4].push_back(1);
-      constrvalues[block_id * 4 + 2].push_back(deltax);
-      rhsum += -pin_x/2;
-      rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-      rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-      constrvalues[block_id * 4 + 1].push_back(1);
-      constrvalues[block_id * 4 + 3].push_back(deltay);
-      rhsum += -pin_y/2;
+      sens.push_back('E');
+      rhs.push_back(rhsum);
     }
-    sens.push_back('E');
-    rhs.push_back(rhsum);
     ++clknetitr;
   }
 
@@ -2537,13 +2547,13 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     }
 
     //solve the integer program
-    static int write_cnt{0};
+    /*static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
       block_name = mydesign.name;
     }
-    if (write_cnt < 6000) {
+    if (write_cnt < 10) {
       char* names[N_var];
       std::vector<std::string> namesvec(N_var);
       namesvec[N_area_x]     = "area_x\0";
@@ -2575,16 +2585,20 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       }
       int iteridx{0};
       for (auto& it : mydesign.clockNets) {
-        int ind = N_clock_net_start + iteridx * 2;
-        namesvec[ind] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_p\0");
+        int ind = N_clock_net_start + iteridx * 4;
+        namesvec[ind] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_px\0");
         names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_n\0");
+        namesvec[ind + 1] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_nx\0");
         names[ind + 1] = &(namesvec[ind + 1][0]);
+        namesvec[ind + 2] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_py\0");
+        names[ind + 2] = &(namesvec[ind + 2][0]);
+        namesvec[ind + 3] = ("clock_net_" + mydesign.Blocks[it.first.first][0].name + "__" + mydesign.Blocks[it.first.first][0].blockPins[it.first.second].name + "_ny\0");
+        names[ind + 3] = &(namesvec[ind + 3][0]);
         ++iteridx;
       }
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names);
       ++write_cnt;
-    }
+    }*/
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);

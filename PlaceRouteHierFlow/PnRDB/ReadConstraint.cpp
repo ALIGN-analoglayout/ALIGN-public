@@ -658,9 +658,9 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
     } else if (constraint["const_name"] == "ClockNet") {
       PnRDB::ClockNetConstraint c;
       c.driver = constraint["driver"];
-      logger->info("clock driver : {0}", static_cast<std::string>(c.driver));
+      //logger->info("clock driver : {0}", static_cast<std::string>(c.driver));
       for (auto r : constraint["receivers"]) {
-        logger->info("clock receiver : {0}", static_cast<std::string>(r));
+        //logger->info("clock receiver : {0}", static_cast<std::string>(r));
         c.receivers.insert(static_cast<std::string>(r));
       }
       node.ClockNetConstraints.push_back(c);
