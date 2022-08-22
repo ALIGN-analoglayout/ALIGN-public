@@ -1660,11 +1660,14 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         auto piit = pin_idx_map.find(std::make_pair(block_id, pin_id));
         if (piit == pin_idx_map.end()) continue;
         int llx = std::get<0>(piit->second),     lly = std::get<0>(piit->second) + 1;
+        int urx = std::get<0>(piit->second) + 2, ury = std::get<0>(piit->second) + 3;
         if (yitr == 0) {
           rowindofcol[block_id * 6].push_back(rhs.size());
           rowindofcol[llx].push_back(rhs.size());
+          rowindofcol[urx].push_back(rhs.size());
           constrvalues[block_id * 6].push_back(-1);
-          constrvalues[llx].push_back(-1);
+          constrvalues[llx].push_back(-0.5);
+          constrvalues[urx].push_back(-0.5);
           if (std::get<1>(piit->second) != INT_MIN) {
             rowindofcol[block_id * 6 + 2].push_back(rhs.size());
             constrvalues[block_id * 6 + 2].push_back(-std::get<1>(piit->second));
@@ -1675,8 +1678,10 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         } else {
           rowindofcol[block_id * 6 + 1].push_back(rhs.size());
           rowindofcol[lly].push_back(rhs.size());
+          rowindofcol[ury].push_back(rhs.size());
           constrvalues[block_id * 6 + 1].push_back(-1);
-          constrvalues[lly].push_back(-1);
+          constrvalues[lly].push_back(-0.5);
+          constrvalues[ury].push_back(-0.5);
           if (std::get<1>(piit->second) != INT_MIN) {
             rowindofcol[block_id * 6 + 3].push_back(rhs.size());
             constrvalues[block_id * 6 + 3].push_back(-std::get<1>(piit->second));
@@ -1692,11 +1697,14 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         auto piit = pin_idx_map.find(std::make_pair(block_id, pin_id));
         if (piit == pin_idx_map.end()) continue;
         int llx = std::get<0>(piit->second),     lly = std::get<0>(piit->second) + 1;
+        int urx = std::get<0>(piit->second) + 2, ury = std::get<0>(piit->second) + 3;
         if (yitr == 0) {
           rowindofcol[block_id * 6].push_back(rhs.size());
           rowindofcol[llx].push_back(rhs.size());
+          rowindofcol[urx].push_back(rhs.size());
           constrvalues[block_id * 6].push_back(1./clknetit.second.size());
-          constrvalues[llx].push_back(1./clknetit.second.size());
+          constrvalues[llx].push_back(0.5/clknetit.second.size());
+          constrvalues[urx].push_back(0.5/clknetit.second.size());
           if (std::get<1>(piit->second) != INT_MIN) {
             rowindofcol[block_id * 6 + 2].push_back(rhs.size());
             constrvalues[block_id * 6 + 2].push_back(-1. * std::get<1>(piit->second) / clknetit.second.size());
@@ -1707,8 +1715,10 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         } else {
           rowindofcol[block_id * 6 + 1].push_back(rhs.size());
           rowindofcol[lly].push_back(rhs.size());
+          rowindofcol[ury].push_back(rhs.size());
           constrvalues[block_id * 6 + 1].push_back(1./clknetit.second.size());
-          constrvalues[lly].push_back(1./clknetit.second.size());
+          constrvalues[lly].push_back(0.5/clknetit.second.size());
+          constrvalues[ury].push_back(0.5/clknetit.second.size());
           if (std::get<1>(piit->second) != INT_MIN) {
             rowindofcol[block_id * 6 + 3].push_back(rhs.size());
             constrvalues[block_id * 6 + 3].push_back(-1. * std::get<1>(piit->second) / clknetit.second.size());
