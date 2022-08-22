@@ -204,32 +204,12 @@ def strong_pruning(args):
     failed = set()
 
     def strong_prune(e, possible):
-        # What about e0, ..., e{n-3}, e{n-1}
-
         print(f'strong_prune: {disp(e)}')
-
-        while True:
-            f = e[:-2] + (e[-1],)
-            print(f'{disp(e)} -> {disp(f)}')
-            if check(f):
-                break
-            print(f'{disp(f)} failed')
-            e = f
-
-        e = e[:-1]
-
-        print(f'marked {disp(e)} as failed')
-        failed.add(e)
-
-        
-        # now work on the possible set
-        for x in possible:
+        for x in chain((e[-1],), possible):
             f = e[:-1] + (x,)
 
-            if check(f):
-                continue
-            else:
-                print(f'found more pruning using possible set: {disp((x,))} {disp(f)}')
+            if not check(f):
+                print(f'found failure: {disp(f)}')
                 e = f
                 while True:
                     f = e[:-2] + (e[-1],)
