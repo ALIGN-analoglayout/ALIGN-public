@@ -216,13 +216,15 @@ def strong_pruning(args):
             print(f'{disp(f)} failed')
             e = f
 
-        print(f'marked {disp(e[:-1])} as failed')
-        failed.add(e[:-1])
+        e = e[:-1]
+
+        print(f'marked {disp(e)} as failed')
+        failed.add(e)
 
         
         # now work on the possible set
         for x in possible:
-            f = e[:-2] + (x,)
+            f = e[:-1] + (x,)
 
             if check(f):
                 continue
@@ -236,8 +238,10 @@ def strong_pruning(args):
                         break
                     print(f'{disp(f)} failed')
                     e = f
-                print(f'marked {disp(e[:-1])} as failed')
-                failed.add(e[:-1])
+
+                e = e[:-1]
+                print(f'marked {disp(e)} as failed')
+                failed.add(e)
 
 
 
