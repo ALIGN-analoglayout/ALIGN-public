@@ -213,10 +213,10 @@ def strong_pruning(args):
                 e = f
                 while True:
                     f = e[:-2] + (e[-1],)
-                    print(f'{disp(e)} -> {disp(f)}')
-                    if check(f):
+                    ok = check(f)
+                    print(f'{disp(e)} -> {disp(f)} {ok}')
+                    if ok:
                         break
-                    print(f'{disp(f)} failed')
                     e = f
 
                 e = e[:-1]
