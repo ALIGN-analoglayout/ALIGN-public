@@ -1,6 +1,7 @@
 from collections import deque
 import argparse
 import random
+from itertools import chain
 
 
 def expand(n, s):
@@ -120,7 +121,8 @@ def rand(args):
     s = args.num_samples
 
     rnd = random.Random()
-    rnd.seed(args.seed)
+    if args.seed is not None:
+        rnd.seed(args.seed)
 
     successes = 0
     done = False
@@ -149,7 +151,8 @@ def pruning(args):
     s = args.num_samples
 
     rnd = random.Random()
-    rnd.seed(args.seed)
+    if args.seed is not None:
+        rnd.seed(args.seed)
 
     successes = 0
     done = False
@@ -187,12 +190,94 @@ def pruning(args):
     print(f'{successes} out of {trial} trails')
 
 
+def strong_pruning(args):
+    n = args.num_nets
+    s = args.num_samples
+
+    rnd = random.Random()
+    if args.seed is not None:
+        rnd.seed(args.seed)
+
+    successes = 0
+    done = False
+
+    failed = set()
+
+    def strong_prune(e, possible):
+        # What about e0, ..., e{n-3}, e{n-1}
+
+        print(f'strong_prune: {disp(e)}')
+
+        while True:
+            f = e[:-2] + (e[-1],)
+            print(f'{disp(e)} -> {disp(f)}')
+            if check(f):
+                break
+            print(f'{disp(f)} failed')
+            e = f
+
+        print(f'marked {disp(e[:-1])} as failed')
+        failed.add(e[:-1])
+
+        
+        # now work on the possible set
+        for x in possible:
+            f = e[:-2] + (x,)
+
+            if check(f):
+                continue
+            else:
+                print(f'found more pruning using possible set: {disp((x,))} {disp(f)}')
+                e = f
+                while True:
+                    f = e[:-2] + (e[-1],)
+                    print(f'{disp(e)} -> {disp(f)}')
+                    if check(f):
+                        break
+                    print(f'{disp(f)} failed')
+                    e = f
+                print(f'marked {disp(e[:-1])} as failed')
+                failed.add(e[:-1])
+
+
+
+    trial = 0
+    while trial < s and not done:
+
+        e = ()
+        possible = set(range(n))
+
+        for i in range(n):
+            #print(f'before {disp(e)}')
+            order = [j for j in possible if e + (j,) not in failed]
+
+            if order:
+                j = rnd.choice(order)
+                e = e + (j,)
+                possible.remove(j)
+                ok = check(e)
+                if not ok:
+                    #print(f'marking {disp(e)} as failed')
+                    strong_prune(e, possible)
+                    break
+                elif len(e) == n:
+                    successes += 1
+                    print(f'{disp(e)} succeeded on trial {trial}')
+                    done = True
+            else:
+                break
+
+        trial += 1
+
+    print(f'{successes} out of {trial} trails')
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tree Enumerator")
     parser.add_argument("-n", "--num_nets", type=int, default=6)
     parser.add_argument("-s", "--num_samples", type=int, default=100)
     parser.add_argument("-a", "--algorithm", type=str, default="enum")
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=None)
 
     args = parser.parse_args()
 
