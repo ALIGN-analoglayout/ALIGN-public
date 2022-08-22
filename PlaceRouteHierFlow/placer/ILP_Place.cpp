@@ -1653,7 +1653,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       rowindofcol[ind + 2 * yitr].push_back(rhs.size());
       rowindofcol[ind + 2 * yitr + 1].push_back(rhs.size());
       constrvalues[ind + 2 * yitr].push_back(-1);
-      constrvalues[ind + 2 * yitr + 1].push_back(-1);
+      constrvalues[ind + 2 * yitr + 1].push_back(1);
       { // driver
         const int block_id = clknetit.first.first;
         const int pin_id = clknetit.first.second;

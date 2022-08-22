@@ -2335,7 +2335,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       rowindofcol[ind + 2 * yitr].push_back(rhs.size());
       rowindofcol[ind + 2 * yitr + 1].push_back(rhs.size());
       constrvalues[ind + 2 * yitr].push_back(-1);
-      constrvalues[ind + 2 * yitr + 1].push_back(-1);
+      constrvalues[ind + 2 * yitr + 1].push_back(+1);
       int rhsum{0};
       { // driver
         const int block_id = clknetit.first.first;
