@@ -2,7 +2,8 @@ from collections import deque
 import argparse
 import random
 from itertools import chain
-
+from functools import reduce
+from operator import __mul__
 
 def expand(n, s):
     """s is a tuple of length at most n"""
@@ -24,10 +25,15 @@ def check(s):
     return True
 
 def fac(n):
-    prod = 1
-    for i in range(2, n+1):
-        prod *= i
-    return prod
+    return reduce(__mul__, range(2, n+1), 1)
+
+def test_fac():
+    assert fac(-1) == 1
+    assert fac(0) == 1
+    assert fac(1) == 1
+    assert fac(2) == 2
+    assert fac(3) == 6
+
 
 def state_space_size(n):
     """1 + n + n(n-1) + n(n-1)(n-2) + ... + n!
@@ -35,40 +41,42 @@ def state_space_size(n):
 """
 
     fn = fac(n)
+    return sum(fn//fac(i) for i in range(n, -1, -1))
 
-    s = 0
-    for i in range(n, -1, -1):
-        s += fn//fac(i)
-
-    return s
+def alt_state_space_size(n):
+    """1 + n + n(n-1) + n(n-1)(n-2) + ... + n!
+"""
+    return sum(reduce(__mul__, range(n+1-i,n+1), 1) for i in range(0, n+1))
 
 def test_state_space_size():
-    """1 + 2 + 2(1)
- -> a,A -> aA,Aa
+    """1
+'' 
+       1 + 1
+'' -> a
+       1 + 2 + 2(1)
+'' -> a,A -> aA,Aa
        1 + 3 + (3)(2) + (3)(2)(1)
- -> a,b,c -> ab, ac, ba, bc, ca, cb -> abc, acb, bac, bca, cab, cba
+'' -> a,b,c -> ab, ac, ba, bc, ca, cb -> abc, acb, bac, bca, cab, cba
 """
+    assert state_space_size(0) == 1
+    assert state_space_size(1) == 2
     assert state_space_size(2) == 5
     assert state_space_size(3) == 16
 
     for i in range(1, 20):
         print(fac(i), state_space_size(i)/fac(i))
 
+def test_alt_state_space_size():
+    assert state_space_size(0) == 1
+    assert state_space_size(1) == 2
+    assert alt_state_space_size(2) == 5
+    assert alt_state_space_size(3) == 16
+
+    for i in range(1, 20):
+        print(fac(i), alt_state_space_size(i)/fac(i))
+
 
 def simple(args):
-    
-    """
-n: 2 count: 4 successes: 1 ratio: 4.0
-n: 4 count: 33 successes: 6 ratio: 5.5
-n: 6 count: 550 successes: 90 ratio: 6.111111111111111
-n: 8 count: 16201 successes: 2520 ratio: 6.428968253968254
-n: 10 count: 751056 successes: 113400 ratio: 6.623068783068783
-n: 12 count: 50541769 successes: 7484400 ratio: 6.752948666559778
-"""
-
-
-
-
 
     n = args.num_nets
 
@@ -233,7 +241,8 @@ def strong_pruning(args):
 
 
     trial = 0
-    while trial < s and not done:
+    restarts = 0
+    while trial + restarts < s and not done:
 
         e = ()
         possible = set(range(n))
@@ -255,18 +264,21 @@ def strong_pruning(args):
                     print(f'Restarting with {disp(e)}')
                     e_s = set(e)
                     possible = set(i for i in range(n) if i not in e_s)
-                    trial += 1
-                    #break
+                    restarts += 1
                 elif len(e) == n:
                     successes += 1
                     print(f'{disp(e)} succeeded on trial {trial}')
-                    done = True
+                    if not args.dont_stop_after_first:
+                        done = True
             else:
                 break
 
         trial += 1
 
-    print(f'{successes} out of {trial} trails')
+    def plural(tag, value, p="s"):
+        return f'{value} {tag}{p if value != 1 else ""}'
+
+    print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
 
 
 if __name__ == "__main__":
@@ -275,6 +287,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--num_samples", type=int, default=100)
     parser.add_argument("-a", "--algorithm", type=str, default="enum")
     parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--dont_stop_after_first", action="store_true")
 
     args = parser.parse_args()
 
