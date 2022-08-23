@@ -1878,7 +1878,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
   //  objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
   //}
-  double area_scale = (mydesign.clockNets.empty() ? 1. : 0.0001);
+  double area_scale = 1.;
   if (flushbl) {
     objective[N_area_y] = area_scale * estimated_width;
     objective[N_area_x] = area_scale * estimated_height;

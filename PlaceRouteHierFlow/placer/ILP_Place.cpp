@@ -192,7 +192,6 @@ double ILP_solver::UpdateAreaHPWLCost(const design& mydesign, const SeqPair& cur
 }
 
 SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol) {
-
   SolutionMap sol;
   if (mydesign.Blocks.empty()) return sol;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceUsingILP");
@@ -1898,7 +1897,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       ++write_cnt;
     }
     int status{0};
-    solverif.setTimeLimit(10 * mydesign.Blocks.size());
+    solverif.setTimeLimit(5 * mydesign.Blocks.size());
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);
