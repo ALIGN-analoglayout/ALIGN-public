@@ -21,8 +21,8 @@ class MNA:
         self.xa = None
         self.g = []
 
-        self.C = defaultdict(int)
-        self.D = defaultdict(int)
+        self.C = defaultdict(float)
+        self.D = defaultdict(float)
 
 
     @property
@@ -50,8 +50,8 @@ class MNA:
 
         self.xa = -self.f.solve(self.d, trans='T')
         
-        #print('x:', self.x)
-        #print('xa:', self.xa)
+        print('x:', self.x)
+        print('xa:', self.xa)
 
 
     def semantic(self):

@@ -51,7 +51,8 @@ def test_state_space_size():
     assert state_space_size(2) == 5
     assert state_space_size(3) == 16
 
-
+    for i in range(1, 20):
+        print(fac(i), state_space_size(i)/fac(i))
 
 
 def simple(args):
@@ -143,7 +144,10 @@ def rand(args):
 
 def disp(s):
     origin = [ord('a'), ord('A')]
-    return ''.join([chr(origin[x%2]+x//2) for x in s])
+    if not s or max(s) < 52:
+        return ''.join([chr(origin[x%2]+x//2) for x in s])
+    else:
+        return s
 
 
 def pruning(args):
@@ -190,6 +194,30 @@ def pruning(args):
     print(f'{successes} out of {trial} trails')
 
 
+def strong_prune(e, possible):
+    print(f'strong_prune: {disp(e)}')
+    most_constraining_e = e
+
+    for x in chain((e[-1],), possible):
+        f = e[:-1] + (x,)
+
+        if not check(f):
+            print(f'found failure: {disp(f)}')
+            e = f
+            while True:
+                f = e[:-2] + (e[-1],)
+                ok = check(f)
+                print(f'{disp(e)} -> {disp(f)} {ok}')
+                if ok:
+                    break
+                e = f
+
+            e = e[:-1]
+            most_constraining_e = e
+
+    return most_constraining_e
+
+
 def strong_pruning(args):
     n = args.num_nets
     s = args.num_samples
@@ -203,27 +231,6 @@ def strong_pruning(args):
 
     failed = set()
 
-    def strong_prune(e, possible):
-        print(f'strong_prune: {disp(e)}')
-        for x in chain((e[-1],), possible):
-            f = e[:-1] + (x,)
-
-            if not check(f):
-                print(f'found failure: {disp(f)}')
-                e = f
-                while True:
-                    f = e[:-2] + (e[-1],)
-                    ok = check(f)
-                    print(f'{disp(e)} -> {disp(f)} {ok}')
-                    if ok:
-                        break
-                    e = f
-
-                e = e[:-1]
-                print(f'marked {disp(e)} as failed')
-                failed.add(e)
-
-
 
     trial = 0
     while trial < s and not done:
@@ -231,7 +238,7 @@ def strong_pruning(args):
         e = ()
         possible = set(range(n))
 
-        for i in range(n):
+        while len(e) < n:
             #print(f'before {disp(e)}')
             order = [j for j in possible if e + (j,) not in failed]
 
@@ -241,9 +248,15 @@ def strong_pruning(args):
                 possible.remove(j)
                 ok = check(e)
                 if not ok:
-                    #print(f'marking {disp(e)} as failed')
-                    strong_prune(e, possible)
-                    break
+                    most_constraining_e = strong_prune(e, possible)
+                    print(f'marked {disp(most_constraining_e)} as failed')
+                    failed.add(most_constraining_e)
+                    e = most_constraining_e[:-1]
+                    print(f'Restarting with {disp(e)}')
+                    e_s = set(e)
+                    possible = set(i for i in range(n) if i not in e_s)
+                    trial += 1
+                    #break
                 elif len(e) == n:
                     successes += 1
                     print(f'{disp(e)} succeeded on trial {trial}')
