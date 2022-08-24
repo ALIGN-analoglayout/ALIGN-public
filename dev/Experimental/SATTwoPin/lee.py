@@ -262,7 +262,7 @@ class StrongPruning:
     def check(self, e):
         assert e == self.stack
 
-        return Lee(self.n_i, self.n_j).is_routable(e, self.args.alg, self.args.check, self.nets)
+        return Lee(self.n_i, self.n_j).is_routable(self.stack, self.args.alg, self.args.check, self.nets)
 
     def strong_prune(self, e, possible):
         print(f'strong_prune: {disp(e)}')
