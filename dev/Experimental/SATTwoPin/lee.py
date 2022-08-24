@@ -1,4 +1,5 @@
 from collections import defaultdict, Counter
+from itertools import chain
 import random
 import render
 import argparse
@@ -213,6 +214,11 @@ class Lee:
         return sum(self.path_length(path) for _, path in self.paths.items())
         
 
+    def is_routable(self, e, alg, check, nets):
+        samp = [nets[idx] for idx in e]
+        return self.route_all(samp, alg=alg, check=check)
+
+
 def determine_order(nets):
     counts = []
 
@@ -236,7 +242,140 @@ def determine_order(nets):
 
     return [b for _, b in ordering]
 
-def main(n, m, lst, num_trials, alg='astar', check=False, order=False):
+class StrongPruning:
+    def __init__(self, args, n_i, n_j, nets):
+        self.args = args
+        self.n_i = n_i
+        self.n_j = n_j
+        self.nets = nets
+        self.stack = ()
+
+
+    def pop(self):
+        res = self.stack[-1]
+        self.stack = self.stack[:-1]
+        return res
+
+    def push(self, x):
+        self.stack = self.stack + (x,)
+
+    def check(self, e):
+        assert e == self.stack
+
+        return Lee(self.n_i, self.n_j).is_routable(e, self.args.alg, self.args.check, self.nets)
+
+    def strong_prune(self, e, possible):
+        print(f'strong_prune: {disp(e)}')
+        most_constraining_e = e
+
+        for x in chain((e[-1],), possible):
+
+            self.pop()
+
+            f = e[:-1] + (x,)
+
+            self.push(x)
+
+            assert f == self.stack, (f, self.stack)
+
+            if not self.check(f):
+                print(f'found failure: {disp(f)}')
+                e = f
+                while True:
+                    f = e[:-2] + (e[-1],)
+
+                    y = self.pop()
+                    z = self.pop()
+                    self.push(y)
+
+                    ok = self.check(f)
+                    print(f'{disp(e)} -> {disp(f)} {ok}')
+                    if ok:
+                        y = self.pop()
+                        self.push(z)
+                        self.push(y)
+                        break
+                    e = f
+
+                e = e[:-1]
+                self.pop()
+
+                assert e == self.stack, (e, self.stack)
+
+                most_constraining_e = e
+
+        return most_constraining_e
+
+
+    def strong_pruning(self):
+        n = len(self.nets)
+        s = args.num_samples
+
+        rnd = random.Random()
+        if args.seed is not None:
+            rnd.seed(args.seed)
+
+        successes = 0
+        done = False
+
+        failed = set()
+
+        trial = 0
+        restarts = 0
+        while trial + restarts < s and not done:
+
+            e = ()
+            possible = set(range(n))
+
+            self.stack = ()
+
+
+            while len(e) < n:
+                #print(f'before {disp(e)}')
+                order = [j for j in possible if e + (j,) not in failed]
+
+                if order:
+                    j = rnd.choice(order)
+                    e = e + (j,)
+
+                    self.push(j)
+
+                    assert self.stack == e
+
+                    possible.remove(j)
+                    if not self.check(e):
+                        most_constraining_e = self.strong_prune(e, possible)
+                        print(f'marked {disp(most_constraining_e)} as failed')
+                        failed.add(tuple(most_constraining_e))
+                        e = most_constraining_e[:-1]
+
+                        self.stack = e
+
+                        print(f'Restarting with {disp(e)}')
+                        e_s = set(e)
+                        possible = set(i for i in range(n) if i not in e_s)
+                        restarts += 1
+                    elif len(e) == n:
+                        successes += 1
+                        print(f'{disp(e)} succeeded on trial {trial}')
+                        yield e
+                        if not args.dont_stop_after_first:
+                            done = True
+                else:
+                    break
+
+            trial += 1
+
+        def plural(tag, value, p="s"):
+            return f'{value} {tag}{p if value != 1 else ""}'
+
+        print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
+
+        return e
+
+
+def main(n, m, lst, args):
+    num_trials = args.num_trials
     count = 0
     histo = Counter()
 
@@ -245,7 +384,7 @@ def main(n, m, lst, num_trials, alg='astar', check=False, order=False):
 
         a = Lee(n, m)
 
-        ok = a.route_all(samp, alg=alg, check=check)
+        ok = a.route_all(samp, alg=args.alg, check=args.check)
         if ok:
             print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
             count += 1
@@ -255,7 +394,15 @@ def main(n, m, lst, num_trials, alg='astar', check=False, order=False):
 
         a.show()
 
-    if order:
+    if args.strong_pruning:
+        for e in StrongPruning(args, n, m, lst).strong_pruning():
+            samp = [lst[idx] for idx in e]
+            route(samp)
+
+        print(f'Successfully routed {count} of {num_trials} times.')
+
+
+    elif args.order:
         samp = determine_order(lst)
         route(samp)
         if count == 1:
@@ -270,6 +417,8 @@ def main(n, m, lst, num_trials, alg='astar', check=False, order=False):
 
     print(f'Wirelength histogram:', list(sorted(histo.items())))
 
+def disp(e):
+    return e
 
 def test_total_wire_length():
     a = Lee(4, 4)
@@ -288,13 +437,17 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model", type=str, default="ten_nets_8x8")
     parser.add_argument("-n", "--num_trials", type=int, default=100)
     parser.add_argument("-a", "--alg", type=str, default='astar')
-    parser.add_argument("-s", "--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("-c", "--check", action='store_true')
+    parser.add_argument("-s", "--num_samples", type=int, default=100)
     parser.add_argument("-o", "--order", action='store_true')
+    parser.add_argument("--strong_pruning", action='store_true')
+    parser.add_argument("--dont_stop_after_first", action="store_true")
 
     args = parser.parse_args()
 
-    random.seed(args.seed)
+    if args.seed is not None:
+        random.seed(args.seed)
 
     """
   01234567
@@ -331,7 +484,7 @@ if __name__ == "__main__":
         for net, src, tgt in nets:
             yield net, tuple(x*scale for x in src), tuple(x*scale for x in tgt)
 
-    p = re.compile(r'^(ten_nets|simple)_(\d+)x(\d+)$')
+    p = re.compile(r'^(ten_nets|simple|synthetic|river|random)_(\d+)x(\d+)$')
 
     m = p.match(args.model)
 
@@ -339,62 +492,60 @@ if __name__ == "__main__":
         subs = m.groups()
         n_i = int(subs[1])
         n_j = int(subs[2])
-        assert n_i == n_j
-        nets = ten_nets if subs[0] == 'ten_nets' else simple_nets
 
-        factor = (n_i+7) // 8
+        if subs[0] in ['ten_nets', 'simple']:
+            assert n_i == n_j
+            nets = ten_nets if subs[0] == 'ten_nets' else simple_nets
+            factor = (n_i+7) // 8
+            main(n_i, n_j, list(scale(nets, factor)), args)
 
-        main(n_i, n_j, list(scale(nets, factor)), num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)        
+        elif subs[0] == 'synthetic':
+            nets = []
+            assert n_i == 4
+            assert n_j % 4 == 0
+
+            k = n_j // 4 # number of pairs
+
+            for i in range(k):
+                nets.append( (chr(ord('a')+i), (1, 4*i+0), (3, 4*i+2)))
+                nets.append( (chr(ord('A')+i), (2, 4*i+1), (0, 4*i+3)))
+
+            main(n_i, n_j, nets, args)
+
+        elif subs[0] == 'river':
+            nets = []
+            assert n_i == n_j
+            nnets = n_i // 2 - 1
+            for i in range(nnets):
+                nets.append( (chr(ord('a')+i), (i, n_i//2-1-i), (n_i//2+i, n_i-1-i)))
+
+            main(n_i, n_j, nets, args)
+
+        elif subs[0] == 'random':
+            nets = []
+            assert n_i == n_j
+            nnets = n_i//2
+
+            endpoints = set()
+
+            def get_rand_point():
+                while True:
+                    i = random.randrange( 0, n_i)
+                    j = random.randrange( 0, n_j)
+                    if (i,j) not in endpoints:
+                        endpoints.add((i,j))
+                        return (i,j)
+
+            for k in range(nnets):
+                i0, j0 = get_rand_point()
+                i1, j1 = get_rand_point()
+
+                nets.append( (chr(ord('a')+k), (i0, j0), (i1, j1)))
+
+            main(n_i, n_j, nets, args)
 
     elif args.model == "two_nets_10x10":
-        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
-
-    elif args.model == "river_8x8":
-        main(8, 8, [
-        ("0", (7, 0), (0, 7)),
-        ("1", (7, 1), (1, 7)),
-        ("2", (7, 2), (2, 7)),
-        ("3", (7, 3), (3, 7)),
-        ("4", (7, 4), (4, 7)),
-        ("5", (7, 5), (5, 7)),
-        ("6", (7, 6), (6, 7)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
-
-    elif args.model == "synthetic_4x20":
-        main(4, 20, [
-        ("a", (1, 0), (3, 2)),
-        ("A", (2, 1), (0, 3)),
-        ("b", (1, 4), (3, 6)),
-        ("B", (2, 5), (0, 7)),
-        ("c", (1, 8), (3, 10)),
-        ("C", (2, 9), (0, 11)),
-        ("d", (1, 12), (3, 14)),
-        ("D", (2, 13), (0, 15)),
-        ("e", (1, 16), (3, 18)),
-        ("E", (2, 17), (0, 19)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
-
-    elif args.model == "synthetic_4x16":
-        main(4, 16, [
-        ("a", (1, 0), (3, 2)),
-        ("A", (2, 1), (0, 3)),
-        ("b", (1, 4), (3, 6)),
-        ("B", (2, 5), (0, 7)),
-        ("c", (1, 8), (3, 10)),
-        ("C", (2, 9), (0, 11)),
-        ("d", (1, 12), (3, 14)),
-        ("D", (2, 13), (0, 15)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
-
-    elif args.model == "synthetic_4x12":
-        main(4, 12, [
-        ("a", (1, 0), (3, 2)),
-        ("A", (2, 1), (0, 3)),
-        ("b", (1, 4), (3, 6)),
-        ("B", (2, 5), (0, 7)),
-        ("c", (1, 8), (3, 10)),
-        ("C", (2, 9), (0, 11)),
-        ], num_trials=args.num_trials, alg=args.alg, check=args.check, order=args.order)
+        main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], args)
 
     else:
         assert False, f"Unknown model: {args.model}"
