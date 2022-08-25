@@ -265,7 +265,6 @@ class StrongPruning:
     def strong_prune(self, possible):
         print(f'strong_prune: {disp(self.stack)}')
         most_constraining_e = self.stack
-
         
         last = self.pop()
         self.push(last)
@@ -275,7 +274,7 @@ class StrongPruning:
             self.push(x)
 
             if not self.check():
-                print(f'found failure: {disp(self.stack)}')
+                print(f'found failure: {self.disp(self.stack)}')
                 while True:
 
                     save_e = self.stack
@@ -285,7 +284,7 @@ class StrongPruning:
                     self.push(y)
 
                     ok = self.check()
-                    print(f'{disp(save_e)} -> {disp(self.stack)} {ok}')
+                    print(f'{disp(self.save_e)} -> {self.disp(self.stack)} {ok}')
                     if ok:
                         y = self.pop()
                         self.push(z)
@@ -298,6 +297,9 @@ class StrongPruning:
 
         return most_constraining_e
 
+
+    def disp(self, e):
+        return e
 
     def strong_pruning(self):
         n = len(self.nets)
@@ -316,45 +318,41 @@ class StrongPruning:
         restarts = 0
         while trial + restarts < s and not done:
 
-            e = ()
             possible = set(range(n))
 
             self.stack = ()
 
 
-            while len(e) < n:
-                #print(f'before {disp(e)}')
-                order = [j for j in possible if e + (j,) not in failed]
+            while len(self.stack) < n:
+                #print(f'before {self.disp(self.stack)}')
+                order = [j for j in possible if self.stack + (j,) not in failed]
 
-                if order:
-                    j = rnd.choice(order)
-                    e = e + (j,)
-
-                    self.push(j)
-
-                    assert self.stack == e
-
-                    possible.remove(j)
-                    if not self.check():
-                        most_constraining_e = self.strong_prune(possible)
-                        print(f'marked {disp(most_constraining_e)} as failed')
-                        failed.add(tuple(most_constraining_e))
-                        e = most_constraining_e[:-1]
-
-                        self.stack = e
-
-                        print(f'Restarting with {disp(e)}')
-                        e_s = set(e)
-                        possible = set(i for i in range(n) if i not in e_s)
-                        restarts += 1
-                    elif len(e) == n:
-                        successes += 1
-                        print(f'{disp(e)} succeeded on trial {trial}')
-                        yield e
-                        if not args.dont_stop_after_first:
-                            done = True
-                else:
+                if not order:
                     break
+
+                j = rnd.choice(order)
+
+                self.push(j)
+
+
+                possible.remove(j)
+                if not self.check():
+                    most_constraining_e = self.strong_prune(possible)
+                    print(f'marked {self.disp(most_constraining_e)} as failed')
+                    failed.add(tuple(most_constraining_e))
+
+                    self.stack = most_constraining_e[:-1]
+
+                    print(f'Restarting with {self.disp(self.stack)}')
+                    e_s = set(self.stack)
+                    possible = set(i for i in range(n) if i not in e_s)
+                    restarts += 1
+                elif len(self.stack) == n:
+                    successes += 1
+                    print(f'{self.disp(self.stack)} succeeded on trial {trial}')
+                    yield self.stack
+                    if not args.dont_stop_after_first:
+                        done = True
 
             trial += 1
 
@@ -363,7 +361,7 @@ class StrongPruning:
 
         print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
 
-        return e
+        return self.stack
 
 
 def main(n, m, lst, args):
@@ -408,9 +406,6 @@ def main(n, m, lst, args):
         print(f'Successfully routed {count} of {num_trials} times.')
 
     print(f'Wirelength histogram:', list(sorted(histo.items())))
-
-def disp(e):
-    return e
 
 def test_total_wire_length():
     a = Lee(4, 4)
