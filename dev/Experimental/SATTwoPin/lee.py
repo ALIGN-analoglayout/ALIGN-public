@@ -263,7 +263,7 @@ class StrongPruning:
         return Lee(self.n_i, self.n_j).is_routable(self.stack, self.args.alg, self.args.check, self.nets)
 
     def strong_prune(self, possible):
-        print(f'strong_prune: {disp(self.stack)}')
+        print(f'strong_prune: {self.disp(self.stack)}')
         most_constraining_e = self.stack
         
         last = self.pop()
@@ -298,8 +298,11 @@ class StrongPruning:
         return most_constraining_e
 
 
-    def disp(self, e):
-        return e
+    def disp(self, e=None):
+        if e is None:
+            return self.stack
+        else:
+            return e
 
     def strong_pruning(self):
         n = len(self.nets)
