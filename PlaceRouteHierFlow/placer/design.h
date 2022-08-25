@@ -182,6 +182,8 @@ class design {
   int grid_unit_x = 1, grid_unit_y = 1;
   bool mixFlag;
   // above is added by yg
+  std::map<std::pair<int, int>, int> hSpread, vSpread;
+
 
   // void readBlockFile(string blockfile);
   // void readNetFile(string netfile);
@@ -206,6 +208,8 @@ class design {
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  map<string, map<std::tuple<int, int, int, int>, double> > CFValues;
+  int CFdist_type;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
@@ -290,6 +294,19 @@ class design {
   void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
   bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
   size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+
+  const int getSpread(const int i, const int j, const bool horizon) const
+  {
+    int spread{0};
+    const auto& hvSpread = horizon ? hSpread : vSpread;
+    if (!hvSpread.empty()) {
+      auto it = hvSpread.find(std::make_pair(i, j));
+      if (it != hvSpread.end()) {
+        spread = it->second;
+      }
+    }
+    return spread;
+  }
   // std::ofstream _debugofs;
 };
 

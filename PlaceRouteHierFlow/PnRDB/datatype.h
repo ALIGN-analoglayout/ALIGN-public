@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 #include "limits.h"
 //#include "../router/Rdatatype.h"
@@ -40,6 +41,7 @@ struct Alignment;
 struct AlignBlock;
 struct Abument;
 struct MatchBlock;
+struct SpreadConstraint;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
@@ -485,6 +487,9 @@ struct hierNode {
   double cost = -1;
   std::string compact_style = "left";
   vector<string> DoNotRoute;
+  map<string, vector<std::tuple<string, string, double> > > CFValues;
+  int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
+  vector<SpreadConstraint> SpreadConstraints;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -540,6 +545,12 @@ struct AlignBlock {
   std::vector<int> blocks;  // LL.x/LL.y equal
   int horizon;              // 1 is h, 0 is v.
   int line;                 // 0 is left or bottom, 1 is center, 2 is right or top
+};
+
+struct SpreadConstraint {
+  std::set<int> blocks;
+  int horizon;
+  int distance;
 };
 
 struct PortPos {

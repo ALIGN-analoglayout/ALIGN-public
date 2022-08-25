@@ -20,57 +20,33 @@
             ]
         },
         {
+            "direction": "H",
+            "const_name": "Ordering",
+            "abut": false,
+            "blocks": [
+                "X_MP9",
+                "X_MP10"
+            ]
+        },
+        {
+            "direction": "H",
+            "const_name": "Ordering",
+            "abut": false,
+            "blocks": [
+                "X_MP7",
+                "X_MP8"
+            ]
+        },
+        {
             "pairs": [
                 {
                     "type": "sympair",
                     "block1": "X_INV_N_MP11_MN13",
                     "block2": "X_INV_P_MP12_MN14"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_MP10_MP9"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_MP7_MP8"
                 }
             ],
             "const_name": "SymmBlock",
             "axis_dir": "V"
-        },
-        {
-            "axis_dir": "V",
-            "const_name": "SymmNet",
-            "net1": {
-                "blocks": [
-                    {
-                        "name": "X_INV_P_MP12_MN14",
-                        "pin": "P2",
-                        "type": "pin"
-                    },
-                    {
-                        "name": "X_MP10_MP9",
-                        "pin": "DB",
-                        "type": "pin"
-                    }
-                ],
-                "name": "VIN_O"
-            },
-            "net2": {
-                "blocks": [
-                    {
-                        "name": "X_INV_N_MP11_MN13",
-                        "pin": "P2",
-                        "type": "pin"
-                    },
-                    {
-                        "name": "X_MP10_MP9",
-                        "pin": "DA",
-                        "type": "pin"
-                    }
-                ],
-                "name": "VIP_O"
-            }
         },
         {
             "axis_dir": "V",

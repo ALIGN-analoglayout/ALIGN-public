@@ -29,7 +29,7 @@ class MOSGenerator(CanvasPDK):
         self.add_tap = True
         self.place_on_grid = None
         for const in self.primitive_constraints:
-            if const.constraint == 'generator':
+            if const.constraint == 'Generator':
                 if const.parameters is not None:
                     self.pattern_template = const.parameters.get('pattern_template')
                     self.PARTIAL_ROUTING = const.parameters.get('PARTIAL_ROUTING', False)
@@ -196,7 +196,7 @@ class MOSGenerator(CanvasPDK):
                 assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
             elif self.pattern_template is not None:
-                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)
             else:
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col)
         else:
@@ -205,7 +205,7 @@ class MOSGenerator(CanvasPDK):
                 assert k in self.exact_patterns_d, (k, self.exact_patterns_d)
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.exact_patterns_d[k])
             elif self.pattern_template is not None:
-                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)                
+                interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=self.pattern_template)
             else:
                 interleave_array = self.interleave_pattern(self.n_row, self.n_col, pattern_template=["A"])
 

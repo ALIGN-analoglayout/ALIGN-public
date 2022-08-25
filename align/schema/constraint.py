@@ -55,6 +55,9 @@ def upper_case(cls, value):
     return [v.upper() for v in value]
 
 
+def upper_case_str(cls, value):
+    return value.upper()
+
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
     return value
@@ -65,8 +68,9 @@ class SoftConstraint(types.BaseModel):
     constraint: str
 
     def __init__(self, *args, **kwargs):
-        constraint = pattern.sub(
-            '_', self.__class__.__name__).lower()
+        # constraint = pattern.sub(
+        #     '__', self.__class__.__name__).lower()
+        constraint = self.__class__.__name__
         if 'constraint' not in kwargs or kwargs['constraint'] == self.__class__.__name__:
             kwargs['constraint'] = constraint
         else:
@@ -352,8 +356,8 @@ class Enclose(HardConstraint):
 
 class Spread(HardConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along
-    `direction` if two instances overlap in other direction
+    Spread `instances` by forcing minimum spacing along `direction`
+    if a pair of instances overlap in the orthogonal direction
 
     Args:
         instances (list[str]): List of `instances`
@@ -375,7 +379,7 @@ class Spread(HardConstraint):
     '''
 
     instances: List[str]
-    direction: Optional[Literal['horizontal', 'vertical']]
+    direction: Literal['horizontal', 'vertical']
     distance: int  # in nm
 
     @types.validator('instances', allow_reuse=True)
@@ -385,22 +389,17 @@ class Spread(HardConstraint):
 
     def translate(self, solver):
 
-        def cc(b1, b2, c='x'):
-            d = 'y' if c == 'x' else 'x'
+        def cc(b1, b2, d='x'):
+            od = 'y' if d == 'x' else 'x'
             return solver.Implies(
-                solver.And(  # overlap orthogonal to c
-                    getattr(b1, f'ur{d}') > getattr(b2, f'll{d}'),
-                    getattr(b2, f'ur{d}') > getattr(b1, f'll{d}'),
+                solver.And(  # overlap in orthogonal direction od
+                    getattr(b1, f'ur{od}') > getattr(b2, f'll{od}'),
+                    getattr(b2, f'ur{od}') > getattr(b1, f'll{od}'),
                 ),
-                solver.Abs(  # distance in c coords
-                    (
-                        getattr(b1, f'll{c}')
-                        + getattr(b1, f'ur{c}')
-                    ) - (
-                        getattr(b2, f'll{c}')
-                        + getattr(b2, f'ur{c}')
-                    )
-                ) >= self.distance * 2
+                solver.And(  # distance between sidewalls in direction d
+                    solver.Abs(getattr(b1, f'll{d}') - getattr(b2, f'ur{d}')) >= self.distance,
+                    solver.Abs(getattr(b2, f'll{d}') - getattr(b1, f'ur{d}')) >= self.distance,
+                )
             )
 
         bvars = solver.iter_bbox_vars(self.instances)
@@ -410,10 +409,7 @@ class Spread(HardConstraint):
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                yield solver.Or(
-                    cc(b1, b2, 'x'),
-                    cc(b1, b2, 'y')
-                )
+                assert False, "Please speficy direction"
 
 
 class AssignBboxVariables(HardConstraint):
@@ -1352,6 +1348,34 @@ class SymmetricNets(SoftConstraint):
     pins2: Optional[List]
     direction: Literal['H', 'V']
 
+    #TODO check net names
+    _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
+    _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+    @types.validator('pins1', allow_reuse=True)
+    def pins1_validator(cls, pins1):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins1:
+            pins1 = [pin.upper() for pin in pins1]
+            for pin in pins1:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+        return pins1
+
+    @types.validator('pins2', allow_reuse=True)
+    def pins2_validator(cls, pins2, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins2:
+            pins2 = [pin.upper() for pin in pins2]
+            for pin in pins2:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+        return pins2
+
 
 class ChargeFlow(SoftConstraint):
     '''ChargeFlow
@@ -1359,20 +1383,27 @@ class ChargeFlow(SoftConstraint):
     The chargeflow constraints help in improving the placement.
 
     Args:
+        dist_type (str) : 'Euclidean' or 'Manhattan' distance between pins,
         time (list) : List of time intervals
         pin_current (dict) : current for each pin at different time intervals
     Example ::
 
         {
             "constraint" : "ChargeFlow",
-            "time" : [0,1.2,2.4]
+            "dist_type" : [0,1.2,2.4],
+            "time" : [0,1.2,2.4],
             "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
         }
      '''
 
+    dist_type: Optional[Literal['Euclidean', 'Manhattan']] = 'Manhattan'
     time: List[float]
     pin_current: dict
 
+    @types.validator('dist_type', allow_reuse=True)
+    def dist_type_validator(cls, value):
+        assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
+        return value
     @types.validator('time', allow_reuse=True)
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'

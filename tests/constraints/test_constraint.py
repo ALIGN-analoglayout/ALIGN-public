@@ -270,6 +270,31 @@ def test_placecloser():
     shutil.rmtree(ckt_dir)
 
 
+def test_spread():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o vccx vssx
+    .ends
+    .subckt {name} vi vo vccx vssx
+    xi0 vi v1 vccx vssx dig22inv
+    xi1 v1 v2 vccx vssx dig22inv
+    xi2 v2 vo vccx vssx dig22inv
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
+        {"constraint": "Floorplan", "order": "true", "regions": [["xi0", "xi1"], ["xi2"]]},
+        {"constraint": "Spread", "instances": ["xi0", "xi1"], "direction": "horizontal", "distance": 200},
+        {"constraint": "Spread", "instances": ["xi0", "xi2"], "direction": "vertical",   "distance": 630}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False)
+
+
 @pytest.mark.skip(reason='Failing test to be enabled in a follow up next PR')
 def test_portlocation():
     name = f'ckt_{get_test_id()}'

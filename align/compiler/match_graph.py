@@ -61,7 +61,7 @@ class Annotate:
             list: all updated circuit list
         """
         logger.debug(
-            f"ALl  subckt:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
+            f"All  subckts: {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
         )
 
         # names = list(self.ckt_data)
@@ -167,6 +167,7 @@ class Annotate:
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
         new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
+            new_subckt = self.ckt_data.find(new_subckt_name)
             logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
             # Create a subckt and add to library
@@ -193,16 +194,16 @@ class Annotate:
                 pins={all_pins[x]: x for x in subckt_pins},
             )
             parent_subckt.elements.append(X1)
-        tr = ConstraintTranslator(self.ckt_data, parent_subckt.name, new_subckt_name)
+        tr = ConstraintTranslator(self.ckt_data, parent_subckt.name, new_subckt)
         # Translate any constraints defined on the groupblock elements to subckt
         tr._top_to_bottom_translation(
             {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()}
         )
         # Modify instance names in constraints after modifying groupblock
         tr._update_const(const.instance_name, {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()})
-        # Removing const with single instances.
+        # Add const after removing const with single instances.
         for c in list(parent_subckt.constraints):
-            tr._check_const_length(parent_subckt.constraints, c)
+            tr._add_const(parent_subckt.constraints, c)
 
     def _group_block_const(self, parent_subckt_name):
         parent_subckt = self.ckt_data.find(parent_subckt_name)
@@ -222,7 +223,7 @@ class Annotate:
                 inst_new = Instance(**{k: (v if k!='name' else new_name) for k, v in inst.dict().items()})
                 parent_subckt.elements.remove(inst)
                 parent_subckt.elements.append(inst_new)
-            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name, inst.model)
+            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name, None)
             # Modify instance names in constraints after modifying groupblock
             tr._update_const(new_name, {old_name: new_name})
 
@@ -232,8 +233,6 @@ class Annotate:
             assert set(const_insts).issubset(
                 ckt_ele
             ), f"Constraint instances: {const_insts} not in subcircuit {parent_subckt.name} with elements {ckt_ele}"
-
-            #TODO use isomorphism to check for matching group blocks
             if const.template_name and const.template_name.upper() in self.lib_names:
                 child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_insts]

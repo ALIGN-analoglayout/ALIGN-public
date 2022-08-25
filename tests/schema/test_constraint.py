@@ -42,7 +42,7 @@ def test_Order_input_sanitation(db):
 def test_Order_constraintname(db):
     with set_context(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
-    assert x.constraint == 'order'
+    assert x.constraint == 'Order'
 
 
 def test_Order_nblock_checking(db):
@@ -53,7 +53,6 @@ def test_Order_nblock_checking(db):
             constraint.Order(direction='left_to_right', instances=['M1'])
 
 
-@pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
     with set_context(db):
         with pytest.raises(Exception):

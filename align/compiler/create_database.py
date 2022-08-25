@@ -12,7 +12,6 @@ from .util import get_generator
 
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
