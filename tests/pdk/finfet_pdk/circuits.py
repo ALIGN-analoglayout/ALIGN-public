@@ -398,3 +398,32 @@ def analog_mux_4to1(name):
     .END
     """)
     return netlist
+
+
+def folded_cascode(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} ina inb icm icsl outb vccx vssx
+
+    qp5<0> casp casp vccx vccx p stack=2 m=4 nf=1 w=360e-9
+    qp5<1> casp casp vccx vccx p stack=2 m=4 nf=1 w=360e-9
+    qp6<0> icsl icsl casp vccx p stack=2 m=4 nf=1 w=360e-9
+    qp6<1> icsl icsl casp vccx p stack=2 m=4 nf=1 w=360e-9
+
+    qp4 difa casp vccx vccx p stack=2 m=8 nf=1 w=360e-9
+    qp3 difb casp vccx vccx p stack=2 m=8 nf=1 w=360e-9
+    qp2 casn icsl difa vccx p stack=2 m=8 nf=1 w=360e-9
+    qp1 outb icsl difb vccx p stack=2 m=8 nf=1 w=360e-9
+
+    qn1 difa ina icm vssx n m=6 nf=2 w=360e-9
+    qn2 difb inb icm vssx n m=6 nf=2 w=360e-9
+
+    qn4 casn casn net1 vssx n stack=2 m=8 nf=1 w=360e-9
+    qn3 outb casn net2 vssx n stack=2 m=8 nf=1 w=360e-9
+
+    qn6 net1 casn vssx vssx n stack=2 m=8 nf=1 w=360e-9
+    qn5 net2 casn vssx vssx n stack=2 m=8 nf=1 w=360e-9
+
+    .ends {name}
+    .END
+    """)
+    return netlist
