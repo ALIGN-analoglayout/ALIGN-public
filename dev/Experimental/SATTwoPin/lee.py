@@ -259,50 +259,42 @@ class StrongPruning:
     def push(self, x):
         self.stack = self.stack + (x,)
 
-    def check(self, e):
-        assert e == self.stack
-
+    def check(self):
         return Lee(self.n_i, self.n_j).is_routable(self.stack, self.args.alg, self.args.check, self.nets)
 
-    def strong_prune(self, e, possible):
-        print(f'strong_prune: {disp(e)}')
-        most_constraining_e = e
+    def strong_prune(self, possible):
+        print(f'strong_prune: {disp(self.stack)}')
+        most_constraining_e = self.stack
 
-        for x in chain((e[-1],), possible):
+        
+        last = self.pop()
+        self.push(last)
 
+        for x in chain((last,), possible):
             self.pop()
-
-            f = e[:-1] + (x,)
-
             self.push(x)
 
-            assert f == self.stack, (f, self.stack)
-
-            if not self.check(f):
-                print(f'found failure: {disp(f)}')
-                e = f
+            if not self.check():
+                print(f'found failure: {disp(self.stack)}')
                 while True:
-                    f = e[:-2] + (e[-1],)
+
+                    save_e = self.stack
 
                     y = self.pop()
                     z = self.pop()
                     self.push(y)
 
-                    ok = self.check(f)
-                    print(f'{disp(e)} -> {disp(f)} {ok}')
+                    ok = self.check()
+                    print(f'{disp(save_e)} -> {disp(self.stack)} {ok}')
                     if ok:
                         y = self.pop()
                         self.push(z)
                         self.push(y)
                         break
-                    e = f
 
-                e = e[:-1]
                 self.pop()
 
-                assert e == self.stack, (e, self.stack)
-
-                most_constraining_e = e
+                most_constraining_e = self.stack
 
         return most_constraining_e
 
@@ -343,8 +335,8 @@ class StrongPruning:
                     assert self.stack == e
 
                     possible.remove(j)
-                    if not self.check(e):
-                        most_constraining_e = self.strong_prune(e, possible)
+                    if not self.check():
+                        most_constraining_e = self.strong_prune(possible)
                         print(f'marked {disp(most_constraining_e)} as failed')
                         failed.add(tuple(most_constraining_e))
                         e = most_constraining_e[:-1]
