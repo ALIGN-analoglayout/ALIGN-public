@@ -4,8 +4,11 @@ import random
 import render
 import argparse
 import re
+import copy
 
 import heapq
+
+last_trace = None
 
 class Lee:
     def __init__(self, n, m):
@@ -161,7 +164,9 @@ class Lee:
 
         return self._astar(nm, src, tgt, obstacles, heuristic=heuristic)
 
-    def route_all(self, lst, alg='astar', check=False):
+    def route_all(self, nets, lst, alg='astar', check=False):
+
+        global last_trace
 
         fn = self.astar if alg == 'astar' else self.dijkstra
 
@@ -171,15 +176,18 @@ class Lee:
 
         obstacles = set()
 
-        for _, src, tgt in lst:
+        for _, src, tgt in nets:
             obstacles.add(src)
             obstacles.add(tgt)
+
+        current_trace = []
 
         for nm, src, tgt in lst:
             obstacles.remove(src)
             obstacles.remove(tgt)
 
             path_l = fn( nm, src, tgt, obstacles)
+
             if check:
                 path_l_ref = self.dijkstra( nm, src, tgt, obstacles)
                 assert (path_l is None) == (path_l_ref is None)
@@ -189,6 +197,11 @@ class Lee:
                     #print(f'Checking path lengths: {alg} {pl} dijkstra {pl_ref}')
                     assert pl == pl_ref
 
+            save_obstacles = set(list(obstacles))
+            path_str, path_cost = (self.path2str(path_l), self.path_length(path_l)) if path_l is not None else (None, None)
+            print(nm, src, tgt, path_str, path_cost)
+            current_trace.append((nm, path_str, path_cost, save_obstacles))
+
             if path_l is None:
                 obstacles.add(src)
                 obstacles.add(tgt)
@@ -197,7 +210,15 @@ class Lee:
                 obstacles.update([tup[:2] for tup in path_l])
                 self.add_path(nm, path_l)
 
-            print(nm, src, tgt, self.path2str(path_l) if path_l is not None else None)
+        if last_trace is not None:
+            for idx, (x, y) in enumerate(zip(last_trace, current_trace)):
+                nm_x, s_x, c_x, o_x = x
+                nm_y, s_y, c_y, o_y = y
+                if nm_x == nm_y and x != y: 
+                    print("last trace differs from current trace:", idx, x, y)
+
+        last_trace = current_trace
+
 
         return all_ok
 
@@ -215,8 +236,7 @@ class Lee:
         
 
     def is_routable(self, e, alg, check, nets):
-        samp = [nets[idx] for idx in e]
-        return self.route_all(samp, alg=alg, check=check)
+        return self.route_all(nets, [nets[idx] for idx in e], alg=alg, check=check)
 
 
 def determine_order(nets):
@@ -250,6 +270,8 @@ class StrongPruning:
         self.nets = nets
         self.stack = ()
 
+        self.obstructions = None
+
 
     def pop(self):
         res = self.stack[-1]
@@ -263,7 +285,7 @@ class StrongPruning:
         return Lee(self.n_i, self.n_j).is_routable(self.stack, self.args.alg, self.args.check, self.nets)
 
     def strong_prune(self, possible):
-        print(f'strong_prune: {self.disp(self.stack)}')
+        print(f'strong_prune: {self.disp()}')
         most_constraining_e = self.stack
         
         last = self.pop()
@@ -274,7 +296,7 @@ class StrongPruning:
             self.push(x)
 
             if not self.check():
-                print(f'found failure: {self.disp(self.stack)}')
+                print(f'found failure: {self.disp()}')
                 while True:
 
                     save_e = self.stack
@@ -284,7 +306,7 @@ class StrongPruning:
                     self.push(y)
 
                     ok = self.check()
-                    print(f'{disp(self.save_e)} -> {self.disp(self.stack)} {ok}')
+                    print(f'{self.disp(save_e)} -> {self.disp()} {ok}')
                     if ok:
                         y = self.pop()
                         self.push(z)
@@ -299,10 +321,16 @@ class StrongPruning:
 
 
     def disp(self, e=None):
+        ee = e
         if e is None:
-            return self.stack
+            ee = self.stack
+
+        a = [self.nets[x][0] for x in ee]
+
+        if all(len(x) == 1 for x in a):
+            return ''.join(a)
         else:
-            return e
+            return ','.join(a)
 
     def strong_pruning(self):
         n = len(self.nets)
@@ -327,7 +355,7 @@ class StrongPruning:
 
 
             while len(self.stack) < n:
-                #print(f'before {self.disp(self.stack)}')
+                #print(f'before {self.disp()}')
                 order = [j for j in possible if self.stack + (j,) not in failed]
 
                 if not order:
@@ -346,13 +374,13 @@ class StrongPruning:
 
                     self.stack = most_constraining_e[:-1]
 
-                    print(f'Restarting with {self.disp(self.stack)}')
+                    print(f'Restarting with {self.disp()}')
                     e_s = set(self.stack)
                     possible = set(i for i in range(n) if i not in e_s)
                     restarts += 1
                 elif len(self.stack) == n:
                     successes += 1
-                    print(f'{self.disp(self.stack)} succeeded on trial {trial}')
+                    print(f'{self.disp()} succeeded on trial {trial}')
                     yield self.stack
                     if not args.dont_stop_after_first:
                         done = True
@@ -377,7 +405,7 @@ def main(n, m, lst, args):
 
         a = Lee(n, m)
 
-        ok = a.route_all(samp, alg=args.alg, check=args.check)
+        ok = a.route_all(samp, samp, alg=args.alg, check=args.check)
         if ok:
             print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
             count += 1
@@ -389,8 +417,7 @@ def main(n, m, lst, args):
 
     if args.strong_pruning:
         for e in StrongPruning(args, n, m, lst).strong_pruning():
-            samp = [lst[idx] for idx in e]
-            route(samp)
+            route([lst[idx] for idx in e])
 
         print(f'Successfully routed {count} of {num_trials} times.')
 
