@@ -538,22 +538,28 @@ if __name__ == "__main__":
         nnets = int(subs[3])
 
         if subs[0] == 'random':
+            nms = 'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
+
+
             nets = []
             endpoints = set()
 
-            def get_rand_point():
+            def get_rand_point(n_i, n_j, s_i, s_j):
                 while True:
-                    i = random.randrange( 0, n_i)
-                    j = random.randrange( 0, n_j)
-                    if (i,j) not in endpoints:
+                    nn_i = n_i-s_i
+                    nn_j = n_j-s_j
+                    i = random.randrange( 0, nn_i)
+                    j = random.randrange( 0, nn_j)
+                    if (i,j) not in endpoints and (i+s_i,j+s_j) not in endpoints:
                         endpoints.add((i,j))
-                        return (i,j)
+                        endpoints.add((i+s_i,j+s_j))
+                        return (i,j), (i+s_i, j+s_j)
 
             for k in range(nnets):
-                i0, j0 = get_rand_point()
-                i1, j1 = get_rand_point()
+                s_i = random.randrange(1, 4)
+                s_j = random.randrange(1, 4)
 
-                nets.append( (chr(ord('a')+k), (i0, j0), (i1, j1)))
+                nets.append( (nms[k],) + get_rand_point(n_i, n_j, s_i, s_j))
 
             main(n_i, n_j, nets, args)
         else:
