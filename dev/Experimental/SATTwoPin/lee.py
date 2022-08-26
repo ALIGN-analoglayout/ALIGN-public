@@ -8,8 +8,6 @@ import copy
 
 import heapq
 
-last_trace = None
-
 class Lee:
     def __init__(self, n, m):
         self.n, self.m = n, m
@@ -165,22 +163,19 @@ class Lee:
         return self._astar(nm, src, tgt, obstacles, heuristic=heuristic)
 
     def route_all(self, nets, lst, alg='astar', check=False):
-
-        global last_trace
+        """Route the seq 'lst' which is a subset of all the nets 'nets'"""
 
         fn = self.astar if alg == 'astar' else self.dijkstra
 
         all_ok = True
 
-        print("="*80)
+        #print("="*80)
 
         obstacles = set()
 
         for _, src, tgt in nets:
             obstacles.add(src)
             obstacles.add(tgt)
-
-        current_trace = []
 
         for nm, src, tgt in lst:
             obstacles.remove(src)
@@ -197,10 +192,8 @@ class Lee:
                     #print(f'Checking path lengths: {alg} {pl} dijkstra {pl_ref}')
                     assert pl == pl_ref
 
-            save_obstacles = set(list(obstacles))
-            path_str, path_cost = (self.path2str(path_l), self.path_length(path_l)) if path_l is not None else (None, None)
-            print(nm, src, tgt, path_str, path_cost)
-            current_trace.append((nm, path_str, path_cost, save_obstacles))
+            #path_str, path_cost = (self.path2str(path_l), self.path_length(path_l)) if path_l is not None else (None, None)
+            #print(nm, src, tgt, path_str, path_cost)
 
             if path_l is None:
                 obstacles.add(src)
@@ -209,16 +202,6 @@ class Lee:
             else:
                 obstacles.update([tup[:2] for tup in path_l])
                 self.add_path(nm, path_l)
-
-        if last_trace is not None:
-            for idx, (x, y) in enumerate(zip(last_trace, current_trace)):
-                nm_x, s_x, c_x, o_x = x
-                nm_y, s_y, c_y, o_y = y
-                if nm_x == nm_y and x != y: 
-                    print("last trace differs from current trace:", idx, x, y)
-
-        last_trace = current_trace
-
 
         return all_ok
 
@@ -301,21 +284,26 @@ class StrongPruning:
 
                     save_e = self.stack
 
-                    y = self.pop()
-                    z = self.pop()
-                    self.push(y)
-
-                    ok = self.check()
-                    print(f'{self.disp(save_e)} -> {self.disp()} {ok}')
-                    if ok:
+                    if len(self.stack) > 1:
                         y = self.pop()
-                        self.push(z)
+                        z = self.pop()
                         self.push(y)
+
+                        ok = self.check()
+                        print(f'{self.disp(save_e)} -> {self.disp()} {ok}')
+                        if ok:
+                            y = self.pop()
+                            self.push(z)
+                            self.push(y)
+                            break
+                    else:
                         break
 
                 self.pop()
-
                 most_constraining_e = self.stack
+
+            if not self.stack:
+                break
 
         return most_constraining_e
 
@@ -334,7 +322,6 @@ class StrongPruning:
 
     def strong_pruning(self):
         n = len(self.nets)
-        s = args.num_samples
 
         rnd = random.Random()
         if args.seed is not None:
@@ -347,15 +334,19 @@ class StrongPruning:
 
         trial = 0
         restarts = 0
-        while trial + restarts < s and not done:
+        while trial + restarts < args.num_trials and not done:
 
             possible = set(range(n))
 
             self.stack = ()
 
-
             while len(self.stack) < n:
                 #print(f'before {self.disp()}')
+
+                if () in failed:
+                    break
+
+
                 order = [j for j in possible if self.stack + (j,) not in failed]
 
                 if not order:
@@ -456,7 +447,6 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alg", type=str, default='astar')
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("-c", "--check", action='store_true')
-    parser.add_argument("-s", "--num_samples", type=int, default=100)
     parser.add_argument("-o", "--order", action='store_true')
     parser.add_argument("--strong_pruning", action='store_true')
     parser.add_argument("--dont_stop_after_first", action="store_true")
@@ -502,10 +492,9 @@ if __name__ == "__main__":
             yield net, tuple(x*scale for x in src), tuple(x*scale for x in tgt)
 
     p = re.compile(r'^(ten_nets|simple|synthetic|river|random)_(\d+)x(\d+)$')
+    p3 = re.compile(r'^(random)_(\d+)x(\d+)_(\d+)$')
 
-    m = p.match(args.model)
-
-    if m:
+    if (m := p.match(args.model)) is not None:
         subs = m.groups()
         n_i = int(subs[1])
         n_j = int(subs[2])
@@ -538,11 +527,18 @@ if __name__ == "__main__":
 
             main(n_i, n_j, nets, args)
 
-        elif subs[0] == 'random':
-            nets = []
-            assert n_i == n_j
-            nnets = n_i//2
+        else:
+            assert False, subs
 
+    elif (m := p3.match(args.model)) is not None:
+
+        subs = m.groups()
+        n_i = int(subs[1])
+        n_j = int(subs[2])
+        nnets = int(subs[3])
+
+        if subs[0] == 'random':
+            nets = []
             endpoints = set()
 
             def get_rand_point():
@@ -560,6 +556,8 @@ if __name__ == "__main__":
                 nets.append( (chr(ord('a')+k), (i0, j0), (i1, j1)))
 
             main(n_i, n_j, nets, args)
+        else:
+            assert False, subs
 
     elif args.model == "two_nets_10x10":
         main(10, 10, [("a", (3,2), (7,6)), ("b", (6,4), (2,8))], args)
