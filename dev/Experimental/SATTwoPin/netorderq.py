@@ -155,7 +155,9 @@ def disp(s):
     if not s or max(s) < 52:
         return ''.join([chr(origin[x%2]+x//2) for x in s])
     else:
-        return s
+        pairs = [(x%2, x//2) for x in s]
+        triples = [(r, q//26, q % 26) for r, q in pairs]
+        return ' '.join([chr(origin[r]+x0) + chr(origin[0]+x1) for r, x0, x1 in triples])
 
 
 def pruning(args):

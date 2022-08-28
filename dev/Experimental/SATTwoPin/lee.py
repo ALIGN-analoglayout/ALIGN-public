@@ -4,7 +4,7 @@ import random
 import render
 import argparse
 import re
-import copy
+import json
 
 import heapq
 
@@ -386,35 +386,37 @@ class StrongPruning:
         return self.stack
 
 
-def main(n, m, lst, args):
+def main(n_i, n_j, nets, args):
     num_trials = args.num_trials
     count = 0
     histo = Counter()
 
+    nets = [(nm, tuple(src), tuple(tgt)) for nm, src, tgt in nets]
+
     def route(samp):
         nonlocal count
 
-        a = Lee(n, m)
+        a = Lee(n_i, n_j)
 
         ok = a.route_all(samp, samp, alg=args.alg, check=args.check)
         if ok:
-            print(f'Routed all {len(lst)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
+            print(f'Routed all {len(nets)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
             count += 1
             histo[a.total_wire_length()] += 1
         else:
-            print(f'Only routed {len(a.paths)} of {len(lst)} nets.')
+            print(f'Only routed {len(a.paths)} of {len(nets)} nets.')
 
         a.show()
 
     if args.strong_pruning:
-        for e in StrongPruning(args, n, m, lst).strong_pruning():
-            route([lst[idx] for idx in e])
+        for e in StrongPruning(args, n_i, n_j, nets).strong_pruning():
+            route([nets[idx] for idx in e])
 
         print(f'Successfully routed {count} of {num_trials} times.')
 
 
     elif args.order:
-        samp = determine_order(lst)
+        samp = determine_order(nets)
         route(samp)
         if count == 1:
             print(f'Successfully routed using the ordering heuristic.')
@@ -422,7 +424,7 @@ def main(n, m, lst, args):
             print(f'Routing failed when using the ordering heuristic.')
     else:
         for _ in range(num_trials):
-            samp = random.sample(lst, len(lst))
+            samp = random.sample(nets, len(nets))
             route(samp)
         print(f'Successfully routed {count} of {num_trials} times.')
 
@@ -450,11 +452,21 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--order", action='store_true')
     parser.add_argument("--strong_pruning", action='store_true')
     parser.add_argument("--dont_stop_after_first", action="store_true")
+    parser.add_argument("-i", "--input_json", type=str, default=None)
 
     args = parser.parse_args()
 
     if args.seed is not None:
         random.seed(args.seed)
+
+
+    if args.input_json is not None:
+        with open(args.input_json, "rt") as fp:
+            j = json.load(fp)
+            main(**j, args=args)
+
+        exit()
+
 
     """
   01234567
@@ -556,10 +568,14 @@ if __name__ == "__main__":
                         return (i,j), (i+s_i, j+s_j)
 
             for k in range(nnets):
-                s_i = random.randrange(1, 4)
-                s_j = random.randrange(1, 4)
+                s_i = random.randrange(1, 8)
+                s_j = random.randrange(1, 8)
 
                 nets.append( (nms[k],) + get_rand_point(n_i, n_j, s_i, s_j))
+
+            with open("__save_nets.json", "wt") as fp:
+                json.dump({'n_i': n_i, 'n_j': n_j, 'nets': nets}, fp=fp, indent=2)
+
 
             main(n_i, n_j, nets, args)
         else:
