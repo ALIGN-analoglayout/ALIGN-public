@@ -793,6 +793,30 @@ class SameTemplate(SoftConstraint):
     """
     instances: List[str]
 
+    @types.validator("instances", allow_reuse=True)
+    def instances_validator(cls, instances):
+
+        # logger.debug(f"SameTemplate {instances=}")
+        # assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
+
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        instances = validate_instances(cls, instances)
+
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return instances
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
+            return instances
+
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for i0, i1 in itertools.pairwise(instances):
+            if i0 not in group_block_instances and i1 not in group_block_instances:
+                assert cls._validator_ctx().parent.parent.get_element(i0).parameters == \
+                        cls._validator_ctx().parent.parent.get_element(i1).parameters, \
+                        f"Parameters of {i0} and {i1} must match for SameTemplate in subckt {cls._validator_ctx().parent.parent.name}"
+        return instances
+
 
 class CreateAlias(SoftConstraint):
     """CreateAlias

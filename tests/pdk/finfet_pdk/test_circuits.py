@@ -313,7 +313,7 @@ def test_charge_pump_switch():
         align_in_order = [c for c in module["constraints"] if c["constraint"] == "AlignInOrder"]
         assert len(align_in_order) == 1, "AlignInOrder not found"
 
-    with (run_dir / "3_pnr" / "inputs" /f"{name}.pnr.const.json").open("rt") as fp:
+    with (run_dir / "3_pnr" / "inputs" / f"{name}.pnr.const.json").open("rt") as fp:
         charge_pump_const = json.load(fp)
         same_template = [c for c in charge_pump_const["constraints"] if c["const_name"] == "SameTemplate"]
         assert len(same_template) == 1, "Duplicate SameTemplate constraints"
@@ -566,3 +566,58 @@ def test_analog_mux_4to1():
     }
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, max_errors=4)
+
+
+def test_folded_cascode():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.folded_cascode(name)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "auto_constraint": False,
+            "propagate": True,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": True,
+            "remove_dummy_hierarchies": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xqp4",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xqp2",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xqn4",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xqn6",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xdp",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp5<0>"], "instance_name": "xqp5<0>",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp5<1>"], "instance_name": "xqp5<1>",
+            "generator": {"name": "MOS", "parameters": {"place_on_grid": True, "add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp6<0>"], "instance_name": "xqp6<0>",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "GroupBlocks", "instances": ["qp6<1>"], "instance_name": "xqp6<1>",
+            "generator": {"name": "MOS", "parameters": {"add_tap": False, "legal_sizes": [{"y": 2}]}}},
+        {"constraint": "SameTemplate", "instances": ["xqp5<0>", "xqp5<1>"]},
+        {"constraint": "SameTemplate", "instances": ["xqp6<0>", "xqp6<1>"]},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "symmetrize": True,
+            "regions": [
+                ["xqp5<0>", "xqp6<0>", "xqp6<1>", "xqp5<1>"],
+                ["xqn6"],
+                ["xqn4"],
+                ["xqp2"],
+                ["xqp4"],
+                ["xdp"]
+            ]
+        }
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
