@@ -63,7 +63,7 @@ class Rect:
 
 if (args.lef):
   pos = args.lef.find(".lef")
-  outfile = args.lef[0:pos] + "_obs.lef"
+  outfile = args.lef[0:pos] + f"_r{args.rotate}.lef"
   lines = []
   print("new lef file with obs : ", outfile)
   with open (args.lef, 'rt') as ifile:

@@ -135,6 +135,7 @@ if top_cell:
     else:
         outlib = gdspy.GdsLibrary(name=args.top_cell, unit=args.units)
         cell = gdspy.Cell(args.top_cell + '_r' + str(args.rotate))
+        top_cell.flatten()
         b = top_cell.get_bounding_box()
         h = b[1][1] - b[0][1]
         w = b[1][0] - b[0][0]

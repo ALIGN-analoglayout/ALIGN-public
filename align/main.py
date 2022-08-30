@@ -201,13 +201,17 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         pl_files = set((pnr_dir / 'Results').glob(f'{subckt.upper()}*.scaled_placement_verilog.json'))
         for plfile in pl_files:
-            os.system(f'hanan_router -r -uu 1 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.lef -p {plfile} -o {pnr_dir}/Results')
-        pfiles = set(primitive_dir.glob('*.gds.json'))
-        for pfile in pfiles:
-            if black_box_gds_dir and (black_box_gds_dir/plfile.stem).is_file():
-                shutil.copy(black_box_gds_dir/plfile.stem, primitive_dir/plfile.stem)
+            if (pnr_dir / 'inputs' / 'ndr.json').exists():
+                logger.info(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results -ndr {pnr_dir}/inputs/ndr.json')
+                os.system(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results -ndr {pnr_dir}/inputs/ndr.json')
             else:
-                convert_GDSjson_GDS(pfile, f'{primitive_dir}/{pfile.stem}')
+                os.system(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results')
+        pfiles = set(primitive_dir.glob('*.gds.json'))
+        #for pfile in pfiles:
+        #    if black_box_gds_dir and (black_box_gds_dir/plfile.stem).is_file():
+        #        shutil.copy(black_box_gds_dir/plfile.stem, primitive_dir/plfile.stem)
+        #    else:
+        #        convert_GDSjson_GDS(pfile, f'{primitive_dir}/{pfile.stem}')
         assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
         deffiles = set((pnr_dir / 'Results').glob(f'{subckt.upper()}*.def'))

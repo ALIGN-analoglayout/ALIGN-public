@@ -106,9 +106,9 @@ def scale_and_check_placement(*, placement_verilog_d, concrete_name, scale_facto
     (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json').write_text(scaled_placement_verilog_d.json(indent=2,sort_keys=True))
     standalone_overlap_checker( scaled_placement_verilog_d, concrete_name)
     #Comment out the next two calls to disable checking (possibly to use the GUI to visualize the error.)
-    check_placement( scaled_placement_verilog_d, scale_factor)
-    if is_toplevel:
-        check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
+    #check_placement( scaled_placement_verilog_d, scale_factor)
+    #if is_toplevel:
+    #    check_place_on_grid(scaled_placement_verilog_d, concrete_name, opath)
     placement_verilog_alternatives[concrete_name] = scaled_placement_verilog_d
 
 def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_verilog_alternatives, is_toplevel, metrics):
