@@ -5,6 +5,9 @@ import render
 import argparse
 import re
 import json
+import subprocess
+import time
+
 
 import heapq
 
@@ -400,13 +403,16 @@ def main(n_i, n_j, nets, args):
 
         ok = a.route_all(samp, samp, alg=args.alg, check=args.check)
         if ok:
-            print(f'Routed all {len(nets)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
             count += 1
             histo[a.total_wire_length()] += 1
+            subprocess.run(["clear"])
+            a.show()
+            print(f'Routed all {len(nets)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
         else:
-            print(f'Only routed {len(a.paths)} of {len(nets)} nets.')
+            ...
+            #print(f'Only routed {len(a.paths)} of {len(nets)} nets.')
 
-        a.show()
+
 
     if args.strong_pruning:
         for e in StrongPruning(args, n_i, n_j, nets).strong_pruning():
@@ -425,7 +431,12 @@ def main(n_i, n_j, nets, args):
     else:
         for _ in range(num_trials):
             samp = random.sample(nets, len(nets))
+
+
+
             route(samp)
+
+
         print(f'Successfully routed {count} of {num_trials} times.')
 
     print(f'Wirelength histogram:', list(sorted(histo.items())))
@@ -568,8 +579,8 @@ if __name__ == "__main__":
                         return (i,j), (i+s_i, j+s_j)
 
             for k in range(nnets):
-                s_i = random.randrange(1, 8)
-                s_j = random.randrange(1, 8)
+                s_i = random.randrange(1, 8 if k % 5 == 0 else 4)
+                s_j = random.randrange(1, 8 if k % 5 == 0 else 4)
 
                 nets.append( (nms[k],) + get_rand_point(n_i, n_j, s_i, s_j))
 
