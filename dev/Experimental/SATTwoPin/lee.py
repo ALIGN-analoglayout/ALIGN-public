@@ -12,8 +12,9 @@ import time
 import heapq
 
 class Lee:
-    def __init__(self, n, m):
+    def __init__(self, n, m, nets):
         self.n, self.m = n, m
+        self.nets = nets 
         self.paths = {}
         self.via_cost = 10
 
@@ -22,6 +23,9 @@ class Lee:
 
     def add_path(self, nm, path):
         self.paths[nm] = path
+
+    def delete_path(self, nm):
+        del self.paths[nm]
 
     def show(self):
 
@@ -165,8 +169,8 @@ class Lee:
 
         return self._astar(nm, src, tgt, obstacles, heuristic=heuristic)
 
-    def route_all(self, nets, lst, alg='astar', check=False):
-        """Route the seq 'lst' which is a subset of all the nets 'nets'"""
+    def route_all(self, lst, alg='astar', check=False):
+        """Route the seq 'lst' which is a subset of 'self.nets'"""
 
         fn = self.astar if alg == 'astar' else self.dijkstra
 
@@ -176,7 +180,7 @@ class Lee:
 
         obstacles = set()
 
-        for _, src, tgt in nets:
+        for _, src, tgt in self.nets:
             obstacles.add(src)
             obstacles.add(tgt)
 
@@ -221,8 +225,8 @@ class Lee:
         return sum(self.path_length(path) for _, path in self.paths.items())
         
 
-    def is_routable(self, e, alg, check, nets):
-        return self.route_all(nets, [nets[idx] for idx in e], alg=alg, check=check)
+    def is_routable(self, e, alg, check):
+        return self.route_all([self.nets[idx] for idx in e], alg=alg, check=check)
 
 
 def determine_order(nets):
@@ -254,32 +258,98 @@ class StrongPruning:
         self.n_i = n_i
         self.n_j = n_j
         self.nets = nets
+
+        self.router = None
+        self.stack = None
+        self.obstructions = None
+        self.routable = None
+
+    def init_stack(self):
+        self.router = Lee(self.n_i, self.n_j, self.nets)
         self.stack = ()
 
-        self.obstructions = None
+        self.obstacles = set()
+        for _, src, tgt in self.nets:
+            self.obstacles.add(src)
+            self.obstacles.add(tgt)
 
+        self.routable = True
+
+
+    def top(self):
+        return self.stack[-1]
 
     def pop(self):
-        res = self.stack[-1]
+        assert self.router is not None
+
+        x = self.stack[-1]
         self.stack = self.stack[:-1]
-        return res
+
+        nm, src, tgt = self.nets[x]        
+
+        if nm in self.router.paths:
+            path_l = self.router.paths[nm]
+
+            for i, j, _ in path_l:
+                if (i, j) in self.obstacles:
+                    self.obstacles.remove((i,j))
+
+            self.obstacles.add(src)
+            self.obstacles.add(tgt)
+
+            self.router.delete_path(nm)
+
+        return x
 
     def push(self, x):
+        assert self.router is not None
+
         self.stack = self.stack + (x,)
 
+        fn = self.router.astar if self.args.alg == 'astar' else self.router.dijkstra
+
+        nm, src, tgt = self.nets[x]
+
+        self.obstacles.remove(src)
+        self.obstacles.remove(tgt)
+
+        path_l = fn(nm, src, tgt, self.obstacles)
+
+        if path_l is None:
+
+            if src in self.obstacles:
+                print(f"{src} in obstacle set")
+            if tgt in self.obstacles:
+                print(f"{tgt} in obstacle set")
+
+            self.obstacles.add(src)
+            self.obstacles.add(tgt)
+            self.routable = False
+        else:
+            self.obstacles.update([tup[:2] for tup in path_l])
+            self.router.add_path(nm, path_l)
+            self.routable = True
+
+
     def check(self):
-        return Lee(self.n_i, self.n_j).is_routable(self.stack, self.args.alg, self.args.check, self.nets)
+        #parallel_check = Lee(self.n_i, self.n_j, self.nets).is_routable(self.stack, self.args.alg, self.args.check)
+
+        #assert parallel_check == self.routable, (parallel_check, self.routable)
+
+
+        return self.routable
+
 
     def strong_prune(self, possible):
         print(f'strong_prune: {self.disp()}')
         most_constraining_e = self.stack
         
-        last = self.pop()
-        self.push(last)
+        last = self.top()
 
         for x in chain((last,), possible):
-            self.pop()
-            self.push(x)
+            if x != last:
+                self.pop()
+                self.push(x)
 
             if not self.check():
                 print(f'found failure: {self.disp()}')
@@ -312,9 +382,7 @@ class StrongPruning:
 
 
     def disp(self, e=None):
-        ee = e
-        if e is None:
-            ee = self.stack
+        ee = self.stack if e is None else e
 
         a = [self.nets[x][0] for x in ee]
 
@@ -322,6 +390,69 @@ class StrongPruning:
             return ''.join(a)
         else:
             return ','.join(a)
+
+    def branch_and_bound(self):
+        n = len(self.nets)
+
+        rnd = random.Random()
+        if args.seed is not None:
+            rnd.seed(args.seed)
+
+        successes = 0
+        done = False
+
+        failed = set()
+
+        trial = 0
+        restarts = 0
+        while trial + restarts < args.num_trials and not done:
+            self.init_stack()
+            possible = set(range(n))
+
+            while len(self.stack) < n:
+                #print(f'before {self.disp()}')
+
+                if () in failed:
+                    break
+
+                order = [j for j in possible if self.stack + (j,) not in failed]
+
+                if not order:
+                    break
+
+                j = rnd.choice(order)
+
+                self.push(j)
+                possible.remove(j)
+
+                if not self.check():
+                    most_constraining_e = self.strong_prune(possible)
+                    print(f'marked {self.disp(most_constraining_e)} as failed')
+                    failed.add(tuple(most_constraining_e))
+
+                    if self.stack:
+                        self.pop()
+
+                        print(f'Restarting with {self.disp()}')
+                        e_s = set(self.stack)
+                        possible = set(i for i in range(n) if i not in e_s)
+                        restarts += 1
+                    else:
+                        print(f'Whole tree pruned {self.disp(most_constraining_e)}')
+                        done = True
+                elif len(self.stack) == n:
+                    successes += 1
+                    print(f'{self.disp()} succeeded on trial {trial}')
+                    yield self.stack
+                    if not args.dont_stop_after_first:
+                        done = True
+
+            trial += 1
+
+        def plural(tag, value, p="s"):
+            return f'{value} {tag}{p if value != 1 else ""}'
+
+        print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
 
     def strong_pruning(self):
         n = len(self.nets)
@@ -338,17 +469,14 @@ class StrongPruning:
         trial = 0
         restarts = 0
         while trial + restarts < args.num_trials and not done:
-
+            self.init_stack()
             possible = set(range(n))
-
-            self.stack = ()
 
             while len(self.stack) < n:
                 #print(f'before {self.disp()}')
 
                 if () in failed:
                     break
-
 
                 order = [j for j in possible if self.stack + (j,) not in failed]
 
@@ -358,20 +486,23 @@ class StrongPruning:
                 j = rnd.choice(order)
 
                 self.push(j)
-
-
                 possible.remove(j)
+
                 if not self.check():
                     most_constraining_e = self.strong_prune(possible)
                     print(f'marked {self.disp(most_constraining_e)} as failed')
                     failed.add(tuple(most_constraining_e))
 
-                    self.stack = most_constraining_e[:-1]
+                    if self.stack:
+                        self.pop()
 
-                    print(f'Restarting with {self.disp()}')
-                    e_s = set(self.stack)
-                    possible = set(i for i in range(n) if i not in e_s)
-                    restarts += 1
+                        print(f'Restarting with {self.disp()}')
+                        e_s = set(self.stack)
+                        possible = set(i for i in range(n) if i not in e_s)
+                        restarts += 1
+                    else:
+                        print(f'Whole tree pruned {self.disp(most_constraining_e)}')
+                        done = True
                 elif len(self.stack) == n:
                     successes += 1
                     print(f'{self.disp()} succeeded on trial {trial}')
@@ -386,8 +517,6 @@ class StrongPruning:
 
         print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
 
-        return self.stack
-
 
 def main(n_i, n_j, nets, args):
     num_trials = args.num_trials
@@ -396,12 +525,27 @@ def main(n_i, n_j, nets, args):
 
     nets = [(nm, tuple(src), tuple(tgt)) for nm, src, tgt in nets]
 
+    if args.print_terminals:
+
+        raster = [[' ' for _ in range(n_j)] for _ in range(n_i)]
+
+        for nm, src, tgt in nets:
+            raster[src[0]][src[1]] = nm
+            raster[tgt[0]][tgt[1]] = nm
+
+        for row in raster:
+            print(''.join(row))
+
+        return
+
+
+
     def route(samp):
         nonlocal count
 
-        a = Lee(n_i, n_j)
+        a = Lee(n_i, n_j, nets)
 
-        ok = a.route_all(samp, samp, alg=args.alg, check=args.check)
+        ok = a.route_all(samp, alg=args.alg, check=args.check)
         if ok:
             count += 1
             histo[a.total_wire_length()] += 1
@@ -416,6 +560,13 @@ def main(n_i, n_j, nets, args):
 
     if args.strong_pruning:
         for e in StrongPruning(args, n_i, n_j, nets).strong_pruning():
+            route([nets[idx] for idx in e])
+
+        print(f'Successfully routed {count} of {num_trials} times.')
+
+
+    elif args.branch_and_bound:
+        for e in StrongPruning(args, n_i, n_j, nets).branch_and_bound():
             route([nets[idx] for idx in e])
 
         print(f'Successfully routed {count} of {num_trials} times.')
@@ -442,9 +593,12 @@ def main(n_i, n_j, nets, args):
     print(f'Wirelength histogram:', list(sorted(histo.items())))
 
 def test_total_wire_length():
-    a = Lee(4, 4)
+    a = Lee(4, 4, None)
 
     a.paths['0'] = [(0,0,0), (0,1,0), (0,1,1), (1,1,1)]
+    a.via_cost = 100
+    assert a.total_wire_length() == 102
+
     a.via_cost = 10
     assert a.total_wire_length() == 12
 
@@ -462,7 +616,9 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--check", action='store_true')
     parser.add_argument("-o", "--order", action='store_true')
     parser.add_argument("--strong_pruning", action='store_true')
+    parser.add_argument("--branch_and_bound", action='store_true')
     parser.add_argument("--dont_stop_after_first", action="store_true")
+    parser.add_argument("--print_terminals", action="store_true")
     parser.add_argument("-i", "--input_json", type=str, default=None)
 
     args = parser.parse_args()
