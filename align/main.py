@@ -203,7 +203,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for plfile in pl_files:
             if (pnr_dir / 'inputs' / 'ndr.json').exists():
                 logger.info(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results -ndr {pnr_dir}/inputs/ndr.json')
-                os.system(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results -ndr {pnr_dir}/inputs/ndr.json')
+                #os.system(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results -ndr {pnr_dir}/inputs/ndr.json')
             else:
                 os.system(f'hanan_router -r -uu 1000 -d {pnr_dir}/inputs/layers.json -l {pnr_dir}/inputs/{subckt.upper()}.placement_lef -p {plfile} -o {pnr_dir}/Results')
         pfiles = set(primitive_dir.glob('*.gds.json'))
