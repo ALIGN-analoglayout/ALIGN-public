@@ -1,5 +1,5 @@
 from collections import defaultdict, Counter
-from itertools import chain
+from itertools import chain, combinations
 import random
 import render
 import argparse
@@ -391,6 +391,64 @@ class StrongPruning:
         else:
             return ','.join(a)
 
+    def held_karp(self):
+        n = len(self.nets)
+
+        terminals = set()
+        for _, src, tgt in self.nets:
+            terminals.add(src)
+            terminals.add(tgt)
+
+
+        reached = { frozenset(range(n)) : { frozenset(terminals) : (0, ()) } }
+
+        def local_route(obstacles, x):
+            a = Lee(self.n_i, self.n_j, self.nets)
+
+            fn = a.astar if self.args.alg == 'astar' else a.dijkstra
+
+            nm, src, tgt = self.nets[x]
+
+            new_obstacles = set(obstacles)
+
+            new_obstacles.remove(src)
+            new_obstacles.remove(tgt)
+            
+            path_l = fn(nm, src, tgt, new_obstacles)
+
+            if path_l is None:
+                return obstacles, 1000000
+            else:
+                new_obstacles.update([tup[:2] for tup in path_l])
+                return frozenset(new_obstacles), a.path_length(path_l)
+
+        for k in range(n, 0, -1):
+            for comb in combinations(range(n), k):
+                remaining = set(comb)
+                dd = reached.get(frozenset(remaining))
+                assert dd is not None
+                for x in comb:
+                    for obstacles, (cost, order) in dd.items():
+                        new_obstacles, delta_cost = local_route(obstacles, x)
+                        new_remaining = frozenset(remaining.difference(set([x])))
+                        new_cost = cost + delta_cost
+                        new_order = order + (x,)
+
+                        d = reached.get(new_remaining)
+                        if d is not None:
+                            t = d.get(new_obstacles)
+                            print(t)
+                            if t is None or new_cost < t[0]:
+                                d[new_obstacles] = new_cost, new_order
+                        else:
+                            reached[new_remaining] = { frozenset(new_obstacles) : (new_cost, new_order) }
+
+        assert frozenset() in reached
+
+        for (cost, order) in sorted(reached[frozenset()].values()):
+            yield order
+
+
     def branch_and_bound(self):
         n = len(self.nets)
 
@@ -694,6 +752,12 @@ def main(n_i, n_j, nets, args):
 
         print(f'Successfully routed {count} of {num_trials} times.')
 
+    elif args.held_karp:
+        for e in StrongPruning(args, n_i, n_j, nets).held_karp():
+            route([nets[idx] for idx in e])
+
+        print(f'Successfully routed {count} of {num_trials} times.')
+
 
     elif args.order:
         samp = determine_order(nets)
@@ -740,6 +804,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--order", action='store_true')
     parser.add_argument("--strong_pruning", action='store_true')
     parser.add_argument("--branch_and_bound", action='store_true')
+    parser.add_argument("--held_karp", action='store_true')
     parser.add_argument("--dont_stop_after_first", action="store_true")
     parser.add_argument("--print_terminals", action="store_true")
     parser.add_argument("--clear_screen", action="store_true")
