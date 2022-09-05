@@ -403,9 +403,23 @@ class StrongPruning:
 
         failed = set()
 
+        min_cost_upper_bound = None
+
+        def compute_remaining(ps, possible):
+            if possible:
+                res = 0
+                for x in possible:
+                    ns = ps + (x,)
+                    if ns not in failed:
+                        res += compute_remaining(ns, possible.difference(set([x])))
+                return res
+            else:
+                return 1
+
         trial = 0
         restarts = 0
         while trial + restarts < args.num_trials and not done:
+            #print(f'Initializing stack...')
             self.init_stack()
             possible = set(range(n))
 
@@ -413,11 +427,14 @@ class StrongPruning:
                 #print(f'before {self.disp()}')
 
                 if () in failed:
+                    done = True
                     break
 
                 order = [j for j in possible if self.stack + (j,) not in failed]
 
                 if not order:
+                    print(f'Nothing to choose at "{self.disp()}". Marking as failed.')
+                    failed.add(tuple(self.stack))
                     break
 
                 j = rnd.choice(order)
@@ -425,7 +442,10 @@ class StrongPruning:
                 self.push(j)
                 possible.remove(j)
 
-                if not self.check():
+
+                def aux():
+                    nonlocal possible, restarts, done
+
                     most_constraining_e = self.strong_prune(possible)
                     print(f'marked {self.disp(most_constraining_e)} as failed')
                     failed.add(tuple(most_constraining_e))
@@ -440,6 +460,10 @@ class StrongPruning:
                     else:
                         print(f'Whole tree pruned {self.disp(most_constraining_e)}')
                         done = True
+
+
+                if not self.check():
+                    aux()
                 elif len(self.stack) == n:
                     successes += 1
                     print(f'{self.disp()} succeeded on trial {trial}')
@@ -447,12 +471,110 @@ class StrongPruning:
                     if not args.dont_stop_after_first:
                         done = True
 
+                    cost = self.router.total_wire_length()
+
+                    if min_cost_upper_bound is None or cost < min_cost_upper_bound:
+                        min_cost_upper_bound = cost
+                else: # try to prune based on cost
+                    if min_cost_upper_bound is not None:
+                        ok = True
+                        cost = self.router.total_wire_length()
+                        sum_of_delta_costs = 0
+                        #print(f'Computing bound for "{self.disp()}" Initial cost {cost}')
+                        for j in possible:
+                            self.push(j)
+                            if not self.check():
+                                aux()
+                                ok = False
+                                break
+                            else:
+                                new_nm, _, _ = self.router.nets[self.stack[-1]]
+                                delta_cost = self.router.path_length(self.router.paths[new_nm])
+                                #delta_cost2 = self.router.total_wire_length() - cost
+                                #assert delta_cost2 == delta_cost
+                                #print(f'Incremental cost for net {new_nm} is {delta_cost}')
+                                #self.router.show()
+
+                                sum_of_delta_costs += delta_cost
+
+                            self.pop()
+                            
+                        if ok:
+                            min_cost_lower_bound = cost + sum_of_delta_costs
+                            if min_cost_lower_bound >= min_cost_upper_bound:
+                                print(f'Pruning based on bound "{self.disp()}" {min_cost_lower_bound} {min_cost_upper_bound}')
+                                failed.add(tuple(self.stack))
+
+                                # can we also prune more here based on cost
+
+                                while True:
+                                    save_e = self.stack
+                                    if len(self.stack) > 1:
+                                        y = self.pop()
+                                        z = self.pop()
+                                        self.push(y)
+
+                                        possible.add(z)
+
+                                        cost = self.router.total_wire_length()
+                                        sum_of_delta_costs = 0
+
+                                        ok2 = True
+
+                                        for j in possible:
+                                            self.push(j)
+                                            if not self.check():
+                                                aux()
+                                                ok2 = False
+                                                break
+                                            else:
+                                                new_nm, _, _ = self.router.nets[self.stack[-1]]
+                                                delta_cost = self.router.path_length(self.router.paths[new_nm])
+                                                sum_of_delta_costs += delta_cost
+                                            self.pop()
+                                            
+                                        if not ok2:
+                                            break
+
+                                        min_cost_lower_bound = cost + sum_of_delta_costs
+
+                                        if min_cost_lower_bound >= min_cost_upper_bound:
+                                            print(f'**More pruning based on bound "{self.disp()}" {min_cost_lower_bound} {min_cost_upper_bound}')
+
+                                            failed.add(self.stack)
+                                        else:
+                                            y = self.pop()
+                                            self.push(z)
+                                            self.push(y)
+                                            possible.remove(z)
+                                            break
+                                    else:
+                                        break
+
+
+                                if self.stack:
+                                    while self.stack: # go back to the beginning
+                                        self.pop()
+                                    print(f'Restarting with "{self.disp()}"')
+                                    e_s = set(self.stack)
+                                    possible = set(i for i in range(n) if i not in e_s)
+                                    restarts += 1
+                                else:
+                                    print(f'Whole tree pruned {self.disp(most_constraining_e)}')
+                                    done = True
+
             trial += 1
 
         def plural(tag, value, p="s"):
             return f'{value} {tag}{p if value != 1 else ""}'
 
         print(f'{plural("success", successes, "es")} out of {plural("trial", trial)} and {plural("restart", restarts)}.')
+        #print(f'Remaining non-pruned states: {compute_remaining((), set(list(range(len(self.nets)))))}')
+        #print(f'Pruned nodes:')
+        #for ps in failed:
+            #print(f'\t{self.disp(ps)}')
+
+
 
     def strong_pruning(self):
         n = len(self.nets)
@@ -549,7 +671,8 @@ def main(n_i, n_j, nets, args):
         if ok:
             count += 1
             histo[a.total_wire_length()] += 1
-            subprocess.run(["clear"])
+            if args.clear_screen:
+                subprocess.run(["clear"])
             a.show()
             print(f'Routed all {len(nets)} nets. Wire Length = {a.total_wire_length()} Dequeues: {a.sum_of_counts}')
         else:
@@ -619,6 +742,7 @@ if __name__ == "__main__":
     parser.add_argument("--branch_and_bound", action='store_true')
     parser.add_argument("--dont_stop_after_first", action="store_true")
     parser.add_argument("--print_terminals", action="store_true")
+    parser.add_argument("--clear_screen", action="store_true")
     parser.add_argument("-i", "--input_json", type=str, default=None)
 
     args = parser.parse_args()
@@ -670,7 +794,7 @@ if __name__ == "__main__":
         for net, src, tgt in nets:
             yield net, tuple(x*scale for x in src), tuple(x*scale for x in tgt)
 
-    p = re.compile(r'^(ten_nets|simple|synthetic|river|random)_(\d+)x(\d+)$')
+    p = re.compile(r'^(ten_nets|simple|synthetic|cost|river|random)_(\d+)x(\d+)$')
     p3 = re.compile(r'^(random)_(\d+)x(\d+)_(\d+)$')
 
     if (m := p.match(args.model)) is not None:
@@ -690,6 +814,19 @@ if __name__ == "__main__":
             assert n_j % 4 == 0
 
             k = n_j // 4 # number of pairs
+
+            for i in range(k):
+                nets.append( (chr(ord('a')+i), (1, 4*i+0), (3, 4*i+2)))
+                nets.append( (chr(ord('A')+i), (2, 4*i+1), (0, 4*i+3)))
+
+            main(n_i, n_j, nets, args)
+
+        elif subs[0] == 'cost':
+            nets = []
+            assert n_i == 6
+            assert n_j % 6 == 0
+
+            k = n_j // 6 # number of pairs
 
             for i in range(k):
                 nets.append( (chr(ord('a')+i), (1, 4*i+0), (3, 4*i+2)))
