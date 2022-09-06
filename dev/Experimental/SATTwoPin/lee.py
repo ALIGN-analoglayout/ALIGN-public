@@ -422,11 +422,15 @@ class StrongPruning:
                 new_obstacles.update([tup[:2] for tup in path_l])
                 return frozenset(new_obstacles), a.path_length(path_l)
 
+        number_of_dd_none = 0
+
         for k in range(n, 0, -1):
+            print(f'Working on subsets of size {n-k+1}')
             for comb in combinations(range(n), k):
                 remaining = set(comb)
                 dd = reached.get(frozenset(remaining))
                 if dd is None:
+                    number_of_dd_none += 1
                     continue
                 for x in comb:
                     for obstacles, (cost, order) in dd.items():
@@ -441,11 +445,13 @@ class StrongPruning:
                         d = reached.get(new_remaining)
                         if d is not None:
                             t = d.get(new_obstacles)
-                            print(t)
+                            #print(t)
                             if t is None or new_cost < t[0]:
                                 d[new_obstacles] = new_cost, new_order
                         else:
                             reached[new_remaining] = { frozenset(new_obstacles) : (new_cost, new_order) }
+
+        print(f'Number of subsets with empty lists: {number_of_dd_none}')
 
         if frozenset() in reached:
             for (cost, order) in sorted(reached[frozenset()].values()):
