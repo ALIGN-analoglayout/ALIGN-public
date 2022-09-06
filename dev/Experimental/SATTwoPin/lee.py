@@ -426,13 +426,17 @@ class StrongPruning:
             for comb in combinations(range(n), k):
                 remaining = set(comb)
                 dd = reached.get(frozenset(remaining))
-                assert dd is not None
+                if dd is None:
+                    continue
                 for x in comb:
                     for obstacles, (cost, order) in dd.items():
                         new_obstacles, delta_cost = local_route(obstacles, x)
                         new_remaining = frozenset(remaining.difference(set([x])))
                         new_cost = cost + delta_cost
                         new_order = order + (x,)
+
+                        if delta_cost >= 1000000:
+                            continue
 
                         d = reached.get(new_remaining)
                         if d is not None:
@@ -443,10 +447,9 @@ class StrongPruning:
                         else:
                             reached[new_remaining] = { frozenset(new_obstacles) : (new_cost, new_order) }
 
-        assert frozenset() in reached
-
-        for (cost, order) in sorted(reached[frozenset()].values()):
-            yield order
+        if frozenset() in reached:
+            for (cost, order) in sorted(reached[frozenset()].values()):
+                yield order
 
 
     def branch_and_bound(self):
