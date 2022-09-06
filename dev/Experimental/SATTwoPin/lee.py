@@ -859,7 +859,7 @@ if __name__ == "__main__":
         for net, src, tgt in nets:
             yield net, tuple(x*scale for x in src), tuple(x*scale for x in tgt)
 
-    p = re.compile(r'^(ten_nets|simple|synthetic|cost|river|random)_(\d+)x(\d+)$')
+    p = re.compile(r'^(ten_nets|simple|synthetic|cost|triple|river|random)_(\d+)x(\d+)$')
     p3 = re.compile(r'^(random)_(\d+)x(\d+)_(\d+)$')
 
     if (m := p.match(args.model)) is not None:
@@ -889,13 +889,29 @@ if __name__ == "__main__":
         elif subs[0] == 'cost':
             nets = []
             assert n_i == 6
+            assert n_j % 4 == 0
+
+            k = n_j // 4 # number of pairs
+
+            for i in range(k):
+                nets.append( (chr(ord('a')+i), (1, 4*i+0), (3, 4*i+2)))
+                nets.append( (chr(ord('A')+i), (2, 4*i+1), (0, 4*i+3)))
+
+            main(n_i, n_j, nets, args)
+
+        elif subs[0] == 'triple':
+            nms = 'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
+
+            nets = []
+            assert n_i == 6
             assert n_j % 6 == 0
 
             k = n_j // 6 # number of pairs
 
             for i in range(k):
-                nets.append( (chr(ord('a')+i), (1, 4*i+0), (3, 4*i+2)))
-                nets.append( (chr(ord('A')+i), (2, 4*i+1), (0, 4*i+3)))
+                nets.append( (nms[3*i+0], (2, 6*i+1), (3, 6*i+4)))
+                nets.append( (nms[3*i+1], (4, 6*i+1), (5, 6*i+2)))
+                nets.append( (nms[3*i+2], (1, 6*i+2), (4, 6*i+4)))
 
             main(n_i, n_j, nets, args)
 
@@ -936,9 +952,12 @@ if __name__ == "__main__":
                         endpoints.add((i+s_i,j+s_j))
                         return (i,j), (i+s_i, j+s_j)
 
+            #mult, small, large = 5, 4, 8
+            mult, small, large = 1, 4, 4
+
             for k in range(nnets):
-                s_i = random.randrange(1, 8 if k % 5 == 0 else 4)
-                s_j = random.randrange(1, 8 if k % 5 == 0 else 4)
+                s_i = random.randrange(1, large if k % mult == 0 else small)
+                s_j = random.randrange(1, large if k % mult == 0 else small)
 
                 nets.append( (nms[k],) + get_rand_point(n_i, n_j, s_i, s_j))
 
