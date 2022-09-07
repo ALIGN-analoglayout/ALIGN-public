@@ -685,7 +685,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(maxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -699,7 +699,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(-maxdim);
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxxdim);
+        rhs.push_back(maxxdim - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -713,7 +713,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(-maxdim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(-maxdim);
+        rhs.push_back(-maxdim + std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -727,7 +727,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(maxdim);
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxydim + maxdim);
+        rhs.push_back(maxydim + maxdim - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
         rowtype.push_back('o');
       } else if (alignhij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
@@ -747,7 +747,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -759,7 +759,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxxdim);
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxxdim);
+        rhs.push_back(maxxdim - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
         rowtype.push_back('o');
       } else if (alignvij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
@@ -779,7 +779,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxydim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -791,7 +791,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxydim);
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxydim);
+        rhs.push_back(maxydim - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
         rowtype.push_back('o');
       }
     }
