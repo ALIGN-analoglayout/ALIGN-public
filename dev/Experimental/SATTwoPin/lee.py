@@ -417,7 +417,7 @@ class StrongPruning:
             path_l = fn(nm, src, tgt, new_obstacles)
 
             if path_l is None:
-                return obstacles, 1000000
+                return obstacles, None
             else:
                 new_obstacles.update([tup[:2] for tup in path_l])
                 return frozenset(new_obstacles), a.path_length(path_l)
@@ -435,12 +435,12 @@ class StrongPruning:
                 for x in comb:
                     for obstacles, (cost, order) in dd.items():
                         new_obstacles, delta_cost = local_route(obstacles, x)
+                        if delta_cost is None:
+                            continue
+
                         new_remaining = frozenset(remaining.difference(set([x])))
                         new_cost = cost + delta_cost
                         new_order = order + (x,)
-
-                        if delta_cost >= 1000000:
-                            continue
 
                         d = reached.get(new_remaining)
                         if d is not None:
@@ -458,12 +458,106 @@ class StrongPruning:
                 yield order
 
 
+    def best_first(self):
+        n = len(self.nets)
+
+        q = [(0, ())] # cost, order
+
+        heapq.heapify([q])
+
+        universe = set(range(n))
+
+        while q:
+            cost, u = heapq.heappop(q)
+
+            print(f'Removed {cost} {u} from the priority queue')
+
+            if len(u) == n:
+                yield u
+                if not self.args.dont_stop_after_first:
+                    break
+
+            remaining = universe.difference(u)
+
+
+            a = Lee(self.n_i, self.n_j, self.nets)
+            fn = a.astar if self.args.alg == 'astar' else a.dijkstra            
+
+            obstacles = set()
+
+            for nm, src, tgt in self.nets:
+                obstacles.add(src)
+                obstacles.add(tgt)
+                
+            cost_u = 0
+
+            for x in u:
+                
+                nm, src, tgt = self.nets[x]
+
+                obstacles.remove(src)
+                obstacles.remove(tgt)
+            
+                path_l = fn(nm, src, tgt, obstacles)
+
+                assert path_l is not None
+
+                obstacles.update([tup[:2] for tup in path_l])                
+
+                cost_u += a.path_length(path_l)
+
+
+            for x in remaining:
+
+                new_obstacles = set(obstacles)
+
+                nm, src, tgt = self.nets[x]
+
+                new_obstacles.remove(src)
+                new_obstacles.remove(tgt)
+            
+                path_l = fn(nm, src, tgt, new_obstacles)
+
+
+                if path_l is None:
+                    continue
+
+                new_obstacles.update([tup[:2] for tup in path_l])                
+
+                new_cost = cost_u + a.path_length(path_l)
+
+                ok = True
+                for y in remaining:
+                    if y == x:
+                        continue
+
+                    nm, src, tgt = self.nets[y]
+
+                    new_obstacles.remove(src)
+                    new_obstacles.remove(tgt)
+
+                    path_l = fn(nm, src, tgt, new_obstacles)
+
+                    new_obstacles.add(src)
+                    new_obstacles.add(tgt)
+                    if path_l is None:
+                        ok = False
+                        break
+
+                    else:
+                        new_cost += a.path_length(path_l)
+
+                if ok:
+                    heapq.heappush(q, (new_cost, u + (x,)))
+                    
+
+
     def branch_and_bound(self):
         n = len(self.nets)
 
         rnd = random.Random()
-        if args.seed is not None:
-            rnd.seed(args.seed)
+        if self.args.seed is not None:
+            rnd.seed(self.args.seed)
 
         successes = 0
         done = False
@@ -485,7 +579,7 @@ class StrongPruning:
 
         trial = 0
         restarts = 0
-        while trial + restarts < args.num_trials and not done:
+        while trial + restarts < self.args.num_trials and not done:
             #print(f'Initializing stack...')
             self.init_stack()
             possible = set(range(n))
@@ -535,7 +629,7 @@ class StrongPruning:
                     successes += 1
                     print(f'{self.disp()} succeeded on trial {trial}')
                     yield self.stack
-                    if not args.dont_stop_after_first:
+                    if not self.args.dont_stop_after_first:
                         done = True
 
                     cost = self.router.total_wire_length()
@@ -647,8 +741,8 @@ class StrongPruning:
         n = len(self.nets)
 
         rnd = random.Random()
-        if args.seed is not None:
-            rnd.seed(args.seed)
+        if self.args.seed is not None:
+            rnd.seed(self.args.seed)
 
         successes = 0
         done = False
@@ -657,7 +751,7 @@ class StrongPruning:
 
         trial = 0
         restarts = 0
-        while trial + restarts < args.num_trials and not done:
+        while trial + restarts < self.args.num_trials and not done:
             self.init_stack()
             possible = set(range(n))
 
@@ -696,7 +790,7 @@ class StrongPruning:
                     successes += 1
                     print(f'{self.disp()} succeeded on trial {trial}')
                     yield self.stack
-                    if not args.dont_stop_after_first:
+                    if not self.args.dont_stop_after_first:
                         done = True
 
             trial += 1
@@ -768,6 +862,13 @@ def main(n_i, n_j, nets, args):
         print(f'Successfully routed {count} of {num_trials} times.')
 
 
+    elif args.best_first:
+        for e in StrongPruning(args, n_i, n_j, nets).best_first():
+            route([nets[idx] for idx in e])
+
+        print(f'Successfully routed {count} of {num_trials} times.')
+
+
     elif args.order:
         samp = determine_order(nets)
         route(samp)
@@ -787,6 +888,12 @@ def main(n_i, n_j, nets, args):
         print(f'Successfully routed {count} of {num_trials} times.')
 
     print(f'Wirelength histogram:', list(sorted(histo.items())))
+
+def test_best_first():
+    sp = StrongPruning(None, 8, 8, (("a", 0, 0), ("b", 0, 0)))
+
+    sp.best_first()
+
 
 def test_total_wire_length():
     a = Lee(4, 4, None)
@@ -811,6 +918,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("-c", "--check", action='store_true')
     parser.add_argument("-o", "--order", action='store_true')
+    parser.add_argument("--best_first", action='store_true')
     parser.add_argument("--strong_pruning", action='store_true')
     parser.add_argument("--branch_and_bound", action='store_true')
     parser.add_argument("--held_karp", action='store_true')
@@ -909,7 +1017,7 @@ if __name__ == "__main__":
             main(n_i, n_j, nets, args)
 
         elif subs[0] == 'triple':
-            nms = 'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
+            nms = r'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
 
             nets = []
             assert n_i == 6
@@ -944,7 +1052,7 @@ if __name__ == "__main__":
         nnets = int(subs[3])
 
         if subs[0] == 'random':
-            nms = 'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
+            nms = r'abcedfghijklmnopqrstuvwxyzABCEDFGHIJKLMNOPQRSTUVWXYZ0123456789~!@#$%^&*()_+`-={}[]|\<>?,/'
 
 
             nets = []
@@ -961,8 +1069,8 @@ if __name__ == "__main__":
                         endpoints.add((i+s_i,j+s_j))
                         return (i,j), (i+s_i, j+s_j)
 
-            #mult, small, large = 5, 4, 8
-            mult, small, large = 1, 4, 4
+            mult, small, large = 5, 4, 8
+            #mult, small, large = 1, 4, 4
 
             for k in range(nnets):
                 s_i = random.randrange(1, large if k % mult == 0 else small)
