@@ -31,6 +31,8 @@ class ConstraintTranslator():
             self.child = child
             self.child_name = child.name
             self.child_const = self.child.constraints
+        else:
+            self.child=None
 
     def _top_to_bottom_translation(self, node_map):
         """
@@ -92,12 +94,12 @@ class ConstraintTranslator():
         if self.child_const:
             logger.debug(f"transferred constraints to {self.child_name} {self.child_const}")
 
-    def _update_const(self, new_inst, node_map):
+    def _update_const(self, new_inst_name, node_map):
         """
         Update instance names in the parent constraint
 
         Args:
-            new_inst (str): name of instance of child hierarchy
+            new_inst_name (str): name of instance of child hierarchy
         """
 
         def _list_replace(lst, old_value, new_value):
@@ -105,15 +107,15 @@ class ConstraintTranslator():
                 if value == old_value:
                     lst[i] = new_value
 
-        logger.debug(f"update constraints of {self.parent_name} with {new_inst}")
+        logger.debug(f"update constraints of {self.parent_name} with {new_inst_name} map {node_map}")
         for const in self.parent_const:
             if hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
                 # checking instances in the constraint and update names
                 if set(const.instances) & set(node_map.keys()):
                     replace = True
                     for old_inst in node_map.keys():
-                        if replace:
-                            _list_replace(const.instances, old_inst, new_inst)
+                        if replace and not new_inst_name in const.instances:
+                            _list_replace(const.instances, old_inst, new_inst_name)
                             replace = False
                         elif old_inst in const.instances:
                             const.instances.remove(old_inst)
@@ -124,15 +126,15 @@ class ConstraintTranslator():
                 for pair in const.pairs:
                     if len(pair) == 2:
                         if pair[0] in node_map.keys() and pair[1] in node_map.keys():
-                            pair[0] = new_inst
+                            pair[0] = new_inst_name
                             pair.pop()
                         elif pair[0] in node_map.keys() and pair[1] not in node_map.keys():
-                            pair[0] = new_inst
+                            pair[0] = new_inst_name
                         elif pair[1] in node_map.keys() and pair[0] not in node_map.keys():
-                            pair[1] = new_inst
+                            pair[1] = new_inst_name
                     elif len(pair) == 1:
                         if pair[0] in node_map.keys():
-                            pair[0] = new_inst
+                            pair[0] = new_inst_name
             elif hasattr(const, "pin_current"):
                 logger.debug(f"updating charge flow constraints {const.pin_current.keys()}")
                 updated_pc = {}
@@ -146,28 +148,61 @@ class ConstraintTranslator():
                             new_parent_pin = self.child.get_element(child_inst_name).pins[pin.split('/')[1]]
                         else:
                             raise NotImplementedError("Groupcap does not have child hieararchy")
-                        if new_inst+'/'+new_parent_pin in updated_pc:
-                            for id, cur in enumerate(updated_pc[new_inst+'/'+new_parent_pin]):
-                                updated_pc[new_inst+'/'+new_parent_pin][id] = cur + current[id]
+                        if new_inst_name+'/'+new_parent_pin in updated_pc:
+                            for id, cur in enumerate(updated_pc[new_inst_name+'/'+new_parent_pin]):
+                                updated_pc[new_inst_name+'/'+new_parent_pin][id] = cur + current[id]
                         else:
-                            updated_pc[new_inst+'/'+new_parent_pin] = current
+                            updated_pc[new_inst_name+'/'+new_parent_pin] = current
 
                 for pin in remove_pins:
                     const.pin_current.pop(pin)
                 for pin, current in updated_pc.items():
                     const.pin_current[pin] = current
+            elif hasattr(const, "pins1") and const.pins1:
+                replace_pins = {}
+                for pin in const.pins1 + const.pins2:
+                    if '/' in pin:
+                        if self.child:
+                            new_pin = self._get_pin_map(pin, node_map, new_inst_name)
+                            if new_pin:
+                                replace_pins[pin]=new_pin
+                        else:
+                            parent_inst_name= pin.split('/')[0]
+                            if parent_inst_name in node_map.keys():
+                                replace_pins[pin] = pin.replace(parent_inst_name, new_inst_name)
+                for k, v in replace_pins.items():
+                    for i in range(len(const.pins1)):
+                        if k==const.pins1[i]:
+                            const.pins1[i]=v
+                        if k == const.pins2[i]:
+                            const.pins2[i] = v
+
             elif hasattr(const, "regions"):
                 for i, row in enumerate(const.regions):
                     if set(row) & set(node_map.keys()):
                         replace = True
                         for old_inst in node_map.keys():
                             if replace:
-                                _list_replace(const.regions[i], old_inst, new_inst)
+                                _list_replace(const.regions[i], old_inst, new_inst_name)
                                 replace = False
                             elif old_inst in row:
                                 const.regions[i].remove(old_inst)
 
         logger.debug(f"updated constraints of {self.parent_name} {self.parent_const}")
+
+    def _get_pin_map(self, pin, node_map, new_inst_name):
+        parent_inst_name, port = pin.split('/')
+        if parent_inst_name in node_map.keys():
+            child_inst_name = node_map[parent_inst_name]
+            if self.child_name: #no child during renaming
+                assert self.child.get_element(child_inst_name), f"child does not have instance {child_inst_name}"
+                new_parent_pin = self.child.get_element(child_inst_name).pins[port]
+            else:
+                raise NotImplementedError("Groupcap does not have child hieararchy")
+            new_pin = new_inst_name+'/'+new_parent_pin
+        else:
+            new_pin = None
+        return new_pin
 
     def _add_const(self, const_list, const):
         is_append = False

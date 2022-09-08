@@ -189,7 +189,7 @@ class PnRConstraintWriter:
                                 if net in pwrgndclkports: continue
                                 if net not in nets: nets[net] = set()
                                 nets[net].add(instname + '/' + fa["formal"])
-                if 'branch_current' not in const: const['branch_current'] = dict()
+                if 'scaled_rms_charge_flow' not in const: const['scaled_rms_charge_flow'] = dict()
                 for net, pins in nets.items():
                     pc = dict()
                     for pin in pins:
@@ -218,16 +218,16 @@ class PnRConstraintWriter:
                         rmsc = dict()
                         for (src, snk) in ppcurrents:
                             rmsc[f'{src},{snk}'] = math.sqrt(sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) ** 2 / 4 for i in range(len(time) -1)]) / (time[-1] - time[0]))
-                        if len(rmsc):
-                            const['branch_current'][net] = rmsc
+                        if len(rmsc): 
+                            const['scaled_rms_charge_flow'][net] = rmsc
                             maxrmsc = max(maxrmsc, max([v for k,v in rmsc.items()]))
                 const.pop('time')
                 const.pop('pin_current')
 
         if maxrmsc > 0.:
             for const in pnr_const:
-                if 'branch_current' in const:
-                    for net, ppairs in const['branch_current'].items():
+                if 'scaled_rms_charge_flow' in const:
+                    for net, ppairs in const['scaled_rms_charge_flow'].items():
                         for k in ppairs:
                             ppairs[k] /= maxrmsc
 

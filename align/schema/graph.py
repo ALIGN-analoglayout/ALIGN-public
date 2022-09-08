@@ -160,8 +160,8 @@ class Graph(networkx.Graph):
     def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
         new_subckt_names = []
-        for match in matches:
 
+        for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"

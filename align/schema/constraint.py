@@ -55,6 +55,9 @@ def upper_case(cls, value):
     return [v.upper() for v in value]
 
 
+def upper_case_str(cls, value):
+    return value.upper()
+
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
     return value
@@ -790,6 +793,30 @@ class SameTemplate(SoftConstraint):
     """
     instances: List[str]
 
+    @types.validator("instances", allow_reuse=True)
+    def instances_validator(cls, instances):
+
+        # logger.debug(f"SameTemplate {instances=}")
+        # assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
+
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        instances = validate_instances(cls, instances)
+
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return instances
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
+            return instances
+
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for i0, i1 in itertools.pairwise(instances):
+            if i0 not in group_block_instances and i1 not in group_block_instances:
+                assert cls._validator_ctx().parent.parent.get_element(i0).parameters == \
+                        cls._validator_ctx().parent.parent.get_element(i1).parameters, \
+                        f"Parameters of {i0} and {i1} must match for SameTemplate in subckt {cls._validator_ctx().parent.parent.name}"
+        return instances
+
 
 class CreateAlias(SoftConstraint):
     """CreateAlias
@@ -1321,6 +1348,34 @@ class SymmetricNets(SoftConstraint):
     pins2: Optional[List]
     direction: Literal['H', 'V']
 
+    #TODO check net names
+    _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
+    _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+    @types.validator('pins1', allow_reuse=True)
+    def pins1_validator(cls, pins1):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins1:
+            pins1 = [pin.upper() for pin in pins1]
+            for pin in pins1:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+        return pins1
+
+    @types.validator('pins2', allow_reuse=True)
+    def pins2_validator(cls, pins2, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins2:
+            pins2 = [pin.upper() for pin in pins2]
+            for pin in pins2:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+        return pins2
+
 
 class ChargeFlow(SoftConstraint):
     '''ChargeFlow
@@ -1328,20 +1383,27 @@ class ChargeFlow(SoftConstraint):
     The chargeflow constraints help in improving the placement.
 
     Args:
+        dist_type (str) : 'Euclidean' or 'Manhattan' distance between pins,
         time (list) : List of time intervals
         pin_current (dict) : current for each pin at different time intervals
     Example ::
 
         {
             "constraint" : "ChargeFlow",
-            "time" : [0,1.2,2.4]
+            "dist_type" : [0,1.2,2.4],
+            "time" : [0,1.2,2.4],
             "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
         }
      '''
 
+    dist_type: Optional[Literal['Euclidean', 'Manhattan']] = 'Manhattan'
     time: List[float]
     pin_current: dict
 
+    @types.validator('dist_type', allow_reuse=True)
+    def dist_type_validator(cls, value):
+        assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
+        return value
     @types.validator('time', allow_reuse=True)
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
