@@ -118,7 +118,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
-	  macroIns.master = macroIns.name;
+	        macroIns.master = macroIns.name;
           if (lefData.find(macroIns.master) == lefData.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
@@ -137,7 +137,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           if (temp[1].front() == 'M') {
             interMetals.resize(interMetals.size() + 1);
             interMetals.back().metal = temp[1];
-          } else if (temp[1].front() == 'V' && temp[1].back() != '0' && temp[1].back() != 'T') {
+          } else if (temp[1].front() == 'V' && temp[1].back() != '0') {
             interVias.resize(interVias.size() + 1);
             interVias.back().model_index = DRC_info.Viamap[temp[1]];
             interVias.back().ViaRect.metal = temp[1];
@@ -165,7 +165,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
               interMetals.back().originBox = oBox;
               interMetals.back().originCenter.x = (LLx + URx) / 2;
               interMetals.back().originCenter.y = (LLy + URy) / 2;
-            } else if (rect_type == 'V' && temp[1].back() != 'T') {
+            } else if (rect_type == 'V') {
               assert(interVias.size() > 0);
               PnRDB::point center((LLx + URx) / 2, (LLy + URy) / 2);
               PnRDB::ViaModel via_model = DRC_info.Via_model[interVias.back().model_index];
@@ -214,7 +214,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
             Metal_Flag = true;
             macroPins.back().pinContacts.resize(macroPins.back().pinContacts.size() + 1);
             macroPins.back().pinContacts.back().metal = temp[1];
-          }else if(rect_type == 'V' && temp[1].back() != 'T'){
+          }else if(rect_type == 'V'){
             Via_Flag = true;
             macroPins.back().pinVias.resize(macroPins.back().pinVias.size() + 1);
             macroPins.back().pinVias.back().model_index = DRC_info.Viamap[temp[1]]; 
