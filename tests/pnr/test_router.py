@@ -211,7 +211,7 @@ def test_ru_m1m2_v():
     cv.addWire(cv.m2, 'A',   4, (1, -1),  (3, 1), netType='pin')
     cv.drop_via(cv.v1)
     cv.addWire(cv.m1, 'A',   1, (6, -1),  (9, 1), netType='pin')
-    cv.addWire(cv.m1, None,  8, (0, -1),  (9, 1), netType='blockage')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (9, 1), netType='blockage')
 
     # for x in range(8):
     #     cv.addWire(cv.m3, None,  x, (0, -1),  (9, 1), netType='blockage')
