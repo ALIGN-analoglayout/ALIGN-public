@@ -164,7 +164,7 @@
     },
     {
       "Layer": "VT",
-      "GdsLayerNo": 201,
+      "GdsLayerNo": 501,
       "GdsDatatype":{"Draw":0},
       "Stack": [null, "M1"],
       "SpaceX": 600,
