@@ -2500,6 +2500,7 @@ std::vector<std::vector<RouterDB::SinkData>> GcellDetailRouter::findPins_new(Gri
 
     if (temp_net.connected[i].type == RouterDB::BLOCK) {
       unsigned int contact_number = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts.size();
+      unsigned int via_number = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias.size();
 
       for (unsigned int j = 0; j < contact_number; j++) {
         RouterDB::SinkData temp_contact;
@@ -2512,6 +2513,35 @@ std::vector<std::vector<RouterDB::SinkData>> GcellDetailRouter::findPins_new(Gri
         temp_contact.coord.push_back(temp_point);
         temp_contact.metalIdx = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].metal;
         temp_contacts.push_back(temp_contact);
+      }
+
+      for (unsigned int j = 0; j < via_number; j++) {
+        //add via metals into the source and dest
+        {
+          RouterDB::SinkData temp_contact;
+          RouterDB::point temp_point;
+          temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].UpperMetalRect.placedLL.x;
+          temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].UpperMetalRect.placedLL.y;
+          temp_contact.coord.push_back(temp_point);
+          temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].UpperMetalRect.placedUR.x;
+          temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].UpperMetalRect.placedUR.y;
+          temp_contact.coord.push_back(temp_point);
+          temp_contact.metalIdx = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].UpperMetalRect.metal;
+          temp_contacts.push_back(temp_contact);
+        }
+
+        {
+          RouterDB::SinkData temp_contact;
+          RouterDB::point temp_point;
+          temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].LowerMetalRect.placedLL.x;
+          temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].LowerMetalRect.placedLL.y;
+          temp_contact.coord.push_back(temp_point);
+          temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].LowerMetalRect.placedUR.x;
+          temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].LowerMetalRect.placedUR.y;
+          temp_contact.coord.push_back(temp_point);
+          temp_contact.metalIdx = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinVias[j].LowerMetalRect.metal;
+          temp_contacts.push_back(temp_contact);
+        }
       }
 
     } else if (temp_net.connected[i].type == RouterDB::TERMINAL && this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal != -1) {

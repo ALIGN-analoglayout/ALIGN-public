@@ -183,6 +183,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("PowerNets", &block::PowerNets)
     .def_readwrite("blockPins", &block::blockPins)
     .def_readwrite("interMetals", &block::interMetals)
+    .def_readwrite("interVias", &block::interVias)
     .def_readwrite("dummy_power_pin", &block::dummy_power_pin);
   py::class_<terminal>( m, "terminal")
     .def( py::init<>())
