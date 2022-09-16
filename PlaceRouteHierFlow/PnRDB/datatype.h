@@ -65,6 +65,7 @@ struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
 struct guardring_info;
+struct GdsDatatype;
 
 /// Part 1: declaration of enum types
 enum NType { Block, Terminal };
@@ -673,8 +674,8 @@ struct metal_info {
 struct via_info {
   string name;
   int layerNo;
-  int lower_metal_index;
-  int upper_metal_index;
+  int lower_metal_index = -1;
+  int upper_metal_index = -1;
   int width;    // drData.MinWidth["V6"], X direction width
   int width_y;  // Y direction width
   int cover_l;  // the length that the via should be coverage   EnMax["V4M5"] EnMax["V4M4"]

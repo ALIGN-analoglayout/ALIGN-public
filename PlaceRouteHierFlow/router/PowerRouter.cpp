@@ -1602,8 +1602,6 @@ void PowerRouter::ConvertVia(RouterDB::Via& temp_via, PnRDB::Via& pnr_via) {
   // UpperRect //UpperMetalRect
   if (drc_info.Metalmap.find(pnr_via.UpperMetalRect.metal) != drc_info.Metalmap.end()) {
     temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_via.UpperMetalRect.metal];
-  } else {
-    logger->error("Power Router-Error: - Metal map Error");
   }
   temp_via.UpperMetalRect.placedLL.x = pnr_via.UpperMetalRect.placedBox.LL.x;
   temp_via.UpperMetalRect.placedLL.y = pnr_via.UpperMetalRect.placedBox.LL.y;
@@ -1656,8 +1654,6 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin, PnRDB::pin& pnr_pin) {
     // LowerRect //LowerMetalRect
     if (drc_info.Metalmap.find(pnr_pin.pinVias[k].LowerMetalRect.metal) != drc_info.Metalmap.end()) {
       temp_via.LowerMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].LowerMetalRect.metal];
-    } else {
-      logger->error("Power Router-Error: Metal map error");
     }
     temp_via.LowerMetalRect.placedLL.x = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.x;
     temp_via.LowerMetalRect.placedLL.y = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.y;
@@ -1668,8 +1664,6 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin, PnRDB::pin& pnr_pin) {
     // UpperRect //UpperMetalRect
     if (drc_info.Metalmap.find(pnr_pin.pinVias[k].UpperMetalRect.metal) != drc_info.Metalmap.end()) {
       temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].UpperMetalRect.metal];
-    } else {
-      logger->error("Power Router-Error: Metal map error");
     }
     temp_via.UpperMetalRect.placedLL.x = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.x;
     temp_via.UpperMetalRect.placedLL.y = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.y;

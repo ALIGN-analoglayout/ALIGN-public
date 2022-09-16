@@ -224,14 +224,12 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             }
           }
 
-          if (metal_stack_indices[0] != -1 && metal_stack_indices[1] != -1) {
-            tmp_via.lower_metal_index = metal_stack_indices[0];
-            tmp_via.upper_metal_index = metal_stack_indices[1];
-            assert(viaSet.find(lnum) == viaSet.end());
-            viaSet.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
-            assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
-            name2ViaLayerMap[tmp_via.name] = via_index;
-          }
+          tmp_via.lower_metal_index = metal_stack_indices[0];
+          tmp_via.upper_metal_index = metal_stack_indices[1];
+          assert(viaSet.find(lnum) == viaSet.end());
+          viaSet.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
+          assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
+          name2ViaLayerMap[tmp_via.name] = via_index;
         }
       }
     }
@@ -343,7 +341,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
                      DRC_info.Via_model.push_back(temp_viamodel);
                    }
       */
-      {
+      if(temp_viamodel.LowerIdx >= 0){
         auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
         int width = mi.width;
         // LL LowerRect
@@ -366,7 +364,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
       }
 
-      {
+      if(temp_viamodel.UpperIdx >= 0){
         auto& mi = DRC_info.Metal_info[temp_viamodel.UpperIdx];
         int width = mi.width;
         // LL UpperRect
@@ -387,8 +385,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           temp_point.x = 0 + vi.width / 2 + vi.cover_u;
           temp_viamodel.UpperRect.push_back(temp_point);
         }
-        DRC_info.Via_model.push_back(temp_viamodel);
       }
+      DRC_info.Via_model.push_back(temp_viamodel);
     }
     // 6. Add mask ID
     // added by wbxu
