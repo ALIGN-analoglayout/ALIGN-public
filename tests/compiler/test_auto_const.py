@@ -9,6 +9,7 @@ from align.compiler.find_constraint import add_or_revert_const, symmnet_device_p
 from align.compiler.gen_abstract_name import PrimitiveLibrary
 
 from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
+import textwrap
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -147,7 +148,6 @@ def test_reusable_const():
     assert constraints == constraints1
 
 
-
 def test_filter_dummy():
     name = f'ckt_{get_test_id()}'
     netlist = ota_dummy(name)
@@ -160,4 +160,35 @@ def test_filter_dummy():
     pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
+    clean_data(name)
+
+
+def test_propagate_constraint():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vo vccx vccx p w=360e-9 nf=2 m=1
+        mn1 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn2 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn3 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn4 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True, "merge_parallel_devices": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2", "mn3", "mn4"], "instance_name": "xm"},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "regions": [["mn1", "mn2", "mn3", "mn4"]]
+        }
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    ckt = ckt_library.find(name)
     clean_data(name)
