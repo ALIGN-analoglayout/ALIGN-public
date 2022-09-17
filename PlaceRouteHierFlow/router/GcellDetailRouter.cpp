@@ -1534,8 +1534,8 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
     // do lower contact
     RouterDB::SinkData contact;
     RouterDB::point LL, UR;
-    contact.metalIdx = vit->first;
     if (drc_info.Via_model[vit->first].LowerIdx >= 0) {
+      contact.metalIdx = drc_info.Via_model[vit->first].LowerIdx;
       LL.x = vit->second.x + drc_info.Via_model[vit->first].LowerRect[0].x;
       LL.y = vit->second.y + drc_info.Via_model[vit->first].LowerRect[0].y;
       UR.x = vit->second.x + drc_info.Via_model[vit->first].LowerRect[1].x;
@@ -1546,7 +1546,7 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
     }
     // do upper contact
     if (drc_info.Via_model[vit->first].UpperIdx >= 0) {
-      contact.metalIdx = vit->first + 1;
+      contact.metalIdx = drc_info.Via_model[vit->first].UpperIdx;
       LL.x = vit->second.x + drc_info.Via_model[vit->first].UpperRect[0].x;
       LL.y = vit->second.y + drc_info.Via_model[vit->first].UpperRect[0].y;
       UR.x = vit->second.x + drc_info.Via_model[vit->first].UpperRect[1].x;
@@ -1600,7 +1600,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
     if (drc_info.Metal_info[mIdx].direct == 0)  // vertical
     {
       if (mIdx < this->layerNo - 1) {  // not the highest metal
-        int vIdx = mIdx;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx].name.substr(1)];
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x;
@@ -1609,7 +1609,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
       }
       if (mIdx > 0) {  // not the lowest metal
-        int vIdx = mIdx - 1;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx - 1].name.substr(1)];
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x;
@@ -1619,7 +1619,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
       }
     } else if (drc_info.Metal_info[mIdx].direct == 1) {  // Horizontal
       if (mIdx < this->layerNo - 1) {                    // not highest metal
-        int vIdx = mIdx;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx].name.substr(1)];
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y;
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
@@ -1628,7 +1628,7 @@ void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::po
         write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
       }
       if (mIdx > 0) {  // not lowest metal
-        int vIdx = mIdx - 1;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx - 1].name.substr(1)];
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y;
         box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
@@ -1798,7 +1798,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
       int mIdx = mit->metalIdx;
       if (mIdx < 0) continue;
       if (mIdx < this->layerNo - 1) {
-        int vIdx = mIdx;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx].name.substr(1)];
         box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
@@ -1807,14 +1807,16 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         //std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         //std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
         // current metal cannot go up
-        ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        if(drc_info.Via_model[vIdx].LowerIdx>=0)
+          ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         // upper metal cannot go down
-        ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
-        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
+        if(drc_info.Via_model[vIdx].UpperIdx>=0)
+          ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x, box.LL.y, box.UR.x, box.UR.y, vIdx, 2);
+        write_out_via(box.LL.x, box.LL.y, box.UR.x, box.UR.y, vIdx + 1, 2);
       };
       if (mIdx > 0) {
-        int vIdx = mIdx - 1;
+        int vIdx = drc_info.Viamap["V" + drc_info.Metal_info[mIdx - 1].name.substr(1)];
         box.LL.x = mit->coord[0].x + drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = mit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
@@ -1823,10 +1825,12 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         //std::cout<<"via model "<<drc_info.Via_model[vIdx].LowerRect[0].x<<" "<<drc_info.Via_model[vIdx].LowerRect[0].y<<" "<<drc_info.Via_model[vIdx].LowerRect[1].x<<" "<<drc_info.Via_model[vIdx].LowerRect[1].y<<std::endl;
         //std::cout<<"ee "<< drc_info.Metal_info[mIdx].dist_ee<<std::endl;
         // current metal cannot go down
-        ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        if(drc_info.Via_model[vIdx].UpperIdx)
+          ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         // lower metal cannot go up
-        ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-        write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx,2);
+        if(drc_info.Via_model[vIdx].LowerIdx)
+          ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        write_out_via(box.LL.x, box.LL.y, box.UR.x, box.UR.y, vIdx, 2);
         write_out_via(box.LL.x,box.LL.y,box.UR.x,box.UR.y,vIdx+1,2);
       };
     }
@@ -3491,7 +3495,7 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i) {
 
     if (Nets[i].path_metal[h].LinePoint[0].y == Nets[i].path_metal[h].LinePoint[1].y &&
         Nets[i].path_metal[h].LinePoint[0].x == Nets[i].path_metal[h].LinePoint[1].x) { //v
-      unsigned int via_id = drc_info.Viamap["V" + drc_info.Metal_info[Nets[i].path_metal[h].MetalRect.metal].name.substr(1)];
+      int via_id = drc_info.Viamap["V" + drc_info.Metal_info[Nets[i].path_metal[h].MetalRect.metal].name.substr(1)];
       if (via_id >= 0 && via_id < drc_info.Via_model.size()) {
         // use lower metal of each via
         Nets[i].path_metal[h].MetalRect.placedLL.x = Nets[i].path_metal[h].LinePoint[0].x + drc_info.Via_model[via_id].LowerRect[0].x;
@@ -3596,8 +3600,8 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
         push_contact(*cit);
       }
       for (std::vector<RouterDB::Via>::iterator cit = pit->pinVias.begin(); cit != pit->pinVias.end(); ++cit) {
-        push_contact(cit->UpperMetalRect);
-        push_contact(cit->LowerMetalRect);
+        if (cit->UpperMetalRect.metal >= 0) push_contact(cit->UpperMetalRect);
+        if (cit->LowerMetalRect.metal >= 0) push_contact(cit->LowerMetalRect);
       }
     }
 
@@ -3608,8 +3612,8 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
       // std::cout<<"check point createplistBlocks 4.5 "<<std::endl;
     }
     for (std::vector<RouterDB::Via>::iterator pit = bit->InternalVia.begin(); pit != bit->InternalVia.end(); ++pit) {
-      push_contact(pit->UpperMetalRect);
-      push_contact(pit->LowerMetalRect);
+      if (pit->UpperMetalRect.metal >= 0) push_contact(pit->UpperMetalRect);
+      if (pit->LowerMetalRect.metal >= 0) push_contact(pit->LowerMetalRect);
     }
   }
 
@@ -3868,28 +3872,28 @@ void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB
         if (temp_metal_index == next_metal_index - 1) {
           if (temp_path[j].LinePoint[0].x == temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[0].y == temp_path[h].LinePoint[0].y) {
             temp_via.position = temp_path[j].LinePoint[0];
-            temp_via.model_index = temp_metal_index;
+            temp_via.model_index = drc_info.Viamap["V" + drc_info.Metal_info[temp_metal_index].name.substr(1)];
             UpdateVia(temp_via);
             set_via.insert(temp_via);
           }
 
           if (temp_path[j].LinePoint[0].x == temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[0].y == temp_path[h].LinePoint[1].y) {
             temp_via.position = temp_path[j].LinePoint[0];
-            temp_via.model_index = temp_metal_index;
+            temp_via.model_index = drc_info.Viamap["V" + drc_info.Metal_info[temp_metal_index].name.substr(1)];
             UpdateVia(temp_via);
             set_via.insert(temp_via);
           }
 
           if (temp_path[j].LinePoint[1].x == temp_path[h].LinePoint[0].x && temp_path[j].LinePoint[1].y == temp_path[h].LinePoint[0].y) {
             temp_via.position = temp_path[j].LinePoint[1];
-            temp_via.model_index = temp_metal_index;
+            temp_via.model_index = drc_info.Viamap["V" + drc_info.Metal_info[temp_metal_index].name.substr(1)];
             UpdateVia(temp_via);
             set_via.insert(temp_via);
           }
 
           if (temp_path[j].LinePoint[1].x == temp_path[h].LinePoint[1].x && temp_path[j].LinePoint[1].y == temp_path[h].LinePoint[1].y) {
             temp_via.position = temp_path[j].LinePoint[1];
-            temp_via.model_index = temp_metal_index;
+            temp_via.model_index = drc_info.Viamap["V" + drc_info.Metal_info[temp_metal_index].name.substr(1)];
             UpdateVia(temp_via);
             set_via.insert(temp_via);
           }
