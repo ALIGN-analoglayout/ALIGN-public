@@ -24,6 +24,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
     // times *= ScaleFactor;
     std::map<int, PnRDB::metal_info> metalSet;
     std::map<int, PnRDB::via_info> viaSet;
+    std::map<int, PnRDB::via_info> viaSet_vt;
     std::unordered_map<string, int> name2ViaLayerMap;
     // 1. Extract metal info
     int metal_index = 0;
@@ -224,17 +225,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             }
           }
 
-          tmp_via.lower_metal_index = metal_stack_indices[0];
-          tmp_via.upper_metal_index = metal_stack_indices[1];
-          assert(viaSet.find(lnum) == viaSet.end());
-          viaSet.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
-          assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
-          name2ViaLayerMap[tmp_via.name] = via_index;
+          if (metal_stack_indices[0] != -1) {
+            tmp_via.lower_metal_index = metal_stack_indices[0];
+            tmp_via.upper_metal_index = metal_stack_indices[1];
+            assert(viaSet.find(lnum) == viaSet.end());
+            viaSet.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
+            assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
+            name2ViaLayerMap[tmp_via.name] = via_index;
+          } else {
+            tmp_via.lower_metal_index = metal_stack_indices[0];
+            tmp_via.upper_metal_index = metal_stack_indices[1];
+            assert(viaSet_vt.find(lnum) == viaSet_vt.end());
+            viaSet_vt.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
+            assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
+            name2ViaLayerMap[tmp_via.name] = via_index;
+          }
         }
       }
     }
 
     for (std::map<int, PnRDB::via_info>::iterator it = viaSet.begin(); it != viaSet.end(); ++it) {
+      DRC_info.Via_info.push_back(it->second);
+      //cout << "Assign the Viamap[" << it->second.name << "] = " << DRC_info.Via_info.size()-1 << endl;
+      DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size() - 1;
+    }
+    for (std::map<int, PnRDB::via_info>::iterator it = viaSet_vt.begin(); it != viaSet_vt.end(); ++it) {
       DRC_info.Via_info.push_back(it->second);
       //cout << "Assign the Viamap[" << it->second.name << "] = " << DRC_info.Via_info.size()-1 << endl;
       DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size() - 1;
@@ -271,7 +286,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
       PnRDB::ViaModel temp_viamodel;
 
       temp_viamodel.name = DRC_info.Via_info[i].name;
-      const auto& vs = viaSet[name2ViaLayerMap[temp_viamodel.name]];
+
+      auto& vs = DRC_info.Via_info[i];
 
       temp_viamodel.ViaIdx = i;
       temp_viamodel.LowerIdx = vs.lower_metal_index;
