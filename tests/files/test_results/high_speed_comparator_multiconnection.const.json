@@ -1,14 +1,14 @@
 [
         {
-          "constraint": "horizontal_distance",
+          "constraint": "HorizontalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "vertical_distance",
+          "constraint": "VerticalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "symmetric_blocks",
+          "constraint": "SymmetricBlocks",
           "pairs": [
             [
               "X_MN0"
@@ -38,7 +38,7 @@
           "direction": "V"
         },
         {
-          "constraint": "order",
+          "constraint": "Order",
           "instances": [
             "X_MN0",
             "X_DP_MN1_MN2",
@@ -49,7 +49,7 @@
           "abut": false
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_MP9",
             "X_MP7",
@@ -60,7 +60,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_INV_N_MP11_MN13",
             "X_CCP_MP5_MP6",
@@ -69,14 +69,14 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "multi_connection",
+          "constraint": "MultiConnection",
           "nets": [
             "vcom"
           ],
           "multiplier": 3
         },
         {
-          "constraint": "do_not_identify",
+          "constraint": "DoNotIdentify",
           "instances": [
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6",

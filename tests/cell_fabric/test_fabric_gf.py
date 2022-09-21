@@ -28,7 +28,7 @@ def test_nunit():
 
     assert data == data2
 
-def test_nunit_no_duplicates():
+def test_nunit_no_duplicates_gf():
     c = fabric_gf.CanvasNMOS()
 
     for (x,y) in ( (x,y) for x in range(2) for y in range(1)):

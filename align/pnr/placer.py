@@ -79,7 +79,7 @@ def subset_verilog_d( verilog_d, nm):
     def aux( module_name):
         found_modules.add( module_name)
         if module_name in modules:
-            for instance in modules[module_name]['instances']:        
+            for instance in modules[module_name]['instances']:
                 atn = instance['abstract_template_name']
                 aux( atn)
 
@@ -91,7 +91,7 @@ def subset_verilog_d( verilog_d, nm):
     for module in new_verilog_d['modules']:
         if module['name'] in found_modules:
             new_modules.append( module)
-    
+
     new_verilog_d['modules'] = new_modules
 
     return new_verilog_d
@@ -119,7 +119,7 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_ve
     concrete_name = next(iter(concrete_names))
 
     scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
-    
+
 
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
     hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
@@ -160,7 +160,7 @@ def gen_leaf_map(*, DB):
 
             else:
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
-    
+
     return leaf_map
 
 def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics):
@@ -281,10 +281,10 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
         gen_constraints(scaled_placement_verilog_d, top_name)
         top_module = next(iter([module for module in scaled_placement_verilog_d['modules'] if module['concrete_name'] == top_name]))
 
-        frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'place_on_grid']
+        frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'PlaceOnGrid']
 
         for constraint in frontier[top_name]:
-            assert constraint['constraint'] == 'place_on_grid'
+            assert constraint['constraint'] == 'PlaceOnGrid'
             # assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
             # Warn now and fail at the end for human-readable error message
             if not constraint['ored_terms']:
@@ -300,7 +300,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
-        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor, invert=True)        
+        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor, invert=True)
 
         modules = defaultdict(list)
         for m in hack_placement_verilog_d['modules']:

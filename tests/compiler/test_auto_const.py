@@ -5,7 +5,9 @@ from align.schema import constraint
 from align.schema.types import set_context
 from align.compiler.util import get_ports_weight
 from align.compiler.compiler import compiler_input, annotate_library
-from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const
+from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
+from align.compiler.gen_abstract_name import PrimitiveLibrary
+
 from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
@@ -78,6 +80,7 @@ def test_add_symmetry_const():
     clean_data(name)
 
 
+
 def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
@@ -92,6 +95,7 @@ def test_match_start_points():
     ports_weight = get_ports_weight(graph)
     recursive_start_points(graph, match_pairs, stop_points, 'VIN', 'VIP', ports_weight)
     assert match_pairs[('VIN', 'VIP')] == {'MN4': 'MN3', 'VIN': 'VIP'}
+    clean_data(name)
 
 
 def test_filter_duplicate_instances():
@@ -105,6 +109,7 @@ def test_filter_duplicate_instances():
     pairs = [['MN3', 'MN4'], ['VIN', 'VIP'], ['MN4', 'MN4']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['MN3', 'MN4']]
+    clean_data(name)
 
 
 def test_symmnet_filters():
@@ -118,6 +123,29 @@ def test_symmnet_filters():
     add = add_symmetry_const(ckt, pairs, set(), [], None)
     add.loop_through_pairs()
     assert ckt.constraints[0].pairs == [['MN3', 'MN4']]
+    clean_data(name)
+
+
+def test_reusable_const():
+    name = f'ckt_{get_test_id()}'
+    netlist = ota_six(name)
+    constraints = []
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    constraints = ckt_library.find(name).constraints.dict()['__root__']
+    clean_data(name)
+    clean_data(f"run_{name}")
+    example1 = build_example(name, netlist, constraints)
+    ckt_library1, primitive_library1 = compiler_input(example1, name, pdk_path, config_path)
+    annotate_library(ckt_library1, primitive_library1)
+    primitives1 = PrimitiveLibrary(ckt_library1, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library1)
+    constraints1 = ckt_library1.find(name).constraints
+    assert constraints == constraints1
+
 
 
 def test_filter_dummy():
@@ -132,3 +160,4 @@ def test_filter_dummy():
     pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
+    clean_data(name)

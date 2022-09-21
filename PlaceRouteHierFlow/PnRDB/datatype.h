@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 #include "limits.h"
 //#include "../router/Rdatatype.h"
@@ -40,6 +41,7 @@ struct Alignment;
 struct AlignBlock;
 struct Abument;
 struct MatchBlock;
+struct SpreadConstraint;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
@@ -63,6 +65,7 @@ struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
 struct guardring_info;
+struct GdsDatatype;
 
 /// Part 1: declaration of enum types
 enum NType { Block, Terminal };
@@ -485,6 +488,9 @@ struct hierNode {
   double cost = -1;
   std::string compact_style = "left";
   vector<string> DoNotRoute;
+  map<string, vector<std::tuple<string, string, double> > > CFValues;
+  int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
+  vector<SpreadConstraint> SpreadConstraints;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -540,6 +546,12 @@ struct AlignBlock {
   std::vector<int> blocks;  // LL.x/LL.y equal
   int horizon;              // 1 is h, 0 is v.
   int line;                 // 0 is left or bottom, 1 is center, 2 is right or top
+};
+
+struct SpreadConstraint {
+  std::set<int> blocks;
+  int horizon;
+  int distance;
 };
 
 struct PortPos {
@@ -663,8 +675,8 @@ struct metal_info {
 struct via_info {
   string name;
   int layerNo;
-  int lower_metal_index;
-  int upper_metal_index;
+  int lower_metal_index = -1;
+  int upper_metal_index = -1;
   int width;    // drData.MinWidth["V6"], X direction width
   int width_y;  // Y direction width
   int cover_l;  // the length that the via should be coverage   EnMax["V4M5"] EnMax["V4M4"]

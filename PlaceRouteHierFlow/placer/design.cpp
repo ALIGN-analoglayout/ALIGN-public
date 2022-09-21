@@ -18,7 +18,7 @@ design::design() {
   noSymGroup4FullMove = 0;
 }
 
-design::design(PnRDB::hierNode& node, const int seed) {
+design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
@@ -30,6 +30,8 @@ design::design(PnRDB::hierNode& node, const int seed) {
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
   Same_Template_Constraints = node.Same_Template_Constraints;
+  grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
+  grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks
@@ -278,6 +280,18 @@ design::design(PnRDB::hierNode& node, const int seed) {
     this->Port_Location.back().tid = it->tid;
     this->Port_Location.back().pos = placerDB::Bmark(it->pos);
   }
+  // Add spread constraints
+  for (const auto& it : node.SpreadConstraints) {
+    for (auto itb1 = it.blocks.begin(); itb1 != it.blocks.end(); ++itb1) {
+      for (auto itb2 = std::next(itb1); itb2 != it.blocks.end(); ++itb2) {
+        if (it.horizon) {
+          hSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        } else {
+          vSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        }
+      }
+    }
+  }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {
@@ -300,14 +314,14 @@ design::design(PnRDB::hierNode& node, const int seed) {
         for (const auto& al : node.Align_blocks) {
           if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i]) != al.blocks.end()) {
             for (auto b : al.blocks) {
-              if (b != order.first[i]) {
+              if (b != order.first[i] && Blocks[order.first[i]][0].height >= Blocks[b][0].height) {
                 Ordering_Constraints.push_back(make_pair(make_pair(b, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
               }
             }
           }
           if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i+1]) != al.blocks.end()) {
             for (auto b : al.blocks) {
-              if (b != order.first[i+1]) {
+              if (b != order.first[i+1] && Blocks[order.first[i+1]][0].height >= Blocks[b][0].height) {
                 Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], b), order.second == PnRDB::H ? placerDB::H : placerDB::V));
               }
             }
@@ -369,6 +383,36 @@ design::design(PnRDB::hierNode& node, const int seed) {
       }
     }
     maxBlockHPWLSum += (width + height);
+  }
+  std::map<std::string, std::pair<int, int> > pinName2Index;
+  if (!node.CFValues.empty()) {
+    CFdist_type = node.CFdist_type;
+    for (auto& net : Nets) {
+      if (node.CFValues.find(net.name) == node.CFValues.end()) continue;
+      for (auto& conn : net.connected) {
+        if (conn.type == placerDB::Block) {
+          if (Blocks[conn.iter2].size() > 0 && Blocks[conn.iter2][0].blockPins.size() > conn.iter) {
+            pinName2Index[Blocks[conn.iter2][0].name + '/' + Blocks[conn.iter2][0].blockPins[conn.iter].name] = std::make_pair(conn.iter2, conn.iter);
+          }
+        }
+      }
+    }
+
+    for (auto& it : node.CFValues) {
+      for (int i = 0; i < (int)Nets.size(); ++i) {
+        auto cfit = CFValues.find(Nets[i].name);
+        if (cfit == CFValues.end() && Nets[i].name == it.first) {
+          for (auto& pp : it.second) {
+            auto itp1 = pinName2Index.find(std::get<0>(pp));
+            auto itp2 = pinName2Index.find(std::get<1>(pp));
+            if (itp1 != pinName2Index.end() && itp2 != pinName2Index.end()) {
+              CFValues[Nets[i].name][std::make_tuple(itp1->second.first, itp1->second.second,
+                  itp2->second.first, itp2->second.second)] = std::get<2>(pp);
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -913,6 +957,13 @@ void design::PrintConstraints() {
     for (vector<int>::iterator it2 = it->blocks.begin(); it2 != it->blocks.end(); ++it2) {
       logger->debug(" {0} ", *it2);
     }
+  }
+  logger->debug("=== SpreadConstraints Constraints ===");
+  for (auto it : hSpread) {
+    logger->debug("@h ({0},{1}) {2}", it.first.first, it.first.second, it.second);
+  }
+  for (auto it : vSpread) {
+    logger->debug("@v ({0},{1}) {2}", it.first.first, it.first.second, it.second);
   }
 }
 

@@ -9,6 +9,7 @@ from ..schema import SubCircuit, Model
 import logging
 import pathlib
 import hashlib
+from flatdict import FlatDict
 import importlib
 import sys
 
@@ -76,14 +77,13 @@ def get_base_model(subckt, node):
 
 
 def get_leaf_connection(subckt, net):
-    # assert net in subckt.nets, f""
     conn = []
     if net in subckt.nets:
         graph = Graph(subckt)
         for nbr in graph.neighbors(net):
             for pin in graph.get_edge_data(net, nbr)["pin"]:
                 s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-                if isinstance(s, SubCircuit):
+                if isinstance(s, SubCircuit) and s.name != subckt.name:
                     conn.extend(get_leaf_connection(s, pin))
                 else:
                     conn.append(pin)
@@ -114,7 +114,7 @@ def leaf_weights(G, node, nbr):
             conn_type = set(get_leaf_connection(s, p))
         else:
             conn_type = G.get_edge_data(node, nbr)["pin"]
-    return conn_type
+    return set(sorted(conn_type))
 
 
 def reduced_neighbors(G, node, nbr):
@@ -160,13 +160,18 @@ def gen_key(param):
     key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
     return key
 
+def gen_group_key(multi_param):
+    param = FlatDict(multi_param)
+    arg_str = '_'.join([str(k)+':'+str(param[k]) for k in sorted(param.keys())])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
 
 def create_node_id(G, node1, ports_weight=None):
-    in1 = G.nodes[node1].get("instance")
-    if in1:
-        properties = {'model': in1.model, 'n_pins': len(set(in1.pins.values()))}
-        if in1.parameters:
-            properties.update(in1.parameters)
+    instance = G.nodes[node1].get("instance")
+    if instance:
+        properties = {'model': instance.model, 'n_pins': len(set(instance.pins.values()))}
+        if instance.parameters:
+            properties.update(instance.parameters)
         return gen_key(properties)
     else:
         nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
@@ -174,8 +179,8 @@ def create_node_id(G, node1, ports_weight=None):
         if node1 in ports_weight:
             properties.extend([str(p) for p in ports_weight[node1]])
         else:
-            lw = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
-            properties.extend([str(p) for p in lw])
+            leaf_wt = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
+            properties.extend([str(p) for p in leaf_wt])
         properties = sorted(properties)
         arg_str = '_'.join(properties)
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
@@ -223,7 +228,8 @@ def get_generator(name, pdkdir):
         if generator_class and generator_class(name):
             return generator_class(name)
         else:
-            return getattr(module, name, False) or getattr(module, name.lower(), False)
+            res = getattr(module, name, False) or getattr(module, name.lower(), False)
+            return res
 
     try:  # is pdk an installed module
         module = importlib.import_module(pdk_dir_stem)

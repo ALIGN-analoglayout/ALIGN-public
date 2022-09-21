@@ -90,7 +90,7 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
 
 
 def gen_constraint_files(verilog_d, input_dir):
-    pnr_const_ds = {module['name'] : PnRConstraintWriter().map_valid_const(module['constraints']) for module in verilog_d['modules']}
+    pnr_const_ds = {module['name'] : PnRConstraintWriter().map_valid_const(module['constraints'], module) for module in verilog_d['modules']}
 
     constraint_files = { (input_dir / f'{nm}.pnr.const.json') : constraints for nm, constraints in pnr_const_ds.items() if len(constraints) > 0 }
 
