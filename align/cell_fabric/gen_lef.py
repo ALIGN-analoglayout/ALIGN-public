@@ -32,6 +32,9 @@ def lef_from_layout_d(layout_d, fp, out_lef, bodyswitch, blockM, *, exclude_laye
     terminals_on_net = defaultdict(list)
     for obj in layout_d['terminals']:
         if obj['netType'] == 'pin':
+            # Do not expose layers that are not relevant for routing 
+            if mode == 'routing' and obj['layer'] in exclude_layers:
+                continue
             pin_name = obj['netName']
             pin_name = pin_map.get(pin_name, pin_name)
             terminals_on_net[pin_name].append(obj)
