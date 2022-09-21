@@ -155,6 +155,7 @@ def test_ru_exclude_m1():
     for term in cvr.terminals:
         assert term['layer'] != 'M1', 'M1 excluded'
 
+
 def test_ru_exclude_m3():
     name = get_test_id()
     cv = CanvasPDK()
@@ -175,3 +176,50 @@ def test_ru_exclude_m3():
     for term in cvr.terminals:
         assert term['layer'] != 'M3', 'M3 excluded'
 
+
+def test_ru_m1vt_h():
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (8, 1), netType='blockage')
+    cv.addWire(cv.m1, 'A',   1, (2, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',   3, (2, -1),  (6, 1), netType='pin')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (8, 1), netType='blockage')
+    for y in range(2, 7):
+        cv.addVia(cv.vt, None, 1, y)
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_m1vt_v():
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (12, 1), netType='blockage')
+    cv.addWire(cv.m1, 'B',   2, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m1, 'B',   2, (8, -1),  (11, 1), netType='pin')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (12, 1), netType='blockage')
+    for y in range(1, 5):
+        cv.addVia(cv.vt, None, 2, y)
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_m1m2_v():
+    ''' Connect by stretching m1 tracks, not with m3 '''
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m1, None,  0, (0, -1),  (9, 1), netType='blockage')
+    cv.addWire(cv.m1, 'A',   1, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',   3, (1, -1),  (4, 1), netType='pin')
+    cv.addWire(cv.m2, 'A',   4, (1, -1),  (3, 1), netType='pin')
+    cv.drop_via(cv.v1)
+    cv.addWire(cv.m1, 'A',   1, (6, -1),  (9, 1), netType='pin')
+    cv.addWire(cv.m1, None,  4, (0, -1),  (9, 1), netType='blockage')
+
+    # for x in range(8):
+    #     cv.addWire(cv.m3, None,  x, (0, -1),  (9, 1), netType='blockage')
+
+    data = run_postamble(name, cv, max_errors=0)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    for term in cvr.terminals:
+        assert term['layer'] != 'M3', 'Why use M3 but not M1?'
