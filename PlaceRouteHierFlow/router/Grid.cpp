@@ -2596,7 +2596,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
 
   grid_Uy = Uy;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if(sourcelist.metalIdx>0)
+    if (sourcelist.metalIdx > 0)
       grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
     else
       grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
@@ -2605,13 +2605,12 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   }
   grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
-  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0){
-    if(sourcelist.metalIdx>0)
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
       grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
     else
       grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
-  }else
-  {
+  } else {
     grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
   }
   // cout<<grid_Uy<<endl;
@@ -2620,7 +2619,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2630,7 +2629,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2641,7 +2640,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2651,7 +2650,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2660,7 +2659,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
 
   grid_Ly1 = Ly;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2670,7 +2669,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2681,7 +2680,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
 
   grid_Uy1 = Uy;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2691,7 +2690,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2717,11 +2716,11 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
     }
   }
 
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
+  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end();) {
     if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      continue;
+      ++p;
     } else {
-      grid_node_coord.erase(*p);
+      p = grid_node_coord.erase(p);
     }
   }
 
@@ -2820,7 +2819,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
 
   grid_Uy = Uy;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if(sourcelist.metalIdx>0)
+    if (sourcelist.metalIdx > 0)
       grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
     else
       grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
@@ -2829,13 +2828,12 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   }
   grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
-  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0){
-    if(sourcelist.metalIdx>0)
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
       grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
     else
       grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
-  }else
-  {
+  } else {
     grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
   }
   // cout<<grid_Uy<<endl;
@@ -2844,7 +2842,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2854,7 +2852,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2865,7 +2863,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2875,7 +2873,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
     grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
   else {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2884,7 +2882,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
 
   grid_Ly1 = Ly;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2894,7 +2892,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2905,7 +2903,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
 
   grid_Uy1 = Uy;
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2915,7 +2913,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
   if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
-    if (sourcelist.metalIdx < this->layerNo-1)
+    if (sourcelist.metalIdx < this->layerNo - 1)
       grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
     else
       grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
@@ -2940,12 +2938,12 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
       grid_node_coord.insert(grid_node);
     }
   }
-  
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
+
+  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end();) {
     if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      continue;
+      ++p;
     } else {
-      grid_node_coord.erase(*p);
+      p = grid_node_coord.erase(p);
     }
   }
 
