@@ -2530,29 +2530,174 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   // SinkData sourceL;
   // find the grid point nearby and insert it to the grid_seg;
 
-  grid_Lx = Lx / (grid_unit_x * grid_scale_func);
+  grid_Lx = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Lx = grid_Lx / (grid_unit_x * grid_scale_func);
   grid_Lx = grid_Lx * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Lx<<endl;
-  grid_Ux = (int)ceil(double(Ux) / (grid_unit_x * grid_scale_func));
+
+  grid_Ux = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Ux = (int)ceil(double(grid_Ux) / (grid_unit_x * grid_scale_func));
   grid_Ux = grid_Ux * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Ux<<endl;
-  grid_Ly = Ly / (grid_unit_y * grid_scale_func);
+
+  grid_Ly = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly = grid_Ly / (grid_unit_y * grid_scale_func);
   grid_Ly = grid_Ly * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+
   // cout<<grid_Ly<<endl;
-  grid_Uy = (int)ceil(double(Uy) / (grid_unit_y * grid_scale_func));
+
+  grid_Uy = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if(sourcelist.metalIdx>0)
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0){
+    if(sourcelist.metalIdx>0)
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }else
+  {
+    grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy<<endl;
-  grid_Lx1 = Lx / (grid_unit_x1 * grid_scale_func);
+
+  grid_Lx1 = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Lx1 = grid_Lx1 / (grid_unit_x1 * grid_scale_func);
   grid_Lx1 = grid_Lx1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Lx1<<endl;
-  grid_Ux1 = (int)ceil(double(Ux) / (grid_unit_x1 * grid_scale_func));
+
+  grid_Ux1 = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Ux1 = (int)ceil(double(grid_Ux1) / (grid_unit_x1 * grid_scale_func));
   grid_Ux1 = grid_Ux1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Ux1<<endl;
-  grid_Ly1 = Ly / (grid_unit_y1 * grid_scale_func);
+
+  grid_Ly1 = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Ly1<<endl;
-  grid_Uy1 = (int)ceil(double(Uy) / (grid_unit_y1 * grid_scale_func));
+
+  grid_Uy1 = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
@@ -2568,54 +2713,23 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
     for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
       grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
       grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      if (grid_node_coord.find(grid_node) == grid_node_coord.end()) {
-        new_grid_node_coord.insert(grid_node);
-      }
+      grid_node_coord.insert(grid_node);
     }
   }
-  for (auto p = new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
-    grid_node_coord.insert(*p);
-  }
+
   for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
     if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      covered_node_coord.insert(*p);
+      continue;
+    } else {
+      grid_node_coord.erase(*p);
     }
-  }
-  if (covered_node_coord.size() > 0) {
-    grid_node_coord.clear();
-    grid_node_coord = covered_node_coord;
   }
 
   std::vector<int> sourceL;
-  // wbxu: incorrect startpoint and endpoint [fixed]
-
-  //    std::cout<<"Grid point"<<std::endl;
-
-  int grid_region_llx = INT_MAX;
-  int grid_region_lly = INT_MAX;
-
-  int grid_region_urx = INT_MIN;
-  int grid_region_ury = INT_MIN;
-
   for (int i = index_end_M1_M2; i <= index_end_M3_M3; i++) {
-    // std::cout<<"( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].active<<") ";
-    if (vertices_total[i].x > grid_region_urx) {
-      grid_region_urx = vertices_total[i].x;
-    }
-    if (vertices_total[i].x < grid_region_llx) {
-      grid_region_llx = vertices_total[i].x;
-    }
-    if (vertices_total[i].y > grid_region_ury) {
-      grid_region_ury = vertices_total[i].y;
-    }
-    if (vertices_total[i].y < grid_region_lly) {
-      grid_region_lly = vertices_total[i].y;
-    }
-
     RouterDB::point cand;
     cand.x = vertices_total[i].x;
     cand.y = vertices_total[i].y;
-
     if (grid_node_coord.find(cand) != grid_node_coord.end()) {
       sourceL.push_back(i);
     }
@@ -2640,29 +2754,174 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   // SinkData sourceL;
   // find the grid point nearby and insert it to the grid_seg;
 
-  grid_Lx = Lx / (grid_unit_x * grid_scale_func);
+  grid_Lx = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Lx = grid_Lx / (grid_unit_x * grid_scale_func);
   grid_Lx = grid_Lx * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Lx<<endl;
-  grid_Ux = (int)ceil(double(Ux) / (grid_unit_x * grid_scale_func));
+
+  grid_Ux = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Ux = (int)ceil(double(grid_Ux) / (grid_unit_x * grid_scale_func));
   grid_Ux = grid_Ux * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Ux<<endl;
-  grid_Ly = Ly / (grid_unit_y * grid_scale_func);
+
+  grid_Ly = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly = grid_Ly / (grid_unit_y * grid_scale_func);
   grid_Ly = grid_Ly * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+
   // cout<<grid_Ly<<endl;
-  grid_Uy = (int)ceil(double(Uy) / (grid_unit_y * grid_scale_func));
+
+  grid_Uy = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if(sourcelist.metalIdx>0)
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0){
+    if(sourcelist.metalIdx>0)
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }else
+  {
+    grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy<<endl;
-  grid_Lx1 = Lx / (grid_unit_x1 * grid_scale_func);
+
+  grid_Lx1 = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Lx1 = grid_Lx1 / (grid_unit_x1 * grid_scale_func);
   grid_Lx1 = grid_Lx1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Lx1<<endl;
-  grid_Ux1 = (int)ceil(double(Ux) / (grid_unit_x1 * grid_scale_func));
+
+  grid_Ux1 = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Ux1 = (int)ceil(double(grid_Ux1) / (grid_unit_x1 * grid_scale_func));
   grid_Ux1 = grid_Ux1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Ux1<<endl;
-  grid_Ly1 = Ly / (grid_unit_y1 * grid_scale_func);
+
+  grid_Ly1 = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Ly1<<endl;
-  grid_Uy1 = (int)ceil(double(Uy) / (grid_unit_y1 * grid_scale_func));
+
+  grid_Uy1 = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo-1)
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
@@ -2678,25 +2937,19 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
     for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
       grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
       grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      if (grid_node_coord.find(grid_node) == grid_node_coord.end()) {
-        new_grid_node_coord.insert(grid_node);
-      }
+      grid_node_coord.insert(grid_node);
     }
   }
-  for (auto p = new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
-    grid_node_coord.insert(*p);
-  }
+  
   for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
     if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      covered_node_coord.insert(*p);
+      continue;
+    } else {
+      grid_node_coord.erase(*p);
     }
   }
-  if (covered_node_coord.size() > 0) {
-    grid_node_coord.clear();
-    grid_node_coord = covered_node_coord;
-  }
+
   std::vector<int> sourceL;
-  // wbxu: incorrect startpoint and endpoint [fixed]
   for (int i = index_end_M1_M2; i <= index_end_M3_M3; i++) {
     if (vertices_total[i].active == 1) {
       RouterDB::point cand;
