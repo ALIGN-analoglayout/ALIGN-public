@@ -3323,7 +3323,7 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
           for(int Y = LLy_1; Y <= track_Y; Y += y_unit.at(i - 1)){
             adj_layer_y.insert(Y);
           }
-          int LLy_2 = int(ceil(double(track_y + drc_info.Metal_info[i + 1].offset) / y_unit.at(i + 1))) * y_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
+          int LLy_2 = int(ceil(double(track_y - drc_info.Metal_info[i + 1].offset) / y_unit.at(i + 1))) * y_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
           for(int Y = LLy_2; Y <= track_Y; Y += y_unit.at(i + 1)){
             adj_layer_y.insert(Y);
           }
@@ -3444,13 +3444,13 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
         } else {  // if middle layer
           nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
           int LLx_1 = int(ceil(double(track_x - drc_info.Metal_info[i - 1].offset) / x_unit.at(i - 1))) * x_unit.at(i - 1) + drc_info.Metal_info[i - 1].offset;
-          for(int X = LLx; X <= track_X; X += x_unit.at(i - 1)){
+          for(int X = LLx_1; X <= track_X; X += x_unit.at(i - 1)){
             adj_layer_x.insert(X);
           }
           //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
           //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
           int LLx_2 = int(ceil(double(track_x - drc_info.Metal_info[i + 1].offset) / x_unit.at(i + 1))) * x_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
-          for(int X = LLx; X <= track_X; X += x_unit.at(i + 1)){
+          for(int X = LLx_2; X <= track_X; X += x_unit.at(i + 1)){
             adj_layer_x.insert(X);
           }
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
