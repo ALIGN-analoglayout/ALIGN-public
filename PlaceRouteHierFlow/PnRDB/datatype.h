@@ -665,8 +665,8 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  int offset = 0;
   double unit_R;
-  int offset;
   double unit_C;
   double unit_CC;
   GdsDatatype gds_datatype;
