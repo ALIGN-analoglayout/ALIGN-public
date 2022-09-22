@@ -8,7 +8,7 @@ from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
 
-from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator
+from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator, comparator_hier
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -163,7 +163,7 @@ def test_filter_dummy():
     clean_data(name)
 
 
-def test_disable_auto_constraint():
+def test_disable_auto_constraint_virtual():
     name = f'ckt_{get_test_id()}'
     netlist = comparator(name)
    
@@ -181,8 +181,7 @@ def test_disable_auto_constraint():
     constraint_generator(ckt_library)
     ckt = ckt_library.find("CMP_INP")
     constraints = {c.constraint for c in ckt.constraints}
-    assert "SymmetricNets" in constraints
-    assert "SymmetricBlocks" in constraints
+    assert "SymmetricNets" in constraints or "SymmetricBlocks" in constraints
 
     # Test disabling
     constraints = [
@@ -197,6 +196,43 @@ def test_disable_auto_constraint():
     primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
     constraint_generator(ckt_library)
     ckt = ckt_library.find("CMP_INP")
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" not in constraints
+    assert "SymmetricBlocks" not in constraints
+    clean_data(name)
+
+
+def test_disable_auto_constraint_physical():
+    name = f'ckt_{get_test_id()}'
+    netlist = comparator_hier(name)
+   
+    # Sanity check: compler should auto-generate for cmp_inp
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "ConfigureCompiler", "auto_constraint": True, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    ckt = ckt_library.find("COMPARATOR")
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" in constraints or "SymmetricBlocks" in constraints
+
+    # Test disabling
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    ckt = ckt_library.find("COMPARATOR")
     constraints = {c.constraint for c in ckt.constraints}
     assert "SymmetricNets" not in constraints
     assert "SymmetricBlocks" not in constraints
