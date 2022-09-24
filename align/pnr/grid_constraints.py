@@ -74,10 +74,10 @@ def gen_constraints_for_module(m, modules, leaves):
         ctn = instance['concrete_template_name']
         constraints = None
         # I don't know why I have to do this: I can't check to see if 'constraints' is in leaves[ctn] (it never is.)
-        if ctn in leaves:
+        # This might be due to the emulated dictionary class not supporting  "is in" operator.
+        if ctn in leaves and "constraints" in leaves[ctn]:
             try:
                 constraints = leaves[ctn]['constraints']
-
             except KeyError:
                 pass
         elif ctn in modules:
@@ -114,6 +114,7 @@ def gen_constraints_for_module(m, modules, leaves):
 
     if pog_constraints:
         m['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))
+        logger.debug(f"{m}")
 
 
 def gen_constraints(placement_verilog_d, top_level_name):

@@ -371,3 +371,64 @@ def test_gen_constraints_internal():
     assert module_top['constraints'][0]['ored_terms'] == []
 
 
+
+
+def single_leaf_single_instance(offsets, scalings, transformation):
+    leaf_a0 = {
+        "abstract_name": "A",
+        "concrete_name": "A_0",
+        "bbox": [0, 0, 10, 10],
+        "terminals": [],
+        "constraints": [
+            {
+                "constraint": "PlaceOnGrid",
+                "direction": "H",
+                "pitch": 20,
+                "ored_terms": [
+                    {
+                        "offsets": offsets.copy(),
+                        "scalings": scalings.copy()
+                    }
+                ]
+            }
+        ]
+    }
+    module_top = {
+        "abstract_name": "T",
+        "concrete_name": "T_0",
+        "bbox": [0, 0, 10, 20],
+        "constraints": [],
+        "instances": [
+            {
+                "abstract_template_name": "A",
+                "concrete_template_name": "A_0",
+                "fa_map": [],
+                "instance_name": "U0",
+                "transformation": transformation.copy()
+            }
+        ]
+    }
+    placement_verilog_d = {"global_signals": [], "leaves": [leaf_a0], "modules": [module_top]}
+    return placement_verilog_d
+
+
+def test_inherit_one_1():
+    offsets = [0, 1]
+    scalings = [1]
+    transformation = {'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}
+    plvd = single_leaf_single_instance(offsets, scalings, transformation)
+    gen_constraints(plvd, 'T_0')
+    assert plvd["modules"][0]['constraints'][0]['pitch'] == 20
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0, 1}
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
+
+
+def test_inherit_one_2():
+    offsets = [0, 1]
+    scalings = [1]
+    transformation = {'oX': 1, 'oY': 0, 'sX': 1, 'sY': 1}
+    plvd = single_leaf_single_instance(offsets, scalings, transformation)
+    gen_constraints(plvd, 'T_0')
+    assert plvd["modules"][0]['constraints'][0]['pitch'] == 20
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0, 3}
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
