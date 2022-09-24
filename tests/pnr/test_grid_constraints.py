@@ -373,7 +373,7 @@ def test_gen_constraints_internal():
 
 
 
-def single_leaf_single_instance(offsets, scalings, transformation):
+def single_leaf_single_instance(pitch, offsets, scalings, transformation):
     leaf_a0 = {
         "abstract_name": "A",
         "concrete_name": "A_0",
@@ -383,7 +383,7 @@ def single_leaf_single_instance(offsets, scalings, transformation):
             {
                 "constraint": "PlaceOnGrid",
                 "direction": "H",
-                "pitch": 20,
+                "pitch": pitch,
                 "ored_terms": [
                     {
                         "offsets": offsets.copy(),
@@ -413,22 +413,36 @@ def single_leaf_single_instance(offsets, scalings, transformation):
 
 
 def test_inherit_one_1():
+    pitch = 10
     offsets = [0, 1]
     scalings = [1]
     transformation = {'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}
-    plvd = single_leaf_single_instance(offsets, scalings, transformation)
+    plvd = single_leaf_single_instance(pitch, offsets, scalings, transformation)
     gen_constraints(plvd, 'T_0')
-    assert plvd["modules"][0]['constraints'][0]['pitch'] == 20
+    assert plvd["modules"][0]['constraints'][0]['pitch'] == 10
     assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0, 1}
     assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
 
 
 def test_inherit_one_2():
+    pitch = 10
     offsets = [0, 1]
     scalings = [1]
-    transformation = {'oX': 1, 'oY': 0, 'sX': 1, 'sY': 1}
-    plvd = single_leaf_single_instance(offsets, scalings, transformation)
+    transformation = {'oX': 0, 'oY': 1, 'sX': 1, 'sY': 1}
+    plvd = single_leaf_single_instance(pitch, offsets, scalings, transformation)
     gen_constraints(plvd, 'T_0')
-    assert plvd["modules"][0]['constraints'][0]['pitch'] == 20
-    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0, 3}
+    assert plvd["modules"][0]['constraints'][0]['pitch'] == 10
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0, 9}
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
+
+
+def test_inherit_one_3():
+    pitch = 10
+    offsets = [5]
+    scalings = [1]
+    transformation = {'oX': 0, 'oY': 5, 'sX': 1, 'sY': 1}
+    plvd = single_leaf_single_instance(pitch, offsets, scalings, transformation)
+    gen_constraints(plvd, 'T_0')
+    assert plvd["modules"][0]['constraints'][0]['pitch'] == 10
+    assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0}
     assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
