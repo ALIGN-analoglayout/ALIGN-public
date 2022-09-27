@@ -10,15 +10,15 @@
         "direction" : "V",
         "pairs": [["mn0"], ["x_dp_mn1_mn2"], ["x_ccn_mn3_mn4"], ["x_ccp_mp5_mp6"], ["mp7", "mp8"], ["mp9", "mp10"], ["x_inv_n_mp11_mn13", "x_inv_p_mp12_mn14"]]
     },
-    {"constraint": "order",
+    {"constraint": "Order",
         "direction" : "top_to_bottom",
         "instances": ["mn0", "x_dp_mn1_mn2", "x_ccn_mn3_mn4", "x_ccp_mp5_mp6"]
     },
-    {"constraint": "align",
+    {"constraint": "Align",
         "line" : "h_bottom",
         "instances": ["mp9", "mp7", "x_dp_mn1_mn2", "mp8", "mp10"]
     },
-    {"constraint": "align",
+    {"constraint": "Align",
         "line" : "h_bottom",
         "instances": ["x_inv_n_mp11_mn13", "x_ccp_mp5_mp6", "x_inv_p_mp12_mn14"]
     }
