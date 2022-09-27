@@ -183,6 +183,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("PowerNets", &block::PowerNets)
     .def_readwrite("blockPins", &block::blockPins)
     .def_readwrite("interMetals", &block::interMetals)
+    .def_readwrite("interVias", &block::interVias)
     .def_readwrite("dummy_power_pin", &block::dummy_power_pin);
   py::class_<terminal>( m, "terminal")
     .def( py::init<>())
@@ -358,6 +359,56 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
+  py::class_<via_info>( m, "via_info")
+    .def( py::init<>())
+    .def_readwrite("name", &via_info::name)
+    .def_readwrite("layerNo", &via_info::layerNo)
+    .def_readwrite("lower_metal_index", &via_info::lower_metal_index)
+    .def_readwrite("upper_metal_index", &via_info::upper_metal_index)
+    .def_readwrite("width", &via_info::width)
+    .def_readwrite("width_y", &via_info::width_y)
+    .def_readwrite("cover_l", &via_info::cover_l)
+    .def_readwrite("cover_l_P", &via_info::cover_l_P)
+    .def_readwrite("cover_u", &via_info::cover_u)
+    .def_readwrite("cover_u_P", &via_info::cover_u_P)
+    .def_readwrite("dist_ss", &via_info::dist_ss)
+    .def_readwrite("dist_ss_y", &via_info::dist_ss_y)
+    .def_readwrite("R", &via_info::R)
+    .def_readwrite("gds_datatype", &via_info::gds_datatype);
+
+  py::class_<metal_info>( m, "metal_info")
+    .def( py::init<>())
+    .def_readwrite("name", &metal_info::name)
+    .def_readwrite("layerNo", &metal_info::layerNo)
+    .def_readwrite("width", &metal_info::width)
+    .def_readwrite("dist_ss", &metal_info::dist_ss)
+    .def_readwrite("direct", &metal_info::direct)
+    .def_readwrite("grid_unit_x", &metal_info::grid_unit_x)
+    .def_readwrite("grid_unit_y", &metal_info::grid_unit_y)
+    .def_readwrite("minL", &metal_info::minL)
+    .def_readwrite("maxL", &metal_info::maxL)
+    .def_readwrite("dist_ee", &metal_info::dist_ee)
+    .def_readwrite("unit_R", &metal_info::unit_R)
+    .def_readwrite("unit_C", &metal_info::unit_C)
+    .def_readwrite("unit_CC", &metal_info::unit_CC)
+    .def_readwrite("gds_datatype", &metal_info::gds_datatype)
+    ;
+
+  py::class_<GdsDatatype>( m, "GdsDatatype")
+    .def( py::init<>())
+    .def_readwrite("Draw", &GdsDatatype::Draw)
+    .def_readwrite("Pin", &GdsDatatype::Pin)
+    .def_readwrite("Label", &GdsDatatype::Label)
+    .def_readwrite("Blockage", &GdsDatatype::Blockage)
+    ;
+
+  py::class_<Boundary>( m, "Boundary")
+    .def( py::init<>())
+    .def_readwrite("name", &Boundary::name)
+    .def_readwrite("layerNo", &Boundary::layerNo)
+    .def_readwrite("gds_datatype", &Boundary::gds_datatype)
+    ;
+
   py::class_<design_info>( m, "design_info")
     .def( py::init<>())
     .def_readwrite("Hspace", &design_info::Hspace)
@@ -435,10 +486,6 @@ PYBIND11_MODULE(PnR, m) {
     .value("Backward",Backward)
     .export_values();
 
-  py::class_<ReadVerilogHelper>( m, "ReadVerilogHelper")
-    .def( py::init<PnRdatabase&>())
-    .def( "parse_top", &ReadVerilogHelper::parse_top);
-
   py::class_<PnRdatabase>( m, "PnRdatabase")
     .def( py::init<>())
     .def( "semantic0", &PnRdatabase::semantic0)
@@ -446,13 +493,11 @@ PYBIND11_MODULE(PnR, m) {
     .def( "semantic2", &PnRdatabase::semantic2)
     .def( "TraverseHierTree", &PnRdatabase::TraverseHierTree)
     .def( "CheckoutHierNode", &PnRdatabase::CheckoutHierNode)
-    .def( "CheckoutHierNodeVec", &PnRdatabase::CheckoutHierNodeVec)
     .def( "PrintHierNode", &PnRdatabase::PrintHierNode)
     .def( "PrintHierTree", &PnRdatabase::PrintHierTree)
     .def( "ReadPDKJSON", &PnRdatabase::ReadPDKJSON)
     .def( "ReadLEF", &PnRdatabase::ReadLEF)
     .def( "ReadLEFFromString", &PnRdatabase::ReadLEFFromString)
-    .def( "ReadVerilog", &PnRdatabase::ReadVerilog)
     .def( "getDrc_info", &PnRdatabase::getDrc_info)
     .def( "checkoutSingleLEF", &PnRdatabase::checkoutSingleLEF)
     .def( "AddingPowerPins", &PnRdatabase::AddingPowerPins)
@@ -472,11 +517,13 @@ PYBIND11_MODULE(PnR, m) {
     .def( "Write_Current_Workload", &PnRdatabase::Write_Current_Workload)
     .def( "Write_Power_Mesh_Conf", &PnRdatabase::Write_Power_Mesh_Conf)
     .def( "ReadConstraint_Json", &PnRdatabase::ReadConstraint_Json)
+    .def( "ReadPrimitiveOffsetPitch", &PnRdatabase::ReadPrimitiveOffsetPitch)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)
+    .def_readwrite("ScaleFactor", &PnRdatabase::ScaleFactor)
   ;
 
   py::class_<Placer_Router_Cap_Ifc>( m, "Placer_Router_Cap_Ifc")
@@ -495,10 +542,15 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
     .def_readwrite("max_init_trial_count", &PlacerHyperparameters::max_init_trial_count)
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
+    .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP) // Choice of variant selection in SA: 0-Sequence Pair, 1-ILP
+    .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer) // Use ILP to place blocks instead of SA
+    .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
+    .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
+    .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
-    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&, bool, int>())
+    .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())
     .def( "getNodeVecSize", &PlacerIfc::getNodeVecSize)
     .def( "getNode", &PlacerIfc::getNode);
 

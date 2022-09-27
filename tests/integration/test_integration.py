@@ -8,38 +8,66 @@ run_flat = {'linear_equalizer',
             'single_to_differential_converter'}
 
 skip_pdks = {'Bulk65nm_Mock_PDK',
-             'Nonuniform_mock_pdk'}
+             'Nonuniform_mock_pdk',
+             'Bulk45nm_Mock_PDK'}
 
-skip_dirs = {'Sanitized_model3x_MDLL_TOP',
-             'OTA_FF_2s_v3e',
-             'Sanitized_Coarse_SAR_Logic',
-             'ADC_CORE',
-             'GF65_DLL_sanitized',
-             'Sanitized_5b_ADC',
-             'Sanitized_CDAC_SW_Coarse',
-             'Sanitized_DLPF_RCFilter',
-             'Sanitized_TempSensor',
-             'CTDTDSM_V3',
-             'single_SAR',
-             'Sanitized_civiR_DLDO_TOP',
-             'Sanitized_TX_8l12b',
-             'Santized_12b_ADC_TOP',
-             'Sanitized_LevelCrossingDetector',
-             'Sanitized_CK_Divider8',
+skip_dirs = {'five_transistor_ota_Bulk',
              'mimo_bulk'}
+
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
-examples_dir = ALIGN_HOME / 'examples'
-examples = [p.parents[0] for p in examples_dir.rglob('*.sp') if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 pdks = [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() if pdk.is_dir() and pdk.name not in skip_pdks]
 
 
-@pytest.mark.nightly
-@pytest.mark.parametrize("design_dir", examples, ids=lambda x: x.name)
-@pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
-def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
+def gen_examples():
+    ci_level = os.environ.get('CI_LEVEL', 'all')
 
+    examples_dir = ALIGN_HOME / 'examples'
+    examples = [p.parents[0] for p in examples_dir.rglob('*.sp') if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
+
+    if ci_level == 'merge':
+        circle_ci_skip = "not single_to_differential_converter and not vco_dtype_12_hierarchical and not linear_equalizer and not test_vga and not powertrain_binary and and not telescopic_ota_guard_ring"
+        exclude_strings = [nm for nm in circle_ci_skip.split(' ') if nm not in ["and", "or", "not"]]
+
+        additional_skip_dirs = set()
+        for p in examples:
+            s = str(p)
+            if any(x in s for x in exclude_strings):
+                additional_skip_dirs.add(p.stem)
+        print(additional_skip_dirs)
+
+        examples = [p.parents[0]
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs and x not in additional_skip_dirs
+                    for x in p.relative_to(examples_dir).parts)]
+    elif ci_level == 'checkin':
+        circle_ci_dont_skip = "adder or switched_capacitor_filter or high_speed_comparator"
+        include_strings = [nm for nm in circle_ci_dont_skip.split(' ') if nm not in ["or"]]
+        restricted_directories = set()
+        for p in examples:
+            s = str(p)
+            if any(x in s for x in include_strings):
+                restricted_directories.add(p.stem)
+
+        print(restricted_directories)
+        examples = [p.parents[0]
+                    for p in examples_dir.rglob('*.sp')
+                    if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)
+                    and any(x in restricted_directories for x in p.relative_to(examples_dir).parts)]
+    elif ci_level == 'all':
+        pass
+    else:
+        assert False, ci_level
+
+    print(examples)
+    return examples
+
+
+@pytest.mark.nightly
+@pytest.mark.parametrize("design_dir", gen_examples(), ids=lambda x: x.name)
+@pytest.mark.parametrize("pdk_dir", pdks, ids=lambda x: x.name)
+def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS, placer_sa_iterations, nvariants):
     uid = os.environ.get('PYTEST_CURRENT_TEST')
     uid = uid.split(' ')[0].split(':')[-1].replace('[', '_').replace(']', '').replace('-', '_')
     run_dir = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / uid
@@ -52,9 +80,13 @@ def test_integration(pdk_dir, design_dir, maxerrors, router_mode, skipGDS):
             '-flat',  str(1 if nm in run_flat else 0), '-l', 'WARNING', '-v', 'INFO']
     args.extend(['--router_mode', router_mode])
 
+    args.extend(['--placer_sa_iterations', str(placer_sa_iterations)])
+    args.extend(['--nvariants', str(nvariants)])
+
     if skipGDS:
         args.extend(['--skipGDS'])
     else:
+        # SMB Do we really need this?
         args.extend(['--regression'])
 
     results = align.CmdlineParser().parse_args(args)

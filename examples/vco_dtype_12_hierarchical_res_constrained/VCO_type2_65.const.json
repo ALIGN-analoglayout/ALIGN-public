@@ -1,19 +1,50 @@
 [
-    {"constraint": "GroupBlocks", "instances": ["I1<1>", "I1<2>", "I1<3>", "I1<4>"], "name": "top"},
-    {"constraint": "GroupBlocks", "instances": ["I1<8>", "I1<7>", "I1<6>", "I1<5>"], "name": "bot"},
-    {
-	"constraint": "Order",
-	"direction" : "left_to_right",
-	"instances": ["I1<1>", "I1<2>", "I1<3>", "I1<4>"]
-    },
-    {
-	"constraint": "Order",
-	"direction" : "left_to_right",
-	"instances": ["I1<8>", "I1<7>", "I1<6>", "I1<5>"]
-    },
-    {
-	"constraint": "Order",
-	"direction" : "top_to_bottom",
-	"instances": ["top", "bot"]
-    }
+	{
+		"constraint": "GroupBlocks",
+		"instances": [
+			"XI1<1>",
+			"XI1<2>",
+			"XI1<3>",
+			"XI1<4>"
+		],
+		"instance_name": "xtop"
+	},
+	{
+		"constraint": "GroupBlocks",
+		"instances": [
+			"XI1<8>",
+			"XI1<7>",
+			"XI1<6>",
+			"XI1<5>"
+		],
+		"instance_name": "xbot"
+	},
+	{
+		"constraint": "Order",
+		"direction": "left_to_right",
+		"instances": [
+			"XI1<1>",
+			"XI1<2>",
+			"XI1<3>",
+			"XI1<4>"
+		]
+	},
+	{
+		"constraint": "Order",
+		"direction": "left_to_right",
+		"instances": [
+			"XI1<8>",
+			"XI1<7>",
+			"XI1<6>",
+			"XI1<5>"
+		]
+	},
+	{
+		"constraint": "Order",
+		"direction": "top_to_bottom",
+		"instances": [
+			"xtop",
+			"xbot"
+		]
+	}
 ]

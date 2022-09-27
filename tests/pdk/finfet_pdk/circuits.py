@@ -241,3 +241,189 @@ def two_stage_ota_differential(name):
         .END
     """)
     return netlist
+
+
+def charge_pump_switch(name, size=16):
+    netlist = textwrap.dedent(f"""\
+    .subckt switch ng pg t1 t2 vccx vssx
+    qp0 t1 pg t2 vccx p m=1 nf=2 w=90e-9
+    qn0 t1 ng t2 vssx n m=1 nf=2 w=90e-9
+    .ends
+    .subckt {name} en enb in out vccx vssx
+    """)
+    for i in range(size):
+        netlist += f"isw<{i}> en enb in out vccx vssx switch\n"
+    netlist += textwrap.dedent(f"""\
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def niwc_opamp_split(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vtail vbn vbp1 vbp2 vin vip out vccx vssx
+    m1 cas1 vin tail vssx n w=360e-9 m=8 nf=1 stack=4
+    m2 cas2 vip tail vssx n w=360e-9 m=8 nf=1 stack=4
+    mtail tail vtail vssx vssx n w=360e-9 m=32 nf=1 stack=8
+    m7a y x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m7b y x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m8a z x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m8b z x vssx vssx n w=360e-9 m=8 nf=1 stack=8
+    m5a x   vbn y vssx n w=360e-9 m=4 nf=1 stack=4
+    m5b x   vbn y vssx n w=360e-9 m=4 nf=1 stack=4
+    m6a out vbn z vssx n w=360e-9 m=4 nf=1 stack=4
+    m6b out vbn z vssx n w=360e-9 m=4 nf=1 stack=4
+    m3a x vbp1 cas1 vccx p w=360e-9 m=4 nf=1 stack=4
+    m3b x vbp1 cas1 vccx p w=360e-9 m=4 nf=1 stack=4
+    m4a x vbp1 cas2 vccx p w=360e-9 m=4 nf=1 stack=4
+    m4b x vbp1 cas2 vccx p w=360e-9 m=4 nf=1 stack=4
+    m11 cas1 vbp2 vccx vccx p w=360e-9 m=32 nf=1 stack=8
+    m12 cas2 vbp2 vccx vccx p w=360e-9 m=32 nf=1 stack=8
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def opamp_poor(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt ps4 d g s b
+    .param m=1
+    i0 d0 g s  b p m=1 w=180e-9 m=1 nf=1
+    i1 d1 g d0 b p m=1 w=180e-9 m=1 nf=1
+    i2 d2 g d1 b p m=1 w=180e-9 m=1 nf=1
+    i3 d  g d2 b p m=1 w=180e-9 m=1 nf=1
+    .ends
+    .subckt ns4 d g s b
+    .param m=1
+    i0 d0 g s  b n m=1 w=180e-9 m=1 nf=1
+    i1 d1 g d0 b n m=1 w=180e-9 m=1 nf=1
+    i2 d2 g d1 b n m=1 w=180e-9 m=1 nf=1
+    i3 d  g d2 b n m=1 w=180e-9 m=1 nf=1
+    .ends
+    .subckt cascode_p d g s b
+    i0 d0 g s  b ps4  m=2
+    i1 d  g d0 b plvt w=720e-9 m=1 nf=8
+    .ends
+    .subckt cascode_n d g s b
+    i1 d  g d0 b nlvt w=720e-9 m=1 nf=8
+    i0 d0 g s  b ns4  m=2
+    .ends
+    .subckt {name} vplus vminus vout fbin fbout ibias vccx vssx
+    iloadl<0> voutb voutb vccx vccx cascode_p
+    iloadl<1> voutb voutb vccx vccx cascode_p
+    iloadr<0> vout  vout  vccx vccx cascode_p
+    iloadr<1> vout  vout  vccx vccx cascode_p
+
+    idiffl<0> voutb vplus  vtail vssx cascode_n
+    idiffl<1> voutb vplus  vtail vssx cascode_n
+    idiffr<0> vout  vminus vtail vssx cascode_n
+    idiffr<1> vout  vminus vtail vssx cascode_n
+
+    ibias<0> ibias ibias  vssx vssx cascode_n
+    ibias<1> ibias ibias  vssx vssx cascode_n
+    ibias<2> ibias ibias  vssx vssx cascode_n
+    ibias<3> ibias ibias  vssx vssx cascode_n
+    ibias<4> ibias ibias  vssx vssx cascode_n
+    itail    vtail ibias  vssx vssx cascode_n
+
+    i0 fbout fbin  vccx vssx n w=720e-9 m=1 nf=8
+    i1 fbout ibias vssx vssx cascode_n
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def comparator_analog(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vminus vplus vout en vccx vssx
+    invp1 enn en  vccx vccx p m=1 nf=2 w=180e-9
+    invn1 enn en  vssx vssx n m=1 nf=2 w=180e-9
+    invp2 enp enn vccx vccx p m=1 nf=2 w=180e-9
+    invn2 enp enn vssx vssx n m=1 nf=2 w=180e-9
+    mpbias pbias pbias vccx vccx p stack=4  m=4 nf=1 w=360e-9
+    nres1  pbias enp   vmid vssx n stack=12 m=1 nf=1 w=360e-9
+    nres0  vmid  hi    vssx vssx n stack=40 m=1 nf=1 w=360e-9
+    mp_hi  hi    vssx  vccx vccx p m=1 nf=4 w=360e-9
+    decap0 vssx vminus vssx vssx n m=24 nf=4 w=360e-9
+    decap1 vccx pbias  vccx vccx p m=24 nf=4 w=360e-9
+    ptail vcm pbias vccx vccx p stack=4 m=48 nf=1 w=360e-9
+    pinp vo1p vminus vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    pinn vo1n vplus  vcm vccx p stack=2 m=48 nf=1 w=180e-9
+    nldl vo1p vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    nldr vo1n vo1p  vssx vssx n stack=4 m=24 nf=1 w=360e-9
+    p2 vout pbias vccx vccx p stack=4 m=8 nf=1 w=360e-9
+    n2 vout vo1n  vssx vssx n stack=2 m=4 nf=1 w=180e-9
+    sw_pullup_enb vout  enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pbias_en   pbias enp vccx vccx p stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en  vo1n  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    sw_pulldn_en1 vo1p  enn vssx vssx n stack=4 m=2 nf=1 w=360e-9
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def analog_mux_4to1(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt dig22inv a o1 vccx vssx
+    .ends
+    .subckt dig22nand a b o1 vccx vssx
+    .ends
+    .subckt decoder_2to4 o0 o0b o1 o1b o2 o2b o3 o3b vccx vssx x0 x1
+    inv08 x0 net21 vccx vssx dig22inv
+    inv09 x1 net16 vccx vssx dig22inv
+    inv00 o0b o0 vccx vssx dig22inv
+    inv01 o1b o1 vccx vssx dig22inv
+    inv02 o2b o2 vccx vssx dig22inv
+    inv03 o3b o3 vccx vssx dig22inv
+    nand0 net21 net16 o0b vccx vssx dig22nand
+    nand1 x0 net16 o1b vccx vssx dig22nand
+    nand2 net21 x1 o2b vccx vssx dig22nand
+    nand3 x0 x1 o3b vccx vssx dig22nand
+    .ends
+    .subckt passgate en enb pgin pgout vccx vssx
+    qp1 pgin enb pgout vccx p m=16 nf=2 w=360e-9
+    qn1 pgin en  pgout vssx n m=16 nf=2 w=360e-9
+    .ends
+    .subckt {name} in0 in1 in2 in3 muxout vccx vssx x0 x1
+    i0 net7 net8 net5 net6 net3 net4 net1 net2 vccx vssx x0 x1 decoder_2to4
+    pg0 net7 net8 in0 muxout vccx vssx passgate
+    pg1 net5 net6 in1 muxout vccx vssx passgate
+    pg2 net3 net4 in2 muxout vccx vssx passgate
+    pg3 net1 net2 in3 muxout vccx vssx passgate
+    .ends {name}
+    .END
+    """)
+    return netlist
+
+
+def folded_cascode(name):
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} ina inb icm icsl outb vccx vssx
+
+    qp5<0> casp casp vccx vccx p stack=2 m=4 nf=1 w=360e-9
+    qp5<1> casp casp vccx vccx p stack=2 m=4 nf=1 w=360e-9
+    qp6<0> icsl icsl casp vccx p stack=2 m=4 nf=1 w=360e-9
+    qp6<1> icsl icsl casp vccx p stack=2 m=4 nf=1 w=360e-9
+
+    qp4 difa casp vccx vccx p stack=2 m=8 nf=1 w=360e-9
+    qp3 difb casp vccx vccx p stack=2 m=8 nf=1 w=360e-9
+    qp2 casn icsl difa vccx p stack=2 m=8 nf=1 w=360e-9
+    qp1 outb icsl difb vccx p stack=2 m=8 nf=1 w=360e-9
+
+    qn1 difa ina icm vssx n m=6 nf=2 w=360e-9
+    qn2 difb inb icm vssx n m=6 nf=2 w=360e-9
+
+    qn4 casn casn net1 vssx n stack=2 m=8 nf=1 w=360e-9
+    qn3 outb casn net2 vssx n stack=2 m=8 nf=1 w=360e-9
+
+    qn6 net1 casn vssx vssx n stack=2 m=8 nf=1 w=360e-9
+    qn5 net2 casn vssx vssx n stack=2 m=8 nf=1 w=360e-9
+
+    .ends {name}
+    .END
+    """)
+    return netlist

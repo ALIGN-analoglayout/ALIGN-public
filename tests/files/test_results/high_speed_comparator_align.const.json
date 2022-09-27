@@ -1,17 +1,17 @@
 [
         {
-          "constraint": "horizontal_distance",
+          "constraint": "HorizontalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "vertical_distance",
+          "constraint": "VerticalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "symmetric_blocks",
+          "constraint": "SymmetricBlocks",
           "pairs": [
             [
-              "MN0"
+              "X_MN0"
             ],
             [
               "X_DP_MN1_MN2"
@@ -23,12 +23,12 @@
               "X_CCP_MP5_MP6"
             ],
             [
-              "MP7",
-              "MP8"
+              "X_MP7",
+              "X_MP8"
             ],
             [
-              "MP9",
-              "MP10"
+              "X_MP9",
+              "X_MP10"
             ],
             [
               "X_INV_N_MP11_MN13",
@@ -38,9 +38,9 @@
           "direction": "V"
         },
         {
-          "constraint": "order",
+          "constraint": "Order",
           "instances": [
-            "MN0",
+            "X_MN0",
             "X_DP_MN1_MN2",
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6"
@@ -49,18 +49,18 @@
           "abut": false
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
-            "MP9",
-            "MP7",
+            "X_MP9",
+            "X_MP7",
             "X_DP_MN1_MN2",
-            "MP8",
-            "MP10"
+            "X_MP8",
+            "X_MP10"
           ],
           "line": "h_bottom"
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_INV_N_MP11_MN13",
             "X_CCP_MP5_MP6",
@@ -69,18 +69,18 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "do_not_identify",
+          "constraint": "DoNotIdentify",
           "instances": [
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6",
             "X_DP_MN1_MN2",
             "X_INV_N_MP11_MN13",
             "X_INV_P_MP12_MN14",
-            "MN0",
-            "MP10",
-            "MP7",
-            "MP8",
-            "MP9"
+            "X_MN0",
+            "X_MP10",
+            "X_MP7",
+            "X_MP8",
+            "X_MP9"
           ]
         }
       ]

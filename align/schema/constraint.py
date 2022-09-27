@@ -1,11 +1,13 @@
 import abc
 import more_itertools as itertools
+import itertools as plain_itertools
 import re
 import logging
 
-
 from . import types
-from .types import Union, Optional, Literal, List, set_context
+from .types import BaseModel, Union, Optional, Literal, List, set_context
+
+from pydantic import Field
 
 
 logger = logging.getLogger(__name__)
@@ -22,20 +24,43 @@ def get_instances_from_hacked_dataclasses(constraint):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
-    names = {x.name for x in constraint.parent if hasattr(x, 'name')}
-    return set.union(instances, names)
+    names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')}  # group block
+    names2 = {x.name for x in constraint.parent if hasattr(x, 'name')}  # group_cap, alias
+    return set.union(instances, names1, names2)
 
 
 def validate_instances(cls, value):
     # instances = cls._validator_ctx().parent.parent.instances
     instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
     assert isinstance(instances, set), 'Could not retrieve instances from subcircuit definition'
-    assert all(x in instances or x.upper() in instances for x in value), f'One or more constraint instances {value} not found in {instances}'
+    for x in value:  # explicit loop to point out the not found instance
+        assert x in instances or x.upper() in instances, f"Instance {x} not found in the circuit"
     return [x.upper() for x in value]
+
+
+def validate_ports(cls, value):
+    constraint = cls._validator_ctx()
+    if constraint.parent and constraint.parent.parent:
+        obj = constraint.parent.parent
+        # VerilogJson modules do not always have power pins due to power pin removal hack.
+        # isinstance avoided due to circular import
+        if hasattr(obj, "pins"):
+            pins = obj.pins
+            for v in value:
+                assert v in pins, f"Port {v} not found in subcircuit {obj.name.lower()}"
+    return value
 
 
 def upper_case(cls, value):
     return [v.upper() for v in value]
+
+
+def upper_case_str(cls, value):
+    return value.upper()
+
+def assert_non_negative(cls, value):
+    assert value >= 0, f'Value must be non-negative: {value}'
+    return value
 
 
 class SoftConstraint(types.BaseModel):
@@ -43,8 +68,9 @@ class SoftConstraint(types.BaseModel):
     constraint: str
 
     def __init__(self, *args, **kwargs):
-        constraint = pattern.sub(
-            '_', self.__class__.__name__).lower()
+        # constraint = pattern.sub(
+        #     '__', self.__class__.__name__).lower()
+        constraint = self.__class__.__name__
         if 'constraint' not in kwargs or kwargs['constraint'] == self.__class__.__name__:
             kwargs['constraint'] = constraint
         else:
@@ -86,7 +112,8 @@ class UserConstraint(HardConstraint, abc.ABC):
 
     def translate(self, solver):
         for constraint in self.yield_constraints():
-            yield from constraint.translate(solver)
+            if isinstance(constraint, HardConstraint):
+                yield from constraint.translate(solver)
 
 
 class Order(HardConstraint):
@@ -110,7 +137,7 @@ class Order(HardConstraint):
             :obj:`'top_to_bottom'`, placement order is top to bottom.
 
             :obj:`None`: default (:obj:`'horizontal'` or :obj:`'vertical'`)
-        abut (bool, optional): If `abut` is `True` adjoining instances will touch
+        abut (bool, optional): If `abut` is `true` adjoining instances will touch
 
     .. image:: ../images/OrderBlocks.PNG
         :align: center
@@ -120,7 +147,7 @@ class Order(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Order", "direction": "left_to_right"}
+        {"constraint":"Order", "instances": ['MN0', 'MN1', 'MN2'], "direction": "left_to_right"}
 
     '''
     instances: List[str]
@@ -129,7 +156,7 @@ class Order(HardConstraint):
         'left_to_right', 'right_to_left',
         'bottom_to_top', 'top_to_bottom'
     ]]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -205,7 +232,7 @@ class Align(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Align", "line": "v_center"}
+        {"constraint":"Align", "instances": ['MN0', 'MN1', 'MN2'], "line": "v_center"}
 
     '''
     instances: List[str]
@@ -275,7 +302,7 @@ class Enclose(HardConstraint):
 
     Example: ::
 
-        {"constraint":"Enclose", "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
+        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
     '''
     instances: Optional[List[str]]
     min_height: Optional[int]
@@ -329,8 +356,8 @@ class Enclose(HardConstraint):
 
 class Spread(HardConstraint):
     '''
-    Spread `instances` by forcing minimum spacing along
-    `direction` if two instances overlap in other direction
+    Spread `instances` by forcing minimum spacing along `direction`
+    if a pair of instances overlap in the orthogonal direction
 
     Args:
         instances (list[str]): List of `instances`
@@ -352,7 +379,7 @@ class Spread(HardConstraint):
     '''
 
     instances: List[str]
-    direction: Optional[Literal['horizontal', 'vertical']]
+    direction: Literal['horizontal', 'vertical']
     distance: int  # in nm
 
     @types.validator('instances', allow_reuse=True)
@@ -362,22 +389,17 @@ class Spread(HardConstraint):
 
     def translate(self, solver):
 
-        def cc(b1, b2, c='x'):
-            d = 'y' if c == 'x' else 'x'
+        def cc(b1, b2, d='x'):
+            od = 'y' if d == 'x' else 'x'
             return solver.Implies(
-                solver.And(  # overlap orthogonal to c
-                    getattr(b1, f'ur{d}') > getattr(b2, f'll{d}'),
-                    getattr(b2, f'ur{d}') > getattr(b1, f'll{d}'),
+                solver.And(  # overlap in orthogonal direction od
+                    getattr(b1, f'ur{od}') > getattr(b2, f'll{od}'),
+                    getattr(b2, f'ur{od}') > getattr(b1, f'll{od}'),
                 ),
-                solver.Abs(  # distance in c coords
-                    (
-                        getattr(b1, f'll{c}')
-                        + getattr(b1, f'ur{c}')
-                    ) - (
-                        getattr(b2, f'll{c}')
-                        + getattr(b2, f'ur{c}')
-                    )
-                ) >= self.distance * 2
+                solver.And(  # distance between sidewalls in direction d
+                    solver.Abs(getattr(b1, f'll{d}') - getattr(b2, f'ur{d}')) >= self.distance,
+                    solver.Abs(getattr(b2, f'll{d}') - getattr(b1, f'ur{d}')) >= self.distance,
+                )
             )
 
         bvars = solver.iter_bbox_vars(self.instances)
@@ -387,10 +409,7 @@ class Spread(HardConstraint):
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                yield solver.Or(
-                    cc(b1, b2, 'x'),
-                    cc(b1, b2, 'y')
-                )
+                assert False, "Please speficy direction"
 
 
 class AssignBboxVariables(HardConstraint):
@@ -402,12 +421,12 @@ class AssignBboxVariables(HardConstraint):
 
     @types.validator('urx', allow_reuse=True)
     def x_is_valid(cls, value, values):
-        assert value > values['llx'], f'Reflection is not supported yet'
+        assert value > values['llx'], 'Reflection is not supported yet'
         return value
 
     @types.validator('ury', allow_reuse=True)
     def y_is_valid(cls, value, values):
-        assert value > values['lly'], f'Reflection is not supported yet'
+        assert value > values['lly'], 'Reflection is not supported yet'
         return value
 
     def translate(self, solver):
@@ -439,10 +458,7 @@ class AspectRatio(HardConstraint):
     ratio_high: float = 10
     weight: int = 1
 
-    @types.validator('ratio_low', allow_reuse=True)
-    def ratio_low_validator(cls, value):
-        assert value >= 0, f'AspectRatio:ratio_low should be greater than zero {value}'
-        return value
+    _ratio_low_validator = types.validator('ratio_low', allow_reuse=True)(assert_non_negative)
 
     @types.validator('ratio_high', allow_reuse=True)
     def ratio_high_validator(cls, value, values):
@@ -472,15 +488,8 @@ class Boundary(HardConstraint):
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
-    @types.validator('max_width', allow_reuse=True)
-    def max_width_validator(cls, value):
-        assert value >= 0, f'Boundary:max_width should be greater than zero {value}'
-        return value
-
-    @types.validator('max_height', allow_reuse=True)
-    def max_height_validator(cls, value):
-        assert value >= 0, f'Boundary:max_height should be greater than zero {value}'
-        return value
+    _max_width = types.validator('max_width', allow_reuse=True)(assert_non_negative)
+    _max_height = types.validator('max_height', allow_reuse=True)(assert_non_negative)
 
     def translate(self, solver):
         bvar = solver.bbox_vars('subcircuit')
@@ -500,37 +509,52 @@ class GroupBlocks(HardConstraint):
 
     Args:
       instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
+      template_name (str): Optional template name for the group (virtual hiearchy).
+      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
 
     Example: ::
 
         {
             "constraint":"GroupBlocks",
-            "name": "group1",
+            "instance_name": "X_MN0_MN1_MN3",
             "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
+            "template_name": "DP1"
         }
-    """
-    name: str
-    instances: List[str]
-    style: Optional[Literal["tbd_interdigitated", "tbd_common_centroid"]]
 
-    @types.validator('name', allow_reuse=True)
+    Note: If not provided a unique template name will be auto generated.
+    Template_names are added with a post_script during the flow using a UUID based on
+    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
+    """
+    instance_name: str
+    instances: List[str]
+    template_name: Optional[str]
+    generator: Optional[dict]
+
+    @types.validator('instance_name', allow_reuse=True)
     def group_block_name(cls, value):
         assert value, 'Cannot be an empty string'
+        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
         return value.upper()
 
     def translate(self, solver):
         # Non-zero width / height
-        bb = solver.bbox_vars(self.name)
+        instances = get_instances_from_hacked_dataclasses(self)
+        bb = solver.bbox_vars(self.instance_name)
         yield bb.llx < bb.urx
         yield bb.lly < bb.ury
         # Grouping into common bbox
-        for b in solver.iter_bbox_vars(self.instances):
+        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
             yield b.ury <= bb.ury
             yield b.lly >= bb.lly
-        instances = get_instances_from_hacked_dataclasses(self)
         for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
             yield solver.Or(
                 b.urx <= bb.llx,
@@ -589,7 +613,7 @@ class AlignInOrder(UserConstraint):
         'center'
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
-    abut: Optional[bool] = False
+    abut: bool = False
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -599,13 +623,13 @@ class AlignInOrder(UserConstraint):
                 v = 'horizontal'
             else:
                 assert v == 'horizontal', \
-                    f'direction is horizontal if line is bottom or top'
+                    'direction is horizontal if line is bottom or top'
         elif values['line'] in ['left', 'right']:
             if v is None:
                 v = 'vertical'
             else:
                 assert v == 'vertical', \
-                    f'direction is vertical if line is left or right'
+                    'direction is vertical if line is left or right'
         # Center needs both line & direction
         elif values['line'] == 'center':
             assert v, \
@@ -625,12 +649,76 @@ class AlignInOrder(UserConstraint):
             )
 
 
+class Floorplan(UserConstraint):
+    '''
+    Row-based layout floorplan from top to bottom
+    Instances on each row are ordered from left to right.
+
+    Example: Define three regions and assign each instance to a region:
+        {"constraint":"Floorplan", "regions": [["A", "B", "C"], ["D", "E"], ["G"], "order": true}
+
+        -----
+        A B C
+        -----
+        D E
+        -----
+        G
+        -----
+    '''
+    regions: List[List[str]]
+    order: bool = False
+    symmetrize: bool = False
+
+    @types.validator('regions', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        new_rows = list()
+        for row in value:
+            new_rows.append(validate_instances(cls, row))
+        return new_rows
+
+    def yield_constraints(self):
+        above_below = set()
+        with set_context(self._parent):
+            logger.debug("=== Floorplan ========================")
+            # Regions from top to bottom
+            logger.debug("===========================")
+            for i in range(len(self.regions)-1):
+                for [above, below] in plain_itertools.product(self.regions[i], self.regions[i+1]):
+                    logger.debug(f'Above:{above} Below:{below}')
+                    above_below.add((above, below))
+                    assert (below, above) not in above_below, \
+                        f'Please review floorplan constraint:\n{self.regions}.\n{below} is previously placed above {above}.'
+                    yield Order(instances=[above, below], direction='top_to_bottom', abut=False)
+            # Order instances in each region from left to right
+            if self.order:
+                logger.debug("===========================")
+                for region in self.regions:
+                    logger.debug(f'Order left to right: {region}')
+                    if len(region) > 1:
+                        yield Order(instances=region, direction='left_to_right', abut=False)
+            # Symmetrize instances along a single vertical line
+            if self.symmetrize:
+                logger.debug("===========================")
+                pairs = list()
+                for region in self.regions:
+                    if len(region) <= 2:
+                        pairs.append(region)
+                    else:
+                        for i in range(len(region)//2):
+                            pairs.append([region[i], region[-1-i]])
+                        if len(region) % 2 == 1:
+                            pairs.append([region[i+1]])
+                logger.debug(f'Symmetric blocks:\n{pairs}')
+                yield SymmetricBlocks(pairs=pairs, direction='V')
+
+
 #
 # list of 'SoftConstraint'
 #
 # Below is a list of legacy constraints
 # that have not been hardened yet
 #
+
 
 class PlaceSymmetric(SoftConstraint):
     # TODO: Finish implementing this. Not registered to
@@ -663,7 +751,7 @@ class PlaceSymmetric(SoftConstraint):
         '''
 
         assert len(value) >= 1, 'Must contain at least one instance'
-        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {self.instances}'
+        assert all(isinstance(x, List) for x in value), f'All arguments must be of type list in {cls.instances}'
         return value
 
 
@@ -705,6 +793,30 @@ class SameTemplate(SoftConstraint):
     """
     instances: List[str]
 
+    @types.validator("instances", allow_reuse=True)
+    def instances_validator(cls, instances):
+
+        # logger.debug(f"SameTemplate {instances=}")
+        # assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
+
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        instances = validate_instances(cls, instances)
+
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return instances
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
+            return instances
+
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for i0, i1 in itertools.pairwise(instances):
+            if i0 not in group_block_instances and i1 not in group_block_instances:
+                assert cls._validator_ctx().parent.parent.get_element(i0).parameters == \
+                        cls._validator_ctx().parent.parent.get_element(i1).parameters, \
+                        f"Parameters of {i0} and {i1} must match for SameTemplate in subckt {cls._validator_ctx().parent.parent.name}"
+        return instances
+
 
 class CreateAlias(SoftConstraint):
     """CreateAlias
@@ -728,11 +840,12 @@ class CreateAlias(SoftConstraint):
     name: str
 
 
-class MatchBlocks(SoftConstraint):
+class PlaceCloser(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
+        `instances` are preferred to be placed closer.
     '''
     instances: List[str]
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
 class PowerPorts(SoftConstraint):
@@ -755,6 +868,7 @@ class PowerPorts(SoftConstraint):
     ports: List[str]
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+    _ports = types.validator('ports', allow_reuse=True)(validate_ports)
 
 
 class GroundPorts(SoftConstraint):
@@ -777,6 +891,7 @@ class GroundPorts(SoftConstraint):
     ports: List[str]
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
+    _ports = types.validator('ports', allow_reuse=True)(validate_ports)
 
 
 class ClockPorts(SoftConstraint):
@@ -813,198 +928,100 @@ class DoNotUseLib(SoftConstraint):
         {
             "constraint": "DoNotUseLib",
             "libraries": ["DP_NMOS", "INV"],
-            "propagate": False
+            "propagate": false
         }
     '''
     libraries: List[str]
-    propagate: Optional[bool]
+    propagate: bool = False
 
 
-class IsDigital(SoftConstraint):
+class ConfigureCompiler(SoftConstraint):
     '''
-    Place this hierarchy as a digital hierarchy
-    Forbids any preprocessing, auto-annotation,
-    array-identification or auto-constraint generation
+    Compiler default optimization flags
 
     Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
+        is_digital(bool): true/false , stops any annotation or constraint generation
+        auto_constraint(bool): true/false , stops auto-symmetry-constraint identification
+        identify_array(bool): true/false , stops array identification
+        fix_source_drain(bool): true/false , ensures (drain of NMOS/ source of PMOS) is at higher potential.
+        remove_dummy_hierarchies(bool): true/false , Removes any single instance hierarchies.
+        remove_dummy_devices(bool): true/false , Removes dummy devices in the design.
+        merge_series_devices(bool): true/false , stack series devices
+        merge_parallel_devices(bool): true/false , merge parallel devices
+        propagate(bool): true/false , propagates these constarints to lower hierarchies
 
     Example: ::
 
         {
-            "constraint": "IsDigital",
-            "isTrue": True,
-            "propagate": False
+            "constraint": "ConfigureCompiler",
+            "is_digital": true,
+            "remove_dummy_hierarchies": true,
+            "propagate": true
         }
     '''
-    isTrue: bool
-    propagate: Optional[bool]
+    is_digital: bool = False  # Annotation and auto-constraint generation
+    auto_constraint: bool = True  # Auto-constraint generation
+    identify_array: bool = True  # Forbids/Allow any array identification
+    fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
+    remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
+    remove_dummy_devices: bool = True  # Removes dummy transistors
+    merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
+    merge_parallel_devices: bool = True  # Merge parallel devices
+    same_template: bool = True # generates identical layouts for all existing hierarchies in the input netlist
+    propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
-class AutoConstraint(SoftConstraint):
+class Generator(SoftConstraint):
     '''
-    Forbids/Allow any auto-constraint generation
-
+    Used to guide primitive generator.
     Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
+        name(str): name of genrator e.g., mos/cap/res/ring
+        parameters(dict): {
+                            pattern (str): common centroid (cc)/ Inter digitated (id)/Non common centroid (ncc)
+                            shared_diff (bool): true/false
+                            body (bool): true/ false
+                            height (int): max height/nfin of a unit cell (including 16 dummy fins)
+                            parallel_wires: {"net1":2, "net2":2} #to be implemented
+                            }
 
     Example: ::
 
         {
-            "constraint": "AutoConstraint",
-            "isTrue": True,
-            "propagate": False
+            "constraint": "Generator",
+            "name": "mos",
+            "parameters : {
+                            "pattern": "cc",
+                            "parallel_wires": {"net1":2, "net2":2},
+                            "body": true
+                            }
         }
     '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class IdentifyArray(SoftConstraint):
-    '''
-    Forbids/Alow any array identification
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "IdentifyArray",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class AutoGroupCaps(SoftConstraint):
-    '''
-    Forbids/Allow creation of arrays for symmetric caps
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "AutoGroupCaps",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class FixSourceDrain(SoftConstraint):
-    '''
-    Forbids auto checking of source/drain terminals of transistors.
-    If `True`, Traverses from power to ground and vice-versa to
-    ensure (drain of NMOS/ source of PMOS) is at higher potential.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "FixSourceDrain",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class KeepDummyHierarchies(SoftConstraint):
-    '''
-    Removes any single instance hierarchies.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "KeepDummyHierarchies",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeSeriesDevices(SoftConstraint):
-    '''
-    Allow stacking of series devices
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeSeriesDevices",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
-
-
-class MergeParallelDevices(SoftConstraint):
-    '''
-    Allow merging of parallel devices.
-    Only works on NMOS/PMOS/CAP/RES.
-
-    Args:
-        isTrue (bool): True/False.
-        propagate: Copy this constraint to sub-hierarchies
-
-    Example: ::
-
-        {
-            "constraint": "MergeParallelDevices",
-            "isTrue": True,
-            "propagate": False
-        }
-    '''
-    isTrue: bool
-    propagate: Optional[bool]
+    name: Optional[str]
+    parameters: Optional[dict]
 
 
 class DoNotIdentify(SoftConstraint):
     '''
-    TODO: Can be replicated by Enclose??
-    Auto generated constraint based on all intances which are constrained
+    Stop any auto-grouping of provided instances
+    Automatically adds instances from all constraint
+
+    WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
 
 
-class SymmetricBlocks(SoftConstraint):
+class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
 
-    Defines a symmetry constraint between pair of blocks.
+    Defines a symmetry constraint between single and/or pairs of blocks.
 
     Args:
         pairs (list[list[str]]): List of pair of instances.
             A pair can have one :obj:`instance` or two instances,
             where single instance implies self-symmetry
-        direction (str) : Direction for axis of symmetry.
-        mirrot (bool) : True/ False, Mirror instances along line of symmetry
+        direction (str) : Direction for axis of symmetry. Literal::
+
+            ['V', 'H']
 
     .. image:: ../images/SymmetricBlocks.PNG
         :align: center
@@ -1013,8 +1030,8 @@ class SymmetricBlocks(SoftConstraint):
 
         {
             "constraint" : "SymmetricBlocks",
-            "pairs" : [["MN0","MN1"], ["MN2","MN3"],["MN4"]],
-            "direction" : "vertical"
+            "pairs" : [["MN0","MN1"], ["MN2","MN3"], ["MN4"]],
+            "direction" : "V"
         }
 
     """
@@ -1023,13 +1040,9 @@ class SymmetricBlocks(SoftConstraint):
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
-        '''
-        X = Align(2, 3, 'h_center')
-        Y = Align(4, 5, 'h_center')
-        Align(1, X, Y, 6, 'center')
-
-        '''
-        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if len(value) == 1:
+            assert len(value[0]) == 2, 'Must contain at least a pair of two instances or more than two pairs.'
         for pair in value:
             assert len(pair) >= 1, 'Must contain at least one instance'
             assert len(pair) <= 2, 'Must contain at most two instances'
@@ -1040,7 +1053,7 @@ class SymmetricBlocks(SoftConstraint):
         if len(cls._validator_ctx().parent.parent.elements) == 0:
             # skips the check while reading user constraints
             return value
-        group_block_instances = [const.name for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
         for pair in value:
             # logger.debug(f"pairs {self.pairs} {self.parent.parent.get_element(pair[0])}")
             if len([ele for ele in pair if ele in group_block_instances]) > 0:
@@ -1051,7 +1064,62 @@ class SymmetricBlocks(SoftConstraint):
                 assert cls._validator_ctx().parent.parent.get_element(pair[1]), f"element {pair[1]} not found in design"
                 assert cls._validator_ctx().parent.parent.get_element(pair[0]).parameters == \
                     cls._validator_ctx().parent.parent.get_element(pair[1]).parameters, \
-                    f"Incorrent symmetry pair {pair} in subckt {cls._validator_ctx().parent.parent.name}"
+                    f"Parameters of the symmetry pair {pair} do not match in subckt {cls._validator_ctx().parent.parent.name}"
+        return value
+
+    def translate(cls, solver):
+
+        def construct_expression(b1, b2=None):
+            c = 'x' if cls.direction == 'V' else 'y'
+            expression = getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            if b2:
+                expression += getattr(b2, f'll{c}') + getattr(b2, f'ur{c}')
+            else:
+                expression += getattr(b1, f'll{c}') + getattr(b1, f'ur{c}')
+            return expression
+
+        for i, instances in enumerate(cls.pairs):
+            if len(instances) == 2:
+                b0 = solver.bbox_vars(instances[0])
+                b1 = solver.bbox_vars(instances[1])
+
+                # the difference between the center lines should be <= 1/4th of the block heights
+                # abs(cl_1 - cl_2) <= height_1/4  && abs(cl_1 - cl_2) <= height_2/4
+                # abs(4.cl_1 - 4.cl_2) <= height_1, height_2
+                c = 'y' if cls.direction == 'V' else 'x'
+                b0_quad_cl = 2*(getattr(b0, f'll{c}') + getattr(b0, f'ur{c}'))
+                b1_quad_cl = 2*(getattr(b1, f'll{c}') + getattr(b1, f'ur{c}'))
+                expression = solver.And(
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b0, f'ur{c}') - getattr(b0, f'll{c}'),
+                    solver.Abs(b0_quad_cl - b1_quad_cl) <= getattr(b1, f'ur{c}') - getattr(b1, f'll{c}'),
+                )
+                yield expression
+
+            # center lines of pairs should match along the direction
+            if i == 0:
+                reference = construct_expression(*solver.iter_bbox_vars(instances))
+            else:
+                centerline = construct_expression(*solver.iter_bbox_vars(instances))
+                expression = (reference == centerline)
+                yield expression
+
+
+class OffsetsScalings(BaseModel):
+    offsets: List[int] = Field(default_factory=lambda: [0])
+    scalings: List[Literal[-1, 1]] = Field(default_factory=lambda: [1])
+
+
+class PlaceOnGrid(SoftConstraint):
+    direction: Literal['H', 'V']
+    pitch: int
+    ored_terms: List[OffsetsScalings] = Field(default_factory=lambda: [OffsetsScalings()])
+
+    @types.validator('ored_terms', allow_reuse=False)
+    def ored_terms_validator(cls, value, values):
+        pitch = values['pitch']
+        for term in value:
+            for offset in getattr(term, 'offsets'):
+                assert 0 <= offset < pitch, f'offset {offset} should be less than pitch {pitch}'
         return value
 
 
@@ -1173,7 +1241,7 @@ class GroupCaps(SoftConstraint):
             "name" : "cap_group1",
             "instances" : ["C0", "C1", "C2"],
             "num_units" : [2, 4, 8],
-            "dummy" : True
+            "dummy" : true
         }
     '''
     name: str  # subcircuit name
@@ -1181,6 +1249,18 @@ class GroupCaps(SoftConstraint):
     unit_cap: str  # cap value in fF
     num_units: List
     dummy: bool  # whether to fill in dummies
+
+
+class NetPriority(SoftConstraint):
+    """
+    Specify a non-negative priority for a list of nets for placement (default = 1).
+    Example: {"constraint": "NetPriority", "nets": ["en", "enb"], "priority": 0}
+    """
+    nets: List[str]
+    weight: int
+
+    _weight = types.validator('weight', allow_reuse=True)(assert_non_negative)
+    _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
 
 
 class NetConst(SoftConstraint):
@@ -1268,6 +1348,76 @@ class SymmetricNets(SoftConstraint):
     pins2: Optional[List]
     direction: Literal['H', 'V']
 
+    #TODO check net names
+    _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
+    _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+    @types.validator('pins1', allow_reuse=True)
+    def pins1_validator(cls, pins1):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins1:
+            pins1 = [pin.upper() for pin in pins1]
+            for pin in pins1:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+        return pins1
+
+    @types.validator('pins2', allow_reuse=True)
+    def pins2_validator(cls, pins2, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        if pins2:
+            pins2 = [pin.upper() for pin in pins2]
+            for pin in pins2:
+                if '/' in pin:
+                    assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
+                else:
+                    validate_ports(cls, [pin])
+            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+        return pins2
+
+
+class ChargeFlow(SoftConstraint):
+    '''ChargeFlow
+    Defines the current flowing through each pin.
+    The chargeflow constraints help in improving the placement.
+
+    Args:
+        dist_type (str) : 'Euclidean' or 'Manhattan' distance between pins,
+        time (list) : List of time intervals
+        pin_current (dict) : current for each pin at different time intervals
+    Example ::
+
+        {
+            "constraint" : "ChargeFlow",
+            "dist_type" : [0,1.2,2.4],
+            "time" : [0,1.2,2.4],
+            "pin_current" : {"block1/A": [0,3.2,4.5], "block2/A":[2.3, 1.2,3.2]}
+        }
+     '''
+
+    dist_type: Optional[Literal['Euclidean', 'Manhattan']] = 'Manhattan'
+    time: List[float]
+    pin_current: dict
+
+    @types.validator('dist_type', allow_reuse=True)
+    def dist_type_validator(cls, value):
+        assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
+        return value
+    @types.validator('time', allow_reuse=True)
+    def time_list_validator(cls, value):
+        assert len(value) >= 1, 'Must contain at least one time stamp'
+        return value
+
+    # TODO add pin validators
+    @types.validator('pin_current', allow_reuse=True)
+    def pairs_validator(cls, pin_current, values):
+        instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        for pin, current in pin_current.items():
+            assert pin.split('/')[0].upper() in instances, f"element {pin} not found in design"
+            assert len(current) == len(values['time']), 'Must contain at least one instance'
+        return pin_current
+
 
 class MultiConnection(SoftConstraint):
     '''MultiConnection
@@ -1297,9 +1447,23 @@ class DoNotRoute(SoftConstraint):
     _upper_case = types.validator('nets', allow_reuse=True)(upper_case)
 
 
+class CustomizeRoute(BaseModel):
+    nets: List[str]
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    shield: bool = False
+    match: bool = False
+
+
+class Route(SoftConstraint):
+    min_layer: Optional[str]
+    max_layer: Optional[str]
+    customize: List[CustomizeRoute] = []
+
+
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align,
+    Order, Align, Floorplan,
     Enclose, Spread,
     AssignBboxVariables,
     AspectRatio,
@@ -1309,11 +1473,13 @@ ConstraintType = Union[
     # Legacy Align constraints
     # (SoftConstraints)
     CompactPlacement,
+    Generator,
     SameTemplate,
     CreateAlias,
     GroupBlocks,
-    MatchBlocks,
+    PlaceCloser,
     DoNotIdentify,
+    PlaceOnGrid,
     BlockDistance,
     HorizontalDistance,
     VerticalDistance,
@@ -1330,14 +1496,10 @@ ConstraintType = Union[
     GroundPorts,
     ClockPorts,
     DoNotUseLib,
-    IsDigital,
-    AutoConstraint,
-    AutoGroupCaps,
-    FixSourceDrain,
-    KeepDummyHierarchies,
-    MergeSeriesDevices,
-    MergeParallelDevices,
-    IdentifyArray
+    ConfigureCompiler,
+    NetPriority,
+    Route,
+    ChargeFlow
 ]
 
 
@@ -1345,11 +1507,15 @@ class ConstraintDB(types.List[ConstraintType]):
 
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
-        if hasattr(constraint, 'translate'):
-            if self.parent._checker is None:
-                self.parent.verify()
-            self.parent.verify(formulae=self._translate_and_annotate(constraint, self.parent._checker))
-        super().append(constraint)
+        if (constraint_str := repr(constraint)) not in self._cache:
+            if hasattr(constraint, 'translate'):
+                if self.parent._checker is None:
+                    self.parent.verify()
+                self.parent.verify(constraint=constraint)
+            super().append(constraint)
+            self._cache.add(constraint_str)
+        else:
+            logger.debug(f"Constraint is duplicated: {constraint_str}")
 
     @types.validate_arguments
     def remove(self, constraint: ConstraintType):
@@ -1376,6 +1542,9 @@ class ConstraintDB(types.List[ConstraintType]):
                 super().append(x)
 
     def checkpoint(self):
+        if self.parent._checker is None:
+            self.parent.verify()
+
         self.parent._checker.checkpoint()
         return super().checkpoint()
 

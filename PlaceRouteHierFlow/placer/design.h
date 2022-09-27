@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+#include <chrono>
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -13,7 +15,6 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
-#include <chrono>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -29,11 +30,9 @@ using std::string;
 using std::vector;
 
 class design {
-  private:
-  friend class ConstGraph;
+  public:
   friend class SeqPair;
   friend class SeqPairEnumerator;
-  friend class Aplace;
   friend class Placer;
   friend class ILP_solver;
   friend class ExtremeBlocksOfNet;
@@ -69,6 +68,12 @@ class design {
     bool bigMacro = true;
     int mapIdx = -1;
     vector<pin> blockPins;
+    vector<int> xoffset;
+    int xpitch = 1;
+    int xflip = 0;
+    vector<int> yoffset;
+    int ypitch = 1;
+    int yflip = 0;
   };
 
   struct terminal {
@@ -174,9 +179,11 @@ class design {
   vector<MatchBlock> Match_blocks;
   int bias_Hgraph;
   int bias_Vgraph;
+  int grid_unit_x = 1, grid_unit_y = 1;
   bool mixFlag;
-  void readRandConstFile(string random_const_file);
   // above is added by yg
+  std::map<std::pair<int, int>, int> hSpread, vSpread;
+
 
   // void readBlockFile(string blockfile);
   // void readNetFile(string netfile);
@@ -187,11 +194,9 @@ class design {
   vector<pair<int, int>> checkSelfsymInSymmBlock(vector<placerDB::SymmBlock>& SBs, vector<pair<int, placerDB::Smark>>& Tselfsym);
   // pair<int,int> checkSympairInSymmBlock(vector< pair<int,int> >& Tsympair);
   // pair<int,int> checkSelfsymInSymmBlock(vector< pair<int,placerDB::Smark> >& Tselfsym);
-  placerDB::point GetMultPolyCenterPoint(vector<placerDB::point>& pL);
   int MergeNewBlockstoSymmetryGroup(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, vector<placerDB::SymmBlock>& SBs,
                                     vector<SymmNet>& SNs, placerDB::Smark axis_dir);
   int GetSizeAsymBlock4Move(int mode);
-  int GetSizeSymGroup4PartMove(int mode);
   int GetSizeSymGroup4FullMove(int mode);
   int GetSizeBlock4Move(int mode);
   std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
@@ -203,11 +208,13 @@ class design {
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  map<string, map<std::tuple<int, int, int, int>, double> > CFValues;
+  int CFdist_type;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
-  design(PnRDB::hierNode& node, const int seed = 0);
+  design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed = 0);
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
@@ -219,16 +226,10 @@ class design {
   design(string blockfile, string netfile, string cfile, string random_const_file, int write_out_flag);
 
   design(const design& other);
-  design(design& other, int mode);
   design& operator=(const design& other);
-
-  // generate_random_const file by yg
-  void Generate_random_const(string random_constrain_file);
-  //
 
   int GetSizeofBlocks();
   int GetSizeofTerminals();
-  int GetSizeofNets();
   int GetSizeofSBlocks();
   int GetBlockSymmGroup(int blockid) const;
   int GetBlockCounterpart(int blockid);
@@ -245,9 +246,8 @@ class design {
   string GetBlockPinName(int blockid, int pinid, int sel);
   string GetTerminalName(int termid);
   int GetBlockPinNum(int blockid, int sel);
-  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);               // Get width of block when it's placed
-  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);              // Get height of block when it's placed
-  placerDB::point GetBlockCenter(int blockid, placerDB::Omark ort, int sel);  // Get relative location of block center when it's placed at origin
+  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);   // Get width of block when it's placed
+  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);  // Get height of block when it's placed
   placerDB::point GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL,
                                     int sel);  // Get absolute location of block center when it's placed at LL
   vector<placerDB::point> GetPlacedBlockPinRelPosition(int blockid, int pinid, placerDB::Omark ort,
@@ -294,6 +294,19 @@ class design {
   void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
   bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
   size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+
+  const int getSpread(const int i, const int j, const bool horizon) const
+  {
+    int spread{0};
+    const auto& hvSpread = horizon ? hSpread : vSpread;
+    if (!hvSpread.empty()) {
+      auto it = hvSpread.find(std::make_pair(i, j));
+      if (it != hvSpread.end()) {
+        spread = it->second;
+      }
+    }
+    return spread;
+  }
   // std::ofstream _debugofs;
 };
 

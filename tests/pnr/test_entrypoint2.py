@@ -101,14 +101,8 @@ def gen_matrix_module(nm, row_nm, n=3):
 
 
 def gen_primitives(run_dir):
+    primitives_library = []
     primitives_d = {}
-
-    sizes = [('_AN', (10, 10, 1)),
-             ('_BN', (5, 20, 1)),
-             ('_CN', (20, 5, 1)),
-             ('_AF', (10, 10, -1)),
-             ('_BF', (5, 20, -1)),
-             ('_CF', (20, 5, -1))]
 
     sizes = [('_A', (10, 10, 1)),
              ('_B', (5, 20, 1)),
@@ -117,11 +111,16 @@ def gen_primitives(run_dir):
     for suffix, _ in sizes:
         atn = 'SLICE'
         ctn = f'{atn}{suffix}'
+        primitives_library.append({
+                            'name': ctn,
+                             'pins': ['INP', 'OUT'],
+                             'generator': {'name':atn},
+                             })
         primitives_d[ctn] = {'abstract_template_name': atn,
                              'concrete_template_name': ctn}
 
-    with (run_dir / '1_topology' / '__primitives__.json').open('wt') as fp:
-        json.dump(primitives_d, fp=fp, indent=2)
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('wt') as fp:
+        json.dump(primitives_library, fp=fp, indent=2)
 
     with (run_dir / '2_primitives' / '__primitives__.json').open('wt') as fp:
         json.dump(primitives_d, fp=fp, indent=2)
@@ -172,7 +171,10 @@ def gen_primitives(run_dir):
             gen_gds_json.translate(ctn, '', 0, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), p)
 
         gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
-                         cell_pin=['INP', 'OUT'], bodyswitch=1, blockM=0, p=p)
+                         bodyswitch=1, blockM=0, p=p, mode='placement')
+
+        gen_lef.json_lef(run_dir / '2_primitives' / f'{ctn}.json', ctn,
+                         bodyswitch=1, blockM=0, p=p)
 
 
 def test_row():
@@ -213,7 +215,7 @@ def test_matrix():
     nm = 'matrix'
 
     run_dir = ALIGN_WORK_DIR / f'{nm}_entrypoint2'
-
+    print(run_dir)
     if run_dir.exists():
         assert run_dir.is_dir()
         shutil.rmtree(run_dir)

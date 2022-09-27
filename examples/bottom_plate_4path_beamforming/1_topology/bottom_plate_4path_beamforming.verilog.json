@@ -122,7 +122,7 @@
 	      "direction": "top_to_bottom"
 	  },
 	  {
-	      "constraint": "align",
+	      "constraint": "Align",
 	      "instances": [ "XC1", "XC4"],
 	      "line": "h_bottom"
 	  },
@@ -132,7 +132,7 @@
 	      "direction": "left_to_right"
 	  },
 	  {
-	      "constraint": "align",
+	      "constraint": "Align",
 	      "instances": [ "XC0", "XC5"],
 	      "line": "h_bottom"
 	  },
@@ -142,7 +142,7 @@
 	      "direction": "left_to_right"
 	  },
 	  {
-	      "constraint": "align",
+	      "constraint": "Align",
 	      "instances": [ "XC2", "XC6"],
 	      "line": "h_bottom"
 	  },
@@ -152,7 +152,7 @@
 	      "direction": "left_to_right"
 	  },
 	  {
-	      "constraint": "align",
+	      "constraint": "Align",
 	      "instances": [ "XC8", "XI0", "XC9"],
 	      "line": "h_bottom"
 	  },
@@ -825,9 +825,9 @@
           ],
           "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16"
         }
-      ]  
-   } 
-    
+      ]
+   }
+
   ],
   "global_signals": []
 }

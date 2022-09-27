@@ -9,29 +9,30 @@ from align.schema import Model, SubCircuit, Instance
 from ..schema.types import set_context
 import logging
 from ..schema import constraint
-from ..schema.types import set_context
 from align.schema.graph import Graph
-
+from align.schema import ConstraintTranslator
+from .util import gen_group_key
+from flatdict import FlatDict
+import hashlib
 logger = logging.getLogger(__name__)
+
 
 class Annotate:
     """
     Creates hierarchies in the graph based on a library or user defined groupblock constraint
-    Boundries (clk,digital, etc) are defined from setup file
+    Boundries (clk,digital, etc) are defined from constraints
     """
 
-    def __init__(self, ckt_data, primitive_library, existing_generator):
+    def __init__(self, ckt_data, primitive_library):
         """
         Args:
-            ckt_data (dict): all subckt graph, names and port
-            design_setup (dict): information from setup file
-            library (list): list of library elements in dict format
-            existing_generator (list): list of names of existing generators
+            ckt_data (dict): all subckt information
+            library (list): template library to match
         """
         self.ckt_data = ckt_data
         self.lib = primitive_library
-        self.all_lef = existing_generator
         self.lib_names = [lib_ele.name for lib_ele in primitive_library]
+        self.matched_dict = {} # To avoid iterative calls (search subckt in subckt)
 
     def _is_skip(self, ckt):
         di_const = [
@@ -47,19 +48,20 @@ class Annotate:
     def _is_digital(self, ckt):
         IsDigital = False
         for const in ckt.constraints:
-            if isinstance(const, constraint.IsDigital):
-                IsDigital = const.isTrue
+            if isinstance(const, constraint.ConfigureCompiler):
+                IsDigital = const.is_digital
         return IsDigital
+
     def annotate(self):
         """
-        main function to creates hierarchies in the block
-        iterativily goes through all subckts in the netlist
-        Reduce graph to a list of nodes
+        Main function to creates hierarchies in the block.
+        Iteratively goes through all subckts in the netlist.
+        Reduce graph to a list of nodes.
         Returns:
             list: all updated circuit list
         """
         logger.debug(
-            f"ALl  subckt:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
+            f"All  subckts: {[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
         )
 
         # names = list(self.ckt_data)
@@ -73,187 +75,207 @@ class Annotate:
             f"All subckt after grouping:{[ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]}"
         )
 
-        traversed = []  # libray gets appended, so only traverse subckt once
-        temp_match_dict = {}  # To avoid iterative calls (search subckt in subckt)
         for ckt in self.ckt_data:
-            if (
-                isinstance(ckt, SubCircuit) and \
-                not self._is_digital(ckt) and \
-                ckt.name not in self.all_lef and \
-                ckt.name not in traversed
-            ):
-                netlist_graph = Graph(ckt)
-                skip_nodes = self._is_skip(ckt)
-
-                logger.debug(
-                    f"START MATCHING in circuit: {ckt.name} count: {len(ckt.elements)} \
-                    ele: {[e.name for e in ckt.elements]} traversed: {traversed} skip: {skip_nodes}"
-                )
-                do_not_use_lib = set()
-                for const in ckt.constraints:
-                    if isinstance(const, constraint.DoNotUseLib):
-                        do_not_use_lib.update(const.libraries)
-                traversed.append(ckt.name)
-                for subckt in self.lib:
-                    if subckt.name == ckt.name or \
-                        subckt.name in do_not_use_lib or \
-                        (subckt.name in temp_match_dict and
-                        ckt.name in temp_match_dict[subckt.name]
-                    ):
-                        continue
-                    new_subckts = netlist_graph.replace_matching_subgraph(
-                        Graph(subckt), skip_nodes
-                    )
-                    if subckt.name in temp_match_dict:
-                        temp_match_dict[subckt.name].extend(new_subckts)
-                    else:
-                        temp_match_dict[subckt.name] = new_subckts
+            if not isinstance(ckt, SubCircuit):
+                logger.debug(f"skip annotation for model {ckt.name}")
+                continue
+            elif self._is_digital(ckt):
+                logger.debug(f"skip annotation for digital circuit {ckt.name}")
+                continue
+            elif [True for const in ckt.constraints if isinstance(const, constraint.Generator)]:
+                logger.debug(f"skip annotation for circuit {ckt.name} with available generators {ckt.constraints}")
+                continue
+            else:
+                self.create_hierarchy(ckt)
                 logger.debug(f"Circuit after annotation: {ckt.name} {[e.name for e in ckt.elements]}")
         all_subckt = [ckt.name for ckt in self.ckt_data if isinstance(ckt, SubCircuit)]
         logger.debug(f"Subcircuits after creating primitive hiearchy {all_subckt}")
         return self.lib_names
 
-    def _check_const_length(self, const_list, const):
-        is_append = False
-        try:
-            with set_context(const_list):
-                if hasattr(const, "instances") and len(const.instances) > 0:
-                    is_append = True
-                # TODO: remove dict type
-                elif (
-                    isinstance(const, dict)
-                    and "instances" in const
-                    and len(const["instances"]) == 0
-                ):
-                    pass
-                    # skipping const of zero length
-                elif not hasattr(const, "instances"):
-                    is_append = True
+    def create_hierarchy(self,ckt, skip_nodes=None):
+        netlist_graph = Graph(ckt)
+        skip_constrained = (self._is_skip(ckt) + skip_nodes) if skip_nodes else self._is_skip(ckt)
+        logger.debug(f"all subckt defnition {[x.name for x in self.ckt_data if isinstance(x, SubCircuit)]}")
+        logger.debug(
+            f"Start matching in circuit: {ckt.name} count: {len(ckt.elements)} \
+            ele: {[e.name for e in ckt.elements]} skip: {skip_nodes}"
+            )
+        do_not_use_lib = set()
+        for const in ckt.constraints:
+            if isinstance(const, constraint.DoNotUseLib):
+                do_not_use_lib.update(const.libraries)
+        all_matched_subckts = []
+        for subckt in self.lib:
+            logger.debug(f"matching circuit {subckt.name}")
+            if subckt.name == ckt.name or \
+                subckt.name in do_not_use_lib or \
+                (subckt.name in self.matched_dict and ckt.name in self.matched_dict[subckt.name]):  # to stop searching INVB in INVB_1
+                continue
+            if len(subckt.elements) > 1:
+                new_subckts = netlist_graph.replace_matching_subgraph(
+                    Graph(subckt), skip_constrained
+                )
+            else:
+                new_subckts = netlist_graph.replace_matching_subgraph(
+                    Graph(subckt), skip_nodes
+                )
+            if subckt.name in self.matched_dict:
+                self.matched_dict[subckt.name].extend(new_subckts)
+            else:
+                self.matched_dict[subckt.name] = new_subckts
+            all_matched_subckts.extend(new_subckts)
+        return all_matched_subckts
+
+    def create_canonical_primitive(self, parent_subckt, const):
+        parent_graph = Graph(parent_subckt)
+        insts = [e for e in parent_subckt.elements if e.name in const.instances]
+        def pin_id(pins):
+            id = []
+            repeat = {}
+            for pin in sorted(pins.keys()):
+                if pins[pin] not in repeat:
+                    id.append(pin)
+                    repeat[pins[pin]] = pin
                 else:
-                    logger.debug(f"invalid constraint {const}")
-                if is_append == True and const not in const_list:
-                    logger.debug(f"constraint appended: {const}")
-                    const_list.append(const)
-        except:
-            logger.debug(f"skipping invalid constraint {const}")
+                    id.append(repeat[pins[pin]])
+            return "".join(id)
+        #create unique order of instances, making it independent of unstance name
+        insts = sorted(insts, key=lambda inst: pin_id(inst.pins)+'_'.join([k+':'+str(inst.parameters[k]) for k in sorted(inst.parameters.keys())]))
+        inst_names = {"M"+str(i):inst for i,inst in enumerate(insts)}
+        # Filter internal nets but skip internal net connected to port
 
-    def _remove_group_const(self, subckt, rm_const):
-        with set_context(subckt.constraints):
-            start_count = len(subckt.constraints)
-            for const in rm_const:
-                subckt.constraints.remove(const)
-            assert len(subckt.constraints) == start_count - len(rm_const)
+        new_nets = []
+        for inst in insts:
+            for pin in sorted(inst.pins.keys()):
+                net = inst.pins[pin]
+                if net not in new_nets:
+                    new_nets.append(net)
 
-    def _group_block_const(self, name):
-        subckt = self.ckt_data.find(name)
-        const_list = subckt.constraints
-        pwr = list()
-        gnd = list()
-        clk = list()
-        for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts):
-                pwr.extend(const.ports)
-            elif isinstance(const, constraint.GroundPorts):
-                gnd.extend(const.ports)
-            elif isinstance(const, constraint.ClockPorts):
-                clk.extend(const.ports)
+        all_pins = {pin: "P"+str(i) for i, pin in enumerate(new_nets)}
+        subckt_pins = [net for net in new_nets if (not set(parent_graph.neighbors(net)).issubset(
+            set(inst.name for inst in inst_names.values()))) or net in parent_subckt.pins]
+        new_insts = []
+        for new_inst_name, old_inst in inst_names.items():
+            new_insts.append({"name": new_inst_name,
+                              "model":old_inst.model,
+                              "pins":{formal: all_pins[actual] for formal,actual in old_inst.pins.items()},
+                              "parameters": old_inst.parameters
+                              })
+        all_properties = new_insts + [const.generator]
+        param = FlatDict({"_":all_properties})
+        arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
+        if self.ckt_data.find(new_subckt_name):
+            new_subckt = self.ckt_data.find(new_subckt_name)
+            logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
+        else:
+            # Create a subckt and add to library
+            with set_context(self.ckt_data):
+                new_subckt = SubCircuit(name=new_subckt_name, pins=[all_pins[pin] for pin in subckt_pins])
+                if getattr(const, 'generator', None):
+                    new_subckt.generator["name"] = const.generator["name"]
+                    gen_const = constraint.Generator(**const.generator)
+                    with set_context(parent_subckt.constraints):
+                        new_subckt.constraints.append(gen_const)
+                self.ckt_data.append(new_subckt)
+            # Add all instances of groupblock to new subckt
+            with set_context(new_subckt.elements):
+                for e in new_insts:
+                    new_subckt.elements.append(Instance(**e))
+            logger.debug(f"added new hiearchy {new_subckt} based on group_block_constraint")
+        # Remove elements from subckt then Add new_subckt instance
+        with set_context(parent_subckt.elements):
+            for e in insts:
+                parent_subckt.elements.remove(e)
+            X1 = Instance(
+                name=const.instance_name,
+                model=new_subckt_name,
+                pins={all_pins[x]: x for x in subckt_pins},
+            )
+            parent_subckt.elements.append(X1)
+        tr = ConstraintTranslator(self.ckt_data, parent_subckt.name, new_subckt)
+        # Translate any constraints defined on the groupblock elements to subckt
+        tr._top_to_bottom_translation(
+            {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()}
+        )
+        # Modify instance names in constraints after modifying groupblock
+        tr._update_const(const.instance_name, {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()})
+        # Add const after removing const with single instances.
+        for c in list(parent_subckt.constraints):
+            tr._add_const(parent_subckt.constraints, c)
+
+    def _group_block_const(self, parent_subckt_name):
+        parent_subckt = self.ckt_data.find(parent_subckt_name)
+        const_list = parent_subckt.constraints
         if not const_list:
             return
         gb_const = [
             const
-            for const in subckt.constraints
+            for const in parent_subckt.constraints
             if isinstance(const, constraint.GroupBlocks)
         ]
-        self._remove_group_const(subckt, gb_const)
+
+        def rename_inst(old_name, new_name):
+            with set_context(parent_subckt.elements):
+                inst = parent_subckt.get_element(old_name)
+                assert inst, f" No instance found to rename {old_name} {[x.name for x in parent_subckt.elements]}"
+                inst_new = Instance(**{k: (v if k!='name' else new_name) for k, v in inst.dict().items()})
+                parent_subckt.elements.remove(inst)
+                parent_subckt.elements.append(inst_new)
+            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name, None)
+            # Modify instance names in constraints after modifying groupblock
+            tr._update_const(new_name, {old_name: new_name})
 
         for const in gb_const:
-            assert (
-                self.ckt_data.find(const.name.upper()) == None
-            ), f"Already existing subckt with this name, please provide different name to const"
-            const_inst = [i.upper() for i in const.instances]
-            ckt_ele = set([ele.name for ele in subckt.elements])
-            assert set(const_inst).issubset(
+            const_insts = [i.upper() for i in const.instances]
+            ckt_ele = set([ele.name for ele in parent_subckt.elements])
+            assert set(const_insts).issubset(
                 ckt_ele
-            ), f"Constraint instances: {const_inst} not in subcircuit {subckt.name}"
-            # ac_nets : all nets connected to group block instances
-            ac_nets = [
-                ele.pins.values() for ele in subckt.elements if ele.name in const_inst
-            ]
-            ac_nets = set([x for y in ac_nets for x in y])
-            # Filter internal nets but skip internal net connected to port
-            ac_nets = [
-                net
-                for net in ac_nets
-                if any(
-                    net in ele.pins.values()
-                    for ele in subckt.elements
-                    if not ele.name in const_inst
-                )
-            ] + list(ac_nets & set(subckt.pins))
-            ac_nets = list(set(ac_nets))
-            pwr = list(set(pwr) & set(ac_nets))
-            gnd = list(set(gnd) & set(ac_nets))
-            clk = list(set(clk) & set(ac_nets))
+            ), f"Constraint instances: {const_insts} not in subcircuit {parent_subckt.name} with elements {ckt_ele}"
+            if const.template_name and const.template_name.upper() in self.lib_names:
+                child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
+                skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_insts]
+                group_block_name = Graph(parent_subckt).replace_matching_subgraph(
+                        child_subckt_graph, skip_insts)[0]
+                assert group_block_name, f"a primitive name same as {group_block_name} does not match group features"
+                if const.template_name.upper() in self.matched_dict.keys():
+                    self.matched_dict[const.template_name.upper()].append(group_block_name)
+                else:
+                     self.matched_dict[const.template_name.upper()]=[group_block_name]
+                auto_generated_name = [inst.name for inst in parent_subckt.elements if inst.model == group_block_name and all( i in inst.name for i in const_insts)][0]
+                rename_inst(auto_generated_name, const.instance_name.upper())
+                continue
+            else:
+                self.create_canonical_primitive(parent_subckt, const)
+        logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
 
-            logger.debug(
-                f"Grouping instances {const_inst} in subckt {const.name.upper()} pins: {ac_nets}"
-            )
-            # Create a subckt and add to library
-            with set_context(self.ckt_data):
-                new_subckt = SubCircuit(name=const.name.upper(), pins=ac_nets)
-                self.ckt_data.append(new_subckt)
-            # Add all instances of groupblock to new subckt
-            with set_context(new_subckt.elements):
-                for e in const_inst:
-                    new_subckt.elements.append(subckt.get_element(e))
-            # Remove elements from subckt then Add new_subckt instance
-            inst_name = "X_" + const.name.upper() + "_" + "_".join(const_inst)
-            with set_context(subckt.elements):
-                for e in const_inst:
-                    subckt.elements.remove(subckt.get_element(e))
-                X1 = Instance(
-                    name=inst_name,
-                    model=const.name.upper(),
-                    pins={x: x for x in ac_nets},
-                    generator=const.name.upper(),
-                )
-                subckt.elements.append(X1)
-            # Translate any constraints defined on the groupblock elements to subckt
-            self._top_to_bottom_translation(
-                name, {inst: inst for inst in const_inst}, const.name
-            )
-            # Modify instance names in constraints after modifying groupblock
-            self._update_const(name, [const.name.upper(), *const_inst], inst_name)
-        # Removing const with single instances.
-        for c in list(const_list):
-            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
-    def _group_cap_const(self, name):
+
+    def _group_cap_const(self, parent_subckt_name):
         # TODO: merge group cap and group block
-        subckt = self.ckt_data.find(name)
-        const_list = subckt.constraints
+        parent_subckt = self.ckt_data.find(parent_subckt_name)
         gc_const = [
             const
-            for const in subckt.constraints
+            for const in parent_subckt.constraints
             if isinstance(const, constraint.GroupCaps) and len(const.instances) > 1
         ]
         if len(gc_const) > 0:
-            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {name}")
+            logger.info(f"Existing GroupCaps constraint {gc_const} for subckt {parent_subckt_name}")
         else:
             return
-
         for const in gc_const:
             for i in range(len(const.instances)):
                 const.instances[i] = const.instances[i].upper()
             const_inst = [i for i in const.instances]
 
             assert set(const_inst).issubset(
-                set([e.name for e in subckt.elements])
-            ), f"const instances{const_inst} are not in subckt {name}"
+                set([e.name for e in parent_subckt.elements])
+            ), f"const instances{const_inst} are not in subckt {parent_subckt_name}"
             # all nets connected to common centroid cap constraints
             new_pins = {}
             for i, e in enumerate(const_inst):
-                sc_pins = subckt.get_element(e).pins  # single cap pins
+                sc_pins = parent_subckt.get_element(e).pins  # single cap pins
                 new_pins.update({k + str(i): v for k, v in sc_pins.items()})
             cc_name = "CAP_CC_" + "_".join([str(x) for x in const.num_units])
             if not self.ckt_data.find(const.name.upper()):
@@ -261,120 +283,24 @@ class Annotate:
                 # Ideally create a subckt initially but did not work at PnR needs Cap names startwith C
                 with set_context(self.ckt_data):
                     new_subckt = Model(
-                        name=const.name.upper(), pins=list(new_pins.keys())
+                        name=cc_name, pins=list(new_pins.keys())
                     )
+                if not self.ckt_data.find(cc_name):
                     self.ckt_data.append(new_subckt)
 
-            with set_context(subckt.elements):
+            with set_context(parent_subckt.elements):
                 for e in const_inst:
-                    subckt.elements.remove(subckt.get_element(e))
+                    parent_subckt.elements.remove(parent_subckt.get_element(e))
                 logger.debug(f"pins {new_pins} {new_subckt.pins}")
                 X1 = Instance(
                     name=const.name.upper(),
-                    model=const.name.upper(),
-                    pins=new_pins,
-                    generator=cc_name,
+                    model=cc_name,
+                    pins=new_pins
                 )
-                subckt.elements.append(X1)
+                parent_subckt.elements.append(X1)
             # Modify instance names in constraints after modifying groupblock
-            self._update_const(
-                name, [const.name.upper(), *const_inst], const.name.upper()
+            tr = ConstraintTranslator(self.ckt_data, parent_subckt_name)
+            tr._update_const(
+                const.name.upper(), {inst: inst for inst in [const.name.upper(), *const_inst]}
             )
-            # Removing const with single instances.
-        for c in list(const_list):
-            self._check_const_length(self.ckt_data.find(name).constraints, c)
 
-    def _top_to_bottom_translation(self, top, match_dict, bottom):
-        """
-        Update instance names in the constraint in case they are reduced
-
-        Args:
-            top (str): name of subckt
-            match_dict (dict): node mapping
-        """
-
-        logger.debug(
-            f"transfering constraints from top subckt: {top} to bottom subckt: {bottom} "
-        )
-        assert self.ckt_data.find(bottom), f"Hierarchy not found, {bottom}"
-        const_list = self.ckt_data.find(top).constraints
-        sub_const = self.ckt_data.find(bottom).constraints
-        if not sub_const:
-            with set_context(sub_const):
-                for const in list(const_list):
-                    if any(
-                        isinstance(const, x)
-                        for x in [
-                            constraint.HorizontalDistance,
-                            constraint.VerticalDistance,
-                            constraint.BlockDistance,
-                            constraint.CompactPlacement,
-                        ]
-                    ):
-                        sub_const.append(const)
-                    elif hasattr(const, "instances"):
-                        # checking if sub hierarchy instances are in const defined
-                        sconst = {
-                            x: [
-                                match_dict[block]
-                                for block in const.instances
-                                if block in match_dict.keys()
-                            ]
-                            if x == "instances"
-                            else getattr(const, x)
-                            for x in const.__fields_set__
-                        }
-                        assert "constraint" in sconst
-                        # logger.debug(f"transferred constraint instances {match_dict} from {const} to {sconst}")
-                        self._check_const_length(
-                            self.ckt_data.find(bottom).constraints, sconst
-                        )
-                logger.debug(f"Transferred constraints to {bottom} {sub_const}")
-
-    def _update_const(self, name, remove_nodes, new_inst):
-        """
-        Update instance names in the constraint in case they are reduced by groupblock
-
-        Args:
-            name (str): name of subckt
-            G1 (graph): subckt graph
-            remove_nodes (list): nodes which are being removed
-        """
-
-        def _list_replace(lst, old_value, new_value):
-            for i, value in enumerate(lst):
-                if value == old_value:
-                    lst[i] = new_value
-
-        logger.debug(
-            f"update constraints at top hiearchy {name} :{remove_nodes} with {new_inst}"
-        )
-        const_list = self.ckt_data.find(name).constraints
-        for const in const_list:
-            if hasattr(const, "instances"):
-                # checking instances in the constraint and update names
-                if set(const.instances) & set(remove_nodes):
-                    replace = True
-                    for old_inst in remove_nodes:
-                        if replace:
-                            _list_replace(const.instances, old_inst, new_inst)
-                            replace = False
-                        elif old_inst in const.instances:
-                            const.instances.remove(old_inst)
-                    # logger.debug(f"updated instances in the constraint:{const}")
-            elif hasattr(const, "pairs"):
-                for pair in const.pairs:
-                    if len(pair) == 2:
-                        if pair[0] in remove_nodes and pair[1] in remove_nodes:
-                            pair[0] = new_inst
-                            pair.pop()
-                            # logger.debug(f"updated symmetric pair constraint to self symmetry:{const}")
-                        elif pair[0] in remove_nodes and pair[1] not in remove_nodes:
-                            pair[0] = new_inst
-                        elif pair[1] in remove_nodes and pair[0] not in remove_nodes:
-                            pair[1] = new_inst
-                    elif len(pair) == 1:
-                        if pair[0] in remove_nodes:
-                            pair[0] = new_inst
-                            # logger.debug(f"updated self symmetric constraint block:{const}")
-        logger.debug(f"updated constraints of {name} {const_list}")

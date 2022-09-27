@@ -4,12 +4,20 @@ import pathlib
 from copy import deepcopy
 import shutil
 import align.pdk.finfet
+import re
 
-align_home = os.getenv('ALIGN_HOME')
+ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 
-my_dir = pathlib.Path(__file__).resolve().parent
+PDK_DIR = pathlib.Path(align.pdk.finfet.__file__).parent
 
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+MY_DIR = pathlib.Path(__file__).resolve().parent
+
+if 'ALIGN_WORK_DIR' in os.environ:
+    WORK_DIR = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / "pdk_finfet"
+else:
+    WORK_DIR = MY_DIR / "constraints"
+
+WORK_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def _canvas_to_data(c):
@@ -25,9 +33,9 @@ def _canvas_to_data(c):
 
 
 def export_to_viewer(fn, c):
-    if align_home:
+    if ALIGN_HOME:
         data = _canvas_to_data(c)
-        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+        with open(pathlib.Path(ALIGN_HOME)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
         return data
 
@@ -38,10 +46,10 @@ def compare_with_golden(fn, c):
 
     export_to_viewer(fn, data)
 
-    with open(my_dir / (fn + "-cand.json"), "wt") as fp:
+    with open(MY_DIR / (fn + "-cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
-    with open(my_dir / (fn + "-freeze.json"), "rt") as fp:
+    with open(MY_DIR / (fn + "-freeze.json"), "rt") as fp:
         data2 = json.load(fp)
 
     assert data == data2
@@ -68,7 +76,7 @@ def get_test_id():
 
 
 def build_example(name, netlist, constraints):
-    example = my_dir / name
+    example = WORK_DIR / name
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
     example.mkdir(parents=True)
@@ -79,14 +87,24 @@ def build_example(name, netlist, constraints):
     return example
 
 
+def _count_pattern(pattern):
+    data = set()
+    with open(WORK_DIR / 'LOG' / 'align.log', 'r') as fp:
+        for line in fp:
+            if re.search(pattern, line):
+                line = line.split(pattern)[1]
+                data.add(line)
+    return len(data)
+
+
 def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
-    run_dir = my_dir / f'run_{example.name}'
+    run_dir = WORK_DIR / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '-l', log_level, '-n', str(n)]
+    args = [str(example), '-p', str(PDK_DIR), '-l', log_level, '-n', str(n)]
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
