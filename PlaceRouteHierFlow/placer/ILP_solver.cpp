@@ -2623,6 +2623,10 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
+      if (symphony) {
+        roundup(Blocks[i].x, x_pitch);
+        roundup(Blocks[i].y, y_pitch);
+      }
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
