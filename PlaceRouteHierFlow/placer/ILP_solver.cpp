@@ -2772,25 +2772,6 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
         }
       }
     }
-    bool non_zero_xoffset = false, non_zero_yoffset = false;
-    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      for (auto& instance : mydesign.Blocks[i]) {
-        if (!instance.xoffset.empty()) {
-          non_zero_xoffset = true;
-          break;
-        }
-      }
-      for (auto& instance : mydesign.Blocks[i]) {
-        if (!instance.yoffset.empty()) {
-          non_zero_yoffset = true;
-          break;
-        }
-      }
-    }
-    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      if (!non_zero_xoffset) roundup(Blocks[i].x, x_pitch);
-      if (!non_zero_yoffset) roundup(Blocks[i].y, y_pitch);
-    }
   }
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
