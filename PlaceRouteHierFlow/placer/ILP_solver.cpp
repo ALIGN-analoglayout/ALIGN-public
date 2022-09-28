@@ -2623,10 +2623,6 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
-      if (symphony) {
-        roundup(Blocks[i].x, x_pitch);
-        roundup(Blocks[i].y, y_pitch);
-      }
       minx = std::min(minx, Blocks[i].x);
       miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
@@ -2775,6 +2771,29 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
           roundup(Blocks[second_id].x, x_pitch);
         }
       }
+    }
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      bool non_zero_xoffset = false, non_zero_yoffset = false;
+      for (auto instance : mydesign.Blocks[i]) {
+        for (auto offset : instance.xoffset) {
+          if (offset != 0) {
+            non_zero_xoffset = true;
+            break;
+          }
+        }
+        if (non_zero_xoffset) break;
+      }
+      if (!non_zero_xoffset) roundup(Blocks[i].x, x_pitch);
+      for (auto instance : mydesign.Blocks[i]) {
+        for (auto offset : instance.yoffset) {
+          if (offset != 0) {
+            non_zero_yoffset = true;
+            break;
+          }
+        }
+        if (non_zero_yoffset) break;
+      }
+      if (!non_zero_yoffset) roundup(Blocks[i].y, y_pitch);
     }
   }
 
