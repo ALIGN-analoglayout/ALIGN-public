@@ -2012,6 +2012,14 @@ size_t design::getSeqIndex(const vector<int>& seq) {
 size_t design::getSeqIndex(const vector<int>& seq) const {
   size_t ind = ULONG_MAX;
   if (seq.size() <= 12) {
+    if (_factorial.size() < seq.size()) {
+      for (unsigned i = _factorial.size(); i < seq.size(); ++i) {
+        if (i > 0)
+          const_cast<vector<size_t>&>(_factorial).push_back(i * _factorial[i - 1]);
+        else
+          const_cast<vector<size_t>&>(_factorial).push_back(1);
+      }
+    }
     ind = 0;
     for (unsigned i = 0; i < seq.size() - 1; ++i) {
       unsigned count = 0;
