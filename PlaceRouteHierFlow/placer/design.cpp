@@ -41,6 +41,18 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     _useCache = true;
   }
 
+  bool offsetpresent{false};
+  for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
+    for (int bb = 0; bb < it->instNum; ++bb) {
+      if ((it->instance).at(bb).xoffset.size() > 0
+          || ((it->instance).at(bb).width % drcInfo.Metal_info[0].grid_unit_x != 0)
+          || ((it->instance).at(bb).height % drcInfo.Metal_info[1].grid_unit_y != 0)) {
+        offsetpresent = true;
+        break;
+      }
+    }
+    if (offsetpresent) break;
+  }
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size() + 1);
     int WL = 0;
@@ -64,12 +76,12 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       tmpblock.width = (it->instance).at(bb).width;
       tmpblock.height = (it->instance).at(bb).height;
       tmpblock.xoffset = (it->instance).at(bb).xoffset;
-      if (tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
+      if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
       tmpblock.xpitch = (it->instance).at(bb).xpitch;
       if (tmpblock.xpitch == 1) tmpblock.xpitch = drcInfo.Metal_info[0].grid_unit_x;
       tmpblock.xflip = (it->instance).at(bb).xflip;
       tmpblock.yoffset = (it->instance).at(bb).yoffset;
-      if (tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
+      if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
       tmpblock.ypitch = (it->instance).at(bb).ypitch;
       if (tmpblock.ypitch == 1) tmpblock.ypitch = drcInfo.Metal_info[1].grid_unit_y;
       tmpblock.yflip = (it->instance).at(bb).yflip;
