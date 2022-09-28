@@ -47,6 +47,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         int lnum = layer["LayerNo"];
 #endif
         std::string ldir = layer["Direction"];
+        int offset = layer["Offset"];
         int lpitch = -1;
         // logger->debug("Reading Json PDK on Pitch");
         json pdata = layer["Pitch"];
@@ -118,6 +119,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         tmp_metal.dist_ss = times * (lpitch - lwidth) / ScaleFactor;
         tmp_metal.minL = times * lminL / ScaleFactor;
         tmp_metal.dist_ee = times * le2e / ScaleFactor;
+        tmp_metal.offset = times * offset / ScaleFactor;
         double rc_scale = 0.0005;
         tmp_metal.unit_R = unit_R * rc_scale;
         tmp_metal.unit_C = unit_C * rc_scale;
