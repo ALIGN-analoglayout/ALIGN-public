@@ -244,27 +244,22 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP)
-      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    else
-      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
 
-    curr_sp.cacheSeq(designData);
+    if (!curr_sp.isSeqInCache(designData)) {
+      if (hyper.select_in_ILP)
+        curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+      else
+        curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      curr_sp.cacheSeq(designData);
+    }
 
+    logger->debug("trial_count {0} curr_cost {1} ", trial_count, curr_cost);
 
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
       break;
     } else {
-      int trial_cached = 0;
-      while (++trial_cached < hyper.max_cache_hit_count) {
-        if (!curr_sp.PerturbationNew(designData)) continue;
-        if (!curr_sp.isSeqInCache(designData)) {
-          break;
-        }
-      }
-      mean_cache_miss += trial_cached;
-      ++num_perturb;
+      curr_sp.PerturbationNew(designData);
     }
   }
 
@@ -300,6 +295,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       MAX_Iter = effort;
     }
     while (i <= MAX_Iter) {
+
+      // TODO: Refactor the logic below so that we never ever solve ILP for a SP that has been solved in the past!
+      //  Store cost to the sequence pair cache 
+
       // cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
       SeqPair trial_sp(curr_sp);
@@ -314,7 +313,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       mean_cache_miss += trial_cached;
       ++num_perturb;
-      trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;

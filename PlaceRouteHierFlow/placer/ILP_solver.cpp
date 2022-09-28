@@ -2547,6 +2547,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           objective.data(), rhslb, rhsub, intvarsi.data());
     }
 
+    // TODO: Control by an environment variable
     /*//solve the integer program
     static int write_cnt{0};
     static std::string block_name;
@@ -2603,6 +2604,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names, rownamesarr);
       ++write_cnt;
     }*/
+
     int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
