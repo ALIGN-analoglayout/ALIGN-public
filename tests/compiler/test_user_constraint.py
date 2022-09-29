@@ -314,3 +314,63 @@ def test_groupblock_generator():
     assert dp1.constraints.dict()['__root__'][0] == {'constraint':'Generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
 
     clean_data(name)
+
+def test_floorplan_propagation_const():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b g1 g2 vssx
+        mn1 a g1 s1 vssx n w=360e-9 nf=2 m=8
+        mn2 b g2 s2 vssx n w=360e-9 nf=2 m=8
+        mn3 c g3 s3 vssx n w=360e-9 nf=2 m=8
+        mn4 d g4 s4 vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2", "mn3"],
+                    "instance_name": "x_test",
+                    "template_name":"TEST"
+                    },
+                   {"constraint": "Floorplan",
+                    "regions": [["mn1", "mn2"], ["mn3"]],
+                    "order": True
+                    }
+                   ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    assert len([sckt for sckt in cktlib if 'TEST' in sckt.name]) == 1, f"no groupblock primitive found {[subckt.name for subckt in cktlib]}"
+    test1 = [sckt for sckt in cktlib if 'TEST' in sckt.name][0]
+    assert test1.constraints.dict()['__root__'][0] == {'constraint': 'Floorplan', 'regions': [['X_M0', 'X_M1'], [
+        'X_M2']], 'order': True, 'symmetrize': False}, f"generator constraint error {test1.constraints.dict()['__root__']}"
+    clean_data(name)
+
+
+def test_symmetry_propagation_const():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b g1 g2 vssx
+        mn1 a g1 s1 vssx n w=360e-9 nf=2 m=8
+        mn2 b g2 s2 vssx n w=360e-9 nf=2 m=8
+        mn3 c g3 s3 vssx n w=360e-9 nf=2 m=8
+        mn4 d g4 s4 vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2", "mn3"],
+                    "instance_name": "x_test",
+                    "template_name":"TEST"
+                    },
+                   {"constraint": "SymmetricBlocks",
+                    "pairs": [["mn1", "mn2"]],
+                    "direction": "V"
+                    }
+                   ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    assert len([sckt for sckt in cktlib if 'TEST' in sckt.name]) == 1, f"no groupblock primitive found {[subckt.name for subckt in cktlib]}"
+    test1 = [sckt for sckt in cktlib if 'TEST' in sckt.name][0]
+    assert test1.constraints.dict()['__root__'][0] == {'constraint': 'SymmetricBlocks', 'pairs': [['X_M0', 'X_M1']], 'direction': 'V'}, f"generator constraint error {test1.constraints.dict()['__root__']}"
+    clean_data(name)

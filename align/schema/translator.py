@@ -82,8 +82,9 @@ class ConstraintTranslator():
                             for x in const.__fields_set__
                         }
                         assert "constraint" in _child_const, f"format check failed"
-                        logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
-                        self._add_const(self.child_const, _child_const)
+                        if len(_child_const["regions"])>0:
+                            logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
+                            self._add_const(self.child_const, _child_const)
                     elif isinstance(const, constraint.SymmetricBlocks):
                             # checking if sub hierarchy floorplan instances are in const defined
                         _child_const = {
@@ -93,8 +94,9 @@ class ConstraintTranslator():
                             for x in const.__fields_set__
                         }
                         assert "constraint" in _child_const, f"format check failed"
-                        logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
-                        self._add_const(self.child_const, _child_const)
+                        if len(_child_const["pairs"]) > 0:
+                            logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
+                            self._add_const(self.child_const, _child_const)
 
 
 
