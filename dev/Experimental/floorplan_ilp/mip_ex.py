@@ -2,6 +2,7 @@
 from mip import *
 from itertools import product
 from collections import defaultdict
+import pytest
 
 
 def wire_length(m, sizes, wires):
@@ -61,22 +62,10 @@ def floorplan(m, sizes, fp):
 
 
 
-def main():
+def place(*, sizes, wires, place_on_grid, fp, symmetrize=False):
     m = Model(sense=MINIMIZE, solver_name=CBC)
+    m.verbose = 0
 
-
-    pitches = {'x': 4,'y': 4}
-
-    place_on_grid = {'x': [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets': [0, 1], 'scalings': [1]}]}]}
-
-
-    sizes = {'x': (1,1), 'y': (1,1), 'z': (1,1), 'a': (1,1), 'b': (1,1)}
-
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
-
-    fp = [['x', 'y', 'z'],
-          ['a', 'b']
-    ]
 
     for k, _ in sizes.items():
         for tag in ['llx', 'lly', 'urx', 'ury']:
@@ -94,22 +83,31 @@ def main():
                 pitch = d['pitch']
                 for dd in d['ored_terms']:
                     offsets = dd['offsets']
-
                     scalings = dd['scalings']
                     assert set(scalings) == {-1} or set(scalings) == {1} or set(scalings) == {-1,1}
-                    one_hots[frozenset(set(scalings))].extend((offset, m.add_var(var_type=BINARY)) for offset in offsets)
+                    one_hots[frozenset(set(scalings))].extend(offsets)
 
-                s = xsum(b for _, v in one_hots.items() for _, b in v)
+                count = sum(len(v) for _, v in one_hots.items())
 
-                m += s == 1
+                assert count == len(set(o for _, v in one_hots.items() for o in v))
+
+                # Don't use any variables if there is only one offset
+                if count == 1:
+                    for scalings_fs, v in one_hots.items():
+                        one_hots[scalings_fs] = [(o, 1) for o in v]
+                else:
+                    for scalings_fs, v in one_hots.items():                    
+                        one_hots[scalings_fs] = [(o, m.add_var(var_type=BINARY)) for o in v]
+
+                    m += xsum(b for _, v in one_hots.items() for _, b in v) == 1
 
                 f = m.var_by_name(f'{k}_f{axis.upper()}')
-
+                # force flipping
                 for scalings_fs, pairs in one_hots.items():
-                    if set(scalings_fs) == {-1}:
+                    if scalings_fs == {-1}:
                         for _, b in pairs:
                             m += b <= f
-                    if set(scalings_fs) == {1}:
+                    if scalings_fs == {1}:
                         for _, b in pairs:
                             m += f <= 1 - b
 
@@ -151,7 +149,66 @@ def main():
         for v in m.vars:
             print('\t', v.name, v.x)
 
+    return m
 
+def test_simple():
+
+    place_on_grid = {'x': [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets': [2, 3], 'scalings': [1]}]}]}
+    sizes = {'x': (1,1), 'y': (1,1), 'z': (1,1), 'a': (1,1), 'b': (1,1)}
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b']
+    ]
+
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
+
+    assert m.var_by_name('hpwl').x == 0.5
+
+def test_large():
+
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h'],
+          ['i', 'j', 'k', 'l']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                           {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                          ] for row in fp for nm in row }
+
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
+
+    assert m.var_by_name('hpwl').x == 1.5
+
+    assert m.var_by_name('i_fY').x == 0
+    assert m.var_by_name('e_fY').x == 1
+    assert m.var_by_name('a_fY').x == 0
+    assert m.var_by_name('x_fY').x == 1
+
+def test_duplicate_offset():
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y']]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]},
+                                                                    {'offsets':[0], 'scalings': [1]}]}
+                          ] for row in fp for nm in row }
+
+    with pytest.raises(Exception, match='assert 2 == 1') as exc_info:
+        m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
+
+def test_bad_scaling():
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y']]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1,2]}]}
+                          ] for row in fp for nm in row }
+
+    with pytest.raises(Exception, match='assert') as exc_info:
+        m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
 
 if __name__ == "__main__":
-    main()
+    test_two()
