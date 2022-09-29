@@ -166,7 +166,7 @@ def test_filter_dummy():
 def test_disable_auto_constraint_virtual():
     name = f'ckt_{get_test_id()}'
     netlist = comparator(name)
-   
+
     # Sanity check: compler should auto-generate for cmp_inp
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
@@ -179,7 +179,8 @@ def test_disable_auto_constraint_virtual():
     annotate_library(ckt_library, primitive_library)
     primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
     constraint_generator(ckt_library)
-    ckt = ckt_library.find("CMP_INP")
+    assert len([sckt for sckt in ckt_library if 'CMP_INP' in sckt.name]) == 1, f"no CMP_INP hierarchy found {[sckt.name for sckt in ckt_library]}"
+    ckt = [sckt for sckt in ckt_library if 'CMP_INP' in sckt.name][0]
     constraints = {c.constraint for c in ckt.constraints}
     assert "SymmetricNets" in constraints or "SymmetricBlocks" in constraints
 
@@ -195,7 +196,7 @@ def test_disable_auto_constraint_virtual():
     annotate_library(ckt_library, primitive_library)
     primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
     constraint_generator(ckt_library)
-    ckt = ckt_library.find("CMP_INP")
+    ckt = [sckt for sckt in ckt_library if 'CMP_INP' in sckt.name][0]
     constraints = {c.constraint for c in ckt.constraints}
     assert "SymmetricNets" not in constraints
     assert "SymmetricBlocks" not in constraints
@@ -205,7 +206,7 @@ def test_disable_auto_constraint_virtual():
 def test_disable_auto_constraint_physical():
     name = f'ckt_{get_test_id()}'
     netlist = comparator_hier(name)
-   
+
     # Sanity check: compler should auto-generate for cmp_inp
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},

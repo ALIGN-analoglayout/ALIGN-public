@@ -165,7 +165,7 @@ class Annotate:
         param = FlatDict({"_":all_properties})
         arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
-        new_subckt_name = (const.template_name if const.template_name else 'primitive'+key)
+        new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
             new_subckt = self.ckt_data.find(new_subckt_name)
             logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
