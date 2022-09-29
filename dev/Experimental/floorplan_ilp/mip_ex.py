@@ -1,6 +1,8 @@
 
 from mip import *
 from itertools import product
+from collections import defaultdict
+
 
 def wire_length(m, sizes, wires):
     for wire_name, terminals in wires:
@@ -11,9 +13,8 @@ def wire_length(m, sizes, wires):
         for instance, bbox in terminals:
             size = dict(zip("xy", sizes[instance]))
             for (tag, axis), offset in zip(product(['ll', 'ur'], ['x', 'y']), bbox):
-                Q = size[axis] / 2
-                P = offset - Q
-                eqn = P * m.var_by_name(f'{instance}_s{axis.upper()}') + Q + m.var_by_name(f'{instance}_ll{axis}')
+                P, Q = size[axis] - 2*offset, offset
+                eqn = P * m.var_by_name(f'{instance}_f{axis.upper()}') + Q + m.var_by_name(f'{instance}_ll{axis}')
                 m += eqn <= m.var_by_name(f'{wire_name}_ur{axis}')
                 m += m.var_by_name(f'{wire_name}_ll{axis}') <= eqn
 
@@ -21,12 +22,6 @@ def wire_length(m, sizes, wires):
 
     m += xsum(m.var_by_name(f'{wire_name}_ur{axis}') for wire_name, _ in wires for axis in ['x', 'y']) - \
         xsum(m.var_by_name(f'{wire_name}_ll{axis}') for wire_name, _ in wires for axis in ['x', 'y']) == hpwl
-
-
-
-    ...
-
-
 
 
 def floorplan(m, sizes, fp):
@@ -69,6 +64,12 @@ def floorplan(m, sizes, fp):
 def main():
     m = Model(sense=MINIMIZE, solver_name=CBC)
 
+
+    pitches = {'x': 4,'y': 4}
+
+    place_on_grid = {'x': [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets': [0, 1], 'scalings': [1]}]}]}
+
+
     sizes = {'x': (1,1), 'y': (1,1), 'z': (1,1), 'a': (1,1), 'b': (1,1)}
 
     wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
@@ -79,13 +80,42 @@ def main():
 
     for k, _ in sizes.items():
         for tag in ['llx', 'lly', 'urx', 'ury']:
-            m.add_var(name=f'{k}_{tag}')
+            m.add_var(name=f'{k}_{tag}', lb=-INF)
         
         for tag in ['X', 'Y']:
             f = m.add_var(name=f'{k}_f{tag}', var_type=BINARY)
-            s = m.add_var(name=f'{k}_s{tag}', lb=-INF)
 
-            m += 1 - 2*f == s
+        size = dict(zip("xy", sizes[k]))
+
+        if k in place_on_grid:
+            for d in place_on_grid[k]:
+                one_hots = defaultdict(list)
+                axis = d['axis']
+                pitch = d['pitch']
+                for dd in d['ored_terms']:
+                    offsets = dd['offsets']
+
+                    scalings = dd['scalings']
+                    assert set(scalings) == {-1} or set(scalings) == {1} or set(scalings) == {-1,1}
+                    one_hots[frozenset(set(scalings))].extend((offset, m.add_var(var_type=BINARY)) for offset in offsets)
+
+                s = xsum(b for _, v in one_hots.items() for _, b in v)
+
+                m += s == 1
+
+                f = m.var_by_name(f'{k}_f{axis.upper()}')
+
+                for scalings_fs, pairs in one_hots.items():
+                    if set(scalings_fs) == {-1}:
+                        for _, b in pairs:
+                            m += b <= f
+                    if set(scalings_fs) == {1}:
+                        for _, b in pairs:
+                            m += f <= 1 - b
+
+                grid = m.add_var(name=f'{k}_grid_{axis}', var_type=INTEGER)
+                origin = grid * pitch + xsum(c*b for _, v in one_hots.items() for c, b in v)
+                m += origin - size[axis] * f == m.var_by_name(f'{k}_ll{axis}') 
 
     for tag in ['llx', 'lly', 'urx', 'ury']:
         m.add_var(name=f'{tag}')  
@@ -100,11 +130,7 @@ def main():
 
     z = m.add_var('z')
 
-    #m += m.var_by_name('x_fX') == 1
-    #m += m.var_by_name('y_fY') == 1
-    #m += m.var_by_name('y_fX') == 1
-
-    m += m.var_by_name('urx') + m.var_by_name('ury') + m.var_by_name('hpwl') == z
+    m += 1*m.var_by_name('urx') + 1*m.var_by_name('ury') + 1*m.var_by_name('hpwl') == z
 
     m.objective += minimize(z)
 
