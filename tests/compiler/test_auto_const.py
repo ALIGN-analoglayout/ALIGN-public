@@ -8,12 +8,8 @@ from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
 
-<<<<<<< HEAD
 from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator, comparator_hier
-=======
-from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
 import textwrap
->>>>>>> 1a20c15109c3b8ee06a1b3375c467f5d9263a8f6
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
