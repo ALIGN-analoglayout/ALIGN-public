@@ -241,6 +241,27 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
+  if (curr_sp.Enumerate()) {
+    const auto maxcount = size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
+    size_t cnt{0};
+    bool exhausted{false};
+    while (!exhausted) {
+      ILP_solver tsol(designData, hyper.ilp_solver);
+      curr_cost = tsol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      if (curr_cost >= 0) {
+        oData[curr_cost] = std::make_pair(curr_sp, tsol);
+        ReshapeSeqPairMap(oData, nodeSize);
+      }
+      exhausted = curr_sp.EnumExhausted();
+      curr_sp.PerturbationNew(designData);
+      if (cnt >= maxcount) break;
+    }
+    if (curr_sp.EnumExhausted()) {
+      logger->info("Exhausted all permutations of sequence pairs");
+      return oData;
+    }
+  }
+
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
@@ -250,6 +271,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
       else
         curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      curr_sol.cost = curr_cost;
       curr_sp.cacheSeq(designData);
     }
 
@@ -280,7 +302,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   float per = 0.1;
   // int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
-  bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
 
@@ -328,20 +349,18 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       if (trial_cost >= 0) {
         oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
         // Smark is true if search space is enumerated (no need to randomize)
-        bool Smark = trial_sp.Enumerate();
-        if (!Smark) {
-          delta_cost = trial_cost - curr_cost;
-          if (delta_cost < 0) {
+        delta_cost = trial_cost - curr_cost;
+        bool Smark{false};
+        if (delta_cost < 0) {
+          Smark = true;
+          logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+        } else {
+          double r = (double)rand() / RAND_MAX;
+          // De-normalize the delta cost
+          delta_cost = exp(delta_cost);
+          if (r < exp((-1.0 * delta_cost) / T)) {
             Smark = true;
-            logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
-          } else {
-            double r = (double)rand() / RAND_MAX;
-            // De-normalize the delta cost
-            delta_cost = exp(delta_cost);
-            if (r < exp((-1.0 * delta_cost) / T)) {
-              Smark = true;
-              logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
-            }
+            logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
           }
         }
         if (Smark) {
@@ -358,18 +377,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
       i++;
       update_index++;
-      if (trial_sp.EnumExhausted()) {
-        logger->info("Exhausted all permutations of sequence pairs");
-        exhausted = true;
-        break;
-      }
     }
     T_index++;
     if (total_update_number * per < T_index) {
       logger->info("..... {0} %", (int)(per * 100));
       per = per + 0.1;
     }
-    if (exhausted) break;
     T *= hyper.ALPHA;
     // logger->debug("sa__reducing_temp T={0}", T);
   }
