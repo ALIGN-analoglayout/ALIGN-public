@@ -665,6 +665,7 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  int offset = 0;
   double unit_R;
   double unit_C;
   double unit_CC;
