@@ -1,11 +1,13 @@
 
 from mip import *
-from itertools import product
+from itertools import product, combinations
 from collections import defaultdict
 import pytest
 
+import plotly.graph_objects as go
 
-def wire_length(m, sizes, wires):
+
+def wire_length(m, *, sizes, wires):
     for wire_name, terminals in wires:
 
         for tag, axis in product(['ll', 'ur'], ['x', 'y']):
@@ -25,18 +27,41 @@ def wire_length(m, sizes, wires):
         xsum(m.var_by_name(f'{wire_name}_ll{axis}') for wire_name, _ in wires for axis in ['x', 'y']) == hpwl
 
 
-def floorplan(m, sizes, fp):
+def floorplan(m, *, sizes, fp, symmetrize=False, order=True):
 
-    for k, v in sizes.items():
-        m += m.var_by_name(f'{k}_llx') + v[0] == m.var_by_name(f'{k}_urx')
-        m += m.var_by_name(f'{k}_lly') + v[1] == m.var_by_name(f'{k}_ury')
+    if order:
+        for row in fp:
+            m += m.var_by_name('llx') <= m.var_by_name(f'{row[0]}_llx') 
+            m += m.var_by_name(f'{row[-1]}_urx') <= m.var_by_name('urx')
 
-    
+        for l, r in zip(row[:-1], row[1:]):
+            m += m.var_by_name(f'{l}_urx') <= m.var_by_name(f'{r}_llx')
+
+    else:
+        for row in fp:
+            for cell in row:
+                m += m.var_by_name('llx') <= m.var_by_name(f'{cell}_llx') 
+                m += m.var_by_name(f'{cell}_urx') <= m.var_by_name('urx')
+        
+            Mx = sum(size[0] for _, size in sizes.items())
+            My = sum(size[1] for _, size in sizes.items())
+
+            # four binarys for each pair in the row
+            for a, b in combinations(row, 2):
+                below = m.add_var(name=f'{a}_below_{b}', var_type=BINARY)
+                above = m.add_var(name=f'{a}_above_{b}', var_type=BINARY)
+                left_of = m.add_var(name=f'{a}_left_of_{b}', var_type=BINARY)
+                right_of = m.add_var(name=f'{a}_right_of_{b}', var_type=BINARY)
+                m += below + above + left_of + right_of == 1
+
+                m += m.var_by_name(f'{a}_urx') <= m.var_by_name(f'{b}_llx') + Mx - Mx*left_of 
+                m += m.var_by_name(f'{b}_urx') <= m.var_by_name(f'{a}_llx') + Mx - Mx*right_of 
+
+                m += m.var_by_name(f'{a}_ury') <= m.var_by_name(f'{b}_lly') + My - My*below
+                m += m.var_by_name(f'{b}_ury') <= m.var_by_name(f'{a}_lly') + My - My*above
+
 
     for i, row in enumerate(fp):
-        m += m.var_by_name('llx') <= m.var_by_name(f'{row[0]}_llx') 
-        m += m.var_by_name(f'{row[-1]}_urx') <= m.var_by_name('urx')
-
         if i == 0:
             for cell in row:
                 m += m.var_by_name(f'{cell}_ury') <= m.var_by_name('ury')
@@ -55,14 +80,27 @@ def floorplan(m, sizes, fp):
             for cell in row:
                 m += m.var_by_name(f'{cell}_ury') <= between_rows[i-1]
 
-        for l, r in zip(row[:-1], row[1:]):
-            m += m.var_by_name(f'{l}_urx') <= m.var_by_name(f'{r}_llx')
+
+
+    if symmetrize:
+        line_of_symmetry = m.add_var(name='line_of_symmetry')
+
+        for row in fp:
+            if len(row) % 2 == 1:
+                cell = row[len(row)//2]
+                m += m.var_by_name(f'{cell}_llx') + m.var_by_name(f'{cell}_urx') == 2*line_of_symmetry
+
+            for i in range(len(row)//2):
+                cell_l = row[i]
+                cell_r = row[len(row)-1-i]
+                m += m.var_by_name(f'{cell_l}_llx') + m.var_by_name(f'{cell_r}_urx') == 2*line_of_symmetry
+
+                # flips must be different
+                m += m.var_by_name(f'{cell_l}_fX') + m.var_by_name(f'{cell_r}_fX') == 1
 
 
 
-
-
-def place(*, sizes, wires, place_on_grid, fp, symmetrize=False):
+def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True):
     m = Model(sense=MINIMIZE, solver_name=CBC)
     m.verbose = 0
 
@@ -75,6 +113,9 @@ def place(*, sizes, wires, place_on_grid, fp, symmetrize=False):
             f = m.add_var(name=f'{k}_f{tag}', var_type=BINARY)
 
         size = dict(zip("xy", sizes[k]))
+
+        for axis in "xy":
+            m += m.var_by_name(f'{k}_ll{axis}') + size[axis] == m.var_by_name(f'{k}_ur{axis}')
 
         if k in place_on_grid:
             for d in place_on_grid[k]:
@@ -118,10 +159,8 @@ def place(*, sizes, wires, place_on_grid, fp, symmetrize=False):
     for tag in ['llx', 'lly', 'urx', 'ury']:
         m.add_var(name=f'{tag}')  
 
-     
-
-    floorplan(m, sizes, fp)
-    wire_length(m, sizes, wires)
+    floorplan(m, sizes=sizes, fp=fp, symmetrize=symmetrize, order=order)
+    wire_length(m, sizes=sizes, wires=wires)
 
     m.var_by_name('llx').lb = 0
     m.var_by_name('lly').lb = 0
@@ -151,9 +190,43 @@ def place(*, sizes, wires, place_on_grid, fp, symmetrize=False):
 
     return m
 
+def draw(m, *, fp):
+    xs, ys = [], []
+    def add_point(x, y):
+        xs.append(x)
+        ys.append(y)
+    def add_space():
+        xs.append(None)
+        ys.append(None)
+    def add_rect(xll, yll, xur, yur):
+        add_point(xll, yll)
+        add_point(xur, yll)
+        add_point(xur, yur)
+        add_point(xll, yur)
+        add_point(xll, yll)
+
+    fig = go.Figure()
+
+    for row in fp:
+        for cell in row:
+            xs.clear()
+            ys.clear()
+            llx, lly = m.var_by_name(f'{cell}_llx').x, m.var_by_name(f'{cell}_lly').x
+            urx, ury = m.var_by_name(f'{cell}_urx').x, m.var_by_name(f'{cell}_ury').x
+            add_rect(llx, lly, urx, ury)
+            add_space()
+            fX, fY = m.var_by_name(f'{cell}_fX').x, m.var_by_name(f'{cell}_fY').x
+            fig.add_trace(go.Scatter(x=xs, y=ys, fill='toself', mode='none', name=f'{cell} fX={fX:.0f} fY={fY:.0f}'))
+
+    #fig.update_xaxes(showticklabels=False)
+    #fig.update_yaxes(showticklabels=False)
+
+    fig.show()
+
+
 def test_simple():
 
-    place_on_grid = {'x': [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets': [2, 3], 'scalings': [1]}]}]}
+    place_on_grid = {'x': [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets': [2], 'scalings': [-1,1]}]}]}
     sizes = {'x': (1,1), 'y': (1,1), 'z': (1,1), 'a': (1,1), 'b': (1,1)}
     wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
     fp = [['x', 'y', 'z'],
@@ -161,6 +234,8 @@ def test_simple():
     ]
 
     m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
+
+    draw(m, fp=fp)
 
     assert m.var_by_name('hpwl').x == 0.5
 
@@ -179,6 +254,58 @@ def test_large():
                           ] for row in fp for nm in row }
 
     m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
+
+    draw(m, fp=fp)
+
+    assert m.var_by_name('hpwl').x == 1.5
+
+    assert m.var_by_name('i_fY').x == 0
+    assert m.var_by_name('e_fY').x == 1
+    assert m.var_by_name('a_fY').x == 0
+    assert m.var_by_name('x_fY').x == 1
+
+def test_large_symmetrize():
+
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h'],
+          ['i', 'j', 'k', 'l']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                           {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                          ] for row in fp for nm in row }
+
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, symmetrize=True)
+
+    draw(m, fp=fp)
+
+    assert m.var_by_name('hpwl').x == 1.5
+
+    assert m.var_by_name('i_fY').x == 0
+    assert m.var_by_name('e_fY').x == 1
+    assert m.var_by_name('a_fY').x == 0
+    assert m.var_by_name('x_fY').x == 1
+
+def test_large_noorder():
+
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h'],
+          ['i', 'j', 'k', 'l']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                           {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                          ] for row in fp for nm in row }
+
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False)
+
+    draw(m, fp=fp)
 
     assert m.var_by_name('hpwl').x == 1.5
 
