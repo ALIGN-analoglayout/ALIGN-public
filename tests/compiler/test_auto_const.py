@@ -8,7 +8,12 @@ from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
 
+<<<<<<< HEAD
 from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator, comparator_hier
+=======
+from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
+import textwrap
+>>>>>>> 1a20c15109c3b8ee06a1b3375c467f5d9263a8f6
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -147,7 +152,6 @@ def test_reusable_const():
     assert constraints == constraints1
 
 
-
 def test_filter_dummy():
     name = f'ckt_{get_test_id()}'
     netlist = ota_dummy(name)
@@ -237,4 +241,35 @@ def test_disable_auto_constraint_physical():
     constraints = {c.constraint for c in ckt.constraints}
     assert "SymmetricNets" not in constraints
     assert "SymmetricBlocks" not in constraints
+    clean_data(name)
+
+
+def test_propagate_constraint():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vo vccx vccx p w=360e-9 nf=2 m=1
+        mn1 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn2 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn3 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn4 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True, "merge_parallel_devices": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2", "mn3", "mn4"], "instance_name": "xm"},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "regions": [["mn1", "mn2", "mn3", "mn4"]]
+        }
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    ckt = ckt_library.find(name)
     clean_data(name)
