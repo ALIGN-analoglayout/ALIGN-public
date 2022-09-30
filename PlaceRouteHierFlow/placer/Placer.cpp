@@ -244,8 +244,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   if (curr_sp.Enumerate()) {
     const auto maxcount = size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
     size_t cnt{0};
-    bool exhausted{false};
-    while (!exhausted) {
+    while (!curr_sp.EnumExhausted()) {
       ILP_solver tsol(designData, hyper.ilp_solver);
       curr_cost = tsol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
       tsol.cost = curr_cost;
@@ -253,7 +252,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         oData[curr_cost] = std::make_pair(curr_sp, tsol);
         ReshapeSeqPairMap(oData, nodeSize);
       }
-      exhausted = curr_sp.EnumExhausted();
       curr_sp.PerturbationNew(designData);
       if (cnt >= maxcount) break;
     }

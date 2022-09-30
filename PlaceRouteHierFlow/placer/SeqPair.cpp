@@ -533,6 +533,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     logger->info("Enumerated search");
     posPair = _seqPairEnum->PosPair();
     negPair = _seqPairEnum->NegPair();
+    selected = _seqPairEnum->Selected();
   } else {
     KeepOrdering(caseNL);
     _seqPairEnum.reset();
@@ -1686,10 +1687,10 @@ bool SeqPair::PerturbationNew(design& caseNL) {
   int trial_cnt{0};
   do {
     if (_seqPairEnum && _seqPairEnum->valid()) {
+      _seqPairEnum->Permute();
       posPair = _seqPairEnum->PosPair();
       negPair = _seqPairEnum->NegPair();
       selected = _seqPairEnum->Selected();
-      _seqPairEnum->Permute();
     } else {
       bool mark = false;
       std::set<int> pool;
@@ -1756,7 +1757,7 @@ bool SeqPair::PerturbationNew(design& caseNL) {
     // logger->info("KeepOrdering end: {0}", ok);
 
     SameSelected(caseNL);
-    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
+    retval = (_seqPairEnum && _seqPairEnum->valid()) ? false : ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
     if (logger->should_log(spdlog::level::debug)) {
       std::string tmpstr, tmpstrn, tmpstrs;
       for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
