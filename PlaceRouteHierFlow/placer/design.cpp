@@ -44,7 +44,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   bool offsetpresent{false};
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     for (int bb = 0; bb < it->instNum; ++bb) {
-      if ((it->instance).at(bb).xoffset.size() > 0
+      if ((it->instance).at(bb).xoffset.size() > 0 || (it->instance).at(bb).yoffset.size() > 0
           || ((it->instance).at(bb).width % drcInfo.Metal_info[0].grid_unit_x != 0)
           || ((it->instance).at(bb).height % drcInfo.Metal_info[1].grid_unit_y != 0)) {
         offsetpresent = true;
