@@ -68,15 +68,17 @@ class ILP_solver {
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
   bool FrameSolveILPCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const SOLVERTOUSE solvertouse, const bool snapGridILP, const vector<placerDB::point>* prev);
   bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
-  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool flushlb = true, const bool snapGridILP = false, const vector<placerDB::point>* prev = nullptr)
+  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool flushlb, const bool snapGridILP, const vector<placerDB::point>* prev = nullptr)
   {
     if (!snapGridILP) {
+      bool offsetpresent{false};
       for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
         if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
             !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
-          return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, false, prev);
+          offsetpresent = true;
         }
       }
+      if (offsetpresent) return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, false, prev);
     }
     return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, CBC, snapGridILP, prev);
   }
@@ -92,7 +94,7 @@ class ILP_solver {
   int xdim() const { return UR.x - LL.x; }
   int ydim() const { return UR.y - LL.y; }
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
-  bool GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP = false);
+  bool GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
   SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);

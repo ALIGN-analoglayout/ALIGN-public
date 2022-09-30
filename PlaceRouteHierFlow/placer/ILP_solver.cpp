@@ -1943,14 +1943,14 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       rowindofcol[i * 4].push_back(rhs.size());
       rowindofcol[gridSnapVarStart + i * 2].push_back(rhs.size());
       constrvalues[i * 4].push_back(1);
-      constrvalues[gridSnapVarStart + i * 2].push_back(x_pitch * 1.);
+      constrvalues[gridSnapVarStart + i * 2].push_back(x_pitch * -1.);
       sens.push_back('E');
       rhs.push_back(0);
       rownames.push_back("GSX");
       rowindofcol[i * 4 + 1].push_back(rhs.size());
       rowindofcol[gridSnapVarStart + i * 2 + 1].push_back(rhs.size());
       constrvalues[i * 4 + 1].push_back(1);
-      constrvalues[gridSnapVarStart + i * 2 + 1].push_back(y_pitch * 1.);
+      constrvalues[gridSnapVarStart + i * 2 + 1].push_back(y_pitch * -1.);
       sens.push_back('E');
       rhs.push_back(0);
       rownames.push_back("GSY");
@@ -2840,14 +2840,14 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return false;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, snapGridILP))  return false;
     } else if (mydesign.rightAlign()) {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false)) return false;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false, snapGridILP)) return false;
     } else {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return false;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, snapGridILP))  return false;
       std::vector<Block> blockslocal{Blocks};
       // frame and solve ILP to flush top/right
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false) 
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false, snapGridILP) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -2889,33 +2889,17 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (!GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  bool snapGridILP{false};
-  if (mydesign.Blocks.size() > 1) {
+  bool snapGridILP{false}, offsetpresent{false};
+  for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
+    if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
+        !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
+      offsetpresent = true;
+      break;
+    }
+  }
+  if (!offsetpresent && mydesign.Blocks.size() > 1) {
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      bool non_zero_xoffset = false, non_zero_yoffset = false;
-      for (auto instance : mydesign.Blocks[i]) {
-        for (auto offset : instance.xoffset) {
-          if (offset != 0) {
-            non_zero_xoffset = true;
-            break;
-          }
-        }
-        if (non_zero_xoffset) break;
-      }
-      if (!non_zero_xoffset && Blocks[i].x % x_pitch != 0) {
-        snapGridILP = true;
-        break;
-      }
-      for (auto instance : mydesign.Blocks[i]) {
-        for (auto offset : instance.yoffset) {
-          if (offset != 0) {
-            non_zero_yoffset = true;
-            break;
-          }
-        }
-        if (non_zero_yoffset) break;
-      }
-      if (!non_zero_yoffset && Blocks[i].y % y_pitch != 0) {
+      if ((Blocks[i].x % x_pitch) || (Blocks[i].y % y_pitch)) {
         snapGridILP = true;
         break;
       }
