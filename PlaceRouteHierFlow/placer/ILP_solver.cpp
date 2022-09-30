@@ -2550,7 +2550,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    solverif.setTimeLimit(Blocks.size());
+    // TODO: Make the time limit below a hyperparam
+    solverif.setTimeLimit(10*Blocks.size());
     if (solvertouse == SYMPHONY) {
       solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
           values.data(), collb.data(), colub.data(),
@@ -2672,7 +2673,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
         write_cnt = 0;
         block_name = mydesign.name;
       }
-      if (write_cnt < 10 && snapGridILP) {
+      // TODO: Replace angular brackets with square brackets  
+      if (write_cnt < 10) {
         char* names[N_var];
         std::vector<std::string> namesvec(N_var);
         namesvec[N_area_x]     = "area_x\0";
