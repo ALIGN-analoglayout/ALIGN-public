@@ -1954,6 +1954,14 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       sens.push_back('E');
       rhs.push_back(0);
       rownames.push_back("GSY");
+      collb[i * 4] = std::max(Blocks[i].x - x_pitch * 2, 0);
+      colub[i * 4] = (Blocks[i].x + x_pitch * 2);
+      collb[i * 4 + 1] = std::max(Blocks[i].y - y_pitch * 2, 0);
+      colub[i * 4 + 1] = (Blocks[i].y + y_pitch * 2);
+      collb[gridSnapVarStart + i * 2] = std::max(Blocks[i].x / x_pitch - 2, 0);
+      colub[gridSnapVarStart + i * 2] = (Blocks[i].x / x_pitch + 2);
+      collb[gridSnapVarStart + i * 2 + 1] = std::max(Blocks[i].y / y_pitch - 2, 0);
+      colub[gridSnapVarStart + i * 2 + 1] = (Blocks[i].y / y_pitch + 2);
     }
   }
 
@@ -2656,63 +2664,64 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       return true;
     }
 
-    // TODO: Control by an environment variable
-    /*//solve the integer program
-    static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      char* names[N_var];
-      std::vector<std::string> namesvec(N_var);
-      namesvec[N_area_x]     = "area_x\0";
-      names[N_area_x] = &(namesvec[N_area_x][0]);
-      namesvec[N_area_y]     = "area_y\0";
-      names[N_area_y] = &(namesvec[N_area_y][0]);
-      for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        int ind = i * 4;
-        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
+    if (getenv("ALIGN_DEBUG_SA_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_SA_ILP"))) {
+      //solve the integer program
+      static int write_cnt{0};
+      static std::string block_name;
+      if (block_name != mydesign.name) {
+        write_cnt = 0;
+        block_name = mydesign.name;
       }
+      if (write_cnt < 10 && snapGridILP) {
+        char* names[N_var];
+        std::vector<std::string> namesvec(N_var);
+        namesvec[N_area_x]     = "area_x\0";
+        names[N_area_x] = &(namesvec[N_area_x][0]);
+        namesvec[N_area_y]     = "area_y\0";
+        names[N_area_y] = &(namesvec[N_area_y][0]);
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          int ind = i * 4;
+          namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
+          names[ind + 2] = &(namesvec[ind + 2][0]);
+          namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
+          names[ind + 3] = &(namesvec[ind + 3][0]);
+        }
 
-      for (int i = 0; i < mydesign.Nets.size(); ++i) {
-        int ind = i * 4 + mydesign.Blocks.size() * 4;
-        namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
-      }
-      if (rownames.size() < rhs.size()) rownames.resize(rhs.size());
-      char* rownamesarr[rhs.size()];
-      for (unsigned i = 0; i < rhs.size(); ++i) {
-        if (rownames[i].empty()) {
-          rownames[i] = "c" + std::to_string(i) + "\0";
-        } else {
-          rownames[i] += (std::to_string(i) + "\0");
+        for (int i = 0; i < mydesign.Nets.size(); ++i) {
+          int ind = i * 4 + mydesign.Blocks.size() * 4;
+          namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
+          names[ind + 2] = &(namesvec[ind + 2][0]);
+          namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
+          names[ind + 3] = &(namesvec[ind + 3][0]);
         }
-        rownamesarr[i] = &(rownames[i][0]);
-      }
-      for (unsigned i = 0; i < N_var; ++i) {
-        if (namesvec[i].empty()) {
-          namesvec[i] = ("var" + std::to_string(i));
-          names[i] = &(namesvec[i])[0];
+        if (rownames.size() < rhs.size()) rownames.resize(rhs.size());
+        char* rownamesarr[rhs.size()];
+        for (unsigned i = 0; i < rhs.size(); ++i) {
+          if (rownames[i].empty()) {
+            rownames[i] = "c" + std::to_string(i) + "\0";
+          } else {
+            rownames[i] += (std::to_string(i) + "\0");
+          }
+          rownamesarr[i] = &(rownames[i][0]);
         }
+        for (unsigned i = 0; i < N_var; ++i) {
+          if (namesvec[i].empty()) {
+            namesvec[i] = ("var" + std::to_string(i));
+            names[i] = &(namesvec[i])[0];
+          }
+        }
+        solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
+        ++write_cnt;
       }
-      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
-      ++write_cnt;
-    }*/
+    }
 
     int status{0};
     {

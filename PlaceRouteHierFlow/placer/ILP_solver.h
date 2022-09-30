@@ -70,16 +70,15 @@ class ILP_solver {
   bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
   bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool flushlb, const bool snapGridILP, const vector<placerDB::point>* prev = nullptr)
   {
-    if (!snapGridILP) {
-      bool offsetpresent{false};
-      for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
-        if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
-            !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
-          offsetpresent = true;
-        }
+    bool offsetpresent{false};
+    for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
+      if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
+          !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
+        offsetpresent = true;
+        break;
       }
-      if (offsetpresent) return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, false, prev);
     }
+    if (!offsetpresent) return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, snapGridILP, prev);
     return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, CBC, snapGridILP, prev);
   }
   std::vector<std::set<int>> GetCC(const design& mydesign) const;
