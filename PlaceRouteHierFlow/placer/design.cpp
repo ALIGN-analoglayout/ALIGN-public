@@ -2054,20 +2054,24 @@ size_t design::getSelIndex(const vector<int>& sel) const {
   return ind;
 }
 
-void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel) {
+void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel, const double cost) {
   auto logger = spdlog::default_logger()->clone("placer.design.cacheSeq");
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
   if (_seqPairCache.empty()) {
     logger->debug("Using seq pair cache for {0} to reduce redundancy", name);
   }
-  _seqPairCache.emplace(pindx, nindx, sindx);
+  _seqPairCache[std::make_tuple(pindx, nindx, sindx)] = cost;
 }
 
-bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const {
+bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel, double* cost) const {
   if (!_useCache) return false;
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
   if (pindx != ULONG_MAX && nindx != ULONG_MAX && sindx != ULONG_MAX) {
-    return _seqPairCache.find(std::make_tuple(pindx, nindx, sindx)) != _seqPairCache.end();
+    const auto it = _seqPairCache.find(std::make_tuple(pindx, nindx, sindx));
+    if (it != _seqPairCache.end()) {
+      if (cost) *cost = it->second;
+      return true;
+    }
   }
   return false;
 }
@@ -2077,10 +2081,11 @@ design::~design() {
   _rnd = nullptr;
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   // logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
-  // logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
-  //               _infeasPlBound, _totalNumCostCalc);
+  // logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4} num_ilp_calls={5}", name, _infeasAspRatio, _infeasILPFail,
+  //               _infeasPlBound, _totalNumCostCalc, _numILPCalls);
   // logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
   // logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
   // logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
+  // logger->debug("sa__num_snap_grid_fails : {0}", _numSnapGridFail);
   //_debugofs.close();
 }

@@ -248,6 +248,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     while (!exhausted) {
       ILP_solver tsol(designData, hyper.ilp_solver);
       curr_cost = tsol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      tsol.cost = curr_cost;
       if (curr_cost >= 0) {
         oData[curr_cost] = std::make_pair(curr_sp, tsol);
         ReshapeSeqPairMap(oData, nodeSize);
@@ -272,7 +273,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       else
         curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
       curr_sol.cost = curr_cost;
-      curr_sp.cacheSeq(designData);
+      curr_sp.cacheSeq(designData, curr_cost);
     }
 
     logger->debug("trial_count {0} curr_cost {1} ", trial_count, curr_cost);
@@ -334,23 +335,29 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       mean_cache_miss += trial_cached;
       ++num_perturb;
-      trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP)
-        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      else
-        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      bool fromCache{false};
+      if (!trial_sp.isSeqInCache(designData, &trial_cost)) {
+        if (hyper.select_in_ILP)
+          trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+        else
+          trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+        trial_sp.cacheSeq(designData, trial_cost);
+        if (trial_cost >= 0) {
+          oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
+        }
+      } else {
+          fromCache = true;
+      }
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
       total_candidates += 1;
       if (trial_cost >= 0) {
-        oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        // Smark is true if search space is enumerated (no need to randomize)
-        delta_cost = trial_cost - curr_cost;
         bool Smark{false};
+        delta_cost = trial_cost - curr_cost;
         if (delta_cost < 0) {
           Smark = true;
           logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
@@ -364,6 +371,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
           }
         }
         if (Smark) {
+          if (fromCache) {
+            if (hyper.select_in_ILP)
+              trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+            else
+              trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+          }
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;

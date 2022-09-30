@@ -134,8 +134,8 @@ class SeqPair {
   void CompactSeq();
 
   std::string getLexIndex(design& des) const;
-  void cacheSeq(design& des) const { des.cacheSeq(posPair, negPair, selected); }
-  bool isSeqInCache(const design& des) const { return des.isSeqInCache(posPair, negPair, selected); }
+  void cacheSeq(design& des, const double cost) const { des.cacheSeq(posPair, negPair, selected, cost); }
+  bool isSeqInCache(const design& des, double *cost = nullptr) const { return des.isSeqInCache(posPair, negPair, selected, cost); }
 
   // vector<int> GetFlip(const bool hor) const;
   bool operator==(const SeqPair& s1) const { return (posPair == s1.posPair) && (negPair == s1.negPair) && (selected == s1.selected); }

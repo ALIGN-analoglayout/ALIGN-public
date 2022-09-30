@@ -1729,8 +1729,9 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   return true;
 }**/
 
-bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, bool symphony, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const SOLVERTOUSE solvertouse, const bool snapGridILP, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
+  ++const_cast<design&>(mydesign)._numILPCalls;
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPCore");
 
   auto sighandler = signal(SIGINT, nullptr);
@@ -1767,11 +1768,15 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) place_on_grid_var_count += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
   }
   N_var += place_on_grid_var_count;
+  const auto gridSnapVarStart{N_var};
+  if (place_on_grid_var_count == 0 && snapGridILP) {
+    N_var += (2 * mydesign.Blocks.size());
+  }
   N_var += 2; //Area x and y variables
   const unsigned N_area_x = N_var - 2;
   const unsigned N_area_y = N_var - 1;
 
-  ILPSolverIf solverif(symphony ? SOLVER_ENUM::SYMPHONY : SOLVER_ENUM::Cbc);
+  ILPSolverIf solverif(solvertouse == SYMPHONY  ? SOLVER_ENUM::SYMPHONY : SOLVER_ENUM::Cbc);
   const double infty{solverif.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
@@ -1927,6 +1932,28 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       sens.push_back('E');
       rhs.push_back(1);
       rownames.push_back("F");
+    }
+  }
+
+  // grid snapping constraints
+  if (snapGridILP && place_on_grid_var_count == 0) {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+      intvars[gridSnapVarStart + i * 2] = 1;
+      intvars[gridSnapVarStart + i * 2 + 1] = 1;
+      rowindofcol[i * 4].push_back(rhs.size());
+      rowindofcol[gridSnapVarStart + i * 2].push_back(rhs.size());
+      constrvalues[i * 4].push_back(1);
+      constrvalues[gridSnapVarStart + i * 2].push_back(x_pitch * 1.);
+      sens.push_back('E');
+      rhs.push_back(0);
+      rownames.push_back("GSX");
+      rowindofcol[i * 4 + 1].push_back(rhs.size());
+      rowindofcol[gridSnapVarStart + i * 2 + 1].push_back(rhs.size());
+      constrvalues[i * 4 + 1].push_back(1);
+      constrvalues[gridSnapVarStart + i * 2 + 1].push_back(y_pitch * 1.);
+      sens.push_back('E');
+      rhs.push_back(0);
+      rownames.push_back("GSY");
     }
   }
 
@@ -2515,12 +2542,12 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    if (symphony) {
-      solverif.setTimeLimit(Blocks.size());
+    solverif.setTimeLimit(Blocks.size());
+    if (solvertouse == SYMPHONY) {
       solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
           values.data(), collb.data(), colub.data(),
           intvars.data(), objective.data(), sens.data(), rhs.data());
-    } else {
+    } else if (solvertouse == CBC) {
       double rhslb[rhs.size()], rhsub[rhs.size()];
       for (unsigned i = 0;i < sens.size(); ++i) {
         switch (sens[i]) {
@@ -2539,12 +2566,94 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             break;
         }
       }
-      solverif.setTimeLimit(10 * Blocks.size());
       vector<int> intvarsi(intvars.size());
       for (unsigned i = 0; i < intvars.size(); ++i) intvarsi[i] = intvars[i];
       solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
           values.data(), collb.data(), colub.data(),
           objective.data(), rhslb, rhsub, intvarsi.data());
+    } else {
+      lprec* lp = make_lp(0, N_var);
+      set_verbose(lp, IMPORTANT);
+      put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
+      double obj[N_var + 1];
+      for (unsigned int i = 0; i < N_var; ++i) {
+        if (intvars[i]) {
+          if (colub[i] == 1) {
+            set_binary(lp, i + 1, TRUE);
+          } else {
+            set_int(lp, i + 1, TRUE);
+          }
+        }
+        obj[i + 1] = objective[i];
+      }
+      std::vector<std::pair<int, double>> rowmap[rhs.size()];
+      for (unsigned int i = 0; i < N_var; ++i) {
+        for (unsigned j = 0; j < rowindofcol[i].size(); ++j) {
+          rowmap[rowindofcol[i][j]].push_back(std::make_pair(i + 1, constrvalues[i][j]));
+        }
+      }
+      for (unsigned int i = 0; i < rhs.size(); ++i) {
+        double weightv[rowmap[i].size()];
+        int indexv[rowmap[i].size()];
+        for (unsigned j = 0; j < rowmap[i].size(); ++j) {
+          indexv[j] = rowmap[i][j].first;
+          weightv[j] = rowmap[i][j].second;
+        }
+        switch (sens[i]) {
+          case 'E':
+          default:
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, EQ, rhs[i])) logger->error("error");
+            }
+            break;
+          case 'G':
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, GE, rhs[i])) logger->error("error");
+            }
+            break;
+          case 'L':
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, LE, rhs[i])) logger->error("error");
+            }
+            break;
+        }
+      }
+      set_obj_fn(lp, obj);
+      set_minim(lp);
+      set_timeout(lp, Blocks.size());
+      //static int write_cnt{0};
+      //if (write_cnt < 100) {
+      //  write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt++) + ".lp").c_str()));
+      //}
+      set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
+      int ret = solve(lp);
+      if (ret != 0 && ret != 1) {
+        delete_lp(lp);
+        ++const_cast<design&>(mydesign)._infeasILPFail;
+        return false;
+      }
+      double var[N_var];
+      for (unsigned i = 0; i < N_var; ++i) var[i] = 0;
+      int Norig_columns, Norig_rows, i;
+      Norig_columns = get_Norig_columns(lp);
+      Norig_rows = get_Norig_rows(lp);
+      for(i = 1; i <= Norig_columns; i++) {
+        var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
+      }
+      delete_lp(lp);
+      area_ilp = var[N_var - 1] * var[N_var - 2];
+      for (int i = 0; i < mydesign.Blocks.size(); i++) {
+        Blocks[i].x = roundupint(var[i * 4]);
+        Blocks[i].y = roundupint(var[i * 4 + 1]);
+        Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
+        Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
+      }
+      // calculate HPWL from ILP solution
+      for (int i = 0; i < mydesign.Nets.size(); ++i) {
+        int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+        HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+      }
+      return true;
     }
 
     // TODO: Control by an environment variable
@@ -2601,7 +2710,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           names[i] = &(namesvec[i])[0];
         }
       }
-      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()), names, rownamesarr);
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
       ++write_cnt;
     }*/
 
@@ -2617,7 +2726,6 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       return false;
     }
     sighandler = signal(SIGINT, sighandler);
-    int minx(INT_MAX), miny(INT_MAX);
     //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
     //  area_ilp += (objective[i] * var[i]);
     //}
@@ -2625,23 +2733,21 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
-      minx = std::min(minx, Blocks[i].x);
-      miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
       Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     }
-    /** may fail place on grid constraint
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x -= minx;
-      Blocks[i].y -= miny;
-    }
-    **/
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
       HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
+  /** may fail place on grid constraint
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    Blocks[i].x -= minx;
+    Blocks[i].y -= miny;
+    }
+   **/
 
   return true;
 }
@@ -2722,11 +2828,11 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
   return true;
 }
 
-double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
-
-  if (mydesign.Blocks.empty()) return -1;
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP) {
+  if (mydesign.Blocks.empty()) return false;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolutionCore");
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
+  if (snapGridILP) ++const_cast<design&>(mydesign)._numSnapGridFail;
   if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
     Blocks[0].x = 0; Blocks[0].y = 0;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
@@ -2734,11 +2840,11 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return false;
     } else if (mydesign.rightAlign()) {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false)) return false;
     } else {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true))  return false;
       std::vector<Block> blockslocal{Blocks};
       // frame and solve ILP to flush top/right
       if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false) 
@@ -2749,7 +2855,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     // snap up coordinates to grid
-    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++){
+    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++) {
       if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
       //if sympair center is not on grid
       {
@@ -2774,6 +2880,17 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
         }
       }
     }
+  }
+  return true;
+}
+
+double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
+
+  if (!GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+  ++const_cast<design&>(mydesign)._totalNumCostCalc;
+  bool snapGridILP{false};
+  if (mydesign.Blocks.size() > 1) {
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
       bool non_zero_xoffset = false, non_zero_yoffset = false;
       for (auto instance : mydesign.Blocks[i]) {
@@ -2785,7 +2902,10 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
         }
         if (non_zero_xoffset) break;
       }
-      if (!non_zero_xoffset) roundup(Blocks[i].x, x_pitch);
+      if (!non_zero_xoffset && Blocks[i].x % x_pitch != 0) {
+        snapGridILP = true;
+        break;
+      }
       for (auto instance : mydesign.Blocks[i]) {
         for (auto offset : instance.yoffset) {
           if (offset != 0) {
@@ -2795,9 +2915,14 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
         }
         if (non_zero_yoffset) break;
       }
-      if (!non_zero_yoffset) roundup(Blocks[i].y, y_pitch);
+      if (!non_zero_yoffset && Blocks[i].y % y_pitch != 0) {
+        snapGridILP = true;
+        break;
+      }
     }
   }
+
+  if (snapGridILP && !GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, true)) return -1;
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // calculate LL and UR
@@ -2975,6 +3100,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   }
   return calculated_cost;
 }
+
 
 double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution_select");

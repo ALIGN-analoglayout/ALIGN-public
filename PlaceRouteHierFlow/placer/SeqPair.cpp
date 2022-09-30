@@ -531,6 +531,8 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 
   if (_seqPairEnum->valid()) {
     logger->info("Enumerated search");
+    posPair = _seqPairEnum->PosPair();
+    negPair = _seqPairEnum->NegPair();
   } else {
     KeepOrdering(caseNL);
     _seqPairEnum.reset();
