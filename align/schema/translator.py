@@ -65,7 +65,7 @@ class ConstraintTranslator():
                     elif hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
                         # checking if sub hierarchy instances are in const defined
                         _child_const = {
-                            x: f_node_map(const.instances, node_map)
+                            x : f_node_map(list(const.instances), node_map)
                             if x == "instances"
                             else getattr(const, x)
                             for x in const.__fields_set__
@@ -76,7 +76,7 @@ class ConstraintTranslator():
                     elif isinstance(const, constraint.Floorplan):
                         # checking if sub hierarchy floorplan instances are in const defined
                         _child_const = {
-                            x: f_node_map(const.regions, node_map)
+                            x: f_node_map(list(const.regions), node_map)
                             if x == "regions"
                             else getattr(const, x)
                             for x in const.__fields_set__
@@ -86,9 +86,9 @@ class ConstraintTranslator():
                             logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
                             self._add_const(self.child_const, _child_const)
                     elif isinstance(const, constraint.SymmetricBlocks):
-                            # checking if sub hierarchy floorplan instances are in const defined
+                            # checking if sub hierarchy symmetricblocks instances are in const defined
                         _child_const = {
-                            x: f_node_map(const.pairs, node_map)
+                            x: f_node_map(list(const.pairs), node_map)
                             if x == "pairs"
                             else getattr(const, x)
                             for x in const.__fields_set__
@@ -263,5 +263,6 @@ def f_node_map(instance_list:list, node_map:dict):
             for inst in instance_list:
                 if inst in node_map.keys():
                     updated_list.append(node_map[inst])
+    logger.debug(f"virtual hierarchy mapped inst{updated_list}")
     return updated_list
 
