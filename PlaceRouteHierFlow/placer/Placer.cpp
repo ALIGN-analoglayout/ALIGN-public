@@ -249,12 +249,14 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       ILP_solver tsol(designData, hyper.ilp_solver);
       curr_cost = tsol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
       tsol.cost = curr_cost;
+      logger->debug("Solving enumeration {0} cost {1}", cnt, curr_cost);
       if (curr_cost >= 0) {
         oData[curr_cost] = std::make_pair(curr_sp, tsol);
         ReshapeSeqPairMap(oData, nodeSize);
       }
       exhausted = curr_sp.EnumExhausted();
       curr_sp.PerturbationNew(designData);
+      ++cnt;
       if (cnt >= maxcount) break;
     }
     if (curr_sp.EnumExhausted()) {
