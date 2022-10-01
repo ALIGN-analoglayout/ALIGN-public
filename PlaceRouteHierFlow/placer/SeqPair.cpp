@@ -535,7 +535,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
     negPair = _seqPairEnum->NegPair();
     selected = _seqPairEnum->Selected();
   } else {
-    KeepOrdering(caseNL);
+    if (!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty()) KeepOrdering(caseNL);
     _seqPairEnum.reset();
   }
 }
@@ -1753,7 +1753,10 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         fail++;
       }
     }
-    bool ok = (_seqPairEnum && _seqPairEnum->valid()) ? true : KeepOrdering(caseNL);
+    bool ok{_seqPairEnum && _seqPairEnum->valid()};
+    if (!ok && (!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty())) {
+      ok = KeepOrdering(caseNL);
+    }
     // logger->info("KeepOrdering end: {0}", ok);
 
     SameSelected(caseNL);
