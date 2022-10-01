@@ -53,6 +53,22 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     }
     if (offsetpresent) break;
   }
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  int gridx_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int gridy_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size() + 1);
     int WL = 0;
@@ -78,12 +94,12 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       tmpblock.xoffset = (it->instance).at(bb).xoffset;
       if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
       tmpblock.xpitch = (it->instance).at(bb).xpitch;
-      if (tmpblock.xpitch == 1) tmpblock.xpitch = drcInfo.Metal_info[0].grid_unit_x;
+      if (tmpblock.xpitch == 1) tmpblock.xpitch = gridx_pitch;
       tmpblock.xflip = (it->instance).at(bb).xflip;
       tmpblock.yoffset = (it->instance).at(bb).yoffset;
       if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
       tmpblock.ypitch = (it->instance).at(bb).ypitch;
-      if (tmpblock.ypitch == 1) tmpblock.ypitch = drcInfo.Metal_info[1].grid_unit_y;
+      if (tmpblock.ypitch == 1) tmpblock.ypitch = gridy_pitch;
       tmpblock.yflip = (it->instance).at(bb).yflip;
       // cout<<tmpblock.height<<endl;
       // [wbxu] Following lines have be updated to support multi contacts

@@ -17,7 +17,7 @@ from .build_pnr_model import gen_DB_verilog_d
 logger = logging.getLogger(__name__)
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, placer_sa_iterations):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, placer_sa_iterations, placer_ilp_runtime):
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
@@ -39,6 +39,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
     hyper.use_ILP_placer = place_using_ILP
+    hyper.ILP_runtime_limit = placer_ilp_runtime
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
@@ -295,7 +296,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
-                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, placer_sa_iterations):
+                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, placer_sa_iterations, placer_ilp_runtime):
 
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
@@ -320,7 +321,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
-              placer_sa_iterations=placer_sa_iterations)
+              placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
         update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 
@@ -337,7 +338,7 @@ def placer_driver(*, cap_map, cap_lef_s,
                   lambda_coeff, scale_factor,
                   select_in_ILP, place_using_ILP, seed,
                   use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir,
-                  placer_sa_iterations):
+                  placer_sa_iterations, placer_ilp_runtime):
 
     fpath = toplevel_args_d['input_dir']
 
@@ -379,6 +380,6 @@ def placer_driver(*, cap_map, cap_lef_s,
                                                                                       select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                                                                                       use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                                       primitives=primitives,
-                                                                                      placer_sa_iterations=placer_sa_iterations)
+                                                                                      placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics

@@ -1,6 +1,7 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
 #include <iostream>
+#include <algorithm>
 #include <malloc.h>
 #include <signal.h>
 #include "ILPSolverIf.h"
@@ -2550,8 +2551,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    // TODO: Make the time limit below a hyperparam
-    solverif.setTimeLimit(10*Blocks.size());
+    PlacerHyperparameters hyper;
+    solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(Blocks.size())));
     if (solvertouse == SYMPHONY) {
       solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
           values.data(), collb.data(), colub.data(),
@@ -2629,7 +2630,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       }
       set_obj_fn(lp, obj);
       set_minim(lp);
-      set_timeout(lp, Blocks.size());
+      PlacerHyperparameters hyper;
+      set_timeout(lp, std::max(hyper.ILP_runtime_limit, static_cast<int>(Blocks.size())));
       //static int write_cnt{0};
       //if (write_cnt < 100) {
       //  write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt++) + ".lp").c_str()));
@@ -2673,7 +2675,6 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
         write_cnt = 0;
         block_name = mydesign.name;
       }
-      // TODO: Replace angular brackets with square brackets  
       if (write_cnt < 10) {
         char* names[N_var];
         std::vector<std::string> namesvec(N_var);
@@ -2718,6 +2719,9 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           if (namesvec[i].empty()) {
             namesvec[i] = ("var" + std::to_string(i));
             names[i] = &(namesvec[i])[0];
+          } else if (namesvec[i].find("<") != std::string::npos || namesvec[i].find(">") != std::string::npos) {
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '<', '[');
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '>', ']');
           }
         }
         solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);

@@ -156,6 +156,11 @@ class CmdlineParser():
                             choices=['symphony', 'lpsolve'],
                             help='ILP Solver used by placer ')
 
+
+        parser.add_argument('--placer_ilp_runtime',
+                            type=int,
+                            default=1,
+                            help="Runtime limit for ILP in each iteration of placement")
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
