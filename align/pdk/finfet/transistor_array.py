@@ -47,6 +47,7 @@ class MOSGenerator(CanvasPDK):
 
         if os.getenv('ALIGN_DISABLE_TAP', None) is not None:
             self.add_tap = False
+            logger_func(f"Tap insertion is disabled")
 
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True

@@ -22,7 +22,7 @@ def test_cmp_vanilla():
         {"constraint": "GroundPorts", "ports": ["vssx"]}
     ]
     example = build_example(name, netlist, constraints)
-    ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL)
+    ckt_dir, run_dir = run_example(example, n=1, cleanup=False, log_level=LOG_LEVEL, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
     counter = len([fname.name for fname in (run_dir / '2_primitives').iterdir() if fname.name.startswith('DP_NMOS') and fname.name.endswith('.lef')])
     assert counter == 6, f'Diff pair in comparator should have 6 variants. Found {counter}.'
     if CLEANUP:
@@ -88,7 +88,7 @@ def test_cmp_fp1():
     ]
     example = build_example(name, netlist, constraints)
     # Stop flow early for memory profiling
-    run_example(example, cleanup=CLEANUP, area=4e10, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, area=4e10, log_level=LOG_LEVEL, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
     # run_example(example, cleanup=CLEANUP, area=4e10, additional_args=['--flow_stop', '2_primitives'])
     # run_example(example, cleanup=CLEANUP, area=4e10, additional_args=['--flow_stop', '3_pnr:prep', '--router_mode', 'no_op'])
 
@@ -487,7 +487,7 @@ def test_opamp_poor():
     ]
     example = build_example(name, netlist, constraints)
     # TODO: increase n after #1083 is fixed
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
 def test_comparator_analog():
@@ -522,7 +522,7 @@ def test_comparator_analog():
             ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
 def test_analog_mux_4to1():
