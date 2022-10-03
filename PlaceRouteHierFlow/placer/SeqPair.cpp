@@ -417,7 +417,7 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
-  orient.resize(caseNL.GetSizeofBlocks());
+  orient.resize(caseNL.GetSizeofBlocks(), placerDB::N);
   selected.resize(caseNL.GetSizeofBlocks(), 0);
 
   for (int i = 0; i < caseNL.GetSizeofBlocks(); ++i) {
@@ -1754,7 +1754,7 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         }
         fail++;
       }
-      bool ok{(!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty()) ? true : KeepOrdering(caseNL)};
+      bool ok{(!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty()) ? KeepOrdering(caseNL) : true};
       SameSelected(caseNL);
       retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
     }

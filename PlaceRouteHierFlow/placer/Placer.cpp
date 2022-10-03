@@ -258,7 +258,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       if (cnt >= maxcount) break;
     }
     if (curr_sp.EnumExhausted()) {
-      logger->info("Exhausted all permutations of sequence pairs");
+      logger->info("Exhausted all permutations of sequence pairs {0}", oData.size());
       return oData;
     }
   }

@@ -5024,7 +5024,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
       alpha = 1;
     }
     alpha *= mydesign.Nets.at(netIdx).weight;  // add weight to reflect the modification for bigMacros
-    if (sbIdx != -1) {                         // in symmetry group
+    if (sbIdx != -1 && !curr_sp.Enumerate()) {                         // in symmetry group
       placerDB::Smark axis = curr_sp.GetSymmBlockAxis(sbIdx);
       if (cp == (int)i) {  // self-symmetric
         if (axis == placerDB::V) {
@@ -5555,10 +5555,12 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
     UpdateBlockinHierNode(mydesign, ort, node, i, curr_sp.GetBlockSelected(i), drcInfo);
   }
   UpdateTerminalinHierNode(mydesign, node, drcInfo);
-  for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
-    int SBidx = mydesign.SNets.at(i).SBidx;
-    placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
-    UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+  if (!curr_sp.Enumerate()) {
+    for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
+      int SBidx = mydesign.SNets.at(i).SBidx;
+      placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
+      UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+    }
   }
 }
 
