@@ -122,6 +122,8 @@ def test_Floorplan(db):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M1']]))
         with pytest.raises(AssertionError):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
+        with pytest.raises(ValidationError):
+            db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], []]))
 
 
 def test_SameTemplate(db):

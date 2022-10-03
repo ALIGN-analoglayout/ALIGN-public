@@ -257,15 +257,23 @@ def test_propagate_constraint():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2", "mn3", "mn4"], "instance_name": "xm"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2", "mn3", "mn4"], "instance_name": "xm", "template_name": "mygroup"},
         {
             "constraint": "Floorplan",
             "order": True,
-            "regions": [["mn1", "mn2", "mn3", "mn4"]]
+            "regions": [["mn1", "mn2", "mn3"], ["mn4"]]
         }
     ]
     example = build_example(name, netlist, constraints)
     ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_library, primitive_library)
+
     ckt = ckt_library.find(name)
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" not in constraints, f"{ckt.constraints}"
+
+    ckt = [ckt for ckt in ckt_library if ckt.name.startswith("MYGROUP")][0]
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" in constraints, f"{ckt.constraints}"
+
     clean_data(name)
