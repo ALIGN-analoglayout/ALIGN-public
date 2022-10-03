@@ -50,7 +50,7 @@ def test_cmp_fp1_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=4e10, max_errors=5 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, area=4e10, max_errors=5 if not BYPASS_ERRORS else 0, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
 def test_cmp_fp2_pr(partial_routing):
@@ -76,7 +76,7 @@ def test_cmp_fp2_pr(partial_routing):
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=5e9, max_errors=1 if not BYPASS_ERRORS else 0)
+    run_example(example, cleanup=CLEANUP, area=5e9, max_errors=1 if not BYPASS_ERRORS else 0, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
 def test_ota_six_pr(partial_routing):

@@ -60,6 +60,8 @@ class ConstraintTranslator():
                         ]
                     ):
                         self.child_const.append(const)
+                    elif isinstance(const,constraint.ConfigureCompiler) and const.propagate:
+                        self.child_const.append(const)
                     elif hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
                         # checking if sub hierarchy instances are in const defined
                         _child_const = {
