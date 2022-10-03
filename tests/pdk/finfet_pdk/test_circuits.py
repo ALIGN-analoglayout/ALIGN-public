@@ -115,7 +115,7 @@ def test_cmp_fp2():
         {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
 def test_cmp_fp2_regions():
