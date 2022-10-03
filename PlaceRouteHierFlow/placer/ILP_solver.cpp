@@ -2720,11 +2720,12 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             namesvec[i] = ("var" + std::to_string(i));
             names[i] = &(namesvec[i])[0];
           } else if (namesvec[i].find("<") != std::string::npos || namesvec[i].find(">") != std::string::npos) {
-            std::replace(namesvec[i].begin(), namesvec[i].end(), '<', '[');
-            std::replace(namesvec[i].begin(), namesvec[i].end(), '>', ']');
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '<', '(');
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '>', ')');
           }
         }
         solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
+        logger->debug("writing ilp file {0}", (mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp"));
         ++write_cnt;
       }
     }
@@ -2889,7 +2890,7 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
         if (Blocks[first_id].x>Blocks[second_id].x) {
           roundup(Blocks[first_id].x, x_pitch);
           rounddown(Blocks[second_id].x, x_pitch);
-        }else{
+        } else {
           rounddown(Blocks[first_id].x, x_pitch);
           roundup(Blocks[second_id].x, x_pitch);
         }
@@ -3093,10 +3094,10 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
-  if (cost >= 0.) {
-    // logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-    // logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
-  }
+  //if (cost >= 0.) {
+  //  logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+  //  logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+  //}
   return calculated_cost;
 }
 
@@ -4051,8 +4052,10 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
                   max_dim;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
-  cost += constraint_penalty;
+  if (!isnan(linear_const) && !isnan(multi_linear_const) && !isnan(match_cost)) {
+    constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
+    cost += constraint_penalty;
+  }
   if (cost > 0 && HPWL_extend_net_priority > 0 && cfcost > 0) {
     logger->debug("ILP calculate cost hpwl : {0} cfcost : {1} logcosts : {2} {3} {4} {5}", HPWL_extend_net_priority, cfcost, log(HPWL_extend_net_priority) * hyper.LAMBDA,
         log(cfcost) * hyper.LAMBDA, log(area), cost);

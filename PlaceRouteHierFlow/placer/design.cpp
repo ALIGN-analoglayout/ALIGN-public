@@ -41,18 +41,6 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     _useCache = true;
   }
 
-  bool offsetpresent{false};
-  for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
-    for (int bb = 0; bb < it->instNum; ++bb) {
-      if ((it->instance).at(bb).xoffset.size() > 0 || (it->instance).at(bb).yoffset.size() > 0
-          || ((it->instance).at(bb).width % drcInfo.Metal_info[0].grid_unit_x != 0)
-          || ((it->instance).at(bb).height % drcInfo.Metal_info[1].grid_unit_y != 0)) {
-        offsetpresent = true;
-        break;
-      }
-    }
-    if (offsetpresent) break;
-  }
   int v_metal_index = -1;
   int h_metal_index = -1;
   for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
@@ -69,6 +57,19 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   }
   int gridx_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   int gridy_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  logger->info("grid pitches : {0} {1}", gridx_pitch, gridy_pitch);
+  bool offsetpresent{false};
+  for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
+    for (int bb = 0; bb < it->instNum; ++bb) {
+      if ((it->instance).at(bb).xoffset.size() > 0 || (it->instance).at(bb).yoffset.size() > 0
+          || ((it->instance).at(bb).width % gridx_pitch != 0)
+          || ((it->instance).at(bb).height % gridy_pitch != 0)) {
+        offsetpresent = true;
+        break;
+      }
+    }
+    if (offsetpresent) break;
+  }
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size() + 1);
     int WL = 0;

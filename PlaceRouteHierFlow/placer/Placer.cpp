@@ -28,37 +28,38 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   json jedb = json::parse(jsonStr);
   for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
-    json constraint = concrete["constraints"][0];
-    if (constraint["constraint"] != "PlaceOnGrid") continue;
-    unsigned int start = 0;
-    unsigned int slash = s.find_last_of('_');
-    if (slash != string::npos) {
-      start = slash + 1;
-    }
-    string concrete_name = s.substr(0, slash);
-    int instance_id = atoi(s.substr(start, s.size() - start).c_str());
-    for (auto& block : nodeVec.back().Blocks) {
-      if (block.instance.front().master == concrete_name) {
-        auto& b = block.instance[instance_id];
-        if (constraint["direction"] == "H") {  // horizontal metal
-          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
-            b.yoffset.push_back(offset);
-            b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
-          }
-          b.ypitch = constraint["pitch"];
-          b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
-          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
-            b.yflip = constraint["ored_terms"][0]["scalings"][0];
-          }
-        } else if (constraint["direction"] == "V") {  // vertical metal
-          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
-            b.xoffset.push_back(offset);
-            b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
-          }
-          b.xpitch = constraint["pitch"];
-          b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
-          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
-            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+    for (const auto& constraint : concrete["constraints"]) {
+      if (constraint["constraint"] != "PlaceOnGrid") continue;
+      unsigned int start = 0;
+      unsigned int slash = s.find_last_of('_');
+      if (slash != string::npos) {
+        start = slash + 1;
+      }
+      string concrete_name = s.substr(0, slash);
+      int instance_id = atoi(s.substr(start, s.size() - start).c_str());
+      for (auto& block : nodeVec.back().Blocks) {
+        if (block.instance.front().master == concrete_name) {
+          auto& b = block.instance[instance_id];
+          if (constraint["direction"] == "H") {  // horizontal metal
+            for (auto offset : constraint["ored_terms"][0]["offsets"]) {
+              b.yoffset.push_back(offset);
+              b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
+            }
+            b.ypitch = constraint["pitch"];
+            b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
+            if (constraint["ored_terms"][0]["scalings"].size() < 2) {
+              b.yflip = constraint["ored_terms"][0]["scalings"][0];
+            }
+          } else if (constraint["direction"] == "V") {  // vertical metal
+            for (auto offset : constraint["ored_terms"][0]["offsets"]) {
+              b.xoffset.push_back(offset);
+              b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
+            }
+            b.xpitch = constraint["pitch"];
+            b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
+            if (constraint["ored_terms"][0]["scalings"].size() < 2) {
+              b.xflip = constraint["ored_terms"][0]["scalings"][0];
+            }
           }
         }
       }
