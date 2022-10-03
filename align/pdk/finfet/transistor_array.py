@@ -86,7 +86,7 @@ class MOSGenerator(CanvasPDK):
 
         parameters = {k.lower(): v for k, v in parameters.items()}  # Revert all parameters to lower case
 
-        if parameters.get("drain", "sig") != "sig" or parameters.get("source", "sig"):
+        if parameters.get("drain", "sig") != "sig" or parameters.get("source", "sig") != "sig":
             logger_func(f"Primitive is connected to power grid")
             if self.place_on_grid is None:
                 row_height = 7*self.pdk['M2']['Pitch']
