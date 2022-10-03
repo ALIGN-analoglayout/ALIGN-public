@@ -138,7 +138,8 @@ def gen_param(subckt, primitives, pdk_dir):
 
         for e in subckt.elements:
             assert vt == e.model, f'Primitive with different models not supported {vt} vs {e.model}'
-            assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
+            if values != e.parameters:
+                assert values == e.parameters, f'Primitive with different parameters not supported {values} vs {e.parameters}'
         assert 'M' in values,  f'm: Number of instances not specified {values}'
         assert 'NF' in values, f'nf: Number of fingers not specified {values}'
 
