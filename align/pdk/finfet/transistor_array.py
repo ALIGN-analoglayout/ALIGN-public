@@ -45,6 +45,9 @@ class MOSGenerator(CanvasPDK):
                     for k in const.parameters.keys():
                         assert k in legal_keys, (k, legal_keys)
 
+        if os.getenv('ALIGN_DISABLE_TAP', None) is not None:
+            self.add_tap = False
+
         if os.getenv('PARTIAL_ROUTING', None) is not None:
             self.PARTIAL_ROUTING = True
 
@@ -82,6 +85,18 @@ class MOSGenerator(CanvasPDK):
 
         parameters = {k.lower(): v for k, v in parameters.items()}  # Revert all parameters to lower case
 
+        if parameters.get("drain", "sig") != "sig" or parameters.get("source", "sig"):
+            logger_func(f"Primitive is connected to power grid")
+            if self.place_on_grid is None:
+                row_height = 7*self.pdk['M2']['Pitch']
+                place_on_grid = dict()
+                place_on_grid['constraints'] = [
+                    PlaceOnGrid(direction='H', pitch=2*row_height, ored_terms=[OffsetsScalings(offsets=[0], scalings=[1, -1])]).dict()
+                    ]
+                if not hasattr(self, 'metadata'):
+                    self.metadata = dict()
+                self.metadata['constraints'] = place_on_grid['constraints']
+
         #################################################################################################
         assert pattern in {0, 1, 2}, f'This primitive cannot be generated with this PDK. Unknown pattern {pattern}'
 
@@ -100,13 +115,13 @@ class MOSGenerator(CanvasPDK):
         else:
             assert False, f'Either nf>1 or stack>1 parameter should be defined {parameters}'
 
-        if 'w' in parameters:
+        if 'nfin' in parameters:
+            nfin = parameters['nfin']
+        elif 'w' in parameters:
             nfin = int(float(parameters['w']) * 1e10) // self.pdk['Fin']['Pitch']
             # Divide w by nf for parallel devices
             if device_type == 'parallel':
                 nfin = nfin // nf
-        elif 'nfin' in parameters:
-            nfin = parameters['nfin']
         else:
             assert False, f'Either nfin or w parameter should be defined {parameters}'
 
