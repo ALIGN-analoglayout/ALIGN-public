@@ -57,7 +57,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   }
   int gridx_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
   int gridy_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
-  logger->info("grid pitches : {0} {1}", gridx_pitch, gridy_pitch);
+  logger->debug("grid pitches : {0} {1}", gridx_pitch, gridy_pitch);
   bool offsetpresent{false};
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     for (int bb = 0; bb < it->instNum; ++bb) {
