@@ -1099,7 +1099,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         if (mydesign.Blocks[iter2][0].blockPins.size() > 0) {
           for (const auto& centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
             // calculate contact center
-            intt  pin_x = centerk.x;
+            int  pin_x = centerk.x;
             int pin_y = centerk.y;
             if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
             if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
