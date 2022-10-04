@@ -4019,6 +4019,7 @@ double ILP_solver::CalculateCost(const design& mydesign) const {
   cost += 0.0 / area * hyper.PHI; //dead_area
   cost += linear_const * hyper.PI;
   cost += multi_linear_const * hyper.PII;
+  assert(!isnan(cost));
   return cost;
 }
 

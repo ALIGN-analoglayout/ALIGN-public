@@ -160,7 +160,7 @@ class CmdlineParser():
         parser.add_argument('--placer_ilp_runtime',
                             type=int,
                             default=1,
-                            help="Runtime limit for ILP in each iteration of placement")
+                            help="Runtime limit in seconds for ILP in each iteration of placement")
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
