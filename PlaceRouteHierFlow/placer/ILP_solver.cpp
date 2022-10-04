@@ -3061,7 +3061,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
     feature_value.push_back(temp_feature);
     double temp_sum = 0;
-    for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
+    for (int j = 0; j < neti.connected.size(); j++) if (temp_feature.size() > j) temp_sum += neti.connected[j].alpha * temp_feature[j];
     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
     if(!neti.floating_pin) linear_const += temp_sum;
   }
