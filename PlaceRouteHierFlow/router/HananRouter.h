@@ -8,18 +8,15 @@
 #include <climits>
 #include <set>
 #include <cmath>
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/register/point.hpp>
-#include <boost/geometry/geometries/register/box.hpp>
-#include <boost/geometry/index/rtree.hpp>
+#include <chrono>
+#include <iostream>
+#include <bitset>
+#include <memory>
 
 #include "../PnRDB/datatype.h"
 
-namespace bg = boost::geometry;
-namespace bgi = boost::geometry::index;
-
 namespace Geom {
+
 
 using namespace std;
 //using json = nlohmann::json;
@@ -249,9 +246,6 @@ double Dist(const Geom::Rect& r1, const Geom::Rect& r2, const bool manh = true);
 void MergeLayerRects(Geom::LayerRects& l1, const Geom::LayerRects& l2, Geom::Rect* b = nullptr);
 }
 
-BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(geom::Point, int, bg::cs::cartesian, geom::Point::getx, geom::Point::gety, geom::Point::setx, geom::Point::sety);
-BOOST_GEOMETRY_REGISTER_BOX(geom::Rect, geom::Point, geom::Rect::ll(), geom::Rect::ur());
-
 namespace DRC {
 
 using namespace std; 
@@ -447,6 +441,13 @@ class LayerInfo {
 
 }
 
+
+namespace HananRouter{
+class Router;
+class Via;
+typedef std::vector<std::shared_ptr<Via>> Vias;
+};
+
 namespace Placement {
 
 class Module;
@@ -492,7 +493,6 @@ class Net {
     std::set<const Pin*> _pins;
     std::vector<Pin*> _vpins;
     Geom::LayerRects _routeshapes;
-    Router::Vias _vias;
     Geom::Rect _bbox;
     int _unroute : 1;
     //PinPairs reorderPins() const;
@@ -510,7 +510,7 @@ class Net {
     void addPin(const Pin* p) { _pins.insert(p); }
     void print() const;
     const std::string& name() const { return _name; }
-    void route(Router::Router& r, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update);
+    void route(HananRouter::Router& r, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update);
     const Geom::LayerRects& routeShapes() const { return _routeshapes; }
     const Geom::Rect& bbox() const { return _bbox; }
     const bool open() const { return _unroute ? true : false; }
@@ -538,7 +538,7 @@ class Instance {
     const Module* _m;
     Pins _pins;
     Geom::LayerRects _routeshapes;
-    Router::Vias _vias;
+    HananRouter::Vias _vias;
     void build(const bool rebuild = false);
     Geom::Rect _bbox;
   public:
@@ -567,7 +567,7 @@ class Module {
     Nets _nets;
     Pins _pins;
     Instances _instances;
-    Router::Vias _vias;
+    HananRouter::Vias _vias;
     std::map<const Net*, std::vector<std::pair<Instance*, std::string>>> _tmpnetpins;
     Geom::LayerRects _obstacles;
     Geom::Rect _bbox;
@@ -640,7 +640,7 @@ class Module {
     }
 
     void print() const;
-    void route(Router::Router& r);
+    void route(HananRouter::Router& r);
     void plot() const;
 
     const Geom::Rect& bbox() const { return _bbox; }
@@ -664,7 +664,7 @@ class Netlist {
     Netlist(const std::string& plfile, const::std::string& leffile, const DRC::LayerInfo& lf, const int uu);
     ~Netlist();
     void print() const;
-    void route(Router::Router& r)
+    void route(HananRouter::Router& r)
     {
       if (!_valid) return;
       for (auto& m : _modules) m.second->route(r);
@@ -752,7 +752,6 @@ class Via {
 
 
 };
-typedef std::vector<std::shared_ptr<Via>> Vias;
 
 class CostFn {
   private:
@@ -777,12 +776,10 @@ class CostFn {
         if (i < numLayers-1) _layerPairCost[i][i+1] = 2;
       }
       //for (int i = 0; i < numLayers; ++i) {
-      //  COUT << "layer : " << i << " cost : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
+      //  std::cout << "layer : " << i << " cost : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
       //}
     }
 };
-
-class Router;
 
 enum Direction
 {
@@ -855,14 +852,14 @@ class Node {
     void setParent(const Node* n) { _parent = n; }
     void print(const std::string& s) const
     {
-      COUT << s << ' ' << _x << ' ' << _y << ' ' << _z << ' ' << _fcost << ' ' << _tcost <<  ' ' << cost();
-      if (_expanddir.test(NORTH)) COUT << " N";
-      if (_expanddir.test(SOUTH)) COUT << " S";
-      if (_expanddir.test(EAST))  COUT << " E";
-      if (_expanddir.test(WEST))  COUT << " W";
-      if (_expanddir.test(UP))    COUT << " VU";
-      if (_expanddir.test(DOWN))  COUT << " VD";
-      COUT << '\n';
+      std::cout << s << ' ' << _x << ' ' << _y << ' ' << _z << ' ' << _fcost << ' ' << _tcost <<  ' ' << cost();
+      if (_expanddir.test(NORTH)) std::cout << " N";
+      if (_expanddir.test(SOUTH)) std::cout << " S";
+      if (_expanddir.test(EAST))  std::cout << " E";
+      if (_expanddir.test(WEST))  std::cout << " W";
+      if (_expanddir.test(UP))    std::cout << " VU";
+      if (_expanddir.test(DOWN))  std::cout << " VD";
+      std::cout << '\n';
     }
 };
 typedef std::vector<Node*> NodePtrVec;
@@ -983,9 +980,9 @@ class Router {
       }
       _nodes.clear();
       _nodes.resize(_maxLayer + 1);
-      COUT << "flushing nodes\n";
+      std::cout << "flushing nodes\n";
 #if DEBUG
-      COUT << " remaining " << Node::_nodectr << ' ' << _nodeset.size() << "\n";
+      std::cout << " remaining " << Node::_nodectr << ' ' << _nodeset.size() << "\n";
       for (auto& n : _nodeset) {
         n->print("rem node : ");
       }
@@ -1057,5 +1054,6 @@ class Router {
     void writeLEF() const;
 };
 
+  void HananRoute(PnRDB::hierNode& node, const PnRDB::Drc_info& drcData, const int Lmetal, const int Hmetal);
 }
 #endif

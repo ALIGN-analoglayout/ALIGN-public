@@ -61,6 +61,6 @@ void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData
     PowerRouter(node, drcData, Lmetal, Hmetal, 1, inputfile);
   } else if (mode == 8) {
     logger->info("RouteWork {8}", mode);
-    Hanan::DetailRouter(node, drcData, Lmetal, Hmetal);
+    HananRouter::HananRoute(node, drcData, Lmetal, Hmetal);
   }
 };
