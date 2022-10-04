@@ -34,8 +34,8 @@ def floorplan(m, *, sizes, fp, symmetrize=False, order=True):
             m += m.var_by_name('llx') <= m.var_by_name(f'{row[0]}_llx') 
             m += m.var_by_name(f'{row[-1]}_urx') <= m.var_by_name('urx')
 
-        for l, r in zip(row[:-1], row[1:]):
-            m += m.var_by_name(f'{l}_urx') <= m.var_by_name(f'{r}_llx')
+            for l, r in zip(row[:-1], row[1:]):
+                m += m.var_by_name(f'{l}_urx') <= m.var_by_name(f'{r}_llx')
 
     else:
         for row in fp:
@@ -100,9 +100,9 @@ def floorplan(m, *, sizes, fp, symmetrize=False, order=True):
 
 
 
-def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True):
+def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True, constraints=None, objective=None):
     m = Model(sense=MINIMIZE, solver_name=CBC)
-    m.verbose = 0
+    m.verbose = 1
 
 
     for k, _ in sizes.items():
@@ -167,30 +167,38 @@ def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True):
 
     z = m.add_var('z')
 
-    m += 1*m.var_by_name('urx') + 1*m.var_by_name('ury') + 1*m.var_by_name('hpwl') == z
+    if objective is None:
+        objective = {'urx': 1, 'ury': 1, 'hpwl': 1}
+
+    if constraints is None:
+        constraints = {}
+
+    m += xsum(m.var_by_name(k)*v for k, v in objective.items()) == z
+
+    for k, v in constraints.items():
+        m += m.var_by_name(k) <= v
 
     m.objective += minimize(z)
 
     m.write('model.lp')
 
-    status = m.optimize()
+    status = m.optimize(max_seconds_same_incumbent=60.0)
     if status == OptimizationStatus.OPTIMAL:
         print(f'optimal solution found: cost={m.objective_value}')
     elif status == OptimizationStatus.FEASIBLE:
         print(f'solution with cost {m.objective_value} current lower bound: {m.objective_bound}')
-    elif status == OptimizationStatus.NO_SOLUTION_FOUND:
-        print(f'no solution found, lower bound is: {m.objective_bound}')
     else:
-        print(m.conflict_graph)
+        raise Exception('No solution to ILP')
 
     if status == OptimizationStatus.OPTIMAL or status == OptimizationStatus.FEASIBLE:
         print('Solution:')
         for v in m.vars:
             print('\t', v.name, v.x)
+        print(f'Number of solutions: {m.num_solutions}')
 
     return m
 
-def draw(m, *, fp):
+def draw(m, *, fp, wires):
     xs, ys = [], []
     def add_point(x, y):
         xs.append(x)
@@ -216,10 +224,25 @@ def draw(m, *, fp):
             add_rect(llx, lly, urx, ury)
             add_space()
             fX, fY = m.var_by_name(f'{cell}_fX').x, m.var_by_name(f'{cell}_fY').x
-            fig.add_trace(go.Scatter(x=xs, y=ys, fill='toself', mode='none', name=f'{cell} fX={fX:.0f} fY={fY:.0f}'))
+            fig.add_trace(go.Scatter(x=xs, y=ys, fill='toself', mode='lines', name=f'{cell} fX={fX:.0f} fY={fY:.0f}'))
+
+    for wire_name, _ in wires:
+        llx, lly = m.var_by_name(f'{wire_name}_llx').x, m.var_by_name(f'{wire_name}_lly').x
+        urx, ury = m.var_by_name(f'{wire_name}_urx').x, m.var_by_name(f'{wire_name}_ury').x
+        xs.clear()
+        ys.clear()
+        add_rect(llx, lly, urx, ury)
+        add_space()
+        fig.add_trace(go.Scatter(x=xs, y=ys, fill='toself', mode='lines', line={'color': 'RoyalBlue'}, name=f'{wire_name}'))
+        
 
     #fig.update_xaxes(showticklabels=False)
     #fig.update_yaxes(showticklabels=False)
+
+    fig.update_yaxes(
+        scaleanchor = "x",
+        scaleratio = 1
+    )
 
     fig.show()
 
@@ -235,13 +258,13 @@ def test_simple():
 
     m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
 
-    draw(m, fp=fp)
+    draw(m, fp=fp, wires=wires)
 
     assert m.var_by_name('hpwl').x == 0.5
 
 def test_large():
 
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
     fp = [['x', 'y', 'z'],
           ['a', 'b', 'c', 'd'],
           ['e', 'f', 'g', 'h'],
@@ -255,7 +278,7 @@ def test_large():
 
     m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
 
-    draw(m, fp=fp)
+    draw(m, fp=fp, wires=wires)
 
     assert m.var_by_name('hpwl').x == 1.5
 
@@ -266,7 +289,7 @@ def test_large():
 
 def test_large_symmetrize():
 
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
     fp = [['x', 'y', 'z'],
           ['a', 'b', 'c', 'd'],
           ['e', 'f', 'g', 'h'],
@@ -280,7 +303,8 @@ def test_large_symmetrize():
 
     m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, symmetrize=True)
 
-    draw(m, fp=fp)
+    draw(m, fp=fp, wires=wires)
+
 
     assert m.var_by_name('hpwl').x == 1.5
 
@@ -289,13 +313,12 @@ def test_large_symmetrize():
     assert m.var_by_name('a_fY').x == 0
     assert m.var_by_name('x_fY').x == 1
 
-def test_large_noorder():
+def test_large_noorder_3_wide():
 
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
     fp = [['x', 'y', 'z'],
           ['a', 'b', 'c', 'd'],
-          ['e', 'f', 'g', 'h'],
-          ['i', 'j', 'k', 'l']
+          ['e', 'f', 'g', 'h']
     ]
     sizes = { nm: (2,2) for row in fp for nm in row }
 
@@ -303,19 +326,118 @@ def test_large_noorder():
                            {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
                           ] for row in fp for nm in row }
 
-    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False)
+    constraints = { 'urx': 3 }
 
-    draw(m, fp=fp)
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False, constraints=constraints)
 
-    assert m.var_by_name('hpwl').x == 1.5
+    draw(m, fp=fp, wires=wires)
 
-    assert m.var_by_name('i_fY').x == 0
-    assert m.var_by_name('e_fY').x == 1
-    assert m.var_by_name('a_fY').x == 0
-    assert m.var_by_name('x_fY').x == 1
+def test_large_noorder_6_tall():
+
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                           {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                          ] for row in fp for nm in row }
+
+    constraints = { 'ury': 6 }
+
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False, constraints=constraints)
+
+    draw(m, fp=fp, wires=wires)
+
+def test_large_noorder_5_tall():
+
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
+    fp = [['x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                           {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                          ] for row in fp for nm in row }
+
+    constraints = { 'ury': 5 }
+
+    with pytest.raises(Exception) as exc_info:
+        m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False, constraints=constraints)
+        draw(m, fp=fp, wires=wires)
+
+
+def test_snake_no_order():
+
+    wires = [('w0', [('w', (.25,.25,.25,.25)), ('x', (1.75,1.75,1.75,1.75))]),
+             ('w1', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))]),
+             ('w2', [('y', (.25,.25,.25,.25)), ('z', (1.75,1.75,1.75,1.75))]),
+             ('w3', [('z', (.25,.25,.25,.25)), ('d', (1.75,1.75,1.75,1.75))]),
+             ('w4', [('d', (.25,.25,.25,.25)), ('c', (1.75,1.75,1.75,1.75))]),
+             ('w5', [('c', (.25,.25,.25,.25)), ('b', (1.75,1.75,1.75,1.75))]),
+             ('w6', [('b', (.25,.25,.25,.25)), ('a', (1.75,1.75,1.75,1.75))]),
+             ('w7', [('a', (.25,.25,.25,.25)), ('e', (1.75,1.75,1.75,1.75))]),
+             ('w8', [('e', (.25,.25,.25,.25)), ('f', (1.75,1.75,1.75,1.75))]),
+             ('w9', [('f', (.25,.25,.25,.25)), ('g', (1.75,1.75,1.75,1.75))]),
+             ('wa', [('g', (.25,.25,.25,.25)), ('h', (1.75,1.75,1.75,1.75))])]
+             
+    fp = [['w', 'x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h']
+    ]
+
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    if True:
+        place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                               {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                              ] for row in fp for nm in row }
+    else:
+        place_on_grid = {}
+
+    constraints = {'ury': 6}
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=False, constraints=constraints)
+    draw(m, fp=fp, wires=wires)
+
+def test_snake_order():
+
+    wires = [('w0', [('w', (.25,.25,.25,.25)), ('x', (1.75,1.75,1.75,1.75))]),
+             ('w1', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))]),
+             ('w2', [('y', (.25,.25,.25,.25)), ('z', (1.75,1.75,1.75,1.75))]),
+             ('w3', [('z', (.25,.25,.25,.25)), ('d', (1.75,1.75,1.75,1.75))]),
+             ('w4', [('d', (.25,.25,.25,.25)), ('c', (1.75,1.75,1.75,1.75))]),
+             ('w5', [('c', (.25,.25,.25,.25)), ('b', (1.75,1.75,1.75,1.75))]),
+             ('w6', [('b', (.25,.25,.25,.25)), ('a', (1.75,1.75,1.75,1.75))]),
+             ('w7', [('a', (.25,.25,.25,.25)), ('e', (1.75,1.75,1.75,1.75))]),
+             ('w8', [('e', (.25,.25,.25,.25)), ('f', (1.75,1.75,1.75,1.75))]),
+             ('w9', [('f', (.25,.25,.25,.25)), ('g', (1.75,1.75,1.75,1.75))]),
+             ('wa', [('g', (.25,.25,.25,.25)), ('h', (1.75,1.75,1.75,1.75))])]
+             
+    fp = [['w', 'x', 'y', 'z'],
+          ['a', 'b', 'c', 'd'],
+          ['e', 'f', 'g', 'h']
+    ]
+    sizes = { nm: (2,2) for row in fp for nm in row }
+
+    if True:
+        place_on_grid = { nm: [{'axis': 'y', 'pitch': 4, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                               {'axis': 'x', 'pitch': 1, 'ored_terms': [{'offsets':[0], 'scalings': [-1,1]}]},
+                              ] for row in fp for nm in row }
+    else:
+        place_on_grid = {}
+
+    constraints = {}
+    m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid, order=True, constraints=constraints)
+    draw(m, fp=fp, wires=wires)
+
+
 
 def test_duplicate_offset():
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
     fp = [['x', 'y']]
     sizes = { nm: (2,2) for row in fp for nm in row }
 
@@ -327,7 +449,7 @@ def test_duplicate_offset():
         m = place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
 
 def test_bad_scaling():
-    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (.75,.75,.75,.75))])]
+    wires = [('w', [('x', (.25,.25,.25,.25)), ('y', (1.75,1.75,1.75,1.75))])]
     fp = [['x', 'y']]
     sizes = { nm: (2,2) for row in fp for nm in row }
 
