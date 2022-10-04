@@ -227,14 +227,14 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       if (match_const.blockid2 == -1) logger->error("ReadConstraint: MatchBlock: couldn't find block2: {0}", block_second);
       if (match_const.blockid1 != -1 && match_const.blockid2 != -1) node.Match_blocks.push_back(match_const);
     } else if (constraint["const_name"] == "bias_graph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Hgraph = distance;
       node.bias_Vgraph = distance;
     } else if (constraint["const_name"] == "bias_Hgraph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Hgraph = distance;
     } else if (constraint["const_name"] == "bias_Vgraph") {
-      int distance = constraint["distance"];
+      int distance = static_cast<int>(constraint["distance"]) * 2 / ScaleFactor;
       node.bias_Vgraph = distance;
     } else if (constraint["const_name"] == "ShieldNet") {
       string shield_net = constraint["net_name"];
@@ -622,6 +622,39 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
          DoNotRoute.push_back(net);
       }
       node.DoNotRoute = DoNotRoute;
+    } else if (constraint["const_name"] == "ChargeFlow") {
+      if (constraint.find("scaled_rms_charge_flow") != constraint.end()) {
+        auto& cfdata = constraint["scaled_rms_charge_flow"];
+        for (const auto& net : cfdata.items()) {
+          auto& cfdatanet = net.value();
+          for (const auto& pinpair : cfdatanet.items()) {
+            auto pp = static_cast<std::string>(pinpair.key());
+            auto pos = pp.find(',');
+            if (pos != std::string::npos) {
+              node.CFValues[net.key()].push_back(std::make_tuple(pp.substr(0, pos), pp.substr(pos + 1), pinpair.value()));
+            }
+          }
+        }
+      }
+      if (constraint.find("dist_type") != constraint.end()) {
+        node.CFdist_type = (constraint["dist_type"] == "Manhattan") ? 0 : 1;
+      }
+    } else if (constraint["const_name"] == "Spread") {
+      PnRDB::SpreadConstraint s;
+      s.horizon = (constraint["direction"] == "horizontal") ? 1 : 0;
+      s.distance = static_cast<int>(constraint["distance"]) * 2;
+      for (auto block : constraint["blocks"]) {
+        bool found{false};
+        for (int i = 0; i < (int)node.Blocks.size(); i++) {
+          if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
+            s.blocks.insert(i);
+            found = true;
+            break;
+          }
+        }
+        if (!found) logger->error("Block {0} in Spread not found in netlist", block);
+      }
+      node.SpreadConstraints.push_back(s);
     }
   }
 }
@@ -633,7 +666,7 @@ void PnRdatabase::ReadPrimitiveOffsetPitch(vector<PnRDB::lefMacro> &primitive, c
   if(jedb.contains("metadata")){
     json constraints = jedb["metadata"]["constraints"];
     for (auto constraint : constraints) {
-      if (constraint["constraint"] == "place_on_grid"){
+      if (constraint["constraint"] == "PlaceOnGrid"){
         string s = constraint["direction"];
         if (constraint["direction"] == "H") {  // horizontal metal
           for(auto offset:constraint["ored_terms"][0]["offsets"]){

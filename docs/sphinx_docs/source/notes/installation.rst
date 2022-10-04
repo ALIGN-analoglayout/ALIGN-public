@@ -6,7 +6,7 @@ Step 0: Check prerequisites
 --------------------------------
 The following dependencies must be met by your system:
   * gcc >= 6.1.0 (For C++14 support)
-  * python >= 3.7 (For `PEP 560 <https://www.python.org/dev/peps/pep-0560/>`_ support)
+  * python >= 3.8 (For walrus (`:=`) operator support
 
 You may optionally install `Boost <https://www.boost.org/>`_ & `lp_solve <http://lpsolve.sourceforge.net/5.5/>`_ using your distro package manager (apt, yum etc) to save some compilation time.
 
@@ -43,7 +43,7 @@ Step 2: Create a `Python virtualenv <https://docs.python.org/3/tutorial/venv.htm
 
 Step 3a: Install ALIGN as a USER
 --------------------------------------
-If you already have a working installation of Python 3.7 or Python 3.8, the easiest way to install ALIGN is:
+If you already have a working installation of Python 3.8 or above, the easiest way to install ALIGN is:
 
 .. code-block:: bash
 
@@ -69,6 +69,8 @@ For ALIGN (C++) Extension developers:
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
+    pip install -v --no-build-isolation -e . --no-deps --install-option='-DBUILD_TESTING=ON'
+
 
 .. note::
     The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
@@ -79,7 +81,7 @@ If you want the build-type to be Release (-O3), you can issue the following thre
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release' --install-option='-DBUILD_TESTING=ON'
 
 or
 
@@ -87,7 +89,7 @@ or
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DBUILD_TESTING=ON'
 
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
@@ -105,6 +107,18 @@ Then in a python shell:
     from pstats import SortKey
     p = pstats.Stats('stats')
     p.sort_stats(SortKey.TIME).print_stats(20)
+
+To run tests similar to the checkin and merge-to-master CI runs run:
+
+.. code-block:: bash
+
+    cd $ALIGN_HOME
+    # Checkin
+    pytest -vv
+    CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 -- tests/integration/
+    # Merge to master
+    CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 -- tests/integration/ tests/pdks
+
 
 
 Step 4: Run ALIGN

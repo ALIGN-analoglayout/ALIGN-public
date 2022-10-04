@@ -29,7 +29,7 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
     json constraint = concrete["constraints"][0];
-    if (constraint["constraint"] != "place_on_grid") continue;
+    if (constraint["constraint"] != "PlaceOnGrid") continue;
     unsigned int start = 0;
     unsigned int slash = s.find_last_of('_');
     if (slash != string::npos) {
@@ -70,7 +70,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   auto logger = spdlog::default_logger()->clone("placer.Placer.setPlacementInfoFromJson");
   logger->debug("Calling setPlacementInfoFromJson");
   json modules = json::parse(hyper.placement_info_json);
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(), drcInfo);
   int idx = 0;
   //pad nodeVec to match the number of concretes in JSON file
   for (const auto& m : modules) {
@@ -246,27 +246,22 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
-    if (hyper.select_in_ILP)
-      curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-    else
-      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
 
-    curr_sp.cacheSeq(designData);
+    if (!curr_sp.isSeqInCache(designData)) {
+      if (hyper.select_in_ILP)
+        curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
+      else
+        curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      curr_sp.cacheSeq(designData);
+    }
 
-    
+    logger->debug("trial_count {0} curr_cost {1} ", trial_count, curr_cost);
+
     if (curr_cost > 0) {
       logger->info("Required {0} perturbations to generate a feasible solution.", trial_count);
       break;
     } else {
-      int trial_cached = 0;
-      while (++trial_cached < hyper.max_cache_hit_count) {
-        if (!curr_sp.PerturbationNew(designData)) continue;
-        if (!curr_sp.isSeqInCache(designData)) {
-          break;
-        }
-      }
-      mean_cache_miss += trial_cached;
-      ++num_perturb;
+      curr_sp.PerturbationNew(designData);
     }
   }
 
@@ -302,6 +297,10 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       MAX_Iter = effort;
     }
     while (i <= MAX_Iter) {
+
+      // TODO: Refactor the logic below so that we never ever solve ILP for a SP that has been solved in the past!
+      //  Store cost to the sequence pair cache 
+
       // cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
       SeqPair trial_sp(curr_sp);
@@ -428,7 +427,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
 #endif
   int mode = 0;
   // Read design netlist and constraints
-  design designData(nodeVec.back(), hyper.SEED);
+  design designData(nodeVec.back(), drcInfo, hyper.SEED);
   _rng.seed(hyper.SEED);
   //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
@@ -478,7 +477,7 @@ void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierN
 #endif
   // int mode=0;
   // Read design netlist and constraints
-  design designData(nodeVec.back());
+  design designData(nodeVec.back(),drcInfo);
   // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
   // SeqPair curr_sp(designData);

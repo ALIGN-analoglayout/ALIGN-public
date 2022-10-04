@@ -35,32 +35,32 @@ def test_flow_each_step():
 
     os.chdir(run_dir)
 
-    args = [f'../../examples/{nm}', '--flow_stop', '1_topology']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_stop', '1_topology']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None
 
-    args = [f'../../examples/{nm}', '--flow_start', '2_primitives', '--flow_stop', '2_primitives']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_start', '2_primitives', '--flow_stop', '2_primitives']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None
 
-    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:prep', '--flow_stop', '3_pnr:prep']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_start', '3_pnr:prep', '--flow_stop', '3_pnr:prep']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None
 
-    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:place', '--flow_stop', '3_pnr:place']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_start', '3_pnr:place', '--flow_stop', '3_pnr:place']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None
 
-    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:gui', '--flow_stop', '3_pnr:gui']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_start', '3_pnr:gui', '--flow_stop', '3_pnr:gui']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None
 
-    args = [f'../../examples/{nm}', '--flow_start', '3_pnr:route']
+    args = [f'{ALIGN_HOME}/examples/{nm}', '--flow_start', '3_pnr:route']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None

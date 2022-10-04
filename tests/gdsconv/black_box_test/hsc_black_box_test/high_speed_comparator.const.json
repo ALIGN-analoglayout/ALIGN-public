@@ -14,11 +14,11 @@
         "direction" : "top_to_bottom",
         "instances": ["mn0", "dp0", "ccn", "ccp"]
     },
-    {"constraint": "align",
+    {"constraint": "Align",
         "line" : "h_bottom",
         "instances": ["mp9", "mp7", "dp0", "mp8", "mp10"]
     },
-    {"constraint": "align",
+    {"constraint": "Align",
         "line" : "h_bottom",
         "instances": ["xi0", "ccp", "xi1"]
     },

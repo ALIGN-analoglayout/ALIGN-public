@@ -3,7 +3,7 @@ from align.pdk.finfet import MOS, CanvasPDK
 from .utils import compare_with_golden, place
 
 
-def test_zero():
+def test_zero_mos():
     cv = CanvasPDK()
     ox = oy = 0
     track_pattern = {'G': [6], 'S': [4], 'D': [2]}
