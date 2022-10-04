@@ -1099,7 +1099,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
         if (mydesign.Blocks[iter2][0].blockPins.size() > 0) {
           for (const auto& centerk : mydesign.Blocks[iter2][0].blockPins[iter].center) {
             // calculate contact center
-            int pin_x = centerk.x;
+            intt  pin_x = centerk.x;
             int pin_y = centerk.y;
             if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][0].width - pin_x;
             if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][0].height - pin_y;
@@ -1145,7 +1145,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
             newp.y += Blocks[connectedj.iter2].y;
             pos.push_back(newp);
           }
-          center_points.push_back(pos);
+          if (!pos.empty()) center_points.push_back(pos);
         } else {
           placerDB::point newp;
           newp.x = mydesign.Blocks[connectedj.iter2][0].width / 2;
@@ -3053,7 +3053,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
           newp.y += Blocks[connectedj.iter2].y;
           pos.push_back(newp);
         }
-        center_points.push_back(pos);
+        if (!pos.empty()) center_points.push_back(pos);
       } else if (connectedj.type == placerDB::Terminal) {
         center_points.push_back({mydesign.Terminals[connectedj.iter].center});
       }
