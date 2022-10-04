@@ -97,7 +97,8 @@ def floorplan(m, *, sizes, fp, symmetrize=False, order=True):
 
 def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True, constraints=None, objective=None):
     m = Model(sense=MINIMIZE, solver_name=CBC)
-    m.verbose = 1
+    # set to one to see more progress output with the solver
+    m.verbose = 0
 
     for k, _ in sizes.items():
         for tag in ['llx', 'lly', 'urx', 'ury']:
@@ -275,7 +276,7 @@ def test_large():
 
     draw(m, fp=fp, wires=wires)
 
-    assert m.var_by_name('hpwl').x == 1.5
+    assert m.var_by_name('hpwl').x == 2.0
 
     assert m.var_by_name('i_fY').x == 0
     assert m.var_by_name('e_fY').x == 1
@@ -302,7 +303,7 @@ def test_large_symmetrize():
     draw(m, fp=fp, wires=wires)
 
 
-    assert m.var_by_name('hpwl').x == 1.5
+    assert m.var_by_name('hpwl').x == 2.0
 
     assert m.var_by_name('i_fY').x == 0
     assert m.var_by_name('e_fY').x == 1
