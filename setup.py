@@ -1,8 +1,6 @@
 import sys
 import os
 
-import sys
-
 try:
     from skbuild import setup
     from setuptools import find_packages
@@ -90,7 +88,8 @@ setup(name='align',
           'dash',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict'
+          'flatdict',
+          'mip'
       ],
       extras_require={
           'test': [
