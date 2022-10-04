@@ -114,6 +114,14 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
                   totEnum);
   } else {
     _maxEnum = _posEnumerator.NumSequences();
+    totEnum = _maxEnum;
+    for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
+      totEnum *= casenl.Blocks.at(i).size();
+      if (maxIter < totEnum) {
+        _valid = 0;
+        break;
+      }
+    }
   }
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
@@ -122,7 +130,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
   if (_posEnumerator.valid() && _negEnumerator.valid()) {
     _posEnumerator.NextPermutation(_posPair, 0);
     _negEnumerator.NextPermutation(_negPair, 0);
-    logger->debug("max enum : {0}", _maxEnum);
+    logger->debug("max number of seq pairs : {0} max number of seq pair / select combinations : {1}", _maxEnum, totEnum);
   }
 
   _maxSize = 0;

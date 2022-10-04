@@ -90,7 +90,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   // Read design netlist and constraints
   // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
+  SeqPair curr_sp(designData, ceil(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
@@ -243,7 +243,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (curr_sp.Enumerate()) {
-    const auto maxcount = size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
+    const auto maxcount = ceil(log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
     size_t cnt{0};
     while (!curr_sp.EnumExhausted()) {
       ILP_solver tsol(designData, hyper.ilp_solver);
@@ -456,7 +456,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   _rng.seed(hyper.SEED);
   //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
+  SeqPair curr_sp(designData, ceil(log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData, hyper.ilp_solver);
   // clock_t start, finish;
