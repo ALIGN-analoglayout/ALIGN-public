@@ -67,7 +67,7 @@ class BaseModel(pydantic.BaseModel):
         validate_assignment = True
         extra = 'forbid'
         allow_mutation = False
-        copy_on_model_validation = 'none'
+        copy_on_model_validation = False
 
     def __init__(self, *args, **kwargs):
         self._parent = _ctx.get()
@@ -133,7 +133,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     class Config:
         validate_assignment = True
         extra = 'forbid'
-        copy_on_model_validation = 'none'
+        copy_on_model_validation = False
         allow_mutation = False
 
     def append(self, item: DataT):
@@ -222,7 +222,7 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
     class Config:
         validate_assignment = True
         extra = 'forbid'
-        copy_on_model_validation = 'none'
+        copy_on_model_validation = False
         allow_mutation = False
 
     def __init__(self, *args, **kwargs):

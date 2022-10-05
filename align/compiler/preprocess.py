@@ -1,7 +1,7 @@
 from align.schema.types import set_context
 from align.schema.subcircuit import SubCircuit
 from ..schema import constraint
-from .util import get_next_level, get_base_model, gen_key
+from .util import get_next_level, get_base_model
 from ..schema.graph import Graph
 import logging
 from align.schema.instance import Instance
@@ -24,7 +24,6 @@ def preprocess_stack_parallel(ckt_data, design_name):
         MergeSeriesDevices = True
         MergeParallelDevices = True
         RemoveDummyDevices = True
-        SameTemplate = True
         if isinstance(subckt, SubCircuit):
             logger.debug(f"Preprocessing stack/parallel circuit name: {subckt.name}")
             for const in subckt.constraints:
@@ -34,7 +33,6 @@ def preprocess_stack_parallel(ckt_data, design_name):
                     MergeSeriesDevices = const.merge_series_devices
                     MergeParallelDevices = const.merge_parallel_devices
                     RemoveDummyDevices = const.remove_dummy_devices
-                    SameTemplate = const.same_template
             if not IsDigital:
                 logger.debug(
                     f"Starting no of elements in subckt {subckt.name}: {len(subckt.elements)}"
@@ -51,9 +49,6 @@ def preprocess_stack_parallel(ckt_data, design_name):
                 if RemoveDummyDevices:
                     # remove dummy devices powered down or shorted D/G/S
                     remove_dummy_devices(subckt)
-                if SameTemplate:
-                    #generates same template for identical subcircuit instances in the circuit
-                    same_template(subckt)
                 logger.debug(
                     f"After reducing series/parallel, elements count in subckt {subckt.name}: {len(subckt.elements)}"
                 )
@@ -92,7 +87,7 @@ def remove_dummies(library, dummy_hiers, top):
                                 f"Removing instance {inst} with instance {ckt.elements[0].model}"
                             )
                             replace[inst.name] = ckt.elements[0]
-
+                            # @Parijat, is there a better way to modify?
                     with set_context(other_ckt.elements):
                         for x, y in replace.items():
                             ele = other_ckt.get_element(x)
@@ -399,32 +394,5 @@ def remove_dummy_devices(subckt):
             remove_inst.append(inst)
 
     G = Graph(subckt)
-    if len(subckt.elements)>1 and len(subckt.elements) == len(remove_inst):
-        assert False, f"subcircuit {subckt.name} has all dummy devices, please remove this hiearchy or turn off remove_dummy_devices feature"
-    logger.debug(f"removed dummy devices {[inst.name for inst in remove_inst]}")
     for inst in remove_inst:
         G.remove(inst)
-
-
-def same_template(subckt):
-    """same_template _summary_
-
-    creating same template constarint for all sub-hierarchy instances in the circuit
-    Reduces the search space for placement.
-
-    Args:
-        subckt (_type_): _description_
-    """
-    logger.debug(f"creating same template constarint for all sub-hierarchy instances in the circuit")
-    groups = {} #model:instance names
-    for inst in subckt.elements:
-        if isinstance(subckt.parent.find(inst.model), SubCircuit):
-            key = inst.model + gen_key(inst.parameters)
-            if key in groups:
-                groups[key].append(inst.name)
-            else:
-                groups[key] = [inst.name]
-    for group in groups.values():
-        if len(group) > 1 :
-            with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.SameTemplate(instances=group))

@@ -1,29 +1,13 @@
 [
     {"constraint":"HorizontalDistance", "abs_distance":0},
     {"constraint":"VerticalDistance", "abs_distance":0},
-    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "instance_name": "x_dp_mn1_mn2"},
-    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "instance_name": "x_ccn_mn3_mn4"},
-    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "instance_name": "x_ccp_mp5_mp6"},
-    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "instance_name": "x_inv_n_mp11_mn13"},
-    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "instance_name": "x_inv_p_mp12_mn14"},
-    {"constraint": "Order",
+    {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"],   "name": "dp"},
+    {"constraint":"GroupBlocks",  "instances": ["mn3", "mn4"],   "name": "ccn"},
+    {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"],   "name": "ccp"},
+    {"constraint": "GroupBlocks", "instances": ["mp11", "mn13"], "name": "inv_n"},
+    {"constraint": "GroupBlocks", "instances": ["mp12", "mn14"], "name": "inv_p"},
+    {"constraint": "order",
         "direction" : "top_to_bottom",
-        "instances": ["mn0", "x_dp_mn1_mn2", "x_ccn_mn3_mn4", "x_ccp_mp5_mp6"]
-    },
-    {
-        "constraint": "Order",
-        "direction": "left_to_right",
-        "instances": [
-            "mp9",
-            "mp10"
-        ]
-    },
-    {
-        "constraint": "Order",
-        "direction": "left_to_right",
-        "instances": [
-            "mp7",
-            "mp8"
-        ]
+        "instances": ["mn0", "dp", "ccn", "ccp"]
     }
 ]

@@ -1,25 +1,25 @@
 [
         {
-          "constraint": "PowerPorts",
+          "constraint": "power_ports",
           "ports": [
             "VDD"
           ]
         },
         {
-          "constraint": "GroundPorts",
+          "constraint": "ground_ports",
           "ports": [
             "VSS"
           ]
         },
         {
-          "constraint": "ClockPorts",
+          "constraint": "clock_ports",
           "ports": [
             "PHI1",
             "PHI2"
           ]
         },
         {
-          "constraint": "SymmetricBlocks",
+          "constraint": "symmetric_blocks",
           "pairs": [
             [
               "XI0"
@@ -68,7 +68,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "NET63",
           "net2": "NET62",
           "pins1": [
@@ -86,7 +86,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "NET64",
           "net2": "NET66",
           "pins1": [
@@ -104,7 +104,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "NET67",
           "net2": "NET68",
           "pins1": [
@@ -120,7 +120,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "NET72",
           "net2": "NET60",
           "pins1": [
@@ -136,7 +136,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "VINN",
           "net2": "VINP",
           "pins1": [
@@ -152,7 +152,7 @@
           "direction": "V"
         },
         {
-          "constraint": "SymmetricNets",
+          "constraint": "symmetric_nets",
           "net1": "VOUTN",
           "net2": "VOUTP",
           "pins1": [

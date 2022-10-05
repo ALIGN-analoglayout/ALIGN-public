@@ -1,8 +1,6 @@
-import os
 import pathlib
+import sys
 import pytest
-from .utils import get_test_id, WORK_DIR
-import importlib
 
 
 pdks = []
@@ -23,13 +21,8 @@ def get_xcells_pattern(primitive, pattern, x_cells):
         pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
     return x_cells, pattern
 
-
-def check_shorts(pdk, cmdlist):
-    spec = importlib.util.spec_from_file_location("Align_primitives", pdk / 'Align_primitives.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    main = getattr(module, "main")
-    gen_parser = getattr(module, "gen_parser")
+def check_shorts(cmdlist):
+    from Align_primitives import main, gen_parser
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
     uc = main(args)
@@ -42,16 +35,15 @@ def check_shorts(pdk, cmdlist):
 
 
 def build_test(pdk, prim, *, n, X, Y):
+    sys.path.insert(0, str(pdk))
     b = f"{prim}_n{n}_X{X}_Y{Y}"
-    cwd = pathlib.Path(os.getcwd())
-    check_shorts(pdk, ['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}", '-o', f"{cwd}"])
+    #print(f'Testing {b} ...')
+    check_shorts(['-p', prim, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}"])
+    sys.path.pop(0)
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_mos_smoke(pdk):
-    test_dir = WORK_DIR / get_test_id()
-    test_dir.mkdir(parents=True, exist_ok=True)
-    os.chdir(test_dir)
     x = 2
     y = 2
     nfins = 12
@@ -73,8 +65,6 @@ def test_mos_smoke(pdk):
     ids=lambda x: x.replace('_{}', ''))
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_mos_full(pdk, pstr, typ, nfins, x, y):
-    test_dir = WORK_DIR / get_test_id()
-    test_dir.mkdir(parents=True, exist_ok=True)
-    os.chdir(test_dir)
     prim = pstr.format(typ)
     build_test(pdk, prim, n=nfins, X=x, Y=y)
+

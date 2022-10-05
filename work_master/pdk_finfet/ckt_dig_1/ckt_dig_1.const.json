@@ -1,7 +1,0 @@
-[
-  {
-    "constraint": "ConfigureCompiler",
-    "auto_constraint": false,
-    "propagate": true
-  }
-]

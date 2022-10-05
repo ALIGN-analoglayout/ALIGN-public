@@ -20,67 +20,19 @@
             ]
         },
         {
-            "direction": "H",
-            "const_name": "Ordering",
-            "abut": false,
-            "blocks": [
-                "X_MP9",
-                "X_MP10"
-            ]
-        },
-        {
-            "direction": "H",
-            "const_name": "Ordering",
-            "abut": false,
-            "blocks": [
-                "X_MP7",
-                "X_MP8"
-            ]
-        },
-        {
             "pairs": [
                 {
                     "type": "sympair",
-                    "block1": "X_INV_N_MP11_MN13",
-                    "block2": "X_INV_P_MP12_MN14"
+                    "block1": "X_MP10",
+                    "block2": "X_MP9"
+                },
+                {
+                    "type": "selfsym",
+                    "block": "X_MP7_MP8"
                 }
             ],
             "const_name": "SymmBlock",
             "axis_dir": "V"
-        },
-        {
-            "axis_dir": "V",
-            "const_name": "SymmNet",
-            "net1": {
-                "blocks": [
-                    {
-                        "name": "X_INV_P_MP12_MN14",
-                        "pin": "P1",
-                        "type": "pin"
-                    },
-                    {
-                        "name": "VON",
-                        "pin": null,
-                        "type": "terminal"
-                    }
-                ],
-                "name": "VON"
-            },
-            "net2": {
-                "blocks": [
-                    {
-                        "name": "X_INV_N_MP11_MN13",
-                        "pin": "P1",
-                        "type": "pin"
-                    },
-                    {
-                        "name": "VOP",
-                        "pin": null,
-                        "type": "terminal"
-                    }
-                ],
-                "name": "VOP"
-            }
         }
     ]
 }

@@ -1,18 +1,18 @@
 [
         {
-          "constraint": "HorizontalDistance",
+          "constraint": "horizontal_distance",
           "abs_distance": 0
         },
         {
-          "constraint": "VerticalDistance",
+          "constraint": "vertical_distance",
           "abs_distance": 0
         },
         {
-          "constraint": "CompactPlacement",
+          "constraint": "compact_placement",
           "style": "center"
         },
         {
-          "constraint": "SymmetricBlocks",
+          "constraint": "symmetric_blocks",
           "pairs": [
             [
               "X_MN0"
@@ -42,7 +42,7 @@
           "direction": "V"
         },
         {
-          "constraint": "DoNotIdentify",
+          "constraint": "do_not_identify",
           "instances": [
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6",

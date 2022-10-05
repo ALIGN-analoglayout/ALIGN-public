@@ -23,7 +23,6 @@ class PlacerHyperparameters {
   bool select_in_ILP = false;
   int ilp_solver = 0; // 0 : SYMPHONY, 1 : lpsolve
   bool use_ILP_placer = false;
-  int ILP_runtime_limit = 0;
 
   std::string place_on_grid_constraints_json;
 };

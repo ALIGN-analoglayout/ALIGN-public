@@ -183,7 +183,6 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("PowerNets", &block::PowerNets)
     .def_readwrite("blockPins", &block::blockPins)
     .def_readwrite("interMetals", &block::interMetals)
-    .def_readwrite("interVias", &block::interVias)
     .def_readwrite("dummy_power_pin", &block::dummy_power_pin);
   py::class_<terminal>( m, "terminal")
     .def( py::init<>())
@@ -359,57 +358,6 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("UpperRect", &ViaModel::UpperRect)
     .def_readwrite("R", &ViaModel::R);
 
-  py::class_<via_info>( m, "via_info")
-    .def( py::init<>())
-    .def_readwrite("name", &via_info::name)
-    .def_readwrite("layerNo", &via_info::layerNo)
-    .def_readwrite("lower_metal_index", &via_info::lower_metal_index)
-    .def_readwrite("upper_metal_index", &via_info::upper_metal_index)
-    .def_readwrite("width", &via_info::width)
-    .def_readwrite("width_y", &via_info::width_y)
-    .def_readwrite("cover_l", &via_info::cover_l)
-    .def_readwrite("cover_l_P", &via_info::cover_l_P)
-    .def_readwrite("cover_u", &via_info::cover_u)
-    .def_readwrite("cover_u_P", &via_info::cover_u_P)
-    .def_readwrite("dist_ss", &via_info::dist_ss)
-    .def_readwrite("dist_ss_y", &via_info::dist_ss_y)
-    .def_readwrite("R", &via_info::R)
-    .def_readwrite("gds_datatype", &via_info::gds_datatype);
-
-  py::class_<metal_info>( m, "metal_info")
-    .def( py::init<>())
-    .def_readwrite("name", &metal_info::name)
-    .def_readwrite("layerNo", &metal_info::layerNo)
-    .def_readwrite("width", &metal_info::width)
-    .def_readwrite("dist_ss", &metal_info::dist_ss)
-    .def_readwrite("direct", &metal_info::direct)
-    .def_readwrite("grid_unit_x", &metal_info::grid_unit_x)
-    .def_readwrite("grid_unit_y", &metal_info::grid_unit_y)
-    .def_readwrite("minL", &metal_info::minL)
-    .def_readwrite("maxL", &metal_info::maxL)
-    .def_readwrite("dist_ee", &metal_info::dist_ee)
-    .def_readwrite("offset", &metal_info::offset)
-    .def_readwrite("unit_R", &metal_info::unit_R)
-    .def_readwrite("unit_C", &metal_info::unit_C)
-    .def_readwrite("unit_CC", &metal_info::unit_CC)
-    .def_readwrite("gds_datatype", &metal_info::gds_datatype)
-    ;
-
-  py::class_<GdsDatatype>( m, "GdsDatatype")
-    .def( py::init<>())
-    .def_readwrite("Draw", &GdsDatatype::Draw)
-    .def_readwrite("Pin", &GdsDatatype::Pin)
-    .def_readwrite("Label", &GdsDatatype::Label)
-    .def_readwrite("Blockage", &GdsDatatype::Blockage)
-    ;
-
-  py::class_<Boundary>( m, "Boundary")
-    .def( py::init<>())
-    .def_readwrite("name", &Boundary::name)
-    .def_readwrite("layerNo", &Boundary::layerNo)
-    .def_readwrite("gds_datatype", &Boundary::gds_datatype)
-    ;
-
   py::class_<design_info>( m, "design_info")
     .def( py::init<>())
     .def_readwrite("Hspace", &design_info::Hspace)
@@ -548,7 +496,6 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
-    .def_readwrite("ILP_runtime_limit", &PlacerHyperparameters::ILP_runtime_limit)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

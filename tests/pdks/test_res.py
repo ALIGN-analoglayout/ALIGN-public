@@ -1,8 +1,6 @@
-import os
 import pathlib
+import sys
 import pytest
-from .utils import get_test_id, WORK_DIR
-import importlib
 
 pdks = []
 for pdk in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
@@ -10,12 +8,8 @@ for pdk in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
         pdks.append(pdk)
 
 
-def check_shorts(pdk, cmdlist):
-    spec = importlib.util.spec_from_file_location("fabric_Res", pdk / 'fabric_Res.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    main = getattr(module, "main")
-    gen_parser = getattr(module, "gen_parser")
+def check_shorts(cmdlist):
+    from fabric_Res import main, gen_parser
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
     uc = main(args)
@@ -25,15 +19,14 @@ def check_shorts(pdk, cmdlist):
 
 
 def build_test(pdk, b, *, X, Y, n, r):
-    cwd = pathlib.Path(os.getcwd())
-    check_shorts(pdk, ['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}', '-o', f"{cwd}"])
+    sys.path.insert(0, str(pdk))
+    # print(str(pdk))
+    check_shorts(['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}'])
+    sys.path.pop(0)
 
 
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_res_smoke(pdk):
-    test_dir = WORK_DIR / get_test_id()
-    test_dir.mkdir(parents=True, exist_ok=True)
-    os.chdir(test_dir)
     x = 2
     y = 2
     n = 2
@@ -48,7 +41,4 @@ def test_res_smoke(pdk):
 @pytest.mark.parametrize("x", range(1, 4), ids=lambda x: f'X{x}')
 @pytest.mark.parametrize("pdk", pdks, ids=lambda x: x.name)
 def test_res(pdk, x, y, n, r):
-    test_dir = WORK_DIR / get_test_id()
-    test_dir.mkdir(parents=True, exist_ok=True)
-    os.chdir(test_dir)
     build_test(pdk, f'res_X{x}_Y{y}_h{n}_r{r}', X=x, Y=y, n=n, r=r)

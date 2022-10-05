@@ -32,7 +32,7 @@ def test_basic_lib():
     with set_context(dp_const):
         x = constraint.SymmetricBlocks(direction="V", pairs=[["M1", "M2"]])
     assert x in dp_const
-    assert isinstance(dp_const[1], constraint.SymmetricBlocks)
+    assert dp_const[1].constraint == "symmetric_blocks"
     assert dp_const[1].pairs == [["M1", "M2"]]
 
 
@@ -46,7 +46,7 @@ def test_basic_models():
     assert len(ckt_parser.library) == 5
     shutil.rmtree(dummy_pdk_dir)
 
-def test_subckt_generator_dummy():
+def test_subckt_generator():
     mydir = pathlib.Path(__file__).resolve().parent
     name = f'ckt_{get_test_id()}'.upper()
     dummy_pdk_dir = mydir / name

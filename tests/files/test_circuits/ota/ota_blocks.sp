@@ -9,10 +9,10 @@ M0 DA G S vdd Switch_PMOS
 M1 DB G S vdd Switch_PMOS
 .ends CMC_PMOS_S_nfin10_n12_X1_Y1_RVT
 
-.subckt x_dp_mn1_mn2_NMOS_nfin75_n12_X7_Y1_RVT DA GA S DB GB
+.subckt DP_NMOS_nfin75_n12_X7_Y1_RVT DA GA S DB GB
 M0 DA GA S B Switch_NMOS
 M1 DB GB S B Switch_NMOS
-.ends x_dp_mn1_mn2_NMOS_nfin75_n12_X7_Y1_RVT
+.ends DP_NMOS_nfin75_n12_X7_Y1_RVT
 
 .subckt CMC_PMOS_nfin15_n12_X2_Y1_RVT DA G SA DB SB
 M0 DA G SA B Switch_PMOS

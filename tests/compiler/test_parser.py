@@ -166,11 +166,11 @@ def test_simple_circuit():
     model = lib.find(circuit.elements[7].model)
     assert model.name == "CAPACITOR"
     assert model.pins == ["PLUS", "MINUS"]
-    assert model.parameters == {"W": "1", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1', 'L':'1', 'M':'1'}
+    assert model.parameters == {"C": "1", "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'}
     assert circuit.elements[7].pins == {"PLUS": "VIN", "MINUS": "NET6"}
     assert circuit.elements[7].parameters == {
-        "W": "1.0000000000000001E-07",
-        "VALUE": "0", 'PARALLEL': '1', 'STACK': '1', 'L': '1.0000000000000001E-07', 'M': '1'
+        "C": "1.0000000000000002E-14",
+        "VALUE": "0", 'PARALLEL': '1', 'STACK': '1'
     }
 
     assert circuit.elements[8].name == "LL1"

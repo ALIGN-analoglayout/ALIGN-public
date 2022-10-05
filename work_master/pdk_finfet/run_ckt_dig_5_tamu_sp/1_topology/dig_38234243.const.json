@@ -1,9 +1,0 @@
-[
-  {
-    "constraint": "SameTemplate",
-    "instances": [
-      "M1",
-      "M2"
-    ]
-  }
-]

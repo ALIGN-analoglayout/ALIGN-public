@@ -1,10 +1,10 @@
 [
     {"constraint": "PowerPorts", "ports": ["vccx"]},
     {"constraint": "GroundPorts", "ports": ["vssx"]},
-    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp"},
-    {"constraint": "GroupBlocks", "instances": ["m7", "m8"], "instance_name": "xnrail"},
-    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail"},
-    {"constraint": "GroupBlocks", "instances": ["m3", "m4"], "instance_name": "xls"},
-    {"constraint": "GroupBlocks", "instances": ["m5", "m6"], "instance_name": "xostage"},
-    {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mtail"], ["xnrail"], ["xprail"], ["xdp"], ["xls"], ["xostage"]]}
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "name": "dp"},
+    {"constraint": "GroupBlocks", "instances": ["m7", "m8"], "name": "nrail"},
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "name": "prail"},
+    {"constraint": "GroupBlocks", "instances": ["m3", "m4"], "name": "ls"},
+    {"constraint": "GroupBlocks", "instances": ["m5", "m6"], "name": "ostage"},
+    {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mtail"], ["nrail"], ["prail"], ["dp"], ["ls"], ["ostage"]]}
 ]

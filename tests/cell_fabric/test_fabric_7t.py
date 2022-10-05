@@ -7,7 +7,7 @@ from align.cell_fabric.transformation import Transformation
 
 mydir = pathlib.Path(__file__).resolve().parent
 
-def test_nunit_no_duplicates_7t():
+def test_nunit_no_duplicates():
     c = fabric_7t.Canvas()
 
     for (x,y) in ( (x,y) for x in range(4) for y in range(2)):

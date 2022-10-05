@@ -163,21 +163,6 @@
       "UnitR":  {"Mean":10}
     },
     {
-      "Layer": "VT",
-      "GdsLayerNo": 501,
-      "GdsDatatype":{"Draw":0},
-      "Stack": [null, "M1"],
-      "SpaceX": 600,
-      "SpaceY": 400,
-      "WidthX": 300,
-      "WidthY": 300,
-      "VencA_L": 0,
-      "VencA_H": 0,
-      "VencP_L": 0,
-      "VencP_H": 0,
-      "R": {"Mean": 10}
-    },
-    {
       "Layer": "V1",
       "GdsLayerNo": 201,
       "GdsDatatype":{"Draw":0},

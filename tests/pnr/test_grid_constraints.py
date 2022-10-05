@@ -86,7 +86,7 @@ def test_split_directions_and_merge():
 
     assert by_direction['H'][0].pitch == 2
     assert by_direction['V'][0].pitch == 3
-
+    
 def test_gen_constraints():
 
     leaf_a0 = {
@@ -96,7 +96,7 @@ def test_gen_constraints():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [0], "scalings": [1]}]
@@ -111,7 +111,7 @@ def test_gen_constraints():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [10], "scalings": [1]}]
@@ -149,7 +149,7 @@ def test_gen_constraints():
     assert module_top['constraints'][0]['pitch'] == 20
     assert set(module_top['constraints'][0]['ored_terms'][0]['offsets']) == {0}
     assert set(module_top['constraints'][0]['ored_terms'][0]['scalings']) == {1}
-
+    
 
 
 def test_gen_constraints_flip():
@@ -161,7 +161,7 @@ def test_gen_constraints_flip():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 20,
                 "ored_terms": [{"offsets": [0,2], "scalings": [1]}]
@@ -213,7 +213,7 @@ def test_gen_constraints_multiple():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 4,
                 "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
@@ -228,7 +228,7 @@ def test_gen_constraints_multiple():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 6,
                 "ored_terms": [{"offsets": [0, 1, 2], "scalings": [1]}]
@@ -275,7 +275,7 @@ def test_gen_constraints_internal():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 4,
                 "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
@@ -290,7 +290,7 @@ def test_gen_constraints_internal():
         "terminals": [],
         "constraints": [
             {
-                "constraint": "PlaceOnGrid",
+                "constraint": "place_on_grid",
                 "direction": "H",
                 "pitch": 6,
                 "ored_terms": [{"offsets": [0, 1, 2], "scalings": [1]}]

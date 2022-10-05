@@ -1,2 +1,0 @@
-DIFFERENT WIDTH ('Rectangles on layer Rvt with the same 2x centerline 3570 but different widths {420, 588}:', ([1, 3], [([2280, 1491, 2520, 2079], None, 'drawing', False), ([1160, 1575, 1880, 1995], None, 'drawing', False), ([520, 1491, 760, 2079], None, 'drawing', False)]))
-DIFFERENT WIDTH ('Rectangles on layer Rvt with the same 2x centerline 8274 but different widths {168, 420}:', ([1, 3], [([1880, 3927, 2280, 4347], None, 'drawing', False), ([440, 4053, 680, 4221], None, 'drawing', False)]))

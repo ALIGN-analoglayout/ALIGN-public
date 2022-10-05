@@ -3,7 +3,6 @@ import pathlib
 from align.schema import constraint, Model, Instance, SubCircuit, Library
 from align.schema.checker import SolutionNotFoundError
 from align.schema.types import set_context
-from pydantic import ValidationError
 
 
 @pytest.fixture
@@ -27,7 +26,6 @@ def db():
         subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
         subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
         subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
-        subckt.elements.append(Instance(name='M7', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, parameters={"MYPARAMETER": "7"}))
     return subckt.constraints
 
 
@@ -42,7 +40,7 @@ def test_Order_input_sanitation(db):
 def test_Order_constraintname(db):
     with set_context(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
-    assert x.constraint == 'Order'
+    assert x.constraint == 'order'
 
 
 def test_Order_nblock_checking(db):
@@ -53,6 +51,7 @@ def test_Order_nblock_checking(db):
             constraint.Order(direction='left_to_right', instances=['M1'])
 
 
+@pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
     with set_context(db):
         with pytest.raises(Exception):
@@ -122,14 +121,6 @@ def test_Floorplan(db):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M1']]))
         with pytest.raises(AssertionError):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
-
-
-def test_SameTemplate(db):
-    with set_context(db):
-        with pytest.raises(ValidationError):
-            db.append(constraint.SameTemplate(instances=['MMM1', 'M2']))
-        with pytest.raises(ValidationError):
-            db.append(constraint.SameTemplate(instances=['M1', 'M7']))
 
 
 def test_duplicate_append(db):

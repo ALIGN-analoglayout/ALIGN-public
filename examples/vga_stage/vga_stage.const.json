@@ -1,9 +1,9 @@
 [
     {"constraint": "CompactPlacement", "style": "center"},
-    {"constraint": "GroupBlocks", "instances": ["M00", "M01"],   "instance_name": "xdp"},
+    {"constraint": "GroupBlocks", "instances": ["M00", "M01"],   "name": "dp"},
     {"constraint": "GroundPorts", "ports": ["VGND"]},
     {"constraint": "Order",
         "direction" : "top_to_bottom",
-        "instances": ["xdp", "Msw0", "M02"]
+        "instances": ["dp", "Msw0", "M02"]
     }
 ]

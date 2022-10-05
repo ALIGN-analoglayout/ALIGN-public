@@ -25,7 +25,7 @@ def test_semiperimeter():
     assert 14 == sp.dist()
 
 
-def test_gen_netlist1():
+def test_gen_netlist():
     placement_verilog_d = {
         "global_signals": [],
         "modules": [
@@ -49,7 +49,7 @@ def test_gen_netlist1():
                       "fa_map": [{"formal": "x", "actual": "y"}]
                   }
               ]
-
+              
             }
         ],
         "leaves": [
@@ -64,7 +64,7 @@ def test_gen_netlist1():
             }
         ]
     }
-
+    
     nets_d = gen_netlist( placement_verilog_d, 'top')
 
     assert 24 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d)
@@ -93,7 +93,7 @@ def test_gen_netlist_flip():
                       "fa_map": [{"formal": "x", "actual": "y"}]
                   }
               ]
-
+              
             }
         ],
         "leaves": [
@@ -108,7 +108,7 @@ def test_gen_netlist_flip():
             }
         ]
     }
-
+    
     nets_d = gen_netlist( placement_verilog_d, 'top')
 
     assert 39 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d)
@@ -123,7 +123,7 @@ def test_gen_netlist_flip():
     assert 35 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d)
 
 
-def test_gen_netlist2():
+def test_gen_netlist():
     placement_verilog_d = {
         "global_signals": [],
         "modules": [
@@ -147,7 +147,7 @@ def test_gen_netlist2():
                       "fa_map": [{"formal": "x", "actual": "y"}]
                   }
               ]
-
+              
             }
         ],
         "leaves": [
@@ -167,7 +167,7 @@ def test_gen_netlist2():
             }
         ]
     }
-
+    
     nets_d = gen_netlist( placement_verilog_d, 'top')
 
     assert 24 == calculate_HPWL_from_placement_verilog_d( placement_verilog_d, 'top', nets_d, skip_globals=False)
@@ -244,7 +244,7 @@ def test_gen_netlist_matrix():
       "constraints": [
         {
           "abut": false,
-          "constraint": "Order",
+          "constraint": "order",
           "direction": "top_to_bottom",
           "instances": [
             "u0",
@@ -366,7 +366,7 @@ def test_gen_netlist_matrix():
       "constraints": [
         {
           "abut": false,
-          "constraint": "Order",
+          "constraint": "order",
           "direction": "left_to_right",
           "instances": [
             "u0",

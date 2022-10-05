@@ -1,14 +1,14 @@
 [
         {
-          "constraint": "HorizontalDistance",
+          "constraint": "horizontal_distance",
           "abs_distance": 0
         },
         {
-          "constraint": "VerticalDistance",
+          "constraint": "vertical_distance",
           "abs_distance": 0
         },
         {
-          "constraint": "SymmetricBlocks",
+          "constraint": "symmetric_blocks",
           "pairs": [
             [
               "X_MN0"
@@ -38,7 +38,7 @@
           "direction": "V"
         },
         {
-          "constraint": "Order",
+          "constraint": "order",
           "instances": [
             "X_MN0",
             "X_DP_MN1_MN2",
@@ -49,7 +49,7 @@
           "abut": false
         },
         {
-          "constraint": "Align",
+          "constraint": "align",
           "instances": [
             "X_MP9",
             "X_MP7",
@@ -60,7 +60,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "Align",
+          "constraint": "align",
           "instances": [
             "X_INV_N_MP11_MN13",
             "X_CCP_MP5_MP6",
@@ -69,7 +69,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "PortLocation",
+          "constraint": "port_location",
           "ports": [
             "von",
             "vop"
@@ -77,7 +77,7 @@
           "location": "TC"
         },
         {
-          "constraint": "DoNotIdentify",
+          "constraint": "do_not_identify",
           "instances": [
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6",

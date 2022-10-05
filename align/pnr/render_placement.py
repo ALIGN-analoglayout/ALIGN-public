@@ -259,8 +259,7 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
     for a,b in combinations(leaves,2):
         if rects_overlap( a[0], b[0]):
             ok = False
-            # logger.error( f'Leaves {a} and {b} intersect')
-            assert False, f'Leaves {a} and {b} intersect'
+            logger.error( f'Leaves {a} and {b} intersect')
     return ok
 
 def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):

@@ -1,9 +1,6 @@
 import pytest
 from align.pdk.finfet import MOSGenerator
-from align.pdk.finfet.gen_param import check_legal
-
 from .utils import get_test_id, export_to_viewer
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -103,18 +100,6 @@ def test_duo_one():
         assert False, f'{get_test_id()}'
 
 
-def test_check_legal():
-    assert check_legal( 1, 1, [{'y': 1}])
-    assert check_legal( 1, 1, [{'x': 1}])
-    assert check_legal( 1, 1, [{}])
-    assert not check_legal( 1, 1, [{'y': 2}])
-    assert not check_legal( 1, 1, [{'x': 2}])
-    assert not check_legal( 1, 1, [{'x': 2, 'y': 1}])
-    assert not check_legal( 1, 1, [{'x': 1, 'y': 2}])
-    assert check_legal( 1, 1, [{'x': 1, 'y': 1}])
-    assert check_legal( 1, 1, [{'x': 1, 'y': 2}, {'x': 2, 'y': 1}, {'x': 1, 'y': 1}])
-
-
 # Unit tests ###
 
 def test_unit_interleave_pattern():
@@ -125,13 +110,13 @@ def test_unit_interleave_pattern():
     assert [['A', 'B', 'A'],
             ['B', 'A', 'B']] == MOSGenerator.interleave_pattern(2, 3)
 
-    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, pattern_template=["A"])
+    assert [['A', 'A']] == MOSGenerator.interleave_pattern(1, 2, patterns=["A"])
 
     assert [['A', 'b', 'A', 'b'],
-            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["Ab","Ba"])
+            ['B', 'a', 'B', 'a']] == MOSGenerator.interleave_pattern(2, 4, patterns=["Ab","Ba"])
 
     assert [['A', 'b', 'B', 'a'],
-            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, pattern_template=["AbBa","BaAb"])
+            ['B', 'a', 'A', 'b']] == MOSGenerator.interleave_pattern(2, 4, patterns=["AbBa","BaAb"])
 
 
 def test_unit_validate_array():

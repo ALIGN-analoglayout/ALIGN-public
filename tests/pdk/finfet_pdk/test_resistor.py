@@ -10,7 +10,7 @@ from . import circuits
 CLEANUP = True
 
 
-def test_zero_res():
+def test_zero():
     pg = ThinFilmResistor()
     data = pg.generate(ports=['a', 'b'])
     export_to_viewer("test_tfr_0", data)
