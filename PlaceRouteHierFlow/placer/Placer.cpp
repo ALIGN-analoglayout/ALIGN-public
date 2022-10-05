@@ -256,12 +256,13 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       curr_sp.PerturbationNew(designData);
       ++cnt;
-      if (cnt >= maxcount) break;
+      if (cnt >= maxcount) break; // should never happen; guard against any unseen scenario
     }
     if (curr_sp.EnumExhausted()) {
-      logger->info("Exhausted all permutations of sequence pairs {0}", oData.size());
+      logger->info("Exhausted all permutations of seq pairs and found {0} placement solution(s)", oData.size());
       return oData;
     }
+    assert(0);
   }
 
   while (++trial_count < hyper.max_init_trial_count) {
