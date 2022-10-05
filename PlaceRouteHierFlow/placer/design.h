@@ -201,7 +201,7 @@ class design {
   int GetSizeBlock4Move(int mode);
   std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
   bool _useCache{false};
-  std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::map<std::tuple<size_t, size_t, size_t>, double> _seqPairCache;
   std::vector<size_t> _factorial;
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
@@ -291,9 +291,9 @@ class design {
 
   size_t getSeqIndex(const vector<int>& seq) const;
   size_t getSelIndex(const vector<int>& sel) const;
-  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
-  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
-  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel, const double cost = 0.);
+  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel, double *cost) const;
+  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0}, _numSnapGridFail{0}, _numILPCalls{0};
 
   const int getSpread(const int i, const int j, const bool horizon) const
   {

@@ -28,37 +28,38 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
   json jedb = json::parse(jsonStr);
   for (auto concrete : jedb) {
     string s = concrete["concrete_name"];
-    json constraint = concrete["constraints"][0];
-    if (constraint["constraint"] != "PlaceOnGrid") continue;
-    unsigned int start = 0;
-    unsigned int slash = s.find_last_of('_');
-    if (slash != string::npos) {
-      start = slash + 1;
-    }
-    string concrete_name = s.substr(0, slash);
-    int instance_id = atoi(s.substr(start, s.size() - start).c_str());
-    for (auto& block : nodeVec.back().Blocks) {
-      if (block.instance.front().master == concrete_name) {
-        auto& b = block.instance[instance_id];
-        if (constraint["direction"] == "H") {  // horizontal metal
-          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
-            b.yoffset.push_back(offset);
-            b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
-          }
-          b.ypitch = constraint["pitch"];
-          b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
-          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
-            b.yflip = constraint["ored_terms"][0]["scalings"][0];
-          }
-        } else if (constraint["direction"] == "V") {  // vertical metal
-          for (auto offset : constraint["ored_terms"][0]["offsets"]) {
-            b.xoffset.push_back(offset);
-            b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
-          }
-          b.xpitch = constraint["pitch"];
-          b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
-          if (constraint["ored_terms"][0]["scalings"].size() < 2) {
-            b.xflip = constraint["ored_terms"][0]["scalings"][0];
+    for (const auto& constraint : concrete["constraints"]) {
+      if (constraint["constraint"] != "PlaceOnGrid") continue;
+      unsigned int start = 0;
+      unsigned int slash = s.find_last_of('_');
+      if (slash != string::npos) {
+        start = slash + 1;
+      }
+      string concrete_name = s.substr(0, slash);
+      int instance_id = atoi(s.substr(start, s.size() - start).c_str());
+      for (auto& block : nodeVec.back().Blocks) {
+        if (block.instance.front().master == concrete_name) {
+          auto& b = block.instance[instance_id];
+          if (constraint["direction"] == "H") {  // horizontal metal
+            for (auto offset : constraint["ored_terms"][0]["offsets"]) {
+              b.yoffset.push_back(offset);
+              b.yoffset.back() = b.yoffset.back() * 2 / drcInfo.ScaleFactor;
+            }
+            b.ypitch = constraint["pitch"];
+            b.ypitch = b.ypitch * 2 / drcInfo.ScaleFactor;
+            if (constraint["ored_terms"][0]["scalings"].size() < 2) {
+              b.yflip = constraint["ored_terms"][0]["scalings"][0];
+            }
+          } else if (constraint["direction"] == "V") {  // vertical metal
+            for (auto offset : constraint["ored_terms"][0]["offsets"]) {
+              b.xoffset.push_back(offset);
+              b.xoffset.back() = b.xoffset.back() * 2 / drcInfo.ScaleFactor;
+            }
+            b.xpitch = constraint["pitch"];
+            b.xpitch = b.xpitch * 2 / drcInfo.ScaleFactor;
+            if (constraint["ored_terms"][0]["scalings"].size() < 2) {
+              b.xflip = constraint["ored_terms"][0]["scalings"][0];
+            }
           }
         }
       }
@@ -89,7 +90,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   // Read design netlist and constraints
   // designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
+  SeqPair curr_sp(designData, ceil(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA)));
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData);
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
@@ -243,6 +244,29 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     logger->debug("Random number generator seed={0}", seed);
   }
 
+  if (curr_sp.Enumerate()) {
+    const auto maxcount = ceil(log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
+    size_t cnt{0};
+    while (!curr_sp.EnumExhausted()) {
+      ILP_solver tsol(designData, hyper.ilp_solver);
+      curr_cost = tsol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      tsol.cost = curr_cost;
+      logger->debug("Solving enumeration {0} cost {1}", cnt, curr_cost);
+      if (curr_cost >= 0) {
+        oData[curr_cost] = std::make_pair(curr_sp, tsol);
+        ReshapeSeqPairMap(oData, nodeSize);
+      }
+      curr_sp.PerturbationNew(designData);
+      ++cnt;
+      if (cnt >= maxcount) break; // should never happen; guard against any unseen scenario
+    }
+    if (curr_sp.EnumExhausted()) {
+      logger->info("Exhausted all permutations of seq pairs and found {0} placement solution(s)", oData.size());
+      return oData;
+    }
+    assert(0);
+  }
+
   while (++trial_count < hyper.max_init_trial_count) {
     // curr_cost negative means infeasible (do not satisfy placement constraints)
     // Only positive curr_cost value is accepted.
@@ -252,7 +276,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
       else
         curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
-      curr_sp.cacheSeq(designData);
+      curr_sol.cost = curr_cost;
+      curr_sp.cacheSeq(designData, curr_cost);
     }
 
     logger->debug("trial_count {0} curr_cost {1} ", trial_count, curr_cost);
@@ -282,7 +307,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   float per = 0.1;
   // int updateThrd = 100;
   float total_update_number = log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA);
-  bool exhausted(false);
   int total_candidates = 0;
   int total_candidates_infeasible = 0;
 
@@ -315,38 +339,48 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       mean_cache_miss += trial_cached;
       ++num_perturb;
-      trial_sp.cacheSeq(designData);
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData, hyper.ilp_solver);
       double trial_cost = 0;
-      if (hyper.select_in_ILP)
-        trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-      else
-        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+      bool fromCache{false};
+      if (!trial_sp.isSeqInCache(designData, &trial_cost)) {
+        if (hyper.select_in_ILP)
+          trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+        else
+          trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+        trial_sp.cacheSeq(designData, trial_cost);
+        if (trial_cost >= 0) {
+          oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
+        }
+      } else {
+          fromCache = true;
+      }
       /*if (designData._debugofs.is_open()) {
               designData._debugofs << "sp__cost : " << trial_sp.getLexIndex(designData) << ' ' << trial_cost << '\n';
       }*/
       total_candidates += 1;
       if (trial_cost >= 0) {
-        oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
-        // Smark is true if search space is enumerated (no need to randomize)
-        bool Smark = trial_sp.Enumerate();
-        if (!Smark) {
-          delta_cost = trial_cost - curr_cost;
-          if (delta_cost < 0) {
+        bool Smark{false};
+        delta_cost = trial_cost - curr_cost;
+        if (delta_cost < 0) {
+          Smark = true;
+          logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
+        } else {
+          double r = (double)rand() / RAND_MAX;
+          // De-normalize the delta cost
+          delta_cost = exp(delta_cost);
+          if (r < exp((-1.0 * delta_cost) / T)) {
             Smark = true;
-            logger->debug("sa__accept_better T={0} delta_cost={1} ", T, delta_cost);
-          } else {
-            double r = (double)rand() / RAND_MAX;
-            // De-normalize the delta cost
-            delta_cost = exp(delta_cost);
-            if (r < exp((-1.0 * delta_cost) / T)) {
-              Smark = true;
-              logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
-            }
+            logger->debug("sa__climbing_up T={0} delta_cost={1}", T, delta_cost);
           }
         }
         if (Smark) {
+          if (fromCache) {
+            if (hyper.select_in_ILP)
+              trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
+            else
+              trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+          }
           curr_cost = trial_cost;
           curr_sp = trial_sp;
           curr_sol = trial_sol;
@@ -360,18 +394,12 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // logger->debug("sa__cost name={0} t_index={1} effort={2} cost={3} temp={4}", designData.name, T_index, i, curr_cost, T);
       i++;
       update_index++;
-      if (trial_sp.EnumExhausted()) {
-        logger->info("Exhausted all permutations of sequence pairs");
-        exhausted = true;
-        break;
-      }
     }
     T_index++;
     if (total_update_number * per < T_index) {
       logger->info("..... {0} %", (int)(per * 100));
       per = per + 0.1;
     }
-    if (exhausted) break;
     T *= hyper.ALPHA;
     // logger->debug("sa__reducing_temp T={0}", T);
   }
@@ -431,7 +459,7 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
   _rng.seed(hyper.SEED);
   //designData.PrintDesign();
   // Initialize simulate annealing with initial solution
-  SeqPair curr_sp(designData, size_t(1. * log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
+  SeqPair curr_sp(designData, ceil(log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA) * ((effort == 0) ? 1. : effort)));
   // curr_sp.PrintSeqPair();
   ILP_solver curr_sol(designData, hyper.ilp_solver);
   // clock_t start, finish;
