@@ -499,70 +499,6 @@ class Boundary(HardConstraint):
             yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
 
 
-class GroupBlocks(HardConstraint):
-    """GroupBlocks
-
-    Forces a hierarchy creation for group of instances.
-    This brings the instances closer.
-    This reduces the problem statement for placer thus providing
-    better solutions.
-
-    Args:
-      instances (list[str]): List of :obj:`instances`
-      template_name (str): Optional template name for the group (virtual hiearchy).
-      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
-      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
-
-    Example: ::
-
-        {
-            "constraint":"GroupBlocks",
-            "instance_name": "X_MN0_MN1_MN3",
-            "instances": ["MN0", "MN1", "MN3"]
-            "generator": {name: 'MOS',
-                        'parameters':
-                            {
-                            "pattern": "cc",
-                            }
-                        }
-            "template_name": "DP1"
-        }
-
-    Note: If not provided a unique template name will be auto generated.
-    Template_names are added with a post_script during the flow using a UUID based on
-    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
-    """
-    instance_name: str
-    instances: List[str]
-    template_name: Optional[str]
-    generator: Optional[dict]
-
-    @types.validator('instance_name', allow_reuse=True)
-    def group_block_name(cls, value):
-        assert value, 'Cannot be an empty string'
-        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
-        return value.upper()
-
-    def translate(self, solver):
-        # Non-zero width / height
-        instances = get_instances_from_hacked_dataclasses(self)
-        bb = solver.bbox_vars(self.instance_name)
-        yield bb.llx < bb.urx
-        yield bb.lly < bb.ury
-        # Grouping into common bbox
-        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
-            yield b.urx <= bb.urx
-            yield b.llx >= bb.llx
-            yield b.ury <= bb.ury
-            yield b.lly >= bb.lly
-        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
-            yield solver.Or(
-                b.urx <= bb.llx,
-                bb.urx <= b.llx,
-                b.ury <= bb.lly,
-                bb.ury <= b.lly,
-            )
-
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
@@ -1459,6 +1395,72 @@ class Route(SoftConstraint):
     min_layer: Optional[str]
     max_layer: Optional[str]
     customize: List[CustomizeRoute] = []
+
+
+class GroupBlocks(HardConstraint):
+    """GroupBlocks
+
+    Forces a hierarchy creation for group of instances.
+    This brings the instances closer.
+    This reduces the problem statement for placer thus providing
+    better solutions.
+
+    Args:
+      instances (list[str]): List of :obj:`instances`
+      template_name (str): Optional template name for the group (virtual hiearchy).
+      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
+
+    Example: ::
+
+        {
+            "constraint":"GroupBlocks",
+            "instance_name": "X_MN0_MN1_MN3",
+            "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
+            "template_name": "DP1"
+        }
+
+    Note: If not provided a unique template name will be auto generated.
+    Template_names are added with a post_script during the flow using a UUID based on
+    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
+    """
+    instance_name: str
+    instances: List[str]
+    template_name: Optional[str]
+    generator: Optional[dict]
+    constraints: Optional[List[Union[Align, AlignInOrder, Order, Floorplan, SymmetricBlocks]]] = None
+
+    @types.validator('instance_name', allow_reuse=True)
+    def group_block_name(cls, value):
+        assert value, 'Cannot be an empty string'
+        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
+        return value.upper()
+
+    def translate(self, solver):
+        # Non-zero width / height
+        instances = get_instances_from_hacked_dataclasses(self)
+        bb = solver.bbox_vars(self.instance_name)
+        yield bb.llx < bb.urx
+        yield bb.lly < bb.ury
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 
 ConstraintType = Union[

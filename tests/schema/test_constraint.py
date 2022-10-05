@@ -190,6 +190,17 @@ def test_Route(db):
         db.append(constraint.Route(max_layer="M5", min_layer="M1", customize=[constraint.CustomizeRoute(nets=["a", "b"], min_layer="M2", max_layer="M3", shield=True, match=True)]))
 
 
+def test_GroupBlocks(db):
+    with set_context(db):
+        fp = constraint.Floorplan(regions=[["M1"], ["M2"]])
+        pg = constraint.GroupBlocks(
+            instance_name="xyz",
+            instances=["a", "b"],
+            constraints=[fp]
+        )
+    assert pg
+
+
 def test_ConstraintDB_incremental_checking(db):
     '''
     ConstraintDB can be used to run experiments
