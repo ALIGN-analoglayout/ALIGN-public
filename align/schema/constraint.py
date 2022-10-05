@@ -16,12 +16,15 @@ pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
 def get_instances_from_hacked_dataclasses(constraint):
     assert constraint.parent.parent is not None, 'Cannot access parent scope'
+
     if hasattr(constraint.parent.parent, 'graph'):
         instances = {k for k, v in constraint.parent.parent.graph.nodes.items() if v['inst_type'] != 'net'}
     elif hasattr(constraint.parent.parent, 'elements'):
         instances = {x.name for x in constraint.parent.parent.elements}
     elif hasattr(constraint.parent.parent, 'instances'):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
+    elif type(constraint.parent.parent).__name__ == "GroupBlocks":
+        return get_instances_from_hacked_dataclasses(constraint.parent.parent)
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
     names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')}  # group block
@@ -157,6 +160,7 @@ class Order(HardConstraint):
         'bottom_to_top', 'top_to_bottom'
     ]]
     abut: bool = False
+    _instance_attribute: str = "instances"
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -240,6 +244,7 @@ class Align(HardConstraint):
         'h_any', 'h_top', 'h_bottom', 'h_center',
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
+    _instance_attribute: str = "instances"
 
     _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
@@ -550,6 +555,7 @@ class AlignInOrder(UserConstraint):
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
     abut: bool = False
+    _instance_attribute: str = "instances"
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -604,6 +610,7 @@ class Floorplan(UserConstraint):
     regions: List[List[str]]
     order: bool = False
     symmetrize: bool = False
+    _instance_attribute: str = "regions"
 
     @types.validator('regions', allow_reuse=True, always=True)
     def _check_instance(cls, value):
@@ -973,6 +980,7 @@ class SymmetricBlocks(HardConstraint):
     """
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+    _instance_attribute: str = "pairs"
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):

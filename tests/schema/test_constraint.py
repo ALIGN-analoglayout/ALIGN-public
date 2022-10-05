@@ -198,7 +198,7 @@ def test_GroupBlocks(db):
             instances=["a", "b"],
             constraints=[fp]
         )
-    assert pg
+        db.append(pg)
 
 
 def test_ConstraintDB_incremental_checking(db):

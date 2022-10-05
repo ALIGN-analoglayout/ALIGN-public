@@ -7,6 +7,7 @@ from align.compiler.util import get_ports_weight
 from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
+import textwrap
 
 from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator, comparator_hier
 
@@ -237,4 +238,44 @@ def test_disable_auto_constraint_physical():
     constraints = {c.constraint for c in ckt.constraints}
     assert "SymmetricNets" not in constraints
     assert "SymmetricBlocks" not in constraints
+    clean_data(name)
+
+
+def test_group_with_constraint():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vo vccx vccx p w=360e-9 nf=2 m=1
+        mn1 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn2 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn3 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn4 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True, "merge_parallel_devices": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks",
+            "instances": ["mn1", "mn2", "mn3", "mn4"],
+            "instance_name": "xm",
+            "template_name": "mygroup",
+            "constraints": [{"constraint": "Floorplan", "order": True,"regions": [["mn1", "mn2", "mn3"], ["mn4"]]}]
+        }
+    ]
+
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+
+    ckt = ckt_library.find(name)
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" not in constraints, f"{ckt.constraints}"
+
+    ckt = [ckt for ckt in ckt_library if ckt.name.startswith("MYGROUP")][0]
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" in constraints, f"{ckt.constraints}"
+
     clean_data(name)
