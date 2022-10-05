@@ -30,18 +30,23 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     shared_diff = 0 if (len(primitive.elements) == 2 and primitive.elements[0].pins["S"] != primitive.elements[1].pins["S"]) else 1
     gen_const = [const for const in primitive.constraints if isinstance(const, constraint.Generator)]
     input_pattern = None
+    exact_patterns = None
     if gen_const:
-        gen_const=gen_const[0]
+        gen_const=gen_const[-1]
+    logger.debug(f"gen const {gen_const}")
     if gen_const:
         if getattr(gen_const, "parameters", None):
-            print(gen_const)
-            if getattr(gen_const.parameters, "shared_diff", None):
+            if "shared_diff" in gen_const.parameters.keys():
                 shared_diff = gen_const.parameters["shared_diff"]
-            if getattr(gen_const.parameters, "pattern", None):
+            if "pattern" in gen_const.parameters.keys():
                 input_pattern = gen_const.parameters["pattern"]
-            if getattr(gen_const.parameters, "bodyswitch", None):
-                bodyswitch = gen_const.parameters["bodyswitch"]
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_constraints=primitive.constraints)
+            if "body" in gen_const.parameters.keys():
+                bodyswitch = gen_const.parameters["body"]
+            if "height" in gen_const.parameters.keys():
+                height = gen_const.parameters["height"]
+            if "exact_patterns" in gen_const.parameters.keys():
+                exact_patterns = gen_const.parameters["exact_patterns"]
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch, primitive_parameters=parameters, primitive_constraints=primitive.constraints)
 
     # Default pattern values
     if not input_pattern:
@@ -54,10 +59,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
     if len(primitive.elements) ==2:
-        if pattern==1:
-            x_cells = 2*x_cells
-            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
-            #TODO do this double during x_cells generation in gen_param.py/add_primitive()
+        x_cells = 2*x_cells
+        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
     logger.debug(
         f"primitive pattern {primitive.name} {primitive.elements} {pattern}")
@@ -80,14 +84,14 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     return uc, gen(pattern, connections)
 
 
-def generate_Cap(pdkdir, block_name, unit_cap):
+def generate_Cap(pdkdir, block_name, length, width):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('CapGenerator', pdkdir)
 
     uc = generator(pdk)
 
-    uc.addCap(unit_cap)
+    uc.addCap(length, width)
 
     return uc, ['PLUS', 'MINUS']
 
@@ -139,7 +143,6 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
         if isinstance(primitive, SubCircuit):
             generate_primitive_param(primitive, primitives, pdk_dir)
     for block_name, block_args in primitives.items():
-        logger.debug(f"Generating primitive {block_name}")
         if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
             primitive_def = primitive_lib.find(block_args['abstract_template_name'])
             assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
@@ -159,7 +162,8 @@ def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: path
     spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
     modules = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modules)
-    assert modules.gen_param(subckt, primitives, pdk_dir), f"unabble to generate primitive {subckt}"
+    rc = modules.gen_param(subckt, primitives, pdk_dir)
+    assert rc, f"unable to generate primitive {subckt}"
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
@@ -175,15 +179,13 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
-    elif 'MOS' == primitive.generator['name']:
+    elif 'MOS' == primitive.generator['name'].upper():
         uc, _ = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells,
                                        pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
-
-
-    elif 'CAP' == primitive.generator['name']:
-        uc, _ = generate_Cap(pdkdir, block_name, value)
+    elif 'CAP' == primitive.generator['name'].upper():
+        uc, _ = generate_Cap(pdkdir, block_name, value[0], value[1])
         uc.setBboxFromBoundary()
-    elif 'RES' == primitive.generator['name']:
+    elif 'RES' == primitive.generator['name'].upper():
         uc, _ = generate_Res(pdkdir, block_name, height, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
@@ -192,10 +194,8 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON(fp)
-    if 'cap' in primitive:
-        blockM = 1
-    else:
-        blockM = 0
+
+    blockM = 1 if 'cap' in primitive else 0
     positive_coord.json_pos(outputdir / (block_name + '.json'))
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')

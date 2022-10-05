@@ -1,0 +1,40 @@
+{
+  "constraints": [
+    {
+      "direction": "V",
+      "abut": false,
+      "const_name": "Ordering",
+      "blocks": [
+        "XDIG",
+        "X_MN1"
+      ]
+    },
+    {
+      "direction": "V",
+      "abut": false,
+      "const_name": "Ordering",
+      "blocks": [
+        "XDIG",
+        "X_MN2"
+      ]
+    },
+    {
+      "direction": "H",
+      "abut": false,
+      "const_name": "Ordering",
+      "blocks": [
+        "X_MN1",
+        "X_MN2"
+      ]
+    },
+    {
+      "direction": "H",
+      "abut": false,
+      "const_name": "Ordering",
+      "blocks": [
+        "X_MN1",
+        "XDIG"
+      ]
+    }
+  ]
+}

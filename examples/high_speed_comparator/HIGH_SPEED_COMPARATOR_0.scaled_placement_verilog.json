@@ -398,7 +398,7 @@
           ]
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "MP9",
             "MP7",
@@ -409,7 +409,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_INV_N_MP11_MN13",
             "X_CCP_MP5_MP6",

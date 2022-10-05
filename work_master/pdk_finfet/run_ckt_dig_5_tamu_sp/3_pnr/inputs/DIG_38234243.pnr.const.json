@@ -1,0 +1,11 @@
+{
+  "constraints": [
+    {
+      "const_name": "SameTemplate",
+      "blocks": [
+        "M2",
+        "M1"
+      ]
+    }
+  ]
+}

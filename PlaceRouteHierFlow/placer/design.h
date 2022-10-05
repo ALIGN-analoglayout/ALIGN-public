@@ -179,8 +179,11 @@ class design {
   vector<MatchBlock> Match_blocks;
   int bias_Hgraph;
   int bias_Vgraph;
+  int grid_unit_x = 1, grid_unit_y = 1;
   bool mixFlag;
   // above is added by yg
+  std::map<std::pair<int, int>, int> hSpread, vSpread;
+
 
   // void readBlockFile(string blockfile);
   // void readNetFile(string netfile);
@@ -198,18 +201,20 @@ class design {
   int GetSizeBlock4Move(int mode);
   std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
   bool _useCache{false};
-  std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::map<std::tuple<size_t, size_t, size_t>, double> _seqPairCache;
   std::vector<size_t> _factorial;
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  map<string, map<std::tuple<int, int, int, int>, double> > CFValues;
+  int CFdist_type;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
-  design(PnRDB::hierNode& node, const int seed = 0);
+  design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed = 0);
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
@@ -286,9 +291,22 @@ class design {
 
   size_t getSeqIndex(const vector<int>& seq) const;
   size_t getSelIndex(const vector<int>& sel) const;
-  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
-  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
-  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel, const double cost = 0.);
+  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel, double *cost) const;
+  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0}, _numSnapGridFail{0}, _numILPCalls{0};
+
+  const int getSpread(const int i, const int j, const bool horizon) const
+  {
+    int spread{0};
+    const auto& hvSpread = horizon ? hSpread : vSpread;
+    if (!hvSpread.empty()) {
+      auto it = hvSpread.find(std::make_pair(i, j));
+      if (it != hvSpread.end()) {
+        spread = it->second;
+      }
+    }
+    return spread;
+  }
   // std::ofstream _debugofs;
 };
 

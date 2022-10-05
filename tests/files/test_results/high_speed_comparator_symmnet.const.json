@@ -1,14 +1,14 @@
 [
         {
-          "constraint": "horizontal_distance",
+          "constraint": "HorizontalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "vertical_distance",
+          "constraint": "VerticalDistance",
           "abs_distance": 0
         },
         {
-          "constraint": "symmetric_blocks",
+          "constraint": "SymmetricBlocks",
           "pairs": [
             [
               "X_MN0"
@@ -38,7 +38,7 @@
           "direction": "V"
         },
         {
-          "constraint": "order",
+          "constraint": "Order",
           "instances": [
             "X_MN0",
             "X_DP_MN1_MN2",
@@ -49,7 +49,7 @@
           "abut": false
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_MP9",
             "X_MP7",
@@ -60,7 +60,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "align",
+          "constraint": "Align",
           "instances": [
             "X_INV_N_MP11_MN13",
             "X_CCP_MP5_MP6",
@@ -69,7 +69,7 @@
           "line": "h_bottom"
         },
         {
-          "constraint": "do_not_identify",
+          "constraint": "DoNotIdentify",
           "instances": [
             "X_CCN_MN3_MN4",
             "X_CCP_MP5_MP6",
@@ -84,50 +84,33 @@
           ]
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "VIN_D",
           "net2": "VIP_D",
           "pins1": [
-            "X_DP_MN1_MN2/VIN_D",
-            "X_CCN_MN3_MN4/VIN_D",
+            "X_DP_MN1_MN2/P1",
+            "X_CCN_MN3_MN4/P3",
             "X_MP7/D"
           ],
           "pins2": [
-            "X_DP_MN1_MN2/VIP_D",
-            "X_CCN_MN3_MN4/VIP_D",
+            "X_DP_MN1_MN2/P4",
+            "X_CCN_MN3_MN4/P4",
             "X_MP8/D"
           ],
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "VIN",
           "net2": "VIP",
           "pins1": [
-            "X_DP_MN1_MN2/VIN",
+            "X_DP_MN1_MN2/P2",
             "VIN"
           ],
           "pins2": [
-            "X_DP_MN1_MN2/VIP",
+            "X_DP_MN1_MN2/P5",
             "VIP"
           ],
           "direction": "V"
-        },
-        {
-          "constraint": "symmetric_blocks",
-          "pairs": [
-            [
-              "X_DP_MN1_MN2"
-            ],
-            [
-              "X_CCN_MN3_MN4"
-            ],
-            [
-              "X_MP7",
-              "X_MP8"
-            ]
-          ],
-          "direction": "V"
         }
-
       ]

@@ -1,0 +1,38 @@
+[
+  {
+    "constraint": "ConfigureCompiler",
+    "auto_constraint": false,
+    "merge_parallel_devices": false
+  },
+  {
+    "constraint": "GroupBlocks",
+    "instance_name": "xdig",
+    "template_name": "dig",
+    "instances": [
+      "xi0",
+      "xi1",
+      "xi2"
+    ]
+  },
+  {
+    "constraint": "Floorplan",
+    "order": true,
+    "regions": [
+      [
+        "xdig"
+      ],
+      [
+        "mn1",
+        "mn2"
+      ]
+    ]
+  },
+  {
+    "constraint": "Order",
+    "direction": "left_to_right",
+    "instances": [
+      "mn1",
+      "xdig"
+    ]
+  }
+]

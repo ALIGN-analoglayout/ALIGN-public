@@ -10,7 +10,8 @@ def gen_parser():
     parser = argparse.ArgumentParser(description="Inputs for Cell Generation")
     parser.add_argument("-i", "--input_spice", type=str, required=False, default=None)
     parser.add_argument("-b", "--block_name", type=str, required=True)
-    parser.add_argument("-n", "--unit_cap", type=float, default=None)
+    parser.add_argument("-l", "--cap_length", type=str, required=True)
+    parser.add_argument("-w", "--cap_width", type=str, required=True)
     parser.add_argument("-q", "--pinSwitch", type=int, required=False, default=0)
     parser.add_argument("-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
     parser.add_argument("-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
@@ -42,7 +43,7 @@ def read_primitive_spice(args):
 
 def main(args):
     cap_subckt = read_primitive_spice(args)
-    return generate_primitive(args.block_name, cap_subckt, value=args.unit_cap, pdkdir=args.pdkdir, outputdir=args.outputdir)
+    return generate_primitive(args.block_name, cap_subckt, value=(args.cap_length, args.cap_width), pdkdir = args.pdkdir, outputdir = args.outputdir)
 
 
 if __name__ == "__main__":

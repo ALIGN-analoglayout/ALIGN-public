@@ -1,0 +1,16 @@
+[
+  {
+    "constraint": "ConfigureCompiler",
+    "auto_constraint": false,
+    "propagate": true
+  },
+  {
+    "constraint": "AlignInOrder",
+    "line": "bottom",
+    "instances": [
+      "xi0",
+      "xi1",
+      "xi2"
+    ]
+  }
+]

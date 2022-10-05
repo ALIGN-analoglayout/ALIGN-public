@@ -154,7 +154,7 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
             with filename.open("r") as fp:
                 data = json.load(fp)
                 if 'metadata' in data and 'constraints' in data['metadata']:
-                    place_on_grids = [c for c in data['metadata']['constraints'] if c['constraint'] == 'place_on_grid']
+                    place_on_grids = [c for c in data['metadata']['constraints'] if c['constraint'] == 'PlaceOnGrid']
                     if place_on_grids:
                         constrained_cns[cn] = place_on_grids
 
