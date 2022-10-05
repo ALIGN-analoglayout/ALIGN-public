@@ -114,6 +114,14 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
                   totEnum);
   } else {
     _maxEnum = _posEnumerator.NumSequences();
+    totEnum = _maxEnum;
+    for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
+      totEnum *= casenl.Blocks.at(i).size();
+      if (maxIter < totEnum) {
+        _valid = 0;
+        break;
+      }
+    }
   }
   if (!_valid) return;
   std::sort(_posPair.begin(), _posPair.end());
@@ -122,7 +130,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
   if (_posEnumerator.valid() && _negEnumerator.valid()) {
     _posEnumerator.NextPermutation(_posPair, 0);
     _negEnumerator.NextPermutation(_negPair, 0);
-    logger->debug("max enum : {0}", _maxEnum);
+    logger->debug("max number of seq pairs : {0} max number of seq pair / select combinations : {1}", _maxEnum, totEnum);
   }
 
   _maxSize = 0;
@@ -417,123 +425,128 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 
   // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
-  orient.resize(caseNL.GetSizeofBlocks());
+  orient.resize(caseNL.GetSizeofBlocks(), placerDB::N);
   selected.resize(caseNL.GetSizeofBlocks(), 0);
 
-  int sym_group_index = 0;
-  for (vector<placerDB::SymmBlock>::iterator bit = caseNL.SBlocks.begin(); bit != caseNL.SBlocks.end(); ++bit) {
-    axis = bit->axis_dir;
-    sym_group_index++;
-    // cout<<"axis"<<axis<<endl;
-    symAxis.push_back(axis);
-    // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-    //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-    // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-    //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-    if (!bit->sympair.empty()) {
-      for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-        if (pit->first < (int)caseNL.GetSizeofBlocks()) {
-          // std::<<pit->first<<","<<pit->secode<<" ";
-          posPair.push_back(pit->first);  // a1,a2,...,ap --> positive
-          orient[pit->first] = placerDB::N;
-        }
-      }
-    }
-    posPair.push_back(bit->dnode);  // axis --> positive
-    if (!bit->selfsym.empty()) {
-      for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
-        if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-          posPair.push_back(sit->first);  // c1,...cs --> positve
-          orient[sit->first] = placerDB::N;
-        }
-      }
-    }
-    if (!bit->sympair.empty()) {
-      for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-        if (pit->second < (int)caseNL.GetSizeofBlocks()) {
-          posPair.push_back(pit->second);  // bp,...,b1 --> positive
-          if (axis == placerDB::V) {
-            orient[pit->second] = placerDB::FN;
-          } else if (axis == placerDB::H) {
-            orient[pit->second] = placerDB::FS;
-          }
-        }
-      }
-    }
-    // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-    //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
-    // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
-    //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
-    if (axis == placerDB::V) {
-      if (!bit->sympair.empty()) {
-        for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-          if (pit->first < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(pit->first);  // a1,a2,...,ap --> negative
-          }
-        }
-      }
-      if (!bit->selfsym.empty()) {
-        for (vector<pair<int, placerDB::Smark>>::reverse_iterator sit = bit->selfsym.rbegin(); sit != bit->selfsym.rend(); ++sit) {
-          if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(sit->first);  // cs,...c1 --> negative
-          }
-        }
-      }
-      negPair.push_back(bit->dnode);  // axis --> negative
-      if (!bit->sympair.empty()) {
-        for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-          if (pit->second < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(pit->second);  // bp,...,b1 --> positive
-          }
-        }
-      }
-    } else if (axis == placerDB::H) {
-      if (!bit->sympair.empty()) {
-        for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
-          if (pit->second < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(pit->second);  // b1,...,bp --> negative
-          }
-        }
-      }
-      negPair.push_back(bit->dnode);  // axis --> negative
-      if (!bit->selfsym.empty()) {
-        for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
-          if (sit->first < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(sit->first);  // c1,...cs --> negative
-          }
-        }
-      }
-      if (!bit->sympair.empty()) {
-        for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
-          if (pit->first < (int)caseNL.GetSizeofBlocks()) {
-            negPair.push_back(pit->first);  // ap,...,a1 --> negative
-          }
-        }
-      }
-    }
-  }
-
-  CompactSeq();
-
   for (int i = 0; i < caseNL.GetSizeofBlocks(); ++i) {
-    if (caseNL.GetBlockSymmGroup(i) == -1) {
-      posPair.push_back(i);
-      negPair.push_back(i);
-      orient.at(i) = placerDB::N;
-    }
+    posPair.push_back(i);
   }
-
-
-  SameSelected(caseNL);
-
   _seqPairEnum = std::make_shared<SeqPairEnumerator>(posPair, caseNL, maxIter);
   // logger->info("KeepOrdering end: {0}", ok);
 
+
   if (_seqPairEnum->valid()) {
     logger->info("Enumerated search");
+    posPair = _seqPairEnum->PosPair();
+    negPair = _seqPairEnum->NegPair();
+    selected = _seqPairEnum->Selected();
   } else {
-    KeepOrdering(caseNL);
+    posPair.clear();
     _seqPairEnum.reset();
+    int sym_group_index = 0;
+    for (vector<placerDB::SymmBlock>::iterator bit = caseNL.SBlocks.begin(); bit != caseNL.SBlocks.end(); ++bit) {
+      axis = bit->axis_dir;
+      sym_group_index++;
+      // cout<<"axis"<<axis<<endl;
+      symAxis.push_back(axis);
+      // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+      //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+      // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+      //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+      if (!bit->sympair.empty()) {
+        for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
+          if (pit->first < (int)caseNL.GetSizeofBlocks()) {
+            // std::<<pit->first<<","<<pit->secode<<" ";
+            posPair.push_back(pit->first);  // a1,a2,...,ap --> positive
+            orient[pit->first] = placerDB::N;
+          }
+        }
+      }
+      posPair.push_back(bit->dnode);  // axis --> positive
+      if (!bit->selfsym.empty()) {
+        for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
+          if (sit->first < (int)caseNL.GetSizeofBlocks()) {
+            posPair.push_back(sit->first);  // c1,...cs --> positve
+            orient[sit->first] = placerDB::N;
+          }
+        }
+      }
+      if (!bit->sympair.empty()) {
+        for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
+          if (pit->second < (int)caseNL.GetSizeofBlocks()) {
+            posPair.push_back(pit->second);  // bp,...,b1 --> positive
+            if (axis == placerDB::V) {
+              orient[pit->second] = placerDB::FN;
+            } else if (axis == placerDB::H) {
+              orient[pit->second] = placerDB::FS;
+            }
+          }
+        }
+      }
+      // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+      //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+      // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+      //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+      if (axis == placerDB::V) {
+        if (!bit->sympair.empty()) {
+          for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
+            if (pit->first < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(pit->first);  // a1,a2,...,ap --> negative
+            }
+          }
+        }
+        if (!bit->selfsym.empty()) {
+          for (vector<pair<int, placerDB::Smark>>::reverse_iterator sit = bit->selfsym.rbegin(); sit != bit->selfsym.rend(); ++sit) {
+            if (sit->first < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(sit->first);  // cs,...c1 --> negative
+            }
+          }
+        }
+        negPair.push_back(bit->dnode);  // axis --> negative
+        if (!bit->sympair.empty()) {
+          for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
+            if (pit->second < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(pit->second);  // bp,...,b1 --> positive
+            }
+          }
+        }
+      } else if (axis == placerDB::H) {
+        if (!bit->sympair.empty()) {
+          for (vector<pair<int, int>>::iterator pit = bit->sympair.begin(); pit != bit->sympair.end(); ++pit) {
+            if (pit->second < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(pit->second);  // b1,...,bp --> negative
+            }
+          }
+        }
+        negPair.push_back(bit->dnode);  // axis --> negative
+        if (!bit->selfsym.empty()) {
+          for (vector<pair<int, placerDB::Smark>>::iterator sit = bit->selfsym.begin(); sit != bit->selfsym.end(); ++sit) {
+            if (sit->first < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(sit->first);  // c1,...cs --> negative
+            }
+          }
+        }
+        if (!bit->sympair.empty()) {
+          for (vector<pair<int, int>>::reverse_iterator pit = bit->sympair.rbegin(); pit != bit->sympair.rend(); ++pit) {
+            if (pit->first < (int)caseNL.GetSizeofBlocks()) {
+              negPair.push_back(pit->first);  // ap,...,a1 --> negative
+            }
+          }
+        }
+      }
+    }
+
+    CompactSeq();
+
+    for (int i = 0; i < caseNL.GetSizeofBlocks(); ++i) {
+      if (caseNL.GetBlockSymmGroup(i) == -1) {
+        posPair.push_back(i);
+        negPair.push_back(i);
+        orient.at(i) = placerDB::N;
+      }
+    }
+    SameSelected(caseNL);
+    if (!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty()) KeepOrdering(caseNL);
   }
 }
 
@@ -1680,14 +1693,14 @@ bool SeqPair::PerturbationNew(design& caseNL) {
 
   const SeqPair cpsp(*this);
   const int max_trial_cnt{20};
-  bool retval{true};
+  bool retval{false};
   int trial_cnt{0};
   do {
     if (_seqPairEnum && _seqPairEnum->valid()) {
+      _seqPairEnum->Permute();
       posPair = _seqPairEnum->PosPair();
       negPair = _seqPairEnum->NegPair();
       selected = _seqPairEnum->Selected();
-      _seqPairEnum->Permute();
     } else {
       bool mark = false;
       std::set<int> pool;
@@ -1749,12 +1762,12 @@ bool SeqPair::PerturbationNew(design& caseNL) {
         }
         fail++;
       }
+      bool ok{(!caseNL.Ordering_Constraints.empty() || !caseNL.Align_blocks.empty()) ? KeepOrdering(caseNL) : true};
+      SameSelected(caseNL);
+      retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
     }
-    bool ok = (_seqPairEnum && _seqPairEnum->valid()) ? true : KeepOrdering(caseNL);
     // logger->info("KeepOrdering end: {0}", ok);
 
-    SameSelected(caseNL);
-    retval = ((cpsp == *this) || !CheckAlign(caseNL) || !CheckSymm(caseNL) || !ok);
     if (logger->should_log(spdlog::level::debug)) {
       std::string tmpstr, tmpstrn, tmpstrs;
       for (const auto& it : posPair) tmpstr += (std::to_string(it) + " ");
