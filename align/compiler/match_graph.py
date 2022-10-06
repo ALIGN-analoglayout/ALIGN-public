@@ -166,8 +166,7 @@ class Annotate:
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
         new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
-            # TODO: What is the usecase? Please comment
-            # TODO: Isn't it required to check the existing circuit is identical?
+            # Matching hash based names ensures the new subckt name is identical or different
             new_subckt = self.ckt_data.find(new_subckt_name)
             logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
@@ -250,7 +249,8 @@ class Annotate:
                 ckt_ele
             ), f"Constraint instances: {const_insts} not in subcircuit {parent_subckt.name} with elements {ckt_ele}"
             if const.template_name and const.template_name.upper() in self.lib_names:
-                # TODO: What is the usecase? Please comment
+                # Create virtual hierarchies with user defined template name
+                # Reusing primitives defined in ALIGN library
                 child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_insts]
                 group_block_name = Graph(parent_subckt).replace_matching_subgraph(
@@ -264,6 +264,7 @@ class Annotate:
                 rename_inst(auto_generated_name, const.instance_name.upper())
                 continue
             else:
+                # For any new virtual hierarchy definition
                 self.create_canonical_primitive(parent_subckt, const)
         logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
 
