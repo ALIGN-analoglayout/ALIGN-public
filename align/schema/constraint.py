@@ -1465,7 +1465,6 @@ class GroupBlocks(HardConstraint):
         yield bb.lly < bb.ury
         # Grouping into common bbox
         for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
-            assert False, "IS THIS CODE EVER EXECUTED???"
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
             yield b.ury <= bb.ury
