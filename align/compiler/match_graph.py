@@ -11,7 +11,6 @@ import logging
 from ..schema import constraint
 from align.schema.graph import Graph
 from align.schema import ConstraintTranslator
-from .util import gen_group_key
 from flatdict import FlatDict
 import hashlib
 logger = logging.getLogger(__name__)
@@ -220,6 +219,8 @@ class Annotate:
         for c in list(parent_subckt.constraints):
             tr._add_const(parent_subckt.constraints, c)
 
+        # TODO: parent_subckt.verify()  # This call is to reset the formulae to exclude the bbox variables for removed elements
+
     def _group_block_const(self, parent_subckt_name):
         parent_subckt = self.ckt_data.find(parent_subckt_name)
         const_list = parent_subckt.constraints
@@ -266,6 +267,7 @@ class Annotate:
                 self.create_canonical_primitive(parent_subckt, const)
         logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
 
+        # TODO: parent_subckt.verify()  # This call is to reset the formulae to exclude the bbox variables for removed elements
 
 
     def _group_cap_const(self, parent_subckt_name):

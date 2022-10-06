@@ -81,7 +81,6 @@ def test_add_symmetry_const():
     clean_data(name)
 
 
-
 def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
@@ -146,7 +145,6 @@ def test_reusable_const():
     constraint_generator(ckt_library1)
     constraints1 = ckt_library1.find(name).constraints
     assert constraints == constraints1
-
 
 
 def test_filter_dummy():
@@ -262,8 +260,10 @@ def test_group_with_constraint():
             "instances": ["mn1", "mn2", "mn3", "mn4"],
             "instance_name": "xm",
             "template_name": "mygroup",
-            "constraints": [{"constraint": "Floorplan", "order": True,"regions": [["mn1", "mn2", "mn3"], ["mn4"]]}]
-        }
+            "constraints": [
+                {"constraint": "DoNotIdentify", "instances": ["mn1", "mn2", "mn3", "mn4"]},
+                {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["mn1", "mn2", "mn3"], ["mn4"]]}
+            ]}
     ]
 
     example = build_example(name, netlist, constraints)
@@ -277,5 +277,6 @@ def test_group_with_constraint():
     ckt = [ckt for ckt in ckt_library if ckt.name.startswith("MYGROUP")][0]
     constraints = {c.constraint for c in ckt.constraints}
     assert "Floorplan" in constraints, f"{ckt.constraints}"
+    assert "DoNotIdentify" in constraints, f"{ckt.constraints}"
 
     clean_data(name)

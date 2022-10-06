@@ -58,7 +58,7 @@ class PnRConstraintWriter:
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
-            const = input_const.dict(exclude={'constraint'}, exclude_unset=False)
+            const = input_const.dict(exclude={'constraint', '_instance_attribute'}, exclude_unset=False)
             const['const_name'] = input_const.__class__.__name__
 
             # Rename instances to blocks

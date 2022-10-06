@@ -61,6 +61,7 @@ def upper_case(cls, value):
 def upper_case_str(cls, value):
     return value.upper()
 
+
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
     return value
@@ -735,6 +736,7 @@ class SameTemplate(SoftConstraint):
         {"constraint":"SameTemplate", "instances": ["MN0", "MN1", "MN3"]}
     """
     instances: List[str]
+    _instance_attribute: str = "instances"
 
     @types.validator("instances", allow_reuse=True)
     def instances_validator(cls, instances):
@@ -910,7 +912,7 @@ class ConfigureCompiler(SoftConstraint):
     remove_dummy_devices: bool = True  # Removes dummy transistors
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
-    same_template: bool = True # generates identical layouts for all existing hierarchies in the input netlist
+    same_template: bool = True  # generates identical layouts for all existing hierarchies in the input netlist
     propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
@@ -951,6 +953,9 @@ class DoNotIdentify(SoftConstraint):
     WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
+    _instance_attribute: str = "instances"
+
+    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
 class SymmetricBlocks(HardConstraint):
@@ -1292,9 +1297,10 @@ class SymmetricNets(SoftConstraint):
     pins2: Optional[List]
     direction: Literal['H', 'V']
 
-    #TODO check net names
+    # TODO check net names
     _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
     _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+
     @types.validator('pins1', allow_reuse=True)
     def pins1_validator(cls, pins1):
         instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
@@ -1317,7 +1323,7 @@ class SymmetricNets(SoftConstraint):
                     assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
                 else:
                     validate_ports(cls, [pin])
-            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+            assert len(values['pins1']) == len(pins2), "pin size mismatch"
         return pins2
 
 
@@ -1348,6 +1354,7 @@ class ChargeFlow(SoftConstraint):
     def dist_type_validator(cls, value):
         assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
         return value
+
     @types.validator('time', allow_reuse=True)
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
@@ -1442,7 +1449,7 @@ class GroupBlocks(HardConstraint):
     instances: List[str]
     template_name: Optional[str]
     generator: Optional[dict]
-    constraints: Optional[List[Union[Align, AlignInOrder, Order, Floorplan, SymmetricBlocks]]] = None
+    constraints: Optional[List[Union[Align, AlignInOrder, Order, Floorplan, SymmetricBlocks, DoNotIdentify]]] = None
 
     @types.validator('instance_name', allow_reuse=True)
     def group_block_name(cls, value):
@@ -1458,6 +1465,7 @@ class GroupBlocks(HardConstraint):
         yield bb.lly < bb.ury
         # Grouping into common bbox
         for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
+            assert False, "IS THIS CODE EVER EXECUTED???"
             yield b.urx <= bb.urx
             yield b.llx >= bb.llx
             yield b.ury <= bb.ury
