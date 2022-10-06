@@ -330,8 +330,8 @@ def test_group_blocks():
         module = [module for module in verilog_json['modules'] if module['name'].startswith("MYGROUP")][0]
         constraints = [constraint["constraint"] for constraint in module["constraints"]]
         assert "Floorplan" in constraints
-    # shutil.rmtree(run_dir)
-    # shutil.rmtree(ckt_dir)
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
 
 
 @pytest.mark.skip(reason='Failing test to be enabled in a follow up next PR')
