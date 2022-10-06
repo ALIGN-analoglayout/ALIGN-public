@@ -955,8 +955,6 @@ class DoNotIdentify(SoftConstraint):
     instances: List[str]
     _instance_attribute: str = "instances"
 
-    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
-
 
 class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
