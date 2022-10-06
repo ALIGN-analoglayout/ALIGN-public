@@ -124,6 +124,8 @@ def run_postamble(nm, cv, max_errors=0, constraints=None):
 
     args = ['unknown', '-s', nm, '--flow_start', '3_pnr', '--skipGDS', '-p', str(cv.pdk.layerfile.parent), '-x']
     results = align.CmdlineParser().parse_args(args)
+    args_str= ' '.join(args)
+    print(f"Command to reproduce: schematic2layout.py {args_str}")
     assert results is not None, f'No results for {nm}'
 
     for result in results:

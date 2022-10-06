@@ -64,6 +64,8 @@ struct GuardRing;
 struct Guardring_Const;
 struct guardring_info;
 struct Min_Max_Routing_Layer;
+struct Min_Max_Routing_Layer_Per_Net;
+struct Routing_Layers_Info;
 
 /// Part 1: declaration of enum types
 enum NType { Block, Terminal };
@@ -486,7 +488,7 @@ struct hierNode {
   double cost = -1;
   std::string compact_style = "left";
   vector<string> DoNotRoute;
-  vector<Min_Max_Routing_Layer> Routing_Layers;
+  Routing_Layers_Info Routing_Layers;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
@@ -604,14 +606,19 @@ struct Multi_connection {
   int multi_number = 1;
 };
 
-struct Min_Max_Routing_Layer{
+struct Routing_Layers_Info{
+  vector<> nets;//corresponding to constraint["customize"]
+  string global_min_layer;
+  string global_max_layer;
+}
 
+//routing layer range for each net
+struct Min_Max_Routing_Layer_Per_Net{
   string global_min_layer;
   string global_max_layer;
   string net_min_layer;
   string net_max_layer;
   string net_name;
-  
 };
 
 /// Part 4: declaration of structures for LEF data
