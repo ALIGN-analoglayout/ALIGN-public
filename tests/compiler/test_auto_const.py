@@ -276,7 +276,6 @@ def test_group_with_constraint():
 
     ckt = [ckt for ckt in ckt_library if ckt.name.startswith("MYGROUP")][0]
     constraints = {c.constraint for c in ckt.constraints}
-    assert "Floorplan" in constraints, f"{ckt.constraints}"
-    assert "DoNotIdentify" in constraints, f"{ckt.constraints}"
+    assert constraints.issuperset({"Floorplan", "DoNotIdentify", "ConfigureCompiler"}), f"{ckt.constraints}"
 
     clean_data(name)
