@@ -30,6 +30,6 @@ def test_compiler():
 
 def test_recursive_replace():
     items = ["a", "b", ["c"], [["d"], "e"]]
-    update_map = { item:item+item for item in ["a", "b", "c", "d", "e"]}
+    update_map = {item: item+item for item in ["A", "B", "C", "D", "E"]}
     recursive_replace(items, update_map)
-    assert items == ["aa", "bb", ["cc"], [["dd"], "ee"]]
+    assert items == ["AA", "BB", ["CC"], [["DD"], "EE"]]

@@ -324,10 +324,10 @@ class Annotate:
 
 
 def recursive_replace(items, update_map):
-    assert isinstance(items, list)
     for idx, item in enumerate(items):
         if isinstance(item, str):
-            assert item in update_map
-            items[idx] = update_map[item]
+            item_upper = item.upper()
+            assert item_upper in update_map
+            items[idx] = update_map[item_upper]
         elif isinstance(item, list):
             recursive_replace(item, update_map)
