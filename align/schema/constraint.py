@@ -617,7 +617,6 @@ class Floorplan(UserConstraint):
     def _check_instance(cls, value):
         new_rows = list()
         for row in value:
-            assert row, f"Empty region is not allowed {row} in {value}"
             new_rows.append(validate_instances(cls, row))
         return new_rows
 

@@ -31,37 +31,53 @@ class ConstraintTranslator():
             self.child_name = child.name
             self.child_const = self.child.constraints
         else:
-            self.child = None
+            self.child=None
 
     def _top_to_bottom_translation(self, node_map):
         """
-        Inherit constraints from parent
+        Update instance names in the child constraints
+
         Args:
             node_map (dict): dict of mapping from parent instance names to child instance names
+
         """
 
-        logger.debug(f"Propagate constraints from parent: {self.parent_name} to child: {self.child_name}")
+        logger.debug(
+            f"transferring constraints from top subckt: {self.parent_name} to bottom subckt: {self.child_name} "
+        )
 
-        constraints_to_propagate = [
-                "HorizontalDistance",
-                "VerticalDistance",
-                "BlockDistance",
-                "CompactPlacement",
-                "ConfigureCompiler"
-            ]
-        constraint_exists = {c: False for c in constraints_to_propagate}
-        for const in self.child_const:
-            if const.constraint in constraint_exists:
-                constraint_exists[const.constraint] = True
+        if not self.child_const:
+            with set_context(self.child_const):
+                for const in list(self.parent_const):
+                    if any(
+                        isinstance(const, x)
+                        for x in [
+                            constraint.HorizontalDistance,
+                            constraint.VerticalDistance,
+                            constraint.BlockDistance,
+                            constraint.CompactPlacement,
+                        ]
+                    ):
+                        self.child_const.append(const)
+                    elif isinstance(const,constraint.ConfigureCompiler) and const.propagate:
+                        self.child_const.append(const)
+                    elif hasattr(const, "instances") and not isinstance(const,constraint.GroupBlocks):
+                        # checking if sub hierarchy instances are in const defined
+                        _child_const = {
+                            x: [
+                                node_map[block]
+                                for block in const.instances
+                                if block in node_map.keys()
+                            ]
+                            if x == "instances"
+                            else getattr(const, x)
+                            for x in const.__fields_set__
+                        }
+                        assert "constraint" in _child_const, f"format check failed"
+                        logger.debug(f"transferred constraint instances {node_map} from {const} to {_child_const}")
+                        self._add_const(self.child_const, _child_const)
 
         for const in list(self.parent_const):
-            if const.constraint in constraint_exists and not constraint_exists[const.constraint]:
-                if isinstance(const, constraint.ConfigureCompiler) and not const.propagate:
-                    continue
-                else:
-                    logger.debug(f"Propagating parent constraint to child: {const}")
-                    self.child_const.append(const)
-
             if hasattr(const, "pin_current"):
                 logger.debug(f"transferring charge flow constraints {const.pin_current.keys()}")
                 pin_map = {}
@@ -71,10 +87,13 @@ class ConstraintTranslator():
                     if parent_inst_name in node_map.keys():
                         child_inst_name = node_map[parent_inst_name]
                         assert parent_pin in self.child.get_element(child_inst_name).pins
-                        pin_map[pin] = child_inst_name+'/'+parent_pin
-                _child_const = {x: {pin_map[pin]: current for pin, current in getattr(const, x).items() if pin in pin_map}
-                                if x == "pin_current" else getattr(const, x) for x in const.__fields_set__}
+                        pin_map[pin] = child_inst_name+'/'+ parent_pin
+                _child_const = {x: {pin_map[pin]:current for pin, current in getattr(const,x).items() if pin in pin_map}
+                                if x== "pin_current" else getattr(const, x) for x in const.__fields_set__}
                 self._add_const(self.child_const, _child_const)
+
+        if self.child_const:
+            logger.debug(f"transferred constraints to {self.child_name} {self.child_const}")
 
     def _update_const(self, new_inst_name, node_map):
         """
