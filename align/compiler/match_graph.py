@@ -168,7 +168,7 @@ class Annotate:
         if self.ckt_data.find(new_subckt_name):
             # Matching hash based names ensures the new subckt name is identical or different
             new_subckt = self.ckt_data.find(new_subckt_name)
-            logger.info(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
+            logger.debug(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
             # Create a subckt and add to library
             with set_context(self.ckt_data):
@@ -190,7 +190,8 @@ class Annotate:
                 constraints_for_group = getattr(const, 'constraints')
                 instance_map = {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()}
                 for child_constraint in constraints_for_group:
-                    recursive_replace(getattr(child_constraint, child_constraint._instance_attribute), instance_map)
+                    if hasattr(child_constraint, "_instance_attribute"):
+                        recursive_replace(getattr(child_constraint, child_constraint._instance_attribute), instance_map)
                     child_constraint._parent = new_subckt.constraints
                     with set_context(new_subckt.constraints):
                         logger.debug(f"Appended {child_constraint} to {new_subckt_name}")

@@ -1447,7 +1447,7 @@ class GroupBlocks(HardConstraint):
     instances: List[str]
     template_name: Optional[str]
     generator: Optional[dict]
-    constraints: Optional[List[Union[Align, AlignInOrder, Order, Floorplan, SymmetricBlocks, DoNotIdentify]]] = None
+    constraints: Optional[List[Union[Align, AlignInOrder, Order, Floorplan, SymmetricBlocks, DoNotIdentify, ConfigureCompiler]]] = None
 
     @types.validator('instance_name', allow_reuse=True)
     def group_block_name(cls, value):
