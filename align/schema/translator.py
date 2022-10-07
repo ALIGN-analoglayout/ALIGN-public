@@ -4,7 +4,6 @@ Created on Fri Nov  2 21:33:22 2018
 @author: kunal
 """
 
-from operator import sub
 from .types import set_context
 import logging
 from align.schema import constraint

@@ -273,7 +273,7 @@ def test_one_to_four_missing_power():
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level="INFO", n=1)
 
 
-@pytest.mark.skip(reason="To be enabled in another PR for triage and debug")
+#@pytest.mark.skip(reason="To be enabled in another PR for triage and debug")
 def test_bias_generator(disable_tap):
     name = f'ckt_{get_test_id()}'
     netlist = circuits.bias_generator(name)
@@ -419,4 +419,4 @@ def test_bias_generator(disable_tap):
           ]
         }
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level="DEBUG", n=1, max_errors=4)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, max_errors=4)
