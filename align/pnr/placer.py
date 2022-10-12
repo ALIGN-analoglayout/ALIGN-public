@@ -126,9 +126,9 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_ve
     hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
 
     if hpwl_alt != hN.HPWL_extend:
-        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ for {concrete_name}!')
     else:
-        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
+        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal for {concrete_name}!')
 
     reported_hpwl = hpwl_alt / 2000
 
