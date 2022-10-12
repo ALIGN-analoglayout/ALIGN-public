@@ -28,6 +28,8 @@ def gen_examples():
 
     if ci_level == 'merge':
         circle_ci_skip = "not single_to_differential_converter and not vco_dtype_12_hierarchical and not linear_equalizer and not test_vga and not powertrain_binary and and not telescopic_ota_guard_ring"
+        # TODO: Re-nameble ldo_error_amp_v2 in a future PR for debug
+        circle_ci_skip = " ldo_error_amp_v2"
         exclude_strings = [nm for nm in circle_ci_skip.split(' ') if nm not in ["and", "or", "not"]]
 
         additional_skip_dirs = set()

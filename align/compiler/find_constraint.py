@@ -253,7 +253,6 @@ def constraint_generator(ckt_data):
 
 
 def FindConst(subckt):
-    logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
     stop_points = set()
     auto_constraint = True
@@ -272,6 +271,7 @@ def FindConst(subckt):
     if not auto_constraint:
         return
 
+    logger.debug(f"Searching constraints for block {subckt.name}")
     # Search symmetry constraints
     match_pairs = FindSymmetry(subckt, stop_points)
     logger.debug(f"match pairs {match_pairs}")

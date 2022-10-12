@@ -25,13 +25,24 @@ class MOS(CanvasPDK):
         if tx.device_type == 'stack':
             self.addWire(self.m1, 'S', 1,       ds_b_idx, (4, 1))
             self.addWire(self.m1, 'D', 1+tx.nf, ds_b_idx, (4, 1))
+
+            for y in range(1, 4):
+                self.addVia(self.vt, None, 1, y)
+                self.addVia(self.vt, None, 1+tx.nf, y)
+
         else:
             for x in range(1, 2+tx.nf):
                 p = 'D' if x % 2 == 0 else 'S'
                 self.addWire(self.m1, p, x, ds_b_idx, (4, 1))
 
+                for y in range(1, 4):
+                    self.addVia(self.vt, None, x, y)
+
         for x in range(2, 1+tx.nf, 2):
             self.addWire(self.m1,  'G', x, (5, -1), (6, 1))
+
+            for y in [5, 6]:
+                self.addVia(self.vt, None, x, y)
 
         if track_pattern is not None:
 

@@ -3,6 +3,7 @@ import textwrap
 import shutil
 
 from align.compiler.compiler import compiler_input, annotate_library, compiler_output, PrimitiveLibrary
+from align.compiler.match_graph import recursive_replace
 
 test_dir = pathlib.Path(__file__).resolve().parent.parent
 pdk_dir = test_dir.parent / "pdks" / "FinFET14nm_Mock_PDK"
@@ -27,4 +28,8 @@ def test_compiler():
     assert (out_path / 'OTA.verilog.json').exists()
 
 
-
+def test_recursive_replace():
+    items = ["a", "b", ["c"], [["d"], "e"]]
+    update_map = {item: item+item for item in ["A", "B", "C", "D", "E"]}
+    recursive_replace(items, update_map)
+    assert items == ["AA", "BB", ["CC"], [["DD"], "EE"]]

@@ -118,7 +118,7 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           macroIns.macroPins = macroPins;
           macroIns.interMetals = interMetals;
           macroIns.interVias = interVias;
-	  macroIns.master = macroIns.name;
+	        macroIns.master = macroIns.name;
           if (lefData.find(macroIns.master) == lefData.end()) {
             std::vector<PnRDB::lefMacro> lefV;
             lefV.push_back(macroIns);
@@ -174,14 +174,18 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
               interVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
               interVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
               interVias.back().ViaRect.metal = via_model.name;
-              interVias.back().LowerMetalRect.originCenter = center;
-              interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
-              interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
-              interVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
-              interVias.back().UpperMetalRect.originCenter = center;
-              interVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
-              interVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
-              interVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+              if (via_model.LowerIdx >= 0) {
+                interVias.back().LowerMetalRect.originCenter = center;
+                interVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
+                interVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
+                interVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
+              }
+              if (via_model.UpperIdx >= 0) {
+                interVias.back().UpperMetalRect.originCenter = center;
+                interVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
+                interVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
+                interVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+              }
             }
           }
         } else if ((found = def.find(obsEnd)) != string::npos) {
@@ -264,14 +268,18 @@ void PnRdatabase::_ReadLEF(istream& fin, const string& leffile) {
           macroPins.back().pinVias.back().ViaRect.originBox.LL = via_model.ViaRect[0] + center;
           macroPins.back().pinVias.back().ViaRect.originBox.UR = via_model.ViaRect[1] + center;
           macroPins.back().pinVias.back().ViaRect.metal = via_model.name;
-          macroPins.back().pinVias.back().LowerMetalRect.originCenter = center;
-          macroPins.back().pinVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
-          macroPins.back().pinVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
-          macroPins.back().pinVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
-          macroPins.back().pinVias.back().UpperMetalRect.originCenter = center;
-          macroPins.back().pinVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
-          macroPins.back().pinVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
-          macroPins.back().pinVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+          if (via_model.LowerIdx >= 0) {
+            macroPins.back().pinVias.back().LowerMetalRect.originCenter = center;
+            macroPins.back().pinVias.back().LowerMetalRect.originBox.LL = via_model.LowerRect[0] + center;
+            macroPins.back().pinVias.back().LowerMetalRect.originBox.UR = via_model.LowerRect[1] + center;
+            macroPins.back().pinVias.back().LowerMetalRect.metal = DRC_info.Metal_info[via_model.LowerIdx].name;
+          }
+          if (via_model.UpperIdx >= 0) {
+            macroPins.back().pinVias.back().UpperMetalRect.originCenter = center;
+            macroPins.back().pinVias.back().UpperMetalRect.originBox.LL = via_model.UpperRect[0] + center;
+            macroPins.back().pinVias.back().UpperMetalRect.originBox.UR = via_model.UpperRect[1] + center;
+            macroPins.back().pinVias.back().UpperMetalRect.metal = DRC_info.Metal_info[via_model.UpperIdx].name;
+          }
           // cout<<"Stage "<<stage<<" @ bbox ";
           // for(vector<PnRDB::point>::iterator
           // it=macroPins.back().pinContacts.back().originBox.polygon.begin();it!=macroPins.back().pinContacts.back().originBox.polygon.end();++it)

@@ -16,12 +16,15 @@ pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
 def get_instances_from_hacked_dataclasses(constraint):
     assert constraint.parent.parent is not None, 'Cannot access parent scope'
+
     if hasattr(constraint.parent.parent, 'graph'):
         instances = {k for k, v in constraint.parent.parent.graph.nodes.items() if v['inst_type'] != 'net'}
     elif hasattr(constraint.parent.parent, 'elements'):
         instances = {x.name for x in constraint.parent.parent.elements}
     elif hasattr(constraint.parent.parent, 'instances'):
         instances = {x.instance_name for x in constraint.parent.parent.instances}
+    elif type(constraint.parent.parent).__name__ == "GroupBlocks":
+        return get_instances_from_hacked_dataclasses(constraint.parent.parent)
     else:
         raise NotImplementedError(f"Cannot handle {type(constraint.parent.parent)}")
     names1 = {x.instance_name for x in constraint.parent if hasattr(x, 'instance_name')}  # group block
@@ -57,6 +60,7 @@ def upper_case(cls, value):
 
 def upper_case_str(cls, value):
     return value.upper()
+
 
 def assert_non_negative(cls, value):
     assert value >= 0, f'Value must be non-negative: {value}'
@@ -157,6 +161,7 @@ class Order(HardConstraint):
         'bottom_to_top', 'top_to_bottom'
     ]]
     abut: bool = False
+    _instance_attribute: str = "instances"
 
     @types.validator('instances', allow_reuse=True)
     def order_instances_validator(cls, value):
@@ -240,6 +245,7 @@ class Align(HardConstraint):
         'h_any', 'h_top', 'h_bottom', 'h_center',
         'v_any', 'v_left', 'v_right', 'v_center'
     ]]
+    _instance_attribute: str = "instances"
 
     _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
@@ -499,70 +505,6 @@ class Boundary(HardConstraint):
             yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
 
 
-class GroupBlocks(HardConstraint):
-    """GroupBlocks
-
-    Forces a hierarchy creation for group of instances.
-    This brings the instances closer.
-    This reduces the problem statement for placer thus providing
-    better solutions.
-
-    Args:
-      instances (list[str]): List of :obj:`instances`
-      template_name (str): Optional template name for the group (virtual hiearchy).
-      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
-      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
-
-    Example: ::
-
-        {
-            "constraint":"GroupBlocks",
-            "instance_name": "X_MN0_MN1_MN3",
-            "instances": ["MN0", "MN1", "MN3"]
-            "generator": {name: 'MOS',
-                        'parameters':
-                            {
-                            "pattern": "cc",
-                            }
-                        }
-            "template_name": "DP1"
-        }
-
-    Note: If not provided a unique template name will be auto generated.
-    Template_names are added with a post_script during the flow using a UUID based on
-    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
-    """
-    instance_name: str
-    instances: List[str]
-    template_name: Optional[str]
-    generator: Optional[dict]
-
-    @types.validator('instance_name', allow_reuse=True)
-    def group_block_name(cls, value):
-        assert value, 'Cannot be an empty string'
-        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
-        return value.upper()
-
-    def translate(self, solver):
-        # Non-zero width / height
-        instances = get_instances_from_hacked_dataclasses(self)
-        bb = solver.bbox_vars(self.instance_name)
-        yield bb.llx < bb.urx
-        yield bb.lly < bb.ury
-        # Grouping into common bbox
-        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
-            yield b.urx <= bb.urx
-            yield b.llx >= bb.llx
-            yield b.ury <= bb.ury
-            yield b.lly >= bb.lly
-        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
-            yield solver.Or(
-                b.urx <= bb.llx,
-                bb.urx <= b.llx,
-                b.ury <= bb.lly,
-                bb.ury <= b.lly,
-            )
-
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
 #     2) Using custom validators to modify attribute values
@@ -614,6 +556,7 @@ class AlignInOrder(UserConstraint):
     ] = 'bottom'
     direction: Optional[Literal['horizontal', 'vertical']]
     abut: bool = False
+    _instance_attribute: str = "instances"
 
     @types.validator('direction', allow_reuse=True, always=True)
     def _direction_depends_on_line(cls, v, values):
@@ -668,6 +611,7 @@ class Floorplan(UserConstraint):
     regions: List[List[str]]
     order: bool = False
     symmetrize: bool = False
+    _instance_attribute: str = "regions"
 
     @types.validator('regions', allow_reuse=True, always=True)
     def _check_instance(cls, value):
@@ -792,6 +736,31 @@ class SameTemplate(SoftConstraint):
         {"constraint":"SameTemplate", "instances": ["MN0", "MN1", "MN3"]}
     """
     instances: List[str]
+    _instance_attribute: str = "instances"
+
+    @types.validator("instances", allow_reuse=True)
+    def instances_validator(cls, instances):
+
+        # logger.debug(f"SameTemplate {instances=}")
+        # assert len(instances) >= 2, "SameTemplate constraint requires at least two instances"
+
+        _ = get_instances_from_hacked_dataclasses(cls._validator_ctx())
+        instances = validate_instances(cls, instances)
+
+        if not hasattr(cls._validator_ctx().parent.parent, 'elements'):
+            # PnR stage VerilogJsonModule
+            return instances
+        if len(cls._validator_ctx().parent.parent.elements) == 0:
+            # skips the check while reading user constraints
+            return instances
+
+        group_block_instances = [const.instance_name.upper() for const in cls._validator_ctx().parent if isinstance(const, GroupBlocks)]
+        for i0, i1 in itertools.pairwise(instances):
+            if i0 not in group_block_instances and i1 not in group_block_instances:
+                assert cls._validator_ctx().parent.parent.get_element(i0).parameters == \
+                        cls._validator_ctx().parent.parent.get_element(i1).parameters, \
+                        f"Parameters of {i0} and {i1} must match for SameTemplate in subckt {cls._validator_ctx().parent.parent.name}"
+        return instances
 
 
 class CreateAlias(SoftConstraint):
@@ -943,7 +912,7 @@ class ConfigureCompiler(SoftConstraint):
     remove_dummy_devices: bool = True  # Removes dummy transistors
     merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
     merge_parallel_devices: bool = True  # Merge parallel devices
-    same_template: bool = True # generates identical layouts for all existing hierarchies in the input netlist
+    same_template: bool = True  # generates identical layouts for all existing hierarchies in the input netlist
     propagate: bool = True  # propagate constraint to all lower hierarchies
 
 
@@ -984,6 +953,7 @@ class DoNotIdentify(SoftConstraint):
     WARNING: user-defined `groupblock`/`groupcap` constraint will ignore this constraint
     '''
     instances: List[str]
+    _instance_attribute: str = "instances"
 
 
 class SymmetricBlocks(HardConstraint):
@@ -1013,6 +983,7 @@ class SymmetricBlocks(HardConstraint):
     """
     pairs: List[List[str]]
     direction: Literal['H', 'V']
+    _instance_attribute: str = "pairs"
 
     @types.validator('pairs', allow_reuse=True)
     def pairs_validator(cls, value):
@@ -1324,9 +1295,10 @@ class SymmetricNets(SoftConstraint):
     pins2: Optional[List]
     direction: Literal['H', 'V']
 
-    #TODO check net names
+    # TODO check net names
     _upper_case_net1 = types.validator('net1', allow_reuse=True)(upper_case_str)
     _upper_case_net2 = types.validator('net2', allow_reuse=True)(upper_case_str)
+
     @types.validator('pins1', allow_reuse=True)
     def pins1_validator(cls, pins1):
         instances = get_instances_from_hacked_dataclasses(cls._validator_ctx())
@@ -1349,7 +1321,7 @@ class SymmetricNets(SoftConstraint):
                     assert pin.split('/')[0].upper() in instances, f"element of pin {pin} not found in design"
                 else:
                     validate_ports(cls, [pin])
-            assert len(values['pins1'])==len(pins2), f"pin size mismatch"
+            assert len(values['pins1']) == len(pins2), "pin size mismatch"
         return pins2
 
 
@@ -1380,6 +1352,7 @@ class ChargeFlow(SoftConstraint):
     def dist_type_validator(cls, value):
         assert value == 'Manhattan' or value == 'Euclidean', 'dist_type must be either Euclidean or Manhattan'
         return value
+
     @types.validator('time', allow_reuse=True)
     def time_list_validator(cls, value):
         assert len(value) >= 1, 'Must contain at least one time stamp'
@@ -1435,6 +1408,80 @@ class Route(SoftConstraint):
     min_layer: Optional[str]
     max_layer: Optional[str]
     customize: List[CustomizeRoute] = []
+
+
+class GroupBlocks(HardConstraint):
+    """GroupBlocks
+
+    Forces a hierarchy creation for group of instances.
+    This brings the instances closer.
+    This reduces the problem statement for placer thus providing
+    better solutions.
+
+    Args:
+      instances (list[str]): List of :obj:`instances`
+      template_name (str): Optional template name for the group (virtual hiearchy).
+      instance_name (str): Instance name for the group (should start with X and unique in a subcircuit).
+      generator (dict): adds a generator constraint to the created groupblock, look into the generator constraint for more options
+
+    Example: ::
+
+        {
+            "constraint":"GroupBlocks",
+            "instance_name": "X_MN0_MN1_MN3",
+            "instances": ["MN0", "MN1", "MN3"]
+            "generator": {name: 'MOS',
+                        'parameters':
+                            {
+                            "pattern": "cc",
+                            }
+                        }
+            "template_name": "DP1"
+        }
+
+    Note: If not provided a unique template name will be auto generated.
+    Template_names are added with a post_script during the flow using a UUID based on
+    all grouped instance parameters to create unique subcircuit names e.g., DP1_987654.
+    """
+    instance_name: str
+    instances: List[str]
+    template_name: Optional[str]
+    generator: Optional[dict]
+    constraints: Optional[List[Union[
+        Align,
+        Order,
+        AlignInOrder,
+        Floorplan,
+        SymmetricBlocks,
+        DoNotIdentify,
+        SameTemplate,
+        ConfigureCompiler]]] = None
+
+    @types.validator('instance_name', allow_reuse=True)
+    def group_block_name(cls, value):
+        assert value, 'Cannot be an empty string'
+        assert value.upper().startswith('X'), f"instance name {value} of the group should start with X"
+        return value.upper()
+
+    def translate(self, solver):
+        # Non-zero width / height
+        instances = get_instances_from_hacked_dataclasses(self)
+        bb = solver.bbox_vars(self.instance_name)
+        yield bb.llx < bb.urx
+        yield bb.lly < bb.ury
+        # Grouping into common bbox
+        for b in solver.iter_bbox_vars((x for x in self.instances if x in instances)):
+            yield b.urx <= bb.urx
+            yield b.llx >= bb.llx
+            yield b.ury <= bb.ury
+            yield b.lly >= bb.lly
+        for b in solver.iter_bbox_vars((x for x in instances if x not in self.instances)):
+            yield solver.Or(
+                b.urx <= bb.llx,
+                bb.urx <= b.llx,
+                b.ury <= bb.lly,
+                bb.ury <= b.lly,
+            )
 
 
 ConstraintType = Union[

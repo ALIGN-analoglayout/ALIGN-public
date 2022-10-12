@@ -11,7 +11,6 @@ import logging
 from ..schema import constraint
 from align.schema.graph import Graph
 from align.schema import ConstraintTranslator
-from .util import gen_group_key
 from flatdict import FlatDict
 import hashlib
 logger = logging.getLogger(__name__)
@@ -167,6 +166,7 @@ class Annotate:
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
         new_subckt_name = (const.template_name if const.template_name else 'primitive')+key
         if self.ckt_data.find(new_subckt_name):
+            # Matching hash based names ensures the new subckt name is identical or different
             new_subckt = self.ckt_data.find(new_subckt_name)
             logger.debug(f"identical group found {new_subckt_name} {self.ckt_data.find(new_subckt_name)}")
         else:
@@ -178,11 +178,25 @@ class Annotate:
                     gen_const = constraint.Generator(**const.generator)
                     with set_context(parent_subckt.constraints):
                         new_subckt.constraints.append(gen_const)
+
                 self.ckt_data.append(new_subckt)
             # Add all instances of groupblock to new subckt
             with set_context(new_subckt.elements):
                 for e in new_insts:
                     new_subckt.elements.append(Instance(**e))
+
+            # Handle any cnstraints provided to this grouped block
+            if getattr(const, 'constraints', None):
+                constraints_for_group = getattr(const, 'constraints')
+                instance_map = {parent_inst.name: child_inst_name for child_inst_name, parent_inst in inst_names.items()}
+                for child_constraint in constraints_for_group:
+                    if hasattr(child_constraint, "_instance_attribute"):
+                        recursive_replace(getattr(child_constraint, child_constraint._instance_attribute), instance_map)
+                    child_constraint._parent = new_subckt.constraints
+                    with set_context(new_subckt.constraints):
+                        logger.debug(f"Appended {child_constraint} to {new_subckt_name}")
+                        new_subckt.constraints.append(child_constraint)
+
             logger.debug(f"added new hiearchy {new_subckt} based on group_block_constraint")
         # Remove elements from subckt then Add new_subckt instance
         with set_context(parent_subckt.elements):
@@ -204,6 +218,8 @@ class Annotate:
         # Add const after removing const with single instances.
         for c in list(parent_subckt.constraints):
             tr._add_const(parent_subckt.constraints, c)
+
+        # TODO: parent_subckt.verify()  # This call is to reset the formulae to exclude the bbox variables for removed elements
 
     def _group_block_const(self, parent_subckt_name):
         parent_subckt = self.ckt_data.find(parent_subckt_name)
@@ -234,6 +250,8 @@ class Annotate:
                 ckt_ele
             ), f"Constraint instances: {const_insts} not in subcircuit {parent_subckt.name} with elements {ckt_ele}"
             if const.template_name and const.template_name.upper() in self.lib_names:
+                # Create virtual hierarchies with user defined template name
+                # Reusing primitives defined in ALIGN library
                 child_subckt_graph = Graph([l for l in self.lib if l.name==const.template_name.upper()][0])
                 skip_insts = [e.name for e in parent_subckt.elements if e.name not in const_insts]
                 group_block_name = Graph(parent_subckt).replace_matching_subgraph(
@@ -247,9 +265,11 @@ class Annotate:
                 rename_inst(auto_generated_name, const.instance_name.upper())
                 continue
             else:
+                # For any new virtual hierarchy definition
                 self.create_canonical_primitive(parent_subckt, const)
         logger.debug(f"reduced constraints of design {parent_subckt_name} {parent_subckt.constraints}")
 
+        # TODO: parent_subckt.verify()  # This call is to reset the formulae to exclude the bbox variables for removed elements
 
 
     def _group_cap_const(self, parent_subckt_name):
@@ -304,3 +324,12 @@ class Annotate:
                 const.name.upper(), {inst: inst for inst in [const.name.upper(), *const_inst]}
             )
 
+
+def recursive_replace(items, update_map):
+    for idx, item in enumerate(items):
+        if isinstance(item, str):
+            item_upper = item.upper()
+            assert item_upper in update_map
+            items[idx] = update_map[item_upper]
+        elif isinstance(item, list):
+            recursive_replace(item, update_map)

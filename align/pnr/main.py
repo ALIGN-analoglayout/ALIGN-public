@@ -199,7 +199,7 @@ def write_verilog_d(verilog_d):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1):
 
     subckt = subckt.upper()
 
@@ -338,7 +338,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                           select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
                           toplevel_args_d=toplevel_args_d, results_dir=None,
-                          placer_sa_iterations=placer_sa_iterations)
+                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
         with open("__placer_dump__.json", "wt") as fp:
             json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
