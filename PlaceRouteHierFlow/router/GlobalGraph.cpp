@@ -469,6 +469,7 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
     std::vector<int> ulist = minDistancefromMultiMap(distMap);
     // std::cout<<"size of Q: "<<ulist.size()<<std::endl;
     if (ulist.empty()) {
+      logger->warn("Router-Warning: ulist empty");
       temp_path.clear();
       return temp_path;
     }
