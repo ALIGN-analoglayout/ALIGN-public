@@ -3094,10 +3094,11 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
-  //if (cost >= 0.) {
-  //  logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-  //  logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
-  //}
+  if (cost >= 0.) {
+    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    if(HPWL_ILP && round(HPWL_extend) != round(HPWL_ILP)) exit(0);
+  }
   return calculated_cost;
 }
 
