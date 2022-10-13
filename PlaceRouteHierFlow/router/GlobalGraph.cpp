@@ -437,6 +437,7 @@ std::vector<int> GlobalGraph::minDistancefromMultiMap(std::multimap<double, int>
 };
 
 std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.dijkstra");
   std::vector<int> temp_path;
 
   std::vector<double> dist;
@@ -494,7 +495,7 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
     }
     count++;
   }
-
+  if (status[dest] != 2) logger->warn("Router-Warning: feasible path might not be found");
   printPath(parent, dest, graph.size(), temp_path);
   // std::cout<<"temp path"<<std::endl;
   // for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
