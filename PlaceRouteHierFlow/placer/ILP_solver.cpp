@@ -3032,6 +3032,10 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
     if (neti.floating_pin) HPWL = HPWL_extend = HPWL_extend_net_priority = HPWL_extend_terminal = 0;
   }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
+  }
 
   // HPWL norm
   if (!mydesign.Nets.empty()) HPWL_norm = HPWL_extend / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
@@ -3877,6 +3881,10 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+  }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
   }
 
   // HPWL norm
