@@ -1891,7 +1891,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     objective[N_area_x] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-    if (mydesign.Nets[i].connected.size() < 2) continue;
+    //if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
     objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight;
     objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight;
@@ -2433,7 +2433,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   {
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-      if (mydesign.Nets[i].connected.size() < 2) continue;
+      //if (mydesign.Nets[i].connected.size() < 2) continue;
       int ind = int(mydesign.Blocks.size() * 4 + i * 4);
 
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
