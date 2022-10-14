@@ -184,16 +184,18 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
             }
           }
         }
-        sol.HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
-        sol.HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
-        bool is_terminal_net = false;
-        for (const auto& c : neti.connected) {
-          if (c.type == placerDB::Terminal) {
-            is_terminal_net = true;
-            break;
+        if (!neti.floating_pin) {
+          sol.HPWL += (HPWL_max_y - HPWL_min_y) + (HPWL_max_x - HPWL_min_x);
+          sol.HPWL_extend += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+          bool is_terminal_net = false;
+          for (const auto& c : neti.connected) {
+            if (c.type == placerDB::Terminal) {
+              is_terminal_net = true;
+              break;
+            }
           }
+          if (is_terminal_net) sol.HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
         }
-        if (is_terminal_net) sol.HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
       }
       if (!designData.Nets.empty()) sol.HPWL_norm = sol.HPWL_extend / designData.GetMaxBlockHPWLSum() / double(designData.Nets.size());
       sol.cost = sol.CalculateCost(designData, sp);
