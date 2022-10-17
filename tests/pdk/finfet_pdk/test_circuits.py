@@ -522,7 +522,7 @@ def test_comparator_analog():
             ]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"], max_errors=1)
 
 
 def test_analog_mux_4to1():
