@@ -418,6 +418,18 @@ struct GuardRing {
   vector<Via> interVias;
 };
 
+struct Min_Max_Routing_Layer_Per_Net{
+  string net_min_layer;
+  string net_max_layer;
+  string net_name;
+};
+
+struct Routing_Layers_Info{
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_per_Net;
+  string global_min_layer;
+  string global_max_layer;
+};
+
 struct hierNode {
   bool isCompleted = false;
   bool isTop = false;
@@ -488,6 +500,8 @@ struct hierNode {
   double cost = -1;
   std::string compact_style = "left";
   vector<string> DoNotRoute;
+//  vector<Min_Max_Routing_Layer> Routing_Layers;
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
   Routing_Layers_Info Routing_Layers;
 };  // structure of vertex in heirarchical tree
 
@@ -606,14 +620,15 @@ struct Multi_connection {
   int multi_number = 1;
 };
 
-struct Routing_Layers_Info{
-  vector<> nets;//corresponding to constraint["customize"]
-  string global_min_layer;
-  string global_max_layer;
-}
+struct Min_Max_Routing_Layer{
+//struct Routing_Layers_Info{
+//  vector<> nets;//corresponding to constraint["customize"]
+//  string global_min_layer;
+//  string global_max_layer;
+//}
 
 //routing layer range for each net
-struct Min_Max_Routing_Layer_Per_Net{
+//struct Min_Max_Routing_Layer_Per_Net{
   string global_min_layer;
   string global_max_layer;
   string net_min_layer;

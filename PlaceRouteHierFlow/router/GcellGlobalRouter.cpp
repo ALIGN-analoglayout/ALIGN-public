@@ -1034,16 +1034,18 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
        }
     }
 
-    for(auto routing_layers: node.Routing_Layers){
-       if(routing_layers.net_name==temp_net.netName){
-          int min_layer = std::max(drc_info.Metalmap[routing_layers.global_min_layer],drc_info.Metalmap[routing_layers.net_min_layer]);
-          int max_layer = std::min(drc_info.Metalmap[routing_layers.global_max_layer],drc_info.Metalmap[routing_layers.net_max_layer]);
-          temp_net.min_routing_layer = min_layer;
-          temp_net.max_routing_layer = max_layer;
-       }
+    int global_min = drc_info.Metalmap[node.Routing_Layers.global_min_layer];
+    int global_max = drc_info.Metalmap[node.Routing_Layers.global_max_layer];
 
+    for(auto routing_layers: node.Routing_Layers.Routing_per_Net){
+      if(routing_layers.net_name==temp_net.netName){
+        int min_layer = std::max(global_min,drc_info.Metalmap[routing_layers.net_min_layer]);
+        int max_layer = std::max(global_max,drc_info.Metalmap[routing_layers.net_max_layer]);
+        temp_net.min_routing_layer = min_layer;
+        temp_net.max_routing_layer = max_layer;
+      }
     }
-    
+
     Nets.push_back(temp_net);
   }
 
