@@ -998,7 +998,7 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i) {
   int temp_lowest_metal = Nets[i].min_routing_layer;
   int temp_highest_metal = Nets[i].max_routing_layer;
   //Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
-  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
+  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, Nets[i].min_routing_layer, Nets[i].max_routing_layer, grid_scale);
   grid.Full_Connected_Vertex();
 
   return grid;
