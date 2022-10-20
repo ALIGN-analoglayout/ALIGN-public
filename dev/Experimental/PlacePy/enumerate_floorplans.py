@@ -1,6 +1,7 @@
 import networkx as nx
 import align.schema.constraint as constraint_schema
 import more_itertools
+import itertools
 
 
 def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int):
@@ -33,18 +34,63 @@ def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int
                 else:
                     pass
 
-    count = 0
+    count = 1
     sequence_pairs = list()
     for pos in nx.all_topological_sorts(pos_graph):
         for neg in nx.all_topological_sorts(neg_graph):
             sequence_pairs.append((pos, neg))
             count += 1
-            if count > max_sequences-1:
+            if count > max_sequences:
                 break
-        if count > max_sequences-1:
+        if count > max_sequences:
             break
 
     return sequence_pairs
+
+
+def enumerate_variants(constraints, instance_map: dict, variant_counts: dict, max_variants: int):
+
+    # Group instances that should use same template
+    groups = list()
+    grouped_instances = set()
+    for constraint in constraint_schema.expand_user_constraints(constraints):
+        if isinstance(constraint, constraint_schema.SameTemplate):
+            set_of_instances = set(constraint.instances)
+            grouped_instances = set.union(grouped_instances, set_of_instances)
+            group_exists = False
+            for i, group in enumerate(groups):
+                if set.intersection(set_of_instances, group):
+                    groups[i] = set.union(set_of_instances, group)
+                    group_exists = True
+                    break
+            if not group_exists:
+                groups.append(set_of_instances)
+
+    # Create groups for isolated instances
+    for instance in instance_map.keys():
+        if instance not in grouped_instances:
+            groups.append({instance})
+
+    # Number of variants per group
+    group_variants = list()
+    for i, group in enumerate(groups):
+        for instance in group:  # get an instance from the set
+            break
+        group_variants.append([k for k in range(variant_counts[instance])])
+
+    # Enumerate
+    count = 1
+    variants = list()
+    for variant in itertools.product(*group_variants):
+        selection = [0]*len(instance_map)
+        for i, v in enumerate(variant):
+            # all instances of group[i] should have variant v
+            for instance in groups[i]:
+                selection[instance_map[instance]] = v
+        variants.append(selection)
+        if count > max_variants:
+            break
+    return variants
 
 
 # Tests
@@ -95,4 +141,20 @@ def test_enumerate_sequence_pairs():
     assert sequence_pairs[0] == ([0, 1, 2, 3], [3, 2, 1, 0])
 
 
-test_enumerate_sequence_pairs()
+def test_enumerate_variants():
+
+    constraints, instance_map = initialize_constraints(2)
+    variant_counts = {k: 2 for k in instance_map.keys()}
+    variants = enumerate_variants(constraints, instance_map, variant_counts, 100)
+    assert len(variants) == 4
+
+    constraints, instance_map = initialize_constraints(4)
+    variant_counts = {k: 2 for k in instance_map.keys()}
+    with set_context(constraints):
+        constraints.append(constraint_schema.SameTemplate(instances=[f'M{i}' for i in range(4)]))
+    variants = enumerate_variants(constraints, instance_map, variant_counts, 100)
+    assert len(variants) == 2
+    assert variants == [[0]*4, [1]*4]
+
+
+test_enumerate_variants()
