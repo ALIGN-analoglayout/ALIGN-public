@@ -547,6 +547,21 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     // new_added for per net metal layer setting, remove this part if an error happens
     int l_metal = Nets[i].min_routing_layer; //
     int h_metal = Nets[i].max_routing_layer; //
+    // add pin metal layer check, if pin's layer < Nets[i].min_routing_layer - 1 or pin's layer > Nets[i].min_routing_layer + 1
+    // Nets[i].min_routing_layer - 1 <= pin's metal layer <= Nets[i].min_routing_layer + 1
+    for(auto c:Nets[i].connected){
+      if(c.type==RouterDB::BLOCK){
+        for(auto pin_contact:Blocks[c.iter2].pins[c.iter].pinContacts){
+          if(pin_contact.metal<Nets[i].min_routing_layer-1){
+            logger->error("Block {0} pin {1} is lower than min_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
+                          Nets[i].min_routing_layer);
+            continue;
+          }
+          //same for metal higher than max_routing_layer
+          l_metal = std::min(pin_contact.metal, Nets[i].min_routing_layer);
+        }
+      }
+    }
     if(l_metal==-1) l_metal=0; //
     if(h_metal==-1) h_metal=drc_info.Metal_info.size()-1; //
     GGgraph.CreateAdjacentList_New(Gcell, l_metal, h_metal); // 
