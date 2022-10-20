@@ -76,6 +76,10 @@ def test_enumerate_sequence_pairs():
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, 1000)
     assert len(sequence_pairs) == 576
 
+    constraints, instance_map = initialize_constraints(20)
+    sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, 1000)
+    assert len(sequence_pairs) == 1000
+
     constraints, instance_map = initialize_constraints(4)
     with set_context(constraints):
         constraints.append(constraint_schema.Order(direction='left_to_right', instances=[f'M{i}' for i in range(4)]))
