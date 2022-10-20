@@ -1036,6 +1036,8 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
 
     int global_min = drc_info.Metalmap[node.Routing_Layers.global_min_layer];
     int global_max = drc_info.Metalmap[node.Routing_Layers.global_max_layer];
+    temp_net.min_routing_layer = global_min;
+    temp_net.max_routing_layer = global_max;
 
     for(auto routing_layers: node.Routing_Layers.Routing_per_Net){
       if(routing_layers.net_name==temp_net.netName){
