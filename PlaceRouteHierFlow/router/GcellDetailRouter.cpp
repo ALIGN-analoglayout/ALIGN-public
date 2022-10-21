@@ -997,8 +997,16 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i) {
   Global_Path_Operation_For_Symmetry_Pins(i, global_path);  // do not need this part
   int temp_lowest_metal = Nets[i].min_routing_layer;
   int temp_highest_metal = Nets[i].max_routing_layer;
+  for (auto c : Nets[i].connected) {
+    if (c.type == RouterDB::BLOCK) {
+      for (auto pin_contact : Blocks[c.iter2].pins[c.iter].pinContacts) {
+        temp_lowest_metal = std::min(pin_contact.metal, temp_lowest_metal);
+        temp_highest_metal = std::max(pin_contact.metal, temp_highest_metal);
+      }
+    }
+  }
   //Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
-  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, Nets[i].min_routing_layer, Nets[i].max_routing_layer, grid_scale);
+  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
 
   return grid;

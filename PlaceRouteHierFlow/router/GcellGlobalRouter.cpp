@@ -489,6 +489,28 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     tileLayerNo = 1;
     tile_size = 10;
   }
+  for (auto net : Nets) {
+    for (auto c : net.connected) {
+      if (c.type == RouterDB::BLOCK) {
+        for (auto pin_contact : Blocks[c.iter2].pins[c.iter].pinContacts) {
+          if (pin_contact.metal < net.min_routing_layer - 1) {
+            logger->error("Block {0} pin {1} is lower than min_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
+                          net.min_routing_layer);
+            continue;
+          }
+          if (pin_contact.metal < net.max_routing_layer - 1) {
+            logger->error("Block {0} pin {1} is higher than max_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
+                          net.max_routing_layer);
+            continue;
+          }
+          // same for metal higher than max_routing_layer
+          Lmetal = std::min(pin_contact.metal, Lmetal);
+          Hmetal = std::max(pin_contact.metal, Hmetal);
+        }
+      }
+    }
+  }
+
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, LL.x, LL.y, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
   Initial_Gcell.AdjustVerticalEdgeCapacityfromInternalMetal(Blocks);
@@ -552,13 +574,9 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     for(auto c:Nets[i].connected){
       if(c.type==RouterDB::BLOCK){
         for(auto pin_contact:Blocks[c.iter2].pins[c.iter].pinContacts){
-          if(pin_contact.metal<Nets[i].min_routing_layer-1){
-            logger->error("Block {0} pin {1} is lower than min_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
-                          Nets[i].min_routing_layer);
-            continue;
-          }
           //same for metal higher than max_routing_layer
-          l_metal = std::min(pin_contact.metal, Nets[i].min_routing_layer);
+          l_metal = std::min(pin_contact.metal, l_metal);
+          h_metal = std::max(pin_contact.metal, h_metal);
         }
       }
     }
