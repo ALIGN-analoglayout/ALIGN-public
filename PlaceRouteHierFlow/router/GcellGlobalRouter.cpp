@@ -580,6 +580,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
         }
       }
     }
+
     if(l_metal==-1) l_metal=0; //
     if(h_metal==-1) h_metal=drc_info.Metal_info.size()-1; //
     GGgraph.CreateAdjacentList_New(Gcell, l_metal, h_metal); // 
