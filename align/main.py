@@ -159,6 +159,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         logger.info(f"Reading netlist: {netlist} subckt={subckt}, flat={flatten}")
 
+        shutil.rmtree(topology_dir, ignore_errors=True)
         topology_dir.mkdir(exist_ok=True)
         primitive_lib = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir)
     else:
@@ -172,6 +173,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     sub_steps = [step for step in steps_to_run if '3_pnr:' in step]
 
     if '2_primitives' in steps_to_run:
+        shutil.rmtree(primitive_dir, ignore_errors=True)
         primitive_dir.mkdir(exist_ok=True)
         primitives = generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir)
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
