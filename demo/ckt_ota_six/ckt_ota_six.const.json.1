@@ -1,0 +1,15 @@
+[
+  {"constraint": "PowerPorts", "ports": ["vccx"]},
+  {"constraint": "GroundPorts", "ports": ["vssx"]},
+  {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+  {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xtail", "generator": { "name": "MOS"}},
+  {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair", "generator": { "name": "MOS"}},
+  {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload", "generator": { "name": "MOS"}},
+  {"constraint": "Floorplan", "order": true, "symmetrize": true, "regions": [
+      ["xload"],
+      ["xdiffpair"],
+      ["xtail"]
+    ]
+  },
+  {"constraint": "AspectRatio", "subcircuit": "ckt_ota_six", "ratio_low": 0.5, "ratio_high": 2}
+]
