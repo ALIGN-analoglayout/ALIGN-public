@@ -291,14 +291,6 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS, additional_inst
                 solver.add(not_a_left_of_b(a, b))
                 solver.add(not_a_right_of_b(a, b))
 
-            for attr in ["east", "west"]:
-                if const.get(attr):
-                    for i, j in itertools.combinations(const[attr], 2):
-                        a = block_vars[i]
-                        b = block_vars[j]
-                        solver.add(not_a_left_of_b(a, b))
-                        solver.add(not_a_right_of_b(a, b))
-
             for i in instances:
                 b = block_vars[i]
 
