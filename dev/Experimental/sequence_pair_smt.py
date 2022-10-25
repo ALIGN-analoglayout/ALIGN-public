@@ -53,9 +53,9 @@ def default_constraints(block_vars, solver):
 
 def find_solution(solver):
     # Solve
-    s = time.time()
+    # s = time.time()
     r = solver.check()
-    e = time.time()
+    # e = time.time()
     # print(f"Elapsed time: {e-s:0.3f} seconds")
     # print(solver)
     if r == z3.sat:
@@ -81,22 +81,36 @@ def find_solution(solver):
         return False
 
 
+def not_a_left_of_b(a, b):
+    return z3.Not(z3.And(a[POS] < b[POS], a[NEG] < b[NEG]))
+
+
+def not_a_right_of_b(a, b):
+    return z3.Not(z3.And(a[POS] > b[POS], a[NEG] > b[NEG]))
+
+
+def not_a_above_b(a, b):
+    return z3.Not(z3.And(a[POS] < b[POS], a[NEG] > b[NEG]))
+
+
+def not_a_below_b(a, b):
+    return z3.Not(z3.And(a[POS] > b[POS], a[NEG] < b[NEG]))
+
+
 def order(a, b, axis, abut=False):
     expression = list()
-    if axis == 'h':
-        # a cannot be after b
-        expression.append(z3.Not(z3.And(a[POS] > b[POS], a[NEG] > b[NEG])))
+    if axis == 'h':  # left to right
+        expression.append(not_a_right_of_b(a, b))
         if abut:
             expression.append(a[URX] == b[LLX])
         else:
             expression.append(a[URX] <= b[LLX])
-    else:
-        # a cannot be below b
-        expression.append(z3.Not(z3.And(a[POS] < b[POS], a[NEG] > b[NEG])))
+    else:  # bottom to top
+        expression.append(not_a_below_b(a, b))
         if abut:
-            expression.append(a[LLY] == b[URY])
+            expression.append(a[URY] == b[LLY])
         else:
-            expression.append(a[LLY] >= b[URY])
+            expression.append(a[URY] <= b[LLY])
     return z3.And(*expression)
 
 
@@ -119,7 +133,7 @@ def align(a, b, axis):
     return z3.And(*expression)
 
 
-def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
+def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS, additional_instances=None):
 
     # Collect instances
     instances = list()
@@ -132,8 +146,20 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
             instances.extend(const["instances"])
             if const["constraint"] == "Align":
                 assert const["direction"] in ["h_bottom", "v_left"], f"Not implemented yet: {const}"
+        elif const["constraint"] == "PlaceOnBoundary":
+            # for schema verify that all of the below are disjoint
+            for attr in ["north", "south", "east", "west", "northeast", "northwest", "southeast", "southwest"]:
+                if const.get(attr, False):
+                    if isinstance(const[attr], list):
+                        instances.extend(const[attr])
+                    else:
+                        instances.append(const[attr])
         else:
             assert False, f"Not implemented yet: {const}"
+
+    if additional_instances:
+        instances.extend(additional_instances)
+    assert instances
 
     instances = set(sorted(instances))
     num_blocks = len(instances)
@@ -225,9 +251,112 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS):
                 else:
                     assert False
 
+        elif const["constraint"] == "PlaceOnBoundary":
+
+            def find_instances_on(lst):
+                sublist = list()
+                for attr in lst:
+                    if const.get(attr, False):
+                        if isinstance(const[attr], list):
+                            sublist.extend(const[attr])
+                        else:
+                            sublist.append(const[attr])
+                return sublist
+
+            all_north = find_instances_on(["north", "northwest", "northeast"])
+            for i, j in itertools.combinations(all_north, 2):
+                a = block_vars[i]
+                b = block_vars[j]
+                solver.add(not_a_below_b(a, b))
+                solver.add(not_a_above_b(a, b))
+
+            all_south = find_instances_on(["south", "southwest", "southeast"])
+            for i, j in itertools.combinations(all_south, 2):
+                a = block_vars[i]
+                b = block_vars[j]
+                solver.add(not_a_below_b(a, b))
+                solver.add(not_a_above_b(a, b))
+
+            all_west = find_instances_on(["west", "southwest", "northwest"])
+            for i, j in itertools.combinations(all_west, 2):
+                a = block_vars[i]
+                b = block_vars[j]
+                solver.add(not_a_left_of_b(a, b))
+                solver.add(not_a_right_of_b(a, b))
+
+            all_east = find_instances_on(["east", "southeast", "northeast"])
+            for i, j in itertools.combinations(all_east, 2):
+                a = block_vars[i]
+                b = block_vars[j]
+                solver.add(not_a_left_of_b(a, b))
+                solver.add(not_a_right_of_b(a, b))
+
+            for attr in ["east", "west"]:
+                if const.get(attr):
+                    for i, j in itertools.combinations(const[attr], 2):
+                        a = block_vars[i]
+                        b = block_vars[j]
+                        solver.add(not_a_left_of_b(a, b))
+                        solver.add(not_a_right_of_b(a, b))
+
+            for i in instances:
+                b = block_vars[i]
+
+                if const.get("northwest") and const["northwest"] != i:
+                    a = block_vars[const["northwest"]]
+                    solver.add(a[URY] >= b[URY])
+                    solver.add(a[LLX] <= b[LLX])
+                    solver.add(not_a_right_of_b(a, b))
+                    solver.add(not_a_below_b(a, b))
+
+                if const.get("northeast") and const["northeast"] != i:
+                    a = block_vars[const["northeast"]]
+                    solver.add(a[URY] >= b[URY])
+                    solver.add(a[URX] >= b[URX])
+                    solver.add(not_a_left_of_b(a, b))
+                    solver.add(not_a_below_b(a, b))
+
+                if const.get("southwest") and const["southwest"] != i:
+                    a = block_vars[const["southwest"]]
+                    solver.add(a[LLY] <= b[LLY])
+                    solver.add(a[LLX] <= b[LLX])
+                    solver.add(not_a_right_of_b(a, b))
+                    solver.add(not_a_above_b(a, b))
+
+                if const.get("southeast") and const["southeast"] != i:
+                    a = block_vars[const["southeast"]]
+                    solver.add(a[LLY] <= b[LLY])
+                    solver.add(a[URX] >= b[URX])
+                    solver.add(not_a_left_of_b(a, b))
+                    solver.add(not_a_above_b(a, b))
+
+                if const.get("north") and (i not in const["north"]):
+                    for block in const["north"]:
+                        a = block_vars[block]
+                        solver.add(a[URY] >= b[URY])
+                    solver.add(not_a_below_b(a, b))
+
+                if const.get("south") and (i not in const["south"]):
+                    for block in const["south"]:
+                        a = block_vars[block]
+                        solver.add(a[LLY] <= b[LLY])
+                        solver.add(not_a_above_b(a, b))
+
+                if const.get("east") and (i not in const["east"]):
+                    for block in const["east"]:
+                        a = block_vars[block]
+                        solver.add(a[URX] >= b[URX])
+                        solver.add(not_a_left_of_b(a, b))
+
+                if const.get("west") and (i not in const["west"]):
+                    for block in const["west"]:
+                        a = block_vars[block]
+                        solver.add(a[LLX] <= b[LLX])
+                        solver.add(not_a_right_of_b(a, b))
+
     initial_pair = find_solution(solver)
     if n < 2 or not initial_pair:
-        return(initial_pair)
+        return initial_pair
     else:
         m = solver.model()
         previous_solution = {str(p): m[p].as_long() for p in m}
@@ -535,6 +664,39 @@ def test_variants():
     for p in sequence_pairs:
         print(p)
     assert len(sequence_pairs) == 2
+
+
+def test_boundary():
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "x"}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10, additional_instances=["y"])
+    assert set(sequence_pairs) == {'x y,x y', 'x y,y x'}
+
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "x", "northeast": "y"}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10, additional_instances=["x", "y"])
+    assert set(sequence_pairs) == {'x y,x y'}
+
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "a", "northeast": "b", "southwest": "c", "southeast": "d"}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10)
+    assert len(sequence_pairs) == 4
+
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "a", "north": ["b"]}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10)
+    assert len(sequence_pairs) == 1
+
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "a", "north": ["b", "c"], "northeast": "d"}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10)
+    assert len(sequence_pairs) == 2
+
+    constraints = [{"constraint": "PlaceOnBoundary", "northwest": "a", "north": ["b", "c"]}]
+    sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=10)
+    assert len(sequence_pairs) == 2
+
+    # constraints = [{"constraint": "PlaceOnBoundary", "northwest": "a", "northeast": "b", "southwest": "c", "southeast": "d"}]
+    # s = time.time()
+    # sequence_pairs = generate_sequence_pair(constraints, z3.Solver(), n=1000, additional_instances=["e", "f"])
+    # e = time.time()
+    # print(f"{len(sequence_pairs)} variants generated in {e-s:0.3f} seconds")
+    # assert sequence_pairs
 
 
 @pytest.mark.skip()
