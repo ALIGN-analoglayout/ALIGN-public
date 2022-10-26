@@ -231,7 +231,7 @@ def test_ru_staggered_m1():
     cv = CanvasPDK()
 
     cv.addWire(cv.m1, 'A',  3, (2, -1),  (7, 1),  netType='pin')
-    cv.addWire(cv.m1, 'A',  4, (9, -1),  (14, 1), netType='pin')
+    cv.addWire(cv.m1, 'A',  5, (9, -1),  (14, 1), netType='pin')
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
