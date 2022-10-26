@@ -3,6 +3,7 @@ from align.cell_fabric import Pdk, transformation
 from align.primitive.default.canvas import DefaultCanvas
 from .utils import get_test_id, run_postamble, MY_DIR
 import pytest
+import json
 
 
 def test_ru_zero():
@@ -143,7 +144,7 @@ def test_ru_exclude_m1():
     cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M3",
@@ -164,7 +165,7 @@ def test_ru_exclude_m3():
     cv.addWire(cv.m2, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m2, 'A',  1, (1, -1),  (6, 1), netType='pin')
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M2",
@@ -246,3 +247,15 @@ def test_ru_metal_offset_v():
     for i in [0, 8]:
         cv.addWire(cv.m3, None,  i, (0, -1),  (10, 1), netType='blockage')
     run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_comparator_clock():
+    name = get_test_id()
+    cv = CanvasPDK()
+    with (MY_DIR / "__json_comparator_clock").open('rt') as fp:
+        data = json.load(fp)
+    cv.bbox = transformation.Rect(*data["bbox"])
+    for term in data["terminals"]:
+        cv.terminals.append(term)
+    run_postamble(name, cv, max_errors=0)
+    assert True
