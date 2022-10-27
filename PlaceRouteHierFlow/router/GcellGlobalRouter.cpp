@@ -498,7 +498,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
                           net.min_routing_layer);
             continue;
           }
-          if (pin_contact.metal < net.max_routing_layer - 1) {
+          if (pin_contact.metal > net.max_routing_layer + 1) {
             logger->error("Block {0} pin {1} is higher than max_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
                           net.max_routing_layer);
             continue;
