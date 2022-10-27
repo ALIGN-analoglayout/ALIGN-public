@@ -801,10 +801,10 @@ class PlaceOnBoundary(SoftConstraint):
     south: Optional[List[str]]
     east: Optional[List[str]]
     west: Optional[List[str]]
-    northeast: str
-    northwest: str
-    southeast: str
-    southwest: str
+    northeast: Optional[str]
+    northwest: Optional[str]
+    southeast: Optional[str]
+    southwest: Optional[str]
 
     @types.validator('north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', allow_reuse=True)
     def instance_validator(cls, value):
