@@ -145,7 +145,7 @@ def test_ru_exclude_m1():
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M3",
           "customize": []
@@ -167,7 +167,7 @@ def test_ru_exclude_m3():
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M2",
           "customize": []
@@ -193,7 +193,7 @@ def test_ru_exclude_per_net():
     cv.bbox = transformation.Rect(*[0, 0, 16*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
     data = run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M3",
           "customize": [{'nets': ["A"], 'min_layer': "M2", 'max_layer': "M3"},
@@ -221,7 +221,7 @@ def test_ru_allow_ports_on_excluded_layers():
     cv.bbox = transformation.Rect(*[0, 0, 10*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
     run_postamble(name, cv, max_errors=0, constraints=[ {
-          "constraint": "route",
+          "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M2"
         }])
@@ -247,7 +247,7 @@ def test_ru_no_extra_routing_on_m1():
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
     constraints = [ {
-        "constraint": "route",
+        "constraint": "Route",
         "min_layer": "M2",
         "max_layer": "M3"
     }]
