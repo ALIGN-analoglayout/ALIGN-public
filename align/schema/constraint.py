@@ -793,6 +793,37 @@ class PlaceCloser(SoftConstraint):
     _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
 
 
+class PlaceOnBoundary(SoftConstraint):
+    '''
+        Instances are placed on the specified boundary.
+    '''
+    north: Optional[List[str]]
+    south: Optional[List[str]]
+    east: Optional[List[str]]
+    west: Optional[List[str]]
+    northeast: str
+    northwest: str
+    southeast: str
+    southwest: str
+
+    @types.validator('north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', allow_reuse=True)
+    def instance_validator(cls, value):
+        if isinstance(value, list):
+            return validate_instances(cls, value)
+        else:
+            return validate_instances(cls, [value])
+
+    def instances_on(cls, lst):
+        sublist = list()
+        for attr in lst:
+            if value := getattr(cls, attr, False):
+                if isinstance(value, list):
+                    sublist.extend(value)
+                else:
+                    sublist.append(value)
+        return sublist
+
+
 class PowerPorts(SoftConstraint):
     '''
     Defines power ports for each hieararchy
@@ -1501,6 +1532,7 @@ ConstraintType = Union[
     CreateAlias,
     GroupBlocks,
     PlaceCloser,
+    PlaceOnBoundary,
     DoNotIdentify,
     PlaceOnGrid,
     BlockDistance,

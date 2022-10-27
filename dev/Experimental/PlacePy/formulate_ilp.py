@@ -4,6 +4,11 @@ import numpy as np
 import time
 import plotly.graph_objects as go
 import plotly.express as px
+# imports for testing
+import pytest
+from align.schema import Model, Instance, SubCircuit, Library
+from align.schema.types import set_context
+import align.schema.constraint as constraint_schema
 
 
 def measure_time(func):
@@ -60,9 +65,28 @@ def formulate_problem(constraints, instance_map, instance_sizes, sequence_pair, 
 
     model.objective += model.var_by_name("W") + model.var_by_name("H")
 
+    for constraint in constraints:
+
+        if isinstance(constraint, constraint_schema.Boundary):
+            if max_width := getattr(constraint, "max_width", False):
+                model += model.var_by_name('W') <= max_width
+            if max_height := getattr(constraint, "max_height", False):
+                model += model.var_by_name('H') <= max_height
+
+        if isinstance(constraint, constraint_schema.PlaceOnBoundary):
+            for name in constraint.instances_on(["north", "northwest", "northeast"]):
+                model += model.var_by_name(f'{name}_ury') == model.var_by_name('H')
+            for name in constraint.instances_on(["south", "southwest", "southeast"]):
+                model += model.var_by_name(f'{name}_lly') == 0
+            for name in constraint.instances_on(["east", "northeast", "southeast"]):
+                model += model.var_by_name(f'{name}_urx') == model.var_by_name('W')
+            for name in constraint.instances_on(["west", "northwest", "southwest"]):
+                model += model.var_by_name(f'{name}_llx') == 0
+
     model.write("model.lp")
 
-    status = model.optimize(max_seconds_same_incumbent=60.0)
+    # Solve
+    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
     if status == mip.OptimizationStatus.OPTIMAL:
         print(f'optimal solution found: cost={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
@@ -79,9 +103,7 @@ def formulate_problem(constraints, instance_map, instance_sizes, sequence_pair, 
     return model
 
 
-# Tests
-from align.schema import Model, Instance, SubCircuit, Library
-from align.schema.types import set_context
+DRAW = True
 
 
 def draw(model, instance_map, wires):
@@ -142,4 +164,36 @@ def test_formulate_problem():
     draw(model, instance_map, [])
 
 
-test_formulate_problem()
+def test_boundary():
+    n = 5
+    constraints, instance_map = initialize_constraints(n)
+    with set_context(constraints):
+        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=8))
+    instance_sizes = {f"M{k}": (2, 2) for k in range(n)}
+    sequence_pair = ([k for k in range(n)], [k for k in range(n)])
+    with pytest.raises(Exception) as _:
+        formulate_problem(constraints, instance_map, instance_sizes, sequence_pair)
+
+    with set_context(constraints):
+        constraints.pop()
+        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+    model = formulate_problem(constraints, instance_map, instance_sizes, sequence_pair)
+    if DRAW:
+        draw(model, instance_map, [])
+    for v in model.vars:
+        if v.name == 'H':
+            break
+    assert v.x <= 10
+
+
+def test_place_on_boundary():
+    n = 4
+    constraints, instance_map = initialize_constraints(n)
+    with set_context(constraints):
+        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+        constraints.append(constraint_schema.PlaceOnBoundary(northwest="M0", northeast="M1", southwest="M2", southeast="M3"))
+    instance_sizes = {f"M{k}": (1+k, 1+k) for k in range(n)}
+    sequence_pair = ([0, 1, 2, 3], [2, 3, 0, 1])
+    model = formulate_problem(constraints, instance_map, instance_sizes, sequence_pair)
+    if DRAW:
+        draw(model, instance_map, [])
