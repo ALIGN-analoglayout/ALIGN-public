@@ -326,7 +326,7 @@ def generate_sequence_pair(constraints, solver, n=NUM_SOLUTIONS, additional_inst
                     for block in const["north"]:
                         a = block_vars[block]
                         solver.add(a[URY] >= b[URY])
-                    solver.add(not_a_below_b(a, b))
+                        solver.add(not_a_below_b(a, b))
 
                 if const.get("south") and (i not in const["south"]):
                     for block in const["south"]:
