@@ -265,6 +265,7 @@ void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, 
     std::vector<int> dest_set = temp_dest;
     SetSrcDest(src_set, dest_set);
     std::vector<int> temp_single_path = dijkstra(grid);
+    assert(!temp_single_path.empty());
     MST_path.push_back(temp_single_path);
     RMSrcDest(src_set, dest_set);
     ChangeSrcDest(temp_src, temp_dest, temp_single_path, pin_access);
@@ -467,6 +468,12 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
   int v;
   while (status[dest] != 2 && count < (int)graph.size() - 1) {
     std::vector<int> ulist = minDistancefromMultiMap(distMap);
+    string ulist_str = "";
+    for (auto e:ulist){
+      ulist_str += " ";
+      ulist_str += std::to_string(e);
+    }
+    logger->info("ulist:{0}", ulist_str);
     // std::cout<<"size of Q: "<<ulist.size()<<std::endl;
     if (ulist.empty()) {
       logger->warn("Router-Warning: ulist empty");
