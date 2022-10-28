@@ -114,42 +114,60 @@ def place(*, sizes, wires, place_on_grid, fp, symmetrize=False, order=True, cons
 
         if k in place_on_grid:
             for d in place_on_grid[k]:
-                one_hots = defaultdict(list)
                 axis = d['axis']
                 pitch = d['pitch']
-                for dd in d['ored_terms']:
-                    offsets = dd['offsets']
-                    scalings = dd['scalings']
-                    assert set(scalings) == {-1} or set(scalings) == {1} or set(scalings) == {-1, 1}
-                    one_hots[frozenset(set(scalings))].extend(offsets)
-
-                count = sum(len(v) for _, v in one_hots.items())
-
-                assert count == len(set(o for _, v in one_hots.items() for o in v))
-
-                # Don't use any variables if there is only one offset
-                if count == 1:
-                    for scalings_fs, v in one_hots.items():
-                        one_hots[scalings_fs] = [(o, 1) for o in v]
-                else:
-                    for scalings_fs, v in one_hots.items():
-                        one_hots[scalings_fs] = [(o, m.add_var(var_type=BINARY)) for o in v]
-
-                    m += xsum(b for _, v in one_hots.items() for _, b in v) == 1
-
                 f = m.var_by_name(f'{k}_f{axis.upper()}')
-                # force flipping
-                for scalings_fs, pairs in one_hots.items():
-                    if scalings_fs == {-1}:
-                        for _, b in pairs:
-                            m += b <= f
-                    if scalings_fs == {1}:
-                        for _, b in pairs:
-                            m += f <= 1 - b
 
-                grid = m.add_var(name=f'{k}_grid_{axis}', var_type=INTEGER)
-                origin = grid * pitch + xsum(c*b for _, v in one_hots.items() for c, b in v)
-                m += origin - size[axis] * f == m.var_by_name(f'{k}_ll{axis}')
+                if True:  # Refactored version
+                    offset_scalings = defaultdict(list)
+                    offset_variables = list()
+                    for term in d['ored_terms']:
+                        offsets = term['offsets']
+                        scalings = term['scalings']
+                        assert set(scalings) in [{1}, {-1}, {-1, 1}]
+                        for offset in offsets:
+                            assert offset not in offset_scalings, "Check not required, added for test_duplicate_offset"
+                            offset_scalings[offset].extend(scalings)
+                    for offset, scalings in offset_scalings.items():
+                        var = m.add_var(var_type=BINARY)
+                        offset_variables.append((offset, var))
+                        if set(scalings) == {1}:
+                            m += var + f <= 1
+                        elif set(scalings) == {-1}:
+                            m += var <= f
+                    m += xsum(var[1] for var in offset_variables) == 1
+                    grid = m.add_var(name=f'{k}_grid_{axis}', var_type=INTEGER, lb=0)
+                    origin = grid*pitch + xsum(v[0]*v[1] for v in offset_variables)
+                    m += origin - size[axis] * f == m.var_by_name(f'{k}_ll{axis}')
+
+                else:
+                    one_hots = defaultdict(list)
+                    for dd in d['ored_terms']:
+                        offsets = dd['offsets']
+                        scalings = dd['scalings']
+                        assert set(scalings) == {-1} or set(scalings) == {1} or set(scalings) == {-1, 1}
+                        one_hots[frozenset(set(scalings))].extend(offsets)
+                    count = sum(len(v) for _, v in one_hots.items())
+                    assert count == len(set(o for _, v in one_hots.items() for o in v))
+                    # Don't use any variables if there is only one offset
+                    if count == 1:
+                        for scalings_fs, v in one_hots.items():
+                            one_hots[scalings_fs] = [(o, 1) for o in v]
+                    else:
+                        for scalings_fs, v in one_hots.items():
+                            one_hots[scalings_fs] = [(o, m.add_var(var_type=BINARY)) for o in v]
+                        m += xsum(b for _, v in one_hots.items() for _, b in v) == 1
+                    # force flipping
+                    for scalings_fs, pairs in one_hots.items():
+                        if scalings_fs == {-1}:
+                            for _, b in pairs:
+                                m += b <= f
+                        if scalings_fs == {1}:
+                            for _, b in pairs:
+                                m += f <= 1 - b
+                    grid = m.add_var(name=f'{k}_grid_{axis}', var_type=INTEGER)
+                    origin = grid * pitch + xsum(c*b for _, v in one_hots.items() for c, b in v)
+                    m += origin - size[axis] * f == m.var_by_name(f'{k}_ll{axis}')
 
     for tag in ['llx', 'lly', 'urx', 'ury']:
         m.add_var(name=f'{tag}')
@@ -443,7 +461,7 @@ def test_duplicate_offset():
                                                                    {'offsets': [0], 'scalings': [1]}]}
                           ] for row in fp for nm in row}
 
-    with pytest.raises(Exception, match='assert 2 == 1') as _:
+    with pytest.raises(Exception, match='assert') as _:
         place(sizes=sizes, wires=wires, fp=fp, place_on_grid=place_on_grid)
 
 
