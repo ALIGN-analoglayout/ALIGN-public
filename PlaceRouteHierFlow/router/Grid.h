@@ -62,7 +62,8 @@ class Grid {
        RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset);
   Grid(GlobalGrid &GG, std::vector<std::pair<int, int>> &ST, PnRDB::Drc_info &drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
        int grid_scale);
-
+  Grid(GlobalGrid &GG, std::vector<std::pair<int, int>> &ST, PnRDB::Drc_info &drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
+       int grid_scale, bool offset);
   void ReduceGrid(std::vector<RouterDB::vertex> &old_vertices, std::vector<RouterDB::vertex> &new_vertices, std::map<int, int> &old2new,
                   std::map<int, int> &new2old, std::vector<int> &old_source, std::vector<int> &old_dest, std::vector<int> &new_source,
                   std::vector<int> &new_dest, std::vector<int> &new_start, std::vector<int> &new_end, int LLx, int LLy, int URx, int URy,
@@ -127,6 +128,8 @@ class Grid {
   void InactivePointlist_via(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &plist, bool up);
   int GetVerticesCount() { return vertices_total.size(); };
   void SetViaInactiveBox(std::vector<std::vector<int>> path, std::vector<std::pair<int, RouterDB::box>> &via_vec);
+  void print_source_dest();
+  void CreateGridData_new();
   // void inactive_node_global();
   // void inacitve_node_detail();
   // active or inactive node?

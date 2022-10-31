@@ -5,9 +5,9 @@
 GlobalGraph::GlobalGraph(GlobalGrid &grid) : path_number(1) {
   auto logger = spdlog::default_logger()->clone("router.GlobalGraph.GlobalGraph");
 
-  logger->debug("Start Creating adjacent list (graph)");
+  // logger->debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid);  // create adjacentList base gird.LL_graph and gird.UR_graph
-  logger->debug("End creating adjacent list (graph)");
+  // logger->debug("End creating adjacent list (graph)");
 };
 
 void GlobalGraph::clearPath() { Path.clear(); };
@@ -19,6 +19,16 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
 
   std::vector<std::vector<int> > temp_terminals = Pin_terminals;
 
+  bool empty_flag = true;
+
+  for(int i=0;i<temp_terminals.size();i++){
+      if(temp_terminals[i].size()!=0){
+          empty_flag = false;
+       }
+  }
+
+  if(empty_flag) return;
+
   for (int i = 0; i < pathNo; ++i) {
     Pin_terminals = temp_terminals;
 
@@ -29,9 +39,9 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
     int weight;
 
     MST(weight, temp_path, grid);
-    logger->debug("End MTS1");
+    // logger->debug("End MTS1");
     UpdateEdgeWeight(temp_path);
-    logger->debug("End Update weight");
+    // logger->debug("End Update weight");
     // return the shortest path
     Path.push_back(temp_path);
   }
@@ -189,7 +199,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       }
     }
   }
-  logger->debug("ChangeSrcDest test1");
+  // logger->debug("ChangeSrcDest test1");
   temp_src.clear();
   temp_dest.clear();
 
@@ -207,7 +217,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
       }
     }
   }
-  logger->debug("ChangeSrcDest test2");
+  // logger->debug("ChangeSrcDest test2");
   for (unsigned int i = 0; i < temp_single_path.size(); i++) {
     src_set.insert(temp_single_path[i]);
   }
@@ -227,7 +237,7 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
   for (xit = itlow; xit != itup; ++xit) {
     temp_dest.push_back(*xit);
   }
-  logger->debug("ChangeSrcDest test3");
+  // logger->debug("ChangeSrcDest test3");
 };
 
 void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, GlobalGrid &grid) {
@@ -237,9 +247,9 @@ void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, 
   std::vector<int> temp_src;
   std::vector<int> temp_dest;
   std::vector<int> pin_access;
-  logger->debug("Starting initialSrcDest");
+  // logger->debug("Starting initialSrcDest");
   InitialSrcDest(temp_src, temp_dest, pin_access);
-  logger->debug("End initialSrcDest");
+  // logger->debug("End initialSrcDest");
   // std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
 
   if (temp_dest.size() == 0) {
@@ -300,6 +310,27 @@ std::vector<std::pair<int, int> > GlobalGraph::Get_MST_Edges(std::vector<std::ve
   return temp_MST_Edges;
 };
 
+void GlobalGraph::select_layers(int l_metal, int h_metal){
+
+  for(auto it: graph){
+     for(auto l: it.metal_layer){
+        if(l<l_metal or l>h_metal){
+           it.active = false;
+        }
+     }
+  }
+
+};
+
+void GlobalGraph::refresh_layers(){
+
+  for(auto it: graph){
+     for(auto l: it.metal_layer){
+         it.active = true;
+     }
+  }
+};
+
 void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
   Node tempNode;
   Edge tempEdge;
@@ -320,8 +351,77 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
     // Node tempNode;
     tempNode.list.clear();
     tempNode.src = i;
+    tempNode.metal_layer = grid.tiles_total[i].metal;
     // Edge tempEdge;
 
+    update_node(i, grid.tiles_total[i].north);
+    update_node(i, grid.tiles_total[i].south);
+    update_node(i, grid.tiles_total[i].east);
+    update_node(i, grid.tiles_total[i].west);
+    update_node(i, grid.tiles_total[i].up);
+    update_node(i, grid.tiles_total[i].down);
+
+    graph.push_back(tempNode);
+  }
+
+  source = graph.size();
+  dest = source + 1;
+
+  Node tempNodeS;
+  tempNodeS.src = source;
+  graph.push_back(tempNodeS);
+
+  Node tempNodeD;
+  tempNodeD.src = dest;
+  graph.push_back(tempNodeD);
+};
+
+
+void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal) {
+
+  graph.clear();
+  Node tempNode;
+  Edge tempEdge;
+
+  auto update_node = [&](int p, std::vector<RouterDB::tileEdge> &temp_vector) {
+    for (unsigned int q = 0; q < temp_vector.size(); q++) {
+      if(temp_vector[q].next==-1) continue;
+      bool active = true;
+      for(int index=0;index< grid.tiles_total[temp_vector[q].next].metal.size();index++){
+        int layer = grid.tiles_total[temp_vector[q].next].metal[index];
+        if(layer<l_metal or layer>h_metal){
+          active = false;
+        }
+      }
+      if (active == false){
+         continue;
+      }      
+      if (temp_vector[q].capacity > 0 && temp_vector[q].next != -1) {
+        tempEdge.dest = temp_vector[q].next;
+        tempEdge.weight =
+            (double)abs(grid.tiles_total[p].y - grid.tiles_total[temp_vector[q].next].y) + abs(grid.tiles_total[p].x - grid.tiles_total[temp_vector[q].next].x);
+        tempEdge.capacity = temp_vector[q].capacity;
+        tempNode.list.push_back(tempEdge);
+      }
+    }
+  };
+
+  for (unsigned int i = 0; i < grid.tiles_total.size(); i++) {
+    // Node tempNode;
+    tempNode.list.clear();
+    tempNode.src = i;
+    tempNode.metal_layer = grid.tiles_total[i].metal;
+    // Edge tempEdge;
+    bool active = true;
+    for(int index=0;index< tempNode.metal_layer.size();index++){
+      int layer = tempNode.metal_layer[index];
+      if(layer<l_metal or layer>h_metal){
+        active = false;
+      }
+    }
+    if (active == false){
+       continue;
+    }
     update_node(i, grid.tiles_total[i].north);
     update_node(i, grid.tiles_total[i].south);
     update_node(i, grid.tiles_total[i].east);

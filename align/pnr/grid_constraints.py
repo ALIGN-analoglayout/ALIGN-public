@@ -67,7 +67,7 @@ def split_directions_and_merge(*rs):
 
 
 def gen_constraints_for_module(m, modules, leaves):
-    logger.info(f'gen_constraints_for_module: {m["concrete_name"]}')
+    logger.debug(f'gen_constraints_for_module: {m["concrete_name"]}')
     pog_constraints = []
     for instance in m['instances']:
         iname = instance['instance_name']
@@ -77,7 +77,7 @@ def gen_constraints_for_module(m, modules, leaves):
         if ctn in leaves:
             try:
                 constraints = leaves[ctn]['constraints']
-                
+
             except KeyError:
                 pass
         elif ctn in modules:
@@ -91,12 +91,12 @@ def gen_constraints_for_module(m, modules, leaves):
         place_on_grid_constraints = []
         if constraints is not None:
             new_constraints = [constraint.dict() if type(constraint) != dict else constraint for constraint in constraints]
-            place_on_grid_constraints = [constraint for constraint in new_constraints if constraint['constraint'] == 'place_on_grid']
+            place_on_grid_constraints = [constraint for constraint in new_constraints if constraint['constraint'] == 'PlaceOnGrid']
 
         tr = instance['transformation']
 
         for pog in place_on_grid_constraints:
-            if pog['direction'] == 'H': 
+            if pog['direction'] == 'H':
                 s, o = tr['sY'], tr['oY']
             elif pog['direction'] == 'V':
                 s, o = tr['sX'], tr['oX']

@@ -11,7 +11,8 @@ jobs:
       python-tags:
         description: "Python version tag(See https://www.python.org/dev/peps/pep-0425/)"
         type: string
-        default: "cp37-cp37m cp38-cp38 cp310-cp310" # Python 3.7 *AND* 3.8 *AND* 3.10
+        default: "cp38-cp38 cp310-cp310" # 3.8 *AND* 3.10
+        # default: "cp37-cp37m cp38-cp38 cp310-cp310" # Python 3.7 *AND* 3.8 *AND* 3.10
       platform:
         # https://github.com/pypa/manylinux
         description: "PEP600 compatible platform name"
@@ -95,6 +96,7 @@ jobs:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
       MAX_JOBS: 2
+      BUILD_PLATFORM: manylinux_2_24_x86_64
 
     steps:
       - run:
@@ -109,9 +111,9 @@ jobs:
       - run:
           name: "Build align in developer mode"
           command: |
-            pip install setuptools wheel pybind11 scikit-build cmake ninja
+            pip install setuptools numpy wheel pybind11 scikit-build cmake ninja
             pip install -v --no-build-isolation -e .[test]
-            pip install -v --no-build-isolation -e . --no-deps --install-option="-DCODE_COVERAGE=ON"
+            pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'
       - run:
           name: "Test align using coverage.py"
           command: |
@@ -168,7 +170,7 @@ jobs:
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
-            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --placer_sa_iterations 100 --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
@@ -198,16 +200,16 @@ workflows:
                 - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
               python-tags:
                 - "cp310-cp310" # Python 3.10
-      - build-wheel:
-          name: "build-wheel-cp37-manylinux2010"
-          requires:
-            - build-wheel-cp38-manylinux_2_24
-          matrix:
-            parameters:
-              platform:
-                - "quay.io/pypa/manylinux2010_x86_64" # PEP 571
-              python-tags:
-                - "cp37-cp37m" # Python 3.7
+      # - build-wheel:
+      #     name: "build-wheel-cp37-manylinux2010"
+      #     requires:
+      #       - build-wheel-cp38-manylinux_2_24
+      #     matrix:
+      #       parameters:
+      #         platform:
+      #           - "quay.io/pypa/manylinux2010_x86_64" # PEP 571
+      #         python-tags:
+      #           - "cp37-cp37m" # Python 3.7
       - test-integration:
           name: "test-integration-cp38-minimal"
           requires:
@@ -225,7 +227,7 @@ workflows:
               ci-level:
                 - "checkin"
               max-errors:
-                - "0"
+                - "1"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:
@@ -257,11 +259,11 @@ workflows:
             alias: build-wheel-all
             parameters:
               platform:
-                - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
+                # - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
                 - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
                 - "quay.io/pypa/manylinux_2_24_x86_64" # PEP 600
               python-tags:
-                - "cp37-cp37m"
+                # - "cp37-cp37m"
                 - "cp38-cp38"
                 - "cp310-cp310"
             exclude:

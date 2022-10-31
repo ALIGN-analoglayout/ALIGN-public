@@ -1,255 +1,269 @@
-.subckt NMOS_S  D G S
-M1 D G S S NMOS w=w1 l=l1
-.ends NMOS_S
+.subckt nmos_3t d g s
+* @: Generator(name='mos')
+m1 d g s s nmos
+.ends nmos_3t
 
-.subckt PMOS_S D G S
-M1 D G S S PMOS w=w1 l=l1
-.ends PMOS_S
+.subckt pmos_3t d g s
+* @: Generator(name='mos')
+m1 d g s s pmos
+.ends pmos_3t
 
-.subckt NMOS_G  D G S
-M1 D G S G NMOS w=w1 l=l1
-.ends NMOS_G
+.subckt nmos_4t d g s b
+* @: Generator(name='mos')
+m1 d g s b nmos
+.ends nmos_4t
 
-.subckt PMOS_G D G S
-M1 D G S G PMOS w=w1 l=l1
-.ends PMOS_G
+.subckt pmos_4t d g s b
+* @: Generator(name='mos')
+m1 d g s b pmos
+.ends pmos_4t
 
-.subckt DUMMY_NMOS_S D S
-M1 D S S S NMOS w=w l=90n
-.ends DUMMY_NMOS_S
+.subckt nmos_gb d g s
+* @: Generator(name='mos')
+m1 d g s g nmos
+.ends nmos_gb
 
-.subckt DUMMY_PMOS_S D S
-M1 D S S S PMOS w=w l=90n
-.ends DUMMY_PMOS_S
+.subckt pmos_gb d g s
+* @: Generator(name='mos')
+m1 d g s g pmos
+.ends pmos_gb
 
-.subckt DCAP_NMOS_B G S B
-M1 S G S B NMOS w=w l=90n
-.ends DCAP_NMOS_B
+.subckt dcap_nmos_3t g s b
+* @: Generator(name='mos')
+m1 s g s b nmos
+.ends dcap_nmos_3t
 
-.subckt DCAP_PMOS_B G S B
-M1 S G S B PMOS w=w l=90n
-.ends DCAP_PMOS_B
+.subckt dcap_pmos_3t g s b
+* @: Generator(name='mos')
+m1 s g s b pmos
+.ends dcap_pmos_3t
 
-.subckt DCAP_NMOS G S
-M1 S G S S NMOS w=w l=90n
-.ends DCAP_NMOS
+.subckt dcap_nmos g s
+* @: Generator(name='mos')
+m1 s g s s nmos
+.ends dcap_nmos
 
-.subckt DCAP_PMOS G S
-M1 S G S S PMOS w=w l=90n
-.ends DCAP_PMOS
+.subckt dcap_pmos g s
+* @: Generator(name='mos')
+m1 s g s s pmos
+.ends dcap_pmos
 
-.subckt DCL_NMOS D S B
-M1 D D S B NMOS w=w l=90n
-.ends DCL_NMOS
+.subckt dcl_nmos_3t d s b
+* @: Generator(name='mos')
+m1 d d s b nmos
+.ends dcl_nmos_3t
 
-.subckt DCL_PMOS D S B
-M1 D D S B PMOS w=w l=90n
-.ends DCL_PMOS
+.subckt dcl_pmos_3t d s b
+* @: Generator(name='mos')
+m1 d d s b pmos
+.ends dcl_pmos_3t
 
-.subckt DCL_NMOS_S D S
-M1 D D S S NMOS w=w l=90n
-.ends DCL_NMOS_S
+.subckt dcl_nmos_2t d s
+* @: Generator(name='mos')
+m1 d d s s nmos
+.ends dcl_nmos_2t
 
-.subckt DCL_PMOS_S D S
-M1 D D S S PMOS w=w l=90n
-.ends DCL_PMOS_S
+.subckt dcl_pmos_2t d s
+* @: Generator(name='mos')
+m1 d d s s pmos
+.ends dcl_pmos_2t
 
-.subckt DUMMY_NMOS D S B
-M1 D S S B NMOS w=w l=90n
-.ends DUMMY_NMOS
+.subckt dummy_nmos_2t d s
+* @: Generator(name='mos')
+m1 d s s s nmos
+.ends dummy_nmos_2t
 
-.subckt DUMMY_PMOS D S B
-M1 D S S B PMOS w=w l=90n
-.ends DUMMY_PMOS
+.subckt dummy_pmos_2t d s
+* @: Generator(name='mos')
+m1 d s s s pmos
+.ends dummy_pmos_2t
 
-.subckt DUMMY1_NMOS S B
-M1 S S S B NMOS w=w l=90n
-.ends DUMMY1_NMOS
+.subckt dummy_nmos_3t d s b
+* @: Generator(name='mos')
+m1 d s s b nmos
+.ends dummy_nmos_3t
 
-.subckt DUMMY1_PMOS S B
-M1 S S S B PMOS w=w l=90n
-.ends DUMMY1_PMOS
+.subckt dummy_pmos_3t d s b
+* @: Generator(name='mos')
+m1 d s s b pmos
+.ends dummy_pmos_3t
 
-.subckt DUMMY1_NMOS_S S
-M1 S S S S NMOS w=w l=90n
-.ends DUMMY1_NMOS_S
+.subckt dummy_full_nmos s
+* @: Generator(name='mos')
+m1 s s s s nmos
+.ends dummy_full_nmos
 
-.subckt DUMMY1_PMOS_S S
-M1 S S S S PMOS w=w l=90n
-.ends DUMMY1_PMOS_S
+.subckt dummy_full_pmos s
+* @: Generator(name='mos')
+m1 s s s s pmos
+.ends dummy_full_pmos
 
-.subckt SCM_NMOS_B DA DB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-M1 DA DA S B NMOS w=w l=90n
-M2 DB DA S B NMOS w=w l=90n
-.ends SCM_NMOS_B
+.subckt dummy_full_nmos_2t s b
+* @: Generator(name='mos')
+m1 s s s b nmos
+.ends dummy_full_nmos_2t
 
-.subckt SCM_PMOS_B DA DB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-M1 DA DA S B PMOS w=w l=90n
-M2 DB DA S B PMOS w=w l=90n
-.ends SCM_PMOS_B
+.subckt dummy_full_pmos_2t s b
+* @: Generator(name='mos')
+m1 s s s b pmos
+.ends dummy_full_pmos_2t
 
-.subckt SCM_NMOS DA DB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-M1 DA DA S S NMOS w=w l=90n
-M2 DB DA S S NMOS w=w l=90n
-.ends SCM_NMOS
+.subckt scm_nmos_b da db s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da s b nmos
+m2 db da s b nmos
+.ends scm_nmos_b
 
-.subckt SCM_PMOS DA DB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-M1 DA DA S S PMOS w=w l=90n
-M2 DB DA S S PMOS w=w l=90n
-.ends SCM_PMOS
+.subckt scm_pmos_b da db s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da s b pmos
+m2 db da s b pmos
+.ends scm_pmos_b
 
-.subckt CMC_S_NMOS_B DA DB SA SB G B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA G SA B NMOS w=w l=90n
-M2 DB G SB B NMOS w=w l=90n
-.ends CMC_S_NMOS_B
+.subckt scm_nmos da db s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da s s nmos
+m2 db da s s nmos
+.ends scm_nmos
 
-.subckt CMC_S_NMOS DA DB SA SB G
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA G SA SB NMOS w=w l=90n
-M2 DB G SB SB NMOS w=w l=90n
-.ends CMC_S_NMOS
+.subckt scm_pmos da db s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da s s pmos
+m2 db da s s pmos
+.ends scm_pmos
 
-.subckt CMC_S_PMOS_B DA DB SA SB G B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA G SA B PMOS w=w l=90n
-M2 DB G SB B PMOS w=w l=90n
-.ends CMC_S_PMOS_B
+.subckt cmc_s_nmos_b da db sa sb g b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g sa b nmos
+m2 db g sb b nmos
+.ends cmc_s_nmos_b
 
-.subckt CMC_NMOS  DA DB G S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA G S S NMOS w=w l=90n
-M2 DB G S S NMOS w=w l=90n
-.ends CMC_NMOS
+.subckt cmc_s_nmos da db sa sb g
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g sa sa nmos
+m2 db g sb sb nmos
+.ends cmc_s_nmos
 
-.subckt CMC_PMOS  DA DB G S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA G S S PMOS w=w l=90n
-M2 DB G S S PMOS w=w l=90n
-.ends CMC_PMOS
+.subckt cmc_s_pmos_b da db sa sb g b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g sa b pmos
+m2 db g sb b pmos
+.ends cmc_s_pmos_b
 
-.subckt CMC_NMOS_B  DA DB G S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA G S B NMOS w=w l=90n
-M2 DB G S B NMOS w=w l=90n
-.ends CMC_NMOS_B
+.subckt cmc_nmos  da db g s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g s s nmos
+m2 db g s s nmos
+.ends cmc_nmos
 
-.subckt CMC_S_PMOS  DA DB G SA SB
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA G SA SA PMOS w=w l=90n
-M2 DB G SB SB PMOS w=w l=90n
-.ends CMC_S_PMOS
+.subckt cmc_pmos  da db g s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g s s pmos
+m2 db g s s pmos
+.ends cmc_pmos
 
-.subckt DP_NMOS_B  DA DB GA GB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA GA S B NMOS w=w l=90n
-M2 DB GB S B NMOS w=w l=90n
-.ends DP_NMOS_B
+.subckt cmc_nmos_b  da db g s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g s b nmos
+m2 db g s b nmos
+.ends cmc_nmos_b
 
-.subckt DP_PMOS_B  DA DB GA GB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA GA S B PMOS w=w l=90n
-M2 DB GB S B PMOS w=w l=90n
-.ends DP_PMOS_B
+.subckt cmc_s_pmos  da db g sa sb
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da g sa sa pmos
+m2 db g sb sb pmos
+.ends cmc_s_pmos
 
-.subckt DP_NMOS  DA DB GA GB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA GA S S NMOS w=w l=90n
-M2 DB GB S S NMOS w=w l=90n
-.ends DP_NMOS
+.subckt dp_nmos_b  da db ga gb s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da ga s b nmos
+m2 db gb s b nmos
+.ends dp_nmos_b
 
-.subckt DP_PMOS  DA DB GA GB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA GA S S PMOS w=w l=90n
-M2 DB GB S S PMOS w=w l=90n
-.ends DP_PMOS
+.subckt dp_pmos_b  da db ga gb s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da ga s b pmos
+m2 db gb s b pmos
+.ends dp_pmos_b
 
-.subckt CCP_S_NMOS_B DA DB SA SB B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA DB SA B NMOS w=w l=90n
-M2 DB DA SB B NMOS w=w l=90n
-.ends CCP_NMOS_B
+.subckt dp_nmos  da db ga gb s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da ga s s nmos
+m2 db gb s s nmos
+.ends dp_nmos
 
-.subckt CCP_S_PMOS_B DA DB SA SB B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA DB SA B PMOS w=w l=90n
-M2 DB DA SB B PMOS w=w l=90n
-.ends CCP_PMOS_B
+.subckt dp_pmos  da db ga gb s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da ga s s pmos
+m2 db gb s s pmos
+.ends dp_pmos
 
-.subckt CCP_NMOS DA DB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA DB S S NMOS w=w l=90n
-M2 DB DA S S NMOS w=w l=90n
-.ends CCP_NMOS
+.subckt ccp_s_nmos_b da db sa sb b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db sa b nmos
+m2 db da sb b nmos
+.ends ccp_nmos_b
 
-.subckt CCP_PMOS DA DB S
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA DB S S PMOS w=w l=90n
-M2 DB DA S S PMOS w=w l=90n
-.ends CCP_PMOS
+.subckt ccp_s_pmos_b da db sa sb b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db sa b pmos
+m2 db da sb b pmos
+.ends ccp_pmos_b
 
-.subckt CCP_NMOS_B DA DB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA DB S B NMOS w=w l=90n
-M2 DB DA S B NMOS w=w l=90n
-.ends CCP_NMOS_B
+.subckt ccp_nmos da db s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db s s nmos
+m2 db da s s nmos
+.ends ccp_nmos
 
-.subckt CCP_PMOS_B DA DB S B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='S',net2='S',  direction='V')
-M1 DA DB S B PMOS w=w l=90n
-M2 DB DA S B PMOS w=w l=90n
-.ends CCP_PMOS_B
+.subckt ccp_pmos da db s
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db s s pmos
+m2 db da s s pmos
+.ends ccp_pmos
 
-.subckt LS_S_NMOS_B DA DB SA SB B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA DA SA B NMOS w=w l=90n
-M2 DB DA SB B NMOS w=w l=90n
-.ends LS_NMOS_B
+.subckt ccp_nmos_b da db s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db s b nmos
+m2 db da s b nmos
+.ends ccp_nmos_b
 
-.subckt LS_S_PMOS_B DA DB SA SB B
-* @: SymmetricBlocks(pairs=[['M1','M2']], direction='V')
-* @: SymmetricNets(net1='DA',net2='DB',  direction='V')
-* @: SymmetricNets(net1='SA',net2='SB',  direction='V')
-M1 DA DA SA B PMOS w=w l=90n
-M2 DB DA SB B PMOS w=w l=90n
-.ends LS_S_PMOS_B
+.subckt ccp_pmos_b da db s b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da db s b pmos
+m2 db da s b pmos
+.ends ccp_pmos_b
+
+.subckt ls_s_nmos_b da db sa sb b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da sa b nmos
+m2 db da sb b nmos
+.ends ls_nmos_b
+
+.subckt ls_s_pmos_b da db sa sb b
+* @: Generator(name='mos')
+* @: SymmetricBlocks(pairs=[['m1','m2']], direction='V')
+m1 da da sa b pmos
+m2 db da sb b pmos
+.ends ls_s_pmos_b

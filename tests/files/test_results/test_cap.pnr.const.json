@@ -6,7 +6,7 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C2",
+                        "name": "X_C2",
                         "pin": "MINUS"
                     },
                     {
@@ -21,7 +21,7 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "C1",
+                        "name": "X_C1",
                         "pin": "MINUS"
                     },
                     {
@@ -38,8 +38,8 @@
             "pairs": [
                 {
                     "type": "sympair",
-                    "block1": "C2",
-                    "block2": "C1"
+                    "block1": "X_C2",
+                    "block2": "X_C1"
                 }
             ],
             "const_name": "SymmBlock",

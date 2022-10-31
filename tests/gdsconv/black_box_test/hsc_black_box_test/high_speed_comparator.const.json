@@ -1,0 +1,140 @@
+[
+    {
+        "constraint": "PowerPorts",
+        "ports": [
+            "VCC"
+        ]
+    },
+    {
+        "constraint": "GroundPorts",
+        "ports": [
+            "VSS"
+        ]
+    },
+    {
+        "constraint": "ClockPorts",
+        "ports": [
+            "clk"
+        ]
+    },
+    {
+        "constraint": "HorizontalDistance",
+        "abs_distance": 0
+    },
+    {
+        "constraint": "VerticalDistance",
+        "abs_distance": 0
+    },
+    {
+        "constraint": "GroupBlocks",
+        "instances": [
+            "mn3",
+            "mn4"
+        ],
+        "instance_name": "xccn"
+    },
+    {
+        "constraint": "GroupBlocks",
+        "instances": [
+            "mp5",
+            "mp6"
+        ],
+        "instance_name": "xccp"
+    },
+    {
+        "constraint": "SymmetricBlocks",
+        "direction": "V",
+        "pairs": [
+            [
+                "mn0"
+            ],
+            [
+                "dp0"
+            ],
+            [
+                "xccn"
+            ],
+            [
+                "xccp"
+            ],
+            [
+                "mp7",
+                "mp8"
+            ],
+            [
+                "mp9",
+                "mp10"
+            ],
+            [
+                "xi0",
+                "xi1"
+            ]
+        ]
+    },
+    {
+        "constraint": "Order",
+        "direction": "top_to_bottom",
+        "instances": [
+            "mn0",
+            "dp0",
+            "xccn",
+            "xccp"
+        ]
+    },
+    {
+        "constraint": "Align",
+        "line": "h_bottom",
+        "instances": [
+            "mp9",
+            "mp7",
+            "dp0",
+            "mp8",
+            "mp10"
+        ]
+    },
+    {
+        "constraint": "Align",
+        "line": "h_bottom",
+        "instances": [
+            "xi0",
+            "xccp",
+            "xi1"
+        ]
+    },
+    {
+        "constraint": "SymmetricNets",
+        "direction": "V",
+        "net1": "vin_d",
+        "pins1": [
+            "dp0/da",
+            "mn3/S",
+            "mp7/D"
+        ],
+        "net2": "vip_d",
+        "pins2": [
+            "dp0/da",
+            "mn4/S",
+            "mp8/D"
+        ]
+    },
+    {
+        "constraint": "SymmetricNets",
+        "direction": "V",
+        "net1": "vin_o",
+        "pins1": [
+            "mn3/D",
+            "mn4/G",
+            "mp5/D",
+            "mp6/G",
+            "mp9/D"
+        ],
+        "net2": "vip_o",
+        "pins2": [
+            "mn3/G",
+            "mn4/D",
+            "mp5/G",
+            "mp6/D",
+            "mp10/D"
+        ]
+    }
+]

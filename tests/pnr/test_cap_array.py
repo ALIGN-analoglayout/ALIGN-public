@@ -3,7 +3,7 @@ import json
 
 from align.pnr import *
 from align.cell_fabric import transformation, pdk
-from align import primitive
+from align.compiler.util import get_generator
 from pprint import pformat
 
 import pytest
@@ -25,7 +25,7 @@ def test_remove_duplicates(fn):
         d = json.load( fp)
 
     pdkdir = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
-    generator = primitive.get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
 
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)

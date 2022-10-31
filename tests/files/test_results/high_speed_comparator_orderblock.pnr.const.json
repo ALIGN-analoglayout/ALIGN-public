@@ -13,35 +13,74 @@
             "const_name": "Ordering",
             "abut": false,
             "blocks": [
-                "MN0",
+                "X_MN0",
                 "X_DP_MN1_MN2",
                 "X_CCN_MN3_MN4",
                 "X_CCP_MP5_MP6"
             ]
         },
         {
-            "const_name": "DoNotIdentify",
+            "direction": "H",
+            "const_name": "Ordering",
+            "abut": false,
             "blocks": [
-                "X_CCN_MN3_MN4",
-                "X_CCP_MP5_MP6",
-                "X_DP_MN1_MN2",
-                "MN0"
+                "X_MP9",
+                "X_MP10"
+            ]
+        },
+        {
+            "direction": "H",
+            "const_name": "Ordering",
+            "abut": false,
+            "blocks": [
+                "X_MP7",
+                "X_MP8"
             ]
         },
         {
             "pairs": [
                 {
                     "type": "sympair",
-                    "block1": "MP10",
-                    "block2": "MP9"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_MP7_MP8"
+                    "block1": "X_INV_N_MP11_MN13",
+                    "block2": "X_INV_P_MP12_MN14"
                 }
             ],
             "const_name": "SymmBlock",
             "axis_dir": "V"
+        },
+        {
+            "axis_dir": "V",
+            "const_name": "SymmNet",
+            "net1": {
+                "blocks": [
+                    {
+                        "name": "X_INV_P_MP12_MN14",
+                        "pin": "P1",
+                        "type": "pin"
+                    },
+                    {
+                        "name": "VON",
+                        "pin": null,
+                        "type": "terminal"
+                    }
+                ],
+                "name": "VON"
+            },
+            "net2": {
+                "blocks": [
+                    {
+                        "name": "X_INV_N_MP11_MN13",
+                        "pin": "P1",
+                        "type": "pin"
+                    },
+                    {
+                        "name": "VOP",
+                        "pin": null,
+                        "type": "terminal"
+                    }
+                ],
+                "name": "VOP"
+            }
         }
     ]
 }

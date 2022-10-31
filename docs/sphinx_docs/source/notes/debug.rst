@@ -43,7 +43,7 @@ To install python virtual environment:
 
     cd $ALIGN_HOME
     export VENV=$ALIGN_HOME/general
-    python3.7 -m venv $VENV
+    python3.8 -m venv $VENV
     source $VENV/bin/activate
     pip install --upgrade pip
     pip install -e .

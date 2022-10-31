@@ -8,9 +8,9 @@ Created on Fri Jan 15 10:38:14 2021
 from align.schema.types import set_context
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
+from .util import get_generator
 
 import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,18 +29,29 @@ class CreateDatabase:
         """
         Add user constraints to the design
         """
-        subckt = self.lib.find(name.upper())
-        assert subckt, f"{name.upper()} not found in library {[e.name for e in self.lib]}"
-        logger.debug(f"creating database for {subckt}")
+        top_subckt = self.lib.find(name.upper())
+        assert top_subckt, f"{name.upper()} not found in library {[e.name for e in self.lib]}"
+        logger.debug(f"creating database for {top_subckt}")
         if self.circuit.parameters:
             self.resolve_parameters(name, self.circuit.parameters)
         else:
-            self.resolve_parameters(name, subckt.parameters)
+            self.resolve_parameters(name, top_subckt.parameters)
         self._update_leaf_instances()
-        pwr, gnd, clk = self._get_pgc(subckt)
-        self._propagate_power_ports(subckt, pwr, gnd, clk)
+        pwr, gnd, clk = self._get_pgc(top_subckt)
+        self._propagate_power_ports(top_subckt, pwr, gnd, clk)
         self.propagate_const_top_to_bottom(name, {name})
         return self.lib
+
+    def add_generators(self, pdk_dir):
+        for subckt in self.lib:
+            if isinstance(subckt, SubCircuit):
+                if get_generator(subckt.name, pdk_dir) and not subckt.generator:
+                    logger.debug(f"available generator for this subcircuit {subckt.name} in PDK ")
+                    subckt.add_generator(subckt.name)
+                    if not [True for const in subckt.constraints if isinstance(const, constraint.Generator)]:
+                        with set_context(subckt.constraints):
+                            subckt.constraints.append(constraint.Generator(name=subckt.name))
+                        logger.debug(f"adding generator for {subckt.name}")
 
     def add_user_const(self):
         for subckt in self.lib:
@@ -54,13 +65,11 @@ class CreateDatabase:
         if not all_subckt:
             return
         for const in top.constraints:
-            global_const = [constraint.IsDigital, constraint.AutoConstraint,
-                constraint.AutoGroupCaps, constraint.FixSourceDrain,
-                constraint.KeepDummyHierarchies, constraint.MergeSeriesDevices,
-                constraint.MergeParallelDevices, constraint.IdentifyArray,
-                constraint.DoNotUseLib]
+            global_const = [constraint.ConfigureCompiler,
+                            constraint.DoNotUseLib,
+                            ]
 
-            if any(isinstance (const,x) for x in global_const):
+            if any(isinstance(const, x) for x in global_const):
                 for child in all_subckt:
                     child_const = self.lib.find(child).constraints
                     if const not in child_const and const.propagate:
@@ -79,7 +88,7 @@ class CreateDatabase:
         _redundant_list = list()
         for model in self.lib:
             if not isinstance(model, SubCircuit):
-                if not (model.name in _model_list or model.base == None):
+                if not (model.name in _model_list or model.base is None):
                     _redundant_list.append(model)
         # Keep base models
         # Delete unused models
@@ -101,6 +110,7 @@ class CreateDatabase:
                 logger.debug(f"Same parameters found {param} {subckt.parameters}")
                 return name.upper()
             # Second time instantiation of this circuit with different parameters
+            # TODO use GUID here
             new_name, updated_param = self._find_new_inst_name(subckt, param)
             if new_name == subckt.name or self.lib.find(new_name):
                 logger.debug(
@@ -117,6 +127,7 @@ class CreateDatabase:
                         pins=subckt.pins,
                         parameters=updated_param,
                         constraints=subckt.constraints,
+                        generator=subckt.generator
                     )
                 assert (
                     self.lib.find(new_name) is None
@@ -125,7 +136,7 @@ class CreateDatabase:
                 with set_context(subckt_new.elements):
                     for ele in subckt.elements:
                         subckt_new.elements.append(ele.copy())
-                self._update_instances(subckt_new)
+                self._update_intermediate_instances(subckt_new)
             return new_name
         else:
             self.multi_param_instantiation.append(name.upper())
@@ -135,10 +146,15 @@ class CreateDatabase:
             for p in subckt.parameters.keys():
                 if p in param:
                     subckt.parameters[p] = param[p]
-            self._update_instances(subckt)
+            self._update_intermediate_instances(subckt)
             return name.upper()
 
-    def _update_instances(self, subckt):
+    def _update_intermediate_instances(self, subckt):
+        """
+        Updates instance parameter values from parameter definitions
+        This function is written seperately as we need to create new subcircuit definitions
+        in case subcircuit is instantiated mupltiple times with different parameters
+        """
         logger.debug(
             f"Updating instance parameters of subckt {subckt.name} as {subckt.parameters}"
         )
@@ -165,18 +181,17 @@ class CreateDatabase:
         for subckt in self.lib:
             if isinstance(subckt, SubCircuit):
                 for inst in subckt.elements:
-                    logger.debug(
-                    f"Updating leaf instance parameters of module \
-                    {subckt.name} as {subckt.parameters}, \
-                    global {self.circuit.parameters}, inst param {inst.parameters}"
-                    )
                     for p, v in inst.parameters.items():
                         if v in self.circuit.parameters.keys():
                             inst.parameters[p] = self.circuit.parameters[v]
                         elif v in subckt.parameters.keys():
-                            inst.parameters[p] = subckt.parameters[v]
+                            if subckt.parameters[v] in self.circuit.parameters:
+                                inst.parameters[p] = self.circuit.parameters[subckt.parameters[v]]
+                            else:
+                                inst.parameters[p] = subckt.parameters[v]
 
     def _find_new_inst_name(self, subckt, param, counter=1):
+        # TODO use GUID
         name = f"{subckt.name.upper()}_{counter}"
         _ckt = self.lib.find(name)
         new_param = subckt.parameters.copy()
@@ -189,13 +204,14 @@ class CreateDatabase:
                 subckt.pins == _ckt.pins
                 and new_param == _ckt.parameters
                 and subckt.constraints == _ckt.constraints
+                and subckt.generator == _ckt.generator
             ):
-                logger.debug(f"Existing ckt defnition found, checking all elements")
+                logger.debug("Existing ckt defnition found, checking all elements")
                 for x in subckt.elements:
                     if (
-                        (_ckt.get_element(x.name).model == x.model)
+                        _ckt.get_element(x.name)
+                        and (_ckt.get_element(x.name).model == x.model)
                         and (_ckt.get_element(x.name).parameters == x.parameters)
-                        and (_ckt.get_element(x.name).generator == x.generator)
                         and (_ckt.get_element(x.name).pins == x.pins)
                     ):
                         continue
@@ -204,13 +220,14 @@ class CreateDatabase:
                         break  # Break after first mismatch
             else:
                 duplicate = False
-            if duplicate == False:
+            if not duplicate:
                 logger.debug(
                     f"Multiple different sized instance of subcircuit found {subckt.name} count {counter+1}"
                 )
                 name, new_param = self._find_new_inst_name(subckt, param, counter + 1)
         return name, new_param
-    def _get_pgc(self,subckt):
+
+    def _get_pgc(self, subckt):
         pwr = list()
         gnd = list()
         clk = list()
@@ -225,55 +242,35 @@ class CreateDatabase:
 
     def _propagate_power_ports(self, subckt, pwr, gnd, clk):
         pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
-        found_power = False
         if not pwr_child and pwr:
-            found_power =True
             pwr_child = pwr
-        elif pwr_child and not pwr:
-            pwr_child = pwr_child
-        elif pwr_child and pwr:
-            if not set(pwr) & set(pwr_child) == set(pwr_child):
-                found_power = True
-                pwr_child = pwr
+            subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
+        elif pwr_child:
+            diff = list(set(pwr).difference(pwr_child))
+            pwr_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.PowerPorts):
+                    const.ports.extend(diff)
 
-                #subcircuit with different power instantiations
-        if found_power:
-            pwr_child = pwr.copy()
-            with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
-        found_gnd = False
         if not gnd_child and gnd:
-            found_gnd = True
             gnd_child = gnd
-        elif gnd_child and not gnd:
-            gnd_child = gnd_child
-        elif gnd_child and gnd:
-            if not set(gnd) & set(gnd_child) == set(gnd_child):
-                found_power = True
-                gnd_child = gnd
+            subckt.constraints.append(constraint.GroundPorts(ports=gnd_child))
+        elif gnd_child:
+            diff = list(set(gnd).difference(gnd_child))
+            gnd_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.GroundPorts):
+                    const.ports.extend(diff)
 
-                #subcircuit with different power instantiations
-        if found_gnd:
-            gnd_child = list(list(gnd_child))
-            with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.GroundPorts( ports=gnd_child))
-        found_clk = False
         if not clk_child and clk:
-            found_clk = True
             clk_child = clk
-        elif clk_child and not clk:
-            clk_child = clk_child
-        elif clk_child and clk:
-            if not set(clk) & set(clk_child) == set(clk_child):
-                found_clk = True
-                clk_child = clk
-
-                #subcircuit with different power instantiations
-        if found_clk:
-            clk_child = list(clk_child)
-            with set_context(subckt.constraints):
-                subckt.constraints.append(constraint.GroundPorts( ports=clk_child))
-
+            subckt.constraints.append(constraint.ClockPorts(ports=clk_child))
+        elif clk_child:
+            diff = list(set(clk).difference(clk_child))
+            clk_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.ClockPorts):
+                    const.ports.extend(diff)
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)
             if isinstance(inst_subckt, SubCircuit):

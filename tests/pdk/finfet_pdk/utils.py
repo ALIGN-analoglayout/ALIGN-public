@@ -6,6 +6,8 @@ import shutil
 import align.pdk.finfet
 import re
 import math
+from collections import Counter
+
 try:
     import matplotlib
     matplotlib.use('Agg')
@@ -13,11 +15,18 @@ try:
 except ImportError:
     plt = None
 
-align_home = os.getenv('ALIGN_HOME')
+ALIGN_HOME = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 
-my_dir = pathlib.Path(__file__).resolve().parent
+PDK_DIR = pathlib.Path(align.pdk.finfet.__file__).parent
 
-pdk_dir = pathlib.Path(align.pdk.finfet.__file__).parent
+MY_DIR = pathlib.Path(__file__).resolve().parent
+
+if 'ALIGN_WORK_DIR' in os.environ:
+    WORK_DIR = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve() / "pdk_finfet"
+else:
+    WORK_DIR = MY_DIR / "pdk_finfet"
+
+WORK_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def _canvas_to_data(c):
@@ -33,23 +42,23 @@ def _canvas_to_data(c):
 
 
 def export_to_viewer(fn, c):
-    if align_home:
+    if ALIGN_HOME:
         data = _canvas_to_data(c)
-        with open(pathlib.Path(align_home)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
+        with open(pathlib.Path(ALIGN_HOME)/'Viewer'/'INPUT'/f'{fn}.json', "wt") as fp:
             fp.write(json.dumps(data, indent=2) + '\n')
         return data
 
 
 def compare_with_golden(fn, c):
-
+    MY_DIR = pathlib.Path(__file__).resolve().parent
     data = _canvas_to_data(c)
 
     export_to_viewer(fn, data)
 
-    with open(my_dir / (fn + "-cand.json"), "wt") as fp:
+    with open(MY_DIR / (fn + "-cand.json"), "wt") as fp:
         fp.write(json.dumps(data, indent=2) + '\n')
 
-    with open(my_dir / (fn + "-freeze.json"), "rt") as fp:
+    with open(MY_DIR / (fn + "-freeze.json"), "rt") as fp:
         data2 = json.load(fp)
 
     assert data == data2
@@ -76,7 +85,7 @@ def get_test_id():
 
 
 def build_example(name, netlist, constraints):
-    example = my_dir / name
+    example = WORK_DIR / name
     if example.exists() and example.is_dir():
         shutil.rmtree(example)
     example.mkdir(parents=True)
@@ -92,20 +101,21 @@ def build_example(name, netlist, constraints):
     return example
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
-    run_dir = my_dir / f'run_{example.name}'
+def run_example(example, n=4, cleanup=True, max_errors=0, log_level='INFO', area=None, additional_args=None):
+    run_dir = WORK_DIR / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True)
     os.chdir(run_dir)
 
-    args = [str(example), '-p', str(pdk_dir), '-l', log_level, '-n', str(n)]
+    args = [str(example), '-p', str(PDK_DIR), '-l', log_level, '-n', str(n)]
 
     if additional_args:
         for elem in additional_args:
             if elem:
                 args.append(elem)
 
+    print(f"\nCOMMAND LINE: schematic2layout.py {' '.join(args)}")
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
@@ -114,7 +124,7 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
         _, variants = result
         for (k, v) in variants.items():
             assert 'errors' in v, f"No Layouts were generated for {example.name} ({k})"
-            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errorrs: {str(v['errors'])}"
+            assert v['errors'] <= max_errors, f"{example.name} ({k}):Number of DRC errors: {str(v['errors'])}"
 
     name = example.name.upper()
 
@@ -131,9 +141,12 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', area
 
 def verify_abstract_names(name, run_dir):
     """ Make sure that there are no unused abstract_template_name's """
-    with (run_dir / '1_topology' / '__primitives__.json').open('rt') as fp:
+    with (run_dir / '1_topology' / '__primitives_library__.json').open('rt') as fp:
         primitives = json.load(fp)
-        abstract_names = {v['abstract_template_name'] for v in primitives.values()}
+        name_counts = Counter([v['name'] for v in primitives])
+        for pname in name_counts:
+            assert name_counts[pname] < 2, f'Multiple primitive definitions for {pname}'
+        abstract_names = {v['name'] for v in primitives if 'generator' in v}
 
     with (run_dir / '1_topology' / f'{name}.verilog.json').open('rt') as fp:
         verilog_json = json.load(fp)
@@ -142,7 +155,7 @@ def verify_abstract_names(name, run_dir):
             abstract_names_used += [i['abstract_template_name'] for i in module['instances']]
         abstract_names_used = set(abstract_names_used)
     assert abstract_names.issubset(abstract_names_used), (
-        f'__primitives__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
+        f'__primitives_library__.json has unused primitives: {set.difference(abstract_names, abstract_names_used)}\n'
     )
 
 
@@ -165,7 +178,7 @@ def _parse_pattern(pattern):
     logger->debug("sa__seq__hash name={0} {1} cost={2} temp={3} t_index={4}", designData.name, trial_sp.getLexIndex(designData), trial_cost, T, T_index);
     """
     data = dict()
-    with open(my_dir / 'LOG' / 'align.log', 'r') as fp:
+    with open(WORK_DIR / 'LOG' / 'align.log', 'r') as fp:
         for line in fp:
             if re.search(pattern, line):
                 line = line.split(pattern)[1]
@@ -211,7 +224,7 @@ def plot_sa_cost(name):
     ax[1].grid()
 
     fig.set_size_inches(14, 8)
-    fig.savefig(f'{my_dir}/{name}_cost_trajectory.png', dpi=300, pad_inches=0.1)
+    fig.savefig(f'{WORK_DIR}/{name}_cost_trajectory.png', dpi=300, pad_inches=0.1)
 
 
 def plot_sa_seq(name):
@@ -253,4 +266,4 @@ def plot_sa_seq(name):
     fig.colorbar(im0, ax=ax[0])
     fig.colorbar(im1, ax=ax[1])
     fig.set_size_inches(14, 6)
-    fig.savefig(f'{my_dir}/{name}_seqpair_scatter.png', dpi=300, pad_inches=0.001)
+    fig.savefig(f'{WORK_DIR}/{name}_seqpair_scatter.png', dpi=300, pad_inches=0.001)

@@ -14,6 +14,57 @@ config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
 
 
+def comparator(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt {name} clk vccx vin vip von vop vssx
+        mn0 vcom clk vssx vssx n w=2.88e-6 m=1 nf=16
+        mn1 vin_d vin vcom vssx n w=360e-9 m=18 nf=2
+        mn2 vip_d vip vcom vssx n w=360e-9 m=18 nf=2
+        mn3 vin_o vip_o vin_d vssx n w=360e-9 m=8 nf=2
+        mn4 vip_o vin_o vip_d vssx n w=360e-9 m=8 nf=2
+        mp5 vin_o vip_o vccx vccx p w=360e-9 m=6 nf=2
+        mp6 vip_o vin_o vccx vccx p w=360e-9 m=6 nf=2
+        mp7 vin_d clk vccx vccx p w=360e-9 m=1 nf=2
+        mp8 vip_d clk vccx vccx p w=360e-9 m=1 nf=2
+        mp9 vin_o clk vccx vccx p w=360e-9 m=2 nf=2
+        mp10 vip_o clk vccx vccx p w=360e-9 m=2 nf=2
+        mn11 von vin_o vssx vssx n w=360e-9 m=1 nf=2
+        mn12 vop vip_o vssx vssx n w=360e-9 m=1 nf=2
+        mp13 von vin_o vccx vccx p w=360e-9 m=1 nf=2
+        mp14 vop vip_o vccx vccx p w=360e-9 m=1 nf=2
+        .ends {name}
+    """)
+    return netlist
+
+
+def comparator_hier(name):
+    netlist = textwrap.dedent(f"""\
+        .subckt comparator clk vccx vin vip von vop vssx
+        mn0 vcom clk vssx vssx n w=2.88e-6 m=1 nf=16
+        mn1 vin_d vin vcom vssx n w=360e-9 m=18 nf=2
+        mn2 vip_d vip vcom vssx n w=360e-9 m=18 nf=2
+        mn3 vin_o vip_o vin_d vssx n w=360e-9 m=8 nf=2
+        mn4 vip_o vin_o vip_d vssx n w=360e-9 m=8 nf=2
+        mp5 vin_o vip_o vccx vccx p w=360e-9 m=6 nf=2
+        mp6 vip_o vin_o vccx vccx p w=360e-9 m=6 nf=2
+        mp7 vin_d clk vccx vccx p w=360e-9 m=1 nf=2
+        mp8 vip_d clk vccx vccx p w=360e-9 m=1 nf=2
+        mp9 vin_o clk vccx vccx p w=360e-9 m=2 nf=2
+        mp10 vip_o clk vccx vccx p w=360e-9 m=2 nf=2
+        mn11 von vin_o vssx vssx n w=360e-9 m=1 nf=2
+        mn12 vop vip_o vssx vssx n w=360e-9 m=1 nf=2
+        mp13 von vin_o vccx vccx p w=360e-9 m=1 nf=2
+        mp14 vop vip_o vccx vccx p w=360e-9 m=1 nf=2
+        .ends
+        .subckt {name} clk vccx vin vip von vop vssx
+        i0 clk vccx vin vip von vop vssx comparator
+        mn0 vssx von vssx vssx n w=360e-9 m=1 nf=2
+        mn1 vssx vop vssx vssx n w=360e-9 m=1 nf=2
+        .ends {name}
+    """)
+    return netlist
+
+
 def ota_six(name):
     netlist = textwrap.dedent(
         f"""\
@@ -22,6 +73,24 @@ def ota_six(name):
         mn2 tail  ibias vssx vssx n w=360e-9 nf=2 m=8
         mn3 vop vip tail vssx n w=360e-9 nf=2 m=16
         mn4 von vin tail vssx n w=360e-9 nf=2 m=16
+        mp5 vop vop vccx vccx p w=360e-9 nf=2 m=4
+        mp6 von vop vccx vccx p w=360e-9 nf=2 m=4
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def ota_dummy(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} ibias vccx vssx  von vin vip
+        mn1 ibias ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn2 tail  ibias vssx vssx n w=360e-9 nf=2 m=8
+        mn3 vop vip tail vssx n w=360e-9 nf=2 m=16
+        mn4 von vin tail vssx n w=360e-9 nf=2 m=16
+        mn3_dummy vop vop vop vssx n w=360e-9 nf=2 m=16
+        mn4_dummy von von von vssx n w=360e-9 nf=2 m=16
         mp5 vop vop vccx vccx p w=360e-9 nf=2 m=4
         mp6 von vop vccx vccx p w=360e-9 nf=2 m=4
         .ends {name}
@@ -145,6 +214,80 @@ def variable_gain_amplifier_ratioed(name):
     return netlist
 
 
+def array_limit(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        mn4 a4 g4 s vssx n w=360e-9 nf=2 m=8
+        mn5 a5 g5 s vssx n w=360e-9 nf=2 m=8
+        mn6 a6 g6 s vssx n w=360e-9 nf=2 m=8
+        mn7 a7 g7 s vssx n w=360e-9 nf=2 m=8
+        mn8 a8 g8 s vssx n w=360e-9 nf=2 m=8
+        mn9 a9 g9 s vssx n w=360e-9 nf=2 m=8
+        mn10 a10 g10 s vssx n w=360e-9 nf=2 m=8
+        mn11 a11 g11 s vssx n w=360e-9 nf=2 m=8
+        mn12 a12 g12 s vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_mismatch(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s vssx
+        mn1a a1a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a1a vssx n w=360e-9 nf=2 m=8
+        mn2a a2a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a2a vssx n w=360e-9 nf=2 m=8
+        mn3a a3a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a3a vssx n w=360e-9 nf=2 m=8
+        mn3c a3c g3c a3a vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_converged_net(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} s vssx
+        mn1a a g1a s vssx n w=360e-9 nf=2 m=8
+        mn1b a1b g1b a vssx n w=360e-9 nf=2 m=8
+        mn2a a g2a s vssx n w=360e-9 nf=2 m=8
+        mn2b a2b g2b a vssx n w=360e-9 nf=2 m=8
+        mn3a a g3a s vssx n w=360e-9 nf=2 m=8
+        mn3b a3b g3b a vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    return netlist
+
+
+def array_converged_instance(name):
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt three_terminal a1 a2 a3
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        .ends three_terminal
+        .subckt {name} s vssx
+        mn1 a1 g1 s vssx n w=360e-9 nf=2 m=8
+        mn2 a2 g2 s vssx n w=360e-9 nf=2 m=8
+        mn3 a3 g3 s vssx n w=360e-9 nf=2 m=8
+        xi0 a1 a2 a3 three_terminal
+        .ends {name}
+    """
+    )
+    return netlist
+
+
 def clean_data(name):
     example = my_dir / name
     if example.exists() and example.is_dir():
@@ -158,8 +301,13 @@ def build_example(name, netlist, constraints):
     example.mkdir(parents=True)
     with open(example / f"{name}.sp", "w") as fp:
         fp.write(netlist)
-    with open(example / f"{name}.const.json", "w") as fp:
-        fp.write(json.dumps(constraints, indent=2))
+    if isinstance(constraints, dict):
+        for k, v in constraints.items():
+            with open(example / f'{k}.const.json', 'w') as fp:
+                fp.write(json.dumps(v, indent=2))
+    elif constraints:
+        with open(example / f'{name}.const.json', 'w') as fp:
+            fp.write(json.dumps(constraints, indent=2))
     return example / (name + ".sp")
 
 

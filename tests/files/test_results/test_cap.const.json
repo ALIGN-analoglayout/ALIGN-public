@@ -1,24 +1,24 @@
 [
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "OUT1",
           "net2": "OUT2",
           "pins1": [
-            "C2/MINUS",
+            "X_C2/MINUS",
             "OUT1"
           ],
           "pins2": [
-            "C1/MINUS",
+            "X_C1/MINUS",
             "OUT2"
           ],
           "direction": "V"
         },
         {
-          "constraint": "symmetric_blocks",
+          "constraint": "SymmetricBlocks",
           "pairs": [
             [
-              "C2",
-              "C1"
+              "X_C2",
+              "X_C1"
             ]
           ],
           "direction": "V"

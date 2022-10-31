@@ -216,4 +216,4 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open((pathlib.Path(__file__).parent.parent / 'files' / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 23
+    assert len(parser.library) - libsize == 47

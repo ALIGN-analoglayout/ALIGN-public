@@ -2,7 +2,7 @@ from .canvas import CanvasPDK
 from align.schema.constraint import PlaceOnGrid, OffsetsScalings
 
 
-class tfr_prim(CanvasPDK):
+class ThinFilmResistor(CanvasPDK):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -42,3 +42,11 @@ class tfr_prim(CanvasPDK):
             PlaceOnGrid(direction='V', pitch=5*poly_pitch, ored_terms=[OffsetsScalings(offsets=[1*poly_pitch], scalings=[1])]).dict()
         ]
         return {"bbox": bbox, "instance": {}, "terminals": self.terminals, "metadata": self.metadata}
+
+
+class tfr_prim(ThinFilmResistor):
+    pass
+
+
+class tfr_flat(ThinFilmResistor):
+    pass

@@ -2,7 +2,7 @@ import pytest
 import textwrap
 from .utils import get_test_id, build_example, run_example
 
-cleanup = False
+CLEANUP = True
 
 
 @pytest.mark.skip(reason="this test is failing in CircleCI")
@@ -16,10 +16,10 @@ def test_pinless():
         .ends {name}
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]}
         ]
     example = build_example(name, netlist, setup, constraints)
-    run_example(example, cleanup=cleanup)
+    run_example(example, cleanup=CLEANUP)

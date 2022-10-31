@@ -6,9 +6,11 @@ from pprint import pformat
 
 from align.pnr import *
 from align.cell_fabric import transformation, pdk
-from align import primitive
+from align.compiler.util import get_generator
 
-mydir =  pathlib.Path(__file__).resolve().parent
+
+mydir = pathlib.Path(__file__).resolve().parent
+
 
 def get_fpath(fn):
     return mydir / f"{fn}_adr_dr_globalrouting.json"
@@ -19,7 +21,7 @@ def aux(fn):
         d = json.load( fp)
 
     pdkdir = mydir.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
-    generator = primitive.get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)

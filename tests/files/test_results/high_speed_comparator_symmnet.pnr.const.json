@@ -12,7 +12,7 @@
             "pairs": [
                 {
                     "type": "selfsym",
-                    "block": "MN0"
+                    "block": "X_MN0"
                 },
                 {
                     "type": "selfsym",
@@ -28,13 +28,13 @@
                 },
                 {
                     "type": "sympair",
-                    "block1": "MP7",
-                    "block2": "MP8"
+                    "block1": "X_MP7",
+                    "block2": "X_MP8"
                 },
                 {
                     "type": "sympair",
-                    "block1": "MP9",
-                    "block2": "MP10"
+                    "block1": "X_MP9",
+                    "block2": "X_MP10"
                 },
                 {
                     "type": "sympair",
@@ -50,7 +50,7 @@
             "abut": false,
             "const_name": "Ordering",
             "blocks": [
-                "MN0",
+                "X_MN0",
                 "X_DP_MN1_MN2",
                 "X_CCN_MN3_MN4",
                 "X_CCP_MP5_MP6"
@@ -60,11 +60,11 @@
             "line": "h_bottom",
             "const_name": "AlignBlock",
             "blocks": [
-                "MP9",
-                "MP7",
+                "X_MP9",
+                "X_MP7",
                 "X_DP_MN1_MN2",
-                "MP8",
-                "MP10"
+                "X_MP8",
+                "X_MP10"
             ]
         },
         {
@@ -77,38 +77,23 @@
             ]
         },
         {
-            "const_name": "DoNotIdentify",
-            "blocks": [
-                "X_CCN_MN3_MN4",
-                "X_CCP_MP5_MP6",
-                "X_DP_MN1_MN2",
-                "X_INV_N_MP11_MN13",
-                "X_INV_P_MP12_MN14",
-                "MN0",
-                "MP10",
-                "MP7",
-                "MP8",
-                "MP9"
-            ]
-        },
-        {
             "net1": {
                 "name": "VIN_D",
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "MP7",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIN_D"
+                        "pin": "P1"
                     },
                     {
                         "type": "pin",
                         "name": "X_CCN_MN3_MN4",
-                        "pin": "VIN_D"
+                        "pin": "P3"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_MP7",
+                        "pin": "D"
                     }
                 ]
             },
@@ -117,18 +102,18 @@
                 "blocks": [
                     {
                         "type": "pin",
-                        "name": "MP8",
-                        "pin": "D"
-                    },
-                    {
-                        "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIP_D"
+                        "pin": "P4"
                     },
                     {
                         "type": "pin",
                         "name": "X_CCN_MN3_MN4",
-                        "pin": "VIP_D"
+                        "pin": "P4"
+                    },
+                    {
+                        "type": "pin",
+                        "name": "X_MP8",
+                        "pin": "D"
                     }
                 ]
             },
@@ -142,7 +127,7 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIN"
+                        "pin": "P2"
                     },
                     {
                         "type": "terminal",
@@ -157,7 +142,7 @@
                     {
                         "type": "pin",
                         "name": "X_DP_MN1_MN2",
-                        "pin": "VIP"
+                        "pin": "P5"
                     },
                     {
                         "type": "terminal",
@@ -167,25 +152,6 @@
                 ]
             },
             "const_name": "SymmNet",
-            "axis_dir": "V"
-        },
-        {
-            "pairs": [
-                {
-                    "type": "sympair",
-                    "block1": "MP7",
-                    "block2": "MP8"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_DP_MN1_MN2"
-                },
-                {
-                    "type": "selfsym",
-                    "block": "X_CCN_MN3_MN4"
-                }
-            ],
-            "const_name": "SymmBlock",
             "axis_dir": "V"
         }
     ]

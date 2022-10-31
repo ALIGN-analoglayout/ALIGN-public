@@ -46,6 +46,7 @@ pycharm/
 **/*.dot
 **/*.json
 **/*.lef
+**/*.placement_lef
 # Exclude files based on ALIGN naming conventions
 **/*_cand
 **/*.pl
@@ -91,3 +92,4 @@ tests/cell_fabric/Foo*.cir
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
 _skbuild/
+*.lp

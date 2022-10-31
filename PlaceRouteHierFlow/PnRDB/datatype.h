@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 #include "limits.h"
 //#include "../router/Rdatatype.h"
@@ -40,6 +41,7 @@ struct Alignment;
 struct AlignBlock;
 struct Abument;
 struct MatchBlock;
+struct SpreadConstraint;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
@@ -63,6 +65,10 @@ struct Multi_connection;
 struct GuardRing;
 struct Guardring_Const;
 struct guardring_info;
+struct GdsDatatype;
+struct Min_Max_Routing_Layer;
+struct Min_Max_Routing_Layer_Per_Net;
+struct Routing_Layers_Info;
 
 /// Part 1: declaration of enum types
 enum NType { Block, Terminal };
@@ -378,6 +384,7 @@ struct blockComplex {
 struct PowerGrid {
   std::string name;
   vector<Metal> metals;
+  vector<Metal> merged_metals;
   vector<Via> vias;
   bool power = 1;  // 1 is vdd, 0 is gnd
 };
@@ -412,6 +419,18 @@ struct GuardRing {
   vector<pin> blockPins;
   vector<contact> interMetals;
   vector<Via> interVias;
+};
+
+struct Min_Max_Routing_Layer_Per_Net{
+  string net_min_layer;
+  string net_max_layer;
+  string net_name;
+};
+
+struct Routing_Layers_Info{
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_per_Net;
+  string global_min_layer;
+  string global_max_layer;
 };
 
 struct hierNode {
@@ -484,9 +503,17 @@ struct hierNode {
   double cost = -1;
   std::string compact_style = "left";
   vector<string> DoNotRoute;
+  map<string, vector<std::tuple<string, string, double> > > CFValues;
+  int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
+  vector<SpreadConstraint> SpreadConstraints;
+//  vector<Min_Max_Routing_Layer> Routing_Layers;
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
+  Routing_Layers_Info Routing_Layers;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
+
+
 
 struct SymmNet {
   net net1, net2;
@@ -539,6 +566,12 @@ struct AlignBlock {
   std::vector<int> blocks;  // LL.x/LL.y equal
   int horizon;              // 1 is h, 0 is v.
   int line;                 // 0 is left or bottom, 1 is center, 2 is right or top
+};
+
+struct SpreadConstraint {
+  std::set<int> blocks;
+  int horizon;
+  int distance;
 };
 
 struct PortPos {
@@ -601,6 +634,22 @@ struct Multi_connection {
   int multi_number = 1;
 };
 
+struct Min_Max_Routing_Layer{
+//struct Routing_Layers_Info{
+//  vector<> nets;//corresponding to constraint["customize"]
+//  string global_min_layer;
+//  string global_max_layer;
+//}
+
+//routing layer range for each net
+//struct Min_Max_Routing_Layer_Per_Net{
+  string global_min_layer;
+  string global_max_layer;
+  string net_min_layer;
+  string net_max_layer;
+  string net_name;
+};
+
 /// Part 4: declaration of structures for LEF data
 struct lefMacro {
   int width = 0, height = 0;
@@ -652,6 +701,7 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  int offset = 0;
   double unit_R;
   double unit_C;
   double unit_CC;
@@ -661,8 +711,8 @@ struct metal_info {
 struct via_info {
   string name;
   int layerNo;
-  int lower_metal_index;
-  int upper_metal_index;
+  int lower_metal_index = -1;
+  int upper_metal_index = -1;
   int width;    // drData.MinWidth["V6"], X direction width
   int width_y;  // Y direction width
   int cover_l;  // the length that the via should be coverage   EnMax["V4M5"] EnMax["V4M4"]

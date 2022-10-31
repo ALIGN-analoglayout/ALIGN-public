@@ -1,7 +1,11 @@
 import json
 import pytest
 import textwrap
+import shutil
 from .utils import get_test_id, build_example, run_example
+
+
+CLEANUP = True
 
 
 def dump_simplified_json(modules, filename):
@@ -45,9 +49,9 @@ def test_collisions():
     .ends {name}
     .END
     """)
-    constraints = [{"constraint": "AutoConstraint", "isTrue": False, "propagate": True}]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
     name = name.upper()
     filename = run_dir / '1_topology' / f'{name}.verilog.json'
@@ -73,6 +77,10 @@ def test_collisions():
         mn02 = find_instance(instances, ['MN02'])
         assert mn01[atn] != mn02[atn], 'Collision of mn01 and mn02'
 
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
 
 def test_disable_fix_merge():
     name = f'ckt_{get_test_id()}'
@@ -86,13 +94,16 @@ def test_disable_fix_merge():
     .END
     """)
     constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True},
-        {"constraint": "FixSourceDrain", "isTrue": False, "propagate": True},
-        {"constraint": "MergeSeriesDevices", "isTrue": False, "propagate": True},
-        {"constraint": "MergeParallelDevices", "isTrue": False, "propagate": True}
+        {"constraint": "ConfigureCompiler",
+         "auto_constraint": False,
+         'fix_source_drain': False,
+         'merge_series_devices': False,
+         'merge_parallel_devices': False,
+         'propagate': True
+         }
     ]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
+    ckt_dir, run_dir = run_example(example, cleanup=False, n=1, additional_args=['--flow_stop', '2_primitives'])
 
     name = name.upper()
     filename = run_dir / '1_topology' / f'{name}.verilog.json'
@@ -103,7 +114,11 @@ def test_disable_fix_merge():
         instances = {inst['instance_name']: inst for inst in modules[name]['instances']}
         filename = run_dir / '1_topology' / f'{name}_simple.verilog.json'
         _ = dump_simplified_json(modules, filename)
-        assert all([k in instances for k in ['MN01', 'MN02', 'MN03', 'MN04']]), 'Incorrect annotation'
+        assert all([k in instances for k in ['X_MN01', 'X_MN02', 'X_MN03', 'X_MN04']]), 'Incorrect annotation'
+
+    if CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
 
 
 def test_illegal():
@@ -116,9 +131,7 @@ def test_illegal():
     .ends {name}
     .END
     """)
-    constraints = [
-        {"constraint": "AutoConstraint", "isTrue": False, "propagate": True}
-    ]
+    constraints = [{"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}]
     example = build_example(name, netlist, constraints)
 
     with pytest.raises(AssertionError):
