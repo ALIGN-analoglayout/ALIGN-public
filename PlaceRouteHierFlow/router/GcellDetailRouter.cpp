@@ -183,9 +183,11 @@ void GcellDetailRouter::ReturnInternalMetalContactALL(std::set<RouterDB::SinkDat
 
 void GcellDetailRouter::Grid_Inactive_One_Layer(Grid &grid, int layer){
   // 1. find the vertices indices range in this layer, the first index of each layer is in grid.Start_index_metal_vertices
-  int start_index = 0, end_index = 0;
+  int start_index = grid.Start_index_metal_vertices.at(layer);
+  int end_index = grid.End_index_metal_vertices.at(layer);
   // 2. set all vertices's active to false in this layer, the vector of vertices is grid.vertices_total
-  for (unsigned int i = start_index; i <= end_index;i++) {
+  for (unsigned int i = start_index; i <= end_index; i++) {
+    grid.vertices_total.at(i).active = false;
     //vertice's active = false
   }
 }
