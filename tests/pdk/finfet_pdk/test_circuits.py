@@ -205,7 +205,8 @@ def test_ldo_amp_simple():
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, max_errors=1, additional_args=["--placer_sa_iterations", "100"])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, max_errors=1,
+                additional_args=["--placer_sa_iterations", "100", "--router_mode", "no_op"])
 
 
 def test_ldo_amp():
@@ -217,7 +218,8 @@ def test_ldo_amp():
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=["--placer_sa_iterations", "100"])
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL,
+                additional_args=["--placer_sa_iterations", "100", '--router_mode', 'no_op'])
 
 
 def test_ro_simple():
