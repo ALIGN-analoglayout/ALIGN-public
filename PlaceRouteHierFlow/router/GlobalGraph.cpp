@@ -558,12 +558,16 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
   int v;
   while (status[dest] != 2 && count < (int)graph.size() - 1) {
     std::vector<int> ulist = minDistancefromMultiMap(distMap);
-    string ulist_str = "";
-    for (auto e:ulist){
-      ulist_str += " ";
-      ulist_str += std::to_string(e);
+
+    if (logger->should_log(spdlog::level::trace)) {
+      string ulist_str = "";
+      for (auto e:ulist){
+        ulist_str += " ";
+        ulist_str += std::to_string(e);
+      }
+      logger->info("ulist:{0}", ulist_str);
     }
-    logger->info("ulist:{0}", ulist_str);
+
     // std::cout<<"size of Q: "<<ulist.size()<<std::endl;
     if (ulist.empty()) {
       logger->warn("Router-Warning: ulist empty");
