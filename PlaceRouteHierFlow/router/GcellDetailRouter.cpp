@@ -318,13 +318,33 @@ void GcellDetailRouter::SortPinsOrder() {
   //order by the manhattan distance to LL
   for (unsigned int i = 0; i < Nets.size(); i++) {
     if (Nets[i].connected.size() == 0) continue;
+    //order by the manhattan distance to LL
     std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
       if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL) return true;
       return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
              Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
     });
 
-    for (unsigned int j = 0; j < Nets[i].connected.size(); j++) {
+    for (unsigned int j = 1; j < Nets[i].connected.size() - 1; j++) {
+      std::sort(Nets[i].connected.begin() + j, Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL) return true;
+        //calculate each pin's minimum distance to sorted pins
+        vector<int> dis_a, dis_b;
+        int x_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x, y_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y;
+        int x_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x, y_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+        for (unsigned int k = 0; k < j; k++) {
+          auto node_k = Nets[i].connected[k];
+          if (node_k.type == RouterDB::TERMINAL) continue;
+          dis_a.push_back(abs(x_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
+                          abs(y_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.y));
+          dis_b.push_back(abs(x_b - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
+                          abs(y_b - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.y));
+        }
+        sort(dis_a.begin(), dis_a.end());
+        sort(dis_b.begin(), dis_b.end());
+        //dis_a[0] is the minimum distance between a and sorted pins
+        return dis_a[0] < dis_b[0];
+      });
     }
   }
 }
