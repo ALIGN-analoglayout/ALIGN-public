@@ -655,6 +655,21 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         if (!found) logger->error("Block {0} in Spread not found in netlist", block);
       }
       node.SpreadConstraints.push_back(s);
+    } else if(constraint["const_name"] == "Route"){
+      PnRDB::Routing_Layers_Info tmp_routing;
+      tmp_routing.global_min_layer = constraint["min_layer"];
+      tmp_routing.global_max_layer = constraint["max_layer"];
+      for(auto netset: constraint["customize"]){//if the key does not exist, should assign NULL	
+        PnRDB::Min_Max_Routing_Layer_Per_Net tmp_routing_net;
+      
+        for(auto net_name: netset["nets"]){
+          tmp_routing_net.net_min_layer = netset["min_layer"];
+          tmp_routing_net.net_max_layer = netset["max_layer"];
+          tmp_routing_net.net_name = net_name;
+          tmp_routing.Routing_per_Net.push_back(tmp_routing_net);
+        }
+      }
+      node.Routing_Layers = tmp_routing;
     }
   }
 }

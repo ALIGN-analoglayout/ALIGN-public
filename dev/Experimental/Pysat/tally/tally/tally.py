@@ -1,6 +1,7 @@
 
 from collections import defaultdict
 import pysat.solvers
+import pysat.formula
 
 class BitVar:
   def __repr__( self):
@@ -106,12 +107,18 @@ class VarMgr:
 class Tally:
   def __init__( self):
     self.nvars = 0
-    self.nm_map = {}
     self.h = defaultdict( lambda: None)
     self.state = 'UNKNOWN'
     self.solver = pysat.solvers.Glucose4()
+    self.cnf = pysat.formula.CNF()
+
+  def dump_cnf(self, fn):
+    with open(fn, "wt") as fp:
+      self.cnf.to_fp(fp)
 
   def solve( self, assumptions=None):
+
+
     res = self.solver.solve( assumptions=assumptions if assumptions is not None else [])
     if res is True:
       self.state = 'SAT'
@@ -140,7 +147,9 @@ class Tally:
     return self.nvars
 
   def add_clause( self, cl):
-    self.solver.add_clause( cl)
+    self.solver.add_clause(cl)
+    self.cnf.append(cl)
+    
 
   def emit_or_aux( self, a, z):
 # a0 | a1 | ... => z
