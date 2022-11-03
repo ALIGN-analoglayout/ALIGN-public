@@ -338,7 +338,7 @@ void GcellDetailRouter::SortPinsOrder() {
         int x_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x, y_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
         for (unsigned int k = 0; k < j; k++) {
           auto node_k = Nets[i].connected[k];
-          if (node_k.type == RouterDB::TERMINAL) continue;
+          if (node_k.type == RouterDB::TERMINAL || Blocks[node_k.iter2].pins[node_k.iter].pinContacts.size() == 0) continue;
           dis_a.push_back(abs(x_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
                           abs(y_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.y));
           dis_b.push_back(abs(x_b - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
@@ -347,6 +347,7 @@ void GcellDetailRouter::SortPinsOrder() {
         sort(dis_a.begin(), dis_a.end());
         sort(dis_b.begin(), dis_b.end());
         //dis_a[0] is the minimum distance between a and sorted pins
+        if (dis_a.size() == 0 || dis_b.size() == 0) return true;
         return dis_a[0] < dis_b[0];
       });
     }
