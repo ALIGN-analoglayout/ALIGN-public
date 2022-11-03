@@ -1891,12 +1891,12 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     objective[N_area_x] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-    if (mydesign.Nets[i].connected.size() < 2) continue;
+    //if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-    objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 2) = hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind)     = mydesign.Nets[i].floating_pin ? 0. : -hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 1) = mydesign.Nets[i].floating_pin ? 0. : -hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 2) = mydesign.Nets[i].floating_pin ? 0. :  hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 3) = mydesign.Nets[i].floating_pin ? 0. :  hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -2424,16 +2424,17 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       }
     }
   }
-  ExtremeBlocksOfNet netExtremes(curr_sp, mydesign.Nets.size());
-  for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    netExtremes.FindExtremes(mydesign.Nets[i], i);
-  }
+  //ExtremeBlocksOfNet netExtremes(curr_sp, mydesign.Nets.size());
+  //for (int i = 0; i < mydesign.Nets.size(); ++i) {
+  //  netExtremes.FindExtremes(mydesign.Nets[i], i);
+  //}
 
   // set_add_rowmode(lp, FALSE);
   {
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-      if (mydesign.Nets[i].connected.size() < 2) continue;
+      //if (mydesign.Nets[i].connected.size() < 2) continue;
+      if (mydesign.Nets[i].floating_pin) continue;
       int ind = int(mydesign.Blocks.size() * 4 + i * 4);
 
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
@@ -2443,58 +2444,57 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
           int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
           int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
-          if (blk.blockPins.size()) {
+          if (blk.blockPins.size()
+              && blk.blockPins[pin_id].bbox.LL.x <= blk.blockPins[pin_id].bbox.UR.x
+              && blk.blockPins[pin_id].bbox.LL.y <= blk.blockPins[pin_id].bbox.UR.y) {
             pin_llx = blk.blockPins[pin_id].bbox.LL.x;
             pin_lly = blk.blockPins[pin_id].bbox.LL.y;
             pin_urx = blk.blockPins[pin_id].bbox.UR.x;
             pin_ury = blk.blockPins[pin_id].bbox.UR.y;
+          } else {
+            continue;
           }
-          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
-          double deltay = 1.*(blk.height - pin_lly - pin_ury);
-          if (netExtremes.InLeftExtreme(i, block_id)) {
-            rowindofcol[block_id * 4].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-            rowindofcol[ind].push_back(rhs.size());
-            constrvalues[block_id * 4].push_back(1);
-            constrvalues[block_id * 4 + 2].push_back(deltax);
-            constrvalues[ind].push_back(-1);
-            sens.push_back('G');
-            rhs.push_back(-pin_llx);
-            rownames.push_back("H");
-          }
-          if (netExtremes.InBottomExtreme(i, block_id)) {
-            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-            rowindofcol[ind + 1].push_back(rhs.size());
-            constrvalues[block_id * 4 + 1].push_back(1);
-            constrvalues[block_id * 4 + 3].push_back(deltay);
-            constrvalues[ind + 1].push_back(-1);
-            sens.push_back('G');
-            rhs.push_back(-pin_lly);
-            rownames.push_back("H");
-          }
-          if (netExtremes.InRightExtreme(i, block_id)) {
-            rowindofcol[block_id * 4].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-            rowindofcol[ind + 2].push_back(rhs.size());
-            constrvalues[block_id * 4].push_back(1);
-            constrvalues[block_id * 4 + 2].push_back(deltax);
-            constrvalues[ind + 2].push_back(-1);
-            sens.push_back('L');
-            rhs.push_back(-pin_urx);
-            rownames.push_back("H");
-          }
-          if (netExtremes.InTopExtreme(i, block_id)) {
-            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-            rowindofcol[ind + 3].push_back(rhs.size());
-            constrvalues[block_id * 4 + 1].push_back(1);
-            constrvalues[block_id * 4 + 3].push_back(deltay);
-            constrvalues[ind + 3].push_back(-1);
-            sens.push_back('L');
-            rhs.push_back(-pin_ury);
-            rownames.push_back("H");
-          }
+          double deltax = (blk.width  - pin_llx - pin_urx);
+          double deltay = (blk.height - pin_lly - pin_ury);
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[ind].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(1);
+          constrvalues[block_id * 4 + 2].push_back(deltax);
+          constrvalues[ind].push_back(-1);
+          sens.push_back('G');
+          rhs.push_back(-pin_llx);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[ind + 1].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(1);
+          constrvalues[block_id * 4 + 3].push_back(deltay);
+          constrvalues[ind + 1].push_back(-1);
+          sens.push_back('G');
+          rhs.push_back(-pin_lly);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[ind + 2].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(1);
+          constrvalues[block_id * 4 + 2].push_back(deltax);
+          constrvalues[ind + 2].push_back(-1);
+          sens.push_back('L');
+          rhs.push_back(-pin_urx);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[ind + 3].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(1);
+          constrvalues[block_id * 4 + 3].push_back(deltay);
+          constrvalues[ind + 3].push_back(-1);
+          sens.push_back('L');
+          rhs.push_back(-pin_ury);
+          rownames.push_back("H");
         }
       }
     }
@@ -2661,6 +2661,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       }
       // calculate HPWL from ILP solution
       for (int i = 0; i < mydesign.Nets.size(); ++i) {
+        if (mydesign.Nets[i].floating_pin) continue;
         int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
         HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
       }
@@ -2755,6 +2756,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+      if (mydesign.Nets[i].floating_pin) continue;
       HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
@@ -2955,6 +2957,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   HPWL_extend_terminal = 0;
 
   for (const auto& neti : mydesign.Nets) {
+    if (neti.floating_pin) continue;
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
     int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
     for (const auto& connectedj : neti.connected) {
@@ -2974,29 +2977,29 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
         /*int pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
-        int pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
-        int pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
-        int pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
-        if (Blocks[iter2].H_flip) {
+          int pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
+          int pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
+          int pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
+          if (Blocks[iter2].H_flip) {
           pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
           pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
-        }
-        if (Blocks[iter2].V_flip) {
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
+          }
+          if (Blocks[iter2].V_flip) {
           pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
           pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
-        }
-        pin_llx += Blocks[iter2].x;
-        pin_urx += Blocks[iter2].x;
-        pin_lly += Blocks[iter2].y;
-        pin_ury += Blocks[iter2].y;
-        HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
-        HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
-        HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
-        HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);*/
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
+          }
+          pin_llx += Blocks[iter2].x;
+          pin_urx += Blocks[iter2].x;
+          pin_lly += Blocks[iter2].y;
+          pin_ury += Blocks[iter2].y;
+          HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
+          HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
+          HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
+          HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);*/
         for (const auto& boundaryk : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary) {
           int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
           int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
@@ -3030,7 +3033,10 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
-    if (neti.floating_pin) HPWL = HPWL_extend = HPWL_extend_net_priority = HPWL_extend_terminal = 0;
+  }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
   }
 
   // HPWL norm
@@ -3094,10 +3100,11 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
-  //if (cost >= 0.) {
-  //  logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-  //  logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
-  //}
+  if (cost >= 0.) {
+    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    assert(round(HPWL_extend) == round(HPWL_ILP));
+  }
   return calculated_cost;
 }
 
@@ -3876,6 +3883,10 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
       }
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
+  }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
   }
 
   // HPWL norm
