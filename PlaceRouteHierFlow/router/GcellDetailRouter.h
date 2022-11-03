@@ -209,6 +209,7 @@ class GcellDetailRouter : public GcellGlobalRouter {
   void Refresh_Grid(Grid &grid);
   void returnPath_new(std::vector<std::vector<RouterDB::Metal>> &temp_path, int net_index, std::vector<std::vector<int>> extend_labels, std::vector<RouterDB::Via> &temp_via);
   void ReturnInternalMetalContactALL(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+  void Grid_Inactive_One_Layer(Grid &grid, int layer);
   void Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set, RouterDB::point &gridll, RouterDB::point &gridur);
   void Detailed_router_set_src_dest_new(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,
                                                      int i, RouterDB::point &sym_gridll, RouterDB::point &sym_gridur, RouterDB::point &gridll,

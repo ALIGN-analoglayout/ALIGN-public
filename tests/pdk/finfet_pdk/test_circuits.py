@@ -196,7 +196,19 @@ def test_tia():
     run_example(example, cleanup=CLEANUP)
 
 
-@pytest.mark.skip
+def test_ldo_amp_simple():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_amp_simple(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, max_errors=1,
+                additional_args=["--placer_sa_iterations", "100", "--router_mode", "no_op"])
+
+
 def test_ldo_amp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_amp(name)
@@ -206,7 +218,8 @@ def test_ldo_amp():
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL,
+                additional_args=["--placer_sa_iterations", "100", '--router_mode', 'no_op'])
 
 
 def test_ro_simple():
@@ -427,6 +440,7 @@ def test_niwc_opamp_split():
     if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
 
 def test_niwc_opamp_split_reuse():
     # Tests legal size and exact_patterns restrictions
