@@ -62,7 +62,7 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
             x, y = block_args['x_cells'], block_args['y_cells']
             pairs = set()
             m = x*y
-            y_sqrt = floor(sqrt(x*y))
+            y_sqrt = 1 #;floor(sqrt(x*y))
             for y in range(y_sqrt, 0, -1):
                 if m % y == 0:
                     pairs.add((y, m//y))
