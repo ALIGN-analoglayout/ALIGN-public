@@ -1,6 +1,7 @@
 from align.pdk.finfet import CanvasPDK
-from align.cell_fabric import transformation
-from .utils import get_test_id, run_postamble
+from align.cell_fabric import Pdk, transformation
+from align.primitive.default.canvas import DefaultCanvas
+from .utils import get_test_id, run_postamble, MY_DIR
 import pytest
 import json
 
@@ -145,7 +146,7 @@ def test_ru_exclude_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M3",
@@ -158,6 +159,7 @@ def test_ru_exclude_m1():
     for term in cvr.terminals:
         assert term['layer'] != 'M1', 'M1 excluded'
 
+
 def test_ru_exclude_m3():
     name = get_test_id()
     cv = CanvasPDK()
@@ -167,7 +169,7 @@ def test_ru_exclude_m3():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M2",
@@ -193,7 +195,7 @@ def test_ru_exclude_per_net():
 
     cv.bbox = transformation.Rect(*[0, 0, 16*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M3",
@@ -208,6 +210,7 @@ def test_ru_exclude_per_net():
         assert term['netName'] != "A" or term['layer'] != 'M1', 'M1 excluded for net A'
         assert term['netName'] != "B" or term['layer'] != 'M3', 'M3 excluded for net A'
 
+
 def test_ru_allow_ports_on_excluded_layers():
     name = get_test_id()
     cv = CanvasPDK()
@@ -218,14 +221,14 @@ def test_ru_allow_ports_on_excluded_layers():
     cv.addWire(cv.m3, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m3, 'B',  9, (9, -1),  (14, 1), netType='pin')
 
-
     cv.bbox = transformation.Rect(*[0, 0, 10*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    run_postamble(name, cv, max_errors=0, constraints=[ {
+    run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M2"
         }])
+
 
 def test_ru_staggered_m1():
     name = get_test_id()
@@ -236,7 +239,8 @@ def test_ru_staggered_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0)
+    run_postamble(name, cv, max_errors=0)
+
 
 def test_ru_no_extra_routing_on_m1():
     name = get_test_id()
@@ -247,7 +251,7 @@ def test_ru_no_extra_routing_on_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    constraints = [ {
+    constraints = [{
         "constraint": "Route",
         "min_layer": "M2",
         "max_layer": "M3"
