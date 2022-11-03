@@ -371,18 +371,11 @@ def test_gen_constraints_internal():
     assert module_top['constraints'][0]['ored_terms'] == []
 
 
-
-
 def single_leaf_single_instance(pitch, offsets, scalings, transformation):
     leaf_a0 = {
         "abstract_name": "A",
         "concrete_name": "A_0",
         "bbox": [0, 0, 10, 10],
-        "terminals": [],
-        "constraints": [
-            {
-                "constraint": "PlaceOnGrid",
-                "direction": "H",
                 "pitch": pitch,
                 "ored_terms": [
                     {
@@ -446,3 +439,67 @@ def test_inherit_one_3():
     assert plvd["modules"][0]['constraints'][0]['pitch'] == pitch
     assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['offsets']) == {0}
     assert set(plvd["modules"][0]['constraints'][0]['ored_terms'][0]['scalings']) == {1}
+
+def test_gen_constraints_standard_cells():
+    leaf_a0 = {
+        "abstract_name": "A",
+        "concrete_name": "A_0",
+        "bbox": [0,0,2,2],
+        "terminals": [],
+        "constraints": [
+            {
+                "constraint": "PlaceOnGrid",
+                "direction": "H",
+                "pitch": 4,
+                "ored_terms": [{"offsets": [0, 1], "scalings": [1]}]
+            }
+        ]
+    }
+
+    module_internal = {
+        "abstract_name": "C",
+        "concrete_name": "C_0",
+        "bbox": [0,0,5,6],
+        "constraints": [],
+        "instances": [
+            {
+                "abstract_template_name": "A",
+                "concrete_template_name": "A_0",
+                "fa_map": [],
+                "instance_name": "U0",
+                "transformation": { 'oX': 1, 'oY': 1, 'sX': 1, 'sY': 1}
+            }
+        ]
+    }
+
+    module_top = {
+        "abstract_name": "T",
+        "concrete_name": "T_0",
+        "bbox": [0,0,5,16],
+        "constraints": [],
+        "instances": [
+            {
+                "abstract_template_name": "C",
+                "concrete_template_name": "C_0",
+                "fa_map": [],
+                "instance_name": "U0",
+                "transformation": { 'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}
+            }
+        ]
+    }
+
+    placement_verilog_d = { "global_signals": [], "leaves": [leaf_a0], "modules": [module_top,module_internal]}
+
+    for oY in range(0,6):
+        module_top['instances'][0]['transformation']['oY'] = oY
+        module_internal['constraints'] = []
+        module_top['constraints'] = []
+
+        gen_constraints(placement_verilog_d, 'T_0')
+
+        assert module_internal['constraints'][0]['pitch'] == 4
+        assert module_internal['constraints'][0]['ored_terms'][0]['offsets'] == [0, 3]
+
+        assert module_top['constraints'][0]['pitch'] == 4
+        #print(f'top oY={oY}', module_top['constraints'][0]['ored_terms'][0]['offsets'])
+        print(f'top oY={oY}', module_top['constraints'][0])

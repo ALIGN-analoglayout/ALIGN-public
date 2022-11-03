@@ -7,8 +7,9 @@ from align.compiler.util import get_ports_weight
 from align.compiler.compiler import compiler_input, annotate_library
 from align.compiler.find_constraint import add_or_revert_const, symmnet_device_pairs, recursive_start_points, add_symmetry_const, constraint_generator
 from align.compiler.gen_abstract_name import PrimitiveLibrary
+import textwrap
 
-from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy
+from utils import clean_data, build_example, ota_six, get_test_id, ota_dummy, comparator, comparator_hier
 
 align_home = pathlib.Path(__file__).resolve().parent.parent.parent
 pdk_path = align_home / "pdks" / "FinFET14nm_Mock_PDK"
@@ -80,7 +81,6 @@ def test_add_symmetry_const():
     clean_data(name)
 
 
-
 def test_match_start_points():
     name = f'ckt_{get_test_id()}'
     netlist = ota_six(name)
@@ -147,7 +147,6 @@ def test_reusable_const():
     assert constraints == constraints1
 
 
-
 def test_filter_dummy():
     name = f'ckt_{get_test_id()}'
     netlist = ota_dummy(name)
@@ -160,4 +159,124 @@ def test_filter_dummy():
     pairs = [['X_MN3_MN4', 'X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
     mpairs = add.filter_symblock_const(pairs)
     assert mpairs == [['X_MN3_MN4'], ['X_MN3_DUMMY', 'X_MN4_DUMMY']]
+    clean_data(name)
+
+
+def test_disable_auto_constraint_virtual():
+    name = f'ckt_{get_test_id()}'
+    netlist = comparator(name)
+
+    # Sanity check: compler should auto-generate for cmp_inp
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn0", "mn1", "mn2", "mn3", "mn4"], "instance_name": "x0", "template_name": "cmp_inp"},
+        {"constraint": "ConfigureCompiler", "auto_constraint": True, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    assert len([sckt for sckt in ckt_library if 'CMP_INP' in sckt.name]) == 1, f"no CMP_INP hierarchy found {[sckt.name for sckt in ckt_library]}"
+    ckt = [sckt for sckt in ckt_library if 'CMP_INP' in sckt.name][0]
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" in constraints or "SymmetricBlocks" in constraints
+
+    # Test disabling
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "GroupBlocks", "instances": ["mn0", "mn1", "mn2", "mn3", "mn4"], "instance_name": "x0", "template_name": "cmp_inp"},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    ckt = [sckt for sckt in ckt_library if 'CMP_INP' in sckt.name][0]
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" not in constraints
+    assert "SymmetricBlocks" not in constraints
+    clean_data(name)
+
+
+def test_disable_auto_constraint_physical():
+    name = f'ckt_{get_test_id()}'
+    netlist = comparator_hier(name)
+
+    # Sanity check: compler should auto-generate for cmp_inp
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "ConfigureCompiler", "auto_constraint": True, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    ckt = ckt_library.find("COMPARATOR")
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" in constraints or "SymmetricBlocks" in constraints
+
+    # Test disabling
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+    primitives = PrimitiveLibrary(ckt_library, pdk_path).gen_primitive_collateral()
+    constraint_generator(ckt_library)
+    ckt = ckt_library.find("COMPARATOR")
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "SymmetricNets" not in constraints
+    assert "SymmetricBlocks" not in constraints
+    clean_data(name)
+
+
+def test_group_with_constraint():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vi vo vccx vssx
+        mp0 vo vo vccx vccx p w=360e-9 nf=2 m=1
+        mn1 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn2 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn3 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        mn4 vo vi vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True, "merge_parallel_devices": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks",
+            "instances": ["mn1", "mn2", "mn3", "mn4"],
+            "instance_name": "xm",
+            "template_name": "mygroup",
+            "constraints": [
+                {"constraint": "DoNotIdentify", "instances": ["mn1", "mn2", "mn3", "mn4"]},
+                {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["mn1", "mn2", "mn3"], ["mn4"]]}
+            ]}
+    ]
+
+    example = build_example(name, netlist, constraints)
+    ckt_library, primitive_library = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_library, primitive_library)
+
+    ckt = ckt_library.find(name)
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" not in constraints, f"{ckt.constraints}"
+
+    ckt = [ckt for ckt in ckt_library if ckt.name.startswith("MYGROUP")][0]
+    constraints = {c.constraint for c in ckt.constraints}
+    assert "Floorplan" in constraints, f"{ckt.constraints}"
+    assert "DoNotIdentify" in constraints, f"{ckt.constraints}"
+
     clean_data(name)

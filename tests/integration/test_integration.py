@@ -27,7 +27,7 @@ def gen_examples():
     examples = [p.parents[0] for p in examples_dir.rglob('*.sp') if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
     if ci_level == 'merge':
-        circle_ci_skip = "not single_to_differential_converter and not vco_dtype_12_hierarchical and not linear_equalizer and not test_vga and not powertrain_binary and and not telescopic_ota_guard_ring"
+        circle_ci_skip = ""
         exclude_strings = [nm for nm in circle_ci_skip.split(' ') if nm not in ["and", "or", "not"]]
 
         additional_skip_dirs = set()

@@ -66,6 +66,9 @@ struct GuardRing;
 struct Guardring_Const;
 struct guardring_info;
 struct GdsDatatype;
+struct Min_Max_Routing_Layer;
+struct Min_Max_Routing_Layer_Per_Net;
+struct Routing_Layers_Info;
 
 /// Part 1: declaration of enum types
 enum NType { Block, Terminal };
@@ -418,6 +421,18 @@ struct GuardRing {
   vector<Via> interVias;
 };
 
+struct Min_Max_Routing_Layer_Per_Net{
+  string net_min_layer;
+  string net_max_layer;
+  string net_name;
+};
+
+struct Routing_Layers_Info{
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_per_Net;
+  string global_min_layer;
+  string global_max_layer;
+};
+
 struct hierNode {
   bool isCompleted = false;
   bool isTop = false;
@@ -491,9 +506,14 @@ struct hierNode {
   map<string, vector<std::tuple<string, string, double> > > CFValues;
   int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
   vector<SpreadConstraint> SpreadConstraints;
+//  vector<Min_Max_Routing_Layer> Routing_Layers;
+  vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
+  Routing_Layers_Info Routing_Layers;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
+
+
 
 struct SymmNet {
   net net1, net2;
@@ -614,6 +634,22 @@ struct Multi_connection {
   int multi_number = 1;
 };
 
+struct Min_Max_Routing_Layer{
+//struct Routing_Layers_Info{
+//  vector<> nets;//corresponding to constraint["customize"]
+//  string global_min_layer;
+//  string global_max_layer;
+//}
+
+//routing layer range for each net
+//struct Min_Max_Routing_Layer_Per_Net{
+  string global_min_layer;
+  string global_max_layer;
+  string net_min_layer;
+  string net_max_layer;
+  string net_name;
+};
+
 /// Part 4: declaration of structures for LEF data
 struct lefMacro {
   int width = 0, height = 0;
@@ -665,6 +701,7 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  int offset = 0;
   double unit_R;
   double unit_C;
   double unit_CC;

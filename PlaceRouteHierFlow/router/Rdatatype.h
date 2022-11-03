@@ -261,6 +261,8 @@ struct Net {
   int STindex = 0;
   int multi_connection = 1;
   bool DoNotRoute=false;
+  int min_routing_layer = -1; //-1 means not initialized, then using the general configuration in the layer.json file or lowest metal layer
+  int max_routing_layer = -1; //-1 means not initialized, then using the general configuration in the layer.json file or highest metal layer
   // void display();
 };
 

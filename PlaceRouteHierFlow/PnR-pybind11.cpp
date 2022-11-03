@@ -388,6 +388,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("minL", &metal_info::minL)
     .def_readwrite("maxL", &metal_info::maxL)
     .def_readwrite("dist_ee", &metal_info::dist_ee)
+    .def_readwrite("offset", &metal_info::offset)
     .def_readwrite("unit_R", &metal_info::unit_R)
     .def_readwrite("unit_C", &metal_info::unit_C)
     .def_readwrite("unit_CC", &metal_info::unit_CC)
@@ -547,6 +548,7 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
+    .def_readwrite("ILP_runtime_limit", &PlacerHyperparameters::ILP_runtime_limit)
     ;
 
   py::class_<PlacerIfc>( m, "PlacerIfc")

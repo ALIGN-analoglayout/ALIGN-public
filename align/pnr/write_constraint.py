@@ -58,7 +58,7 @@ class PnRConstraintWriter:
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
-            const = input_const.dict(exclude={'constraint'}, exclude_unset=False)
+            const = input_const.dict(exclude={'constraint', '_instance_attribute'}, exclude_unset=False)
             const['const_name'] = input_const.__class__.__name__
 
             # Rename instances to blocks
@@ -67,7 +67,7 @@ class PnRConstraintWriter:
                 del const['instances']
 
             # Exclude constraints not to be exposed to PnR
-            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler', 'SameTemplate']:
+            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler', 'SameTemplate', 'PlaceOnBoundary']:
                 continue
 
             # Exclude constraints that need to be to multiple constraints

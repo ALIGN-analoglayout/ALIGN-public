@@ -295,6 +295,45 @@ def test_spread():
     run_example(example, cleanup=False)
 
 
+def test_group_blocks():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} vi v0 v1 v2 v3 v4 vccx vssx
+        mp0 v0 vi vccx vccx p w=360e-9 nf=2 m=1
+        mn1 v1 vi vssx vssx n w=360e-9 nf=2 m=1
+        mn2 v2 vi vssx vssx n w=360e-9 nf=2 m=1
+        mn3 v3 vi vssx vssx n w=360e-9 nf=2 m=1
+        mn4 v4 vi vssx vssx n w=360e-9 nf=2 m=1
+        .ends {name}
+    """)
+    constraints = [
+        {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True, "merge_parallel_devices": False},
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "GroupBlocks",
+            "instances": ["mn1", "mn2", "mn3", "mn4"],
+            "instance_name": "xm",
+            "template_name": "mygroup",
+            "constraints": [
+                {"constraint": "DoNotIdentify", "instances": ["mn1", "mn2", "mn3", "mn4"]},
+                {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["mn1", "mn2", "mn3"], ["mn4"]]}
+            ]}
+    ]
+
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False)
+    name = name.upper()
+    with (run_dir / '1_topology' / f'{name.upper()}.verilog.json').open('rt') as fp:
+        verilog_json = json.load(fp)
+        module = [module for module in verilog_json['modules'] if module['name'].startswith("MYGROUP")][0]
+        constraints = [constraint["constraint"] for constraint in module["constraints"]]
+        assert "Floorplan" in constraints
+    shutil.rmtree(run_dir)
+    shutil.rmtree(ckt_dir)
+
+
 @pytest.mark.skip(reason='Failing test to be enabled in a follow up next PR')
 def test_portlocation():
     name = f'ckt_{get_test_id()}'
