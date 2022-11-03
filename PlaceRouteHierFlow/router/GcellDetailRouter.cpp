@@ -320,14 +320,18 @@ void GcellDetailRouter::SortPinsOrder() {
     if (Nets[i].connected.size() == 0) continue;
     //order by the manhattan distance to LL
     std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
-      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL) return true;
+      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+              Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+        return true;
       return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
              Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
     });
 
     for (unsigned int j = 1; j < Nets[i].connected.size() - 1; j++) {
       std::sort(Nets[i].connected.begin() + j, Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
-        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL) return true;
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+                Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
         //calculate each pin's minimum distance to sorted pins
         vector<int> dis_a, dis_b;
         int x_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x, y_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y;
