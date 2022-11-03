@@ -74,8 +74,7 @@ def gen_constraints_for_module(m, modules, leaves):
         ctn = instance['concrete_template_name']
         constraints = None
         # I don't know why I have to do this: I can't check to see if 'constraints' is in leaves[ctn] (it never is.)
-        # This might be due to the emulated dictionary class not supporting  "is in" operator.
-        if ctn in leaves and "constraints" in leaves[ctn]:
+        if ctn in leaves:
             try:
                 constraints = leaves[ctn]['constraints']
             except KeyError:
