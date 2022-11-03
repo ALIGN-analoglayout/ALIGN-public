@@ -313,6 +313,22 @@ bool GcellDetailRouter::check_floating_net(int index){
 
 };
 
+void GcellDetailRouter::SortPinsOrder() {
+  //change the routing order of pins in each net
+  //order by the manhattan distance to LL
+  for (unsigned int i = 0; i < Nets.size(); i++) {
+    if (Nets[i].connected.size() == 0) continue;
+    std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL) return true;
+      return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+             Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+    });
+
+    for (unsigned int j = 0; j < Nets[i].connected.size(); j++) {
+    }
+  }
+}
+
 void GcellDetailRouter::create_detailrouter_new() {
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
 
@@ -321,6 +337,7 @@ void GcellDetailRouter::create_detailrouter_new() {
   // 2. rm the via inactive for inner the pins (this have been corrected by rm the pins from internal block pins)
   // 3. the solution rm the metal of internal block pins from internal metal is quite different for some cases
   // 4. for the contact related via inactive, suggest to just inactive the via_active around the box. Around the box.
+  SortPinsOrder();
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
 
