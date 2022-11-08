@@ -199,7 +199,7 @@ def write_verilog_d(verilog_d):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000, placer_ilp_runtime=1):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None):
 
     subckt = subckt.upper()
 
