@@ -162,7 +162,7 @@ class CmdlineParser():
                             help="Runtime limit in seconds for ILP in each iteration of placement")
 
         parser.add_argument('--placer',
-                            choices=['pythonic', 'cpp'],
+                            choices=['cpp', 'python'],
                             default='cpp',
                             help='Select the placer engine to use. Default: %(default)s')
 

@@ -11,7 +11,7 @@ from align.schema.hacks import VerilogJsonTop
 from align.pnr.grid_constraints import gen_constraints_for_module
 
 
-class HyperParameters():
+class HyperParameters:
     max_sequence_pairs = 100
     max_block_variants = 100
     max_candidates = 10000
@@ -365,6 +365,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     solutions.sort(key=lambda x: x['cost'])
 
     max_solutions = hyper_params.max_solutions if module['name'] == top_level else 1
+
     for i in range(max_solutions):
         solution = solutions[i]
         new_module = copy.deepcopy(module)
