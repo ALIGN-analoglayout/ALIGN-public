@@ -1,3 +1,4 @@
+import json
 from align.pnr.placer_pythonic import pythonic_placer
 
 
@@ -97,9 +98,13 @@ def ring_oscillator():
 
 def test_place_ring_oscillator():
     input_data = ring_oscillator()
+    with open('placement_input.json', "wt") as fp:
+        fp.write(json.dumps(input_data, indent=2) + '\n')
     placement_data = pythonic_placer('ring_oscillator', input_data)
     assert len(placement_data['leaves']) == 2
     assert len(placement_data['modules']) == 2
+    with open('placement_output.json', "wt") as fp:
+        json.dump(placement_data, fp=fp, indent=2)
 
 
 def test_place_ring_oscillator_stage():
