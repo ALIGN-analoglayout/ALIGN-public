@@ -8,6 +8,36 @@ def ring_oscillator():
         {'constraint': 'PlaceOnGrid', 'direction': 'V', 'pitch': 1080, 'ored_terms': [{'offsets': [0], 'scalings': [1, -1]}]}
     ]
     data = {
+        'leaves': [
+            {
+                'abstract_template_name': 'NMOS_3T',
+                'concrete_template_name': 'NMOS_3T_X1_Y2',
+                'bbox': [0, 0, 6480, 12600],
+                'terminals': [],
+                'constraints': place_on_grid
+            },
+            {
+                'abstract_template_name': 'NMOS_3T',
+                'concrete_template_name': 'NMOS_3T_X2_Y1',
+                'bbox': [0, 0, 10800, 6300],
+                'terminals': [],
+                'constraints': place_on_grid
+            },
+            {
+                'abstract_template_name': 'PMOS_3T',
+                'concrete_template_name': 'PMOS_3T_X1_Y2',
+                'bbox': [0, 0, 6480, 12600],
+                'terminals': [],
+                'constraints': place_on_grid
+            },
+            {
+                'abstract_template_name': 'PMOS_3T',
+                'concrete_template_name': 'PMOS_3T_X2_Y1',
+                'bbox': [0, 0, 10800, 6300],
+                'terminals': [],
+                'constraints': place_on_grid
+            }
+        ],
         'modules': [
             {
                 'name': 'ring_oscillator_stage',
@@ -60,36 +90,6 @@ def ring_oscillator():
                                    {'formal': 'VI', 'actual': 'V4'}, {'formal': 'VO', 'actual': 'VO'}]
                     }
                 ]
-            }
-        ],
-        'leaves': [
-            {
-                'abstract_template_name': 'NMOS_3T',
-                'concrete_template_name': 'NMOS_3T_X1_Y2',
-                'bbox': [0, 0, 6480, 12600],
-                'terminals': [],
-                'constraints': place_on_grid
-            },
-            {
-                'abstract_template_name': 'NMOS_3T',
-                'concrete_template_name': 'NMOS_3T_X2_Y1',
-                'bbox': [0, 0, 10800, 6300],
-                'terminals': [],
-                'constraints': place_on_grid
-            },
-            {
-                'abstract_template_name': 'PMOS_3T',
-                'concrete_template_name': 'PMOS_3T_X1_Y2',
-                'bbox': [0, 0, 6480, 12600],
-                'terminals': [],
-                'constraints': place_on_grid
-            },
-            {
-                'abstract_template_name': 'PMOS_3T',
-                'concrete_template_name': 'PMOS_3T_X2_Y1',
-                'bbox': [0, 0, 10800, 6300],
-                'terminals': [],
-                'constraints': place_on_grid
             }
         ]
     }
