@@ -9,6 +9,7 @@ from collections import defaultdict
 import align.schema.constraint as constraint_schema
 from align.schema.hacks import VerilogJsonTop
 from align.pnr.grid_constraints import gen_constraints_for_module
+from align.cell_fabric.transformation import Transformation, Rect
 
 
 class HyperParameters:
@@ -197,11 +198,11 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Half perimeter wire length
     model.add_var(name='HPWL', lb=0, ub=upper_bound)
     if wires:
-        for wire_name, terminals in wires:
+        for wire_name, instance_bbox in wires.items():
             for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
                 model.add_var(name=f'{wire_name}_{tag}{axis}')
 
-            for instance, bbox in terminals:
+            for instance, bbox in instance_bbox:
                 size = dict(zip("xy", instance_sizes[instance]))
                 for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
                     eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
@@ -209,8 +210,8 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn
 
         model += \
-            mip.xsum(model.var_by_name(f'{wire_name}_ur{axis}') for wire_name, _ in wires for axis in ['x', 'y']) - \
-            mip.xsum(model.var_by_name(f'{wire_name}_ll{axis}') for wire_name, _ in wires for axis in ['x', 'y']) == model.var_by_name('HPWL')
+            mip.xsum(model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - \
+            mip.xsum(model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == model.var_by_name('HPWL')
 
     else:
         model += model.var_by_name('HPWL') == 0
@@ -340,6 +341,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
         instance_sizes = dict()
         place_on_grid = dict()
+        wires = defaultdict(list)
         for idx, selected in enumerate(block_variant):
             instance_name = reverse_instance_map[idx]
             concrete_template = variant_map[instances[instance_name][ATN]][selected]
@@ -347,7 +349,12 @@ def place_using_sequence_pairs(placement_data, module, top_level):
             instance_sizes[instance_name] = [bbox[2] - bbox[0], bbox[3] - bbox[1]]
             place_on_grid[instance_name] = [c for c in concrete_template.get('constraints', list()) if c['constraint'] == 'PlaceOnGrid']
 
-        solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, place_on_grid=place_on_grid)
+            for formal_actual in instances[instance_name]['fa_map']:
+                formal, actual = formal_actual['formal'], formal_actual['actual']
+                if actual not in module['global_signals']:
+                    wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
+
+        solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid)
         if solution:
             solution['sequence_pair'] = sequence_pair
             solution['block_variant'] = block_variant
@@ -363,16 +370,41 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     for i in range(max_solutions):
         solution = solutions[i]
         new_module = copy.deepcopy(module)
+        pin_bbox = dict()
         for instance in new_module['instances']:
             instance_name = instance['instance_name']
             instance['transformation'] = solution['transformations'][instance_name]
             variant_index = solution['block_variant'][instance_map[instance_name]]
-            instance[CTN] = variant_map[instance[ATN]][variant_index]['concrete_name']
-            check_place_on_grid(instance, variant_map[instance[ATN]][variant_index]['constraints'])
+            concrete_template = variant_map[instance[ATN]][variant_index]
+            instance[CTN] = concrete_template['concrete_name']
+            check_place_on_grid(instance, concrete_template['constraints'])
+
+            # Annotate bounding box of pins to the module
+            for formal_actual in instance['fa_map']:
+                formal, actual = formal_actual['formal'], formal_actual['actual']
+                if actual not in module['global_signals']:
+                    rect = concrete_template['pin_bbox'][formal]
+                    if not rect:
+                        continue
+                    rect = Transformation(
+                        instance['transformation']['oX'],
+                        instance['transformation']['oY'],
+                        instance['transformation']['sX'],
+                        instance['transformation']['sY']
+                        ).hitRect(Rect(*rect)).canonical().toList()
+
+                    if actual not in pin_bbox:
+                        pin_bbox[actual] = [x for x in rect]
+                    else:
+                        pin_bbox[actual][0] = min(pin_bbox[actual][0], rect[0])
+                        pin_bbox[actual][1] = min(pin_bbox[actual][1], rect[1])
+                        pin_bbox[actual][2] = max(pin_bbox[actual][2], rect[2])
+                        pin_bbox[actual][3] = max(pin_bbox[actual][3], rect[3])
 
         new_module['bbox'] = [0, 0, solution['width'], solution['height']]
         new_module['abstract_name'] = new_module['name']
         new_module['concrete_name'] = new_module['name'] + f'_{i}'
+        new_module['pin_bbox'] = pin_bbox
         del new_module['name']
 
         placement_data['modules'].append(new_module)

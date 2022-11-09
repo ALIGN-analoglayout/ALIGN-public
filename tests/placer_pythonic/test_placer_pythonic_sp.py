@@ -35,9 +35,9 @@ def draw(model, instance_map, instance_sizes, wires):
         n_lst.append(f"${name}$")
 
     i = 0
-    for name, terminals in wires:
+    for name, instance_bbox in wires.items():
         color = colorscale[i % len(colorscale)]
-        for instance, bbox in terminals:
+        for instance, bbox in instance_bbox:
             size = dict(zip("xy", instance_sizes[instance]))
             bb = dict()
             for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
@@ -135,14 +135,14 @@ def test_place_sequence_pair_1():
         {"constraint": "place_on_grid", "direction": "H", "pitch": 2, "ored_terms": [{'offsets': [0], 'scalings': [-1, 1]}]},
         {"constraint": "place_on_grid", "direction": "V", "pitch": 2, "ored_terms": [{'offsets': [0], 'scalings': [-1, 1]}]}
         ]
-    wires = [
-        ('net1', [('M0', (1, 2, 2, 2.25)), ('M1', (3, 1, 4, 1.25))])
-    ]
+    wires = {
+        'net1': [('M0', (1, 2, 2, 2.25)), ('M1', (3, 1, 4, 1.25))]
+        }
     place_on_grid = {f"M{i}": c for i in range(n)}
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid)
     assert solution['transformations']['M0'] == {'oX': 10, 'oY': 0, 'sX': -1, 'sY': 1}
     assert solution['transformations']['M1'] == {'oX': 14, 'oY': 4, 'sX': -1, 'sY': -1}
-    if DRAW:
+    if True:
         draw(solution['model'], instance_map, instance_sizes, wires)
 
 

@@ -1,5 +1,11 @@
 import json
+import plotly.graph_objects as go
+import plotly.express as px
+
 from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals
+from align.cell_fabric.transformation import Transformation, Rect
+
+DRAW = False
 
 
 def ring_oscillator():
@@ -13,28 +19,44 @@ def ring_oscillator():
                 'abstract_template_name': 'NMOS_3T',
                 'concrete_template_name': 'NMOS_3T_X1_Y2',
                 'bbox': [0, 0, 6480, 12600],
-                'terminals': [],
+                'terminals': [
+                    {'layer': 'M1', 'netName': 'D', 'rect': [2000, 1000, 2500, 11000], 'netType': 'pin'},
+                    {'layer': 'M1', 'netName': 'G', 'rect': [3000, 1000, 3500, 11000], 'netType': 'pin'},
+                    {'layer': 'M1', 'netName': 'S', 'rect': [4000, 1000, 4500, 110000], 'netType': 'pin'}
+                ],
                 'constraints': place_on_grid
             },
             {
                 'abstract_template_name': 'NMOS_3T',
                 'concrete_template_name': 'NMOS_3T_X2_Y1',
                 'bbox': [0, 0, 10800, 6300],
-                'terminals': [],
+                'terminals': [
+                    {'layer': 'M2', 'netName': 'D', 'rect': [1000, 1000, 9000, 1500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'G', 'rect': [1000, 3000, 9000, 3500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'S', 'rect': [1000, 5000, 9000, 5500], 'netType': 'pin'}
+                ],
                 'constraints': place_on_grid
             },
             {
                 'abstract_template_name': 'PMOS_3T',
                 'concrete_template_name': 'PMOS_3T_X1_Y2',
                 'bbox': [0, 0, 6480, 12600],
-                'terminals': [],
+                'terminals': [
+                    {'layer': 'M1', 'netName': 'D', 'rect': [2000, 1000, 2500, 10000], 'netType': 'pin'},
+                    {'layer': 'M1', 'netName': 'G', 'rect': [3000, 1000, 3500, 10000], 'netType': 'pin'},
+                    {'layer': 'M1', 'netName': 'S', 'rect': [4000, 1000, 4500, 10000], 'netType': 'pin'}
+                ],
                 'constraints': place_on_grid
             },
             {
                 'abstract_template_name': 'PMOS_3T',
                 'concrete_template_name': 'PMOS_3T_X2_Y1',
                 'bbox': [0, 0, 10800, 6300],
-                'terminals': [],
+                'terminals': [
+                    {'layer': 'M2', 'netName': 'D', 'rect': [1000, 1000, 9000, 1500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'G', 'rect': [1000, 3000, 9000, 3500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'S', 'rect': [1000, 5000, 9000, 5500], 'netType': 'pin'}
+                ],
                 'constraints': place_on_grid
             }
         ],
@@ -108,6 +130,58 @@ def ring_oscillator():
     return data
 
 
+def draw_placement(placement_data, module_name):
+
+    leaves = {x['concrete_name']: x for x in placement_data['leaves']}
+    modules = {x['concrete_name']: x for x in placement_data['modules']}
+    module = modules[module_name]
+
+    colorscale = px.colors.qualitative.Alphabet
+
+    fig = go.Figure()
+    # fig.update_xaxes(range=[0, model.var_by_name('W').x+1])
+    # fig.update_yaxes(range=[0, model.var_by_name('H').x+1])
+
+    # Add shapes
+    x_lst = list()
+    y_lst = list()
+    n_lst = list()
+
+    i = 0
+    for instance in module['instances']:
+        concrete_name = instance['concrete_template_name']
+
+        if concrete_name in leaves:
+            bbox = leaves[concrete_name]['bbox']
+        elif concrete_name in modules:
+            bbox = modules[concrete_name]['bbox']
+        else:
+            assert False
+
+        bbox = Transformation(
+            instance['transformation']['oX'],
+            instance['transformation']['oY'],
+            instance['transformation']['sX'],
+            instance['transformation']['sY']
+            ).hitRect(Rect(*bbox)).canonical().toList()
+
+        llx, lly, urx, ury = bbox
+
+        color = colorscale[i % len(colorscale)]
+        fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="RoyalBlue", width=3), fillcolor=color)
+        i += 1
+        x_lst.append((llx+urx)/2)
+        y_lst.append((lly+ury)/2)
+        n_lst.append(f"{instance['instance_name']}")
+
+    fig.update_shapes(opacity=0.5, xref="x", yref="y")
+
+    # Add labels
+    fig.add_trace(go.Scatter(x=x_lst, y=y_lst, text=n_lst, mode="text", textfont=dict(color="black", size=24)))
+
+    fig.show()
+
+
 def test_place_ring_oscillator():
     input_data = ring_oscillator()
     with open('placement_input.json', "wt") as fp:
@@ -117,6 +191,8 @@ def test_place_ring_oscillator():
     assert len(placement_data['modules']) == 2
     with open('placement_output.json', "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
+    if DRAW:
+        draw_placement(placement_data, 'ring_oscillator_0')
 
 
 def test_place_ring_oscillator_stage():
@@ -124,6 +200,8 @@ def test_place_ring_oscillator_stage():
     placement_data = pythonic_placer('ring_oscillator_stage', input_data)
     assert len(placement_data['leaves']) == 2
     assert len(placement_data['modules']) == 1
+    if DRAW:
+        draw_placement(placement_data, 'ring_oscillator_stage_0')
 
 
 def test_propagate_down_global_signals():
