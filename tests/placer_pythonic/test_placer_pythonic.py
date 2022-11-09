@@ -1,5 +1,5 @@
 import json
-from align.pnr.placer_pythonic import pythonic_placer
+from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals
 
 
 def ring_oscillator():
@@ -41,7 +41,7 @@ def ring_oscillator():
         'modules': [
             {
                 'name': 'ring_oscillator_stage',
-                'parameters': ['VI', 'VO', 'VCCX', 'VSSX'],
+                'parameters': ['VI', 'VO', 'VCC', 'VSSX'],
                 'constraints': [
                     {'constraint': 'Order', 'instances': ['X_MP0', 'X_MN0'], 'direction': 'top_to_bottom'}
                 ],
@@ -52,7 +52,7 @@ def ring_oscillator():
                     },
                     {
                         'instance_name': 'X_MP0', 'abstract_template_name': 'PMOS_3T',
-                        'fa_map': [{'formal': 'D', 'actual': 'VO'}, {'formal': 'G', 'actual': 'VI'}, {'formal': 'S', 'actual': 'VCCX'}]
+                        'fa_map': [{'formal': 'D', 'actual': 'VO'}, {'formal': 'G', 'actual': 'VI'}, {'formal': 'S', 'actual': 'VCC'}]
                     }
                     ]
             },
@@ -66,30 +66,42 @@ def ring_oscillator():
                 'instances': [
                     {
                         'instance_name': 'XI1', 'abstract_template_name': 'ring_oscillator_stage',
-                        'fa_map': [{'formal': 'VCCX', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
+                        'fa_map': [{'formal': 'VCC', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
                                    {'formal': 'VI', 'actual': 'VO'}, {'formal': 'VO', 'actual': 'V1'}]
                     },
                     {
                         'instance_name': 'XI2', 'abstract_template_name': 'ring_oscillator_stage',
-                        'fa_map': [{'formal': 'VCCX', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
+                        'fa_map': [{'formal': 'VCC', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
                                    {'formal': 'VI', 'actual': 'V1'}, {'formal': 'VO', 'actual': 'V2'}]
                     },
                     {
                         'instance_name': 'XI3', 'abstract_template_name': 'ring_oscillator_stage',
-                        'fa_map': [{'formal': 'VCCX', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
+                        'fa_map': [{'formal': 'VCC', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
                                    {'formal': 'VI', 'actual': 'V2'}, {'formal': 'VO', 'actual': 'V3'}]
                     },
                     {
                         'instance_name': 'XI4', 'abstract_template_name': 'ring_oscillator_stage',
-                        'fa_map': [{'formal': 'VCCX', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
+                        'fa_map': [{'formal': 'VCC', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
                                    {'formal': 'VI', 'actual': 'V3'}, {'formal': 'VO', 'actual': 'V4'}]
                     },
                     {
                         'instance_name': 'XI5', 'abstract_template_name': 'ring_oscillator_stage',
-                        'fa_map': [{'formal': 'VCCX', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
+                        'fa_map': [{'formal': 'VCC', 'actual': 'VCCX'}, {'formal': 'VSSX', 'actual': 'VSSX'},
                                    {'formal': 'VI', 'actual': 'V4'}, {'formal': 'VO', 'actual': 'VO'}]
                     }
                 ]
+            }
+        ],
+        'global_signals': [
+            {
+                "prefix": "global_power",
+                "formal": "supply0",
+                "actual": "VSSX"
+            },
+            {
+                "prefix": "global_power",
+                "formal": "supply1",
+                "actual": "VCCX"
             }
         ]
     }
@@ -112,3 +124,15 @@ def test_place_ring_oscillator_stage():
     placement_data = pythonic_placer('ring_oscillator_stage', input_data)
     assert len(placement_data['leaves']) == 2
     assert len(placement_data['modules']) == 1
+
+
+def test_propagate_down_global_signals():
+    input_data = ring_oscillator()
+    modules = {module['name']: module for module in input_data['modules']}
+    global_signals = [x['actual'] for x in input_data['global_signals']]
+    propagate_down_global_signals(modules, 'ring_oscillator', global_signals)
+    assert set(modules['ring_oscillator_stage']['global_signals']) == {'VCC', 'VSSX'}
+
+
+# TODO: compute_topoorder
+# TODO: trim_placement_data

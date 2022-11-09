@@ -7,7 +7,7 @@ import pytest
 import align.schema.constraint as constraint_schema
 from align.schema.types import set_context
 from align.schema import Model, Instance, SubCircuit, Library
-from align.pnr.placer_pythonic_sp import enumerate_sequence_pairs, enumerate_variants, place_sequence_pair
+from align.pnr.placer_pythonic_sp import enumerate_sequence_pairs, enumerate_block_variants, place_sequence_pair
 
 DRAW = False
 
@@ -102,18 +102,18 @@ def test_enumerate_sequence_pairs():
     assert sequence_pairs[0] == ((0, 1, 2, 3), (3, 2, 1, 0))
 
 
-def test_enumerate_variants():
+def test_enumerate_block_variants():
 
     constraints, instance_map = initialize_constraints(2)
     variant_counts = {"M0": 4, "M1": 5}
-    variants = enumerate_variants(constraints, instance_map, variant_counts, 100)
+    variants = enumerate_block_variants(constraints, instance_map, variant_counts, 100)
     assert len(variants) == 20
 
     constraints, instance_map = initialize_constraints(4)
     variant_counts = {k: 2 for k in instance_map.keys()}
     with set_context(constraints):
         constraints.append(constraint_schema.SameTemplate(instances=[f'M{i}' for i in range(4)]))
-    variants = enumerate_variants(constraints, instance_map, variant_counts, 100)
+    variants = enumerate_block_variants(constraints, instance_map, variant_counts, 100)
     assert len(variants) == 2
     assert variants == [tuple([0]*4), tuple([1]*4)]
 
@@ -122,7 +122,7 @@ def test_enumerate_variants():
     with set_context(constraints):
         constraints.append(constraint_schema.SameTemplate(instances=["M1", "M2"]))
         constraints.append(constraint_schema.SameTemplate(instances=["M2", "M3"]))
-    variants = enumerate_variants(constraints, instance_map, variant_counts, 100)
+    variants = enumerate_block_variants(constraints, instance_map, variant_counts, 100)
     assert len(variants) == 3*3
 
 

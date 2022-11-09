@@ -93,7 +93,7 @@ def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int
     return sequence_pairs
 
 
-def enumerate_variants(constraints, instance_map: dict, variant_counts: dict, max_variants: int):
+def enumerate_block_variants(constraints, instance_map: dict, variant_counts: dict, max_variants: int):
 
     # Group instances that should use the same concrete template
     groups = list()
@@ -334,19 +334,13 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     constraints = verilog_json['modules'][0]['constraints']
 
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
-    variants = enumerate_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
+    block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
 
     solutions = list()
-    cnt = 0
-    for sequence_pair, variant_selection in itertools.product(sequence_pairs, variants):
-        if cnt > hyper_params.max_candidates:
-            break
-        cnt += 1
-        print(f'{sequence_pair=}, {variant_selection=}')
-
+    for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
         instance_sizes = dict()
         place_on_grid = dict()
-        for idx, selected in enumerate(variant_selection):
+        for idx, selected in enumerate(block_variant):
             instance_name = reverse_instance_map[idx]
             concrete_template = variant_map[instances[instance_name][ATN]][selected]
             bbox = concrete_template['bbox']
@@ -356,7 +350,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
         solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, place_on_grid=place_on_grid)
         if solution:
             solution['sequence_pair'] = sequence_pair
-            solution['variant_selection'] = variant_selection
+            solution['block_variant'] = block_variant
             solutions.append(solution)
 
     assert solutions, f'No placement solution found for {module}'
@@ -372,7 +366,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
         for instance in new_module['instances']:
             instance_name = instance['instance_name']
             instance['transformation'] = solution['transformations'][instance_name]
-            variant_index = solution['variant_selection'][instance_map[instance_name]]
+            variant_index = solution['block_variant'][instance_map[instance_name]]
             instance[CTN] = variant_map[instance[ATN]][variant_index]['concrete_name']
             check_place_on_grid(instance, variant_map[instance[ATN]][variant_index]['constraints'])
 
