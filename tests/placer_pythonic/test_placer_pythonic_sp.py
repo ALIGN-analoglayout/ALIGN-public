@@ -32,7 +32,7 @@ def draw(model, instance_map, instance_sizes, wires):
         fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="RoyalBlue", width=3), fillcolor=color)
         x_lst.append((llx+urx)/2)
         y_lst.append((lly+ury)/2)
-        n_lst.append(f"${name}$")
+        n_lst.append(f"{name}")
 
     i = 0
     for name, instance_bbox in wires.items():
@@ -48,13 +48,13 @@ def draw(model, instance_map, instance_sizes, wires):
             fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="Black", width=1), fillcolor=color)
             x_lst.append((llx+urx)/2)
             y_lst.append((lly+ury)/2)
-            n_lst.append(f"${name}$")
+            n_lst.append(f"{name}")
         i += 1
 
     fig.update_shapes(opacity=0.5, xref="x", yref="y")
 
     # Add labels
-    fig.add_trace(go.Scatter(x=x_lst, y=y_lst, text=n_lst, mode="text", textfont=dict(color="black", size=196)))
+    fig.add_trace(go.Scatter(x=x_lst, y=y_lst, text=n_lst, mode="text", textfont=dict(color="black", size=24)))
 
     fig.show()
 
@@ -142,7 +142,7 @@ def test_place_sequence_pair_1():
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid)
     assert solution['transformations']['M0'] == {'oX': 10, 'oY': 0, 'sX': -1, 'sY': 1}
     assert solution['transformations']['M1'] == {'oX': 14, 'oY': 4, 'sX': -1, 'sY': -1}
-    if True:
+    if DRAW:
         draw(solution['model'], instance_map, instance_sizes, wires)
 
 

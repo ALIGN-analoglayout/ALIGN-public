@@ -195,27 +195,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                 origin = grid*pitch + mip.xsum(v[0]*v[1] for v in offset_variables)
                 model += origin - size[axis] * flip == model.var_by_name(f'{name}_ll{axis}')
 
-    # Half perimeter wire length
-    model.add_var(name='HPWL', lb=0, ub=upper_bound)
-    if wires:
-        for wire_name, instance_bbox in wires.items():
-            for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
-                model.add_var(name=f'{wire_name}_{tag}{axis}')
-
-            for instance, bbox in instance_bbox:
-                size = dict(zip("xy", instance_sizes[instance]))
-                for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
-                    eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
-                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}')
-                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn
-
-        model += \
-            mip.xsum(model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - \
-            mip.xsum(model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == model.var_by_name('HPWL')
-
-    else:
-        model += model.var_by_name('HPWL') == 0
-
     # Constraints implied by the sequence pairs
     reverse_map = {v: k for k, v in instance_map.items()}
     instance_pos = {reverse_map[index]: i for i, index in enumerate(sequence_pair[0])}
@@ -236,6 +215,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             assert False
 
     # Placement constraints
+    net_priority = dict()
     for constraint in constraints:
 
         if isinstance(constraint, constraint_schema.Boundary):
@@ -254,10 +234,42 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             for name in constraint.instances_on(['west', 'northwest', 'southwest']):
                 model += model.var_by_name(f'{name}_llx') == 0
 
+        if isinstance(constraint, constraint_schema.NetPriority):
+            nets = getattr(constraint, 'nets')
+            weight = getattr(constraint, 'weight')
+            for net in nets:
+                net_priority[net] = weight
+
         # TODO: Placement constraints except Order (sequence pair already satisfies order)
 
-    # Minimize the perimeter of the bounding box
-    model.objective += model.var_by_name('W') + model.var_by_name('H') + model.var_by_name('HPWL')
+    # Half perimeter wire length
+    model.add_var(name='HPWL', lb=0, ub=upper_bound)
+    if wires:
+        for wire_name, instance_bbox in wires.items():
+            for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
+                model.add_var(name=f'{wire_name}_{tag}{axis}')
+
+            for instance, bbox in instance_bbox:
+                size = dict(zip("xy", instance_sizes[instance]))
+                for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
+                    eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
+                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}')
+                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn
+
+        model += \
+            mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - \
+            mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == \
+            model.var_by_name('HPWL')
+
+    else:
+        model += model.var_by_name('HPWL') == 0
+
+    # TODO: Normalize the HPWL by number of nets
+
+    # Minimize the perimeter of the bounding box and normalized HPWL
+    scale_hpwl = 1/len(wires) if wires else 1
+
+    model.objective += model.var_by_name('W') + model.var_by_name('H') + scale_hpwl * model.var_by_name('HPWL')
 
     model.write('model.lp')
 
@@ -295,7 +307,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         'width': w,
         'height': h,
         'area': w*h,
-        'hpwl': model.var_by_name('HPWL').x,
+        'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
         'transformations': transformations,
         'model': model
     }
