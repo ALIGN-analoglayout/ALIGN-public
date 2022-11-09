@@ -139,8 +139,8 @@ def draw_placement(placement_data, module_name):
     colorscale = px.colors.qualitative.Alphabet
 
     fig = go.Figure()
-    # fig.update_xaxes(range=[0, model.var_by_name('W').x+1])
-    # fig.update_yaxes(range=[0, model.var_by_name('H').x+1])
+    fig.update_xaxes(range=[0, max(module['bbox'])])
+    fig.update_yaxes(range=[0, max(module['bbox'])])
 
     # Add shapes
     x_lst = list()
