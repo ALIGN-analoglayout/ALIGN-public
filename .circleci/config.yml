@@ -192,8 +192,9 @@ workflows:
                 - "cp38-cp38" # Python 3.8
       - build-wheel:
           name: "build-wheel-cp310-manylinux_2_24"
-          requires:
-            - build-wheel-cp38-manylinux_2_24
+          # This is failing
+          # requires:
+          #   - build-wheel-cp38-manylinux_2_24
           matrix:
             parameters:
               platform:
