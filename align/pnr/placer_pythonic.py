@@ -30,29 +30,27 @@ def trim_placement_data(placement_data, top_level):
     modules = {module['concrete_name']: module for module in placement_data['modules']}
 
     top_concrete_names = [module['concrete_name'] for module in placement_data['modules'] if module['abstract_name'] == top_level]
-    all_modules_leaves = list()
+    all_modules_leaves = set()
     for concrete_name in top_concrete_names:
         _, found_modules, found_leaves = compute_topoorder(modules, concrete_name, key='concrete_template_name')
-        all_modules_leaves.extend(found_modules)
-        all_modules_leaves.extend(found_leaves)
-
-    all_modules_leaves = set(all_modules_leaves)
+        all_modules_leaves.update(found_modules)
+        all_modules_leaves.update(found_leaves)
 
     new_placement_data = {'leaves': list(), 'modules': list()}
-    new_placement_data['leaves'] = [leaf for leaf in placement_data['leaves'] if leaf['concrete_name'] in all_modules_leaves]
-    new_placement_data['modules'] = [leaf for leaf in placement_data['modules'] if leaf['concrete_name'] in all_modules_leaves]
-
     for key in ['leaves', 'modules']:
+        new_placement_data[key] = [x for x in placement_data[key] if x['concrete_name'] in all_modules_leaves]
         for elem in new_placement_data[key]:
             if 'pin_bbox' in elem:
                 del elem['pin_bbox']
+            if 'global_signals' in elem:
+                elem['global_signals'] = list(elem['global_signals'])
 
     return new_placement_data
 
 
 def propagate_down_global_signals(modules: dict, module_name: str, global_signals: list):
     GS = 'global_signals'
-    modules[module_name][GS] = modules[module_name].get(GS, list()) + global_signals
+    modules[module_name][GS] = set.union(modules[module_name].get(GS, set()), global_signals)
     for instance in modules[module_name]['instances']:
         sub_module_name = instance['abstract_template_name']
         if sub_module_name in modules:
@@ -60,7 +58,7 @@ def propagate_down_global_signals(modules: dict, module_name: str, global_signal
             for formal_actual in instance['fa_map']:
                 formal = formal_actual['formal']
                 actual = formal_actual['actual']
-                if actual in global_signals and formal not in modules[sub_module_name].get(GS, list()):
+                if actual in global_signals and formal not in modules[sub_module_name].get(GS, set()):
                     signals_to_propagate.append(formal)
             if signals_to_propagate:
                 propagate_down_global_signals(modules, sub_module_name, signals_to_propagate)

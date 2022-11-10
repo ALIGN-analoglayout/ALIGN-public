@@ -2,7 +2,7 @@ import json
 import plotly.graph_objects as go
 import plotly.express as px
 
-from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals
+from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals, trim_placement_data
 from align.cell_fabric.transformation import Transformation, Rect
 
 
@@ -203,7 +203,7 @@ def ota():
     return data
 
 
-DRAW = True
+DRAW = False
 
 
 def draw_placement(placement_data, module_name):
@@ -265,6 +265,7 @@ def test_place_ring_oscillator():
     with open('placement_input.json', "wt") as fp:
         fp.write(json.dumps(input_data, indent=2) + '\n')
     placement_data = pythonic_placer('ring_oscillator', input_data)
+    placement_data = trim_placement_data(placement_data, 'ring_oscillator')
     assert len(placement_data['leaves']) == 2
     assert len(placement_data['modules']) == 2
     with open('placement_output.json', "wt") as fp:
