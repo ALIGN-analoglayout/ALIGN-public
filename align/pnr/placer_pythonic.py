@@ -48,18 +48,21 @@ def trim_placement_data(placement_data, top_level):
     return new_placement_data
 
 
-def propagate_down_global_signals(modules: dict, module_name: str, global_signals: list):
+def propagate_down_global_signals(modules: dict, module_name: str, global_signals: set):
     GS = 'global_signals'
-    modules[module_name][GS] = set.union(modules[module_name].get(GS, set()), global_signals)
+    if GS in modules[module_name]:
+        modules[module_name][GS].update(global_signals)
+    else:
+        modules[module_name][GS] = set(global_signals)
     for instance in modules[module_name]['instances']:
         sub_module_name = instance['abstract_template_name']
         if sub_module_name in modules:
-            signals_to_propagate = list()
+            signals_to_propagate = set()
             for formal_actual in instance['fa_map']:
                 formal = formal_actual['formal']
                 actual = formal_actual['actual']
                 if actual in global_signals and formal not in modules[sub_module_name].get(GS, set()):
-                    signals_to_propagate.append(formal)
+                    signals_to_propagate.add(formal)
             if signals_to_propagate:
                 propagate_down_global_signals(modules, sub_module_name, signals_to_propagate)
 
@@ -96,7 +99,7 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
     topological_order, found_modules, _ = compute_topoorder(modules, top_level)
 
     # Propagate power pins down the modules
-    if global_signals := [x['actual'] for x in input_data['global_signals']]:
+    if global_signals := {x['actual'] for x in input_data['global_signals']}:
         propagate_down_global_signals(modules, top_level, global_signals)
 
     for name in topological_order:
