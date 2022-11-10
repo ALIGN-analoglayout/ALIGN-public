@@ -236,6 +236,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
           matrix:
             alias: test-integration-cp38-manylinux_2_24
             parameters:
@@ -255,6 +256,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
           matrix:
             alias: build-wheel-all
             parameters:
@@ -282,6 +284,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
       - publish-wheel:
           requires:
             - build-wheel-all
@@ -289,4 +292,5 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
 
