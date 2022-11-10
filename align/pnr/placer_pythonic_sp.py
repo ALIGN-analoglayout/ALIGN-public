@@ -257,8 +257,8 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             for pair in pairs:
                 if len(pair) == 1:
                     rel_tol = 10  # max distance from symmetry line should be less than 1/10th the block width
-                    model += (1-1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}'), model.var_by_name(f'{pair[0]}_ur{axis}')) <= 2*symmetry_line
-                    model += (1+1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}'), model.var_by_name(f'{pair[0]}_ur{axis}')) >= 2*symmetry_line
+                    model += (1-1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) <= 2*symmetry_line
+                    model += (1+1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) >= 2*symmetry_line
                 else:
                     model += model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}') + \
                              model.var_by_name(f'{pair[1]}_ll{axis}') + model.var_by_name(f'{pair[1]}_ur{axis}') == \

@@ -128,7 +128,82 @@ def ring_oscillator():
     return data
 
 
-DRAW = False
+def ota():
+    place_on_grid = [
+        {'constraint': 'PlaceOnGrid', 'direction': 'H', 'pitch': 12600, 'ored_terms': [{'offsets': [0], 'scalings': [1, -1]}]},
+        {'constraint': 'PlaceOnGrid', 'direction': 'V', 'pitch': 1080, 'ored_terms': [{'offsets': [0], 'scalings': [1, -1]}]}
+    ]
+    data = {
+        'leaves': [
+            {
+                'abstract_template_name': 'NMOS_3T',
+                'concrete_template_name': 'NMOS_3T_X2_Y1',
+                'bbox': [0, 0, 10800, 6300],
+                'terminals': [
+                    {'layer': 'M2', 'netName': 'D', 'rect': [1000, 1000, 9000, 1500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'G', 'rect': [1000, 3000, 9000, 3500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'S', 'rect': [1000, 5000, 9000, 5500], 'netType': 'pin'}
+                ],
+                'constraints': place_on_grid
+            },
+            {
+                'abstract_template_name': 'PMOS_3T',
+                'concrete_template_name': 'PMOS_3T_X2_Y1',
+                'bbox': [0, 0, 10800, 6300],
+                'terminals': [
+                    {'layer': 'M2', 'netName': 'D', 'rect': [1000, 1000, 9000, 1500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'G', 'rect': [1000, 3000, 9000, 3500], 'netType': 'pin'},
+                    {'layer': 'M2', 'netName': 'S', 'rect': [1000, 5000, 9000, 5500], 'netType': 'pin'}
+                ],
+                'constraints': place_on_grid
+            }
+        ],
+        'modules': [
+            {
+                'name': 'ota',
+                'parameters': ['VBIAS', 'VIN', 'VIP', 'VOP', 'VCCX', 'VSSX'],
+                'constraints': [],
+                'instances': [
+                    {
+                        'instance_name': 'XI0', 'abstract_template_name': 'NMOS_3T',
+                        'fa_map': [{'formal': 'D', 'actual': 'VCM'}, {'formal': 'G', 'actual': 'VBIAS'}, {'formal': 'S', 'actual': 'VSSX'}]
+                    },
+                    {
+                        'instance_name': 'XI1', 'abstract_template_name': 'NMOS_3T',
+                        'fa_map': [{'formal': 'D', 'actual': 'VON'}, {'formal': 'G', 'actual': 'VIP'}, {'formal': 'S', 'actual': 'VCM'}]
+                    },
+                    {
+                        'instance_name': 'XI2', 'abstract_template_name': 'NMOS_3T',
+                        'fa_map': [{'formal': 'D', 'actual': 'VOP'}, {'formal': 'G', 'actual': 'VIN'}, {'formal': 'S', 'actual': 'VCM'}]
+                    },
+                    {
+                        'instance_name': 'XI3', 'abstract_template_name': 'PMOS_3T',
+                        'fa_map': [{'formal': 'D', 'actual': 'VON'}, {'formal': 'G', 'actual': 'VON'}, {'formal': 'S', 'actual': 'VCCX'}]
+                    },
+                    {
+                        'instance_name': 'XI4', 'abstract_template_name': 'PMOS_3T',
+                        'fa_map': [{'formal': 'D', 'actual': 'VOP'}, {'formal': 'G', 'actual': 'VON'}, {'formal': 'S', 'actual': 'VCCX'}]
+                    }
+                ]
+            }
+        ],
+        'global_signals': [
+            {
+                "prefix": "global_power",
+                "formal": "supply0",
+                "actual": "VSSX"
+            },
+            {
+                "prefix": "global_power",
+                "formal": "supply1",
+                "actual": "VCCX"
+            }
+        ]
+    }
+    return data
+
+
+DRAW = True
 
 
 def draw_placement(placement_data, module_name):
@@ -216,6 +291,19 @@ def test_place_spread():  # Test relies on ALIGN's constraint checker
         })
     placement_data = pythonic_placer('ring_oscillator_stage', input_data, scale_factor=10)
     draw_placement(placement_data, 'ring_oscillator_stage_0')
+
+
+def test_place_floorplan():  # Test relies on ALIGN's constraint checker
+    input_data = ota()
+    modules = {module['name']: module for module in input_data['modules']}
+    modules['ota']['constraints'].append({
+        'constraint': 'Floorplan',
+        'order': True,
+        'symmetrize': True,
+        'regions': [['XI3', 'XI4'], ['XI1', 'XI2'], ['XI0']]
+        })
+    placement_data = pythonic_placer('ota', input_data, scale_factor=10)
+    draw_placement(placement_data, 'ota_0')
 
 
 def test_propagate_down_global_signals():
