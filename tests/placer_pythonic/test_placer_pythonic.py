@@ -5,8 +5,6 @@ import plotly.express as px
 from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals
 from align.cell_fabric.transformation import Transformation, Rect
 
-DRAW = False
-
 
 def ring_oscillator():
     place_on_grid = [
@@ -130,7 +128,12 @@ def ring_oscillator():
     return data
 
 
+DRAW = False
+
+
 def draw_placement(placement_data, module_name):
+    if not DRAW:
+        return
 
     leaves = {x['concrete_name']: x for x in placement_data['leaves']}
     modules = {x['concrete_name']: x for x in placement_data['modules']}
@@ -191,8 +194,7 @@ def test_place_ring_oscillator():
     assert len(placement_data['modules']) == 2
     with open('placement_output.json', "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
-    if DRAW:
-        draw_placement(placement_data, 'ring_oscillator_0')
+    draw_placement(placement_data, 'ring_oscillator_0')
 
 
 def test_place_ring_oscillator_stage():
@@ -200,8 +202,20 @@ def test_place_ring_oscillator_stage():
     placement_data = pythonic_placer('ring_oscillator_stage', input_data)
     assert len(placement_data['leaves']) == 2
     assert len(placement_data['modules']) == 1
-    if DRAW:
-        draw_placement(placement_data, 'ring_oscillator_stage_0')
+    draw_placement(placement_data, 'ring_oscillator_stage_0')
+
+
+def test_place_spread():  # Test relies on ALIGN's constraint checker
+    input_data = ring_oscillator()
+    modules = {module['name']: module for module in input_data['modules']}
+    modules['ring_oscillator_stage']['constraints'].append({
+        'constraint': 'Spread',
+        'direction': 'vertical',
+        'distance': 100,
+        'instances': [i['instance_name'] for i in modules['ring_oscillator_stage']['instances']]
+        })
+    placement_data = pythonic_placer('ring_oscillator_stage', input_data, scale_factor=10)
+    draw_placement(placement_data, 'ring_oscillator_stage_0')
 
 
 def test_propagate_down_global_signals():

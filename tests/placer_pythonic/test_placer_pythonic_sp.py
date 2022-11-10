@@ -12,7 +12,9 @@ from align.pnr.placer_pythonic_sp import enumerate_sequence_pairs, enumerate_blo
 DRAW = False
 
 
-def draw(model, instance_map, instance_sizes, wires):
+def draw(model, instance_map, instance_sizes=None, wires=None):
+    if not DRAW:
+        return
 
     colorscale = px.colors.qualitative.Alphabet
 
@@ -34,22 +36,23 @@ def draw(model, instance_map, instance_sizes, wires):
         y_lst.append((lly+ury)/2)
         n_lst.append(f"{name}")
 
-    i = 0
-    for name, instance_bbox in wires.items():
-        color = colorscale[i % len(colorscale)]
-        for instance, bbox in instance_bbox:
-            size = dict(zip("xy", instance_sizes[instance]))
-            bb = dict()
-            for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
-                bb[tag+axis] = model.var_by_name(f'{instance}_ll{axis}').x + offset + \
-                               (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}').x
-            llx, urx = min(bb['llx'], bb['urx']), max(bb['llx'], bb['urx'])
-            lly, ury = min(bb['lly'], bb['ury']), max(bb['lly'], bb['ury'])
-            fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="Black", width=1), fillcolor=color)
-            x_lst.append((llx+urx)/2)
-            y_lst.append((lly+ury)/2)
-            n_lst.append(f"{name}")
-        i += 1
+    if instance_sizes and wires:
+        i = 0
+        for name, instance_bbox in wires.items():
+            color = colorscale[i % len(colorscale)]
+            for instance, bbox in instance_bbox:
+                size = dict(zip("xy", instance_sizes[instance]))
+                bb = dict()
+                for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
+                    bb[tag+axis] = model.var_by_name(f'{instance}_ll{axis}').x + offset + \
+                                (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}').x
+                llx, urx = min(bb['llx'], bb['urx']), max(bb['llx'], bb['urx'])
+                lly, ury = min(bb['lly'], bb['ury']), max(bb['lly'], bb['ury'])
+                fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="Black", width=1), fillcolor=color)
+                x_lst.append((llx+urx)/2)
+                y_lst.append((lly+ury)/2)
+                n_lst.append(f"{name}")
+            i += 1
 
     fig.update_shapes(opacity=0.5, xref="x", yref="y")
 
@@ -142,8 +145,7 @@ def test_place_sequence_pair_1():
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid)
     assert solution['transformations']['M0'] == {'oX': 10, 'oY': 0, 'sX': -1, 'sY': 1}
     assert solution['transformations']['M1'] == {'oX': 14, 'oY': 4, 'sX': -1, 'sY': -1}
-    if DRAW:
-        draw(solution['model'], instance_map, instance_sizes, wires)
+    draw(solution['model'], instance_map, instance_sizes, wires)
 
 
 @pytest.mark.parametrize("iter", [i for i in range(10)])
@@ -158,8 +160,7 @@ def test_place_sequence_pair_2(iter):
         ]
     place_on_grid = {f"M{i}": c for i in range(n)}
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, place_on_grid=place_on_grid)
-    if DRAW:
-        draw(solution['model'], instance_map, [], [])
+    draw(solution['model'], instance_map)
 
 
 def test_place_sequence_pair_boundary():
@@ -175,8 +176,7 @@ def test_place_sequence_pair_boundary():
         constraints.pop()
         constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair)
-    if DRAW:
-        draw(solution['model'], instance_map, [], [])
+    draw(solution['model'], instance_map)
     for v in solution['model'].vars:
         if v.name == 'H':
             break
@@ -192,5 +192,4 @@ def test_place_sequence_pair_place_on_boundary():
     instance_sizes = {f"M{k}": (1+k, 1+k) for k in range(n)}
     sequence_pair = ([0, 1, 2, 3], [2, 3, 0, 1])
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair)
-    if DRAW:
-        draw(solution['model'], instance_map, [], [])
+    draw(solution['model'], instance_map)

@@ -71,6 +71,7 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
     placement_data = dict()
     placement_data['modules'] = list()
     placement_data['leaves'] = list()
+    placement_data['scale_factor'] = scale_factor
     for leaf in input_data['leaves']:
         # Calculate a bounding box for each pin for HPWL calculation
         pin_bbox = dict()
