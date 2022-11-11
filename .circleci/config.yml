@@ -190,16 +190,16 @@ workflows:
                 - "quay.io/pypa/manylinux_2_28_x86_64" # PEP 600
               python-tags:
                 - "cp38-cp38" # Python 3.8
-      - build-wheel:
-          name: "build-wheel-cp310-manylinux_2_28"
-          requires:
-            - build-wheel-cp38-manylinux_2_28
-          matrix:
-            parameters:
-              platform:
-                - "quay.io/pypa/manylinux_2_28_x86_64" # PEP 600
-              python-tags:
-                - "cp310-cp310" # Python 3.10
+      # - build-wheel:
+      #     name: "build-wheel-cp310-manylinux_2_28"
+      #     requires:
+      #       - build-wheel-cp38-manylinux_2_28
+      #     matrix:
+      #       parameters:
+      #         platform:
+      #           - "quay.io/pypa/manylinux_2_28_x86_64" # PEP 600
+      #         python-tags:
+      #           - "cp310-cp310" # Python 3.10
       # - build-wheel:
       #     name: "build-wheel-cp37-manylinux2010"
       #     requires:
@@ -236,6 +236,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
           matrix:
             alias: test-integration-cp38-manylinux_2_28
             parameters:
@@ -255,6 +256,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
           matrix:
             alias: build-wheel-all
             parameters:
@@ -269,12 +271,12 @@ workflows:
             exclude:
               # Skipping these as they have been built by
               # other jobs
-              - platform: "quay.io/pypa/manylinux2010_x86_64"
-                python-tags: "cp37-cp37m"
+              # - platform: "quay.io/pypa/manylinux2010_x86_64"
+              #   python-tags: "cp37-cp37m"
               - platform: "quay.io/pypa/manylinux_2_28_x86_64"
                 python-tags: "cp38-cp38"
-              - platform: "quay.io/pypa/manylinux_2_28_x86_64"
-                python-tags: "cp310-cp310"
+              # - platform: "quay.io/pypa/manylinux_2_28_x86_64"
+              #   python-tags: "cp310-cp310"
       - build-test-coverage:
           requires:
             - build-wheel-cp38-manylinux_2_28
@@ -282,6 +284,7 @@ workflows:
             branches:
               only:
                 - master
+                - dev/pythonic_placer
       - publish-wheel:
           requires:
             - build-wheel-all
@@ -289,4 +292,4 @@ workflows:
             branches:
               only:
                 - master
-
+                - dev/pythonic_placer
