@@ -635,3 +635,51 @@ def test_folded_cascode():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+
+
+def test_binary():
+    name = "binary"
+    netlist = textwrap.dedent(f"""\
+        .subckt power_cell vccx vcca vg
+        xmp0 vcca vg vccx vccx ppv drain=gnd m=1 nf=4 source=pwr nfin=4
+        .ends
+        .subckt {name} vccx vcca vg[0]
+        xi0fix vccx vcca vccx power_cell
+        xi0[0] vccx vcca vg[0] power_cell
+        .ends {name}
+        .END
+    """)
+
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "propagate": True,
+            "auto_constraint": False,
+            "identify_array": False,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": False,
+            "remove_dummy_hierarchies": False,
+            "fix_source_drain": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vcca"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["xi0fix"],
+                ["xi0[0]"],
+            ]
+        }
+    ]
+
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False, log_level="DEBUG")
+
+    with (run_dir / '1_topology' / 'power_cell.const.json').open('rt') as fp:
+        constraints = json.load(fp)
+        constraints = {c["constraint"]: c for c in constraints}
+        assert "VG" not in constraints["PowerPorts"]["ports"], "VG is not a power port"
