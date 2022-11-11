@@ -489,6 +489,28 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
     tileLayerNo = 1;
     tile_size = 10;
   }
+  for (auto net : Nets) {
+    for (auto c : net.connected) {
+      if (c.type == RouterDB::BLOCK) {
+        for (auto pin_contact : Blocks[c.iter2].pins[c.iter].pinContacts) {
+          if (pin_contact.metal < net.min_routing_layer - 1) {
+            logger->error("Block {0} pin {1} is lower than min_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
+                          net.min_routing_layer);
+            continue;
+          }
+          if (pin_contact.metal > net.max_routing_layer + 1) {
+            logger->error("Block {0} pin {1} is higher than max_routing_layer {2}", Blocks[c.iter2].blockName, Blocks[c.iter2].pins[c.iter].pinName,
+                          net.max_routing_layer);
+            continue;
+          }
+          // same for metal higher than max_routing_layer
+          Lmetal = std::min(pin_contact.metal, Lmetal);
+          Hmetal = std::max(pin_contact.metal, Hmetal);
+        }
+      }
+    }
+  }
+
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, LL.x, LL.y, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
   Initial_Gcell.AdjustVerticalEdgeCapacityfromInternalMetal(Blocks);
@@ -543,6 +565,25 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode &node, PnRDB::Drc_info &drc
         assert(0);
       }
     }
+
+    // new_added for per net metal layer setting, remove this part if an error happens
+    int l_metal = Nets[i].min_routing_layer; //
+    int h_metal = Nets[i].max_routing_layer; //
+    // add pin metal layer check, if pin's layer < Nets[i].min_routing_layer - 1 or pin's layer > Nets[i].min_routing_layer + 1
+    // Nets[i].min_routing_layer - 1 <= pin's metal layer <= Nets[i].min_routing_layer + 1
+    for(auto c:Nets[i].connected){
+      if(c.type==RouterDB::BLOCK){
+        for(auto pin_contact:Blocks[c.iter2].pins[c.iter].pinContacts){
+          //same for metal higher than max_routing_layer
+          l_metal = std::min(pin_contact.metal, l_metal);
+          h_metal = std::max(pin_contact.metal, h_metal);
+        }
+      }
+    }
+
+    if(l_metal==-1) l_metal=0; //
+    if(h_metal==-1) h_metal=drc_info.Metal_info.size()-1; //
+    GGgraph.CreateAdjacentList_New(Gcell, l_metal, h_metal); // 
 
     GGgraph.setterminals(Nets[i].terminals);
     GGgraph.setTerminals(Nets[i].connectedTile);
@@ -1026,7 +1067,30 @@ void GcellGlobalRouter::getData(PnRDB::hierNode &node, int Lmetal, int Hmetal) {
           temp_net.DoNotRoute = true;
        }
     }
-    
+
+    int global_min = 0;
+    int global_max = drc_info.MaxLayer;
+
+    if(!node.Routing_Layers.global_min_layer.empty()){
+      global_min = drc_info.Metalmap[node.Routing_Layers.global_min_layer];
+    }
+
+    if(!node.Routing_Layers.global_max_layer.empty()){
+      global_max = drc_info.Metalmap[node.Routing_Layers.global_max_layer];
+    }
+
+    temp_net.min_routing_layer = global_min;
+    temp_net.max_routing_layer = global_max;
+
+    for(auto routing_layers: node.Routing_Layers.Routing_per_Net){
+      if(routing_layers.net_name==temp_net.netName){
+        int min_layer = std::max(global_min,drc_info.Metalmap[routing_layers.net_min_layer]);
+        int max_layer = std::max(global_max,drc_info.Metalmap[routing_layers.net_max_layer]);
+        temp_net.min_routing_layer = min_layer;
+        temp_net.max_routing_layer = max_layer;
+      }
+    }
+
     Nets.push_back(temp_net);
   }
 
