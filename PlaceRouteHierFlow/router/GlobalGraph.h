@@ -29,6 +29,8 @@ class GlobalGraph {
 
   struct Node {
     int src;
+    std::vector<int> metal_layer;
+    bool active = true;
     std::vector<Edge> list;
   };
 
@@ -67,6 +69,9 @@ class GlobalGraph {
   std::vector<std::vector<std::pair<int, int> > > returnPath();
   void InitialSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> &pin_access);
   void clearPath();
+  void select_layers(int l_metal, int h_metal);
+  void refresh_layers();
+  void CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal);
   // void Path_graph_total(GlobalGrid& grid, std::vector<int> &temp_path);
 };
 

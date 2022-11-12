@@ -27,7 +27,7 @@
     "@vue/cli-plugin-babel": "^3.0.5",
     "@vue/cli-plugin-eslint": "^3.0.5",
     "@vue/cli-plugin-unit-jest": "^5.0.8",
-    "@vue/cli-service": "^3.8.4",
+    "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-prettier": "^4.0.0",
     "@vue/test-utils": "^1.0.0-beta.27",
     "ajv": "^6.12.3",
