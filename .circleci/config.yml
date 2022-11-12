@@ -262,11 +262,12 @@ workflows:
             parameters:
               platform:
                 # - "quay.io/pypa/manylinux2010_x86_64"  # PEP 571
-                - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
+                # - "quay.io/pypa/manylinux2014_x86_64"  # PEP 599
                 - "quay.io/pypa/manylinux_2_28_x86_64" # PEP 600
               python-tags:
                 # - "cp37-cp37m"
                 - "cp38-cp38"
+                - "cp311-cp311"
                 - "cp310-cp310"
             exclude:
               # Skipping these as they have been built by
