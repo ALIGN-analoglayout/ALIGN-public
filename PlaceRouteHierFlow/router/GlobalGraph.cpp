@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "GlobalGraph.h"
 
 #include "spdlog/spdlog.h"
@@ -265,16 +266,18 @@ void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, 
     std::vector<int> dest_set = temp_dest;
     SetSrcDest(src_set, dest_set);
     std::vector<int> temp_single_path = dijkstra(grid);
-    assert(!temp_single_path.empty());
+    if (temp_single_path.empty()) {
+      throw std::runtime_error("Empty path");
+    }
     MST_path.push_back(temp_single_path);
     RMSrcDest(src_set, dest_set);
     ChangeSrcDest(temp_src, temp_dest, temp_single_path, pin_access);
   }
-  WireLength = Calculate_Weigt(MST_path);
+  WireLength = Calculate_Weight(MST_path);
   temp_path = Get_MST_Edges(MST_path);
 };
 
-int GlobalGraph::Calculate_Weigt(std::vector<std::vector<int> > temp_path) {
+int GlobalGraph::Calculate_Weight(std::vector<std::vector<int> > temp_path) {
   int sum = 0;
   for (unsigned int i = 0; i < temp_path.size(); i++) {
     for (unsigned int j = 0; j < temp_path[i].size() - 1; j++) {

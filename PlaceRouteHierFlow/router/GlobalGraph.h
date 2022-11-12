@@ -58,7 +58,7 @@ class GlobalGraph {
   // std::vector<int> Get_Potential_Steiner_node(GlobalGrid &grid);
   void GetWireLength(int &WireLength, int &index, std::vector<int> Pontential_Stiner_node, GlobalGrid &grid);
   void MST(int &WireLength, std::vector<pair<int, int> > &temp_path, GlobalGrid &grid);
-  int Calculate_Weigt(std::vector<std::vector<int> > temp_path);
+  int Calculate_Weight(std::vector<std::vector<int> > temp_path);
   std::vector<std::pair<int, int> > Get_MST_Edges(std::vector<std::vector<int> > temp_path);
   void SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
   void RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
