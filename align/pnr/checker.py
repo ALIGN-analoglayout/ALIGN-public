@@ -81,36 +81,31 @@ def check_placement(placement_verilog_d, scale_factor):
         constraints.revert()
 
 
-def _transform_leaf(module, instance, leaf):
+def _transform_leaf(instance, leaf, flat_leaves):
     if 'transformation' in leaf:
         tr_leaf = transformation.Transformation(**leaf['transformation'])
     else:
         tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
     tr_inst = transformation.Transformation(**instance['transformation'])
-    if 'name' in leaf:
-        name = leaf['name']
-    else:
-        name = leaf['concrete_name']
-    flat_leaf = dict()
-    flat_leaf['concrete_name'] = leaf['concrete_name']
-    flat_leaf['name'] = instance['instance_name'] + '/' + name
-    flat_leaf['transformation'] = transformation.Transformation.mult(tr_inst, tr_leaf).toDict()
-    module['flat_leaves'].append(flat_leaf)
 
+    name = leaf['name'] if 'name' in leaf else leaf['concrete_name']
+
+    return { 'concrete_name' : leaf['concrete_name'],
+             'name' : instance['instance_name'] + '/' + name,
+             'transformation' : transformation.Transformation.mult(tr_inst, tr_leaf).toDict()
+    }
 
 def _flatten_leaves(placement, concrete_name):
     """ transform leaf coordinates to top level """
-    module = placement['modules'][concrete_name]
-    module['flat_leaves'] = []
-    for instance in module['instances']:
-        leaf = placement['flat_leaves'].get(instance['concrete_template_name'], False)
-        if leaf:
-            _transform_leaf(module, instance, leaf)
+    flat_leaves = []
+    for instance in placement['modules'][concrete_name]['instances']:
+        leaf = placement['flat_leaves'].get(instance['concrete_template_name'], None)
+        if leaf is not None:
+            flat_leaves.append(_transform_leaf(instance, leaf))
         else:
-            leaves = _flatten_leaves(placement, instance['concrete_template_name'])
-            for leaf in leaves:
-                _transform_leaf(module, instance, leaf)
-    return module['flat_leaves']
+            for leaf in _flatten_leaves(placement, instance['concrete_template_name']):
+                flat_leaves.append(_transform_leaf(instance, leaf))
+    return flat_leaves
 
 
 def _check_place_on_grid(flat_leaf, constraints):
@@ -133,14 +128,9 @@ def _check_place_on_grid(flat_leaf, constraints):
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
-    # If we don't do the copy, then we get the 'flat_leaves" field filled in placement_verilog_d (can be large
-    # We might want to use an auxillary data structure instead
-
-    placement_verilog_d_copy = copy.deepcopy(placement_verilog_d)
-
     placement = dict()
-    placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d_copy['leaves']}
-    placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d_copy['modules']}
+    placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d['leaves']}
+    placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d['modules']}
     flat_leaves = _flatten_leaves(placement, concrete_name)
 
     constrained_cns = dict()
