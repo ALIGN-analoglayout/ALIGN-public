@@ -53,7 +53,7 @@ def test_flatten_leaves():
         {'concrete_name': 'INV', 'name': 'XI2/XI0/INV', 'transformation': {'oX': 0, 'oY': 10000, 'sX': 1, 'sY': -1}}
     ]
 
-    placement['leaves'] = {x['concrete_name']: x for x in placement['leaves']}
+    placement['flat_leaves'] = {x['concrete_name']: x for x in placement['leaves']}
     placement['modules'] = {x['concrete_name']: x for x in placement['modules']}
     leaves = _flatten_leaves(placement, 'CKT_TOP_0')
     assert leaves == leaves_gold, 'Value does not match golden'

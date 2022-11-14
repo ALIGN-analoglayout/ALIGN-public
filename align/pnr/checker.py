@@ -2,6 +2,7 @@ import logging
 from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
+import copy
 import pathlib
 import more_itertools
 logger = logging.getLogger(__name__)
@@ -94,41 +95,41 @@ def _transform_leaf(module, instance, leaf):
     flat_leaf['concrete_name'] = leaf['concrete_name']
     flat_leaf['name'] = instance['instance_name'] + '/' + name
     flat_leaf['transformation'] = transformation.Transformation.mult(tr_inst, tr_leaf).toDict()
-    module['leaves'].append(flat_leaf)
+    module['flat_leaves'].append(flat_leaf)
 
 
 def _flatten_leaves(placement, concrete_name):
     """ transform leaf coordinates to top level """
     module = placement['modules'][concrete_name]
-    module['leaves'] = []
+    module['flat_leaves'] = []
     for instance in module['instances']:
-        leaf = placement['leaves'].get(instance['concrete_template_name'], False)
+        leaf = placement['flat_leaves'].get(instance['concrete_template_name'], False)
         if leaf:
             _transform_leaf(module, instance, leaf)
         else:
             leaves = _flatten_leaves(placement, instance['concrete_template_name'])
             for leaf in leaves:
                 _transform_leaf(module, instance, leaf)
-    return module['leaves']
+    return module['flat_leaves']
 
 
-def _check_place_on_grid(leaf, constraints):
+def _check_place_on_grid(flat_leaf, constraints):
     for const in constraints:
         if const['direction'] == 'H':
-            o, s = leaf['transformation']['oY'], leaf['transformation']['sY']
+            o, s = flat_leaf['transformation']['oY'], flat_leaf['transformation']['sY']
         else:
-            o, s = leaf['transformation']['oX'], leaf['transformation']['sX']
+            o, s = flat_leaf['transformation']['oX'], flat_leaf['transformation']['sX']
 
         is_satisfied = False
         for term in const['ored_terms']:
             for offset in term['offsets']:
                 if (o - offset) % const['pitch'] == 0 and s in term['scalings']:
                     is_satisfied = True
-                    logger.debug(f'{leaf["name"]} satisfied {term} in {const}')
+                    logger.debug(f'{flat_leaf["name"]} satisfied {term} in {const}')
                     break
             if is_satisfied:
                 break
-        assert is_satisfied, f'{leaf} does not satisfy {const}'
+        assert is_satisfied, f'{flat_leaf} does not satisfy {const}'
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
@@ -141,13 +142,18 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
     else:
         placement_dict = placement_verilog_d
 
+    # If we don't do the copy, then we get the 'flat_leaves" field filled in placement_verilog_d (can be large)
+    # We might want to use an auxillary data structure instead
+
+    placement_verilog_d_copy = copy.deepcopy(placement_verilog_d)
+
     placement = dict()
-    placement['leaves'] = {x['concrete_name']: x for x in placement_dict['leaves']}
-    placement['modules'] = {x['concrete_name']: x for x in placement_dict['modules']}
-    leaves = _flatten_leaves(placement, concrete_name)
+    placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d_copy['leaves']}
+    placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d_copy['modules']}
+    flat_leaves = _flatten_leaves(placement, concrete_name)
 
     constrained_cns = dict()
-    all_cns = {x['concrete_name'] for x in leaves}
+    all_cns = {x['concrete_name'] for x in flat_leaves}
     for cn in all_cns:
         filename = pathlib.Path(opath) / '../inputs' / f'{cn}.json'
         if filename.exists() and filename.is_file():
@@ -158,7 +164,6 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
                     if place_on_grids:
                         constrained_cns[cn] = place_on_grids
 
-    if constrained_cns:
-        for leaf in leaves:
-            if leaf['concrete_name'] in constrained_cns:
-                _check_place_on_grid(leaf, constrained_cns[leaf['concrete_name']])
+    for flat_leaf in flat_leaves:
+        if flat_leaf['concrete_name'] in constrained_cns:
+            _check_place_on_grid(flat_leaf, constrained_cns[flat_leaf['concrete_name']])
