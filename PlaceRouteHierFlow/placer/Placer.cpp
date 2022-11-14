@@ -74,7 +74,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   design designData(nodeVec.back(), drcInfo);
   int idx = 0;
   //pad nodeVec to match the number of concretes in JSON file
-  for (const auto& m : modules) {
+  /**for (const auto& m : modules) {
     if (m["abstract_name"] == designData.name) {
       string concrete_template_name = m["concrete_name"];
       unsigned int start = 0;
@@ -84,7 +84,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
       idx = atoi(concrete_template_name.substr(start, end - start).c_str());
       if (idx >= nodeVec.size()) nodeVec.insert(nodeVec.end(), idx + 1 - nodeVec.size(), nodeVec.back());
     }
-  }
+  }**/
   int nodeSize = nodeVec.size();
   int mode = 0;
   // Read design netlist and constraints
@@ -96,12 +96,14 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
   std::vector<std::pair<SeqPair, ILP_solver>> spVec(nodeSize, make_pair(curr_sp, curr_sol));
   for (const auto& m : modules) {
     if (m["abstract_name"] == designData.name) {
+      if (m["concrete_name"] != designData.concrete_name) continue;
       string concrete_template_name = m["concrete_name"];
       unsigned int start = 0;
       unsigned int slash = concrete_template_name.find_last_of('_');
       if (slash != string::npos) start = slash + 1;
       unsigned int end = concrete_template_name.size();
-      idx = atoi(concrete_template_name.substr(start, end - start).c_str());
+      //idx = atoi(concrete_template_name.substr(start, end - start).c_str());
+      idx = 0;
       if (idx >= nodeSize) continue;
       auto& sol = spVec[idx].second;
       auto& sp = spVec[idx].first;

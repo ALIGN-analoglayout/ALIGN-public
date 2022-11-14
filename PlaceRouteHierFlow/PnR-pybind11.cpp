@@ -521,6 +521,7 @@ PYBIND11_MODULE(PnR, m) {
     .def( "ReadPrimitiveOffsetPitch", &PnRdatabase::ReadPrimitiveOffsetPitch)
     .def_readwrite("hierTree", &PnRdatabase::hierTree)
     .def_readwrite("topidx", &PnRdatabase::topidx)
+    .def_readwrite("use_external_placement_info", &PnRdatabase::use_external_placement_info)
     .def_readwrite("gdsData2", &PnRdatabase::gdsData2)
     .def_readwrite("lefData", &PnRdatabase::lefData)
     .def_readwrite("DRC_info", &PnRdatabase::DRC_info)

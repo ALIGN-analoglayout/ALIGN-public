@@ -23,6 +23,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
   name = node.name;
+  concrete_name = node.concrete_name;
   placement_id = node.placement_id;
   bias_Vgraph = node.bias_Vgraph;  // from node
   bias_Hgraph = node.bias_Hgraph;  // from node

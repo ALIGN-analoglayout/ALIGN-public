@@ -45,7 +45,9 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
+        DB.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
+        print(hyper.placement_info_json)
     else:
         logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
@@ -278,7 +280,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
                 if 'constraints' not in leaf:
                     leaf['constraints'] = []
 
-                leaf['constraints'].extend(constraint for constraint in primitive['metadata']['constraints'])
+                leaf['constraints'].extend(primitive['metadata']['constraints'])
 
         top_name = f'{hN.name}_{sel}'
         gen_constraints(scaled_placement_verilog_d, top_name)
@@ -329,7 +331,8 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
 
     top_level, leaf_map, placement_verilog_alternatives, metrics = process_placements(DB=DB, verilog_d=verilog_d,
-                                                                                      lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                                                                                      lambda_coeff=lambda_coeff,
+                                                                                      scale_factor=scale_factor,
                                                                                       opath=opath)
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics

@@ -1,12 +1,14 @@
 import logging
 import pathlib
+from pathlib import Path
 import json
 import re
+import copy
 
 from collections import defaultdict
 
 from .. import PnR
-from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstract_verilog_d, connectivity_change_for_partial_routing
+from .manipulate_hierarchy import change_abstract_and_concrete_names_for_routing, gen_abstract_verilog_d, connectivity_change_for_partial_routing
 
 from .build_pnr_model import gen_DB_verilog_d
 from .placer import hierarchical_place
@@ -336,6 +338,10 @@ def router_driver(*, cap_map, cap_lef_s,
                   router_mode, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args_d, results_dir, verilog_ds_to_run):
 
+    toplevel_args_d = copy.deepcopy(toplevel_args_d)
+
+    toplevel_args_d['subckt'] = toplevel_args_d['subckt'] + '_0'
+
     fpath = toplevel_args_d['input_dir']
         
     res_dict = {}
@@ -343,8 +349,24 @@ def router_driver(*, cap_map, cap_lef_s,
 
         connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitives)
 
-        tr_tbl = change_concrete_names_for_routing(scaled_placement_verilog_d)
+        tr_tbl, an_cn_pairs = change_abstract_and_concrete_names_for_routing(scaled_placement_verilog_d)
         abstract_verilog_d = gen_abstract_verilog_d(scaled_placement_verilog_d)
+
+        #
+        # Create links for the pnr constraints
+        #
+        for an, cn in an_cn_pairs:
+            new_file = Path(fpath) / f"{cn}.pnr.const.json"
+            old_file = Path(fpath) / f"{an}.pnr.const.json"
+
+            if new_file.exists() and new_file.is_symlink():
+                new_file.unlink()
+
+            assert old_file.exists()
+            if not new_file.exists():
+                new_file.symlink_to(old_file)
+            else:
+                logger.warning(f"{new_file} already exists. Can't add a symlink to {old_file}.")
 
         # don't need to send this to disk; for debug only
         if True:
@@ -372,7 +394,7 @@ def router_driver(*, cap_map, cap_lef_s,
         idir = pathlib.Path(fpath)
          
         cap_ctns = { str(pathlib.Path(gdsFile).stem) : gdsFile for atn, gdsFile in cap_map }
-        print(cap_ctns)
+
         map_d_in = []
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
@@ -407,6 +429,8 @@ def router_driver(*, cap_map, cap_lef_s,
                            select_in_ILP=False, place_using_ILP=False, seed=0,
                            use_analytical_placer=False, ilp_solver='symphony',
                            primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1)
+
+        print("got here")
 
         placements_to_run = None
 

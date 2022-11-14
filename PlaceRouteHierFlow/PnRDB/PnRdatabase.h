@@ -71,6 +71,7 @@ class PnRdatabase {
 
   public:
   int topidx;
+  bool use_external_placement_info = false;
   PnRDB::Drc_info DRC_info;
   vector<PnRDB::hierNode> hierTree;  // each module in verilog file is a node
   int ScaleFactor = 1;
@@ -96,7 +97,7 @@ class PnRdatabase {
   PnRDB::hierNode CheckoutHierNode(int nodeID, int sel = -1);            // check out data of specific hierarchical node
   void AppendToHierTree(const PnRDB::hierNode &updatedNode);             // append node to end of hierTree
   void CheckinHierNode(int nodeID, const PnRDB::hierNode &updatedNode);  // check out data of specific hierarchical node
-  std::vector<int> UsedInstancesIdx(int nodeID);       // indices of used instances of a hiernode
+  std::vector<int> UsedInstancesIdx(int nodeID);                         // indices of used instances of a hiernode
   void CheckinChildnodetoBlock(PnRDB::hierNode &parent, int blockID, const PnRDB::hierNode &updatedNode, PnRDB::Omark ort);
   void updatePowerPins(PnRDB::pin &temp_pin);
 
@@ -171,7 +172,7 @@ class PnRdatabase {
   void Write_Router_Report(PnRDB::hierNode &node, const string &opath);
   void Write_Power_Mesh_Conf(std::string outputfile);
   void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
-  PnRDB::Metal Find_Top_Middle_Metal(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, int index);
+  PnRDB::Metal Find_Top_Middle_Metal(PnRDB::hierNode &node, const PnRDB::Drc_info &drc_info, int index);
 };
 
 #endif

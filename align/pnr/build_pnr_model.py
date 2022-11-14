@@ -21,6 +21,7 @@ def _ReadVerilogJson( DB, j, add_placement_info=False):
 
         temp_node = PnR.hierNode()
         temp_node.name = module['name'] if 'name' in module else module['abstract_name']
+        temp_node.concrete_name = module['concrete_name'] if 'concrete_name' in module else module['name']
         temp_node.isCompleted = 0
 
         Terminals = []
