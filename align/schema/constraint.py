@@ -473,8 +473,9 @@ class AspectRatio(HardConstraint):
 
     def translate(self, solver):
         bvar = solver.bbox_vars('subcircuit')
+        logger.info(f'x:{bvar.urx-bvar.llx} y:{bvar.ury-bvar.lly} ratio:{self.ratio_low},{self.ratio_high}')
         yield solver.cast(bvar.urx-bvar.llx, float) >= self.ratio_low * solver.cast(bvar.ury-bvar.lly, float)
-        yield solver.cast(bvar.urx-bvar.llx, float) < self.ratio_high * solver.cast(bvar.ury-bvar.lly, float)
+        yield solver.cast(bvar.urx-bvar.llx, float) <= self.ratio_high * solver.cast(bvar.ury-bvar.lly, float)
 
 
 class Boundary(HardConstraint):

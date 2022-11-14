@@ -2942,7 +2942,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
-  ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
+  ratio = double(UR.x) / double(UR.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
     ++const_cast<design&>(mydesign)._infeasAspRatio;
     return -1;
