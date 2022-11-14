@@ -81,7 +81,7 @@ def check_placement(placement_verilog_d, scale_factor):
         constraints.revert()
 
 
-def _transform_leaf(instance, leaf, flat_leaves):
+def _transform_leaf(instance, leaf):
     if 'transformation' in leaf:
         tr_leaf = transformation.Transformation(**leaf['transformation'])
     else:
@@ -132,6 +132,8 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
     placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d['leaves']}
     placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d['modules']}
     flat_leaves = _flatten_leaves(placement, concrete_name)
+
+    print(flat_leaves)
 
     constrained_cns = dict()
     all_cns = {x['concrete_name'] for x in flat_leaves}
