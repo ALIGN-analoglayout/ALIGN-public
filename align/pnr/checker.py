@@ -133,16 +133,7 @@ def _check_place_on_grid(flat_leaf, constraints):
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
-
-    if False:
-        # Load JSON file for easier debug
-        filename = (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json')
-        with (filename).open('rt') as fp:
-            placement_dict = json.load(fp)
-    else:
-        placement_dict = placement_verilog_d
-
-    # If we don't do the copy, then we get the 'flat_leaves" field filled in placement_verilog_d (can be large)
+    # If we don't do the copy, then we get the 'flat_leaves" field filled in placement_verilog_d (can be large
     # We might want to use an auxillary data structure instead
 
     placement_verilog_d_copy = copy.deepcopy(placement_verilog_d)
