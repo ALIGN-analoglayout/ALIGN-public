@@ -99,7 +99,7 @@ def _flatten_leaves(placement, concrete_name):
     """ transform leaf coordinates to top level """
     flat_leaves = []
     for instance in placement['modules'][concrete_name]['instances']:
-        leaf = placement['flat_leaves'].get(instance['concrete_template_name'], None)
+        leaf = placement['leaves'].get(instance['concrete_template_name'], None)
         if leaf is not None:
             flat_leaves.append(_transform_leaf(instance, leaf))
         else:
@@ -128,9 +128,11 @@ def _check_place_on_grid(flat_leaf, constraints):
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
-    placement = dict()
-    placement['flat_leaves'] = {x['concrete_name']: x for x in placement_verilog_d['leaves']}
-    placement['modules'] = {x['concrete_name']: x for x in placement_verilog_d['modules']}
+    placement = {
+        'leaves': {x['concrete_name']: x for x in placement_verilog_d['leaves']},
+        'modules': {x['concrete_name']: x for x in placement_verilog_d['modules']}
+    }
+
     flat_leaves = _flatten_leaves(placement, concrete_name)
 
     print(flat_leaves)
