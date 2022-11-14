@@ -1,0 +1,22 @@
+[
+    {
+        "constraint": "PowerPorts",
+        "ports": [
+            "VDD"
+        ]
+    },
+    {
+        "constraint": "GroundPorts",
+        "ports": [
+            "VSS"
+        ]
+    },
+    {
+        "constraint": "GroupCaps",
+        "name": "c0_c1",
+        "instances": ["c0", "c1"],
+        "unit_cap": "Cap_12f",
+	"num_units": [3, 5],
+	"dummy": true
+    }
+]
