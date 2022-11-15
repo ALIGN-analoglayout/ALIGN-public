@@ -291,7 +291,7 @@ class process_input_const:
         return self.user_constrained_list
 
     def process_do_not_identify(self):
-        for const in self.iconst:
+        for const in constraint.expand_user_constraints(self.iconst):
             if isinstance(const, constraint.DoNotIdentify):
                 self.user_constrained_list.extend(const.instances)
 
@@ -472,8 +472,8 @@ class add_symmetry_const:
                                 pins1=s1,
                                 pins2=s2
                             )
-                            self.iconst.append(symmnet)
-                        logger.debug(f"adding symmetric net const: {symmnet}")
+                        #     self.iconst.append(symmnet)
+                        # logger.debug(f"adding symmetric net const: {symmnet}")
                     else:
                         logger.debug(f"Skip symmetry: large fanout nets {key} {value} {pairs}")
                         # TODO Need update in placer to simplify this
