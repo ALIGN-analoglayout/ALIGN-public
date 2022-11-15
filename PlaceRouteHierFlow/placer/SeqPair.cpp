@@ -32,6 +32,10 @@ bool OrderedEnumerator::TopoSortUtil(vector<int>& res, map<int, bool>& visited) 
   if (!flag && res.size() == _seq.size()) {
     _sequences.push_back(res);
   }
+  if (_sequences.size() >= _maxSeq) {
+    auto logger = spdlog::default_logger()->clone("placer.OrderedEnumerator.TopoSortUtil");
+    logger->debug("num sequences : {0} {1}", _sequences.size(), _maxSeq);
+  }
   return (_sequences.size() <= _maxSeq);
 }
 
@@ -97,33 +101,52 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
       _negEnumerator(pair, casenl.Ordering_Constraints, ceil(sqrt(maxIter)), false) {
   auto logger = spdlog::default_logger()->clone("placer.SeqPairEnumerator.SeqPairEnumerator");
   size_t totEnum = _maxEnum * _maxEnum;
+  _selmap.clear();
+  for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
+    auto s = static_cast<int>(casenl.Blocks.at(i).size());
+    _maxSize = std::max(_maxSize, s);
+    _selmap[static_cast<int>(i)] = nullptr;
+  }
+
+  size_t totSel{1};
+  for (const auto& group : casenl.Same_Template_Constraints) {
+    auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(*group.begin()).size()));
+    totSel *= pairint->second;
+    _selindex.push_back(pairint);
+    for (const auto& i : group) _selmap[i] = pairint;
+  }
+  for (auto& it : _selmap) {
+    if (it.second == nullptr) {
+      auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(it.first).size()));
+      totSel *= pairint->second;
+      _selindex.push_back(pairint);
+      it.second = pairint;
+    }
+  }
   if (!_posEnumerator.valid() || !_negEnumerator.valid()) {
     if (maxIter > 0 && _posPair.size() <= 16 && maxIter > totEnum) {
       // totEnum *= (1 << (2*caseNL.GetSizeofBlocks()));
-      for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
-        totEnum *= casenl.Blocks.at(i).size();
-        if (maxIter < totEnum) {
-          _valid = 0;
-          break;
-        }
+      totEnum *= totSel;
+      if (maxIter < totEnum) {
+        _valid = 0;
       }
     } else {
       _valid = 0;
     }
-    logger->debug("enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3}", (_valid ? 1 : 0), maxIter, _posPair.size(),
-                  totEnum);
+    logger->debug("enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3} total select : {4}", (_valid ? 1 : 0), maxIter, _posPair.size(),
+                  totEnum, totSel);
   } else {
     _maxEnum = _posEnumerator.NumSequences();
-    totEnum = _maxEnum;
-    for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
-      totEnum *= casenl.Blocks.at(i).size();
-      if (maxIter < totEnum) {
-        _valid = 0;
-        break;
-      }
+    totEnum = _maxEnum * totSel;
+    if (maxIter < totEnum) {
+      _valid = 0;
     }
+    logger->debug("ordered enumeration check valid : {0}\n maxIter : {1} seq pair size : {2} total enumerations : {3} total select : {4}", (_valid ? 1 : 0), maxIter, _maxEnum, totEnum, totSel);
   }
-  if (!_valid) return;
+  if (!_valid) {
+    _maxSize = 0;
+    return;
+  }
   std::sort(_posPair.begin(), _posPair.end());
   _negPair = _posPair;
   _selected.resize(casenl.Blocks.size(), 0);
@@ -133,26 +156,7 @@ SeqPairEnumerator::SeqPairEnumerator(const vector<int>& pair, design& casenl, co
     logger->debug("max number of seq pairs : {0} max number of seq pair / select combinations : {1}", _maxEnum, totEnum);
   }
 
-  _maxSize = 0;
-  _selmap.clear();
-  for (unsigned i = 0; i < casenl.GetSizeofBlocks(); ++i) {
-    auto s = static_cast<int>(casenl.Blocks.at(i).size());
-    _maxSize = std::max(_maxSize, s);
-    _selmap[static_cast<int>(i)] = nullptr;
-  }
-
-  for (const auto& group : casenl.Same_Template_Constraints) {
-    auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(*group.begin()).size()));
-    _selindex.push_back(pairint);
-    for (const auto& i : group) _selmap[i] = pairint;
-  }
-  for (auto& it : _selmap) {
-    if (it.second == nullptr) {
-      auto pairint = new std::pair<int, int>(0, static_cast<int>(casenl.Blocks.at(it.first).size()));
-      _selindex.push_back(pairint);
-      it.second = pairint;
-    }
-  }
+  //_maxSize = 0;
   //_hflip = 0;
   //_vflip = 0;
   //_maxFlip = (1 << casenl.GetSizeofBlocks());
