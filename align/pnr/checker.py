@@ -2,9 +2,7 @@ import logging
 from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
-import copy
 import pathlib
-import more_itertools
 logger = logging.getLogger(__name__)
 
 
@@ -88,13 +86,12 @@ def _transform_leaf(instance, leaf):
         assert 'name' in leaf
         name_new += '/' + leaf['name']
     else:
-        # This should probably be the identity matrix and not some offset by the lower left corner
-        #tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
         tr_leaf = transformation.Transformation()
     tr_inst = transformation.Transformation(**instance['transformation'])
     tr_new = transformation.Transformation.mult(tr_inst, tr_leaf)
 
-    return {'concrete_name' : leaf['concrete_name'], 'name' : name_new, 'transformation' : tr_new.toDict()}
+    return {'concrete_name': leaf['concrete_name'], 'name': name_new, 'transformation': tr_new.toDict()}
+
 
 def _flatten_leaves(placement, concrete_name):
     """ transform leaf coordinates to top level """
@@ -135,8 +132,6 @@ def check_place_on_grid(placement_verilog_d, concrete_name, opath):
     }
 
     flat_leaves = _flatten_leaves(placement, concrete_name)
-
-    print(flat_leaves)
 
     constrained_cns = dict()
     all_cns = {x['concrete_name'] for x in flat_leaves}
