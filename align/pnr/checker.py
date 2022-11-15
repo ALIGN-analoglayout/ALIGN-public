@@ -89,7 +89,8 @@ def _transform_leaf(instance, leaf):
         name_new += '/' + leaf['name']
     else:
         # This should probably be the identity matrix and not some offset by the lower left corner
-        tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
+        #tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
+        tr_leaf = transformation.Transformation()
     tr_inst = transformation.Transformation(**instance['transformation'])
     tr_new = transformation.Transformation.mult(tr_inst, tr_leaf)
 
