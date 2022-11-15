@@ -363,7 +363,7 @@ class AppWithCallbacksAndState:
         df['aspect_ratio'] = df['height'] / df['width']
 
         self.tagged_histos = {}
-        for atn, df_group0 in df.groupby(['abstract_template_name']):
+        for atn, df_group0 in df.groupby('abstract_template_name'):
             self.tagged_histos[atn] = defaultdict(list)
             for p, df_group1 in df_group0.groupby(list(self.axes)):
                 for row_index, row in df_group1.iterrows():

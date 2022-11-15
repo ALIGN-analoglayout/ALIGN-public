@@ -30,6 +30,7 @@ import copy
 logger = logging.getLogger(__name__)
 
 from memory_profiler import profile
+import shutil
 
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True,
@@ -218,6 +219,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:prep' in steps_to_run:
         # Create working & input directories
+        shutil.rmtree(working_dir, ignore_errors=True)
+        shutil.rmtree(input_dir, ignore_errors=True)
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
 
