@@ -1,0 +1,5 @@
+[
+    { "constraint": "PowerPorts", "ports": [ "VDD" ] },
+    { "constraint": "GroundPorts", "ports": [ "VSS" ] },
+    { "constraint": "Order", "direction": "left_to_right", "instances": [ "mp1", "mn1"] }
+]
