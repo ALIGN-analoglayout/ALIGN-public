@@ -54,6 +54,6 @@ done
 
 # Bundle external shared libraries into the align wheels
 for whl in /tmp/wheelhouse/align*.whl; do
-#    repair_wheel "$whl" "$ALIGN_HOME"/wheelhouse/
+    repair_wheel "$whl" "$ALIGN_HOME"/wheelhouse/
     rm $whl
 done
