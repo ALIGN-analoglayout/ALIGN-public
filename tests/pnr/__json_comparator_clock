@@ -1,0 +1,4113 @@
+{
+  "bbox": [
+    0,
+    0,
+    54000,
+    88200
+  ],
+  "terminals": [
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        1860,
+        13300,
+        2460,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        1860,
+        19600,
+        2460,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        4020,
+        13300,
+        4620,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        4020,
+        19600,
+        4620,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        4020,
+        44800,
+        4620,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        4020,
+        59200,
+        4620,
+        68600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        6180,
+        13300,
+        6780,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        6180,
+        19600,
+        6780,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        6180,
+        44800,
+        6780,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        6180,
+        59200,
+        6780,
+        68600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        8340,
+        13300,
+        8940,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        8340,
+        19600,
+        8940,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        10500,
+        13300,
+        11100,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        10500,
+        19600,
+        11100,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        10500,
+        38500,
+        11100,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        10500,
+        44800,
+        11100,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        10500,
+        51100,
+        11100,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        13300,
+        13260,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        19600,
+        13260,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        38500,
+        13260,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        44800,
+        13260,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        51100,
+        13260,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        76300,
+        13260,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        12660,
+        78100,
+        13260,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        13300,
+        15420,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        19600,
+        15420,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        38500,
+        15420,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        44800,
+        15420,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        51100,
+        15420,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        14820,
+        57400,
+        15420,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        13300,
+        17580,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        19600,
+        17580,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        38500,
+        17580,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        44800,
+        17580,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        51100,
+        17580,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        16980,
+        57400,
+        17580,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        7000,
+        19740,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        10600,
+        19740,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        13300,
+        19740,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        19600,
+        19740,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        38500,
+        19740,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        44800,
+        19740,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        51100,
+        19740,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        57400,
+        19740,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        76300,
+        19740,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        19140,
+        78100,
+        19740,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        7000,
+        21900,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        10600,
+        21900,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        13300,
+        21900,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        19600,
+        21900,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        38500,
+        21900,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        44800,
+        21900,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        51100,
+        21900,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        21300,
+        57400,
+        21900,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        7000,
+        24060,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        10600,
+        24060,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        13300,
+        24060,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        19600,
+        24060,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        38500,
+        24060,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        44800,
+        24060,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        51100,
+        24060,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        57400,
+        24060,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        76300,
+        24060,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        23460,
+        78100,
+        24060,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        7000,
+        26220,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        10600,
+        26220,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        13300,
+        26220,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        19600,
+        26220,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        38500,
+        26220,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        44800,
+        26220,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        51100,
+        26220,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        25620,
+        57400,
+        26220,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        7000,
+        28380,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        10600,
+        28380,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        13300,
+        28380,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        19600,
+        28380,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        38500,
+        28380,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        44800,
+        28380,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        51100,
+        28380,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        27780,
+        57400,
+        28380,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        7000,
+        30540,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        10600,
+        30540,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        13300,
+        30540,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        19600,
+        30540,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        38500,
+        30540,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        44800,
+        30540,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        51100,
+        30540,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        57400,
+        30540,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        76300,
+        30540,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        29940,
+        78100,
+        30540,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        7000,
+        32700,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        10600,
+        32700,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        13300,
+        32700,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        19600,
+        32700,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        38500,
+        32700,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        44800,
+        32700,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        51100,
+        32700,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        32100,
+        57400,
+        32700,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        7000,
+        34860,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        10600,
+        34860,
+        11900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        13300,
+        34860,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        19600,
+        34860,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        38500,
+        34860,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        44800,
+        34860,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        51100,
+        34860,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        57400,
+        34860,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        76300,
+        34860,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        34260,
+        78100,
+        34860,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        13300,
+        37020,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        19600,
+        37020,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        38500,
+        37020,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        44800,
+        37020,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        51100,
+        37020,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        36420,
+        57400,
+        37020,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        13300,
+        39180,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        19600,
+        39180,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        38500,
+        39180,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        44800,
+        39180,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        51100,
+        39180,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        38580,
+        57400,
+        39180,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        13300,
+        41340,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        19600,
+        41340,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        38500,
+        41340,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        44800,
+        41340,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        51100,
+        41340,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        76300,
+        41340,
+        77600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        40740,
+        78100,
+        41340,
+        81200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        42900,
+        13300,
+        43500,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        42900,
+        19600,
+        43500,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        42900,
+        38500,
+        43500,
+        43400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        42900,
+        44800,
+        43500,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        42900,
+        51100,
+        43500,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        45060,
+        13300,
+        45660,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        45060,
+        19600,
+        45660,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        47220,
+        13300,
+        47820,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        47220,
+        19600,
+        47820,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        47220,
+        44800,
+        47820,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        47220,
+        59200,
+        47820,
+        68600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        49380,
+        13300,
+        49980,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        49380,
+        19600,
+        49980,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        49380,
+        44800,
+        49980,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        49380,
+        59200,
+        49980,
+        68600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        51540,
+        13300,
+        52140,
+        18200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        51540,
+        19600,
+        52140,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        19600,
+        3540,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        23200,
+        3540,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        25900,
+        3540,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        29500,
+        3540,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        32200,
+        3540,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        2940,
+        35800,
+        3540,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        19600,
+        7860,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        23200,
+        7860,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        25900,
+        7860,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        29500,
+        7860,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        32200,
+        7860,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        7260,
+        35800,
+        7860,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        19600,
+        12180,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        23200,
+        12180,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        25900,
+        12180,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        29500,
+        12180,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        32200,
+        12180,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        35800,
+        12180,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        44800,
+        12180,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        48400,
+        12180,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        54700,
+        12180,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        11580,
+        78100,
+        12180,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        19600,
+        16500,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        23200,
+        16500,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        25900,
+        16500,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        29500,
+        16500,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        32200,
+        16500,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        35800,
+        16500,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        44800,
+        16500,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        48400,
+        16500,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        54700,
+        16500,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        63700,
+        16500,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        67300,
+        16500,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        15900,
+        73600,
+        16500,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        700,
+        20820,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        19600,
+        20820,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        23200,
+        20820,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        25900,
+        20820,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        29500,
+        20820,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        32200,
+        20820,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        35800,
+        20820,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        44800,
+        20820,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        48400,
+        20820,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        54700,
+        20820,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        63700,
+        20820,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        67300,
+        20820,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        73600,
+        20820,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        20220,
+        78100,
+        20820,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        700,
+        25140,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        19600,
+        25140,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        23200,
+        25140,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        25900,
+        25140,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        29500,
+        25140,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        32200,
+        25140,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        35800,
+        25140,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        44800,
+        25140,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        48400,
+        25140,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        54700,
+        25140,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        63700,
+        25140,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        67300,
+        25140,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        73600,
+        25140,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        24540,
+        78100,
+        25140,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        700,
+        29460,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        19600,
+        29460,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        23200,
+        29460,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        25900,
+        29460,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        29500,
+        29460,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        32200,
+        29460,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        35800,
+        29460,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        44800,
+        29460,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        48400,
+        29460,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        54700,
+        29460,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        63700,
+        29460,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        67300,
+        29460,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        73600,
+        29460,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        28860,
+        78100,
+        29460,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        700,
+        33780,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        19600,
+        33780,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        23200,
+        33780,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        25900,
+        33780,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        29500,
+        33780,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        32200,
+        33780,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        35800,
+        33780,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        44800,
+        33780,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        48400,
+        33780,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        54700,
+        33780,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        63700,
+        33780,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        67300,
+        33780,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        73600,
+        33780,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        33180,
+        78100,
+        33780,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        19600,
+        38100,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        23200,
+        38100,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        25900,
+        38100,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        29500,
+        38100,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        32200,
+        38100,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        35800,
+        38100,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        44800,
+        38100,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        48400,
+        38100,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        54700,
+        38100,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        63700,
+        38100,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        67300,
+        38100,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        37500,
+        73600,
+        38100,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        19600,
+        42420,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        23200,
+        42420,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        25900,
+        42420,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        29500,
+        42420,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        32200,
+        42420,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        35800,
+        42420,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        44800,
+        42420,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        48400,
+        42420,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        54700,
+        42420,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        41820,
+        78100,
+        42420,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        19600,
+        46740,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        23200,
+        46740,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        25900,
+        46740,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        29500,
+        46740,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        32200,
+        46740,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        46140,
+        35800,
+        46740,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        19600,
+        51060,
+        22700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        23200,
+        51060,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        25900,
+        51060,
+        29000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        29500,
+        51060,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        32200,
+        51060,
+        35300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        50460,
+        35800,
+        51060,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        18060,
+        700,
+        18660,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        18060,
+        78100,
+        18660,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        22380,
+        700,
+        22980,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        22380,
+        78100,
+        22980,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        26700,
+        700,
+        27300,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        31020,
+        700,
+        31620,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        31020,
+        78100,
+        31620,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        35340,
+        700,
+        35940,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        35340,
+        78100,
+        35940,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        5100,
+        51100,
+        5700,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        5100,
+        54700,
+        5700,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        5100,
+        57400,
+        5700,
+        58700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        5100,
+        59200,
+        5700,
+        62300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        48300,
+        51100,
+        48900,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        48300,
+        54700,
+        48900,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        48300,
+        57400,
+        48900,
+        58700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        48300,
+        59200,
+        48900,
+        62300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        13740,
+        78100,
+        14340,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M1",
+      "netName": null,
+      "rect": [
+        39660,
+        78100,
+        40260,
+        87500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        14200,
+        52140,
+        14600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        24100,
+        47820,
+        24500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VCOM",
+      "rect": [
+        1860,
+        22300,
+        52140,
+        22700
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        20500,
+        47820,
+        20900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        23200,
+        52140,
+        23600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        19600,
+        52140,
+        20000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        30400,
+        47820,
+        30800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VCOM",
+      "rect": [
+        1860,
+        28600,
+        52140,
+        29000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        26800,
+        47820,
+        27200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        29500,
+        52140,
+        29900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        25900,
+        52140,
+        26300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        36700,
+        47820,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VCOM",
+      "rect": [
+        1860,
+        34900,
+        52140,
+        35300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        1860,
+        33100,
+        47820,
+        33500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        35800,
+        52140,
+        36200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        6180,
+        32200,
+        52140,
+        32600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        39400,
+        43500,
+        39800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        49300,
+        39180,
+        49700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        47500,
+        39180,
+        47900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        4020,
+        45700,
+        6780,
+        46100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        45700,
+        39180,
+        46100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        47220,
+        45700,
+        49980,
+        46100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        48400,
+        43500,
+        48800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        46600,
+        43500,
+        47000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        44800,
+        43500,
+        45200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIN_O",
+      "rect": [
+        4020,
+        55600,
+        6780,
+        56000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        55600,
+        39180,
+        56000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIP_O",
+      "rect": [
+        47220,
+        55600,
+        49980,
+        56000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        4020,
+        53800,
+        6780,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        53800,
+        39180,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        47220,
+        53800,
+        49980,
+        54200
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VON",
+      "rect": [
+        4020,
+        52000,
+        6780,
+        52400
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        10500,
+        52000,
+        39180,
+        52400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VOP",
+      "rect": [
+        47220,
+        52000,
+        49980,
+        52400
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        54700,
+        43500,
+        55100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        52900,
+        43500,
+        53300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        51100,
+        43500,
+        51500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        60100,
+        39180,
+        60500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        68200,
+        34860,
+        68600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        66400,
+        39180,
+        66800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        64600,
+        34860,
+        65000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        19140,
+        67300,
+        39180,
+        67700
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        19140,
+        63700,
+        39180,
+        64100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        74500,
+        34860,
+        74900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        72700,
+        39180,
+        73100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        14820,
+        70900,
+        34860,
+        71300
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        19140,
+        73600,
+        39180,
+        74000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        19140,
+        70000,
+        39180,
+        70400
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        18060,
+        1600,
+        35940,
+        2000
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "CLK",
+      "rect": [
+        19140,
+        11500,
+        34860,
+        11900
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        18060,
+        9700,
+        35940,
+        10100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VCOM",
+      "rect": [
+        18060,
+        7900,
+        35940,
+        8300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        11580,
+        84400,
+        14340,
+        84800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        18060,
+        84400,
+        25140,
+        84800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        28860,
+        84400,
+        35940,
+        84800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        39660,
+        84400,
+        42420,
+        84800
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "CLK",
+      "rect": [
+        11580,
+        76300,
+        14340,
+        76700
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "CLK",
+      "rect": [
+        18060,
+        76300,
+        25140,
+        76700
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "CLK",
+      "rect": [
+        28860,
+        76300,
+        35940,
+        76700
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "CLK",
+      "rect": [
+        39660,
+        76300,
+        42420,
+        76700
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        11580,
+        78100,
+        14340,
+        78500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        18060,
+        78100,
+        25140,
+        78500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        28860,
+        78100,
+        35940,
+        78500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        39660,
+        78100,
+        42420,
+        78500
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIN_D",
+      "rect": [
+        11580,
+        79900,
+        14340,
+        80300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIN_O",
+      "rect": [
+        18060,
+        79900,
+        25140,
+        80300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIP_O",
+      "rect": [
+        28860,
+        79900,
+        35940,
+        80300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIP_D",
+      "rect": [
+        39660,
+        79900,
+        42420,
+        80300
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        4020,
+        65500,
+        6780,
+        65900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        47220,
+        65500,
+        49980,
+        65900
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIN_O",
+      "rect": [
+        4020,
+        57400,
+        6780,
+        57800
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "VIP_O",
+      "rect": [
+        47220,
+        57400,
+        49980,
+        57800
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        4020,
+        59200,
+        6780,
+        59600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": null,
+      "rect": [
+        47220,
+        59200,
+        49980,
+        59600
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M2",
+      "netName": "VON",
+      "rect": [
+        4020,
+        61000,
+        6780,
+        61400
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M2",
+      "netName": "VOP",
+      "rect": [
+        47220,
+        61000,
+        49980,
+        61400
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIN_D",
+      "rect": [
+        24540,
+        19600,
+        25140,
+        37100
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIN_O",
+      "rect": [
+        24540,
+        44800,
+        25140,
+        56000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": null,
+      "rect": [
+        25620,
+        19600,
+        26220,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIP_O",
+      "rect": [
+        25620,
+        44800,
+        26220,
+        56000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIN_O",
+      "rect": [
+        25620,
+        63700,
+        26220,
+        74900
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIP_D",
+      "rect": [
+        26700,
+        19600,
+        27300,
+        37100
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIN_D",
+      "rect": [
+        26700,
+        44800,
+        27300,
+        56000
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIP_O",
+      "rect": [
+        26700,
+        63700,
+        27300,
+        74900
+      ],
+      "netType": "pin"
+    },
+    {
+      "layer": "M3",
+      "netName": null,
+      "rect": [
+        27780,
+        19600,
+        28380,
+        37100
+      ],
+      "netType": "blockage"
+    },
+    {
+      "layer": "M3",
+      "netName": "VIP_D",
+      "rect": [
+        27780,
+        44800,
+        28380,
+        56000
+      ],
+      "netType": "pin"
+    }
+  ]
+}

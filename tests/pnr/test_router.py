@@ -1,7 +1,9 @@
 from align.pdk.finfet import CanvasPDK
-from align.cell_fabric import transformation
-from .utils import get_test_id, run_postamble
+from align.cell_fabric import Pdk, transformation
+from align.primitive.default.canvas import DefaultCanvas
+from .utils import get_test_id, run_postamble, MY_DIR
 import pytest
+import json
 
 
 def test_ru_zero():
@@ -144,7 +146,7 @@ def test_ru_exclude_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M3",
@@ -157,6 +159,7 @@ def test_ru_exclude_m1():
     for term in cvr.terminals:
         assert term['layer'] != 'M1', 'M1 excluded'
 
+
 def test_ru_exclude_m3():
     name = get_test_id()
     cv = CanvasPDK()
@@ -166,7 +169,7 @@ def test_ru_exclude_m3():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M2",
@@ -192,7 +195,7 @@ def test_ru_exclude_per_net():
 
     cv.bbox = transformation.Rect(*[0, 0, 16*cv.pdk['M1']['Pitch'], 10*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0, constraints=[ {
+    data = run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M1",
           "max_layer": "M3",
@@ -207,6 +210,7 @@ def test_ru_exclude_per_net():
         assert term['netName'] != "A" or term['layer'] != 'M1', 'M1 excluded for net A'
         assert term['netName'] != "B" or term['layer'] != 'M3', 'M3 excluded for net A'
 
+
 def test_ru_allow_ports_on_excluded_layers():
     name = get_test_id()
     cv = CanvasPDK()
@@ -217,14 +221,14 @@ def test_ru_allow_ports_on_excluded_layers():
     cv.addWire(cv.m3, 'A',  9, (1, -1),  (6, 1), netType='pin')
     cv.addWire(cv.m3, 'B',  9, (9, -1),  (14, 1), netType='pin')
 
-
     cv.bbox = transformation.Rect(*[0, 0, 10*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    run_postamble(name, cv, max_errors=0, constraints=[ {
+    run_postamble(name, cv, max_errors=0, constraints=[{
           "constraint": "Route",
           "min_layer": "M2",
           "max_layer": "M2"
         }])
+
 
 def test_ru_staggered_m1():
     name = get_test_id()
@@ -235,7 +239,8 @@ def test_ru_staggered_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    data = run_postamble(name, cv, max_errors=0)
+    run_postamble(name, cv, max_errors=0)
+
 
 def test_ru_no_extra_routing_on_m1():
     name = get_test_id()
@@ -246,7 +251,7 @@ def test_ru_no_extra_routing_on_m1():
 
     cv.bbox = transformation.Rect(*[0, 0, 8*cv.pdk['M1']['Pitch'], 16*cv.pdk['M2']['Pitch']])
 
-    constraints = [ {
+    constraints = [{
         "constraint": "Route",
         "min_layer": "M2",
         "max_layer": "M3"
@@ -264,3 +269,36 @@ def test_ru_no_extra_routing_on_m1():
 
     assert found_m3, "Need m3 to make the connection."
 
+
+def test_ru_metal_offset_h():
+    name = get_test_id()
+    cv = DefaultCanvas(Pdk().load(MY_DIR / "pdk_abstraction_offset" / "layers.json"))
+    cv.addWire(cv.m3, 'A',   1, (0, -1),  (7, 1),  netType='blockage')
+    cv.addWire(cv.m3, 'A',   3, (0, -1),  (7, 1), netType='blockage')
+    cv.addWire(cv.m5, 'A',   5, (0, -1),  (7, 1), netType='blockage')
+    for i in range(8):
+        cv.addWire(cv.m2, None,  i, (0, -1),  (8, 1), netType='blockage')
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_metal_offset_v():
+    name = get_test_id()
+    cv = DefaultCanvas(Pdk().load(MY_DIR / "pdk_abstraction_offset" / "layers.json"))
+    cv.addWire(cv.m4, 'A',   1, (1, -1),  (3, 1),  netType='blockage')
+    cv.addWire(cv.m4, 'A',   3, (1, -1),  (3, 1), netType='blockage')
+    cv.addWire(cv.m4, 'A',   3, (5, -1),  (7, 1), netType='blockage')
+    for i in [0, 8]:
+        cv.addWire(cv.m3, None,  i, (0, -1),  (10, 1), netType='blockage')
+    run_postamble(name, cv, max_errors=0)
+
+
+def test_ru_comparator_clock():
+    name = get_test_id()
+    cv = CanvasPDK()
+    with (MY_DIR / "__json_comparator_clock").open('rt') as fp:
+        data = json.load(fp)
+    cv.bbox = transformation.Rect(*data["bbox"])
+    for term in data["terminals"]:
+        cv.terminals.append(term)
+    run_postamble(name, cv, max_errors=0)
+    assert True
