@@ -9,7 +9,7 @@ from align.schema.types import set_context
 from align.schema import Model, Instance, SubCircuit, Library
 from align.pnr.placer_pythonic_sp import enumerate_sequence_pairs, enumerate_block_variants, place_sequence_pair
 
-from ..test_placer_pythonic import DISABLE_TESTS
+DISABLE_TESTS = True
 
 DRAW = False
 
@@ -78,7 +78,7 @@ def initialize_constraints(n):
     return subckt.constraints, instance_map
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 def test_enumerate_sequence_pairs():
 
     constraints, instance_map = initialize_constraints(2)
@@ -108,7 +108,7 @@ def test_enumerate_sequence_pairs():
     assert sequence_pairs[0] == ((0, 1, 2, 3), (3, 2, 1, 0))
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 def test_enumerate_block_variants():
 
     constraints, instance_map = initialize_constraints(2)
@@ -133,7 +133,7 @@ def test_enumerate_block_variants():
     assert len(variants) == 3*3
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_sequence_pair_1():
     n = 2
     constraints, instance_map = initialize_constraints(n)
@@ -153,7 +153,7 @@ def test_place_sequence_pair_1():
     draw(solution['model'], instance_map, instance_sizes, wires)
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 @pytest.mark.parametrize("iter", [i for i in range(10)])
 def test_place_sequence_pair_2(iter):
     n = 10
@@ -169,7 +169,7 @@ def test_place_sequence_pair_2(iter):
     draw(solution['model'], instance_map)
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_sequence_pair_boundary():
     n = 5
     constraints, instance_map = initialize_constraints(n)
@@ -190,7 +190,7 @@ def test_place_sequence_pair_boundary():
     assert v.x <= 10
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, "Disabled using global variable")
+@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_sequence_pair_place_on_boundary():
     n = 4
     constraints, instance_map = initialize_constraints(n)
