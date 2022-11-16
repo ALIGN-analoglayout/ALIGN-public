@@ -302,3 +302,24 @@ def test_ru_comparator_clock():
         cv.terminals.append(term)
     run_postamble(name, cv, max_errors=0)
     assert True
+
+
+def test_ru_resistive_route():
+    name = get_test_id()
+    cv = CanvasPDK()
+    cv.addWire(cv.m2, 'A', 6, (0, -1), (2, 1), netType='pin')
+    cv.addWire(cv.m2, 'A', 2, (0, -1), (2, 1), netType='pin')
+    cv.addWire(cv.m2, 'A', 6, (8, -1), (10, 1), netType='pin')
+    cv.addWire(cv.m2, 'A', 2, (8, -1), (10, 1), netType='pin')
+    cv.addWire(cv.m2, None, 6, (4, -1),  (6, 1), netType='blockage')
+    cv.addWire(cv.m2, None, 2, (4, -1),  (6, 1), netType='blockage')
+    cv.addWire(cv.m3, 'A',  1, (0, -1),  (7, 1),  netType='pin')
+    cv.addWire(cv.m3, 'A',  9, (0, -1),  (7, 1),  netType='pin')
+    cv.drop_via(cv.v2)
+    data = run_postamble(name, cv, max_errors=0)
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    for term in cvr.terminals:
+        assert term['layer'] != 'M4', 'Why use M4 but not M2?'
