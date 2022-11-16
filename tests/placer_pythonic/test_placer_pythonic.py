@@ -2,12 +2,12 @@ import pytest
 import json
 import plotly.graph_objects as go
 import plotly.express as px
+import os
 
 from align.pnr.placer_pythonic import pythonic_placer, propagate_down_global_signals, trim_placement_data
 from align.cell_fabric.transformation import Transformation, Rect
 
-DISABLE_TESTS = True
-
+DISABLE_TESTS = os.getenv('ENABLE_PYTHONIC_PLACER_TESTS', None) is None
 
 def ring_oscillator():
     place_on_grid = [
@@ -263,7 +263,7 @@ def draw_placement(placement_data, module_name):
     fig.show()
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
+@pytest.mark.skipif(DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_ring_oscillator():
     input_data = ring_oscillator()
     with open('placement_input.json', "wt") as fp:
@@ -277,7 +277,7 @@ def test_place_ring_oscillator():
     draw_placement(placement_data, 'ring_oscillator_0')
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
+@pytest.mark.skipif(DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_ring_oscillator_stage():
     input_data = ring_oscillator()
     placement_data = pythonic_placer('ring_oscillator_stage', input_data)
@@ -286,7 +286,7 @@ def test_place_ring_oscillator_stage():
     draw_placement(placement_data, 'ring_oscillator_stage_0')
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
+@pytest.mark.skipif(DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_spread():  # Test relies on ALIGN's constraint checker
     input_data = ring_oscillator()
     modules = {module['name']: module for module in input_data['modules']}
@@ -300,7 +300,7 @@ def test_place_spread():  # Test relies on ALIGN's constraint checker
     draw_placement(placement_data, 'ring_oscillator_stage_0')
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
+@pytest.mark.skipif(DISABLE_TESTS, reason="Disabled using global variable")
 def test_place_floorplan():  # Test relies on ALIGN's constraint checker
     input_data = ota()
     modules = {module['name']: module for module in input_data['modules']}
@@ -314,7 +314,7 @@ def test_place_floorplan():  # Test relies on ALIGN's constraint checker
     draw_placement(placement_data, 'ota_0')
 
 
-@pytest.mark.skipif(not DISABLE_TESTS, reason="Disabled using global variable")
+@pytest.mark.skipif(DISABLE_TESTS, reason="Disabled using global variable")
 def test_propagate_down_global_signals():
     input_data = ring_oscillator()
     modules = {module['name']: module for module in input_data['modules']}
