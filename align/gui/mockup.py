@@ -601,15 +601,23 @@ class AppWithCallbacksAndState:
 
 
 import socket
+from contextlib import closing
 
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
 
 def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
 
     hostname = socket.gethostname()
     fully_qualified_domain_name = socket.getfqdn(hostname)
+    free_port = find_free_port()
 
-    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name)
+    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=free_port)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel
