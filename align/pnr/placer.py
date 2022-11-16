@@ -361,9 +361,7 @@ def placer_driver(*, cap_map, cap_lef_s,
 
     lef_s_in = None
     if cap_map:
-
-        for entry in cap_map:
-            map_d_in.append([entry['nm'], entry['gdsFile']])
+        map_d_in.extend(cap_map)
 
         with (idir/lef_file).open("rt") as fp:
             lef_s_in = fp.read()
@@ -372,8 +370,6 @@ def placer_driver(*, cap_map, cap_lef_s,
 
 
     DB, verilog_d, new_fpath, opath, numLayout, effort = gen_DB_verilog_d(toplevel_args_d=toplevel_args_d, results_dir=results_dir, map_d_in=map_d_in, lef_s_in=lef_s_in)
-
-    print(verilog_d.json(indent=2))
 
     assert new_fpath == fpath
 

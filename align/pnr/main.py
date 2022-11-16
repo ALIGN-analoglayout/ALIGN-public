@@ -301,6 +301,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         os.chdir(current_working_dir)
 
 
+        with (working_dir / "__cap_map__.json").open("wt") as fp:
+            json.dump(cap_map, fp, indent=2)
+
         with (working_dir / "__cap_lef__").open("wt") as fp:
             fp.write(cap_lef_s)
 
@@ -317,12 +320,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
             new_cap_map.append(entry)
 
-        cap_map = new_cap_map
-
-        with (working_dir / "__cap_map__.json").open("wt") as fp:
-            json.dump(cap_map, fp, indent=2)
-
-        add_cap_dummy_connections(verilog_d, cap_map)
+        add_cap_dummy_connections(verilog_d, new_cap_map)
 
         with (input_dir/verilog_file).open("wt") as fp:
             json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
