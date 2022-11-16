@@ -236,7 +236,6 @@ workflows:
             branches:
               only:
                 - master
-                - dev/pythonic_placer
           matrix:
             alias: test-integration-cp38-manylinux_2_28
             parameters:
@@ -256,7 +255,6 @@ workflows:
             branches:
               only:
                 - master
-                - dev/pythonic_placer
           matrix:
             alias: build-wheel-all
             parameters:
@@ -267,7 +265,6 @@ workflows:
               python-tags:
                 # - "cp37-cp37m"
                 - "cp38-cp38"
-                - "cp311-cp311"
                 - "cp310-cp310"
             exclude:
               # Skipping these as they have been built by
@@ -285,7 +282,6 @@ workflows:
             branches:
               only:
                 - master
-                - dev/pythonic_placer
       - publish-wheel:
           requires:
             - build-wheel-all
@@ -293,4 +289,3 @@ workflows:
             branches:
               only:
                 - master
-                - dev/pythonic_placer
