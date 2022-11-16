@@ -310,14 +310,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
             p = working_dir / gdsFile
             with (p.parent / (p.stem + '.json')).open("rt") as fp:
                 layout_d = json.load(fp)
-            found_minus = any(term['netName'] == "dummy_gnd_MINUS" for term in layout_d['terminals'])
-            found_plus = any(term['netName'] == "dummy_gnd_PLUS" for term in layout_d['terminals'])
 
-            entry = { 'nm' : nm,
-                      'gdsFile': gdsFile,
-                      'dummy_gnd_MINUS': found_minus,
-                      'dummy_gnd_PLUS' : found_plus
-            }
+            entry = { 'nm' : nm, 'gdsFile' : gdsFile }
+            for pin in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
+                entry[pin] = any(term['netName'] == pin for term in layout_d['terminals'])
 
             new_cap_map.append(entry)
 
@@ -326,12 +322,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         with (working_dir / "__cap_map__.json").open("wt") as fp:
             json.dump(cap_map, fp, indent=2)
 
-
         add_cap_dummy_connections(verilog_d, cap_map)
 
         with (input_dir/verilog_file).open("wt") as fp:
             json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
-
 
 
     else:
