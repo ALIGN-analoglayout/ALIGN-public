@@ -600,9 +600,16 @@ class AppWithCallbacksAndState:
         return self.placement_graph, None, options
 
 
+import socket
+
+
 def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
-    awcas.app.run_server(debug=True,use_reloader=False)
+
+    hostname = socket.gethostname()
+    fully_qualified_domain_name = socket.getfqdn(hostname)
+
+    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel
