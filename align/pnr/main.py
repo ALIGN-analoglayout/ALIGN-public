@@ -19,7 +19,7 @@ from .write_constraint import PnRConstraintWriter
 from .. import PnR
 from ..schema import constraint
 from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
-from .manipulate_hierarchy import manipulate_hierarchy
+from .manipulate_hierarchy import manipulate_hierarchy, add_cap_dummy_connections
 
 from .placer import placer_driver, startup_gui
 from .router import router_driver
@@ -300,11 +300,39 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         os.chdir(current_working_dir)
 
-        with (working_dir / "__cap_map__.json").open("wt") as fp:
-            json.dump(cap_map, fp, indent=2)
 
         with (working_dir / "__cap_lef__").open("wt") as fp:
             fp.write(cap_lef_s)
+
+
+        new_cap_map = []
+        for nm, gdsFile in cap_map:
+            p = working_dir / gdsFile
+            with (p.parent / (p.stem + '.json')).open("rt") as fp:
+                layout_d = json.load(fp)
+            found_minus = any(term['netName'] == "dummy_gnd_MINUS" for term in layout_d['terminals'])
+            found_plus = any(term['netName'] == "dummy_gnd_PLUS" for term in layout_d['terminals'])
+
+            entry = { 'nm' : nm,
+                      'gdsFile': gdsFile,
+                      'dummy_gnd_MINUS': found_minus,
+                      'dummy_gnd_PLUS' : found_plus
+            }
+
+            new_cap_map.append(entry)
+
+        cap_map = new_cap_map
+
+        with (working_dir / "__cap_map__.json").open("wt") as fp:
+            json.dump(cap_map, fp, indent=2)
+
+
+        add_cap_dummy_connections(verilog_d, cap_map)
+
+        with (input_dir/verilog_file).open("wt") as fp:
+            json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
+
+
 
     else:
         pnr_const_ds = load_constraint_files(input_dir)

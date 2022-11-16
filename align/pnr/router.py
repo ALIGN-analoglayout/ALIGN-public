@@ -371,7 +371,7 @@ def router_driver(*, cap_map, cap_lef_s,
 
         idir = pathlib.Path(fpath)
          
-        cap_ctns = { str(pathlib.Path(gdsFile).stem) : gdsFile for atn, gdsFile in cap_map }
+        cap_ctns = { str(pathlib.Path(entry['gdsFile']).stem) : entry['gdsFile'] for entry in cap_map }
         print(cap_ctns)
         map_d_in = []
         for leaf in scaled_placement_verilog_d['leaves']:
