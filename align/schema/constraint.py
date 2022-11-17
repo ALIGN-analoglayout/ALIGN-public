@@ -409,7 +409,7 @@ class Spread(HardConstraint):
             )
 
         bvars = solver.iter_bbox_vars(self.instances)
-        for b1, b2 in itertools.pairwise(bvars):
+        for b1, b2 in plain_itertools.combinations(bvars, 2):
             if self.direction == 'horizontal':
                 yield cc(b1, b2, 'x')
             elif self.direction == 'vertical':

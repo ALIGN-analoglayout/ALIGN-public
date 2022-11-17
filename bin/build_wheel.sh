@@ -25,6 +25,11 @@ case "$AUDITWHEEL_PLAT" in
         apt update
         apt -y install libboost-dev lp-solve
     ;;
+    "manylinux_2_28_x86_64")
+	# Not debian based (AlmaLinux 8)
+        #apt update
+        #apt -y install libboost-dev lp-solve
+    ;;
     *)
         echo "WARNING: Unknown environment."
         echo "Please make sure you are using a supported manylinux platform to run this script"
