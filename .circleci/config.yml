@@ -181,17 +181,9 @@ workflows:
   version: 2.1
   commit:
     jobs:
-      - build-test-cktgen:
-          filters:
-            branches:
-              only:
-                - master
+      - build-test-cktgen
       - build-wheel:
           name: "build-wheel-cp38-manylinux_2_24"
-          filters:
-            branches:
-              only:
-                - master
           matrix:
             parameters:
               platform:
@@ -202,10 +194,6 @@ workflows:
           name: "build-wheel-cp310-manylinux_2_24"
           requires:
             - build-wheel-cp38-manylinux_2_24
-          filters:
-            branches:
-              only:
-                - master
           matrix:
             parameters:
               platform:
