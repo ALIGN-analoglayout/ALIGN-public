@@ -65,15 +65,18 @@ class ConstraintParser:
 
             do_not_identify = []
             for const in node.constraints:
-                if const.constraint == "group_blocks":
-                    continue
-                if const.constraint == "group_caps":
+                if isinstance(const, constraint.GroupBlocks) or \
+                    isinstance(const, constraint.GroupCaps):
                     continue
                 if hasattr(const, "instances") and len(const.instances) > 1:
                     do_not_identify.extend(const.instances)
                 elif hasattr(const, "pairs"):
                     for pair in const.pairs:
                         do_not_identify.extend(pair)
+                elif hasattr(const, "pins1") and const.pins1:
+                    _pin_inst = [pin.split('/')[0] for pin in const.pins1+const.pins2 if '/' in pin]
+                    do_not_identify.extend(_pin_inst)
+
 
             if len(do_not_identify) > 0:
                 do_not_identify = list(sorted(set(do_not_identify)))

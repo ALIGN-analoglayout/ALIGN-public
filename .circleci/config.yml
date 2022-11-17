@@ -222,24 +222,24 @@ workflows:
       #           - "quay.io/pypa/manylinux2010_x86_64" # PEP 571
       #         python-tags:
       #           - "cp37-cp37m" # Python 3.7
-      #- test-integration:
-      #    name: "test-integration-cp38-minimal"
-      #    requires:
-      #      - build-wheel-cp38-manylinux_2_24
-      #    filters:
-      #      branches:
-      #        ignore:
-      #          - master
-      #    matrix:
-      #      parameters:
-      #        platform:
-      #          - "python:3.8"
-      #        pdk:
-      #          - "Finfet"
-      #        ci-level:
-      #          - "checkin"
-      #        max-errors:
-      #          - "1"
+      - test-integration:
+          name: "test-integration-cp38-minimal"
+          requires:
+            - build-wheel-cp38-manylinux_2_24
+          filters:
+            branches:
+              ignore:
+                - master
+          matrix:
+            parameters:
+              platform:
+                - "python:3.8"
+              pdk:
+                - "Finfet"
+              ci-level:
+                - "checkin"
+              max-errors:
+                - "0"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:

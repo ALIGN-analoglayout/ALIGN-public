@@ -15,7 +15,7 @@ def mock_circuit():
     with types.set_context(library):
         subckt = SubCircuit(
             name='high_speed_comparator',
-            pins=['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss'])
+            pins=['clk', 'vcc', 'vin', 'vip', 'von', 'vop', 'vss', 'vinn', 'vinp', 'voutn', 'voutp'])
         dummy_sub = SubCircuit(
             name='dummy',
             pins=['D', 'G', 'S', 'B'])
@@ -53,7 +53,7 @@ def test_group_block_hsc(results_file, mock_circuit):
     with types.set_context(mock_circuit.constraints):
         mock_circuit.constraints.extend(constraints)
     with open(tmp_file, 'w') as outfile:
-        json.dump(PnRConstraintWriter().map_valid_const(mock_circuit.constraints), outfile, indent=4)
+        json.dump(PnRConstraintWriter().map_valid_const(mock_circuit.constraints, mock_circuit), outfile, indent=4)
     with open(tmp_file, "r") as const_fp:
         gen_const = json.load(const_fp)["constraints"]
         gen_const.sort(key=lambda item: item.get("const_name"))

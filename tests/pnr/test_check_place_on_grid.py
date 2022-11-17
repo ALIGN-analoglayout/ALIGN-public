@@ -48,15 +48,15 @@ def test_flatten_leaves():
             }
         ]
     }
-    leaves_gold = [
-        {'concrete_name': 'INV', 'name': 'XI0/INV', 'transformation': {'oX': 3000, 'oY': 0, 'sX': 1, 'sY': 1}},
-        {'concrete_name': 'INV', 'name': 'XI2/XI0/INV', 'transformation': {'oX': 0, 'oY': 10000, 'sX': 1, 'sY': -1}}
+    flat_leaves_gold = [
+        {'concrete_name': 'INV', 'name': 'XI0', 'transformation': {'oX': 3000, 'oY': 0, 'sX': 1, 'sY': 1}},
+        {'concrete_name': 'INV', 'name': 'XI2/XI0', 'transformation': {'oX': 0, 'oY': 10000, 'sX': 1, 'sY': -1}}
     ]
 
     placement['leaves'] = {x['concrete_name']: x for x in placement['leaves']}
     placement['modules'] = {x['concrete_name']: x for x in placement['modules']}
-    leaves = _flatten_leaves(placement, 'CKT_TOP_0')
-    assert leaves == leaves_gold, 'Value does not match golden'
+    flat_leaves = _flatten_leaves(placement, 'CKT_TOP_0')
+    assert flat_leaves == flat_leaves_gold, 'Value does not match golden'
 
 
 def test_check_place_on_grid():
@@ -67,28 +67,32 @@ def test_check_place_on_grid():
     ]
 
     # H and V pass
-    leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 40, 'oY': 150, 'sX': 1, 'sY': 1}}
-    _check_place_on_grid(leaf, constraints)
+    flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 40, 'oY': 150, 'sX': 1, 'sY': 1}}
+    _check_place_on_grid(flat_leaf, constraints)
 
-    leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 50, 'oY': 150, 'sX': 1, 'sY': 1}}
-    _check_place_on_grid(leaf, constraints)
+    flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 50, 'oY': 150, 'sX': 1, 'sY': 1}}
+    _check_place_on_grid(flat_leaf, constraints)
 
     # H fail due to offset
-    with pytest.raises(Exception):
-        leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}}
-        _check_place_on_grid(leaf, constraints)
+    with pytest.raises(AssertionError) as exe:
+        flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}}
+        _check_place_on_grid(flat_leaf, constraints)
+    assert "does not satisfy" in str(exe.value)
 
     # H fail due to scaling
-    with pytest.raises(Exception):
-        leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 50, 'sX': 1, 'sY': -1}}
-        _check_place_on_grid(leaf, constraints)
+    with pytest.raises(AssertionError) as exe:
+        flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 50, 'sX': 1, 'sY': -1}}
+        _check_place_on_grid(flat_leaf, constraints)
+    assert "does not satisfy" in str(exe.value)
 
     # V fail due to offset
-    with pytest.raises(Exception):
-        leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 7, 'oY': 50, 'sX': 1, 'sY': 1}}
-        _check_place_on_grid(leaf, constraints)
+    with pytest.raises(AssertionError) as exe:
+        flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 7, 'oY': 50, 'sX': 1, 'sY': 1}}
+        _check_place_on_grid(flat_leaf, constraints)
+    assert "does not satisfy" in str(exe.value)
 
     # V fail due to scaling
-    with pytest.raises(Exception):
-        leaf = {'name': 'CELL', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 50, 'sX': -1, 'sY': 1}}
-        _check_place_on_grid(leaf, constraints)
+    with pytest.raises(AssertionError) as exe:
+        flat_leaf = {'name': 'u0', 'concrete_name': 'CELL_0', 'transformation': {'oX': 0, 'oY': 50, 'sX': -1, 'sY': 1}}
+        _check_place_on_grid(flat_leaf, constraints)
+    assert "does not satisfy" in str(exe.value)

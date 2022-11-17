@@ -181,6 +181,17 @@ void GcellDetailRouter::ReturnInternalMetalContactALL(std::set<RouterDB::SinkDat
   }
 };
 
+void GcellDetailRouter::Grid_Inactive_One_Layer(Grid &grid, int layer){
+  // 1. find the vertices indices range in this layer, the first index of each layer is in grid.Start_index_metal_vertices
+  int start_index = grid.Start_index_metal_vertices.at(layer);
+  int end_index = grid.End_index_metal_vertices.at(layer);
+  // 2. set all vertices's active to false in this layer, the vector of vertices is grid.vertices_total
+  for (unsigned int i = start_index; i <= end_index; i++) {
+    grid.vertices_total.at(i).active = false;
+    //vertice's active = false
+  }
+}
+
 void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set, RouterDB::point &gridll, RouterDB::point &gridur) {
   gridll = grid.GetGridLL();
   gridur = grid.GetGridUR();
@@ -378,6 +389,9 @@ void GcellDetailRouter::create_detailrouter_new() {
       //grid.CreateGridData_new();
       int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
       Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
+      //grid is constructed to cover pins, when routing layer does not cover pins, inactive the pin layer
+      if (Nets[i].min_routing_layer == grid.lowest_metal + 1) Grid_Inactive_One_Layer(grid, grid.lowest_metal);
+      if (Nets[i].max_routing_layer == grid.highest_metal - 1) Grid_Inactive_One_Layer(grid, grid.highest_metal);
       int source_lock = 0;
       std::vector<RouterDB::SinkData> temp_source = Initial_source_pin(temp_pins, source_lock);  // initial source
       std::vector<std::vector<RouterDB::point>> add_plist;  // new feasible grid for routed net
@@ -995,7 +1009,18 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i) {
 
   Global_Path_Operation_For_Pins(i, global_path);
   Global_Path_Operation_For_Symmetry_Pins(i, global_path);  // do not need this part
-  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
+  int temp_lowest_metal = std::max(Nets[i].min_routing_layer, Gcell.lowest_metal);
+  int temp_highest_metal = std::min(Nets[i].max_routing_layer, Gcell.highest_metal);
+  for (auto c : Nets[i].connected) {
+    if (c.type == RouterDB::BLOCK) {
+      for (auto pin_contact : Blocks[c.iter2].pins[c.iter].pinContacts) {
+        temp_lowest_metal = std::min(pin_contact.metal, temp_lowest_metal);
+        temp_highest_metal = std::max(pin_contact.metal, temp_highest_metal);
+      }
+    }
+  }
+  //Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
+  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
 
   return grid;

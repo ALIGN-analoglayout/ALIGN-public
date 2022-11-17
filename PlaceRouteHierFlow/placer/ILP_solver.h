@@ -47,7 +47,7 @@ class ILP_solver {
   vector<Block> Blocks;
   placerDB::point LL, UR;
   double area = 0, area_ilp = 0., HPWL = 0, HPWL_ILP = 0., HPWL_extend = 0, HPWL_extend_terminal = 0, ratio = 0, linear_const = 0, multi_linear_const = 0;
-  double HPWL_extend_net_priority = 0;
+  double HPWL_extend_net_priority = 0, cfcost = 0;
   double area_norm = 0, HPWL_norm = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
@@ -56,7 +56,7 @@ class ILP_solver {
   static void lpsolve_logger(lprec* lp, void* userhandle, char* buf);
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
-  enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE};
+  enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE, CBC};
   int use_ilp_solver = SYMPHONY;
 
   int roundupint (const double& x) const {
@@ -66,23 +66,20 @@ class ILP_solver {
   inline void roundup(int& v, const int pitch) { v = pitch * ((v + pitch - 1) / pitch); }
   inline void rounddown(int& v, const int pitch) { v = pitch * (v / pitch); }
   bool MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, const bool genvalid = true);
-  bool FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
-  bool FrameSolveILPCbc(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushlb, const vector<placerDB::point>* prev);
+  bool FrameSolveILPCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const SOLVERTOUSE solvertouse, const bool snapGridILP, const vector<placerDB::point>* prev);
   bool PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushlb, const int numsol, const vector<placerDB::point>* prev = nullptr);
-  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1, bool flushlb = true, const vector<placerDB::point>* prev = nullptr)
+  bool FrameSolveILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool flushlb, const bool snapGridILP, const vector<placerDB::point>* prev = nullptr)
   {
-    //if (use_ilp_solver == SYMPHONY) 
-    bool no_place_on_grid{true};
-    for(unsigned int i=0;i<mydesign.Blocks.size();i++){
+    bool offsetpresent{false};
+    for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
       if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
           !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
-        no_place_on_grid = false;
+        offsetpresent = true;
         break;
       }
     }
-    if (no_place_on_grid) return FrameSolveILPSymphony(mydesign, curr_sp, drcInfo, flushlb, prev);
-    return FrameSolveILPCbc(mydesign, curr_sp, drcInfo, flushlb, prev);
-    //return FrameSolveILPLpsolve(mydesign, curr_sp, drcInfo, flushlb, prev);
+    if (!offsetpresent) return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, snapGridILP, prev);
+    return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, CBC, snapGridILP, prev);
   }
   std::vector<std::set<int>> GetCC(const design& mydesign) const;
   public:
@@ -96,12 +93,14 @@ class ILP_solver {
   int xdim() const { return UR.x - LL.x; }
   int ydim() const { return UR.y - LL.y; }
   double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
+  bool GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
   SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp);
   double CalculateCost(const design& mydesign) const;
   double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;
+  double CalculateCFCost(const design& mydesign, const SeqPair& curr_sp) ;
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
   //void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);

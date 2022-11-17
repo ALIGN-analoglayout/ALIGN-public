@@ -3,7 +3,6 @@ from ..schema import constraint, types
 from ..cell_fabric import transformation
 import json
 import pathlib
-import more_itertools
 logger = logging.getLogger(__name__)
 
 
@@ -80,85 +79,72 @@ def check_placement(placement_verilog_d, scale_factor):
         constraints.revert()
 
 
-def _transform_leaf(module, instance, leaf):
+def _transform_leaf(instance, leaf):
+    name_new = instance['instance_name']
     if 'transformation' in leaf:
         tr_leaf = transformation.Transformation(**leaf['transformation'])
+        assert 'name' in leaf
+        name_new += '/' + leaf['name']
     else:
-        tr_leaf = transformation.Transformation(**{'oX': leaf['bbox'][0], 'oY': leaf['bbox'][1], 'sX': 1, 'sY': 1})
+        tr_leaf = transformation.Transformation()
     tr_inst = transformation.Transformation(**instance['transformation'])
-    if 'name' in leaf:
-        name = leaf['name']
-    else:
-        name = leaf['concrete_name']
-    flat_leaf = dict()
-    flat_leaf['concrete_name'] = leaf['concrete_name']
-    flat_leaf['name'] = instance['instance_name'] + '/' + name
-    flat_leaf['transformation'] = transformation.Transformation.mult(tr_inst, tr_leaf).toDict()
-    module['leaves'].append(flat_leaf)
+    tr_new = transformation.Transformation.mult(tr_inst, tr_leaf)
+
+    return {'concrete_name': leaf['concrete_name'], 'name': name_new, 'transformation': tr_new.toDict()}
 
 
 def _flatten_leaves(placement, concrete_name):
     """ transform leaf coordinates to top level """
-    module = placement['modules'][concrete_name]
-    module['leaves'] = []
-    for instance in module['instances']:
-        leaf = placement['leaves'].get(instance['concrete_template_name'], False)
-        if leaf:
-            _transform_leaf(module, instance, leaf)
+    flat_leaves = []
+    for instance in placement['modules'][concrete_name]['instances']:
+        leaf = placement['leaves'].get(instance['concrete_template_name'], None)
+        if leaf is not None:
+            flat_leaves.append(_transform_leaf(instance, leaf))
         else:
-            leaves = _flatten_leaves(placement, instance['concrete_template_name'])
-            for leaf in leaves:
-                _transform_leaf(module, instance, leaf)
-    return module['leaves']
+            for leaf in _flatten_leaves(placement, instance['concrete_template_name']):
+                flat_leaves.append(_transform_leaf(instance, leaf))
+    return flat_leaves
 
 
-def _check_place_on_grid(leaf, constraints):
+def _check_place_on_grid(flat_leaf, constraints):
     for const in constraints:
         if const['direction'] == 'H':
-            o, s = leaf['transformation']['oY'], leaf['transformation']['sY']
+            o, s = flat_leaf['transformation']['oY'], flat_leaf['transformation']['sY']
         else:
-            o, s = leaf['transformation']['oX'], leaf['transformation']['sX']
+            o, s = flat_leaf['transformation']['oX'], flat_leaf['transformation']['sX']
 
         is_satisfied = False
         for term in const['ored_terms']:
             for offset in term['offsets']:
                 if (o - offset) % const['pitch'] == 0 and s in term['scalings']:
                     is_satisfied = True
-                    logger.debug(f'{leaf["name"]} satisfied {term} in {const}')
+                    logger.debug(f'{flat_leaf["name"]}@{flat_leaf["concrete_name"]} satisfied {term} in {const}')
                     break
             if is_satisfied:
                 break
-        assert is_satisfied, f'{leaf} does not satisfy {const}'
+        assert is_satisfied, f'{flat_leaf} does not satisfy {const}'
 
 
 def check_place_on_grid(placement_verilog_d, concrete_name, opath):
+    placement = {
+        'leaves': {x['concrete_name']: x for x in placement_verilog_d['leaves']},
+        'modules': {x['concrete_name']: x for x in placement_verilog_d['modules']}
+    }
 
-    if False:
-        # Load JSON file for easier debug
-        filename = (pathlib.Path(opath) / f'{concrete_name}.scaled_placement_verilog.json')
-        with (filename).open('rt') as fp:
-            placement_dict = json.load(fp)
-    else:
-        placement_dict = placement_verilog_d
-
-    placement = dict()
-    placement['leaves'] = {x['concrete_name']: x for x in placement_dict['leaves']}
-    placement['modules'] = {x['concrete_name']: x for x in placement_dict['modules']}
-    leaves = _flatten_leaves(placement, concrete_name)
+    flat_leaves = _flatten_leaves(placement, concrete_name)
 
     constrained_cns = dict()
-    all_cns = {x['concrete_name'] for x in leaves}
+    all_cns = {x['concrete_name'] for x in flat_leaves}
     for cn in all_cns:
         filename = pathlib.Path(opath) / '../inputs' / f'{cn}.json'
         if filename.exists() and filename.is_file():
             with filename.open("r") as fp:
                 data = json.load(fp)
                 if 'metadata' in data and 'constraints' in data['metadata']:
-                    place_on_grids = [c for c in data['metadata']['constraints'] if c['constraint'] == 'place_on_grid']
+                    place_on_grids = [c for c in data['metadata']['constraints'] if c['constraint'] == 'PlaceOnGrid']
                     if place_on_grids:
                         constrained_cns[cn] = place_on_grids
 
-    if constrained_cns:
-        for leaf in leaves:
-            if leaf['concrete_name'] in constrained_cns:
-                _check_place_on_grid(leaf, constrained_cns[leaf['concrete_name']])
+    for flat_leaf in flat_leaves:
+        if flat_leaf['concrete_name'] in constrained_cns:
+            _check_place_on_grid(flat_leaf, constrained_cns[flat_leaf['concrete_name']])

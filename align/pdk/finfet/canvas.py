@@ -1,7 +1,7 @@
 import pathlib
 import logging
 from align.primitive.default.canvas import DefaultCanvas
-from align.cell_fabric import Pdk, Region, SingleGrid, Wire
+from align.cell_fabric import Pdk, Region, SingleGrid, Wire, Via
 
 logger = logging.getLogger(__name__)
 
@@ -27,3 +27,6 @@ class CanvasPDK(DefaultCanvas):
             setattr(self, f"{layer}o", Wire(wire.nm, wire.layer, wire.direction,
                                             clg=wire.clg.copyShift(clg_offset),
                                             spg=wire.spg.copyShift(spg_offset)))
+
+        # VT
+        self.vt = self.addGen(Via('vt', 'VT', h_clg=self.m2.clg, v_clg=self.m1.clg, WidthX=self.pdk['VT']['WidthX'], WidthY=self.pdk['VT']['WidthY']))

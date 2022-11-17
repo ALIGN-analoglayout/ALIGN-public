@@ -9,6 +9,7 @@ import pprint
 import logging
 from ..schema import constraint
 import itertools
+import math
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -40,7 +41,7 @@ class PnRConstraintWriter:
                              'blocks':list(insts)})
 
 
-    def map_valid_const(self, all_const):
+    def map_valid_const(self, all_const, module):
         """
         Maps input format to pnr format
         """
@@ -48,10 +49,16 @@ class PnRConstraintWriter:
 
         # Start mapping
         pnr_const = []
+        pwrgndclkports = set()
+        for input_const in all_const:
+            if input_const.constraint in ['PowerPorts', 'GroundPorts', 'ClockPorts']:
+                for k in input_const.ports: pwrgndclkports.add(k)
+        maxrmsc = -1.
+
         for input_const in constraint.expand_user_constraints(all_const):
 
             # Create dict for PnR constraint and rename constraint to const_name
-            const = input_const.dict(exclude={'constraint'}, exclude_unset=False)
+            const = input_const.dict(exclude={'constraint', '_instance_attribute'}, exclude_unset=False)
             const['const_name'] = input_const.__class__.__name__
 
             # Rename instances to blocks
@@ -60,7 +67,7 @@ class PnRConstraintWriter:
                 del const['instances']
 
             # Exclude constraints not to be exposed to PnR
-            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler', 'SameTemplate']:
+            if const['const_name'] in ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler', 'SameTemplate', 'PlaceOnBoundary']:
                 continue
 
             # Exclude constraints that need to be to multiple constraints
@@ -170,6 +177,60 @@ class PnRConstraintWriter:
                 for (b1, b2) in itertools.combinations(const['blocks'], 2):
                     extra = {"const_name": 'MatchBlock', "block1": b1, "block2": b2}
                     pnr_const.append(extra)
+            elif const["const_name"] == 'ChargeFlow' and 'pin_current' in const and 'time' in const:
+                time = const['time']
+                nets = dict()
+                if "instances" in module:
+                    for inst in module['instances']:
+                        instname = inst['instance_name'] if 'instance_name' in inst else ""
+                        if "fa_map" in inst:
+                            for fa in inst["fa_map"]:
+                                net = fa["actual"]
+                                if net in pwrgndclkports: continue
+                                if net not in nets: nets[net] = set()
+                                nets[net].add(instname + '/' + fa["formal"])
+                if 'scaled_rms_charge_flow' not in const: const['scaled_rms_charge_flow'] = dict()
+                for net, pins in nets.items():
+                    pc = dict()
+                    for pin in pins:
+                        if pin in const['pin_current']:
+                            pc[pin] = const['pin_current'][pin]
+                    if len(pc):
+                        ppcurrents = dict()
+                        for i in range(len(time)):
+                            srccurr = dict()
+                            snkcurr = dict()
+                            sumc = 0.
+                            for pin, current in pc.items():
+                                if current[i] >= 0:
+                                    srccurr[pin] = current[i]
+                                    sumc += current[i]
+                                else:
+                                    snkcurr[pin] = current[i]
+                            for snk in snkcurr:
+                                for src in srccurr:
+                                    if (src, snk) not in ppcurrents and (snk, src) not in ppcurrents:
+                                        ppcurrents[(src, snk)] = [0 for i in range(len(time))]
+                                    if (src, snk) in ppcurrents:
+                                        ppcurrents[(src, snk)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
+                                    elif (snk, src) in ppcurrents:
+                                        ppcurrents[(snk, src)][i] = abs(snkcurr[snk]) * srccurr[src] / sumc
+                        rmsc = dict()
+                        for (src, snk) in ppcurrents:
+                            rmsc[f'{src},{snk}'] = math.sqrt(sum([(time[i + 1] - time[i]) * (ppcurrents[(src, snk)][i] + ppcurrents[(src, snk)][i + 1]) ** 2 / 4 for i in range(len(time) -1)]) / (time[-1] - time[0]))
+                        if len(rmsc): 
+                            const['scaled_rms_charge_flow'][net] = rmsc
+                            maxrmsc = max(maxrmsc, max([v for k,v in rmsc.items()]))
+                const.pop('time')
+                const.pop('pin_current')
+
+        if maxrmsc > 0.:
+            for const in pnr_const:
+                if 'scaled_rms_charge_flow' in const:
+                    for net, ppairs in const['scaled_rms_charge_flow'].items():
+                        for k in ppairs:
+                            ppairs[k] /= maxrmsc
+
         self.merge_sametemplate_const(all_const, pnr_const)
         logger.debug(f"Constraints mapped to PnR constraints: {pnr_const}")
         return {'constraints': pnr_const}

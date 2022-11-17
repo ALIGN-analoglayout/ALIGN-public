@@ -37,8 +37,8 @@ def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
         color="ordering",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['aspect_ratio','area'],
         opacity=0.8
@@ -99,8 +99,8 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
         color="ordering",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -184,8 +184,8 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -232,8 +232,8 @@ def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -269,8 +269,8 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -308,8 +308,8 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -515,8 +515,8 @@ class AppWithCallbacksAndState:
 
         fig.update_layout(
             autosize=False,
-            width=1024,
-            height=1024,
+            width=600,
+            height=600,
             title=title_d
         )
 

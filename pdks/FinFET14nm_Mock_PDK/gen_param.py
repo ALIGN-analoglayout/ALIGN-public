@@ -21,9 +21,9 @@ def limit_pairs(pairs):
         return pairs
 
 def construct_sizes_from_exact_patterns(exact_patterns):
-                        
+
     legal_size_d = {}
-    
+
     for pattern in exact_patterns:
         histo = Counter(c for row in pattern for c in row)
         num_devices = len(set(c.upper() for c in histo.keys()))
@@ -95,7 +95,7 @@ def add_primitive(primitives, block_name, block_args, generator_constraint):
                         logger.debug(f"Adding matching primitive of size {newx} {newy} {generator_constraint}")
                     else:
                         logger.debug(f"Not adding primitive of size {newx} {newy} because it doesn't match {generator_constraint}")
-                
+
                 if ok:
                     concrete_name = f'{block_name}_X{newx}_Y{newy}'
                     if concrete_name not in primitives:
@@ -113,7 +113,7 @@ def gen_param(subckt, primitives, pdk_dir):
 
     generator_constraint = None
     for const in subckt.constraints:
-        if const.constraint == 'generator':
+        if const.constraint == 'Generator':
             assert generator_constraint is None
             generator_constraint = const
 
@@ -211,7 +211,7 @@ def gen_param(subckt, primitives, pdk_dir):
             size = 0
 
         logger.debug(f"Generating lef for {block_name}")
-    
+
         if isinstance(size, int):
             for key in mvalues:
                 assert int(mvalues[device_name]["NFIN"]) == int(mvalues[key]["NFIN"]), f"NFIN should be same for all devices in {block_name} {mvalues}"
@@ -232,14 +232,14 @@ def gen_param(subckt, primitives, pdk_dir):
             if  unequal_devices:
                 yval = 1
                 xval = int(no_units)
-    
+
         if generator_constraint is not None:
                 generator_parameters = generator_constraint.parameters
                 if generator_parameters is not None:
                     exact_patterns = generator_parameters.get('exact_patterns')
                     if exact_patterns is not None:
                         yval = len(exact_patterns[0])
-                        xval = len(exact_patterns[0][0]) if len(device_name_all) !=2 else len(exact_patterns[0][0])//2 
+                        xval = len(exact_patterns[0][0]) if len(device_name_all) !=2 else len(exact_patterns[0][0])//2
 
         block_args = {
             'primitive': generator_name,
