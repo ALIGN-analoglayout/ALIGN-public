@@ -37,8 +37,8 @@ def make_tradeoff_fig_wh(df, log=False, scale='Blugrn'):
         color="ordering",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['aspect_ratio','area'],
         opacity=0.8
@@ -99,8 +99,8 @@ def make_tradeoff_fig_aa(df, log=False, scale='Blugrn'):
         color="ordering",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -184,8 +184,8 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -232,8 +232,8 @@ def make_tradeoff_fig_nn(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -269,8 +269,8 @@ def make_tradeoff_fig_ac(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -308,8 +308,8 @@ def make_tradeoff_fig_hc(df, log=False, scale='Blugrn'):
         color="constraint_penalty",
         color_continuous_scale=scale,
         size="size",
-        width=800,
-        height=800,
+        width=600,
+        height=600,
         hover_name="concrete_template_name",
         hover_data=['width','height']
     )
@@ -515,8 +515,8 @@ class AppWithCallbacksAndState:
 
         fig.update_layout(
             autosize=False,
-            width=1024,
-            height=1024,
+            width=600,
+            height=600,
             title=title_d
         )
 
@@ -600,9 +600,24 @@ class AppWithCallbacksAndState:
         return self.placement_graph, None, options
 
 
+import socket
+from contextlib import closing
+
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
 def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
-    awcas.app.run_server(debug=True,use_reloader=False)
+
+    hostname = socket.gethostname()
+    fully_qualified_domain_name = socket.getfqdn(hostname)
+    free_port = find_free_port()
+
+    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=free_port)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel
