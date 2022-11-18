@@ -104,16 +104,16 @@ def test_AlignInOrder_smt_checking(db):
 
 def test_AspectRatio_input_sanitation(db):
     with set_context(db):
-        constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
+        constraint.AspectRatio(ratio_low=0.1, ratio_high=0.5)
         with pytest.raises(Exception):
-            constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
+            constraint.AspectRatio(ratio_low=0.6, ratio_high=0.5)
 
 
 def test_AspectRatio_smt_checking(db):
     with set_context(db):
-        db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5))
+        db.append(constraint.AspectRatio(ratio_low=0.1, ratio_high=0.5))
         with pytest.raises(SolutionNotFoundError):
-            db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=1.0))
+            db.append(constraint.AspectRatio(ratio_low=0.6, ratio_high=1.0))
 
 
 def test_Floorplan(db):

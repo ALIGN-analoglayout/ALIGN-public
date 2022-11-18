@@ -1,35 +1,22 @@
 import pathlib
 import os
-import io
-import sys
 import logging
 import json
-import re
-import itertools
-
-import copy
-
 from collections import defaultdict
 
-from ..cell_fabric.pdk import Pdk
-
-from .checkers import gen_viewer_json, gen_transformation
-from ..cell_fabric import gen_gds_json, transformation
+from .checkers import gen_viewer_json
+from ..cell_fabric import gen_gds_json
 from .write_constraint import PnRConstraintWriter
-from .. import PnR
-from ..schema import constraint
-from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
+from ..schema.hacks import VerilogJsonTop
 from .manipulate_hierarchy import manipulate_hierarchy, add_cap_dummy_connections
 
 from .placer import placer_driver, startup_gui
 from .router import router_driver
 from .cap_placer import cap_placer_driver
 
-import copy
+import shutil
 
 logger = logging.getLogger(__name__)
-
-from memory_profiler import profile
 
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True,
@@ -218,6 +205,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:prep' in steps_to_run:
         # Create working & input directories
+        shutil.rmtree(working_dir, ignore_errors=True)
+        shutil.rmtree(input_dir, ignore_errors=True)
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
 

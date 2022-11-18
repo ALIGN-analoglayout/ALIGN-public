@@ -3228,7 +3228,6 @@
           "constraint": "aspect_ratio",
           "ratio_high": 2.0,
           "ratio_low": 1.0,
-          "subcircuit": "ckt_place_cmp_1",
           "weight": 1
         },
         {

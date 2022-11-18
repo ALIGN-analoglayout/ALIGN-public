@@ -450,7 +450,6 @@ class AspectRatio(HardConstraint):
     `ratio_low` <= width/height <= `ratio_high`
 
     Args:
-        subcircuit (str) : Name of subciruit
         ratio_low (float): Minimum aspect ratio (default 0.1)
         ratio_high (float): Maximum aspect ratio (default 10)
         weight (int): Weigth of this constraint (default 1)
@@ -459,7 +458,6 @@ class AspectRatio(HardConstraint):
 
         {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 10, "weight": 1 }
     """
-    subcircuit: str
     ratio_low: float = 0.1
     ratio_high: float = 10
     weight: int = 1
@@ -482,15 +480,13 @@ class Boundary(HardConstraint):
     Define `max_height` and/or `max_width` on a subcircuit in micrometers.
 
     Args:
-        subcircuit (str) : Name of subcircuit
         max_width (float, Optional) = 10000
         max_height (float, Optional) = 10000
 
     Example: ::
 
-        {"constraint": "Boundary", "subcircuit": "OTA", "max_height": 100 }
+        {"constraint": "Boundary", "max_height": 100 }
     """
-    subcircuit: str
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
@@ -654,6 +650,12 @@ class Floorplan(UserConstraint):
                             pairs.append([region[i+1]])
                 logger.debug(f'Symmetric blocks:\n{pairs}')
                 yield SymmetricBlocks(pairs=pairs, direction='V')
+            # Do not identify these instances if both ordered and symmetric
+            if self.symmetrize and self.order:
+                instances = list()
+                for region in self.regions:
+                    instances.extend(region)
+                yield DoNotIdentify(instances=instances)
 
 
 #

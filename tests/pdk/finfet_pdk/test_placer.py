@@ -36,7 +36,7 @@ def test_place_cmp_1():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL,
@@ -114,7 +114,7 @@ def test_place_cmp_2():
         {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "xccn"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -179,7 +179,7 @@ def test_place_cmp_seed(seed, analytical_placer):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -245,7 +245,7 @@ def test_cmp_analytical():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -265,7 +265,7 @@ def comparator_constraints(name):
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
@@ -448,7 +448,7 @@ def test_sub_1():
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mp0"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn1"], ["mp1"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn2"], ["mp2"]]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
+        {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
