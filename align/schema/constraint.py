@@ -654,6 +654,12 @@ class Floorplan(UserConstraint):
                             pairs.append([region[i+1]])
                 logger.debug(f'Symmetric blocks:\n{pairs}')
                 yield SymmetricBlocks(pairs=pairs, direction='V')
+            # Do not identify these instances if both ordered and symmetric
+            if self.symmetrize and self.order:
+                instances = list()
+                for region in self.regions:
+                    instances.extend(region)
+                yield DoNotIdentify(instances=instances)
 
 
 #

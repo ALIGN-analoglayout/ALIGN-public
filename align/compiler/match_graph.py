@@ -36,7 +36,7 @@ class Annotate:
     def _is_skip(self, ckt):
         di_const = [
             const.instances
-            for const in ckt.constraints
+            for const in constraint.expand_user_constraints(ckt.constraints)
             if isinstance(const, constraint.DoNotIdentify)
         ]
         # Changing 2D list to 1D list
