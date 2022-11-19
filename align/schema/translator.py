@@ -54,8 +54,7 @@ class ConstraintTranslator():
                         for x in [
                             constraint.HorizontalDistance,
                             constraint.VerticalDistance,
-                            constraint.BlockDistance,
-                            constraint.CompactPlacement,
+                            constraint.BlockDistance
                         ]
                     ):
                         self.child_const.append(const)

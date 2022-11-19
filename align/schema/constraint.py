@@ -701,30 +701,6 @@ class PlaceSymmetric(SoftConstraint):
         return value
 
 
-class CompactPlacement(SoftConstraint):
-    """CompactPlacement
-
-    Defines snapping position of placement for all blocks in design.
-
-    Args:
-        style (str): Following options are available.
-
-            :obj:`'left'`, Moves all instances towards left during post-processing of placement.
-
-            :obj:`'right'`, Moves all instances towards right during post-processing of placement.
-
-            :obj:`'center'`, Moves all instances towards center during post-processing of placement.
-
-    Example: ::
-
-        {"constraint": "CompactPlacement", "style": "center"}
-    """
-    style: Literal[
-        'left', 'right',
-        'center'
-    ] = 'left'
-
-
 class SameTemplate(SoftConstraint):
     """SameTemplate
 
@@ -1528,7 +1504,6 @@ ConstraintType = Union[
     AlignInOrder,
     # Legacy Align constraints
     # (SoftConstraints)
-    CompactPlacement,
     Generator,
     SameTemplate,
     CreateAlias,

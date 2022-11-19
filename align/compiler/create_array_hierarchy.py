@@ -318,8 +318,7 @@ def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
                 for x in [
                     constraint.HorizontalDistance,
                     constraint.VerticalDistance,
-                    constraint.BlockDistance,
-                    constraint.CompactPlacement,
+                    constraint.BlockDistance
                 ]
             ):
                 child.constraints.append(const)
