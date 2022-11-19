@@ -8,10 +8,6 @@
           "abs_distance": 0
         },
         {
-          "constraint": "CompactPlacement",
-          "style": "center"
-        },
-        {
           "constraint": "SymmetricBlocks",
           "pairs": [
             [

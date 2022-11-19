@@ -9,10 +9,6 @@
             "distance": 0
         },
         {
-            "const_name": "CompactPlacement",
-            "style": "center"
-        },
-        {
             "pairs": [
                 {
                     "type": "selfsym",

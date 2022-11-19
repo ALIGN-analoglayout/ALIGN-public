@@ -1,5 +1,4 @@
 [
-    {"constraint": "CompactPlacement", "style": "center"},
     {"constraint": "GroupBlocks", "instances": ["M00", "M01"],   "instance_name": "xdp"},
     {"constraint": "GroundPorts", "ports": ["VGND"]},
     {"constraint": "Order",
