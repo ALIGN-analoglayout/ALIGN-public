@@ -54,7 +54,7 @@ def check_placement(placement_verilog_d, scale_factor):
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
 
-            # logger.info(f"{inst['instance_name']}: {bbox=}")
+            logger.debug(f"{inst['instance_name']}: {bbox=}")
 
             with types.set_context(constraints):
                 constraints.append(

@@ -175,14 +175,14 @@ def test_place_sequence_pair_boundary():
     n = 5
     constraints, instance_map = initialize_constraints(n)
     with set_context(constraints):
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=8))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=8))
     instance_sizes = {f"M{k}": (2, 2) for k in range(n)}
     sequence_pair = ([k for k in range(n)], [k for k in range(n)])
     assert not place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair)
 
     with set_context(constraints):
         constraints.pop()
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=10))
     solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair)
     draw(solution['model'], instance_map)
     for v in solution['model'].vars:
@@ -196,7 +196,7 @@ def test_place_sequence_pair_place_on_boundary():
     n = 4
     constraints, instance_map = initialize_constraints(n)
     with set_context(constraints):
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=10))
         constraints.append(constraint_schema.PlaceOnBoundary(northwest="M0", northeast="M1", southwest="M2", southeast="M3"))
     instance_sizes = {f"M{k}": (1+k, 1+k) for k in range(n)}
     sequence_pair = ([0, 1, 2, 3], [2, 3, 0, 1])
