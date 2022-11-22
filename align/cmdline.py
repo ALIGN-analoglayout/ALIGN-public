@@ -106,6 +106,12 @@ class CmdlineParser():
                             choices=['top_down','bottom_up','no_op'],
                             help='Router mode')
 
+        parser.add_argument('--router',
+                            type=str,
+                            default='astar',
+                            choices=['astar','hanan'],
+                            help='Router to use')
+
         parser.add_argument('--gui',
                             action='store_true',
                             help='Run in GUI mode')

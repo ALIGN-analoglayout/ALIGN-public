@@ -333,7 +333,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
 def router_driver(*, cap_map, cap_lef_s, 
                   numLayout, effort, adr_mode, PDN_mode,
-                  router_mode, skipGDS, scale_factor,
+                  router_mode, router, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args_d, results_dir, verilog_ds_to_run):
 
     fpath = toplevel_args_d['input_dir']
@@ -410,8 +410,12 @@ def router_driver(*, cap_map, cap_lef_s,
 
         placements_to_run = None
 
-        res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                     router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+        if router == 'astar':
+            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+        else:
+            res = hanan_route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                         skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
         res_dict.update(res)
     

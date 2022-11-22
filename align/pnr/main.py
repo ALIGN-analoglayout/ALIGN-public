@@ -197,14 +197,14 @@ def write_verilog_d(verilog_d):
         "global_signals":verilog_d.global_signals}
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
-                 gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
+                 gds_json=False, PDN_mode=False, router_mode='top_down', router='astar', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
                  placer_sa_iterations=10000, placer_ilp_runtime=1):
 
     subckt = subckt.upper()
 
     logger.info(f"Running Place & Route for {subckt}")
-    logger.debug(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
+    logger.debug(f"Running Place & Route for {subckt} {router_mode} {router} {steps_to_run}")
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
@@ -396,7 +396,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         results_name_map = router_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                                          numLayout=toplevel_args_d['nvariants'], effort=toplevel_args_d['effort'],
                                          adr_mode=False, PDN_mode=PDN_mode,
-                                         router_mode=router_mode, skipGDS=skipGDS, scale_factor=scale_factor,
+                                         router_mode=router_mode, router=router, skipGDS=skipGDS, scale_factor=scale_factor,
                                          nroutings=nroutings, primitives=primitives, toplevel_args_d=toplevel_args_d, results_dir=None,
                                          verilog_ds_to_run=verilog_ds_to_run)
 
