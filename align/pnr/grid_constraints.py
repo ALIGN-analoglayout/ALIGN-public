@@ -77,7 +77,6 @@ def gen_constraints_for_module(m, modules, leaves):
         if ctn in leaves:
             try:
                 constraints = leaves[ctn]['constraints']
-
             except KeyError:
                 pass
         elif ctn in modules:
@@ -114,6 +113,7 @@ def gen_constraints_for_module(m, modules, leaves):
 
     if pog_constraints:
         m['constraints'].extend(cnst.dict() for cnst in split_directions_and_merge(*pog_constraints))
+        logger.debug(f"{m}")
 
 
 def gen_constraints(placement_verilog_d, top_level_name):
