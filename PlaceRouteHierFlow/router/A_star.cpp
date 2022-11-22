@@ -117,6 +117,9 @@ std::vector<std::vector<RouterDB::Metal>> A_star::ConvertPathintoPhysical(Grid &
 std::vector<std::vector<int>> A_star::GetExtendLabel() { return Extend_labels; }
 
 int A_star::Manhattan_distan(int sindex, Grid &grid) {
+  /**
+   * old code
+   * 
   std::set<int> Mdis;
 
   for (int i = 0; i < (int)dest.size(); i++) {
@@ -131,6 +134,13 @@ int A_star::Manhattan_distan(int sindex, Grid &grid) {
   int dis = *it;
 
   return dis;
+  **/
+  int max_dis = 0;
+  for (int i = 0; i < (int)dest.size(); i++) {
+    int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
+    max_dis = std::max(max_dis, temp_dis);
+  }
+  return max_dis;
 };
 
 void A_star::initial_source(Grid &grid, std::set<std::pair<int, int>, RouterDB::pairComp> &L_list, std::vector<int> &source) {
