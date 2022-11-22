@@ -210,8 +210,7 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
       int mIdx = mit->metalIdx;
       if (drc_info.Metal_info[mIdx].direct == 0) {
         // vertical
-        if (mIdx < this->layerNo - 1) {
-          int vIdx = mIdx;
+        if (mIdx < this->layerNo - 1 || mIdx > 0) {
           box.LL.x = mit->coord[0].x;
           box.LL.y = mit->coord[0].y - drc_info.Metal_info[mIdx].dist_ee;
           box.UR.x = mit->coord[1].x;
@@ -219,32 +218,14 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
           // current metal cannot go up
           ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
-        if (mIdx > 0) {
-          int vIdx = mIdx - 1;
-          box.LL.x = mit->coord[0].x;
-          box.LL.y = mit->coord[0].y - drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.x = mit->coord[1].x;
-          box.UR.y = mit->coord[1].y + drc_info.Metal_info[mIdx].dist_ee;
-          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-        };
       } else {
         // horizontal
-        if (mIdx < this->layerNo - 1) {
-          int vIdx = mIdx;
+        if (mIdx < this->layerNo - 1 || mIdx > 0) {
           box.LL.x = mit->coord[0].x - drc_info.Metal_info[mIdx].dist_ee;
           box.LL.y = mit->coord[0].y;
           box.UR.x = mit->coord[1].x+ drc_info.Metal_info[mIdx].dist_ee;
           box.UR.y = mit->coord[1].y;
           // current metal cannot go up
-          ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-        };
-        if (mIdx > 0) {
-          int vIdx = mIdx - 1;
-          box.LL.x = mit->coord[0].x - drc_info.Metal_info[mIdx].dist_ee;
-          box.LL.y = mit->coord[0].y;
-          box.UR.x = mit->coord[1].x + drc_info.Metal_info[mIdx].dist_ee;
-          box.UR.y = mit->coord[1].y;
-          // current metal cannot go down
           ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
         };
       }
