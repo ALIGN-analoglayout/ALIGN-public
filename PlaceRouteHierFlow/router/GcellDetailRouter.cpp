@@ -1,5 +1,4 @@
 #include "GcellDetailRouter.h"
-
 #include "spdlog/spdlog.h"
 
 GcellDetailRouter::GcellDetailRouter(){
