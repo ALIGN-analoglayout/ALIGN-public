@@ -1594,14 +1594,13 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
     if (vertices_total_map.at(k).empty()) {
       continue;
     }
-    std::set<int> vSet;
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator low = vertices_total_map.at(k).lower_bound(minP);
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator high = vertices_total_map.at(k).upper_bound(maxP);
     for (std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator pit = low; pit != high; ++pit) {
       int i = pit->second;
       if (vertices_total.at(i).active) {
         if (vertices_total.at(i).x >= LLx && vertices_total.at(i).x <= URx && vertices_total.at(i).y >= LLy && vertices_total.at(i).y <= URy) {
-          vertices_graph.push_back(vertices_total.at(i));
+          vertices_graph.emplace_back(vertices_total.at(i));
           total2graph[i] = vertices_graph.size() - 1;
           graph2total[vertices_graph.size() - 1] = i;
         }
@@ -3216,13 +3215,13 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
               }
             } else {
               if (Vgrid.at(i).at(x).at(y) == -1) {
-                tracks.at(*it).push_back(std::make_pair(start, Vgrid.at(i).at(x).at(y - 1)));
+                tracks.at(*it).emplace_back(std::make_pair(start, Vgrid.at(i).at(x).at(y - 1)));
                 start = -1;
               }
             }
           }
           if (start != -1) {
-            tracks.at(*it).push_back(std::make_pair(start, Vgrid.at(i).at(x).at(Vgrid.at(i).at(x).size() - 1)));
+            tracks.at(*it).emplace_back(std::make_pair(start, Vgrid.at(i).at(x).at(Vgrid.at(i).at(x).size() - 1)));
           }
         }
       } else {  // horizontal
@@ -3235,13 +3234,13 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
               }
             } else {
               if (Hgrid.at(i).at(y).at(x) == -1) {
-                tracks.at(*it).push_back(std::make_pair(start, Hgrid.at(i).at(y).at(x - 1)));
+                tracks.at(*it).emplace_back(std::make_pair(start, Hgrid.at(i).at(y).at(x - 1)));
                 start = -1;
               }
             }
           }
           if (start != -1) {
-            tracks.at(*it).push_back(std::make_pair(start, Hgrid.at(i).at(y).at(Hgrid.at(i).at(y).size() - 1)));
+            tracks.at(*it).emplace_back(std::make_pair(start, Hgrid.at(i).at(y).at(Hgrid.at(i).at(y).size() - 1)));
           }
         }
       }
@@ -3337,18 +3336,18 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
             RouterDB::vertex tmpv;
             bool pmark = false;
             if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
+              tmpv.gridmetal.emplace_back(i + 1);
               pmark = true;
             } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
+              tmpv.gridmetal.emplace_back(i - 1);
               pmark = true;
             } else {
               if (Y % y_unit.at(i - 1) == drc_info.Metal_info[i - 1].offset) {
-                tmpv.gridmetal.push_back(i - 1);
+                tmpv.gridmetal.emplace_back(i - 1);
                 pmark = true;
               }
               if (Y % y_unit.at(i + 1) == drc_info.Metal_info[i + 1].offset) {
-                tmpv.gridmetal.push_back(i + 1);
+                tmpv.gridmetal.emplace_back(i + 1);
                 pmark = true;
               }
             }
@@ -3395,11 +3394,11 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
                 }
               }
               if (mark) {
-                tmpv.south.push_back(w);
-                this->vertices_total.at(w).north.push_back(tmpv.index);
+                tmpv.south.emplace_back(w);
+                this->vertices_total.at(w).north.emplace_back(tmpv.index);
               }
             }
-            this->vertices_total.push_back(tmpv);
+            this->vertices_total.emplace_back(tmpv);
             this->vertices_total_map.at(i).insert(
                 std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
           }
@@ -3463,18 +3462,18 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
             RouterDB::vertex tmpv;
             bool pmark = false;
             if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
+              tmpv.gridmetal.emplace_back(i + 1);
               pmark = true;
             } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
+              tmpv.gridmetal.emplace_back(i - 1);
               pmark = true;
             } else {
               if (X % x_unit.at(i - 1) == drc_info.Metal_info[i - 1].offset) {
-                tmpv.gridmetal.push_back(i - 1);
+                tmpv.gridmetal.emplace_back(i - 1);
                 pmark = true;
               }
               if (X % x_unit.at(i + 1) == drc_info.Metal_info[i + 1].offset) {
-                tmpv.gridmetal.push_back(i + 1);
+                tmpv.gridmetal.emplace_back(i + 1);
                 pmark = true;
               }
             }
@@ -3521,11 +3520,11 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
                 }
               }
               if (mark) {
-                tmpv.west.push_back(w);
-                this->vertices_total.at(w).east.push_back(tmpv.index);
+                tmpv.west.emplace_back(w);
+                this->vertices_total.at(w).east.emplace_back(tmpv.index);
               }
             }
-            this->vertices_total.push_back(tmpv);
+            this->vertices_total.emplace_back(tmpv);
             this->vertices_total_map.at(i).insert(
                 std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
           }
