@@ -194,7 +194,7 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
   gridur = grid.GetGridUR();
 
   RouterDB::box box;
-  std::vector<std::vector<RouterDB::point>> plist(this->layerNo);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> plist(this->layerNo);
 
   // std::cout<<"Detail path region ( "<<gridll.x<<" "<<gridll.y<<") ( "<<gridur.x<<" "<<gridur.y<<" ) "<<std::endl;
   // std::cout<<"Gcell Detail Router Check point 8"<<std::endl;
@@ -213,7 +213,7 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
         box.UR.x = mit->coord[1].x;
         box.UR.y = mit->coord[1].y + drc_info.Metal_info[mIdx].dist_ee;
         // current metal cannot go up
-        ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        ConvertRect2GridPoints_set(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
       };
     } else {
       // horizontal
@@ -223,15 +223,15 @@ void GcellDetailRouter::Grid_Inactive_new(Grid &grid, std::set<RouterDB::SinkDat
         box.UR.x = mit->coord[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = mit->coord[1].y;
         // current metal cannot go up
-        ConvertRect2GridPoints(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        ConvertRect2GridPoints_set(plist, mIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
       };
     }
   }
 
   // convert vector into set
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Plist = Plist2Set(plist);
+  //std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Plist = Plist2Set(plist);
   // block via to avoid
-  grid.InactivePointlist(Plist);
+  grid.InactivePointlist(plist);
 };
 
 void GcellDetailRouter::Detailed_router_set_src_dest_new(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest,

@@ -13,8 +13,6 @@ Grid::Grid(const Grid& other)
       End_index_metal_vertices(other.End_index_metal_vertices),
       Source(other.Source),
       Dest(other.Dest),
-      SourceGraph(other.SourceGraph),
-      DestGraph(other.DestGraph),
       x_unit(other.x_unit),
       y_unit(other.y_unit),
       x_min(other.x_min),
@@ -34,13 +32,10 @@ Grid::Grid(const Grid& other)
 //  this->total2graph=other.total2graph;
 //  this->graph2total=other.graph2total;
 //  this->vertices_total=other.vertices_total;
-//  this->vertices_graph=other.vertices_graph;
 //  this->Start_index_metal_vertices=other.Start_index_metal_vertices;
 //  this->End_index_metal_vertices=other.End_index_metal_vertices;
 //  this->Source=other.Source;
 //  this->Dest=other.Dest;
-//  this->SourceGraph=other.SourceGraph;
-//  this->DestGraph=other.DestGraph;
 //  this->x_unit=other.x_unit;
 //  this->y_unit=other.y_unit;
 //  this->x_min= other.x_min;
@@ -67,8 +62,6 @@ Grid& Grid::operator=(const Grid& other) {
   this->End_index_metal_vertices = other.End_index_metal_vertices;
   this->Source = other.Source;
   this->Dest = other.Dest;
-  this->SourceGraph = other.SourceGraph;
-  this->DestGraph = other.DestGraph;
   this->x_unit = other.x_unit;
   this->y_unit = other.y_unit;
   this->x_min = other.x_min;
@@ -1716,8 +1709,6 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
   vertices_graph.clear();
   total2graph.clear();
   graph2total.clear();
-  SourceGraph.clear();
-  DestGraph.clear();
   RouterDB::point minP, maxP;
   minP.x = LLx;
   minP.y = LLy;
@@ -1731,57 +1722,16 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator low = vertices_total_map.at(k).lower_bound(minP);
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator high = vertices_total_map.at(k).upper_bound(maxP);
     for (std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator pit = low; pit != high; ++pit) {
-      vSet.insert(pit->second);
-    }
-    for (std::set<int>::iterator sit = vSet.begin(); sit != vSet.end(); ++sit) {
-      int i = *sit;
+      int i = pit->second;
       if (vertices_total.at(i).active) {
         if (vertices_total.at(i).x >= LLx && vertices_total.at(i).x <= URx && vertices_total.at(i).y >= LLy && vertices_total.at(i).y <= URy) {
           vertices_graph.push_back(vertices_total.at(i));
           total2graph[i] = vertices_graph.size() - 1;
           graph2total[vertices_graph.size() - 1] = i;
         }
-        {
-          auto fit = Source_set.find(i);
-          if (fit != Source_set.end()) {
-            SourceGraph.push_back(vertices_graph.size() - 1);
-          }
-        }
-        {
-          auto fit = Dest_set.find(i);
-          if (fit != Dest_set.end()) {
-            DestGraph.push_back(vertices_graph.size() - 1);
-          }
-        }
-
-        /*
-        for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
-          if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
-        }
-        for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
-          if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
-        }
-        */
       }
     }
   }
-  // for(int i=0; i<(int)vertices_total.size(); i++) {
-  //  if(vertices_total.at(i).active) {
-  //    if(vertices_total.at(i).x>=LLx && vertices_total.at(i).x<=URx && vertices_total.at(i).y>=LLy && vertices_total.at(i).y<=URy) {
-  //      vertices_graph.push_back(vertices_total.at(i));
-  //      total2graph[i]=vertices_graph.size()-1;
-  //      graph2total[vertices_graph.size()-1]=i;
-  //    }
-  //    for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
-  //      if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
-  //    }
-  //    for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
-  //      if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
-  //    }
-  //  }
-  //}
-  // CheckVerticesGraph();
-  // CheckMaptotal2graph();
 }
 
 void Grid::ActivateSourceDest() {
@@ -3360,39 +3310,6 @@ void Grid::CheckVerticesTotal() {
     }
   }
 };
-
-void Grid::CheckVerticesGraph() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.CheckVerticesGraph");
-
-  logger->debug("===CheckVerticesGraph===");
-  for (std::vector<RouterDB::vertex>::iterator it = this->vertices_graph.begin(); it != this->vertices_graph.end(); ++it) {
-    if (it->index != this->graph2total[it - this->vertices_graph.begin()]) {
-      logger->debug("Unmatched index: in graph {0} in map {1}", it->index, this->graph2total[it - this->vertices_graph.begin()]);
-    }
-    for (std::vector<int>::iterator it2 = it->north.begin(); it2 != it->north.end(); ++it2) {
-      // if(this->graph2total.find(*it2))
-    }
-  }
-}
-
-void Grid::CheckMaptotal2graph() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.CheckMaptotal2graph");
-
-  logger->debug("===CheckMaptotal2graph===");
-  for (auto it = this->total2graph.begin(); it != this->total2graph.end(); ++it) {
-    if (this->vertices_total.at(it->first).x != this->vertices_graph.at(it->second).x ||
-        this->vertices_total.at(it->first).y != this->vertices_graph.at(it->second).y) {
-      logger->debug("Mismatch total {0} vs graph {1}", it->first, it->second);
-    }
-  }
-  logger->debug("===CheckMapgraph2total===");
-  for (auto it = this->graph2total.begin(); it != this->graph2total.end(); ++it) {
-    if (this->vertices_total.at(it->second).x != this->vertices_graph.at(it->first).x ||
-        this->vertices_total.at(it->second).y != this->vertices_graph.at(it->first).y) {
-      logger->debug("Mismatch graph {0} vs total {1}", it->first, it->second);
-    }
-  }
-}
 
 Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
            int grid_scale)

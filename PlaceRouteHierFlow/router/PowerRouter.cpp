@@ -668,7 +668,6 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   // std::cout<<"checkpoint1.2.12"<<std::endl;
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
 
-  // std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
   // here return a power grid metal information
   bool power_grid = 1;
   // std::cout<<"checkpoint1.3"<<std::endl;
@@ -769,7 +768,6 @@ void PowerRouter::CreatePowerGrid_DC(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
   // grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
-  // logger->debug("Power Grid Info {0} {1}", grid.vertices_total.size(), grid.vertices_graph.size());
   // here return a power grid metal information
   bool power_grid = 1;
   // logger->debug("Create Power Grid Flag 11");
