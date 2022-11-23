@@ -77,22 +77,28 @@ Graph::Graph(Grid& grid, int pathNo) {
   }
 };
 
-void Graph::MergePowerMetal(std::vector<RouterDB::Metal> &VddPower_metal){
+void Graph::MergePowerMetal(std::vector<RouterDB::Metal>& VddPower_metal) {
   std::vector<RouterDB::Metal> tempPower_metal;
   RouterDB::Metal temp_metal;
-  if(VddPower_metal.size()>0) temp_metal = VddPower_metal[0];
-  for(unsigned int i=1;i<VddPower_metal.size();++i){
-     //std::cout<<"temp_metal info: "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<std::endl;
-     //std::cout<<"vdd or gnd metal info: "<<VddPower_metal[i].MetalIdx<<" "<<VddPower_metal[i].LinePoint[0].x<<" "<<VddPower_metal[i].LinePoint[0].y<<" "<<VddPower_metal[i].LinePoint[1].x<<" "<<VddPower_metal[i].LinePoint[1].y<<std::endl;
-     if(VddPower_metal[i].MetalIdx == temp_metal.MetalIdx and VddPower_metal[i].MetalIdx % 2 ==0 and VddPower_metal[i].LinePoint[0].x == temp_metal.LinePoint[0].x and VddPower_metal[i].LinePoint[1].x == temp_metal.LinePoint[1].x and VddPower_metal[i].LinePoint[0].y >= temp_metal.LinePoint[0].y and VddPower_metal[i].LinePoint[0].y <= temp_metal.LinePoint[1].y){
-        temp_metal.LinePoint[1].y = std::max(VddPower_metal[i].LinePoint[1].y,temp_metal.LinePoint[1].y);
-       }else if(VddPower_metal[i].MetalIdx == temp_metal.MetalIdx and VddPower_metal[i].MetalIdx % 2 ==1 and VddPower_metal[i].LinePoint[0].y == temp_metal.LinePoint[0].y and VddPower_metal[i].LinePoint[1].y == temp_metal.LinePoint[1].y and VddPower_metal[i].LinePoint[0].x >= temp_metal.LinePoint[0].x and VddPower_metal[i].LinePoint[0].x <= temp_metal.LinePoint[1].x){
-        temp_metal.LinePoint[1].x = std::max(VddPower_metal[i].LinePoint[1].x,temp_metal.LinePoint[1].x);
-       }else{
-        tempPower_metal.push_back(temp_metal);
-        temp_metal = VddPower_metal[i];
-       }
-      //std::cout<<"temp_metal info: "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<std::endl;
+  if (VddPower_metal.size() > 0) temp_metal = VddPower_metal[0];
+  for (unsigned int i = 1; i < VddPower_metal.size(); ++i) {
+    // std::cout<<"temp_metal info: "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].x<<"
+    // "<<temp_metal.LinePoint[1].y<<std::endl; std::cout<<"vdd or gnd metal info: "<<VddPower_metal[i].MetalIdx<<" "<<VddPower_metal[i].LinePoint[0].x<<"
+    // "<<VddPower_metal[i].LinePoint[0].y<<" "<<VddPower_metal[i].LinePoint[1].x<<" "<<VddPower_metal[i].LinePoint[1].y<<std::endl;
+    if (VddPower_metal[i].MetalIdx == temp_metal.MetalIdx and VddPower_metal[i].MetalIdx % 2 == 0 and
+        VddPower_metal[i].LinePoint[0].x == temp_metal.LinePoint[0].x and VddPower_metal[i].LinePoint[1].x == temp_metal.LinePoint[1].x and
+        VddPower_metal[i].LinePoint[0].y >= temp_metal.LinePoint[0].y and VddPower_metal[i].LinePoint[0].y <= temp_metal.LinePoint[1].y) {
+      temp_metal.LinePoint[1].y = std::max(VddPower_metal[i].LinePoint[1].y, temp_metal.LinePoint[1].y);
+    } else if (VddPower_metal[i].MetalIdx == temp_metal.MetalIdx and VddPower_metal[i].MetalIdx % 2 == 1 and
+               VddPower_metal[i].LinePoint[0].y == temp_metal.LinePoint[0].y and VddPower_metal[i].LinePoint[1].y == temp_metal.LinePoint[1].y and
+               VddPower_metal[i].LinePoint[0].x >= temp_metal.LinePoint[0].x and VddPower_metal[i].LinePoint[0].x <= temp_metal.LinePoint[1].x) {
+      temp_metal.LinePoint[1].x = std::max(VddPower_metal[i].LinePoint[1].x, temp_metal.LinePoint[1].x);
+    } else {
+      tempPower_metal.push_back(temp_metal);
+      temp_metal = VddPower_metal[i];
+    }
+    // std::cout<<"temp_metal info: "<<temp_metal.MetalIdx<<" "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<" "<<temp_metal.LinePoint[1].x<<"
+    // "<<temp_metal.LinePoint[1].y<<std::endl;
   }
   tempPower_metal.push_back(temp_metal);
   VddPower_metal = tempPower_metal;

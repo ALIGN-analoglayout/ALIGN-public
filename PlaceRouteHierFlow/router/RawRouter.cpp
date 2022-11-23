@@ -183,7 +183,7 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> RawRouter::Plist2S
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Sets(plist.size());
   for (unsigned int i = 0; i < plist.size(); i++) {
     std::set<RouterDB::point, RouterDB::pointXYComp> Set(plist[i].begin(), plist[i].end());
-    Sets[i]=Set;
+    Sets[i] = Set;
   }
   return Sets;
 }
