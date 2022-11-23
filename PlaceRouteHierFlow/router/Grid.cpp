@@ -80,104 +80,6 @@ Grid& Grid::operator=(const Grid& other) {
   return *this;
 }
 
-void Grid::Check_Full_Connection_Grid() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.Check_Full_Connection_Grid");
-
-  for (int i = 0; i < (int)vertices_total_full_connected.size(); i++) {
-    int east_error = 0;
-    int west_error = 0;
-    int south_error = 0;
-    int north_error = 0;
-
-    int east_empty = 0;
-    int west_empty = 0;
-    int south_empty = 0;
-    int north_empty = 0;
-
-    if (drc_info.Metal_info[vertices_total_full_connected[i].metal].direct == 0) {
-      if ((int)vertices_total_full_connected[i].east.size() > 0) {
-        if ((int)vertices_total_full_connected[i].east.size() > 1) {
-          east_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].east[0]].x - vertices_total_full_connected[i].x) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x) {
-          east_error = 1;
-        }
-      } else {
-        east_empty = 1;
-      }
-
-      if ((int)vertices_total_full_connected[i].west.size() > 0) {
-        if ((int)vertices_total_full_connected[i].west.size() > 1) {
-          west_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].west[0]].x - vertices_total_full_connected[i].x) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x) {
-          west_error = 1;
-        }
-
-      } else {
-        west_empty = 1;
-      }
-
-    } else {
-      if ((int)vertices_total_full_connected[i].south.size() > 0) {
-        if ((int)vertices_total_full_connected[i].south.size() > 1) {
-          south_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].south[0]].y - vertices_total_full_connected[i].y) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y) {
-          south_error = 1;
-        }
-      } else {
-        south_empty = 1;
-      }
-
-      if ((int)vertices_total_full_connected[i].north.size() > 0) {
-        if ((int)vertices_total_full_connected[i].north.size() > 1) {
-          north_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].north[0]].y - vertices_total_full_connected[i].y) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y) {
-          north_error = 1;
-        }
-
-      } else {
-        south_empty = 1;
-      }
-    }
-
-    if (east_error == 0 && west_error == 0 && south_error == 0 && north_error == 0 && east_empty == 0 && west_empty == 0 && south_empty == 0 &&
-        north_empty == 0) {
-    } else {
-      if (east_error == 1) {
-        logger->error("east_error ");
-      }
-      if (west_error == 1) {
-        logger->error("west_error ");
-      }
-      if (south_error == 1) {
-        logger->error("south_error ");
-      }
-      if (north_error == 1) {
-        logger->error("north_error ");
-      }
-      if (east_empty == 1) {
-        logger->error("east_empty ");
-      }
-      if (west_empty == 1) {
-        logger->error("west_empty ");
-      }
-      if (south_empty == 1) {
-        logger->error("south_empty ");
-      }
-      if (north_empty == 1) {
-        logger->error("north_empty ");
-      }
-    }
-  }
-}
-
 void Grid::CreateGridData() {
   std::ofstream matlabfile;
   matlabfile.open("Grid.txt");
@@ -2582,27 +2484,23 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
-      grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
-      grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
-      grid_node_coord.insert(grid_node);
+    grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
+    if (grid_node.x >= Lx && grid_node.x <= Ux) {
+      for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
+        grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
   // wbxu: the following codes can be optimized by using Set
   std::set<RouterDB::point, RouterDB::pointXYComp> new_grid_node_coord;
   for (int i = 0; i <= (grid_Ux1 - grid_Lx1) / (grid_unit_x1 * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
-      grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
-      grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      grid_node_coord.insert(grid_node);
-    }
-  }
-
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end();) {
-    if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      ++p;
-    } else {
-      p = grid_node_coord.erase(p);
+    grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
+    if (grid_node.x >= Lx && grid_node.x <= Ux) {
+      for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
+        grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
 

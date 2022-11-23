@@ -118,7 +118,6 @@ class Grid {
   int Find_EndIndex(int start_index, int direction);
   bool Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis);
   void Full_Connected_Vertex();
-  void Check_Full_Connection_Grid();
   bool CheckExtendable(int i, int metal);
   void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point>> &plist, RouterDB::contact &Contacts);
   void InactivePointlist_via(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &plist, bool up);
