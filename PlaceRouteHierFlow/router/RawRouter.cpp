@@ -180,10 +180,10 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> RawRouter::Findset
 };
 
 std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> RawRouter::Plist2Set(std::vector<std::vector<RouterDB::point>>& plist) {
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Sets(plist.size());
-  for (unsigned int i = 0; i < plist.size(); i++) {
-    std::set<RouterDB::point, RouterDB::pointXYComp> Set(plist[i].begin(), plist[i].end());
-    Sets[i] = Set;
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Sets;
+  Sets.reserve(plist.size());
+  for (const auto& p : plist) {
+    Sets.emplace_back(std::set<RouterDB::point, RouterDB::pointXYComp>(p.begin(), p.end()));
   }
   return Sets;
 }
