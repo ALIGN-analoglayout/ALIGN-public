@@ -30,7 +30,7 @@ def test_cmp_clk():
             ["xdp"],
             ["mn0"]
             ]},
-        {"constraint": "AspectRatio", "subcircuit": "ckt_comparator", "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
 
     example = build_example(name, netlist, constraints)
