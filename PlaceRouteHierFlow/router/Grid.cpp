@@ -1742,21 +1742,15 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
   RouterDB::SinkData source, dest;
   // for source
   for (unsigned int i = 0; i < Vsource.size(); i++) {
-    // logger->debug("Router-Info: detecting source- {0}", i);
     source = Vsource[i];
-    // logger->debug("Router-Info: detecting checkpoint1 {0}", i);
     std::vector<int> temp_Source;
     if (source.coord.size() > 1) {
       // for pin
-      // logger->debug("Router-Info: detecting checkpoint2", i);
       temp_Source = Mapping_function_pin(source);
-      // logger->debug("Router-Info: detecting checkpoint2.1 {0}", i);
       for (unsigned int j = 0; j < temp_Source.size(); j++) {
-        // std::cout<<"Source "<<temp_Source.size()<<std::endl;
         Source.push_back(temp_Source[j]);
       }
     } else if (source.metalIdx != -1) {
-      // logger->debug("Router-Info: detecting checkpoint3 {0}", i);
       // for terminal
       int min_dis = INT_MAX;
       // wbxu: another logic problem in the following [fixed]
@@ -1821,14 +1815,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
             for (unsigned int j = 0; j < temp_Source.size(); j++) {
               Source.push_back(temp_Source[j]);
             }
-            /*
-            Vsource[i].coord.clear();
-            RouterDB::point t_point;
-            t_point.x = vertices_total[temp_Source[0]].x;
-            t_point.y = vertices_total[temp_Source[0]].y;
-            Vsource[i].coord.push_back(t_point);
-            Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
-            */
             Smap.insert(map<RouterDB::point, std::vector<int>>::value_type(source.coord[0], temp_Source));
             break;
           } else {
@@ -1837,14 +1823,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
         }
       } else {
         temp_Source = Smap[source.coord[0]];
-        /*
-        Vsource[i].coord.clear();
-        RouterDB::point t_point;
-        t_point.x = vertices_total[temp_Source[0]].x;
-        t_point.y = vertices_total[temp_Source[0]].y;
-        Vsource[i].coord.push_back(t_point);
-        Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
-        */
         for (unsigned int j = 0; j < temp_Source.size(); j++) {
           Source.push_back(temp_Source[j]);
         }
@@ -1936,14 +1914,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
             for (unsigned int j = 0; j < temp_Dest.size(); j++) {
               Dest.push_back(temp_Dest[j]);
             }
-            /*
-            Vdest[i].coord.clear();
-            RouterDB::point t_point;
-            t_point.x = vertices_total[temp_Dest[0]].x;
-            t_point.y = vertices_total[temp_Dest[0]].y;
-            Vdest[i].coord.push_back(t_point);
-            Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
-            */
             Smap.insert(map<RouterDB::point, std::vector<int>>::value_type(dest.coord[0], temp_Dest));
             break;
           } else {
@@ -1952,14 +1922,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
         }
       } else {
         temp_Dest = Smap[dest.coord[0]];
-        /*
-        Vdest[i].coord.clear();
-        RouterDB::point t_point;
-        t_point.x = vertices_total[temp_Dest[0]].x;
-        t_point.y = vertices_total[temp_Dest[0]].y;
-        Vdest[i].coord.push_back(t_point);
-        Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
-        */
         for (unsigned int j = 0; j < temp_Dest.size(); j++) {
           Dest.push_back(temp_Dest[j]);
         }
@@ -1970,8 +1932,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
     logger->error("Router-Error: fail to find dest vertices on grids");
     return Terminal_contact;
   }
-
-  // logger->debug("Router-Info: finished detecting");
 
   return Terminal_contact;
 }
