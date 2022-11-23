@@ -15,16 +15,16 @@ def check_floating_pins(verilog_d):
         assert set(module["parameters"]).issubset(all_nets), f"floating port found in module {module['name']}"
 
 def check_modules(verilog_d):
-    all_module_pins = {}
-    for mod in verilog_d["modules"]:
-        all_module_pins[mod['name']]=mod["parameters"]
+    ATN = 'abstract_template_name'
+    all_module_pins = {mod['name'] : mod['parameters'] for mod in verilog_d["modules"]}
     for mod in verilog_d["modules"]:
         for inst in mod["instances"]:
-            assert 'abstract_template_name' in inst, f'no generated data for {inst}'
-            if inst["abstract_template_name"] in all_module_pins:
-                assert all(fm["formal"] in all_module_pins[inst["abstract_template_name"]] for fm in inst["fa_map"]), \
-                    f"incorrect instantiation {inst['instance_name']} of module {inst['abstract_template_name']}, \
-                     instance_pins: {inst['fa_map']}, module pins: {all_module_pins[inst['abstract_template_name']]}"
+            atn = inst[ATN] if ATN in inst else None
+            assert atn is not None, f'no generated data for {inst}'
+            if atn in all_module_pins:
+                assert all(fm["formal"] in all_module_pins[atn] for fm in inst["fa_map"]), \
+                    f"incorrect instantiation {inst['instance_name']} of module {atn}, \
+                     instance_pins: {inst['fa_map']}, module pins: {all_module_pins[atn]}"
 
 def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     """remove_pg_pins
@@ -50,7 +50,7 @@ def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     assert len(modules) == 1, f"duplicate modules are found {modules}"
     module = modules[0]
     # Remove port from subckt level
-    module['parameters'] = [p for p in module['parameters'] if p not in pg_connections.keys()]
+    module['parameters'] = [p for p in module['parameters'] if p not in pg_connections]
     for inst in module['instances']:
         if inst['abstract_template_name'] in modules_dict:
             # Inst pins connected to pg_pins
@@ -91,7 +91,7 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
     i = 0
     updated_ckt_name = subckt+'_PG'+str(i)
-    while updated_ckt_name in modules_dict.keys():
+    while updated_ckt_name in modules_dict:
         if modules_dict[updated_ckt_name] == nm['parameters']:
             logger.debug(f"using existing module {updated_ckt_name}")
             return updated_ckt_name
@@ -103,6 +103,26 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     logger.debug(f"new module is added: {nm}")
     verilog_d['modules'].append(nm)
     return updated_ckt_name
+
+
+def add_cap_dummy_connections(verilog_d, cap_map):
+    if not cap_map:
+        return
+
+    cap_abstract_names = { entry['nm'] : entry for entry in cap_map }
+
+    global_gnds = [entry['actual'] for entry in verilog_d['global_signals'] if entry['formal'] == 'supply0']
+
+    for module in verilog_d['modules']:
+        for inst in module['instances']:
+            atn = inst['abstract_template_name']
+            if atn in cap_abstract_names:
+                entry = cap_abstract_names[atn]
+                for pin in ['dummy_gnd_PLUS', 'dummy_gnd_MINUS']:
+                    if entry[pin]:
+                        assert len(global_gnds) == 1, \
+                            f'No or too many global ground signals for dummy_capacitors: {global_gnds}'
+                        inst['fa_map'].append( FormalActualMap(formal=pin, actual=global_gnds[0]))
 
 
 def manipulate_hierarchy(verilog_d, subckt):

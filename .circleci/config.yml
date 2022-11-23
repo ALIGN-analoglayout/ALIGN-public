@@ -227,7 +227,7 @@ workflows:
               ci-level:
                 - "checkin"
               max-errors:
-                - "1"
+                - "0"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:

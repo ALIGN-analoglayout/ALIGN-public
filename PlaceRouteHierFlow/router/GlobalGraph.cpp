@@ -1,5 +1,6 @@
-#include <stdexcept>
 #include "GlobalGraph.h"
+
+#include <stdexcept>
 
 #include "spdlog/spdlog.h"
 
@@ -22,13 +23,13 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
 
   bool empty_flag = true;
 
-  for(int i=0;i<temp_terminals.size();i++){
-      if(temp_terminals[i].size()!=0){
-          empty_flag = false;
-       }
+  for (int i = 0; i < temp_terminals.size(); i++) {
+    if (temp_terminals[i].size() != 0) {
+      empty_flag = false;
+    }
   }
 
-  if(empty_flag) return;
+  if (empty_flag) return;
 
   for (int i = 0; i < pathNo; ++i) {
     Pin_terminals = temp_terminals;
@@ -314,24 +315,21 @@ std::vector<std::pair<int, int> > GlobalGraph::Get_MST_Edges(std::vector<std::ve
   return temp_MST_Edges;
 };
 
-void GlobalGraph::select_layers(int l_metal, int h_metal){
-
-  for(auto it: graph){
-     for(auto l: it.metal_layer){
-        if(l<l_metal or l>h_metal){
-           it.active = false;
-        }
-     }
+void GlobalGraph::select_layers(int l_metal, int h_metal) {
+  for (auto it : graph) {
+    for (auto l : it.metal_layer) {
+      if (l < l_metal or l > h_metal) {
+        it.active = false;
+      }
+    }
   }
-
 };
 
-void GlobalGraph::refresh_layers(){
-
-  for(auto it: graph){
-     for(auto l: it.metal_layer){
-         it.active = true;
-     }
+void GlobalGraph::refresh_layers() {
+  for (auto it : graph) {
+    for (auto l : it.metal_layer) {
+      it.active = true;
+    }
   }
 };
 
@@ -380,26 +378,24 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
   graph.push_back(tempNodeD);
 };
 
-
 void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal) {
-
   graph.clear();
   Node tempNode;
   Edge tempEdge;
 
   auto update_node = [&](int p, std::vector<RouterDB::tileEdge> &temp_vector) {
     for (unsigned int q = 0; q < temp_vector.size(); q++) {
-      if(temp_vector[q].next==-1) continue;
+      if (temp_vector[q].next == -1) continue;
       bool active = true;
-      for(int index=0;index< grid.tiles_total[temp_vector[q].next].metal.size();index++){
+      for (int index = 0; index < grid.tiles_total[temp_vector[q].next].metal.size(); index++) {
         int layer = grid.tiles_total[temp_vector[q].next].metal[index];
-        if(layer<l_metal or layer>h_metal){
+        if (layer < l_metal or layer > h_metal) {
           active = false;
         }
       }
-      if (active == false){
-         continue;
-      }      
+      if (active == false) {
+        continue;
+      }
       if (temp_vector[q].capacity > 0 && temp_vector[q].next != -1) {
         tempEdge.dest = temp_vector[q].next;
         tempEdge.weight =
@@ -417,14 +413,14 @@ void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_me
     tempNode.metal_layer = grid.tiles_total[i].metal;
     // Edge tempEdge;
     bool active = true;
-    for(int index=0;index< tempNode.metal_layer.size();index++){
+    for (int index = 0; index < tempNode.metal_layer.size(); index++) {
       int layer = tempNode.metal_layer[index];
-      if(layer<l_metal or layer>h_metal){
+      if (layer < l_metal or layer > h_metal) {
         active = false;
       }
     }
-    if (active == false){
-       continue;
+    if (active == false) {
+      continue;
     }
     update_node(i, grid.tiles_total[i].north);
     update_node(i, grid.tiles_total[i].south);
@@ -564,7 +560,7 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
 
     if (logger->should_log(spdlog::level::trace)) {
       string ulist_str = "";
-      for (auto e:ulist){
+      for (auto e : ulist) {
         ulist_str += " ";
         ulist_str += std::to_string(e);
       }

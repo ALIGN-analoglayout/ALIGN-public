@@ -21,7 +21,7 @@ def check_placement(placement_verilog_d, scale_factor):
 
         # The check below is at the mercy of constraint translation
         do_not_identify = []
-        for const in constraints:
+        for const in constraint.expand_user_constraints(constraints):
             if isinstance(const, constraint.DoNotIdentify):
                 do_not_identify.extend(const.instances)
         do_not_identify = list(set(do_not_identify))
@@ -54,7 +54,7 @@ def check_placement(placement_verilog_d, scale_factor):
 
             bbox = transformation.Transformation(**t).hitRect(transformation.Rect(*r)).canonical()
 
-            # logger.info(f"{inst['instance_name']}: {bbox=}")
+            logger.debug(f"{inst['instance_name']}: {bbox=}")
 
             with types.set_context(constraints):
                 constraints.append(

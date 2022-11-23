@@ -221,7 +221,7 @@ def test_boundary():
     n = 5
     constraints, instance_map = initialize_constraints(n)
     with set_context(constraints):
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=8))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=8))
     instance_sizes = {f"M{k}": (2, 2) for k in range(n)}
     sequence_pair = ([k for k in range(n)], [k for k in range(n)])
     with pytest.raises(Exception) as _:
@@ -229,7 +229,7 @@ def test_boundary():
 
     with set_context(constraints):
         constraints.pop()
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=10))
     model = formulate_problem(constraints, instance_map, instance_sizes, sequence_pair)
     if DRAW:
         draw(model, instance_map, [])
@@ -243,7 +243,7 @@ def test_place_on_boundary():
     n = 4
     constraints, instance_map = initialize_constraints(n)
     with set_context(constraints):
-        constraints.append(constraint_schema.Boundary(subcircuit="subckt", max_height=10, max_width=10))
+        constraints.append(constraint_schema.Boundary(max_height=10, max_width=10))
         constraints.append(constraint_schema.PlaceOnBoundary(northwest="M0", northeast="M1", southwest="M2", southeast="M3"))
     instance_sizes = {f"M{k}": (1+k, 1+k) for k in range(n)}
     sequence_pair = ([0, 1, 2, 3], [2, 3, 0, 1])
