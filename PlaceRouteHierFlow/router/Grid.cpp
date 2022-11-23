@@ -373,32 +373,6 @@ void Grid::InactivePointlist(std::vector<std::set<RouterDB::point, RouterDB::poi
     p.y = it->y;
     if (plist.at(mm).find(p) != plist.at(mm).end()) {
       it->active = false;
-      /*
-            int via_integ = 2;
-            int next_index = it->index+1;
-            int history_index = it->index-1;
-            if(drc_info.Metal_info[it->metal].direct==1){//h
-               int via_space = -drc_info.Via_model[it->metal].LowerRect[0].x;
-               if(next_index >= 0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].y ==
-         it->y && abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[next_index].active=false;
-                 }
-               if(history_index >= 0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal &&
-         vertices_total[history_index].y == it->y && abs(vertices_total[history_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[history_index].active=false;
-                 }
-              }else{//v
-               int via_space = -drc_info.Via_model[it->metal].LowerRect[0].y;
-               if(next_index >=0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].x ==
-         it->x && abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[next_index].active=false;
-                 }
-               if(history_index >=0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal &&
-         vertices_total[history_index].x == it->x && abs(vertices_total[history_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[history_index].active=false;
-                 }
-              }
-      */
     }
   }
 }
