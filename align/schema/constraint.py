@@ -861,13 +861,13 @@ class ConfigureCompiler(SoftConstraint):
         }
     '''
     is_digital: bool = False  # Annotation and auto-constraint generation
-    auto_constraint: bool = True  # Auto-constraint generation
-    identify_array: bool = True  # Forbids/Allow any array identification
-    fix_source_drain: bool = True  # Auto correction of source/drain terminals of transistors.
+    auto_constraint: bool = False  # Auto-constraint generation
+    identify_array: bool = False  # Forbids/Allow any array identification
+    fix_source_drain: bool = False  # Auto correction of source/drain terminals of transistors.
     remove_dummy_hierarchies: bool = True  # Removes any single instance hierarchies.
-    remove_dummy_devices: bool = True  # Removes dummy transistors
-    merge_series_devices: bool = True  # Merge series/stacked MOS/RES/CAP
-    merge_parallel_devices: bool = True  # Merge parallel devices
+    remove_dummy_devices: bool = False  # Removes dummy transistors
+    merge_series_devices: bool = False  # Merge series/stacked MOS/RES/CAP
+    merge_parallel_devices: bool = False  # Merge parallel devices
     same_template: bool = True  # generates identical layouts for all existing hierarchies in the input netlist
     propagate: bool = True  # propagate constraint to all lower hierarchies
 
