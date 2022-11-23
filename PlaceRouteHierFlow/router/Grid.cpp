@@ -2703,27 +2703,22 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
-      grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
-      grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
-      grid_node_coord.insert(grid_node);
+    grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
+    if (grid_node.>= Lx && grid_node.<= Ux) {
+      for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
+        grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
   // wbxu: the following codes can be optimized by using Set
-  std::set<RouterDB::point, RouterDB::pointXYComp> new_grid_node_coord;
   for (int i = 0; i <= (grid_Ux1 - grid_Lx1) / (grid_unit_x1 * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
-      grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
-      grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      grid_node_coord.insert(grid_node);
-    }
-  }
-
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end();) {
-    if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      ++p;
-    } else {
-      p = grid_node_coord.erase(p);
+    grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
+    if (grid_node.x>= Lx && grid_node.x<= Ux) {
+      for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
+        grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
 
