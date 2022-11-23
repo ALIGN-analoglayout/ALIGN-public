@@ -186,6 +186,17 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         int lvencpl = layer["VencP_L"];
         // std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
         int lvencph = layer["VencP_H"];
+        if(layer.contains("ViaCut")){
+          json ViaCut = layer["ViaCut"];
+          int ViaCut_WidthX = ViaCut["WidthX"];
+          int ViaCut_WidthY = ViaCut["WidthY"];
+          int ViaCut_SpaceX = ViaCut["SpaceX"];
+          int ViaCut_SpaceY = ViaCut["SpaceY"];
+          int ViaCut_NumX = ViaCut["NumX"];
+          int ViaCut_NumY = ViaCut["NumY"];
+          lwidthx = (ViaCut_NumX - 1) * ViaCut_SpaceX + ViaCut_NumX * ViaCut_WidthX;
+          lwidthy = (ViaCut_NumY - 1) * ViaCut_SpaceY + ViaCut_NumY * ViaCut_WidthY;
+        }
 
         double R = 0;
 #ifdef FinFET_MOCK_PDK
