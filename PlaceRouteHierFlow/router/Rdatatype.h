@@ -190,7 +190,7 @@ struct PowerNet {
   std::vector<Metal> path_metal;
   std::vector<Via> path_via;
   std::vector<int> extend_label;
-  bool DoNotRoute=false;
+  bool DoNotRoute = false;
 };
 
 struct SinkData {
@@ -260,9 +260,9 @@ struct Net {
   std::vector<C_const> C_constraints;
   int STindex = 0;
   int multi_connection = 1;
-  bool DoNotRoute=false;
-  int min_routing_layer = -1; //-1 means not initialized, then using the general configuration in the layer.json file or lowest metal layer
-  int max_routing_layer = -1; //-1 means not initialized, then using the general configuration in the layer.json file or highest metal layer
+  bool DoNotRoute = false;
+  int min_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or lowest metal layer
+  int max_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or highest metal layer
   // void display();
 };
 
