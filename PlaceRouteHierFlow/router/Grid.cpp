@@ -2704,7 +2704,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
     grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
-    if (grid_node.>= Lx && grid_node.<= Ux) {
+    if (grid_node.x>= Lx && grid_node.x<= Ux) {
       for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
         grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
         if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
