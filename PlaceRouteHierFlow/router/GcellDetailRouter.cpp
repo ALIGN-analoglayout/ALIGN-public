@@ -378,7 +378,7 @@ void GcellDetailRouter::create_detailrouter_new() {
         EraseSourceDestPinContact(temp_source, temp_dest, Set_x);
 
         Grid_Inactive_new(grid, Set_x, gridll, gridur);  // inactive grid on internal metals
-        grid.CreateGridData_new();
+        //grid.CreateGridData_new();
         std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> src_dest_plist;
         // grid.CreateGridData_new();
         Detailed_router_set_src_dest_new(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur, gridll, gridur, src_dest_plist, Set_net, sym_flag);
