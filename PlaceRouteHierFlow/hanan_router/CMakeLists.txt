@@ -3,7 +3,7 @@ set(headers
     Layer.h
     Placement.h
     RTree.h
-    Router.h
+    HananRouter.h
     Util.h
 )
 
@@ -14,7 +14,7 @@ set(sources
     Net.cpp
     Netlist.cpp
     Placement.cpp
-    Router.cpp
+    HananRouter.cpp
     Util.cpp
 )
 

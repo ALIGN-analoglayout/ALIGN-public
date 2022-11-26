@@ -393,6 +393,21 @@ def router_driver(*, cap_map, cap_lef_s,
         # create a fresh DB and populate it with a placement verilog d    
 
         DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
+        if router == 'hanan':
+            hrouter = PnR.HananRouter()
+            ipath = pathlib.Path("./inputs")
+            hrouter.LoadLayers(str(ipath / 'layers.json'))
+            with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("r") as fp:
+                pldata = fp.read()
+                if lef_s_in:
+                    hrouter.LoadPlacement(pldata, lef_s_in)
+                else:
+                    with (idir/new_lef_file).open("r") as lfp:
+                        lefdata = lfp.read()
+                        hrouter.LoadPlacement(pldata, lefdata)
+            
+                hrouter.Route("./Results/")
+
         
         assert new_verilog_d == abstract_verilog_d
 
@@ -413,9 +428,6 @@ def router_driver(*, cap_map, cap_lef_s,
         if router == 'astar':
             res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                          router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
-        else:
-            res = hanan_route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                         skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
 
         res_dict.update(res)
     

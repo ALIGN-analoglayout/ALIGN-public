@@ -3,26 +3,24 @@
 #include "Util.h"
 #include "Placement.h"
 #include <cmath>
+#include <sstream>
 
 namespace Placement {
 using json = nlohmann::json;
 const auto& npos = std::string::npos;
 
-Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const DRC::LayerInfo& lf, const int uu, const std::string& ndrfile, const std::string& ildir) : _uu(uu), _valid{1}
+Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const DRC::LayerInfo& lf, const int uu, const std::string& ndrfile) : _uu(uu), _valid{1}
 {
-  if (plfile.empty()) {
-    CERR<< "missing placement file" <<std::endl;
+  if (pldata.empty()) {
     _valid = 0;
     return;
   }
-  std::ifstream ifs(plfile);
+  std::istringstream ifs(pldata);
   if (!ifs) {
-    CERR << "unable to open placement file " << plfile <<std::endl;
     _valid = 0;
     return;
   }
   auto oj = json::parse(ifs);
-  ifs.close();
   auto it = oj.find("leaves");
   if (it != oj.end()) {
     for (auto& l : *it) {
@@ -93,20 +91,7 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
       }
     }
   }
-  if (!ildir.empty()) {
-    for (auto& it : _modules) {
-      std::string modlef{ildir + it.first + "_interim_hier.lef"};
-      std::ifstream ifs(modlef);
-      if (ifs.good()) {
-        ifs.close();
-        loadLEF(modlef, lf);
-        if (_loadedMacros.find(it.first) != _loadedMacros.end()) {
-          it.second->setLeaf();
-        }
-      }
-    }
-  }
-  loadLEF(leffile, lf);
+  loadLEFFromString(lefdata, lf);
   _loadedMacros.clear();
   build();
   readNDR(ndrfile, lf);
@@ -143,20 +128,17 @@ void Netlist::build()
 }
 
 
-void Netlist::loadLEF(const std::string& leffile, const DRC::LayerInfo& lf)
+void Netlist::loadLEFFromString(const std::string& lefdata, const DRC::LayerInfo& lf)
 {
-  if (leffile.empty()) {
-    CERR<< "missing leffile" <<std::endl;
+  if (lefdata.empty()) {
     _valid = 0;
     return;
   }
-  std::ifstream ifs(leffile);
+  std::istringstream ifs(lefdata);
   if (!ifs) {
-    CERR << "unable to open leffile " << leffile <<std::endl;
     _valid = 0;
     return;
   }
-  COUT << "Reading LEF file " << leffile << '\n';
   std::string line;
   bool inMacro{false}, inPin{false}, inObs{false}, inPort{false}, inUnits{false};
   Module* curr_module{nullptr};
@@ -274,7 +256,6 @@ void Netlist::loadLEF(const std::string& leffile, const DRC::LayerInfo& lf)
       }
     }
   }
-  ifs.close();
 }
 
 void Netlist::readNDR(const std::string& ndrfile, const DRC::LayerInfo& lf)

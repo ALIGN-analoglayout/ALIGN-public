@@ -3,7 +3,7 @@
 #include <fstream>
 #include "Geom.h"
 #include "Layer.h"
-#include "Router.h"
+#include "HananRouter.h"
 
 namespace Placement {
 
@@ -77,7 +77,7 @@ class Net {
     std::string _name;
     std::set<const Pin*> _pins, _vpins;
     Geom::LayerRects _routeshapeswithpins, _routeshapes, _obstacles;
-    Router::Vias _vias;
+    HRouter::Vias _vias;
     Geom::Rect _bbox;
     unsigned int _unroute : 1;
     unsigned int _exclude : 1;
@@ -109,7 +109,7 @@ class Net {
     }
     void print() const;
     const std::string& name() const { return _name; }
-    void route(Router::Router& r, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update, const int uu, const Geom::Rect& bbox, const std::string& modname);
+    void route(HRouter::Router& r, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update, const int uu, const Geom::Rect& bbox, const std::string& modname);
     const Geom::LayerRects& routeShapesWithPins() const { return _routeshapeswithpins; }
     const Geom::LayerRects& routeShapes() const { return _routeshapes; }
     const Geom::Rect& bbox() const { return _bbox; }
@@ -162,7 +162,7 @@ class Instance {
     Geom::Transform _tr;
     const Module* _m;
     Pins _pins;
-    Router::Vias _vias;
+    HRouter::Vias _vias;
     void build(const bool rebuild = false);
     Geom::Rect _bbox;
   public:
@@ -191,7 +191,7 @@ class Module {
     Nets _nets;
     Pins _pins;
     Instances _instances;
-    Router::Vias _vias;
+    HRouter::Vias _vias;
     std::map<const Net*, std::vector<std::pair<Instance*, std::string>>> _tmpnetpins;
     Geom::LayerRects _obstacles, _internalroutes;
     Geom::Rect _bbox;
@@ -352,7 +352,7 @@ class Module {
     void setusepinwidth(int u) { _usepinwidth = u ? 1 : 0; }
 
     void print() const;
-    void route(Router::Router& r, const std::string& outdir);
+    void route(HRouter::Router& r, const std::string& outdir);
     void plot() const;
 
     const Geom::Rect& bbox() const { return _bbox; }
@@ -370,15 +370,15 @@ class Netlist {
     int _valid;
     Modules _modules;
     void build();
-    void loadLEF(const std::string& leffile, const DRC::LayerInfo& lf);
+    void loadLEFFromString(const std::string& lefdata, const DRC::LayerInfo& lf);
     void readNDR(const std::string& ndrfile, const DRC::LayerInfo& lf);
     std::set<std::string> _loadedMacros;
 
   public:
-    Netlist(const std::string& plfile, const::std::string& leffile, const DRC::LayerInfo& lf, const int uu, const std::string& ndrfile, const std::string& ildir);
+    Netlist(const std::string& pldata, const std::string& lefdata, const DRC::LayerInfo& lf, const int uu, const std::string& ndrfile = "");
     ~Netlist();
     void print() const;
-    void route(Router::Router& r, const std::string& outdir)
+    void route(HRouter::Router& r, const std::string& outdir)
     {
       if (!_valid) return;
       for (auto& m : _modules) m.second->route(r, outdir);

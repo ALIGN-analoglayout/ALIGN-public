@@ -1,5 +1,5 @@
-#ifndef ROUTER_H_
-#define ROUTER_H_
+#ifndef HANAN_ROUTER_H_
+#define HANAN_ROUTER_H_
 #include <set>
 #include <map>
 #include <queue>
@@ -13,7 +13,7 @@
 
 #define COST_MAX 10000
 
-namespace Router {
+namespace HRouter {
 
 typedef double CostType;
 const auto CostTypeMax = std::numeric_limits<CostType>::max();
@@ -390,5 +390,22 @@ class Router {
     bool debug() const { return _debugplot; }
 };
 
-}
+};
+
+namespace Placement {
+  class Netlist;
+};
+class HananRouter {
+  private:
+    DRC::LayerInfo* _linfo;
+    HRouter::Router *_router;
+    Placement::Netlist* _netlist;
+
+  public:
+    HananRouter() : _linfo{nullptr}, _router{nullptr}, _netlist{nullptr} {}
+    ~HananRouter();
+    void LoadLayers(const std::string& layersjson);
+    void LoadPlacement(const std::string& plfile, const std::string& leffile);
+    void Route(const std::string& outdir);
+};
 #endif

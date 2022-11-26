@@ -118,7 +118,7 @@ void Module::build()
   _tmpnetpins.clear();
 }
 
-void Module::route(Router::Router& router, const std::string& outdir)
+void Module::route(HRouter::Router& router, const std::string& outdir)
 {
   TIME_M();
   if (!_routed) {

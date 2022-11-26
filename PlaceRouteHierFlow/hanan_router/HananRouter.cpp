@@ -1,7 +1,8 @@
-#include "Router.h"
+#include "HananRouter.h"
+#include "Placement.h"
 #include <algorithm>
 
-namespace Router {
+namespace HRouter {
 #if DEBUG
 size_t Node::_nodectr = 0;
 #endif
@@ -2073,3 +2074,27 @@ void Router::writeLEF(const Geom::LayerRects* sol) const
 }
 
 }
+
+HananRouter::~HananRouter()
+{
+  delete _netlist; _netlist = nullptr;
+  delete _router; _router = nullptr;
+  delete _linfo; _linfo = nullptr;
+}
+
+void HananRouter::LoadLayers(const std::string& layersjson)
+{
+  _linfo = new DRC::LayerInfo(layersjson, 1);
+  if (_linfo) _router = new HRouter::Router(*_linfo);
+}
+
+void HananRouter::LoadPlacement(const std::string& plfile, const std::string& leffile)
+{
+  if (_linfo) _netlist = new Placement::Netlist(plfile, leffile, *_linfo, 1);
+}
+
+void HananRouter::Route(const std::string& outdir)
+{
+  if (_netlist && _router) _netlist->route(*_router, outdir);
+}
+

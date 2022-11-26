@@ -16,6 +16,7 @@ using namespace pybind11::literals;
 #include "placer/PlacerIfc.h"
 #include "guard_ring/GuardRingIfc.h"
 #include "router/Router.h"
+#include "hanan_router/HananRouter.h"
 #include "MNA/MNASimulationIfc.h"
 //#include "toplevel.h"
 
@@ -567,6 +568,12 @@ PYBIND11_MODULE(PnR, m) {
   py::class_<Router>( m, "Router")
     .def( py::init<>())
     .def( "RouteWork", &Router::RouteWork);
+
+  py::class_<HananRouter>( m, "HananRouter")
+    .def( py::init<>())
+    .def( "LoadLayers", &HananRouter::LoadLayers)
+    .def( "LoadPlacement", &HananRouter::LoadPlacement)
+    .def( "Route", &HananRouter::Route);
 
   /*
   m.def("save_state", &save_state, "helper function to save_state");

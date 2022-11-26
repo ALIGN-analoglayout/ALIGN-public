@@ -174,7 +174,7 @@ PortPairs Net::clockRouteOrder() const
   return porder;
 }
 
-void Net::route(Router::Router& router, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update, const int uu, const Geom::Rect& bbox, const std::string& modname)
+void Net::route(HRouter::Router& router, const Geom::LayerRects& l1, const Geom::LayerRects& l2, const Geom::LayerRects& l3, const bool update, const int uu, const Geom::Rect& bbox, const std::string& modname)
 {
   //TIME_M();
 #if DEBUG
