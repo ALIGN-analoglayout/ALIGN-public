@@ -84,7 +84,7 @@ def test_cmp_fp1():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     # Stop flow early for memory profiling
@@ -112,7 +112,7 @@ def test_cmp_fp2():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
@@ -122,7 +122,7 @@ def test_cmp_fp2_regions():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
@@ -182,7 +182,7 @@ def test_ota_six():
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload"},
         {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
@@ -196,7 +196,19 @@ def test_tia():
     run_example(example, cleanup=CLEANUP)
 
 
-@pytest.mark.skip
+def test_ldo_amp_simple():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.ldo_amp_simple(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vssx"]},
+        {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, max_errors=1,
+                additional_args=["--placer_sa_iterations", "100", "--router_mode", "no_op"])
+
+
 def test_ldo_amp():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ldo_amp(name)
@@ -206,7 +218,8 @@ def test_ldo_amp():
         {"constraint": "DoNotUseLib", "libraries": ["CASCODED_CMC_NMOS", "CMB_PMOS_2", "LSB_PMOS_2", "LSB_NMOS_2"]}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL,
+                additional_args=["--placer_sa_iterations", "100", '--router_mode', 'no_op'])
 
 
 def test_ro_simple():
@@ -250,7 +263,7 @@ def test_two_stage_ota():
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 2.0},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2.0},
         {"constraint": "GroupBlocks", "instances": ["xmn4", "xmn2"], "instance_name": "xscn"},
         {"constraint": "GroupBlocks", "instances": ["xmn1", "xmn0"], "instance_name": "xdp"},
         {"constraint": "GroupBlocks", "instances": ["xmp2", "xmp0"], "instance_name": "xscp"},
@@ -427,6 +440,7 @@ def test_niwc_opamp_split():
     if CLEANUP:
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
+
 
 def test_niwc_opamp_split_reuse():
     # Tests legal size and exact_patterns restrictions

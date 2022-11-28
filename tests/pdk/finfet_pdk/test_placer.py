@@ -36,7 +36,7 @@ def test_place_cmp_1():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL,
@@ -114,7 +114,7 @@ def test_place_cmp_2():
         {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "xccn"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -179,7 +179,7 @@ def test_place_cmp_seed(seed, analytical_placer):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -245,7 +245,7 @@ def test_cmp_analytical():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -265,7 +265,7 @@ def comparator_constraints(name):
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
@@ -448,7 +448,7 @@ def test_sub_1():
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mp0"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn1"], ["mp1"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn2"], ["mp2"]]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
+        {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
@@ -462,3 +462,64 @@ def test_sub_1():
     if CLEANUP:
         shutil.rmtree(ckt_dir)
         shutil.rmtree(run_dir)
+
+
+def test_binary_pfet(caplog):
+    name = "binary"
+    netlist = textwrap.dedent(f"""\
+        .subckt power_cell vccx vcca vg
+        xmp0 vcca vg vccx vccx p m=4 nf=4 nfin=4
+        .ends
+        .subckt {name} vccx vcca vgfix vg[0] vg[1] vg[2] vg[3]
+        xi0fix vccx vcca vgfix power_cell
+        xi0[0] vccx vcca vg[0] power_cell
+        xi1[0] vccx vcca vg[1] power_cell
+        xi1[1] vccx vcca vg[1] power_cell
+        xi2[0] vccx vcca vg[2] power_cell
+        xi2[1] vccx vcca vg[2] power_cell
+        xi2[2] vccx vcca vg[2] power_cell
+        xi2[3] vccx vcca vg[2] power_cell
+        xi3[0] vccx vcca vg[3] power_cell
+        xi3[1] vccx vcca vg[3] power_cell
+        xi3[2] vccx vcca vg[3] power_cell
+        xi3[3] vccx vcca vg[3] power_cell
+        xi3[4] vccx vcca vg[3] power_cell
+        xi3[5] vccx vcca vg[3] power_cell
+        xi3[6] vccx vcca vg[3] power_cell
+        xi3[7] vccx vcca vg[3] power_cell
+        .ends {name}
+        .END
+    """)
+
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "propagate": True,
+            "auto_constraint": False,
+            "identify_array": False,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": False,
+            "remove_dummy_hierarchies": False,
+            "fix_source_drain": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vcca"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["xi3[0]", "xi2[0]", "xi0fix", "xi3[4]"],
+                ["xi3[1]", "xi2[1]", "xi0[0]", "xi3[5]"],
+                ["xi3[2]", "xi2[2]", "xi1[0]", "xi3[6]"],
+                ["xi3[3]", "xi2[3]", "xi1[1]", "xi3[7]"]
+            ]
+        }
+    ]
+
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False, log_level='DEBUG', n=4, additional_args=['--placer_sa_iterations', '10', '--router_mode', 'no_op'])
+    assert 'DEBUG    align.schema.constraint' in caplog.text, 'Log level must be DEBUG for this test'
+    assert 'sa__cost name=BINARY' not in caplog.text, 'Simulated Annealing should be bypassed for this test. Enumeration only.'

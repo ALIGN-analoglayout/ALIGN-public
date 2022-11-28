@@ -14,5 +14,5 @@
     {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
     {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
     {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-    {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 1, "ratio_high": 2}
+    {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
 ]

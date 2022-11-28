@@ -1,8 +1,6 @@
 import sys
 import os
 
-import sys
-
 try:
     from skbuild import setup
     from setuptools import find_packages
@@ -80,6 +78,7 @@ setup(name='align',
           'pybind11',
           'pydantic>=1.9.2',
           'z3-solver',
+          'mip',
           'more-itertools',
           'colorlog',
           'plotly',
@@ -89,7 +88,8 @@ setup(name='align',
           'dash',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict'
+          'flatdict',
+          'mip'
       ],
       extras_require={
           'test': [

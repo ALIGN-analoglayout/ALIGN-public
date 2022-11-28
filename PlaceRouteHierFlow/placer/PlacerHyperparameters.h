@@ -5,11 +5,11 @@
 
 class PlacerHyperparameters {
   public:
-  double T_INT = 1e6;
-  double T_MIN = 1e-6;
+  double T_INT = 0.5;
+  double T_MIN = 0.05;
   double ALPHA = 0.995;
   int SEED = 0;
-  int COUNT_LIMIT = 200;
+  size_t SA_MAX_ITER = 10000;
 
   // this needs to be connected to both the log-based cost funciton and the ILP formulation
   double LAMBDA=1.0;
