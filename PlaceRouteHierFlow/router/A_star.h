@@ -31,7 +31,7 @@ class A_star {
   A_star(Grid &grid, bool shielding);
   bool FindFeasiblePath(Grid &grid, int pathNo, int left_up, int right_down);
   int Manhattan_distan(int sindex, Grid &grid);
-  void initial_source(Grid &grid, std::set<std::pair<int, int>, RouterDB::pairComp> &L_list, std::vector<int> &source);
+  void initial_source(Grid &grid, std::set<std::pair<double, int>, RouterDB::pairCompDBL> &L_list, std::vector<int> &source);
   bool expand_node(std::vector<int> &direction, std::vector<int> &temp_node, Grid &grid);
   bool find_nodes_north(Grid &grid, int node, int number, std::vector<int> &temp_nodes);
   bool find_nodes_east(Grid &grid, int node, int number, std::vector<int> &temp_nodes);
