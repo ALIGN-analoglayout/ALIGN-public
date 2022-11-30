@@ -820,7 +820,7 @@ bool A_star::parallel_routing(Grid &grid, int current_node, int next_node, int l
     // assert(0);
     // logger->debug("L shape connection 1");
     if (grid.vertices_total[current_node].metal != grid.vertices_total[next_node].metal) {
-      if (!Extention_check_prime(grid, current_node, next_node, src_index)) {
+      if(!Extention_check_prime(grid, current_node, next_node, src_index)){
         return false;
       }
     }
@@ -1094,7 +1094,7 @@ bool A_star::Extention_check_prime(Grid &grid, int current_node, int next_node, 
     bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer, current_node, length, minL, grid);
     bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer, current_node, length, minL, grid, direction);
     bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer, current_node, length, minL, grid, direction);
-    return feasible_half or feasible_head or feasible_tail;
+    return feasible_half || feasible_head || feasible_tail;
   } else if (length >= via_space_length) {
     return true;
   } else {
