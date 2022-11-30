@@ -297,6 +297,47 @@ bool GcellDetailRouter::check_floating_net(int index) {
   return floating_net;
 };
 
+void GcellDetailRouter::SortPinsOrder() {
+  //change the routing order of pins in each net
+  //order by the manhattan distance to LL
+  for (unsigned int i = 0; i < Nets.size(); i++) {
+    if (Nets[i].connected.size() == 0) continue;
+    //order by the manhattan distance to LL
+    std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+              Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+        return true;
+      return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+             Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+    });
+
+    for (unsigned int j = 1; j < Nets[i].connected.size() - 1; j++) {
+      std::sort(Nets[i].connected.begin() + j, Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+                Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
+        //calculate each pin's minimum distance to sorted pins
+        vector<int> dis_a, dis_b;
+        int x_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x, y_a = Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y;
+        int x_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x, y_b = Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+        for (unsigned int k = 0; k < j; k++) {
+          auto node_k = Nets[i].connected[k];
+          if (node_k.type == RouterDB::TERMINAL || Blocks[node_k.iter2].pins[node_k.iter].pinContacts.size() == 0) continue;
+          dis_a.push_back(abs(x_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
+                          abs(y_a - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.y));
+          dis_b.push_back(abs(x_b - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.x) +
+                          abs(y_b - Blocks[node_k.iter2].pins[node_k.iter].pinContacts[0].placedCenter.y));
+        }
+        sort(dis_a.begin(), dis_a.end());
+        sort(dis_b.begin(), dis_b.end());
+        //dis_a[0] is the minimum distance between a and sorted pins
+        if (dis_a.size() == 0 || dis_b.size() == 0) return true;
+        return dis_a[0] < dis_b[0];
+      });
+    }
+  }
+}
+
 void GcellDetailRouter::create_detailrouter_new() {
   auto logger = spdlog::default_logger()->clone("router.GcellDetailRouter.create_detailrouter");
 
@@ -305,6 +346,7 @@ void GcellDetailRouter::create_detailrouter_new() {
   // 2. rm the via inactive for inner the pins (this have been corrected by rm the pins from internal block pins)
   // 3. the solution rm the metal of internal block pins from internal metal is quite different for some cases
   // 4. for the contact related via inactive, suggest to just inactive the via_active around the box. Around the box.
+  SortPinsOrder();
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
 
