@@ -1326,10 +1326,11 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
     // std::vector<int> expand_candidate_node;
     for (int i = 0; i < (int)candidate_node.size(); i++) {
       int M_dis = Manhattan_distan(candidate_node[i], grid);
+      int tmp_metal = std::min(grid.vertices_total[candidate_node[i]].metal, grid.vertices_total[current_node].metal);
       int temp_cost = grid.vertices_total[current_node].Cost
         + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R
         + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R
-        + abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) * drc_info.Via_info[grid.vertices_total[current_node].metal].R
+        + drc_info.Via_info[tmp_metal].R
         + temp_candidate_cost[i];
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
