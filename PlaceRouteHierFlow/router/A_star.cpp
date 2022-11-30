@@ -1321,15 +1321,15 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
                           drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R / 2000 +
                       temp_candidate_cost[i];
       if (grid.vertices_total[candidate_node[i]].metal != grid.vertices_total[current_node].metal)
-        temp_cost += drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R *
-                     abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal);
+        temp_cost += drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R;
 
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
         int sym_factor = 0;
 
-        temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor * sym_cost;
+        temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R / 2000 +
+                          sym_factor * sym_cost;
         temp_pair.second = candidate_node[i];
         if (L_list.find(temp_pair) != L_list.end()) {
           auto temp_l_list = L_list.find(temp_pair);
@@ -1338,7 +1338,8 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
 
         grid.vertices_total[candidate_node[i]].Cost = temp_cost;
 
-        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor * sym_cost;
+        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R / 2000 +
+                  sym_factor * sym_cost;
         grid.vertices_total[candidate_node[i]].parent = current_node;
         // grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
         temp_pair.first = dis;
