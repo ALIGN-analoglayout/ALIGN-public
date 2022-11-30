@@ -117,6 +117,9 @@ std::vector<std::vector<RouterDB::Metal>> A_star::ConvertPathintoPhysical(Grid &
 std::vector<std::vector<int>> A_star::GetExtendLabel() { return Extend_labels; }
 
 int A_star::Manhattan_distan(int sindex, Grid &grid) {
+  /**
+   * old code
+   * 
   std::set<int> Mdis;
 
   for (int i = 0; i < (int)dest.size(); i++) {
@@ -131,6 +134,13 @@ int A_star::Manhattan_distan(int sindex, Grid &grid) {
   int dis = *it;
 
   return dis;
+  **/
+  int max_dis = 0;
+  for (int i = 0; i < (int)dest.size(); i++) {
+    int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
+    max_dis = std::max(max_dis, temp_dis);
+  }
+  return max_dis;
 };
 
 void A_star::initial_source(Grid &grid, std::set<std::pair<int, int>, RouterDB::pairComp> &L_list, std::vector<int> &source) {
@@ -504,7 +514,7 @@ bool A_star::CheckExendable_With_Certain_Length_Tail_Extend(int first_node_same_
 };
 
 int A_star::Calculate_Interval_number(Grid &grid, int node) {
-  auto logger = spdlog::default_logger()->clone("router.A_star.Calculate_Interval_number");
+  //auto logger = spdlog::default_logger()->clone("router.A_star.Calculate_Interval_number");
 
   int interval_number = 1;
   int metal = grid.vertices_total[node].metal;
@@ -516,17 +526,10 @@ int A_star::Calculate_Interval_number(Grid &grid, int node) {
     via_space_length = drc_info.Via_info[metal].width + drc_info.Via_info[metal].dist_ss;
     pitches = drc_info.Metal_info[metal].grid_unit_x;
     interval_number = ceil((double)via_space_length / pitches);
-    // logger->debug("metal {0} via_space_length {1} pitches {2}", metal, via_space_length, pitches);
-    // logger->debug("interval_number 1 {0}", interval_number);
-    // assert(0);
-
   } else {
     via_space_length = drc_info.Via_info[metal].width_y + drc_info.Via_info[metal].dist_ss_y;
     pitches = drc_info.Metal_info[metal].grid_unit_y;
     interval_number = ceil((double)via_space_length / pitches);
-    // logger->debug("metal {0} via_space_length {1} pitches {2}", metal, via_space_length, pitches);
-    // logger->debug("interval_number 2 {0}", interval_number);
-    // assert(0);
   }
 
   return interval_number;
@@ -687,12 +690,6 @@ bool A_star::find_succsive_parallel_node(Grid &grid, int current_node, int left,
     vector<int> temp_nodes;
     int exist = 0;
     if (mode == 0) {
-      /*
-            if(hide_mode){
-              exist = find_nodes_west(grid, current_node, left, temp_nodes);
-              exist = Check_Src_Dest(temp_nodes, src_index);
-            }
-      */
       if (!exist) {
         temp_nodes.clear();
         exist = find_nodes_south(grid, current_node, left, temp_nodes);
@@ -714,12 +711,6 @@ bool A_star::find_succsive_parallel_node(Grid &grid, int current_node, int left,
     vector<int> temp_nodes;
     int exist = 0;
     if (mode == 0) {
-      /*
-            if(hide_mode){
-              exist = find_nodes_south(grid, current_node, left, temp_nodes);
-              exist = Check_Src_Dest(temp_nodes, src_index);
-              }
-      */
       if (!exist) {
         temp_nodes.clear();
         exist = find_nodes_west(grid, current_node, left, temp_nodes);
@@ -746,11 +737,7 @@ bool A_star::find_succsive_parallel_node(Grid &grid, int current_node, int left,
     int exist = 0;
 
     if (mode == 0) {
-      /*      if(hide_mode){
-              exist = find_nodes_east(grid, current_node, right, temp_nodes);
-              exist = Check_Src_Dest(temp_nodes, src_index);
-            }
-      */
+
       if (!exist) {
         temp_nodes.clear();
         exist = find_nodes_north(grid, current_node, right, temp_nodes);
@@ -833,7 +820,7 @@ bool A_star::parallel_routing(Grid &grid, int current_node, int next_node, int l
     // assert(0);
     // logger->debug("L shape connection 1");
     if (grid.vertices_total[current_node].metal != grid.vertices_total[next_node].metal) {
-      if (!Extention_check_prime(grid, current_node, next_node, src_index)) {
+      if(!Extention_check_prime(grid, current_node, next_node, src_index)){
         return false;
       }
     }
@@ -1107,7 +1094,7 @@ bool A_star::Extention_check_prime(Grid &grid, int current_node, int next_node, 
     bool feasible_half = CheckExendable_With_Certain_Length(node_same_layer, current_node, length, minL, grid);
     bool feasible_head = CheckExendable_With_Certain_Length_Head_Extend(node_same_layer, current_node, length, minL, grid, direction);
     bool feasible_tail = CheckExendable_With_Certain_Length_Tail_Extend(node_same_layer, current_node, length, minL, grid, direction);
-    return feasible_half or feasible_head or feasible_tail;
+    return feasible_half || feasible_head || feasible_tail;
   } else if (length >= via_space_length) {
     return true;
   } else {

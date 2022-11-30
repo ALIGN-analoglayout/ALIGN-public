@@ -245,7 +245,6 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   }
 
   if (curr_sp.Enumerate()) {
-    const auto maxcount = ceil(log(hyper.T_MIN / hyper.T_INT) / log(hyper.ALPHA));
     size_t cnt{0};
     while (!curr_sp.EnumExhausted()) {
       ILP_solver tsol(designData, hyper.ilp_solver);
@@ -258,7 +257,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       curr_sp.PerturbationNew(designData);
       ++cnt;
-      if (cnt >= maxcount) break; // should never happen; guard against any unseen scenario
+      if (cnt >= std::max(static_cast<size_t>(1), hyper.SA_MAX_ITER)) break; // should never happen; guard against any unseen scenario
     }
     if (curr_sp.EnumExhausted()) {
       logger->info("Exhausted all permutations of seq pairs and found {0} placement solution(s)", oData.size());
@@ -396,6 +395,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       update_index++;
     }
     T_index++;
+    if (T_index >= hyper.SA_MAX_ITER) break;
     if (total_update_number * per < T_index) {
       logger->info("..... {0} %", (int)(per * 100));
       per = per + 0.1;

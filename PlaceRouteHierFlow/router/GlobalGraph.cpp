@@ -1,5 +1,7 @@
 #include "GlobalGraph.h"
 
+#include <stdexcept>
+
 #include "spdlog/spdlog.h"
 
 GlobalGraph::GlobalGraph(GlobalGrid &grid) : path_number(1) {
@@ -21,13 +23,13 @@ void GlobalGraph::FindSTs(GlobalGrid &grid, int pathNo, std::vector<int> &stiner
 
   bool empty_flag = true;
 
-  for(int i=0;i<temp_terminals.size();i++){
-      if(temp_terminals[i].size()!=0){
-          empty_flag = false;
-       }
+  for (int i = 0; i < temp_terminals.size(); i++) {
+    if (temp_terminals[i].size() != 0) {
+      empty_flag = false;
+    }
   }
 
-  if(empty_flag) return;
+  if (empty_flag) return;
 
   for (int i = 0; i < pathNo; ++i) {
     Pin_terminals = temp_terminals;
@@ -265,15 +267,18 @@ void GlobalGraph::MST(int &WireLength, std::vector<pair<int, int> > &temp_path, 
     std::vector<int> dest_set = temp_dest;
     SetSrcDest(src_set, dest_set);
     std::vector<int> temp_single_path = dijkstra(grid);
+    if (temp_single_path.empty()) {
+      throw std::runtime_error("Empty path");
+    }
     MST_path.push_back(temp_single_path);
     RMSrcDest(src_set, dest_set);
     ChangeSrcDest(temp_src, temp_dest, temp_single_path, pin_access);
   }
-  WireLength = Calculate_Weigt(MST_path);
+  WireLength = Calculate_Weight(MST_path);
   temp_path = Get_MST_Edges(MST_path);
 };
 
-int GlobalGraph::Calculate_Weigt(std::vector<std::vector<int> > temp_path) {
+int GlobalGraph::Calculate_Weight(std::vector<std::vector<int> > temp_path) {
   int sum = 0;
   for (unsigned int i = 0; i < temp_path.size(); i++) {
     for (unsigned int j = 0; j < temp_path[i].size() - 1; j++) {
@@ -310,24 +315,21 @@ std::vector<std::pair<int, int> > GlobalGraph::Get_MST_Edges(std::vector<std::ve
   return temp_MST_Edges;
 };
 
-void GlobalGraph::select_layers(int l_metal, int h_metal){
-
-  for(auto it: graph){
-     for(auto l: it.metal_layer){
-        if(l<l_metal or l>h_metal){
-           it.active = false;
-        }
-     }
+void GlobalGraph::select_layers(int l_metal, int h_metal) {
+  for (auto it : graph) {
+    for (auto l : it.metal_layer) {
+      if (l < l_metal or l > h_metal) {
+        it.active = false;
+      }
+    }
   }
-
 };
 
-void GlobalGraph::refresh_layers(){
-
-  for(auto it: graph){
-     for(auto l: it.metal_layer){
-         it.active = true;
-     }
+void GlobalGraph::refresh_layers() {
+  for (auto it : graph) {
+    for (auto l : it.metal_layer) {
+      it.active = true;
+    }
   }
 };
 
@@ -376,26 +378,24 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid &grid) {
   graph.push_back(tempNodeD);
 };
 
-
 void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal) {
-
   graph.clear();
   Node tempNode;
   Edge tempEdge;
 
   auto update_node = [&](int p, std::vector<RouterDB::tileEdge> &temp_vector) {
     for (unsigned int q = 0; q < temp_vector.size(); q++) {
-      if(temp_vector[q].next==-1) continue;
+      if (temp_vector[q].next == -1) continue;
       bool active = true;
-      for(int index=0;index< grid.tiles_total[temp_vector[q].next].metal.size();index++){
+      for (int index = 0; index < grid.tiles_total[temp_vector[q].next].metal.size(); index++) {
         int layer = grid.tiles_total[temp_vector[q].next].metal[index];
-        if(layer<l_metal or layer>h_metal){
+        if (layer < l_metal or layer > h_metal) {
           active = false;
         }
       }
-      if (active == false){
-         continue;
-      }      
+      if (active == false) {
+        continue;
+      }
       if (temp_vector[q].capacity > 0 && temp_vector[q].next != -1) {
         tempEdge.dest = temp_vector[q].next;
         tempEdge.weight =
@@ -413,14 +413,14 @@ void GlobalGraph::CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_me
     tempNode.metal_layer = grid.tiles_total[i].metal;
     // Edge tempEdge;
     bool active = true;
-    for(int index=0;index< tempNode.metal_layer.size();index++){
+    for (int index = 0; index < tempNode.metal_layer.size(); index++) {
       int layer = tempNode.metal_layer[index];
-      if(layer<l_metal or layer>h_metal){
+      if (layer < l_metal or layer > h_metal) {
         active = false;
       }
     }
-    if (active == false){
-       continue;
+    if (active == false) {
+      continue;
     }
     update_node(i, grid.tiles_total[i].north);
     update_node(i, grid.tiles_total[i].south);
@@ -527,6 +527,7 @@ std::vector<int> GlobalGraph::minDistancefromMultiMap(std::multimap<double, int>
 };
 
 std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
+  auto logger = spdlog::default_logger()->clone("router.GlobalGraph.dijkstra");
   std::vector<int> temp_path;
 
   std::vector<double> dist;
@@ -556,8 +557,19 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
   int v;
   while (status[dest] != 2 && count < (int)graph.size() - 1) {
     std::vector<int> ulist = minDistancefromMultiMap(distMap);
+
+    if (logger->should_log(spdlog::level::trace)) {
+      string ulist_str = "";
+      for (auto e : ulist) {
+        ulist_str += " ";
+        ulist_str += std::to_string(e);
+      }
+      logger->info("ulist:{0}", ulist_str);
+    }
+
     // std::cout<<"size of Q: "<<ulist.size()<<std::endl;
     if (ulist.empty()) {
+      logger->warn("Router-Warning: ulist empty");
       temp_path.clear();
       return temp_path;
     }
@@ -584,7 +596,7 @@ std::vector<int> GlobalGraph::dijkstra(GlobalGrid &grid) {
     }
     count++;
   }
-
+  if (status[dest] != 2) logger->warn("Router-Warning: feasible path might not be found");
   printPath(parent, dest, graph.size(), temp_path);
   // std::cout<<"temp path"<<std::endl;
   // for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}

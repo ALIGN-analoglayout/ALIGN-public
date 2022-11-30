@@ -201,6 +201,9 @@ class Order(HardConstraint):
                     cc(b1, b2, 'y'),
                     cc(b2, b1, 'y'))
 
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
+
 
 class Align(HardConstraint):
     '''
@@ -287,77 +290,8 @@ class Align(HardConstraint):
                     solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
 
-
-class Enclose(HardConstraint):
-    '''
-    Enclose `instances` within a flexible bounding box
-    with `min_` & `max_` bounds
-
-    Args:
-        instances (list[str], optional): List of `instances`
-        min_height (int, optional):  assign minimum height to the subcircuit
-        max_height (int, optional):  assign maximum height to the subcircuit
-        min_width (int, optional):  assign minimum width to the subcircuit
-        max_width (int, optional):  assign maximum width to the subcircuit
-        min_aspect_ratio (float, optional):  assign minimum aspect ratio to the subcircuit
-        max_aspect_ratio (float, optional):  assign maximum aspect ratio to the subcircuit
-
-    Note: Specifying any one of the following variables
-    makes it a valid constraint but you may wish to
-    specify more than one for practical purposes
-
-    Example: ::
-
-        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
-    '''
-    instances: Optional[List[str]]
-    min_height: Optional[int]
-    max_height: Optional[int]
-    min_width: Optional[int]
-    max_width: Optional[int]
-    min_aspect_ratio: Optional[float]
-    max_aspect_ratio: Optional[float]
-
-    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
-
-    @types.validator('max_aspect_ratio', allow_reuse=True)
-    def bound_in_box_optional_fields(cls, value, values):
-        assert value or any(
-            getattr(values, x, None)
-            for x in (
-                'min_height',
-                'max_height',
-                'min_width',
-                'max_width',
-                'min_aspect_ratio'
-            )
-        ), 'Too many optional fields'
-        return value
-
-    def translate(self, solver):
-        bb = solver.bbox_vars(solver.label(self))
-        if self.min_width:
-            yield bb.urx - bb.llx >= self.min_width
-        if self.min_height:
-            yield bb.ury - bb.lly >= self.min_height
-        if self.max_width:
-            yield bb.urx - bb.llx <= self.max_width
-        if self.max_height:
-            yield bb.ury - bb.lly <= self.max_height
-        if self.min_aspect_ratio:
-            yield solver.cast(
-                (bb.ury - bb.lly) / (bb.urx - bb.llx),
-                float) >= self.min_aspect_ratio
-        if self.max_aspect_ratio:
-            yield solver.cast(
-                (bb.ury - bb.lly) / (bb.urx - bb.llx),
-                float) <= self.max_aspect_ratio
-        bvars = solver.iter_bbox_vars(self.instances)
-        for b in bvars:
-            yield b.urx <= bb.urx
-            yield b.llx >= bb.llx
-            yield b.ury <= bb.ury
-            yield b.lly >= bb.lly
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
 
 
 class Spread(HardConstraint):
@@ -409,13 +343,16 @@ class Spread(HardConstraint):
             )
 
         bvars = solver.iter_bbox_vars(self.instances)
-        for b1, b2 in itertools.pairwise(bvars):
+        for b1, b2 in plain_itertools.combinations(bvars, 2):
             if self.direction == 'horizontal':
                 yield cc(b1, b2, 'x')
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
                 assert False, "Please speficy direction"
+
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
 
 
 class AssignBboxVariables(HardConstraint):
@@ -450,7 +387,6 @@ class AspectRatio(HardConstraint):
     `ratio_low` <= width/height <= `ratio_high`
 
     Args:
-        subcircuit (str) : Name of subciruit
         ratio_low (float): Minimum aspect ratio (default 0.1)
         ratio_high (float): Maximum aspect ratio (default 10)
         weight (int): Weigth of this constraint (default 1)
@@ -459,7 +395,6 @@ class AspectRatio(HardConstraint):
 
         {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 10, "weight": 1 }
     """
-    subcircuit: str
     ratio_low: float = 0.1
     ratio_high: float = 10
     weight: int = 1
@@ -482,15 +417,13 @@ class Boundary(HardConstraint):
     Define `max_height` and/or `max_width` on a subcircuit in micrometers.
 
     Args:
-        subcircuit (str) : Name of subcircuit
         max_width (float, Optional) = 10000
         max_height (float, Optional) = 10000
 
     Example: ::
 
-        {"constraint": "Boundary", "subcircuit": "OTA", "max_height": 100 }
+        {"constraint": "Boundary", "max_height": 100 }
     """
-    subcircuit: str
     max_width: Optional[float] = 10000
     max_height: Optional[float] = 10000
 
@@ -590,6 +523,7 @@ class AlignInOrder(UserConstraint):
                 direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
                 abut=self.abut
             )
+            yield DoNotIdentify(instances=self.instances)
 
 
 class Floorplan(UserConstraint):
@@ -654,6 +588,12 @@ class Floorplan(UserConstraint):
                             pairs.append([region[i+1]])
                 logger.debug(f'Symmetric blocks:\n{pairs}')
                 yield SymmetricBlocks(pairs=pairs, direction='V')
+            # Do not identify these instances if both ordered and symmetric
+            if self.symmetrize and self.order:
+                instances = list()
+                for region in self.regions:
+                    instances.extend(region)
+                yield DoNotIdentify(instances=instances)
 
 
 #
@@ -763,34 +703,15 @@ class SameTemplate(SoftConstraint):
         return instances
 
 
-class CreateAlias(SoftConstraint):
-    """CreateAlias
-
-    Creates an alias for list of instances. You can use this
-    alias later while defining constraints
-
-    Args:
-      instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
-
-    Example: ::
-
-        {
-            "constraint":"CreateAlias",
-            "instances": ["MN0", "MN1", "MN3"],
-            "name": "alias1"
-        }
-    """
-    instances: List[str]
-    name: str
-
-
 class PlaceCloser(SoftConstraint):
     '''
         `instances` are preferred to be placed closer.
     '''
     instances: List[str]
     _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
 
 
 class PlaceOnBoundary(SoftConstraint):
@@ -822,6 +743,10 @@ class PlaceOnBoundary(SoftConstraint):
                 else:
                     sublist.append(value)
         return sublist
+
+    def yield_constraints(self):
+        instances = self.instances_on(['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'])
+        yield DoNotIdentify(instances=instances)
 
 
 class PowerPorts(SoftConstraint):
@@ -986,6 +911,10 @@ class DoNotIdentify(SoftConstraint):
     instances: List[str]
     _instance_attribute: str = "instances"
 
+    @types.validator('instances', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        return value
+
 
 class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
@@ -1081,6 +1010,11 @@ class SymmetricBlocks(HardConstraint):
                 expression = (reference == centerline)
                 yield expression
 
+    def yield_constraints(cls):
+        instances = list()
+        [instances.extend(pair) for pair in cls.pairs]
+        yield DoNotIdentify(instances=instances)
+
 
 class OffsetsScalings(BaseModel):
     offsets: List[int] = Field(default_factory=lambda: [0])
@@ -1103,8 +1037,6 @@ class PlaceOnGrid(SoftConstraint):
 
 class BlockDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed gap.
     Also used in situations when routing is congested.
 
@@ -1128,8 +1060,6 @@ class BlockDistance(SoftConstraint):
 
 class VerticalDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed vertical gap.
     Also used in situations when routing is congested.
 
@@ -1154,8 +1084,6 @@ class VerticalDistance(SoftConstraint):
 
 class HorizontalDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed horizontal gap.
     Also used in situations when routing is congested.
 
@@ -1517,8 +1445,7 @@ class GroupBlocks(HardConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align, Floorplan,
-    Enclose, Spread,
+    Order, Align, Floorplan, Spread,
     AssignBboxVariables,
     AspectRatio,
     Boundary,
@@ -1529,7 +1456,6 @@ ConstraintType = Union[
     CompactPlacement,
     Generator,
     SameTemplate,
-    CreateAlias,
     GroupBlocks,
     PlaceCloser,
     PlaceOnBoundary,
@@ -1611,7 +1537,8 @@ class ConstraintDB(types.List[ConstraintType]):
 def expand_user_constraints(const_list):
     for const in const_list:
         if hasattr(const, 'yield_constraints'):
+            logger.info(f'expanding: {const}')
             with types.set_context(const.parent):
                 yield from const.yield_constraints()
-        else:
+        if not isinstance(const, UserConstraint):
             yield const

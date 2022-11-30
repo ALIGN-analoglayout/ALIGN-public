@@ -122,7 +122,7 @@ To run tests similar to the checkin and merge-to-master CI runs run:
 cd $ALIGN_HOME
 # Checkin
 pytest -vv
-CI_LEVEL='checkin' pytest -n 8 -s -vv --runnightly --maxerrors=1 --placer_sa_iterations 100 -- tests/integration/
+CI_LEVEL='checkin' pytest -n 4 -s -vv --runnightly --placer_sa_iterations 100 -- tests/integration/
 # Merge to master
 CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 --placer_sa_iterations 100 -- tests/integration/ tests/pdks
 ```
