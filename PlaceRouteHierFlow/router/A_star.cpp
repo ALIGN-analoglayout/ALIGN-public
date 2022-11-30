@@ -117,27 +117,18 @@ std::vector<std::vector<RouterDB::Metal>> A_star::ConvertPathintoPhysical(Grid &
 std::vector<std::vector<int>> A_star::GetExtendLabel() { return Extend_labels; }
 
 int A_star::Manhattan_distan(int sindex, Grid &grid) {
-  /**
-   * old code
-   * 
-  std::set<int> Mdis;
-
-  for (int i = 0; i < (int)dest.size(); i++) {
-    int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
-    Mdis.insert(temp_dis);
-  }
-
-  std::set<int>::iterator it;
-  //it = Mdis.begin();
-  it = Mdis.end();
-
-  int dis = *it;
-
-  return dis;
-  **/
   int max_dis = 0;
   for (int i = 0; i < (int)dest.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
+    max_dis = std::max(max_dis, temp_dis);
+  }
+  return max_dis;
+};
+
+int A_star::Manhattan_distan_via(int sindex, Grid &grid) {
+  int max_dis = 0;
+  for (int i = 0; i < (int)dest.size(); i++) {
+    int temp_dis = abs(grid.vertices_total[sindex].metal - grid.vertices_total[dest[i]].metal);
     max_dis = std::max(max_dis, temp_dis);
   }
   return max_dis;
@@ -1313,6 +1304,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
     // std::vector<int> expand_candidate_node;
     for (int i = 0; i < (int)candidate_node.size(); i++) {
       int M_dis = Manhattan_distan(candidate_node[i], grid);
+      int M_dis_via = Manhattan_distan_via(candidate_node[i], grid);
       int tmp_metal = std::min(grid.vertices_total[candidate_node[i]].metal, grid.vertices_total[current_node].metal);
       double temp_cost = grid.vertices_total[current_node].Cost +
                       abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) *
@@ -1329,7 +1321,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
         int sym_factor = 0;
 
         temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
-                          sym_factor * sym_cost;
+                          drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R * M_dis_via + sym_factor * sym_cost;
         temp_pair.second = candidate_node[i];
         if (L_list.find(temp_pair) != L_list.end()) {
           auto temp_l_list = L_list.find(temp_pair);
@@ -1339,7 +1331,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
         grid.vertices_total[candidate_node[i]].Cost = temp_cost;
 
         int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
-                  sym_factor * sym_cost;
+                  drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R * M_dis_via + sym_factor * sym_cost;
         grid.vertices_total[candidate_node[i]].parent = current_node;
         // grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
         temp_pair.first = dis;
