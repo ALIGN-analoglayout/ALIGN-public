@@ -1249,7 +1249,6 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path) {
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm_Sym");
 
-  int via_expand_effort = 100;
   std::set<std::pair<int, int>, RouterDB::pairComp> L_list;
   std::set<int> close_set;
   std::pair<int, int> temp_pair;
@@ -1330,7 +1329,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       int temp_cost = grid.vertices_total[current_node].Cost
         + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R
         + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R
-        + via_expand_effort * abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal)
+        + abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) * drc_info.Via_info[grid.vertices_total[current_node].metal].R
         + temp_candidate_cost[i];
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
