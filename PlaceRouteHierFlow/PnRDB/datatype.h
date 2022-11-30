@@ -706,6 +706,8 @@ struct metal_info {
   double unit_C;
   double unit_CC;
   GdsDatatype gds_datatype;
+  int lower_via_index = -1;
+  int upper_via_index = -1;
 };
 
 struct via_info {

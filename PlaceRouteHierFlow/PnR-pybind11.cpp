@@ -393,6 +393,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("unit_C", &metal_info::unit_C)
     .def_readwrite("unit_CC", &metal_info::unit_CC)
     .def_readwrite("gds_datatype", &metal_info::gds_datatype)
+    .def_readwrite("lower_via_index", &metal_info::lower_via_index)
+    .def_readwrite("upper_via_index", &metal_info::upper_via_index)
     ;
 
   py::class_<GdsDatatype>( m, "GdsDatatype")
