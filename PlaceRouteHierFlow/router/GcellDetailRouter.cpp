@@ -1963,6 +1963,82 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
     write_out_via(box.LL.x, box.LL.y, box.UR.x, box.UR.y, vIdx, 2);
   }
 
+  // 2. via spacing around dest pins
+  for (auto dest : grid.Dest) {
+    int metal = grid.vertices_total[dest].metal;
+    if (drc_info.Metal_info[metal].direct == 0) {  // V
+      int vIdx = drc_info.Metal_info[metal].upper_via_index;
+      if (vIdx != -1 && metal != drc_info.Metal_info.size() - 1) {
+        // upper via west side
+        box.LL.x = grid.vertices_total[dest].x - drc_info.Via_info[vIdx].dist_ss - drc_info.Via_info[vIdx].width;
+        box.LL.y = grid.vertices_total[dest].y - 1;
+        box.UR.x = grid.vertices_total[dest].x - 1;
+        box.UR.y = grid.vertices_total[dest].y + 1;
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+        // upper via east side
+        box.LL.x = grid.vertices_total[dest].x + 1;
+        box.LL.y = grid.vertices_total[dest].y - 1;
+        box.UR.x = grid.vertices_total[dest].x + drc_info.Via_info[vIdx].dist_ss + drc_info.Via_info[vIdx].width;
+        box.UR.y = grid.vertices_total[dest].y + 1;
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+      }
+      vIdx = drc_info.Metal_info[metal].lower_via_index;
+      if (vIdx != -1 && metal != 0) {
+        // lower via west side
+        box.LL.x = grid.vertices_total[dest].x - drc_info.Via_info[vIdx].dist_ss - drc_info.Via_info[vIdx].width;
+        box.LL.y = grid.vertices_total[dest].y - 1;
+        box.UR.x = grid.vertices_total[dest].x - 1;
+        box.UR.y = grid.vertices_total[dest].y + 1;
+        InactivateRect2GridPoints_Via(metal - 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+        // lower via east side
+        box.LL.x = grid.vertices_total[dest].x + 1;
+        box.LL.y = grid.vertices_total[dest].y - 1;
+        box.UR.x = grid.vertices_total[dest].x + drc_info.Via_info[vIdx].dist_ss + drc_info.Via_info[vIdx].width;
+        box.UR.y = grid.vertices_total[dest].y + 1;
+        InactivateRect2GridPoints_Via(metal - 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+      }
+    } else {  // H
+      int vIdx = drc_info.Metal_info[metal].upper_via_index;
+      if (vIdx != -1 && metal != drc_info.Metal_info.size() - 1) {
+        // upper via north side
+        box.LL.x = grid.vertices_total[dest].x - 1;
+        box.LL.y = grid.vertices_total[dest].y + 1;
+        box.UR.x = grid.vertices_total[dest].x + 1;
+        box.UR.y = grid.vertices_total[dest].y + drc_info.Via_info[vIdx].dist_ss_y + drc_info.Via_info[vIdx].width_y;
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+        // upper via south side
+        box.LL.x = grid.vertices_total[dest].x - 1;
+        box.LL.y = grid.vertices_total[dest].y - drc_info.Via_info[vIdx].dist_ss_y - drc_info.Via_info[vIdx].width_y;
+        box.UR.x = grid.vertices_total[dest].x + 1;
+        box.UR.y = grid.vertices_total[dest].y - 1;
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+      }
+      vIdx = drc_info.Metal_info[metal].lower_via_index;
+      if (vIdx != -1 && metal != 0) {
+        // lower via north side
+        box.LL.x = grid.vertices_total[dest].x - 1;
+        box.LL.y = grid.vertices_total[dest].y + 1;
+        box.UR.x = grid.vertices_total[dest].x + 1;
+        box.UR.y = grid.vertices_total[dest].y + drc_info.Via_info[vIdx].dist_ss_y + drc_info.Via_info[vIdx].width_y;
+        InactivateRect2GridPoints_Via(metal - 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+        // lower via south side
+        box.LL.x = grid.vertices_total[dest].x - 1;
+        box.LL.y = grid.vertices_total[dest].y - drc_info.Via_info[vIdx].dist_ss_y - drc_info.Via_info[vIdx].width_y;
+        box.UR.x = grid.vertices_total[dest].x + 1;
+        box.UR.y = grid.vertices_total[dest].y - 1;
+        InactivateRect2GridPoints_Via(metal - 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y, true, grid);
+        InactivateRect2GridPoints_Via(metal, box.LL.x, box.LL.y, box.UR.x, box.UR.y, false, grid);
+      }
+    }
+  }
+
   // convert vector into set
   // std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   // std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);

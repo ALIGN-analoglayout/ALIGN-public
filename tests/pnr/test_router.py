@@ -15,7 +15,6 @@ def test_ru_zero():
     run_postamble(name, cv, max_errors=0)
 
 
-@pytest.mark.skip(reason='This test is failing. Enable in a future PR after refactoring')
 def test_ru_1():
     name = get_test_id()
     cv = CanvasPDK()
@@ -323,3 +322,4 @@ def test_ru_resistive_route():
     # Quantify route quality
     for term in cvr.terminals:
         assert term['layer'] != 'M4', 'Why use M4 but not M2?'
+
