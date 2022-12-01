@@ -394,6 +394,7 @@ def router_driver(*, cap_map, cap_lef_s,
 
         DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
         if router == 'hanan':
+            logger.info(f"hanan router started")
             hrouter = PnR.HananRouter()
             ipath = pathlib.Path("./inputs")
             hrouter.LoadLayers(str(ipath / 'layers.json'))
@@ -407,6 +408,7 @@ def router_driver(*, cap_map, cap_lef_s,
                         hrouter.LoadPlacement(pldata, lefdata)
             
                 hrouter.Route("./Results/")
+            logger.info(f"hanan router ended")
 
         
         assert new_verilog_d == abstract_verilog_d

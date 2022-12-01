@@ -58,9 +58,9 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
             if (it != l.end() && it->is_number_integer()) mlayer->setOffset(static_cast<int>(*it) * uu);
             it = l.find("Direction");
             if (it != l.end() && it->is_string()) mlayer->setDirection(*it == "H" ? 0 : (*it == "V" ? 1 : 2));
+            mlayer->setGrid();
             _mlayers.push_back(mlayer);
             _mlayerNameMap[name] = mlayer;
-            _mgrids.push_back(Grid(mlayer->pitch(), mlayer->offset()));
           }
         }
       }

@@ -1536,73 +1536,14 @@ void Router::addObstacles(const Geom::LayerRects& lr, const bool temp)
     const auto& layer = l.first;
     if (!uselayers.empty() && uselayers.find(l.first) == uselayers.end()) continue;
     for (const auto& r : l.second) {
-      int sx{0}, sy{0};
+      int hwx{0}, hwy{0};
       if (layer < static_cast<int>(_widthx.size())) {
-        sx = spacex(layer) + (layer <= _maxLayer ? ((widthy(layer) % 2 == 0) ? widthy(layer)/2 : (widthy(layer)/2 + 1)) : 0);
-        sy = spacey(layer) + (layer <= _maxLayer ? ((widthx(layer) % 2 == 0) ? widthx(layer)/2 : (widthx(layer)/2 + 1)) : 0);
+        hwx = spacex(layer) + (layer <= _maxLayer ? ((widthy(layer) % 2 == 0) ? widthy(layer)/2 : (widthy(layer)/2 + 1)) : 0);
+        hwy = spacey(layer) + (layer <= _maxLayer ? ((widthx(layer) % 2 == 0) ? widthx(layer)/2 : (widthx(layer)/2 + 1)) : 0);
       }
 #if DEBUG
       COUT << "layer : " << layer << " obs : " << sx << ' ' << sy << ' ' << r.xmin() << ' ' << r.ymin() << ' ' << r.xmax() << ' ' << r.ymax() << '\n';
 #endif
-      auto obs = r.bloatby(sx, sy);
-      int x1 = sx, x2 = sx, y1 = sy, y2 = sy;
-      /*for (auto src : {true, false}) {
-        const auto it = src ? _sourceshapes.find(l.first) : _targetshapes.find(l.first);
-        const auto itend = src ? _sourceshapes.end() : _targetshapes.end();
-        const auto& nodes = src ? _sources : _targets;
-        if (it != itend) {
-          for (const auto& s : it->second) {
-            if (_cf.isVert(l.first)) {
-#if DEBUG
-              COUT << "source/target shape : " << s.str() << '\n';
-              COUT << "obs : " << obs.str() << '\n';
-              COUT << "r : " << r.str() << '\n';
-#endif
-              if (obs.ymin() <= s.ymin() && obs.ymax() >= s.ymax() && 
-                  obs.xmin() <= s.xmax() && obs.xmax() >= s.xmin()) {
-#if DEBUG
-                COUT << "overlapping : \n";
-#endif
-                if (r.ymin() >= s.ymax()) {
-                  for (auto& n : nodes) {
-                    if (n->z() == l.first && obs.contains(n->x(), n->y())) {
-                      _endextnymax[n] = 0;
-                    }
-                  }
-                  y1 = 0;
-                } else {
-                  for (auto& n : nodes) {
-                    if (n->z() == l.first && obs.contains(n->x(), n->y())) {
-                      _endextnymin[n] = 0;
-                    }
-                  }
-                  y2 = 0;
-                }
-              }
-            }
-            if (_cf.isHor(l.first)) {
-              if (obs.xmin() <= s.xmin() && obs.xmax() >= s.xmax() &&
-                  obs.ymin() <= s.ymax() && obs.ymax() >= s.ymin() ) {
-                if (r.xmin() >= s.xmax()) {
-                  for (auto& n : nodes) {
-                    if (n->z() == l.first && obs.contains(n->x(), n->y())) {
-                      _endextnxmax[n] = 0;
-                    }
-                  }
-                  x1 = 0;
-                } else {
-                  for (auto& n : nodes) {
-                    if (n->z() == l.first && obs.contains(n->x(), n->y())) {
-                      _endextnxmin[n] = 0;
-                    }
-                  }
-                  x2 = 0;
-                }
-              }
-            }
-          }
-        }
-      }*/
       bool olsrcortgt{false};
       for (auto src : {true, false}) {
         const auto& shapes = src ? _sourceshapes : _targetshapes;
@@ -1617,7 +1558,7 @@ void Router::addObstacles(const Geom::LayerRects& lr, const bool temp)
         }
         if (olsrcortgt) break;
       }
-      obs = r.bloatby(x1, y1, x2, y2);
+      auto obs = _lf.snapToGrid(r.bloatby(hwx, hwy, hwx, hwy), l.first);
       if (!olsrcortgt && _bbox.overlaps(obs)) {
         if (temp) {
           _tobstacles[layer].push_back(obs);
