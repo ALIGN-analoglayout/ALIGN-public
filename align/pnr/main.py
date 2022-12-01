@@ -349,7 +349,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                           toplevel_args_d=toplevel_args_d, results_dir=None,
                           placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
-        with open("__placer_dump__.json", "wt") as fp:
+        with open(working_dir/"__placer_dump__.json", "wt") as fp:
             json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
 
         os.chdir(current_working_dir)
@@ -368,12 +368,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                             metrics=metrics)
         else:
             placements_to_run = None
-        
-        with open("__placements_to_run__.json", "wt") as fp:
+
+        with open(working_dir/"__placements_to_run__.json", "wt") as fp:
             json.dump(placements_to_run, fp=fp, indent=2)
 
     elif '3_pnr:route' in steps_to_run:
-        with open("__placements_to_run__.json", "rt") as fp:
+        with open(working_dir/"__placements_to_run__.json", "rt") as fp:
             placements_to_run = json.load(fp)
 
     variants = defaultdict(defaultdict)

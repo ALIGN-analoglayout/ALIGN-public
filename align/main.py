@@ -4,6 +4,7 @@ import os
 import json
 import sys
 import http.server
+import socket
 import socketserver
 import functools
 
@@ -107,8 +108,9 @@ def start_viewer(working_dir, pnr_dir, variant):
 
     stderr = sys.stderr
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
-    with socketserver.TCPServer(('localhost', 0), Handler) as httpd:
-        logger.info(f'Please view layout at http://localhost:{httpd.server_address[1]}/?design={variant}')
+    host_name = socket.getfqdn()
+    with socketserver.TCPServer((host_name, 0), Handler) as httpd:
+        logger.info(f'Please view layout at http://{host_name}:{httpd.server_address[1]}/?design={variant}')
         logger.info('Please type Ctrl + C to stop viewer and continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
