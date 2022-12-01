@@ -157,8 +157,8 @@ void A_star::initial_source(Grid &grid, std::set<std::pair<double, int>, RouterD
   for (int i = 0; i < (int)source.size(); i++) {
     int Mdis = Manhattan_distan_dest(source[i], grid);
     grid.vertices_total[source[i]].Cost = 0;
-    int dis = grid.vertices_total[source[i]].Cost + Mdis;
-    std::pair<int, int> temp_pair;
+    double dis = grid.vertices_total[source[i]].Cost + Mdis * drc_info.Metal_info[grid.vertices_total[source[i]].metal].unit_R;
+    std::pair<double, int> temp_pair;
     temp_pair.first = dis;
     temp_pair.second = source[i];
     L_list.insert(temp_pair);
