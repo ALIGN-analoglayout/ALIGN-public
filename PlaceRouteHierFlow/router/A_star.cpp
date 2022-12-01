@@ -116,39 +116,49 @@ std::vector<std::vector<RouterDB::Metal>> A_star::ConvertPathintoPhysical(Grid &
 
 std::vector<std::vector<int>> A_star::GetExtendLabel() { return Extend_labels; }
 
-int A_star::Manhattan_distan(int sindex, Grid &grid) {
-  /**
-   * old code
-   * 
-  std::set<int> Mdis;
-
+int A_star::Manhattan_distan_dest(int sindex, Grid &grid) {
+  int min_dis = INT_MAX;
   for (int i = 0; i < (int)dest.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
-    Mdis.insert(temp_dis);
+    min_dis = std::min(min_dis, temp_dis);
   }
-
-  std::set<int>::iterator it;
-  //it = Mdis.begin();
-  it = Mdis.end();
-
-  int dis = *it;
-
-  return dis;
-  **/
-  int max_dis = 0;
-  for (int i = 0; i < (int)dest.size(); i++) {
-    int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
-    max_dis = std::max(max_dis, temp_dis);
-  }
-  return max_dis;
+  return min_dis;
 };
 
-void A_star::initial_source(Grid &grid, std::set<std::pair<int, int>, RouterDB::pairComp> &L_list, std::vector<int> &source) {
+int A_star::Manhattan_distan_dest_via(int sindex, Grid &grid) {
+  int min_dis = INT_MAX;
+  for (int i = 0; i < (int)dest.size(); i++) {
+    int temp_dis = abs(grid.vertices_total[sindex].metal - grid.vertices_total[dest[i]].metal);
+    min_dis = std::min(min_dis, temp_dis);
+  }
+  return min_dis;
+};
+
+
+int A_star::Manhattan_distan_source(int sindex, Grid &grid) {
+  int min_dis = INT_MAX;
   for (int i = 0; i < (int)source.size(); i++) {
-    int Mdis = Manhattan_distan(source[i], grid);
+    int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[source[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[source[i]].y);
+    min_dis = std::min(min_dis, temp_dis);
+  }
+  return min_dis;
+};
+
+int A_star::Manhattan_distan_source_via(int sindex, Grid &grid) {
+  int min_dis = INT_MAX;
+  for (int i = 0; i < (int)source.size(); i++) {
+    int temp_dis = abs(grid.vertices_total[sindex].metal - grid.vertices_total[source[i]].metal);
+    min_dis = std::min(min_dis, temp_dis);
+  }
+  return min_dis;
+};
+
+void A_star::initial_source(Grid &grid, std::set<std::pair<double, int>, RouterDB::pairCompDBL> &L_list, std::vector<int> &source) {
+  for (int i = 0; i < (int)source.size(); i++) {
+    int Mdis = Manhattan_distan_dest(source[i], grid);
     grid.vertices_total[source[i]].Cost = 0;
-    int dis = grid.vertices_total[source[i]].Cost + Mdis;
-    std::pair<int, int> temp_pair;
+    double dis = grid.vertices_total[source[i]].Cost + Mdis * drc_info.Metal_info[grid.vertices_total[source[i]].metal].unit_R;
+    std::pair<double, int> temp_pair;
     temp_pair.first = dis;
     temp_pair.second = source[i];
     L_list.insert(temp_pair);
@@ -1236,10 +1246,9 @@ void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &ca
 std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_up, int right_down, vector<RouterDB::Metal> &sym_path) {
   auto logger = spdlog::default_logger()->clone("router.A_star.A_star_algorithm_Sym");
 
-  int via_expand_effort = 250;
-  std::set<std::pair<int, int>, RouterDB::pairComp> L_list;
+  std::set<std::pair<double, int>, RouterDB::pairCompDBL> L_list;
   std::set<int> close_set;
-  std::pair<int, int> temp_pair;
+  std::pair<double, int> temp_pair;
 
   std::set<int> src_index;
 
@@ -1265,7 +1274,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
   int current_node = -1;
 
   while (!L_list.empty() && !found) {
-    std::set<std::pair<int, int>, RouterDB::pairComp>::iterator it;
+    std::set<std::pair<double, int>, RouterDB::pairCompDBL>::iterator it;
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
@@ -1313,16 +1322,29 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
 
     // std::vector<int> expand_candidate_node;
     for (int i = 0; i < (int)candidate_node.size(); i++) {
-      int M_dis = Manhattan_distan(candidate_node[i], grid);
-      int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) +
-                      abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) +
-                      via_expand_effort * abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) + temp_candidate_cost[i];
+      int M_dis_dest = Manhattan_distan_dest(candidate_node[i], grid);
+      int M_dis_dest_via = Manhattan_distan_dest_via(candidate_node[i], grid);
+      int M_dis_source = Manhattan_distan_source(candidate_node[i], grid);
+      int M_dis_source_via = Manhattan_distan_source_via(candidate_node[i], grid);
+      int tmp_metal = std::min(grid.vertices_total[candidate_node[i]].metal, grid.vertices_total[current_node].metal);
+      double current_node_cost_source = M_dis_source * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
+                                        drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R * M_dis_source_via;
+      double temp_cost = current_node_cost_source +
+                         abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) *
+                             drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
+                         abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) *
+                             drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
+                         temp_candidate_cost[i] + M_dis_dest * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
+                         drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R * M_dis_dest_via;
+      if (grid.vertices_total[candidate_node[i]].metal != grid.vertices_total[current_node].metal)
+        temp_cost += drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R;
+
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
         int sym_factor = 0;
 
-        temp_pair.first = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor * sym_cost;
+        temp_pair.first = temp_cost + sym_factor * sym_cost;
         temp_pair.second = candidate_node[i];
         if (L_list.find(temp_pair) != L_list.end()) {
           auto temp_l_list = L_list.find(temp_pair);
@@ -1331,7 +1353,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
 
         grid.vertices_total[candidate_node[i]].Cost = temp_cost;
 
-        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis + sym_factor * sym_cost;
+        int dis = grid.vertices_total[candidate_node[i]].Cost  + sym_factor * sym_cost;
         grid.vertices_total[candidate_node[i]].parent = current_node;
         // grid.vertices_total[candidate_node[i]].trace_back_node = current_node;
         temp_pair.first = dis;
@@ -1409,7 +1431,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm(Grid &grid, int left_up, 
 
   int via_expand_effort = 100;
 
-  std::set<std::pair<int, int>, RouterDB::pairComp> L_list;
+  std::set<std::pair<double, int>, RouterDB::pairCompDBL> L_list;
   std::set<int> close_set;
   std::pair<int, int> temp_pair;
 
@@ -1436,7 +1458,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm(Grid &grid, int left_up, 
   int current_node = -1;
 
   while (!L_list.empty() && !found) {
-    std::set<std::pair<int, int>, RouterDB::pairComp>::iterator it;
+    std::set<std::pair<double, int>, RouterDB::pairCompDBL>::iterator it;
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
@@ -1483,7 +1505,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm(Grid &grid, int left_up, 
 
     // std::vector<int> expand_candidate_node;
     for (int i = 0; i < (int)candidate_node.size(); i++) {
-      int M_dis = Manhattan_distan(candidate_node[i], grid);
+      int M_dis = Manhattan_distan_dest(candidate_node[i], grid);
       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) +
                       abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) +
                       via_expand_effort * abs(grid.vertices_total[candidate_node[i]].metal - grid.vertices_total[current_node].metal) + temp_candidate_cost[i];

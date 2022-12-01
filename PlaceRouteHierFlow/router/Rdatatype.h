@@ -2,6 +2,7 @@
 #define RDATATYPE_H_
 
 #include <limits.h>
+#include <float.h>
 
 #include <string>
 #include <vector>
@@ -90,7 +91,7 @@ struct vertex {
   int x = -1;
   int y = -1;
   int metal = -1;
-  int Cost = INT_MAX;
+  double Cost = DBL_MAX;
   // int Cost = -1;
   bool active = false;
   bool via_active_down = true;
@@ -507,6 +508,16 @@ struct MetalComp {
 };
 struct pairComp {
   bool operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const {
+    if (lhs.first == rhs.first) {
+      return lhs.second < rhs.second;
+    } else {
+      return lhs.first < rhs.first;
+    }
+  }
+};
+
+struct pairCompDBL {
+  bool operator()(const std::pair<double, int>& lhs, const std::pair<double, int>& rhs) const {
     if (lhs.first == rhs.first) {
       return lhs.second < rhs.second;
     } else {
