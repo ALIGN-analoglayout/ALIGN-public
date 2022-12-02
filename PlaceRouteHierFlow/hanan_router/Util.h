@@ -38,7 +38,7 @@ class SaveRestoreStream {
     std::ofstream _ofs, _efs;
     std::streambuf *_ostream, *_estream;
   public:
-    SaveRestoreStream(const std::string& logname, const std::string& errname = "err.log") : _ofs(logname), _efs(errname),
+    SaveRestoreStream(const std::string& logname, const std::string& errname = "err.log") : _ofs(logname, std::ofstream::app), _efs(errname),
     _ostream(std::cout.rdbuf()), _estream(std::cerr.rdbuf())
     {
       if (_ofs) {

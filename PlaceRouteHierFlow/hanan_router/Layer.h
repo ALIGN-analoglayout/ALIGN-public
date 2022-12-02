@@ -65,7 +65,11 @@ class Grid {
       auto rem = (val - _offset) % _pitch;
       return val - ((val - _offset) % _pitch);
     }
-    bool isPtOnGrid(const int val) const { return ((val - _offset) % _pitch) ? false : true; }
+    bool isPtOnGrid(const int val) const { return ((val - _offset) % _pitch == 0); }
+    void getPointsOnGrid(const int start, const int end, std::vector<int>& pts) const
+    {
+      for (int pt = snapUp(start); pt <= snapDn(end); pt += _pitch) pts.push_back(pt);
+    }
 };
 
 class MetalLayer : public Layer {
@@ -116,6 +120,8 @@ class MetalLayer : public Layer {
     }
     const int snapUp(const int val) const { return _grid.snapUp(val); }
     const int snapDn(const int val) const { return _grid.snapDn(val); }
+    bool isPtOnGrid(const int val) const { return _grid.isPtOnGrid(val); }
+    void getPointsOnGrid(const int start, const int end, std::vector<int>& pts) const { _grid.getPointsOnGrid(start, end, pts); }
 
 };
 typedef std::vector<MetalLayer*> MetalLayers;
@@ -264,6 +270,20 @@ class LayerInfo {
       if (layer < _mlayers.size()) return _mlayers[layer]->snapToGrid(r);
       return r;
     }
+    int snapUp(const int r, const int layer) const
+    {
+      if (layer < _mlayers.size()) return _mlayers[layer]->snapUp(r);
+      return r;
+    }
+    int snapDn(const int r, const int layer) const
+    {
+      if (layer < _mlayers.size()) return _mlayers[layer]->snapDn(r);
+      return r;
+    }
+    void getPointsOnGrid(const int start, const int end, const int layer, std::vector<int>& pts) const
+    {
+      if (layer < _mlayers.size()) return _mlayers[layer]->getPointsOnGrid(start, end, pts);
+    }
     Geom::Rect snapToGrid(const Geom::Rect& r, const int llayer, const int ulayer) const
     {
       if (_mlayers[llayer]->isHorizontal() && _mlayers[ulayer]->isVertical()) {
@@ -274,6 +294,17 @@ class LayerInfo {
             _mlayers[ulayer]->snapUp(r.xmax()), _mlayers[llayer]->snapUp(r.ymax()));
       }
       return r;
+    }
+    bool isViaOnGrid(const Geom::Point& p, const int llayer, const int ulayer) const
+    {
+      if (ulayer < _mlayers.size()) {
+        if (_mlayers[llayer]->isHorizontal() && _mlayers[ulayer]->isVertical()) {
+          return _mlayers[llayer]->isPtOnGrid(p.x()) && _mlayers[llayer]->isPtOnGrid(p.y());
+        } else if (_mlayers[llayer]->isVertical() && _mlayers[ulayer]->isHorizontal()) {
+          return _mlayers[llayer]->isPtOnGrid(p.y()) && _mlayers[llayer]->isPtOnGrid(p.x());
+        }
+      }
+      return false;
     }
 };
 

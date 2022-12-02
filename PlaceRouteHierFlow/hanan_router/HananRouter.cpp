@@ -404,29 +404,45 @@ Geom::PointWidthSet Router::findValidPoints(const Geom::Rect& r, const int z, co
         zpadbox = _dnVias[z][0]->upad();
       }
       if (vert) {
-        int space = roundup(std::max(spacey(adj) + ((wy % 2 == 0) ? wy/2 : (wy/2 + 1)), r.height()/NUM_POINTS));
-        if (padbox.valid()) {
-          space = std::max(space, padbox.width());
-        }
-        points.insert(std::make_pair(Geom::Point(x,y), widthy(z)));
-        auto dimy{std::max(zpadbox.height(), widthy(z))/2};
-        int yn = r.ymax() - dimy;
-        while (yn >= (r.ymin() + dimy)) {
-          points.insert(std::make_pair(Geom::Point(x,yn), widthy(z)));
-          yn -= space;
+        std::vector<int> pts;
+        _lf.getPointsOnGrid(r.ymin(), r.ymax(), adj, pts);
+        if (!pts.empty()) {
+          for (const auto& pt : pts) {
+            points.insert(std::make_pair(Geom::Point(x, pt), widthy(z)));
+          }
+        } else {
+          int space = roundup(std::max(spacey(adj) + ((wy % 2 == 0) ? wy/2 : (wy/2 + 1)), r.height()/NUM_POINTS));
+          if (padbox.valid()) {
+            space = std::max(space, padbox.width());
+          }
+          points.insert(std::make_pair(Geom::Point(x,y), widthy(z)));
+          auto dimy{std::max(zpadbox.height(), widthy(z))/2};
+          int yn = r.ymax() - dimy;
+          while (yn >= (r.ymin() + dimy)) {
+            points.insert(std::make_pair(Geom::Point(x,yn), widthy(z)));
+            yn -= space;
+          }
         }
       }
       if (hor) {
-        int space = roundup(std::max(spacex(adj) + ((wx % 2 == 0) ? wx/2 : (wx/2 + 1)), r.width()/NUM_POINTS));
-        if (padbox.valid()) {
-          space = std::max(space, padbox.height());
-        }
-        points.insert(std::make_pair(Geom::Point(x,y), widthx(z)));
-        auto dimx{std::max(zpadbox.width(), widthx(z))/2};
-        int xn = r.xmax() - dimx;
-        while (xn >= (r.xmin() + dimx)) {
-          points.insert(std::make_pair(Geom::Point(xn,y), widthx(z)));
-          xn -= space;
+        std::vector<int> pts;
+        _lf.getPointsOnGrid(r.xmin(), r.xmax(), adj, pts);
+        if (!pts.empty()) {
+          for (const auto& pt : pts) {
+            points.insert(std::make_pair(Geom::Point(pt, y), widthx(z)));
+          }
+        } else {
+          int space = roundup(std::max(spacex(adj) + ((wx % 2 == 0) ? wx/2 : (wx/2 + 1)), r.width()/NUM_POINTS));
+          if (padbox.valid()) {
+            space = std::max(space, padbox.height());
+          }
+          points.insert(std::make_pair(Geom::Point(x,y), widthx(z)));
+          auto dimx{std::max(zpadbox.width(), widthx(z))/2};
+          int xn = r.xmax() - dimx;
+          while (xn >= (r.xmin() + dimx)) {
+            points.insert(std::make_pair(Geom::Point(xn,y), widthx(z)));
+            xn -= space;
+          }
         }
       }
     }
@@ -1083,10 +1099,12 @@ void Router::generateHananGrid()
     for (auto i : {0, 1}) {
       if ((i == 0 && !_cf.isVert(l.first)) || (i == 1 && !_cf.isHor(l.first))) continue;
       std::map<int, IntRangeSet> tmpranges;
-      for (auto& x : ((i == 0) ? xcoords : ycoords)) {
-        if ((i == 0 && x >= _bbox.xmin() && x <= _bbox.xmax()) || 
-            (i == 1 && x >= _bbox.ymin() && x <= _bbox.ymax())) {
-          tmpranges[x].clear();
+      for (auto& coord : ((i == 0) ? xcoords : ycoords)) {
+        for (auto x : {_lf.snapUp(coord, l.first), _lf.snapDn(coord, l.first)}) {
+          if ((i == 0 && x >= _bbox.xmin() && x <= _bbox.xmax()) || 
+              (i == 1 && x >= _bbox.ymin() && x <= _bbox.ymax())) {
+            tmpranges[x].clear();
+          }
         }
       }
 
@@ -1559,6 +1577,7 @@ void Router::addObstacles(const Geom::LayerRects& lr, const bool temp)
         if (olsrcortgt) break;
       }
       auto obs = _lf.snapToGrid(r.bloatby(hwx, hwy, hwx, hwy), l.first);
+      COUT << "rect : " << r.str() << ' ' << obs.str() << '\n';
       if (!olsrcortgt && _bbox.overlaps(obs)) {
         if (temp) {
           _tobstacles[layer].push_back(obs);
@@ -1745,6 +1764,7 @@ const Via* Router::isViaValid(const Node* n, const bool up) const
   Via* via{nullptr};
   if (up) {
     if (n->z() < _maxLayer && !_upVias[n->z()].empty()) {
+      if (!_lf.isViaOnGrid(Geom::Point(n->x(), n->y()), n->z(), n->z() + 1)) return via;
       auto aboveLayer = _aboveViaLayer[n->z()];
       if (aboveLayer >= 0) {
         for (auto& v : _upVias[n->z()]) {
@@ -1793,6 +1813,7 @@ const Via* Router::isViaValid(const Node* n, const bool up) const
   } else {
     if (n->z() > _minLayer && !_dnVias[n->z()].empty()) {
       auto belowLayer = _belowViaLayer[n->z()];
+      if (!_lf.isViaOnGrid(Geom::Point(n->x(), n->y()), n->z() - 1, n->z())) return via;
       if (belowLayer >= 0) {
         for (auto& v : _dnVias[n->z()]) {
           delete via;
@@ -1961,13 +1982,13 @@ void Router::writeLEF(const Geom::LayerRects* sol) const
     ofs << "    PIN SRCNODES\n      DIRECTION INOUT ;\n      USE SIGNAL ;\n      PORT\n";
     for (auto& s : _sources) {
       ofs << "        LAYER " << LAYER_NAMES[s->z()] << "_SRC ;\n";
-      ofs << "          RECT " << (1.*(s->x() - 100)/_uu) << ' ' << (1.*(s->y() - 100)/_uu) << ' ' << (1.*(s->x() + 100)/_uu) << ' ' << (1.*(s->y() + 100)/_uu) << " ;\n";
+      ofs << "          RECT " << (1.*(s->x() - 5)/_uu) << ' ' << (1.*(s->y() - 5)/_uu) << ' ' << (1.*(s->x() + 5)/_uu) << ' ' << (1.*(s->y() + 5)/_uu) << " ;\n";
     }
     ofs << "      END\n    END SRCNODES\n";
     ofs << "    PIN TGTNODES\n      DIRECTION INOUT ;\n      USE SIGNAL ;\n      PORT\n";
     for (auto& s : _targets) {
       ofs << "        LAYER " << LAYER_NAMES[s->z()] << "_TGT ;\n";
-      ofs << "          RECT " << (1.*(s->x() - 100)/_uu) << ' ' << (1.*(s->y() - 100)/_uu) << ' ' << (1.*(s->x() + 100)/_uu) << ' ' << (1.*(s->y() + 100)/_uu) << " ;\n";
+      ofs << "          RECT " << (1.*(s->x() - 5)/_uu) << ' ' << (1.*(s->y() - 5)/_uu) << ' ' << (1.*(s->x() + 5)/_uu) << ' ' << (1.*(s->y() + 5)/_uu) << " ;\n";
     }
     ofs << "      END\n    END TGTNODES\n";
     if (sol) {
@@ -1987,9 +2008,9 @@ void Router::writeLEF(const Geom::LayerRects* sol) const
         for (auto& pos : (vert ? _hanangridv[l] : _hanangridh[l])) {
           for (auto& r : pos.second) {
             if (vert) {
-              ofs << "          RECT " << (1.*(pos.first - 50)/_uu) << ' ' << (1.*r.first/_uu) << ' ' << (1.*(pos.first + 50)/_uu) << ' ' << (1.*r.second/_uu) << " ;\n";
+              ofs << "          RECT " << (1.*(pos.first - 5)/_uu) << ' ' << (1.*r.first/_uu) << ' ' << (1.*(pos.first + 5)/_uu) << ' ' << (1.*r.second/_uu) << " ;\n";
             } else {
-              ofs << "          RECT " << (1.*r.first/_uu) << ' ' << (1.*(pos.first - 50)/_uu) << ' ' << (1.*r.second/_uu) << ' ' << (1.*(pos.first + 50)/_uu) << " ;\n";
+              ofs << "          RECT " << (1.*r.first/_uu) << ' ' << (1.*(pos.first - 5)/_uu) << ' ' << (1.*r.second/_uu) << ' ' << (1.*(pos.first + 5)/_uu) << " ;\n";
             }
           }
         }
@@ -2036,6 +2057,7 @@ void HananRouter::LoadPlacement(const std::string& plfile, const std::string& le
 
 void HananRouter::Route(const std::string& outdir)
 {
+  SaveRestoreStream srs("route.log");
   if (_netlist && _router) _netlist->route(*_router, outdir);
 }
 
