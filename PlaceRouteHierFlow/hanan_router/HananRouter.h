@@ -246,7 +246,7 @@ class Router {
     std::map<int, std::set<Geom::Rect>> _sourceshapes, _targetshapes;
     std::string _modname, _netname;
     int _uu;
-    int _precision{5};
+    int _precision{2};
     Geom::LayerTree _ltree;
     std::set<int> _preflayers;
     bool _usepinwidth{false}, _debugplot{false};

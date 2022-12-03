@@ -59,12 +59,9 @@ class Grid {
     void setPitchOffset(const int pitch, const int offset) { _pitch = pitch; _offset = offset; }
     const int snapUp(const int val) const {
       auto rem = (val - _offset) % _pitch;
-      return rem ? (val + _offset - rem) : val;
+      return rem ? (val + _pitch - rem) : val;
     }
-    const int snapDn(const int val) const {
-      auto rem = (val - _offset) % _pitch;
-      return val - ((val - _offset) % _pitch);
-    }
+    const int snapDn(const int val) const { return val - ((val - _offset) % _pitch); }
     bool isPtOnGrid(const int val) const { return ((val - _offset) % _pitch == 0); }
     void getPointsOnGrid(const int start, const int end, std::vector<int>& pts) const
     {
@@ -110,11 +107,11 @@ class MetalLayer : public Layer {
     Geom::Rect snapToGrid(const Geom::Rect& r) const
     {
       if (isHorizontal()) {
-        return Geom::Rect(_grid.snapDn(r.xmin()), r.ymin(),
-            _grid.snapUp(r.xmax()), r.ymax());
-      } else if (isVertical()) {
         return Geom::Rect(r.xmin(), _grid.snapDn(r.ymin()),
             r.xmax(), _grid.snapUp(r.ymax()));
+      } else if (isVertical()) {
+        return Geom::Rect(_grid.snapDn(r.xmin()), r.ymin(),
+            _grid.snapUp(r.xmax()), r.ymax());
       }
       return r;
     }
@@ -267,22 +264,22 @@ class LayerInfo {
     }
     Geom::Rect snapToGrid(const Geom::Rect& r, const int layer) const
     {
-      if (layer < _mlayers.size()) return _mlayers[layer]->snapToGrid(r);
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapToGrid(r);
       return r;
     }
     int snapUp(const int r, const int layer) const
     {
-      if (layer < _mlayers.size()) return _mlayers[layer]->snapUp(r);
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapUp(r);
       return r;
     }
     int snapDn(const int r, const int layer) const
     {
-      if (layer < _mlayers.size()) return _mlayers[layer]->snapDn(r);
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapDn(r);
       return r;
     }
     void getPointsOnGrid(const int start, const int end, const int layer, std::vector<int>& pts) const
     {
-      if (layer < _mlayers.size()) return _mlayers[layer]->getPointsOnGrid(start, end, pts);
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->getPointsOnGrid(start, end, pts);
     }
     Geom::Rect snapToGrid(const Geom::Rect& r, const int llayer, const int ulayer) const
     {
@@ -297,11 +294,11 @@ class LayerInfo {
     }
     bool isViaOnGrid(const Geom::Point& p, const int llayer, const int ulayer) const
     {
-      if (ulayer < _mlayers.size()) {
+      if (ulayer < static_cast<int>(_mlayers.size())) {
         if (_mlayers[llayer]->isHorizontal() && _mlayers[ulayer]->isVertical()) {
-          return _mlayers[llayer]->isPtOnGrid(p.x()) && _mlayers[llayer]->isPtOnGrid(p.y());
+          return _mlayers[llayer]->isPtOnGrid(p.y()) && _mlayers[ulayer]->isPtOnGrid(p.x());
         } else if (_mlayers[llayer]->isVertical() && _mlayers[ulayer]->isHorizontal()) {
-          return _mlayers[llayer]->isPtOnGrid(p.y()) && _mlayers[llayer]->isPtOnGrid(p.x());
+          return _mlayers[llayer]->isPtOnGrid(p.x()) && _mlayers[ulayer]->isPtOnGrid(p.y());
         }
       }
       return false;
