@@ -1,0 +1,18 @@
+[
+  {"constraint": "ConfigureCompiler","auto_constraint": false,"propagate": true,"identify_array": false,"fix_source_drain": false,"merge_series_devices": false,"merge_parallel_devices": false,"remove_dummy_devices": false,"remove_dummy_hierarchies": false},
+  {"constraint": "PowerPorts","ports": ["vcca"]},
+  {"constraint": "GroundPorts","ports": ["vssx"]},
+  {"constraint": "DoNotRoute","nets": ["vssx","vcca"]},
+  {"constraint": "GroupBlocks","instances": ["mp0"],"instance_name": "xmp0","generator": {"name": "MOS","parameters": {"legal_sizes": [{"y": 2}]}}},
+  {"constraint": "GroupBlocks","instances": ["qp1"],"instance_name": "xqp1","generator": {"name": "MOS","parameters": {"legal_sizes": [{"y": 2}]}}},
+  {"constraint": "GroupBlocks","instances": ["mn0"],"instance_name": "xmn0","generator": {"name": "MOS","parameters": {"legal_sizes": [{"y": 2}]}}},
+  {"constraint": "GroupBlocks","instances": ["qn1"],"instance_name": "xqn1","generator": {"name": "MOS","parameters": {"legal_sizes": [{"y": 2}]}}},
+  {"constraint": "GroupBlocks","instances": ["mn1"],"instance_name": "xmn1","generator": {"name": "MOS","parameters": {"legal_sizes": [{"y": 2}]}}},
+  {"constraint": "Floorplan","order": true,"symmetrize": false,"regions": [
+    ["i0","i6"],
+    ["xmn0","xqn1","xmn1"],
+    ["xmp0","xqp1"],
+    ["i9"]]},
+  {"constraint": "Order","direction": "left_to_right","instances": ["r0","i0"]},
+  {"constraint": "Order","direction": "left_to_right","instances": ["r0","i9"]}
+]

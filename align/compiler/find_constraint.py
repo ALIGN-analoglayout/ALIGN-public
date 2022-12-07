@@ -472,8 +472,8 @@ class add_symmetry_const:
                                 pins1=s1,
                                 pins2=s2
                             )
-                            self.iconst.append(symmnet)
-                        logger.debug(f"adding symmetric net const: {symmnet}")
+                            # self.iconst.append(symmnet)
+                        # logger.debug(f"adding symmetric net const: {symmnet}")
                     else:
                         logger.debug(f"Skip symmetry: large fanout nets {key} {value} {pairs}")
                         # TODO Need update in placer to simplify this

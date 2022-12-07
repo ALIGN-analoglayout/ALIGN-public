@@ -210,14 +210,15 @@ def make_tradeoff_fig_ha(df, log=False, scale='Blugrn', lambda_coeff=1.0):
         log_sweep_y = log_product - np.log(sweep_x)*lambda_coeff
         sweep_y = np.exp(log_sweep_y)
 
-        fig.add_trace(
+        if True:
+         fig.add_trace(
             go.Scatter(
                 x=sweep_x,
                 y=sweep_y,
                 mode='lines',
                 showlegend=False
             )
-        )
+         )
 
     define_colorscale( fig, df['constraint_penalty'])
     define_axes( fig, log, max_x, max_y, log_one_to_one=True)

@@ -1,0 +1,32 @@
+[
+  {"constraint": "ConfigureCompiler","auto_constraint": false,"propagate": true,"identify_array": false,"fix_source_drain": false,"merge_series_devices": false,"merge_parallel_devices": false,"remove_dummy_devices": false,"remove_dummy_hierarchies": false},
+  {"constraint": "PowerPorts","ports": ["vccd","vcca"]},
+  {"constraint": "GroundPorts","ports": ["vssx"]},
+  {"constraint": "DoNotRoute","nets": ["vssx","vccd","vcca"]},
+  {"constraint": "GroupBlocks","instances": ["nand0","nand1","inv09"],"instance_name": "xdig"},
+  {"constraint": "GroupBlocks","instances": ["R0","i12","i21","i13","i20","qn3"],"instance_name": "xoutp", "constraints": [
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+    {"constraint": "DoNotIdentify", "instances": ["i12", "i21", "i13", "i20", "qn3"]},
+    {"constraint": "Floorplan", "order": true, "regions": [["R0"], ["i12", "i21", "i13"], ["i20", "qn3"]]},
+    {"constraint": "Align", "line": "v_left", "instances": ["R0", "i12", "i20"]}
+  ]},
+  {"constraint": "GroupBlocks","instances": ["R6","i15","i35","i36","i22","i16"],"instance_name": "xoutn", "constraints": [
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+    {"constraint": "DoNotIdentify", "instances": ["i15", "i35", "i36", "i22", "i16"]},
+    {"constraint": "Floorplan", "order": true, "regions": [["i35", "i36"], ["i15", "i22", "i16"], ["R6"]]},
+    {"constraint": "Align", "line": "v_left", "instances": ["i35", "i15", "R6"]}
+  ]},
+  {"constraint": "GroupBlocks","instances": ["i25","i32"],"instance_name": "xbiasp", "constraints": [
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+    {"constraint": "Floorplan", "regions": [["i25"], ["i32"]]}
+  ]},
+  {"constraint": "GroupBlocks","instances": ["i24","i27"],"instance_name": "xbiasn", "constraints": [
+    {"constraint": "ConfigureCompiler", "auto_constraint": false, "propagate": true},
+    {"constraint": "Floorplan", "regions": [["i24"], ["i27"]]}
+  ]},
+  {"constraint": "Floorplan","order": true,"symmetrize": false,"regions": [
+    ["xbiasp","i0","xoutp"],
+    ["xdig"],
+    ["xbiasn","i14","xoutn"]]
+  }
+]

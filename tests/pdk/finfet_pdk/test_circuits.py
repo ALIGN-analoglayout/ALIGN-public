@@ -10,7 +10,7 @@ from . import circuits
 import logging
 logger = logging.getLogger(__name__)
 
-CLEANUP = False if os.getenv("CLEANUP", None) else True
+CLEANUP = False
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 
@@ -118,7 +118,7 @@ def test_cmp_fp2():
     run_example(example, cleanup=CLEANUP, area=5e9, log_level=LOG_LEVEL, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
 
 
-def test_cmp_fp2_regions():
+def test_comparator():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.comparator(name)
     constraints = [
