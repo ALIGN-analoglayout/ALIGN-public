@@ -1409,143 +1409,146 @@ void design::constructSymmGroup() {
   vector<pair<int, placerDB::Smark>> tmpselfsym;
   vector<placerDB::SymmBlock> SBs;
   placerDB::Smark axis_dir;
-  for (vector<SymmNet>::iterator sni = SNets.begin(); sni != SNets.end(); ++sni) {
-    axis_dir = sni->axis_dir;
-    tmpsympair.clear();
-    tmpselfsym.clear();
-    // cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
-    for (unsigned int i = 0; i < sni->net1.connected.size(); ++i) {
-      // std::cout<<"type "<<sni->net1.connected.at(i).type<<" vs "<<sni->net2.connected.at(i).type<<std::endl;
-      if (sni->net1.connected.at(i).type != sni->net2.connected.at(i).type) {
-        logger->debug("Placer-Warning: different object type found in symmetric nets! Skip those objects...");
-      }
-      if (sni->net1.connected.at(i).type == placerDB::Terminal) {
-        // cout<<sni->net1.connected.at(i).iter<<endl;
-        // cout<<sni->net2.connected.at(i).iter<<endl;
-        net1Sink = sni->net1.connected.at(i).iter + (int)Blocks.size();
-        net2Sink = sni->net2.connected.at(i).iter + (int)Blocks.size();
-      } else if (sni->net1.connected.at(i).type == placerDB::Block) {
-        net1Sink = sni->net1.connected.at(i).iter2;
-        net2Sink = sni->net2.connected.at(i).iter2;
-      }
-      tpair = (net1Sink < net2Sink) ? make_pair(net1Sink, net2Sink) : make_pair(net2Sink, net1Sink);
-      // cout<<tpair.first<<" "<<tpair.second<<endl;
-      if (tpair.first == tpair.second) {  // if self-symmetric block
-        if (tpair.first < (int)Blocks.size()) {
-          // cout<<"Block "<<sni->net1.connected.at(i).iter2<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).back().name<<  " pin
-          // "<<sni->net1.connected.at(i).iter<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).back().blockPins.at(sni->net1.connected.at(i).iter).name<<endl;
-          // vector<placerDB::point> p1V=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
-          // vector<placerDB::point> p2V=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          // placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
-          // placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          placerDB::Smark tsmark = axis_dir;
-          // placerDB::Smark tsmark= ( abs(p1.x-p2.x)<abs(p1.y-p2.y) ) ? placerDB::V : placerDB::H;
-          tmpselfsym.push_back(make_pair(tpair.first, tsmark));
-        } else {
-          logger->debug("Placer-Warning: self-symmetric terminal found! Skip this object...");
-          continue;
+  bool use_symnet = false;
+  if(use_symnet){
+    for (vector<SymmNet>::iterator sni = SNets.begin(); sni != SNets.end(); ++sni) {
+      axis_dir = sni->axis_dir;
+      tmpsympair.clear();
+      tmpselfsym.clear();
+      // cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
+      for (unsigned int i = 0; i < sni->net1.connected.size(); ++i) {
+        // std::cout<<"type "<<sni->net1.connected.at(i).type<<" vs "<<sni->net2.connected.at(i).type<<std::endl;
+        if (sni->net1.connected.at(i).type != sni->net2.connected.at(i).type) {
+          logger->debug("Placer-Warning: different object type found in symmetric nets! Skip those objects...");
         }
-      } else {  // if paired-symmetric block
-        tmpsympair.push_back(tpair);
+        if (sni->net1.connected.at(i).type == placerDB::Terminal) {
+          // cout<<sni->net1.connected.at(i).iter<<endl;
+          // cout<<sni->net2.connected.at(i).iter<<endl;
+          net1Sink = sni->net1.connected.at(i).iter + (int)Blocks.size();
+          net2Sink = sni->net2.connected.at(i).iter + (int)Blocks.size();
+        } else if (sni->net1.connected.at(i).type == placerDB::Block) {
+          net1Sink = sni->net1.connected.at(i).iter2;
+          net2Sink = sni->net2.connected.at(i).iter2;
+        }
+        tpair = (net1Sink < net2Sink) ? make_pair(net1Sink, net2Sink) : make_pair(net2Sink, net1Sink);
+        // cout<<tpair.first<<" "<<tpair.second<<endl;
+        if (tpair.first == tpair.second) {  // if self-symmetric block
+          if (tpair.first < (int)Blocks.size()) {
+            // cout<<"Block "<<sni->net1.connected.at(i).iter2<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).back().name<<  " pin
+            // "<<sni->net1.connected.at(i).iter<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).back().blockPins.at(sni->net1.connected.at(i).iter).name<<endl;
+            // vector<placerDB::point> p1V=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
+            // vector<placerDB::point> p2V=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
+            // placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
+            // placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
+            placerDB::Smark tsmark = axis_dir;
+            // placerDB::Smark tsmark= ( abs(p1.x-p2.x)<abs(p1.y-p2.y) ) ? placerDB::V : placerDB::H;
+            tmpselfsym.push_back(make_pair(tpair.first, tsmark));
+          } else {
+            logger->debug("Placer-Warning: self-symmetric terminal found! Skip this object...");
+            continue;
+          }
+        } else {  // if paired-symmetric block
+          tmpsympair.push_back(tpair);
+        }
       }
+      for (unsigned int i = 0; i < tmpsympair.size(); ++i) {
+        logger->debug("paired-symmectric: {0} {1}", tmpsympair.at(i).first, tmpsympair.at(i).second);
+      }
+      for (unsigned int i = 0; i < tmpselfsym.size(); ++i) {
+        logger->debug("self-symmectric: {0} {1}", tmpselfsym.at(i).first, tmpselfsym.at(i).second);
+      }
+      checkselfsym(tmpsympair, tmpselfsym, axis_dir);
+      int sbidx = MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
+      // std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<"SBs size()"<<SBs.size()<<std::endl;
+      sni->SBidx = sbidx;
+      // vector<pair<int,int> > matchedPair,matchedSelf;
+      // matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
+      // matchedSelf=checkSelfsymInSymmBlock(SBs, tmpselfsym);
+      // if(matchedPair.empty()) {
+      //  if(matchedSelf.empty()) { // neither matched
+      //    cout<<"New symmetric group "<<endl;
+      //    SBs.resize(SBs.size()+1);
+      //    SBs.back().sympair=tmpsympair;
+      //    SBs.back().selfsym=tmpselfsym;
+      //    //SBs.back().dnode=dnidx++;
+      //  } else { // only matched self-symmetric
+      //    int gidx=matchedSelf[0].first;
+      //    for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
+      //      if(itt->first!=gidx) {
+      //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
+      //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
+      //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
+      //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
+      //      }
+      //    }
+      //    cout<<"Append symmetric group #"<<gidx<<endl;
+      //    for(int i=0;i<(int)tmpsympair.size();i++) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
+      //    for(int i=0;i<(int)tmpselfsym.size();i++) {
+      //      bool found=false;
+      //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
+      //        if(i==mit->second) {found=true;break;}
+      //      }
+      //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
+      //    }
+      //  }
+      //} else {
+      //  if(matchedSelf.empty()) { // only matched paired-symmetric
+      //    int gidx=matchedPair[0].first;
+      //    for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
+      //      if(itt->first!=gidx) {
+      //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
+      //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
+      //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
+      //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
+      //      }
+      //    }
+      //    cout<<"Append symmetric group #"<<gidx<<endl;
+      //    for(int i=0;i<(int)tmpsympair.size();i++) {
+      //      bool found=false;
+      //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
+      //        if(i==mit->second) {found=true;break;}
+      //      }
+      //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
+      //    }
+      //    for(int i=0;i<(int)tmpselfsym.size();i++) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
+      //  } else { // both matched
+      //    int gidx=matchedSelf[0].first;
+      //    for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
+      //      if(itt->first!=gidx) {
+      //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
+      //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
+      //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
+      //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
+      //      }
+      //    }
+      //    for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
+      //      if(itt->first!=gidx) {
+      //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
+      //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
+      //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
+      //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
+      //      }
+      //    }
+      //    for(int i=0;i<(int)tmpselfsym.size();i++) {
+      //      bool found=false;
+      //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
+      //        if(i==mit->second) {found=true;break;}
+      //      }
+      //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
+      //    }
+      //    for(int i=0;i<(int)tmpsympair.size();i++) {
+      //      bool found=false;
+      //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
+      //        if(i==mit->second) {found=true;break;}
+      //      }
+      //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
+      //    }
+      //  }
+      //}
     }
-    for (unsigned int i = 0; i < tmpsympair.size(); ++i) {
-      logger->debug("paired-symmectric: {0} {1}", tmpsympair.at(i).first, tmpsympair.at(i).second);
+    for (vector<SymmPairBlock>::iterator sni = SPBlocks.begin(); sni != SPBlocks.end(); ++sni) {
+      MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets, sni->axis_dir);
     }
-    for (unsigned int i = 0; i < tmpselfsym.size(); ++i) {
-      logger->debug("self-symmectric: {0} {1}", tmpselfsym.at(i).first, tmpselfsym.at(i).second);
-    }
-    checkselfsym(tmpsympair, tmpselfsym, axis_dir);
-    int sbidx = MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets, axis_dir);
-    // std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<"SBs size()"<<SBs.size()<<std::endl;
-    sni->SBidx = sbidx;
-    // vector<pair<int,int> > matchedPair,matchedSelf;
-    // matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
-    // matchedSelf=checkSelfsymInSymmBlock(SBs, tmpselfsym);
-    // if(matchedPair.empty()) {
-    //  if(matchedSelf.empty()) { // neither matched
-    //    cout<<"New symmetric group "<<endl;
-    //    SBs.resize(SBs.size()+1);
-    //    SBs.back().sympair=tmpsympair;
-    //    SBs.back().selfsym=tmpselfsym;
-    //    //SBs.back().dnode=dnidx++;
-    //  } else { // only matched self-symmetric
-    //    int gidx=matchedSelf[0].first;
-    //    for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
-    //      if(itt->first!=gidx) {
-    //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
-    //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
-    //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
-    //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
-    //      }
-    //    }
-    //    cout<<"Append symmetric group #"<<gidx<<endl;
-    //    for(int i=0;i<(int)tmpsympair.size();i++) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
-    //    for(int i=0;i<(int)tmpselfsym.size();i++) {
-    //      bool found=false;
-    //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
-    //        if(i==mit->second) {found=true;break;}
-    //      }
-    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
-    //    }
-    //  }
-    //} else {
-    //  if(matchedSelf.empty()) { // only matched paired-symmetric
-    //    int gidx=matchedPair[0].first;
-    //    for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
-    //      if(itt->first!=gidx) {
-    //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
-    //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
-    //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
-    //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
-    //      }
-    //    }
-    //    cout<<"Append symmetric group #"<<gidx<<endl;
-    //    for(int i=0;i<(int)tmpsympair.size();i++) {
-    //      bool found=false;
-    //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
-    //        if(i==mit->second) {found=true;break;}
-    //      }
-    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
-    //    }
-    //    for(int i=0;i<(int)tmpselfsym.size();i++) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
-    //  } else { // both matched
-    //    int gidx=matchedSelf[0].first;
-    //    for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
-    //      if(itt->first!=gidx) {
-    //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
-    //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
-    //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
-    //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
-    //      }
-    //    }
-    //    for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
-    //      if(itt->first!=gidx) {
-    //        for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit)
-    //        {SBs.at(gidx).sympair.push_back(*spit);} for(vector<pair<int,placerDB::Smark> >::iterator
-    //        spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);} cout<<"Move
-    //        SB#"<<itt->first<<" to SB#"<<gidx<<endl; SBs.at(itt->first).sympair.clear(); SBs.at(itt->first).selfsym.clear();
-    //      }
-    //    }
-    //    for(int i=0;i<(int)tmpselfsym.size();i++) {
-    //      bool found=false;
-    //      for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
-    //        if(i==mit->second) {found=true;break;}
-    //      }
-    //      if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) );
-    //    }
-    //    for(int i=0;i<(int)tmpsympair.size();i++) {
-    //      bool found=false;
-    //      for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
-    //        if(i==mit->second) {found=true;break;}
-    //      }
-    //      if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) );
-    //    }
-    //  }
-    //}
-  }
-  for (vector<SymmPairBlock>::iterator sni = SPBlocks.begin(); sni != SPBlocks.end(); ++sni) {
-    MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets, sni->axis_dir);
   }
   SBlocks.clear();
   for (vector<placerDB::SymmBlock>::iterator it = SBs.begin(); it != SBs.end(); ++it) {
