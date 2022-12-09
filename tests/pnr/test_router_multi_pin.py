@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from align.pdk.finfet import CanvasPDK
-from align.cell_fabric.pex import ParasiticExtraction
 from .utils import get_test_id, run_postamble
 
 PIN = 'pin'
@@ -28,7 +27,7 @@ def extract_parasitics(data, nets):
     return results
 
 
-def test_ru_0():
+def test_ru_multi_0():
     name = get_test_id()
 
     # Routing problem
@@ -63,7 +62,7 @@ def test_ru_0():
     assert res2['total_cap']['A'] <= res1['total_cap']['A']
 
 
-def test_ru_1():
+def test_ru_multi_1():
     name = get_test_id()
     cv = CanvasPDK()
 
@@ -78,7 +77,7 @@ def test_ru_1():
     run_postamble(name, cv)
 
 
-def test_ru_2():
+def test_ru_multi_2():
     name = get_test_id()
     cv = CanvasPDK()
 
@@ -91,7 +90,7 @@ def test_ru_2():
     run_postamble(name, cv)
 
 
-def test_ru_3():
+def test_ru_multi_3():
     name = get_test_id()
     cv = CanvasPDK()
 
