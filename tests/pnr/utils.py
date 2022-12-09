@@ -33,7 +33,7 @@ def set_bbox(cv):
         if cv.bbox.ury is None or cv.bbox.ury < r.ury:
             cv.bbox.ury = r.ury
     cv.bbox.llx = (cv.bbox.llx // cv.pdk['M1']['Pitch']) * cv.pdk['M1']['Pitch']
-    cv.bbox.urx = (cv.bbox.urx // cv.pdk['M1']['Pitch']) * cv.pdk['M1']['Pitch']
+    cv.bbox.urx = (cv.bbox.urx // cv.pdk['M1']['Pitch']) * cv.pdk['M1']['Pitch'] + cv.pdk['M1']['Pitch']
     cv.bbox.lly = (cv.bbox.lly // cv.pdk['M2']['Pitch']) * cv.pdk['M2']['Pitch']
     cv.bbox.ury = (cv.bbox.ury // cv.pdk['M2']['Pitch']) * cv.pdk['M2']['Pitch']
     cv.bbox.llx = cv.bbox.lly = 0
