@@ -400,7 +400,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'pdk_file': str(pdk_file),
                            'subckt': subckt,
                            'nvariants': nvariants,
-                           'effort': effort}
+                           'effort': effort,
+                           'pdk_dir': pdk_dir}
 
         results_name_map = router_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                                          numLayout=toplevel_args_d['nvariants'], effort=toplevel_args_d['effort'],

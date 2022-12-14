@@ -433,7 +433,7 @@ def router_driver(*, cap_map, cap_lef_s,
 
             print(f'scaled_placement_verilog_d: {scaled_placement_verilog_d.json(indent=2)}')
 
-            collect_pins(map_d_in, scaled_placement_verilog_d)
+            collect_pins(map_d_in, scaled_placement_verilog_d, toplevel_args_d)
 
 
     return res_dict

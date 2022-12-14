@@ -6,11 +6,38 @@ import pathlib
 import json
 
 from ..cell_fabric import transformation
+from ..compiler.util import get_generator
+
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
 
-def collect_pins(map_d_in, scaled_placement_verilog_d):
+def route_by_stretch(flat_tbl, Canvas):
+    cv = Canvas()
+
+    all_layers = set()
+    for net, terminals in flat_tbl.items():
+        for (layer, rect) in terminals:
+            cv.terminals.append({'netName': net, 'layer': layer, 'rect': rect, 'netType': 'drawing'})
+            all_layers.add(layer)
+
+    for layer in all_layers:
+        cv.join_wires(cv.generators[layer.lower()])
+
+    new_flat_tbl = defaultdict(list)
+    for term in cv.terminals:
+        new_flat_tbl[term['netName']].append((term['layer'], term['rect']))
+
+    for net, terminals in flat_tbl.items():
+        logger.info(f'Number of wires for {net} before {len(terminals)} after {len(new_flat_tbl[net])}')
+
+    return new_flat_tbl
+
+
+def collect_pins(map_d_in, scaled_placement_verilog_d, top_level_args):
+
+    Canvas = get_generator('CanvasPDK', top_level_args['pdk_dir'])
 
     pin_tbl = {}
     for nm, gds_fn in map_d_in:
@@ -43,6 +70,8 @@ def collect_pins(map_d_in, scaled_placement_verilog_d):
                 for layer, rect in pin_tbl[ctn][formal]:
                     newRect = tr.hitRect(transformation.Rect(*rect)).canonical().toList()
                     flat_tbl[actual].append((layer, newRect))
+
+        flat_tbl = route_by_stretch(flat_tbl, Canvas)
 
         print(module['concrete_name'], flat_tbl)
 
