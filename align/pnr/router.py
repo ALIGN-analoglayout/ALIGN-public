@@ -1,7 +1,11 @@
+import plotly.graph_objects as go
+import plotly.express as px
+
 import logging
 import pathlib
 import json
 import re
+from ..cell_fabric import transformation
 
 from collections import defaultdict
 
@@ -392,28 +396,112 @@ def router_driver(*, cap_map, cap_lef_s,
 
         # create a fresh DB and populate it with a placement verilog d    
 
-        DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
-        
-        assert new_verilog_d == abstract_verilog_d
+        if router_mode in ['top_down', 'bottom_up']:
+            DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
-        assert new_fpath == fpath
+            assert new_verilog_d == abstract_verilog_d
 
-        # populate new DB with placements to run
+            assert new_fpath == fpath
 
-        hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
-                           verilog_d=abstract_verilog_d, lambda_coeff=1,
-                           scale_factor=scale_factor,
-                           placement_verilog_d=scaled_placement_verilog_d.dict(),
-                           select_in_ILP=False, place_using_ILP=False, seed=0,
-                           use_analytical_placer=False, ilp_solver='symphony',
-                           primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1)
+            # populate new DB with placements to run
 
-        placements_to_run = None
+            hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
+                               verilog_d=abstract_verilog_d, lambda_coeff=1,
+                               scale_factor=scale_factor,
+                               placement_verilog_d=scaled_placement_verilog_d.dict(),
+                               select_in_ILP=False, place_using_ILP=False, seed=0,
+                               use_analytical_placer=False, ilp_solver='symphony',
+                               primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1)
 
-        res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                     router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+            placements_to_run = None
 
-        res_dict.update(res)
+            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+
+            res_dict.update(res)
     
+        elif router_mode in ['collect_pins']:
+            print(f'toplevel_args_d: {toplevel_args_d}')
+            print(f'results_dir: {results_dir}')
+            print(f'abstract_verilog_d: {abstract_verilog_d.json(indent=2)}')
+            print(f'map_d_in: {map_d_in}')
+            print(f'lef_s_in: {lef_s_in}')
+
+            print(f'scaled_placement_verilog_d: {scaled_placement_verilog_d.json(indent=2)}')
+
+            lef_path = pathlib.Path(toplevel_args_d['input_dir']) / toplevel_args_d['lef_file']
+            with lef_path.open('rt') as fp:
+                ...
+                # print(fp.read())
+
+
+            pin_tbl = {}
+            for nm, gds_fn in map_d_in:
+                pin_tbl[nm] = {}
+                with pathlib.Path(gds_fn).with_suffix('.json').open('rt') as fp:
+                    j = json.load(fp=fp)
+                    for term in j['terminals']:
+                        if term['netType'] == 'pin':
+                            netName = term['netName']
+                            if netName not in pin_tbl[nm]:
+                                pin_tbl[nm][netName] = []
+                            pin_tbl[nm][netName].append((term['layer'], term['rect']))
+
+            print(pin_tbl)
+
+            colorscale = px.colors.qualitative.Alphabet
+
+            for module in scaled_placement_verilog_d['modules']:
+                flat_tbl = {}
+                for instance in module['instances']:
+                    ctn = instance['concrete_template_name']
+                    tr = transformation.Transformation(**instance['transformation'])
+                    for fa in instance['fa_map']:
+                        formal = fa['formal']
+                        actual = fa['actual']
+
+                        if actual not in flat_tbl:
+                            flat_tbl[actual] = []
+
+                        for layer, rect in pin_tbl[ctn][formal]:
+                            newRect = tr.hitRect(transformation.Rect(*rect)).canonical().toList()
+                            flat_tbl[actual].append((layer, newRect))
+
+                print(module['concrete_name'], flat_tbl)
+
+                _, _, width, height = module['bbox']
+                for idx, (k, v) in enumerate(flat_tbl.items()):
+                    # color = colorscale[idx % len(colorscale)]
+                
+                    fig = go.Figure()
+                    fig.update_xaxes(range=[0,width])
+                    fig.update_yaxes(
+                        range=[0,height],
+                        scaleanchor='x',
+                        scaleratio=1
+                    )
+
+                    x_lst, y_lst, nm_lst = [], [], []
+
+                    layer_colors = {
+                        'M1': 'red',
+                        'M2': 'blue',
+                        'M3': 'green',
+                        'M4': 'plum',
+                        'M5': 'brown'
+                    }
+
+                    for layer, rect in v:
+                        color = layer_colors[layer]
+                        llx, lly, urx, ury = rect
+                        fig.add_shape(type="rect", x0=llx, y0=lly, x1=urx, y1=ury, line=dict(color="RoyalBlue", width=1), fillcolor=color)
+
+                        x_lst.append(urx)
+                        y_lst.append(ury)
+                        nm_lst.append(k)
+
+                    fig.add_trace(go.Scatter(x=x_lst, y=y_lst, text=nm_lst, mode="text", textfont=dict(color="black", size=16)))
+                    fig.show()
+
     return res_dict
 
