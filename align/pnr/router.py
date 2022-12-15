@@ -427,11 +427,8 @@ def router_driver(*, cap_map, cap_lef_s,
 
             print(f'toplevel_args_d: {toplevel_args_d}')
             print(f'results_dir: {results_dir}')
-            print(f'abstract_verilog_d: {abstract_verilog_d.json(indent=2)}')
             print(f'map_d_in: {map_d_in}')
             print(f'lef_s_in: {lef_s_in}')
-
-            print(f'scaled_placement_verilog_d: {scaled_placement_verilog_d.json(indent=2)}')
 
             collect_pins(map_d_in, scaled_placement_verilog_d, toplevel_args_d)
 
