@@ -4368,7 +4368,7 @@ void GcellDetailRouter::InactivateRect2GridPoints(int mIdx, int LLx, int LLy, in
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_x;
 
         int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
-        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        int newURx = URx + enclose_length;//+ drc_info.Metal_info.at(mIdx).dist_ee ;
         int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
         if (boundX > newURx) {
           newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;
@@ -4387,7 +4387,7 @@ void GcellDetailRouter::InactivateRect2GridPoints(int mIdx, int LLx, int LLy, in
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx + 1).grid_unit_x;
 
         int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
-        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        int newURx = URx + enclose_length;  //+ drc_info.Metal_info.at(mIdx).dist_ee;
         int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
         if (boundX > newURx) {
           newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;
