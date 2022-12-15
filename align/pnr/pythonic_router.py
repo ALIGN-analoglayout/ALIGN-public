@@ -114,7 +114,6 @@ def collect_pins(map_d_in, scaled_placement_verilog_d, top_level_args):
 
                     rect_to_grid(canvas, layer, rect)
 
-
                     pin_tbl[nm][netName].append((layer, rect))
 
     for module in scaled_placement_verilog_d['modules']:
@@ -129,7 +128,7 @@ def collect_pins(map_d_in, scaled_placement_verilog_d, top_level_args):
                 for layer, rect in pin_tbl[ctn][formal]:
                     newRect = tr.hitRect(transformation.Rect(*rect)).canonical().toList()
 
-                    rect_to_grid(canvas, layer, rect)
+                    rect_to_grid(canvas, layer, newRect)
 
 
                     flat_tbl[actual].append((layer, newRect))
