@@ -117,40 +117,40 @@ std::vector<std::vector<RouterDB::Metal>> A_star::ConvertPathintoPhysical(Grid &
 std::vector<std::vector<int>> A_star::GetExtendLabel() { return Extend_labels; }
 
 int A_star::Manhattan_distan_dest(int sindex, Grid &grid) {
-  int min_dis = INT_MAX;
+  int max_dis = 0;
   for (int i = 0; i < (int)dest.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
-    min_dis = std::min(min_dis, temp_dis);
+    max_dis = std::max(max_dis, temp_dis);
   }
-  return min_dis;
+  return max_dis;
 };
 
 int A_star::Manhattan_distan_dest_via(int sindex, Grid &grid) {
-  int min_dis = INT_MAX;
+  int max_dis = 0;
   for (int i = 0; i < (int)dest.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].metal - grid.vertices_total[dest[i]].metal);
-    min_dis = std::min(min_dis, temp_dis);
+    max_dis = std::max(max_dis, temp_dis);
   }
-  return min_dis;
+  return max_dis;
 };
 
 
 int A_star::Manhattan_distan_source(int sindex, Grid &grid) {
-  int min_dis = INT_MAX;
+  int max_dis = 0;
   for (int i = 0; i < (int)source.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[source[i]].x) + abs(grid.vertices_total[sindex].y - grid.vertices_total[source[i]].y);
-    min_dis = std::min(min_dis, temp_dis);
+    max_dis = std::max(max_dis, temp_dis);
   }
-  return min_dis;
+  return max_dis;
 };
 
 int A_star::Manhattan_distan_source_via(int sindex, Grid &grid) {
-  int min_dis = INT_MAX;
+  int max_dis = 0;
   for (int i = 0; i < (int)source.size(); i++) {
     int temp_dis = abs(grid.vertices_total[sindex].metal - grid.vertices_total[source[i]].metal);
-    min_dis = std::min(min_dis, temp_dis);
+    max_dis = std::max(max_dis, temp_dis);
   }
-  return min_dis;
+  return max_dis;
 };
 
 void A_star::initial_source(Grid &grid, std::set<std::pair<double, int>, RouterDB::pairCompDBL> &L_list, std::vector<int> &source) {
