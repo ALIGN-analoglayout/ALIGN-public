@@ -424,8 +424,8 @@ class Boundary(HardConstraint):
 
         {"constraint": "Boundary", "max_height": 100 }
     """
-    max_width: Optional[float] = 10000
-    max_height: Optional[float] = 10000
+    max_width: Optional[float] = 100000  # 100mm
+    max_height: Optional[float] = 100000  # 100mm
     halo_horizontal: Optional[float] = 0
     halo_vertical: Optional[float] = 0
 
@@ -445,12 +445,10 @@ class Boundary(HardConstraint):
 
     def translate(self, solver):
         bbox = solver.bbox_vars('subcircuit')
-        if self.max_width is not None:
-            yield solver.cast(bbox.urx-bbox.llx, float) <= 1000*self.max_width  # in nanometer
-        if self.max_height is not None:
-            yield solver.cast(bbox.ury-bbox.lly, float) <= 1000*self.max_height  # in nanometer
+        yield solver.cast(bbox.urx-bbox.llx, float) <= 1000*self.max_width  # convert to nanometer
+        yield solver.cast(bbox.ury-bbox.lly, float) <= 1000*self.max_height  # convert to nanometer
 
-        instances = get_instances_from_hacked_dataclasses(self._validator_ctx())
+        instances = get_instances_from_hacked_dataclasses(self)
         bvars = solver.iter_bbox_vars(instances)
         for b in bvars:
             yield b.llx >= bbox.llx + int(1000*self.halo_horizontal)
