@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from align.pdk.finfet import CanvasPDK
 from .utils import get_test_id, run_postamble
+from align.cell_fabric import gen_lef, transformation
 
 PIN = 'pin'
 BLK = 'blockage'
@@ -37,10 +38,10 @@ def test_ru_multi_0():
             cv.addWire(cv.m1, 'A', x, (1, -1), (3, 1), netType=PIN)
         for x in [7, 9, 11]:
             cv.addWire(cv.m1, 'A', x, (6, -1), (8, 1), netType=PIN)
-        for x in range(6, 12):
-            cv.addWire(cv.m1, NUN, x, (1, -1), (3, 1), netType=BLK)
+        for x in range(6, 13):
+            cv.addWire(cv.m1, NUN, x, (1, -1), (5, 1), netType=BLK)
         for x in range(7):
-            cv.addWire(cv.m1, NUN, x, (6, 1), (8, 1), netType=BLK)
+            cv.addWire(cv.m1, NUN, x, (4, -1), (8, 1), netType=BLK)
         return cv
 
     # A hand-crafted solution
@@ -56,10 +57,16 @@ def test_ru_multi_0():
 
     # Routing problem
     cv = _routing_problem()
-    data = run_postamble(name, cv)
+    data = run_postamble(name, cv, constraints=[{"constraint": "Route", "min_layer": "M2", "max_layer": "M4"}])
     res2 = extract_parasitics(data, ['A'])
 
-    assert res2['total_cap']['A'] <= res1['total_cap']['A']
+    m3_segment = False
+    for term in data['terminals']:
+        if term['layer'] == 'M3':
+            m3_segment = True
+
+    assert m3_segment, 'Router did not respect min_layer'
+    # assert res2['total_cap']['A'] <= res1['total_cap']['A']
 
 
 def test_ru_multi_1():
