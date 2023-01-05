@@ -73,6 +73,14 @@ def test_boundary_max_height():
     run_example(example)
 
 
+def test_boundary_halo():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    constraints = [{"constraint": "Boundary", "halo_vertical": 0.63, "halo_horizontal": 0.216}]
+    example = build_example(name, netlist, constraints)
+    run_example(example)
+
+
 def test_do_not_identify():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.ota_five(name)
