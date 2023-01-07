@@ -640,12 +640,12 @@ def test_folded_cascode():
 def test_binary():
     name = "binary"
     netlist = textwrap.dedent(f"""\
-        .subckt power_cell vccx vcca vg
+        .subckt power_cell vg vccx vcca
         xmp0 vcca vg vccx vccx ppv drain=gnd m=1 nf=4 source=pwr nfin=4
         .ends
         .subckt {name} vccx vcca vg[0]
-        xi0fix vccx vcca vccx power_cell
-        xi0[0] vccx vcca vg[0] power_cell
+        xi0 vccx vccx vcca power_cell
+        xi1 vg[0] vccx vcca power_cell
         .ends {name}
         .END
     """)
@@ -654,6 +654,7 @@ def test_binary():
         "power_cell": [
             {"constraint": "PowerPorts", "ports": ["vccx"]},
             {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]}
         ],
         name: [
             {
@@ -675,8 +676,8 @@ def test_binary():
                 "constraint": "Floorplan",
                 "order": True,
                 "regions": [
-                    ["xi0fix"],
-                    ["xi0[0]"],
+                    ["xi0"],
+                    ["xi1"],
                 ]
             }
         ]
