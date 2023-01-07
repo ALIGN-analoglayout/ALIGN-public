@@ -690,3 +690,11 @@ def test_binary():
         constraints = json.load(fp)
         constraints = {c["constraint"]: c for c in constraints}
         assert "VG" not in constraints["PowerPorts"]["ports"], "VG is not a power port"
+
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        found = False
+        for term in data['terminals']:
+            if term['netName'] and term['netName'] == 'vg[0]':
+                found = True
+        assert found, 'vg[0] terminal not found'
