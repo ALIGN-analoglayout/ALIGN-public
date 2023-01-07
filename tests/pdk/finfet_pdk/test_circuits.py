@@ -650,31 +650,37 @@ def test_binary():
         .END
     """)
 
-    constraints = [
-        {
-            "constraint": "ConfigureCompiler",
-            "propagate": True,
-            "auto_constraint": False,
-            "identify_array": False,
-            "fix_source_drain": False,
-            "merge_series_devices": False,
-            "merge_parallel_devices": False,
-            "remove_dummy_devices": False,
-            "remove_dummy_hierarchies": False,
-            "fix_source_drain": False
-        },
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vcca"]},
-        {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
-        {
-            "constraint": "Floorplan",
-            "order": True,
-            "regions": [
-                ["xi0fix"],
-                ["xi0[0]"],
-            ]
-        }
-    ]
+    constraints = {
+        "power_cell": [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
+        ],
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "propagate": True,
+                "auto_constraint": False,
+                "identify_array": False,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": False,
+                "remove_dummy_hierarchies": False,
+                "fix_source_drain": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+            {
+                "constraint": "Floorplan",
+                "order": True,
+                "regions": [
+                    ["xi0fix"],
+                    ["xi0[0]"],
+                ]
+            }
+        ]
+    }
 
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, log_level="DEBUG")
