@@ -29,7 +29,7 @@ def test_b1(name, params):
         {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xg2"},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xg3", "xg2", "xg1"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     s = time.time()
@@ -71,7 +71,7 @@ def test_b2(name, params):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"], "abut": True},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     s = time.time()
@@ -113,7 +113,7 @@ def test_b3(name, params):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     s = time.time()

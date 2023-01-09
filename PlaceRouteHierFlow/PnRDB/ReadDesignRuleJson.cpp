@@ -234,6 +234,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             viaSet.insert(std::pair<int, PnRDB::via_info>(via_index, tmp_via));
             assert(name2ViaLayerMap.find(tmp_via.name) == name2ViaLayerMap.end());
             name2ViaLayerMap[tmp_via.name] = via_index;
+            
           } else {
             tmp_via.lower_metal_index = metal_stack_indices[0];
             tmp_via.upper_metal_index = metal_stack_indices[1];
@@ -250,11 +251,15 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
       DRC_info.Via_info.push_back(it->second);
       //cout << "Assign the Viamap[" << it->second.name << "] = " << DRC_info.Via_info.size()-1 << endl;
       DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size() - 1;
+      if (it->second.lower_metal_index != -1) DRC_info.Metal_info[it->second.lower_metal_index].upper_via_index = DRC_info.Via_info.size() - 1;
+      if (it->second.upper_metal_index != -1) DRC_info.Metal_info[it->second.upper_metal_index].lower_via_index = DRC_info.Via_info.size() - 1;
     }
     for (std::map<int, PnRDB::via_info>::iterator it = viaSet_vt.begin(); it != viaSet_vt.end(); ++it) {
       DRC_info.Via_info.push_back(it->second);
       //cout << "Assign the Viamap[" << it->second.name << "] = " << DRC_info.Via_info.size()-1 << endl;
       DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size() - 1;
+      if (it->second.lower_metal_index != -1) DRC_info.Metal_info[it->second.lower_metal_index].upper_via_index = DRC_info.Via_info.size() - 1;
+      if (it->second.upper_metal_index != -1) DRC_info.Metal_info[it->second.upper_metal_index].lower_via_index = DRC_info.Via_info.size() - 1;
     }
 
     // extract information for guard ring

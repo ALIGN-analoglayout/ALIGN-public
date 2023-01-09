@@ -297,7 +297,7 @@ class process_input_const:
         return self.user_constrained_list
 
     def process_do_not_identify(self):
-        for const in self.iconst:
+        for const in constraint.expand_user_constraints(self.iconst):
             if isinstance(const, constraint.DoNotIdentify):
                 self.user_constrained_list.extend(const.instances)
 

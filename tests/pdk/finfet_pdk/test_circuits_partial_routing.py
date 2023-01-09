@@ -20,7 +20,7 @@ def test_cmp_vanilla_pr(partial_routing):
     constraints = [
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     # TODO: Reduce max_errors to 0 in the next PR
@@ -47,7 +47,7 @@ def test_cmp_fp1_pr(partial_routing):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, area=4e10, max_errors=5 if not BYPASS_ERRORS else 0, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
@@ -73,7 +73,7 @@ def test_cmp_fp2_pr(partial_routing):
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, area=5e9, max_errors=1 if not BYPASS_ERRORS else 0, additional_args=["--router_mode", "bottom_up", "--placer_sa_iterations", "1000"])
@@ -89,7 +89,7 @@ def test_ota_six_pr(partial_routing):
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xg3"},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xg3", "xg2", "xg1"]},
         {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, max_errors=1 if not BYPASS_ERRORS else 0)

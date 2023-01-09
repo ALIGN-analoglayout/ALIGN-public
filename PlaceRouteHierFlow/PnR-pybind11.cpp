@@ -393,6 +393,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("unit_C", &metal_info::unit_C)
     .def_readwrite("unit_CC", &metal_info::unit_CC)
     .def_readwrite("gds_datatype", &metal_info::gds_datatype)
+    .def_readwrite("lower_via_index", &metal_info::lower_via_index)
+    .def_readwrite("upper_via_index", &metal_info::upper_via_index)
     ;
 
   py::class_<GdsDatatype>( m, "GdsDatatype")
@@ -536,8 +538,8 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("T_MIN", &PlacerHyperparameters::T_MIN)
     .def_readwrite("ALPHA", &PlacerHyperparameters::ALPHA)
     .def_readwrite("SEED", &PlacerHyperparameters::SEED)
-    .def_readwrite("COUNT_LIMIT", &PlacerHyperparameters::COUNT_LIMIT)
     .def_readwrite("LAMBDA", &PlacerHyperparameters::LAMBDA)
+    .def_readwrite("SA_MAX_ITER", &PlacerHyperparameters::SA_MAX_ITER)
     .def_readwrite("use_analytical_placer", &PlacerHyperparameters::use_analytical_placer)
     .def_readwrite("placement_info_json", &PlacerHyperparameters::placement_info_json)
     .def_readwrite("use_external_placement_info", &PlacerHyperparameters::use_external_placement_info)
