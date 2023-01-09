@@ -232,11 +232,11 @@ class CreateDatabase:
         gnd = list()
         clk = list()
         for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts):
+            if isinstance(const, constraint.PowerPorts) and const.propagate :
                 pwr.extend(const.ports)
-            elif isinstance(const, constraint.GroundPorts):
+            elif isinstance(const, constraint.GroundPorts) and const.propagate:
                 gnd.extend(const.ports)
-            elif isinstance(const, constraint.ClockPorts):
+            elif isinstance(const, constraint.ClockPorts) and const.propagate:
                 clk.extend(const.ports)
         return pwr, gnd, clk
 
@@ -245,14 +245,32 @@ class CreateDatabase:
         if not pwr_child and pwr:
             pwr_child = pwr
             subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
+        elif pwr_child:
+            diff = list(set(pwr).difference(pwr_child))
+            pwr_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.PowerPorts) and const.propagate:
+                    const.ports.extend(diff)
 
         if not gnd_child and gnd:
             gnd_child = gnd
             subckt.constraints.append(constraint.GroundPorts(ports=gnd_child))
+        elif gnd_child:
+            diff = list(set(gnd).difference(gnd_child))
+            gnd_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.GroundPorts) and const.propagate:
+                    const.ports.extend(diff)
 
         if not clk_child and clk:
             clk_child = clk
             subckt.constraints.append(constraint.ClockPorts(ports=clk_child))
+        elif clk_child:
+            diff = list(set(clk).difference(clk_child))
+            clk_child.extend(diff)
+            for const in subckt.constraints:
+                if isinstance(const, constraint.ClockPorts) and const.propagate:
+                    const.ports.extend(diff)
 
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)

@@ -758,6 +758,7 @@ class PowerPorts(SoftConstraint):
             The first port of top hierarchy will be used for power grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -767,6 +768,7 @@ class PowerPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -781,6 +783,7 @@ class GroundPorts(SoftConstraint):
             The first port of top hierarchy will be used for ground grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -790,6 +793,7 @@ class GroundPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -803,6 +807,7 @@ class ClockPorts(SoftConstraint):
 
     Args:
         ports (list[str]): List of :obj:`ports`.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -812,6 +817,7 @@ class ClockPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 

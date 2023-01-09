@@ -652,8 +652,8 @@ def test_binary():
 
     constraints = {
         "power_cell": [
-            {"constraint": "PowerPorts", "ports": ["vccx"]},
-            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": False},
+            {"constraint": "GroundPorts", "ports": ["vcca"], "propagate": False},
             {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]}
         ],
         name: [
@@ -669,8 +669,8 @@ def test_binary():
                 "remove_dummy_hierarchies": False,
                 "fix_source_drain": False
             },
-            {"constraint": "PowerPorts", "ports": ["vccx"]},
-            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": False },
+            {"constraint": "GroundPorts", "ports": ["vcca"], "propagate": False },
             {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
             {
                 "constraint": "Floorplan",
@@ -693,8 +693,5 @@ def test_binary():
 
     with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
         data = json.load(fp)
-        found = False
-        for term in data['terminals']:
-            if term['netName'] and term['netName'] == 'vg[0]':
-                found = True
-        assert found, 'vg[0] terminal not found'
+        terminals = set([term['netName'] for term in data['terminals'] if term['netName']])
+        assert 'VG[0]' in terminals, f'VG[0] terminal not found {terminals}'
