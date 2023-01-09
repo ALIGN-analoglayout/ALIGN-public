@@ -141,8 +141,6 @@ def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
                     default_name = nm if nm in global_power_names else formal_name
-                    if nm in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
-                        default_name = hN.Gnd.name
                     term['netName'] = fa_map.get( formal_name, default_name)
                 if 'pin' in term:
                     del term['pin']

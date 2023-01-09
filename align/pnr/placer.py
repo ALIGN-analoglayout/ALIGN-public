@@ -25,15 +25,14 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    hyper.T_INT = 0.5  # Increase for denormalized decision criteria
-    hyper.T_MIN = 0.05
-    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/placer_sa_iterations)
+    # hyper.T_INT = 0.5  # Increase for denormalized decision criteria
+    # hyper.T_MIN = 0.05
+    hyper.SA_MAX_ITER = placer_sa_iterations
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/max(hyper.SA_MAX_ITER, 10000))
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
-    # hyper.ALPHA = 0.99925
     # hyper.max_init_trial_count = 10000
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
-    # hyper.COUNT_LIMIT = 200
     hyper.select_in_ILP = select_in_ILP
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
