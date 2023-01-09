@@ -669,8 +669,8 @@ def test_binary():
                 "remove_dummy_hierarchies": False,
                 "fix_source_drain": False
             },
-            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": False },
-            {"constraint": "GroundPorts", "ports": ["vcca"], "propagate": False },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
             {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
             {
                 "constraint": "Floorplan",

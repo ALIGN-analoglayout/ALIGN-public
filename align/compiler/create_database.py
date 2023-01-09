@@ -232,16 +232,17 @@ class CreateDatabase:
         gnd = list()
         clk = list()
         for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts) and const.propagate :
+            if isinstance(const, constraint.PowerPorts) :
                 pwr.extend(const.ports)
-            elif isinstance(const, constraint.GroundPorts) and const.propagate:
+            elif isinstance(const, constraint.GroundPorts):
                 gnd.extend(const.ports)
-            elif isinstance(const, constraint.ClockPorts) and const.propagate:
+            elif isinstance(const, constraint.ClockPorts):
                 clk.extend(const.ports)
         return pwr, gnd, clk
 
     def _propagate_power_ports(self, subckt, pwr, gnd, clk):
         pwr_child, gnd_child, clk_child = self._get_pgc(subckt)
+
         if not pwr_child and pwr:
             pwr_child = pwr
             subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
@@ -271,11 +272,18 @@ class CreateDatabase:
             for const in subckt.constraints:
                 if isinstance(const, constraint.ClockPorts) and const.propagate:
                     const.ports.extend(diff)
-
+        prop_clock = prop_power = prop_gnd = True
+        for const in subckt.constraints:
+            if isinstance(const, constraint.ClockPorts):
+                prop_clock = const.propagate
+            elif isinstance(const, constraint.PowerPorts):
+                prop_power = const.propagate
+            elif isinstance(const, constraint.GroundPorts):
+                prop_gnd = const.propagate
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)
             if isinstance(inst_subckt, SubCircuit):
-                pp = [p for p, c in inst.pins.items() if c in pwr_child]
-                gp = [p for p, c in inst.pins.items() if c in gnd_child]
-                gc = [p for p, c in inst.pins.items() if c in clk_child]
+                pp = [p for p, c in inst.pins.items() if c in pwr_child and prop_power]
+                gp = [p for p, c in inst.pins.items() if c in gnd_child and prop_gnd]
+                gc = [p for p, c in inst.pins.items() if c in clk_child and prop_clock]
                 self._propagate_power_ports(inst_subckt, list(pp), list(gp), list(gc))
