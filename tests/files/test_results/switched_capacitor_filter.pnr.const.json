@@ -4,20 +4,23 @@
             "ports": [
                 "VDD"
             ],
-            "const_name": "PowerPorts"
+            "const_name": "PowerPorts",
+            "propagate": true
         },
         {
             "ports": [
                 "VSS"
             ],
-            "const_name": "GroundPorts"
+            "const_name": "GroundPorts",
+            "propagate": true
         },
         {
             "ports": [
                 "PHI1",
                 "PHI2"
             ],
-            "const_name": "ClockPorts"
+            "const_name": "ClockPorts",
+            "propagate": true
         },
         {
             "pairs": [

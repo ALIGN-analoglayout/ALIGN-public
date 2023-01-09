@@ -3,20 +3,23 @@
           "constraint": "PowerPorts",
           "ports": [
             "VDD"
-          ]
+          ],
+          "propagate": true
         },
         {
           "constraint": "GroundPorts",
           "ports": [
             "VSS"
-          ]
+          ],
+          "propagate": true
         },
         {
           "constraint": "ClockPorts",
           "ports": [
             "PHI1",
             "PHI2"
-          ]
+          ],
+          "propagate": true
         },
         {
           "constraint": "SymmetricBlocks",
