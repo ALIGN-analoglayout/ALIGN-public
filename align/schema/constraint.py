@@ -1543,7 +1543,7 @@ class ConstraintDB(types.List[ConstraintType]):
 def expand_user_constraints(const_list):
     for const in const_list:
         if hasattr(const, 'yield_constraints'):
-            logger.info(f'expanding: {const}')
+            logger.debug(f'expanding: {const}')
             with types.set_context(const.parent):
                 yield from const.yield_constraints()
         if not isinstance(const, UserConstraint):
