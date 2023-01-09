@@ -640,41 +640,48 @@ def test_folded_cascode():
 def test_binary():
     name = "binary"
     netlist = textwrap.dedent(f"""\
-        .subckt power_cell vccx vcca vg
+        .subckt power_cell vg vccx vcca
         xmp0 vcca vg vccx vccx ppv drain=gnd m=1 nf=4 source=pwr nfin=4
         .ends
         .subckt {name} vccx vcca vg[0]
-        xi0fix vccx vcca vccx power_cell
-        xi0[0] vccx vcca vg[0] power_cell
+        xi0 vccx vccx vcca power_cell
+        xi1 vg[0] vccx vcca power_cell
         .ends {name}
         .END
     """)
 
-    constraints = [
-        {
-            "constraint": "ConfigureCompiler",
-            "propagate": True,
-            "auto_constraint": False,
-            "identify_array": False,
-            "fix_source_drain": False,
-            "merge_series_devices": False,
-            "merge_parallel_devices": False,
-            "remove_dummy_devices": False,
-            "remove_dummy_hierarchies": False,
-            "fix_source_drain": False
-        },
-        {"constraint": "PowerPorts", "ports": ["vccx"]},
-        {"constraint": "GroundPorts", "ports": ["vcca"]},
-        {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
-        {
-            "constraint": "Floorplan",
-            "order": True,
-            "regions": [
-                ["xi0fix"],
-                ["xi0[0]"],
-            ]
-        }
-    ]
+    constraints = {
+        "power_cell": [
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]}
+        ],
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "propagate": True,
+                "auto_constraint": False,
+                "identify_array": False,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": False,
+                "remove_dummy_hierarchies": False,
+                "fix_source_drain": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+            {
+                "constraint": "Floorplan",
+                "order": True,
+                "regions": [
+                    ["xi0"],
+                    ["xi1"],
+                ]
+            }
+        ]
+    }
 
     example = build_example(name, netlist, constraints)
     _, run_dir = run_example(example, cleanup=False, log_level="DEBUG")
@@ -683,3 +690,11 @@ def test_binary():
         constraints = json.load(fp)
         constraints = {c["constraint"]: c for c in constraints}
         assert "VG" not in constraints["PowerPorts"]["ports"], "VG is not a power port"
+
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        found = False
+        for term in data['terminals']:
+            if term['netName'] and term['netName'] == 'vg[0]':
+                found = True
+        assert found, 'vg[0] terminal not found'

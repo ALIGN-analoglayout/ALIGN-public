@@ -245,32 +245,15 @@ class CreateDatabase:
         if not pwr_child and pwr:
             pwr_child = pwr
             subckt.constraints.append(constraint.PowerPorts(ports=pwr_child))
-        elif pwr_child:
-            diff = list(set(pwr).difference(pwr_child))
-            pwr_child.extend(diff)
-            for const in subckt.constraints:
-                if isinstance(const, constraint.PowerPorts):
-                    const.ports.extend(diff)
 
         if not gnd_child and gnd:
             gnd_child = gnd
             subckt.constraints.append(constraint.GroundPorts(ports=gnd_child))
-        elif gnd_child:
-            diff = list(set(gnd).difference(gnd_child))
-            gnd_child.extend(diff)
-            for const in subckt.constraints:
-                if isinstance(const, constraint.GroundPorts):
-                    const.ports.extend(diff)
 
         if not clk_child and clk:
             clk_child = clk
             subckt.constraints.append(constraint.ClockPorts(ports=clk_child))
-        elif clk_child:
-            diff = list(set(clk).difference(clk_child))
-            clk_child.extend(diff)
-            for const in subckt.constraints:
-                if isinstance(const, constraint.ClockPorts):
-                    const.ports.extend(diff)
+
         for inst in subckt.elements:
             inst_subckt = self.lib.find(inst.model)
             if isinstance(inst_subckt, SubCircuit):
