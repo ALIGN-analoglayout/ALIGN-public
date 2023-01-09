@@ -470,3 +470,36 @@ def test_missing_power_port():
         run_example(example)
     except BaseException:
         assert False, 'This should not happen'
+
+
+def test_power_propagation():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt ckt_a vin vop vgg vcca vssa
+        mn0 vop vop vcca vssa n w=720e-9 nf=4 m=5
+        mn1 vin vop vcca vssa n w=720e-9 nf=4 m=5
+        mn2 vgg vop vgg  vssa n w=720e-9 nf=4 m=5
+        .ends
+        .subckt {name} vin vop vccx vssx nbs pbs
+        xi0 vin vop vgg vccx vssx ckt_a
+        xi1 vin vop vccx vccx vssx ckt_a
+        .ends {name}
+        """)
+    constraints = {
+        "ckt_a": [
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": False}
+        ],
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": True}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=['--flow_stop', '3_pnr:prep'])
+    name = name.upper()
+    with (run_dir / "3_pnr" / "inputs" / f"{name}.verilog.json").open("rt") as fp:
+        data = json.load(fp)
+        modules = {module['name']: module for module in data['modules']}
+        assert set(modules.keys()) == {'CKT_A', name}
+        power_const = modules['CKT_A']['constraints'][0]
+        assert power_const['constraint'] == 'PowerPorts'
+        assert power_const['ports'] == ['VCCA']
