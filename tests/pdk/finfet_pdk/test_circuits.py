@@ -684,7 +684,7 @@ def test_binary():
     }
 
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False, log_level="DEBUG")
+    _, run_dir = run_example(example, cleanup=False, log_level="DEBUG", additional_args=['--placer_sa_iterations', '100'])
 
     with (run_dir / '1_topology' / 'power_cell.const.json').open('rt') as fp:
         constraints = json.load(fp)
@@ -695,6 +695,11 @@ def test_binary():
         data = json.load(fp)
         terminals = set([term['netName'] for term in data['terminals'] if term['netName']])
         assert 'VG[0]' in terminals, f'VG[0] terminal not found {terminals}'
+
+    with (run_dir / "3_pnr" / "inputs" / f"{name.upper()}.verilog.json").open("rt") as fp:
+        data = json.load(fp)
+        modules = {module['name']: module for module in data['modules']}
+        assert len(modules) == 2
 
 
 def test_binary_top():
