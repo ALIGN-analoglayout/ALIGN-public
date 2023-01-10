@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 
-from ..schema.hacks import List, FormalActualMap
+from ..schema.hacks import List, FormalActualMap, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,10 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
     # TODO: remove redundant const
 
-    nm = copy.deepcopy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    # DONOT deepcopy VerilogJson* objects directly. Convert to plain dict and parse again.
+    # nm = copy.deepcopy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    nm_dict = [module for module in verilog_d['modules'] if module['name'] == subckt][0].dict()
+    nm = VerilogJsonModule.parse_obj(nm_dict)
 
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
 
