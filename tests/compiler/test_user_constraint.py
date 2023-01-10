@@ -145,7 +145,8 @@ def test_merged_const():
     example = build_example(name, netlist, constraints)
     constraints = [
         {'subcircuit': name,
-         'constraints': [{"constraint": "GroundPorts", "ports": ["S"]}]
+         'constraints': [{"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
          },
         {'subcircuit': 'PARAM_MOS',
          'constraints': [{"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"]}]
@@ -159,9 +160,11 @@ def test_merged_const():
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
-    assert ckt_library.find(name).constraints.dict()['__root__'] == [{"constraint": "GroundPorts", "ports": ["S"]}]
+    assert ckt_library.find(name).constraints.dict()['__root__'] == [{"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
     assert ckt_library.find('PARAM_MOS').constraints.dict()['__root__'] == [{"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"], 'propagate': False},
-                                                                            {"constraint": "GroundPorts", "ports": ["S"]}]
+                                                                            {"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
     clean_data(name)
 
 
