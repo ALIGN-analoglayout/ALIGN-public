@@ -232,7 +232,7 @@ class CreateDatabase:
         gnd = list()
         clk = list()
         for const in subckt.constraints:
-            if isinstance(const, constraint.PowerPorts) :
+            if isinstance(const, constraint.PowerPorts):
                 pwr.extend(const.ports)
             elif isinstance(const, constraint.GroundPorts):
                 gnd.extend(const.ports)
@@ -286,5 +286,5 @@ class CreateDatabase:
                 pp = [p for p, c in inst.pins.items() if c in pwr_child and prop_power]
                 gp = [p for p, c in inst.pins.items() if c in gnd_child and prop_gnd]
                 gc = [p for p, c in inst.pins.items() if c in clk_child and prop_clock]
-                logger.info(f"propagating power  {pp}, gnd {gp}, and clk ports {gc}")
+                logger.debug(f"propagating power  {pp}, gnd {gp}, and clk ports {gc}")
                 self._propagate_power_ports(inst_subckt, list(pp), list(gp), list(gc))
