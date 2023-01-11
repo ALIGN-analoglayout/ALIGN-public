@@ -312,8 +312,8 @@ void GcellDetailRouter::SortPinsOrder() {
       center_x_count++;
       center_y_count++;
     }
-    Nets[i].center_x /= center_x_count;
-    Nets[i].center_y /= center_y_count;
+    if (center_x_count) Nets[i].center_x /= center_x_count;
+    if (center_y_count) Nets[i].center_y /= center_y_count;
 
     // order by the manhattan distance to LL
     std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
