@@ -129,7 +129,7 @@ class design {
   int placement_id = -1;
   bool is_first_ILP = true;
   double Aspect_Ratio[2] = {0, 100};
-  double placement_box[2] = {DBL_MIN, DBL_MAX};
+  double placement_box[2] = {DBL_MAX, DBL_MAX};
   double halo_horizontal = 0;
   double halo_vertical = 0;
   double maxBlockAreaSum = 0.;

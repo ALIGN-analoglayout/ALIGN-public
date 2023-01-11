@@ -499,7 +499,7 @@ struct hierNode {
   int bias_Vgraph = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
-  double placement_box[2] = {DBL_MIN, DBL_MAX};
+  double placement_box[2] = {DBL_MAX, DBL_MAX};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
   int placement_id = 0;
