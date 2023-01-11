@@ -1427,6 +1427,7 @@ class GroupBlocks(HardConstraint):
     constraints: Optional[List[Union[
         Align,
         Order,
+        Boundary,
         AlignInOrder,
         Floorplan,
         SymmetricBlocks,

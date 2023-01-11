@@ -179,7 +179,9 @@ def test_ota_six():
     constraints = [
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xtail"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair", "template_name": "diffpair", "constraints": [
+            {"constraint": "Boundary", "halo_vertical": 0.63}
+        ]},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload"},
         {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
         {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
@@ -228,6 +230,7 @@ def test_ro_simple():
     constraints = {
         'ro_stage': [
             {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mp0", "mn0"]},
+            {"constraint": "Boundary", "halo_horizontal": 0.108}
         ],
         name: [
             {"constraint": "Order", "direction": "left_to_right", "instances": [f'xi{k}' for k in range(5)]},
