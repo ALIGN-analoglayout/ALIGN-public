@@ -125,83 +125,65 @@ def stamp(lst, ref, ports):
         build_sparse(C, nports, split_point), \
         build_sparse(D, nports, nports)
 
-def solve(A, B, C, D, b1):
+def inverse_schur_complement(A, B, C, D):
     # A x0 + B x1 = 0
     # C x0 + D x1 = b1
     # x0 = -A^-1 B x1
     # (D - C A^-1 B) x1 = b1
 
     S = D - C @ sla.spsolve(A, B)
-    # print(f'S: {S} {S.shape}')
-    return sla.spsolve(S, b1)
+    print(f'S: {S} {S.shape}')
+    return la.inv(S.todense())
+
+def max_pin_to_pin_resistance(Sinv):
+    # (u_i-u_j)^T Sinv (u_i-u_j)
+    return max(Sinv[i,i] - Sinv[i,j] - Sinv[j,i] + Sinv[j,j] for (i,j) in itertools.combinations(range(Sinv.shape[0]), 2))
+
+def build_and_solve(lst, ref, ports):
+    A, B, C, D = stamp(lst, ref, ports)
+    # print(f'A: {A} {A.shape}')
+    # print(f'B: {B} {B.shape}')
+    # print(f'C: {C} {C.shape}')
+    # print(f'D: {D} {D.shape}')
+
+    Sinv = inverse_schur_complement(A, B, C, D)
+    print(f'Sinv: {Sinv}')
+    computed_max_pin_to_pin_resistance = max_pin_to_pin_resistance(Sinv)
+    print(f'computed_max_pin_to_pin_resistance: {computed_max_pin_to_pin_resistance}')
+    return computed_max_pin_to_pin_resistance
 
 def test_stamp():
     # 0   1   2   3   4
     # T---x---G---x---T
 
-    A, B, C, D = stamp([(0,1,1), (1,2,1), (2,3,1), (3,4,1)], 2, set([0,4]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
-
-    print(solve(A, B, C, D, np.eye(2)))
-
+    res = build_and_solve([(0,1,1), (1,2,1), (2,3,1), (3,4,1)], 2, set([0,4]))
+    assert abs(res-4) < 0.001
 
 def test_stamp1():
     # 0   1   2   3   4   5
     # G---T---x---T---x---T
-
-    A, B, C, D = stamp([(0,1,1), (1,2,1), (2,3,1), (3,4,1), (4,5,1)], 0, set([1,3,5]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
-
-    print(solve(A, B, C, D, np.eye(3)))
+    res = build_and_solve([(0,1,1), (1,2,1), (2,3,1), (3,4,1), (4,5,1)], 0, set([1,3,5]))
+    assert abs(res-4) < 0.001
 
 @pytest.mark.parametrize("n", [2,3,4,5,6])
 def test_stamp_square_corners(n):
+    def idx(i,j):
+        return n*i + j
+
     lst = []
     for i in range(n):
         for j in range(1, n):
-            lst.append((n*i+j-1,n*i+j,1))
+            lst.append((idx(i,j-1),idx(i,j),1))
     for j in range(n):
         for i in range(1, n):
-            lst.append((n*(i-1)+j,n*i+j,1))
+            lst.append((idx(i-1,j),idx(i,j),1))
 
-    A, B, C, D = stamp(lst, n*n//2, set([0,(n-1)*n+n-1]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
+    print(f'lst: {lst}')
+    res = build_and_solve(lst, n*n//2, set([idx(0,0),idx(n-1,n-1)]))
 
-    solution = solve(A, B, C, D, np.eye(2))
-    print(solution)
-
-    # S^-1 (u_i-u_j)
-    computed_max_pin_to_pin_resistance = max(solution[i,i] - solution[i,j] - solution[j,i] + solution[j,j] for (i,j) in itertools.combinations(range(2), 2))
-    print(computed_max_pin_to_pin_resistance)
-
-    if n == 2:
-        gold = 1
-
-    if n == 3:
-        gold = 3/2
-
-    if n == 4:
-        gold = 13/7
-
-    if n == 5:
-        gold = grid5()
-
-    if n == 6:
-        gold = grid6()
-
-
-    print(n, computed_max_pin_to_pin_resistance - gold)
-
-    assert abs(computed_max_pin_to_pin_resistance-gold) < 0.001
+    gold = { 2: 1, 3: 3/2, 4: 13/7, 5: grid5(), 6: grid6() }
+    print(f'n: {n} res: {res} gold: {gold[n]} diff: {res-gold[n]}')
+    assert abs(res-gold[n]) < 0.001
 
 def test_stamp2():
     #    0   1   2   3   4
@@ -216,7 +198,7 @@ def test_stamp2():
     # 20 T---x---x---x---T
     #
 
-    A, B, C, D = stamp([
+    res = build_and_solve([
         (0,1,1), (1,2,1), (2,3,1), (3,4,1),
         (5,6,1), (6,7,1), (7,8,1), (8,9,1),
         (10,11,1), (11,12,1), (12,13,1), (13,14,1),
@@ -227,18 +209,8 @@ def test_stamp2():
         (10,15,1), (11,16,1), (12,17,1), (13,18,1), (14,19,1),
         (15,20,1), (16,21,1), (17,22,1), (18,23,1), (19,24,1)
     ], 12, set([0,4,20,24]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
 
-    solution = solve(A, B, C, D, np.eye(4))
-    print(solution)
-
-    # S^-1 (u_i-u_j)
-    print(max(solution[i,i] - solution[i,j] - solution[j,i] + solution[j,j] for (i,j) in itertools.combinations(range(4), 2)))
-
-
+    assert abs(res-grid5()) < 0.001
 
 def test_stamp3():
     #    0   1
@@ -246,23 +218,14 @@ def test_stamp3():
     #    |   |
     #  2 x---T
 
-    A, B, C, D = stamp([
+    res = build_and_solve([
         (0,1,1),
         (2,3,1),
         (0,2,1),
         (1,3,1)
     ], 1, set([0,3]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
 
-    solution = solve(A, B, C, D, np.eye(2))
-    print(solution)
-
-    # S^-1 (u_i-u_j)
-    print(max(solution[i,i] - solution[i,j] - solution[j,i] + solution[j,j] for (i,j) in itertools.combinations(range(2), 2)))
-
+    assert abs(res-1) < 0.001
 
 def test_stamp4():
     #    0   1
@@ -272,7 +235,27 @@ def test_stamp4():
     #    |   |
     #  4 x---T
 
-    A, B, C, D = stamp([
+    res = build_and_solve([
+        (0,1,1),
+        (4,5,1),
+        (0,2,1),
+        (1,3,1),
+        (2,4,1),
+        (3,5,1)
+    ], 1, set([0,5]))
+
+    assert abs(res-3/2) < 0.001
+
+
+def test_stamp5():
+    #    0   1
+    #  0 T---x
+    #    |   |
+    #  2 x---x
+    #    |   |
+    #  4 x---T
+
+    res = build_and_solve([
         (0,1,1),
         (2,3,1),
         (4,5,1),
@@ -281,18 +264,8 @@ def test_stamp4():
         (2,4,1),
         (3,5,1)
     ], 1, set([0,5]))
-    # print(f'A: {A} {A.shape}')
-    # print(f'B: {B} {B.shape}')
-    # print(f'C: {C} {C.shape}')
-    # print(f'D: {D} {D.shape}')
 
-    solution = solve(A, B, C, D, np.eye(2))
-    print(solution)
-
-    # S^-1 (u_i-u_j)
-    print(max(solution[i,i] - solution[i,j] - solution[j,i] + solution[j,j] for (i,j) in itertools.combinations(range(2), 2)))
-
-
+    assert abs(res-7/5) < 0.001
 
 
 def power_method(B, x):
