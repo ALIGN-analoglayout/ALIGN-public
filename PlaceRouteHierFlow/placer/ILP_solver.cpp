@@ -1816,6 +1816,10 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
+        collb[id * 4] = mydesign.halo_horizontal;
+        colub[id * 4] = mydesign.placement_box[0] - mydesign.halo_horizontal - mydesign.Blocks[id][curr_sp.selected[id]].width;
+        collb[id * 4 + 1] = mydesign.halo_vertical;
+        colub[id * 4 + 1] = mydesign.placement_box[1] - mydesign.halo_vertical - mydesign.Blocks[id][curr_sp.selected[id]].height;
         if (prev) {
           collb[id * 4] = (*prev)[id].x;
           collb[id * 4 + 1] = (*prev)[id].y;

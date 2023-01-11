@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <tuple>
+#include <cfloat>
 
 #include "limits.h"
 //#include "../router/Rdatatype.h"
@@ -42,6 +43,7 @@ struct AlignBlock;
 struct Abument;
 struct MatchBlock;
 struct SpreadConstraint;
+struct BoundaryConstraint;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
@@ -433,6 +435,11 @@ struct Routing_Layers_Info{
   string global_max_layer;
 };
 
+struct BoundaryConstraint {
+  double halo_horizontal = 0;
+  double halo_vertical = 0;
+};
+
 struct hierNode {
   bool isCompleted = false;
   bool isTop = false;
@@ -492,7 +499,7 @@ struct hierNode {
   int bias_Vgraph = 0;
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
-  double placement_box[2] = {-1, -1};
+  double placement_box[2] = {DBL_MIN, DBL_MAX};
   vector<Router_report> router_report;
   vector<Multi_connection> Multi_connections;
   int placement_id = 0;
@@ -509,6 +516,7 @@ struct hierNode {
 //  vector<Min_Max_Routing_Layer> Routing_Layers;
   vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
   Routing_Layers_Info Routing_Layers;
+  BoundaryConstraint boundary;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
