@@ -2856,7 +2856,7 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
   if (snapGridILP) ++const_cast<design&>(mydesign)._numSnapGridFail;
   if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
-    Blocks[0].x = 0; Blocks[0].y = 0;
+    Blocks[0].x = mydesign.halo_horizontal; Blocks[0].y = mydesign.halo_vertical;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
     area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
   } else {
