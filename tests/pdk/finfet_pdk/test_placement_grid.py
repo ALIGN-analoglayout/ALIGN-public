@@ -208,7 +208,6 @@ def test_cs_on_grid_v(place_on_grid_v_half):
     run_example(example, cleanup=CLEANUP)
 
 
-@pytest.mark.skip(reason="This test is too slow. For a future PR.")
 def test_one_to_four():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -235,10 +234,11 @@ def test_one_to_four():
         },
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]}
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "Boundary", "halo_vertical": 0.3, "halo_horizontal": 0.216}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, n=1)
+    run_example(example, cleanup=False, n=1)
 
 
 @pytest.mark.skip(reason="This test is too slow. For a future PR.")

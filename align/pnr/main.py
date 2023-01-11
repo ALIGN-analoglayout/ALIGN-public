@@ -31,8 +31,8 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
     if gds_json and toplevel:
         # Hack in Outline layer
         # Should be part of post processor
-        d['terminals'].append(
-            {"layer": "Outline", "netName": None, "netType": "drawing", "rect": d['bbox']})
+        # insert is slower than append but it improves the visulazation by drawing outline behind the other rectangles
+        d['terminals'].insert(0, {"layer": "Outline", "netName": None, "netType": "drawing", "rect": d['bbox']})
 
     ret = {}
 
