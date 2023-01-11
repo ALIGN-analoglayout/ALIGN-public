@@ -5545,8 +5545,8 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 }
 
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
-  node.width = UR.x;
-  node.height = UR.y;
+  node.width = UR.x + mydesign.halo_horizontal;
+  node.height = UR.y + mydesign.halo_vertical;
   node.HPWL = HPWL;
   node.HPWL_extend = HPWL_extend;
   node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
