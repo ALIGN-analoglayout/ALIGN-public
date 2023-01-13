@@ -1,5 +1,6 @@
 from align.pdk.finfet import CanvasPDK
 from .utils import get_test_id, run_postamble
+from align.cell_fabric import transformation
 
 PIN = 'pin'
 BLK = 'blockage'
@@ -54,6 +55,8 @@ def test_ru_multi_symmetric():
     cv.addWire(cv.m2, 'B', 1, (6, -1), (7, 1), netType=PIN)
     cv.addWire(cv.m2, 'B', 3, (6, -1), (7, 1), netType=PIN)
     cv.addWire(cv.m2, 'B', 6, (6, -1), (9, 1), netType=PIN)
+
+    cv.bbox = transformation.Rect(*[0, 0, 10*cv.pdk['M1']['Pitch'], 8*cv.pdk['M2']['Pitch']])
 
     check_symmetry(cv.terminals, 'A', 'B', 'V')
 
