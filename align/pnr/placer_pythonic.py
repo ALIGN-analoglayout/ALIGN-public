@@ -1,4 +1,5 @@
-import logging
+import json
+import pathlib
 
 from align.schema.hacks import VerilogJsonTop
 from align.pnr.checker import check_placement
@@ -114,4 +115,34 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
     # Trim unused modules and leaves
     placement_data = trim_placement_data(placement_data, top_level)
 
+    return placement_data
+
+
+def pythonic_placer_driver(top_level, input_dir: pathlib.Path, scale_factor=1):
+
+    with (input_dir / f'{top_level}.verilog.json').open('rt') as fp:
+        input_data = json.load(fp)
+
+    input_data['leaves'] = list()
+
+    modules = {module['name']: module for module in input_data['modules']}
+    _, _, found_leaves = compute_topoorder(modules, top_level)
+
+    for abstract_template_name in found_leaves:
+        json_files = input_dir.glob(f'{abstract_template_name}*.json')
+        for filename in json_files:
+            if not filename.name.endswith('gds.json'):
+                with (input_dir / filename).open('rt') as fp:
+                    leaf_data = json.load(fp)
+                    del leaf_data['globalRoutes']
+                    del leaf_data['globalRouteGrid']
+                    assert 'bbox' in leaf_data
+                    assert 'terminals' in leaf_data
+                    leaf_data['abstract_template_name'] = abstract_template_name
+                    leaf_data['concrete_template_name'] = filename.stem
+                    leaf_data['constraints'] = list()
+                    # TODO: Append PlaceOnGrid if exists
+                    input_data['leaves'].append(leaf_data)
+
+    placement_data = pythonic_placer(top_level, input_data, scale_factor=scale_factor)
     return placement_data

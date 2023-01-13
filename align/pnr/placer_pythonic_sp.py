@@ -1,6 +1,7 @@
 import mip
 import time
 import copy
+import logging
 import itertools
 import more_itertools
 import networkx as nx
@@ -10,6 +11,8 @@ import align.schema.constraint as constraint_schema
 from align.schema.hacks import VerilogJsonTop
 from align.pnr.grid_constraints import gen_constraints_for_module
 from align.cell_fabric.transformation import Transformation, Rect
+
+logger = logging.getLogger(__name__)
 
 
 class HyperParameters:
@@ -44,7 +47,7 @@ def measure_time(func):
         s = time.time()
         returned_value = func(*args, **kwargs)
         e = time.time() - s
-        print(f'Elapsed time: {e:.3f} secs')
+        logger.debug(f'Elapsed time: {e:.3f} secs')
         return returned_value
     return wrapper
 
@@ -218,7 +221,13 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     net_priority = dict()
     for constraint in constraint_schema.expand_user_constraints(constraints):
 
-        if isinstance(constraint, constraint_schema.Boundary):
+        if isinstance(constraint, constraint_schema.AspectRatio):
+            if ratio_low := getattr(constraint, 'ratio_low', False):
+                model += model.var_by_name('W') >= ratio_low * model.var_by_name('H')
+            if ratio_high := getattr(constraint, 'ratio_high', False):
+                model += model.var_by_name('W') <= ratio_high * model.var_by_name('H')
+
+        elif isinstance(constraint, constraint_schema.Boundary):
             if max_width := getattr(constraint, 'max_width', False):
                 model += model.var_by_name('W') <= max_width
             if max_height := getattr(constraint, 'max_height', False):
@@ -249,6 +258,29 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             i0 = instances[0]
             for i1 in instances[1:]:
                 model += model.var_by_name(f'{i0}_{axis}') == model.var_by_name(f'{i1}_{axis}')
+
+        elif isinstance(constraint, constraint_schema.Order):
+            instances = getattr(constraint, 'instances')
+            direction = getattr(constraint, 'direction')
+            abut = getattr(constraint, 'abut')
+
+            def cc(i0, i1, axis, abut):
+                if abut:
+                    return model.var_by_name(f'{i0}_ur{axis}') == model.var_by_name(f'{i1}_ll{axis}')
+                else:
+                    return model.var_by_name(f'{i0}_ur{axis}') <= model.var_by_name(f'{i1}_ll{axis}')
+
+            for i0, i1 in more_itertools.pairwise(instances):
+                if direction == 'top_to_bottom':
+                    model += cc(i1, i0, 'y', abut)
+                elif direction == 'bottom_to_top':
+                    model += cc(i0, i1, 'y', abut)
+                elif direction == 'left_to_right':
+                    model += cc(i0, i1, 'x', abut)
+                elif direction == 'right_to_left':
+                    model += cc(i1, i0, 'x', abut)
+                else:
+                    assert False, f'{direction} not supported'
 
         elif isinstance(constraint, constraint_schema.SymmetricBlocks):
             pairs = getattr(constraint, 'pairs')
@@ -304,21 +336,21 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     model.write('model.lp')
 
     # Solve
-    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
+    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=min(10*len(instance_map), 300))
     if status == mip.OptimizationStatus.OPTIMAL:
-        print(f'optimal solution found: cost={model.objective_value}')
+        logger.debug(f'optimal solution found: cost={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
-        print(f'solution with cost {model.objective_value} current lower bound: {model.objective_bound}')
+        logger.debug(f'solution with cost {model.objective_value} current lower bound: {model.objective_bound}')
     else:
-        print('No solution to ILP')
+        logger.debug('No solution to ILP')
         return False
 
     # if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
     #     if model.verbose:
-    #         print('Solution:')
+    #         logger.debug('Solution:')
     #         for v in model.vars:
     #             print('\t', v.name, v.x)
-    #         print(f'Number of solutions: {model.num_solutions}')
+    #         logger.debug(f'Number of solutions: {model.num_solutions}')
 
     # Extract solution
     transformations = dict()
@@ -337,7 +369,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         'width': w,
         'height': h,
         'area': w*h,
-        'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
+        'hpwl': model.var_by_name('HPWL').x,
         'transformations': transformations,
         'model': model
     }
@@ -350,6 +382,9 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     CTN = 'concrete_template_name'
 
     hyper_params = HyperParameters()
+
+    if 'global_signals' not in module:
+        module['global_signals'] = set()
 
     instances = {i['instance_name']: i for i in module['instances']}
 
@@ -393,7 +428,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
 
             for formal_actual in instances[instance_name]['fa_map']:
                 formal, actual = formal_actual['formal'], formal_actual['actual']
-                if actual not in module['global_signals']:
+                if 'global_signals' in module and actual not in module['global_signals']:
                     wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
 
         solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid,
@@ -449,6 +484,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
         new_module['abstract_name'] = new_module['name']
         new_module['concrete_name'] = new_module['name'] + f'_{i}'
         new_module['pin_bbox'] = pin_bbox
+        new_module['metrics'] = {k: solution[k] for k in ['cost', 'width', 'height', 'area', 'hpwl']}
         del new_module['name']
 
         placement_data['modules'].append(new_module)
