@@ -1816,6 +1816,10 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
+        collb[id * 4] = mydesign.halo_horizontal;
+        colub[id * 4] = mydesign.placement_box[0] - mydesign.halo_horizontal - mydesign.Blocks[id][curr_sp.selected[id]].width;
+        collb[id * 4 + 1] = mydesign.halo_vertical;
+        colub[id * 4 + 1] = mydesign.placement_box[1] - mydesign.halo_vertical - mydesign.Blocks[id][curr_sp.selected[id]].height;
         if (prev) {
           collb[id * 4] = (*prev)[id].x;
           collb[id * 4 + 1] = (*prev)[id].y;
@@ -2852,7 +2856,7 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
   if (snapGridILP) ++const_cast<design&>(mydesign)._numSnapGridFail;
   if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
-    Blocks[0].x = 0; Blocks[0].y = 0;
+    Blocks[0].x = mydesign.halo_horizontal; Blocks[0].y = mydesign.halo_vertical;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
     area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
   } else {
@@ -5541,8 +5545,8 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 }
 
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
-  node.width = UR.x;
-  node.height = UR.y;
+  node.width = UR.x + mydesign.halo_horizontal;
+  node.height = UR.y + mydesign.halo_vertical;
   node.HPWL = HPWL;
   node.HPWL_extend = HPWL_extend;
   node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
