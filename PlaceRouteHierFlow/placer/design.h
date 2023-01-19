@@ -15,6 +15,7 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
+#include <cfloat>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -128,7 +129,9 @@ class design {
   int placement_id = -1;
   bool is_first_ILP = true;
   double Aspect_Ratio[2] = {0, 100};
-  double placement_box[2] = {-1.0, -1.0};
+  double placement_box[2] = {DBL_MAX, DBL_MAX};
+  double halo_horizontal = 0;
+  double halo_vertical = 0;
   double maxBlockAreaSum = 0.;
   double maxBlockHPWLSum = 0.;
   string name = "";
