@@ -307,10 +307,12 @@ void GcellDetailRouter::SortPinsOrder() {
     for (unsigned int j = 0; j < Nets[i].connected.size();j++){
       if (Nets[i].connected[j].type == RouterDB::TERMINAL || Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size() == 0)
         continue;
-      Nets[i].center_x += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[0].placedCenter.x;
-      Nets[i].center_y += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[0].placedCenter.y;
-      center_x_count++;
-      center_y_count++;
+      for (unsigned int k = 0; k<Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size();k++){
+        Nets[i].center_x += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.x;
+        Nets[i].center_y += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.y;
+        center_x_count++;
+        center_y_count++;
+      } 
     }
     if (center_x_count) Nets[i].center_x /= center_x_count;
     if (center_y_count) Nets[i].center_y /= center_y_count;
