@@ -134,7 +134,11 @@ class CmdlineParser():
 
         parser.add_argument('--place_using_ILP',
                             action='store_true',
-                            help='Use ILP to determine subcircuit selection.')
+                            help='Formulate and solve the placement problem as an ILP.')
+
+        parser.add_argument('--place_using_PT',
+                            action='store_true',
+                            help='Use Parallel Tempering to solve the placement problem.')
 
         parser.add_argument('--use_analytical_placer',
                             action='store_true',

@@ -81,6 +81,33 @@ class ILP_solver {
     if (!offsetpresent) return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, SYMPHONY, snapGridILP, prev);
     return FrameSolveILPCore(mydesign, curr_sp, drcInfo, flushlb, CBC, snapGridILP, prev);
   }
+  class SolutionMapSL {
+    const int _N;
+    SolutionMap _sol;
+    public:
+    SolutionMapSL(const int N) : _N{N} {}
+    void insert(const double cost, const std::pair<SeqPair, ILP_solver>& val)
+    {
+      if (_sol.size() < _N) _sol[cost] = val;
+      else {
+        auto it = _sol.find(cost);
+        if (it != _sol.end()) {
+          _sol[cost] = val;
+        } else {
+          it = _sol.begin();
+          std::advance(it, _N - 1);
+          if (it->first > cost) {
+            _sol.erase(it, _sol.end());
+            _sol[cost] = val;
+          }
+        }
+      }
+    }
+    const SolutionMap& val() const { return _sol; }
+    SolutionMap& val() { return _sol; }
+  };
+
+  void Metropolis(const double T, const int Numiter, const PnRDB::Drc_info& drcInfo, SeqPair& curr_sp, double& curr_cost, ILP_solver& curr_sol, const design& designData, const PlacerHyperparameters& hyper, SolutionMapSL& sol, const int iternum);
   std::vector<std::set<int>> GetCC(const design& mydesign) const;
   public:
   double cost = 0;
@@ -96,6 +123,7 @@ class ILP_solver {
   bool GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
   SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
+  SolutionMap PlaceUsingPT(const design& mydesign, const SeqPair& first_sp, const PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper, const int numsol = 1);
   double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp);
   double CalculateCost(const design& mydesign) const;

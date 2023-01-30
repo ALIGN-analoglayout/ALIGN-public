@@ -11,6 +11,7 @@ set(headers
 set(sources
      ILP_solver.cpp
      ILP_Place.cpp
+     PT_Place.cpp
      PlacerIfc.cpp
      SeqPair.cpp
      Placer.cpp

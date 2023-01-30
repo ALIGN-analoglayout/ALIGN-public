@@ -122,7 +122,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
                      flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
-                     nroutings=1, viewer=False, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
+                     nroutings=1, viewer=False, select_in_ILP=False, place_using_ILP=False, place_using_PT=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
                      placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None):
 
     steps_to_run = build_steps(flow_start, flow_stop)
@@ -190,7 +190,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP,
-                                place_using_ILP=place_using_ILP, seed=seed,
+                                place_using_ILP=place_using_ILP, place_using_PT=place_using_PT, seed=seed,
                                 use_analytical_placer=use_analytical_placer,
                                 ilp_solver=ilp_solver,
                                 placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer)

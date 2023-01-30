@@ -551,11 +551,16 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("max_cache_hit_count", &PlacerHyperparameters::max_cache_hit_count)
     .def_readwrite("select_in_ILP", &PlacerHyperparameters::select_in_ILP) // Choice of variant selection in SA: 0-Sequence Pair, 1-ILP
     .def_readwrite("use_ILP_placer", &PlacerHyperparameters::use_ILP_placer) // Use ILP to place blocks instead of SA
+    .def_readwrite("use_PT_placer", &PlacerHyperparameters::use_PT_placer) // Use PT to place blocks instead of SA
     .def_readwrite("ilp_solver", &PlacerHyperparameters::ilp_solver) // choice of solver used in SA : 0 - SYMPHONY, 1 - LpSolve
     .def_readwrite("NUM_THREADS", &PlacerHyperparameters::NUM_THREADS)
     .def_readwrite("place_on_grid_constraints_json", &PlacerHyperparameters::place_on_grid_constraints_json)
     .def_readwrite("ILP_runtime_limit", &PlacerHyperparameters::ILP_runtime_limit)
-    ;
+    .def_readwrite("PT_T_INT", &PlacerHyperparameters::PT_T_INT)
+    .def_readwrite("PT_T_MIN", &PlacerHyperparameters::PT_T_MIN)
+    .def_readwrite("PT_NUM_TEMP", &PlacerHyperparameters::PT_NUM_TEMP)
+    .def_readwrite("PT_NUM_EXCH_ITERS", &PlacerHyperparameters::PT_NUM_EXCH_ITERS)
+    .def_readwrite("PT_NUM_PERT_PER_ITER", &PlacerHyperparameters::PT_NUM_PERT_PER_ITER);
 
   py::class_<PlacerIfc>( m, "PlacerIfc")
     .def( py::init<hierNode&, int, string, int, Drc_info&, const PlacerHyperparameters&>())

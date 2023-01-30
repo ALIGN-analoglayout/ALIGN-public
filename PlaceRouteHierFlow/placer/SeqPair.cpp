@@ -556,10 +556,10 @@ SeqPair::SeqPair(design& caseNL, const size_t maxIter) {
 
 SeqPair& SeqPair::operator=(const SeqPair& sp) {
   // auto logger = spdlog::default_logger()->clone("placer.SeqPair.=");
-  this->posPair = sp.posPair;
-  this->negPair = sp.negPair;
-  this->orient = sp.orient;
-  this->symAxis = sp.symAxis;
+  this->posPair  = sp.posPair;
+  this->negPair  = sp.negPair;
+  this->orient   = sp.orient;
+  this->symAxis  = sp.symAxis;
   this->selected = sp.selected;
   if (!_seqPairEnum) this->_seqPairEnum = sp._seqPairEnum;
   return *this;

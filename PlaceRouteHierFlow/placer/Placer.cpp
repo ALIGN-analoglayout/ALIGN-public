@@ -237,6 +237,15 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     }
   }
 
+  if (!curr_sp.Enumerate() && hyper.use_PT_placer) {
+    logger->info("Placing using Parallel Tempering");
+    oData = curr_sol.PlaceUsingPT(designData, curr_sp, drcInfo, hyper, nodeSize);
+    if (!oData.empty()) {
+      ReshapeSeqPairMap(oData, nodeSize);
+      return oData;
+    }
+  }
+
   unsigned int seed = 0;
   if (hyper.SEED > 0) {
     seed = hyper.SEED;
