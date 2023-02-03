@@ -1,6 +1,7 @@
 FetchContent_Declare(
   ilpsolverif
   GIT_REPOSITORY https://github.com/ALIGN-analoglayout/ILPSolverInterface.git
+  GIT_TAG feature/only_cbc
 )
 include(ProcessorCount)
 ProcessorCount(N)
