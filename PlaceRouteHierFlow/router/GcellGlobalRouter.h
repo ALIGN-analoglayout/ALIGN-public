@@ -34,12 +34,6 @@
 #include "RawRouter.h"
 #include "Rdatatype.h"
 
-extern "C" {
-#include <stdio.h>
-
-#include "lp_lib.h"
-}
-
 using namespace nlohmann;
 class GcellGlobalRouter : public RawRouter {
   friend class GlobalGrid;
@@ -72,7 +66,6 @@ class GcellGlobalRouter : public RawRouter {
   char cwd[PATH_MAX];
   std::vector<valInfo> ValArray;
   int NumOfVar;
-  lprec *lp;  // Data structure for lp_solve
   GlobalGrid Gcell;
   // vector<RouterDB::Net> Nets;
   // vector<RouterDB::Block> Blocks;
@@ -86,8 +79,6 @@ class GcellGlobalRouter : public RawRouter {
   // vector<PnRDB::Drc_info> drc_info;
   // int lowest_metal, highest_metal; //index of lowest metal & highest metal
   // int grid_scale; //dynamic grid_scal
-  typedef void(lphandlestr_func)(lprec *lp, void *userhandle, char *buf);
-  static void lpsolve_logger(lprec *lp, void *userhandle, char *buf);
 
   public:
   GcellGlobalRouter();

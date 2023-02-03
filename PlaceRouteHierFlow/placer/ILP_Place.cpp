@@ -10,6 +10,8 @@
 #include <boost/graph/connected_components.hpp>
 
 #define EPS 1e-4
+#define FALSE 0
+#define TRUE 1
 
 std::vector<std::set<int>> ILP_solver::GetCC(const design& mydesign) const
 {

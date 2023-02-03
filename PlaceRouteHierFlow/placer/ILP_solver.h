@@ -20,7 +20,6 @@
 #include "PlacerHyperparameters.h"
 #include "SeqPair.h"
 #include "design.h"
-#include "lp_lib.h"
 
 using std::cerr;
 using std::cin;
@@ -52,8 +51,6 @@ class ILP_solver {
   double Aspect_Ratio_weight = 1000;
   double Aspect_Ratio[2] = {0, 100};
   double placement_box[2] = {-1.0, -1.0};
-  typedef void(lphandlestr_func)(lprec* lp, void* userhandle, char* buf);
-  static void lpsolve_logger(lprec* lp, void* userhandle, char* buf);
   vector<vector<int>> block_order;
   int x_pitch, y_pitch;
   enum SOLVERTOUSE {SYMPHONY = 0, LPSOLVE, CBC};
@@ -92,18 +89,15 @@ class ILP_solver {
   ILP_solver& operator=(const ILP_solver& solver);
   int xdim() const { return UR.x - LL.x; }
   int ydim() const { return UR.y - LL.y; }
-  double GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_info& drcInfo, PnRDB::hierNode& node);
   bool GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP);
   double GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads = 1);
   SolutionMap PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol = 1);
-  double GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo);
   double UpdateAreaHPWLCost(const design& mydesign, const SeqPair& curr_sp);
   double CalculateCost(const design& mydesign) const;
   double CalculateCost(const design& mydesign, const SeqPair& curr_sp) ;
   double CalculateCFCost(const design& mydesign, const SeqPair& curr_sp) ;
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfile);
-  //void PlotPlacementAnalytical(design& caseNL, string outfile, bool plot_pin, bool plot_terminal, bool plot_net);
   std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point>>& temp_contact);
   void updateTerminalCenter(design& mydesign, SeqPair& curr_sp);
   void updateTerminalCenterAnalytical(design& mydesign);

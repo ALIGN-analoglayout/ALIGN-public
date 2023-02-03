@@ -14,11 +14,7 @@ Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, 
     // logger->info(hyper.placement_info_json);
     setPlacementInfoFromJson(nodeVec, opath, drcInfo);
   }else{
-    if (hyper.use_analytical_placer)
-      //#define analytical_placer
-      PlacementRegularAspectRatio_ILP_Analytical(nodeVec, opath, effort, drcInfo);
-    else
-      PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
+    PlacementRegularAspectRatio_ILP(nodeVec, opath, effort, drcInfo);
   }
 }
 
@@ -31,8 +27,8 @@ void Placer::ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnR
     for (const auto& constraint : concrete["constraints"]) {
       if (constraint["constraint"] != "PlaceOnGrid") continue;
       unsigned int start = 0;
-      unsigned int slash = s.find_last_of('_');
-      if (slash != string::npos) {
+      auto slash = s.find_last_of('_');
+      if (slash != std::string::npos) {
         start = slash + 1;
       }
       string concrete_name = s.substr(0, slash);
@@ -78,7 +74,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
     if (m["abstract_name"] == designData.name) {
       string concrete_template_name = m["concrete_name"];
       unsigned int start = 0;
-      unsigned int slash = concrete_template_name.find_last_of('_');
+      auto slash = concrete_template_name.find_last_of('_');
       if (slash != string::npos) start = slash + 1;
       unsigned int end = concrete_template_name.size();
       idx = atoi(concrete_template_name.substr(start, end - start).c_str());
@@ -98,7 +94,7 @@ void Placer::setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, str
     if (m["abstract_name"] == designData.name) {
       string concrete_template_name = m["concrete_name"];
       unsigned int start = 0;
-      unsigned int slash = concrete_template_name.find_last_of('_');
+      auto slash = concrete_template_name.find_last_of('_');
       if (slash != string::npos) start = slash + 1;
       unsigned int end = concrete_template_name.size();
       idx = atoi(concrete_template_name.substr(start, end - start).c_str());
@@ -271,10 +267,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     // Only positive curr_cost value is accepted.
 
     if (!curr_sp.isSeqInCache(designData)) {
-      if (hyper.select_in_ILP)
-        curr_cost = curr_sol.GenerateValidSolution_select(designData, curr_sp, drcInfo);
-      else
-        curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
+      curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp, drcInfo, hyper.NUM_THREADS);
       curr_sol.cost = curr_cost;
       curr_sp.cacheSeq(designData, curr_cost);
     }
@@ -343,10 +336,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       double trial_cost = 0;
       bool fromCache{false};
       if (!trial_sp.isSeqInCache(designData, &trial_cost)) {
-        if (hyper.select_in_ILP)
-          trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-        else
-          trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+        trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
         trial_sp.cacheSeq(designData, trial_cost);
         if (trial_cost >= 0) {
           oData[trial_cost] = std::make_pair(trial_sp, trial_sol);
@@ -375,10 +365,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
         }
         if (Smark) {
           if (fromCache) {
-            if (hyper.select_in_ILP)
-              trial_cost = trial_sol.GenerateValidSolution_select(designData, trial_sp, drcInfo);
-            else
-              trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
+            trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp, drcInfo, hyper.NUM_THREADS);
           }
           curr_cost = trial_cost;
           curr_sp = trial_sp;
@@ -490,50 +477,3 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
   }
 }
-
-void Placer::PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
-  auto logger = spdlog::default_logger()->clone("placer.Placer.PlacementRegularAspectRatio_ILP");
-  int nodeSize = nodeVec.size();
-// cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
-#ifdef RFLAG
-  // cout<<"Placer-Info: run in random mode..."<<endl;
-  srand(time(NULL));
-#endif
-#ifndef RFLAG
-  // cout<<"Placer-Info: run in normal mode..."<<endl;
-  srand(0);
-#endif
-  // int mode=0;
-  // Read design netlist and constraints
-  design designData(nodeVec.back(),drcInfo);
-  // designData.PrintDesign();
-  // Initialize simulate annealing with initial solution
-  // SeqPair curr_sp(designData);
-  // curr_sp.PrintSeqPair();
-  ILP_solver curr_sol(designData, nodeVec.back());
-  curr_sol.GenerateValidSolutionAnalytical(designData, drcInfo, nodeVec.back());
-  curr_sol.updateTerminalCenterAnalytical(designData);
-  //curr_sol.PlotPlacementAnalytical(designData, opath + nodeVec.back().name + "_" + std::to_string(0) + ".plt", false, false, false);
-  curr_sol.UpdateHierNodeAnalytical(designData, nodeVec.back(), drcInfo);
-  // std::map<double, std::pair<SeqPair, ILP_solver>> spVec=PlacementCoreAspectRatio_ILP(designData, curr_sp, curr_sol, mode, nodeSize, effort, drcInfo);
-  // curr_sol.updateTerminalCenter(designData, curr_sp);
-  // curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
-  // if((int)spVec.size()<nodeSize) {
-  // nodeSize=spVec.size();
-  // nodeVec.resize(nodeSize);
-  //}
-  // int idx=0;
-  // for(std::map<double, std::pair<SeqPair, ILP_solver>>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
-  // std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
-  // vec_sol.ConstraintGraph(designData, it->second);
-  // vec_sol.updateTerminalCenter(designData, it->second);
-  // std::cout<<"wbxu check design\n";
-  // designData.PrintDesign();
-  // it->second.PrintSeqPair();
-  // std::cout<<"write design "<<idx<<std::endl;
-  //
-  // it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
-  // it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-  //}
-}
-

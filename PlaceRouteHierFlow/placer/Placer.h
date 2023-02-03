@@ -35,7 +35,6 @@ class Placer {
   void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
   void ReshapeSeqPairMap(std::map<double, std::pair<SeqPair, ILP_solver>>& spMap, int nodeSize);
   void PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
-  void PlacementRegularAspectRatio_ILP_Analytical(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo);
   void ReadPrimitiveOffsetPitch(std::vector<PnRDB::hierNode>& nodeVec, PnRDB::Drc_info& drcInfo, const string& jsonStr);
   void setPlacementInfoFromJson(std::vector<PnRDB::hierNode>& nodeVec, string opath, PnRDB::Drc_info& drcInfo);
   PlacerHyperparameters hyper;

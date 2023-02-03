@@ -14,7 +14,6 @@ add_library(EA_placer STATIC ${sources} ${headers})
 target_link_libraries(
      EA_placer PRIVATE
      spdlog::spdlog
-     lpsolve::lpsolve55
      Boost::boost
 )
 target_code_coverage(EA_placer)

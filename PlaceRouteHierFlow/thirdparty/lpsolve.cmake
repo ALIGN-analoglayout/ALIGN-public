@@ -6,7 +6,7 @@ FetchContent_Declare(
 )
 find_library(
   lpsolve_lib
-  NAMES liblpsolve55.so
+  NAMES liblpsolve55.5.dylib
   PATH_SUFFIXES lpsolve lp_solve)
 if (NOT lpsolve_lib)
   message(STATUS "lpsolve library file not found. Building from source.")

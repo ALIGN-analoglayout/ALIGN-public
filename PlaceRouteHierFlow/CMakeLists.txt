@@ -22,7 +22,6 @@ target_link_libraries(
      guard_ring
      MNA
      # External Dependencies
-     lpsolve::lpsolve55
      nlohmann_json::nlohmann_json
      spdlog::spdlog
      superlu
@@ -51,7 +50,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           guard_ring
           MNA
           # External Dependencies
-          lpsolve::lpsolve55
           ilp_solver::ilp_solver
           nlohmann_json::nlohmann_json
           spdlog::spdlog

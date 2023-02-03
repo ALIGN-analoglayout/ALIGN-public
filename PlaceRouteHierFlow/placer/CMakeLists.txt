@@ -22,7 +22,6 @@ add_library(placer STATIC ${sources} ${headers})
 target_link_libraries(
      placer PRIVATE
      spdlog::spdlog
-     lpsolve::lpsolve55
      Boost::boost
      nlohmann_json::nlohmann_json
      ilp_solver::ilp_solver
