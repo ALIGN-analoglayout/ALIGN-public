@@ -13,14 +13,16 @@ The ALIGN flow includes the following steps:
 * _Design rule abstraction_ creates a compact JSON-format represetation of the design rules in a PDK. This repository provides a mock PDK based on a FinFET technology (where the parameters are based on published data). These design rules are used to guide the layout and ensure DRC-correctness.
 * _Primitive cell generation_ works with primitives, i.e., blocks at the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
 * _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete.
+## Documentation
+[ALIGN documentation](https://align-analoglayout.github.io/ALIGN-public/index.html)
 
 ## Inputs
 
 * A [SPICE netlist](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
-* [Setup file](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.setup)
+
+* [Constratint file (optional)](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/examples/telescopic_ota/telescopic_ota.const.json)
   * Power and Gnd signals (First power signal is used for global power grid)
-  * Clk signal (optional)
-  * Digital blocks (optional)
+  * [Any other constraint (optional)](https://align-analoglayout.github.io/ALIGN-public/notes/const.html)
 
 * Library:(SPICE format)
   * A basic built-in [template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
@@ -31,8 +33,6 @@ The ALIGN flow includes the following steps:
   * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
   * Primitive cells(NMOS/PMOS/[Resistor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
 
-* LEF:
-  * A list of parameterized cells supported by cell generator is stored in file [param_lef](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/param_lef).
 
 ## Outputs
 
