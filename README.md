@@ -20,17 +20,30 @@ The ALIGN flow includes the following steps:
 
 * A [SPICE netlist](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
 
+  SPICE file and constraint file for all hieararchies need to be placed in the same folder. The name of the folder, SPICE file, and top-design name should match for simple use. For more options, these need to be specified separately as command line arguments. 
+
 * [Constratint file (optional)](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/examples/telescopic_ota/telescopic_ota.const.json)
+
+  Check our documentation and examples directory on how to use constraints to control the layout of the design.
+
   * Power and Gnd signals (First power signal is used for global power grid)
   * [Any other constraint (optional)](https://align-analoglayout.github.io/ALIGN-public/notes/const.html)
 
 * Library:(SPICE format)
-  * A basic built-in [template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+
+  A basic set of library is predefined within ALIGN to create a hierarchical layout. Designers can modify this based on their design style. For a design specific change, designers can use constraints to control the library cells. 
+
+  * A basic built-in [template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/basic_template.sp) is provided, which is used to identify hierarchies in the design.
   * More library elements can be added in the [user_template library](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/config/user_template.sp).
 
 * PDK: Abstracted [design rules](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK)
+
+  PDK setup needs to be configured for any new technology node. We provide multiple open-source [PDK options](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks). 
+
   * A mock FinFET 14nm PDK [rules file](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
-  * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
+  * A new PDK can be represented using a JSON-format design rule abstraction, similar to the mock-PDK design rules file provided.
+  * Device definition: A [basic library](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/schema/library.py) of device models and any PDK specific [derived device model](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/models.sp).
+  * Device parameter definition: A method to [translate different SPICE paramters](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/documentation_update/pdks/FinFET14nm_Mock_PDK/gen_param.py) to device size.
   * Primitive cells(NMOS/PMOS/[Resistor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
 
 
@@ -147,7 +160,7 @@ $ schematic2layout.py -h
 
 ## Design database:
 
-* [examples](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples): Contains example circuits with netlists running on circleci
+* [examples](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples): Contains example circuits with netlists running on CircleCI
 * [CircuitsDatabase](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/CircuitsDatabase): Contains benchmark circuits
 
 ## Viewer :
