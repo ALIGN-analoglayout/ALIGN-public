@@ -56,7 +56,7 @@ The ALIGN flow includes the following steps:
 The following dependencies must be met by your system:
   * gcc >= 6.1.0 (For C++14 support)
   * python >= 3.7 (For [PEP 560](https://www.python.org/dev/peps/pep-0560/) support)
-You may optionally install [Boost](https://www.boost.org/) & [lp_solve](http://lpsolve.sourceforge.net/5.5/) using your distro package manager (apt, yum etc) to save some compilation time.
+You may optionally install [Boost](https://www.boost.org/) & [lp_solve](http://lpsolve.sourceforge.net/5.5/) using your distro package manager (apt, yum, etc) to save some compilation time.
 
 Note: In case you have multiple gcc versions installed on your system, we recommend explicitly setting the compiler paths as follows:
 ```console
