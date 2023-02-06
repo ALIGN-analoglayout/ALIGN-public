@@ -73,7 +73,7 @@ For ALIGN (C++) Extension developers:
 
 
 .. note::
-    The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
+    The second command doesn't just install ALIGN in-place, it also caches generated object files under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 If you want the build-type to be Release (-O3), you can issue the following three lines:
 

@@ -8,7 +8,7 @@ KLayout viewer
 
 `KLayout <https://github.com/KLayout/klayout>`_ viewer is an open-source GDS viewer which you can use to see the align generated layouts.
 
-.. note:: WSL users would need to install xming for display to work
+.. note:: WSL users would need to install xming for the display to work
 
 
 ALIGN viewer
@@ -24,7 +24,7 @@ ALIGN `Viewer <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/Vi
 
 * Copy the <DESIGN_name_0>.JSON from work/3_pnr/ directory to Viewer/INPUT
 
-* From your browser go to:-  localhost:8085/?design=DESIGN_name_0
+* From your browser go to  localhost:8085/?design=DESIGN_name_0
 
 .. figure:: ../images/Viewer.PNG
     :scale: 50 %

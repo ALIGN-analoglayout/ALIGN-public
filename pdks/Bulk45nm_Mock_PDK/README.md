@@ -12,4 +12,4 @@ The abstraction details are provided in the presentation [PDK_Abstraction_guide]
 
 ## References
 
-
+[1] K. -L. Cheng et al., "A highly scaled, high performance 45 nm bulk logic CMOS technology with 0.242 μm2 SRAM cell," 2007 IEEE International Electron Devices Meeting, Washington, DC, USA, 2007, pp. 243-246, doi: 10.1109/IEDM.2007.4418913.
