@@ -1344,7 +1344,7 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-        int sym_factor = 0;
+        double sym_factor = 0.2;
 
         temp_pair.first = temp_cost + sym_factor * sym_cost;
         temp_pair.second = candidate_node[i];
@@ -1396,7 +1396,7 @@ int A_star::Find_Symmetry_Cost(Grid &grid, int current_node, vector<RouterDB::Me
 };
 
 int A_star::Find_Symmetry_cost(Grid &grid, int current_node, RouterDB::Metal &temp_path) {
-  int layer_cost = 100;
+  int layer_cost = 0;
 
   int x = grid.vertices_total[current_node].x;
   int y = grid.vertices_total[current_node].y;
