@@ -1,8 +1,14 @@
-# A Mock PDK based on public data
+# A MockPDK inspired by advanced FinFET processes
 
+The abstraction details are provided in the presentation [FinFET_Mock_PDK_Abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/pdks/FinFET14nm_Mock_PDK).
 
-The abstraction details are provided in the [presentation](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/pdks/FinFET14nm_Mock_PDK).
+## Key files
 
+* layers.json: Design rules such as metal width and pitch are defined in this file.
+* models.sp and [library.py](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/schema/library.py): A library of device definitions in SPICE file.
+* gen_param.py: Method to convert device SPICE parameters to layout parameters.
+* mos.py, res.py, cap.py, guard_ring.py: Rule-based device generators.
+* Align_primitives.py, fabric_Res.py, fabric_Cap.py, fabric_ring.py: Python utilities for standalone usage of device generators. 
 
 ## References
 
