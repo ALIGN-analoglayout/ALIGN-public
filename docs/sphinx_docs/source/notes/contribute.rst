@@ -1,7 +1,7 @@
 Contribute to ALIGN
 ===========================================================
 
-ALIGN is an open source tool for analog layout generation. We appreciate any contribution to ALIGN.
+ALIGN is an open-source tool for analog layout generation. We appreciate any contribution to ALIGN.
 Layout generation requires multiple components for the flow to produce a good layout. There are multiple ways you can contribute.
 
 Some example contributions

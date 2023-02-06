@@ -20,5 +20,5 @@ on advanced FinFET process and bulk process. The data used in these PDKs have be
  * A MockPDK inspired by bulk technologies ([Bulk65nm_Mock_PDK](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/pdks/Bulk65nm_Mock_PDK), [Bulk45nm_Mock_PDK](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/pdks/Bulk45nm_Mock_PDK))
  * A mock PDK inspired by Intel 22nm FinFET Fact Sheet ([finfet](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/align/pdk/finfet)). PDK abstraction contains only Poly, M1-M6 and V1-V5 layers.
 
- * A MockPDK with non-uniform grid metal grids ([Nonuniform_mock_pdk](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/documentation_update/pdks/Nonuniform_mock_pdk/layers.json)). This PDK is for development and is not functional yet.
+ * A MockPDK with non-uniform metal grids ([Nonuniform_mock_pdk](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/documentation_update/pdks/Nonuniform_mock_pdk/layers.json)). This PDK is for development and is not functional yet.
 
