@@ -159,6 +159,7 @@ void A_star::initial_source(Grid &grid, std::set<std::pair<double, int>, RouterD
     grid.vertices_total[source[i]].Cost = 0;
     grid.vertices_total[source[i]].Cost2Source = 0;
     double dis = grid.vertices_total[source[i]].Cost + Mdis * drc_info.Metal_info[grid.vertices_total[source[i]].metal].unit_R;
+    dis += double(abs(grid.vertices_total[source[i]].x - grid.center_x) + abs(grid.vertices_total[source[i]].y - grid.center_y))/1e10;
     std::pair<double, int> temp_pair;
     temp_pair.first = dis;
     temp_pair.second = source[i];
@@ -1339,11 +1340,11 @@ std::vector<std::vector<int>> A_star::A_star_algorithm_Sym(Grid &grid, int left_
                          M_dis_dest * drc_info.Metal_info[grid.vertices_total[current_node].metal].unit_R +
                          drc_info.Via_info[drc_info.Metal_info[tmp_metal].upper_via_index].R * M_dis_dest_via;
 
-
+      temp_cost += double(abs(grid.vertices_total[candidate_node[i]].x - grid.center_x) + abs(grid.vertices_total[candidate_node[i]].y - grid.center_y))/1e10;
       if (temp_cost < grid.vertices_total[candidate_node[i]].Cost) {
         int sym_cost = Find_Symmetry_Cost(grid, candidate_node[i], sym_path);
         // std::cout<<"sym cost "<<sym_cost<<" sym path size "<<sym_path.size()<<std::endl;
-        int sym_factor = 0;
+        double sym_factor = 0.2;
 
         temp_pair.first = temp_cost + sym_factor * sym_cost;
         temp_pair.second = candidate_node[i];
@@ -1395,7 +1396,7 @@ int A_star::Find_Symmetry_Cost(Grid &grid, int current_node, vector<RouterDB::Me
 };
 
 int A_star::Find_Symmetry_cost(Grid &grid, int current_node, RouterDB::Metal &temp_path) {
-  int layer_cost = 100;
+  int layer_cost = 0;
 
   int x = grid.vertices_total[current_node].x;
   int y = grid.vertices_total[current_node].y;
