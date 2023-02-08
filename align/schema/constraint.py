@@ -424,19 +424,37 @@ class Boundary(HardConstraint):
 
         {"constraint": "Boundary", "max_height": 100 }
     """
-    max_width: Optional[float] = 10000
-    max_height: Optional[float] = 10000
+    max_width: Optional[float] = 100000  # 100mm
+    max_height: Optional[float] = 100000  # 100mm
+    halo_horizontal: Optional[float] = 0
+    halo_vertical: Optional[float] = 0
 
     _max_width = types.validator('max_width', allow_reuse=True)(assert_non_negative)
     _max_height = types.validator('max_height', allow_reuse=True)(assert_non_negative)
+    _halo_horizontal = types.validator('halo_horizontal', allow_reuse=True)(assert_non_negative)
+    _halo_vertical = types.validator('halo_vertical', allow_reuse=True)(assert_non_negative)
+
+    @types.validator('halo_horizontal', 'halo_horizontal', allow_reuse=True)
+    def validate_halo(cls, value, values, field):
+        if field.name == 'halo_horizontal':
+            key = 'max_width'
+        else:
+            key = 'max_height'
+        assert values[key] > value, f'Halo should be smaller than the {key}'
+        return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars('subcircuit')
-        if self.max_width is not None:
-            yield solver.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
-        if self.max_height is not None:
-            yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
+        bbox = solver.bbox_vars('subcircuit')
+        yield solver.cast(bbox.urx-bbox.llx, float) <= 1000*self.max_width  # convert to nanometer
+        yield solver.cast(bbox.ury-bbox.lly, float) <= 1000*self.max_height  # convert to nanometer
 
+        instances = get_instances_from_hacked_dataclasses(self)
+        bvars = solver.iter_bbox_vars(instances)
+        for b in bvars:
+            yield b.llx >= bbox.llx + int(1000*self.halo_horizontal)
+            yield b.urx <= bbox.urx - int(1000*self.halo_horizontal)
+            yield b.lly >= bbox.lly + int(1000*self.halo_vertical)
+            yield b.ury <= bbox.ury - int(1000*self.halo_vertical)
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -758,6 +776,7 @@ class PowerPorts(SoftConstraint):
             The first port of top hierarchy will be used for power grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -767,6 +786,7 @@ class PowerPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -781,6 +801,7 @@ class GroundPorts(SoftConstraint):
             The first port of top hierarchy will be used for ground grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -790,6 +811,7 @@ class GroundPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -803,6 +825,7 @@ class ClockPorts(SoftConstraint):
 
     Args:
         ports (list[str]): List of :obj:`ports`.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -812,6 +835,7 @@ class ClockPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
@@ -1409,6 +1433,7 @@ class GroupBlocks(HardConstraint):
     constraints: Optional[List[Union[
         Align,
         Order,
+        Boundary,
         AlignInOrder,
         Floorplan,
         SymmetricBlocks,

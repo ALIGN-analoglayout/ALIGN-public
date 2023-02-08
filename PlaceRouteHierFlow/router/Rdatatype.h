@@ -92,6 +92,7 @@ struct vertex {
   int y = -1;
   int metal = -1;
   double Cost = DBL_MAX;
+  double Cost2Source = DBL_MAX;
   // int Cost = -1;
   bool active = false;
   bool via_active_down = true;
@@ -265,6 +266,7 @@ struct Net {
   int min_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or lowest metal layer
   int max_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or highest metal layer
   // void display();
+  int center_x = 0, center_y = 0;
 };
 
 struct Block {

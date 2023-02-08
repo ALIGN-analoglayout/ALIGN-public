@@ -302,6 +302,10 @@ PYBIND11_MODULE(PnR, m) {
     .def_readwrite("blocks", &AlignBlock::blocks)
     .def_readwrite("horizon", &AlignBlock::horizon)
     .def_readwrite("line", &AlignBlock::line);
+  py::class_<BoundaryConstraint>( m, "BoundaryConstraint")
+    .def( py::init<>())
+    .def_readwrite("halo_horizontal", &BoundaryConstraint::halo_horizontal)
+    .def_readwrite("halo_vertical", &BoundaryConstraint::halo_vertical);
   py::class_<PortPos>( m, "PortPos")
     .def( py::init<>())
     .def_readwrite("tid", &PortPos::tid)

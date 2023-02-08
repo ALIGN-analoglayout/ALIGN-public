@@ -101,7 +101,7 @@ class PnRConstraintWriter:
                 const["const_name"] = 'Aspect_Ratio'
 
             elif const["const_name"] == 'Boundary':
-                for key in ['max_width', 'max_height']:
+                for key in ['halo_vertical', 'halo_horizontal', 'max_width', 'max_height']:
                     if const[key] is None:
                         del const[key]
 

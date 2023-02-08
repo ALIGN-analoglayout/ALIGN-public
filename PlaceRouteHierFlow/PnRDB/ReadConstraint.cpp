@@ -608,6 +608,10 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         logger->error("Wrong placement bounding box, width {0}, height {1}", node.placement_box[0], node.placement_box[1]);
       node.placement_box[0] *= unitScale;
       node.placement_box[1] *= unitScale;
+      if (constraint.find("halo_horizontal") != constraint.end())
+        node.boundary.halo_horizontal = static_cast<double>(constraint["halo_horizontal"]) * unitScale;
+      if (constraint.find("halo_vertical") != constraint.end())
+        node.boundary.halo_vertical = static_cast<double>(constraint["halo_vertical"]) * unitScale;
     } else if (constraint["const_name"] == "SameTemplate") {
       set<int> temp_const;
       for (auto b : constraint["blocks"]) {
@@ -616,7 +620,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
       node.Same_Template_Constraints.push_back(temp_const);
     } else if (constraint["const_name"] == "CompactPlacement") {
       node.compact_style = constraint["style"];
-    } else if(constraint["const_name"] == "DoNotRoute"){
+    } else if (constraint["const_name"] == "DoNotRoute") {
       vector<string> DoNotRoute;
       for(auto net : constraint["nets"]){
          DoNotRoute.push_back(net);
@@ -655,7 +659,7 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         if (!found) logger->error("Block {0} in Spread not found in netlist", block);
       }
       node.SpreadConstraints.push_back(s);
-    } else if(constraint["const_name"] == "Route"){
+    } else if (constraint["const_name"] == "Route") {
       PnRDB::Routing_Layers_Info tmp_routing;
       tmp_routing.global_min_layer = constraint["min_layer"];
       tmp_routing.global_max_layer = constraint["max_layer"];

@@ -50,6 +50,8 @@ class Grid {
   int lowest_metal, highest_metal;  // lower/upper bounds of available metal layers
   int grid_scale;                   // scaling of grids, 1 for detail router, >1 for global router
   int layerNo;                      // max layer number in technology file
+  int center_x = 0, center_y = 0;
+
   public:
   Grid(){};
   Grid(const Grid &other);
