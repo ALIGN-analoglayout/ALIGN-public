@@ -12,3 +12,4 @@ The abstraction details are provided in the presentation [PDK_Abstraction_guide]
 
 ## References
 
+[1] A. Steegen et al., "65nm cmos technology for low power applications," IEEE InternationalElectron Devices Meeting, 2005. IEDM Technical Digest., Washington, DC, USA, 2005, pp. 64-67, doi: 10.1109/IEDM.2005.1609267.
