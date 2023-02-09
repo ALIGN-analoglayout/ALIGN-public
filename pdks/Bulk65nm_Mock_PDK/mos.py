@@ -63,11 +63,11 @@ class MOSGenerator(DefaultCanvas):
         assert self.finDummy >= 8, f"number of fins/width {fin} in the transistor must be less than unit cell height {self.finsPerUnitCell -2*8}"
         assert fin > 1, "number of fins in the transistor must be more than 1"
         assert gateDummy > 0
-        unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
-        activeOffset = self.unitCellHeight//2 -self.pdk['Fin']['Pitch']//2
-        activeWidth =  exact_width if exact_width else self.pdk['Fin']['Pitch']*fin
-        activePitch = self.unitCellHeight
-        RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
+        self.unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
+        self.activeOffset = self.unitCellHeight//2 -self.pdk['Fin']['Pitch']//2
+        self.activeWidth =  exact_width if exact_width else self.pdk['Fin']['Pitch']*fin
+        self.activePitch = self.unitCellHeight
+        RVTWidth = self.activeWidth + 2*self.pdk['Active']['active_enclosure']
 
 
         stoppoint = self.pdk['Active']['activePolyExTracks']*self.pdk['M2']['Pitch']
@@ -89,24 +89,24 @@ class MOSGenerator(DefaultCanvas):
 
         stoppoint = ((self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset'])*(1-self.shared_diff)
         self.active = self.addGen( Wire( 'active', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.activeWidth, offset=self.activeOffset),
+                                         spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.RVT = self.addGen( Wire( 'RVT', 'Rvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
-                                      spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
+                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.LVT = self.addGen( Wire( 'LVT', 'Lvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
-                                      spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
+                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.HVT = self.addGen( Wire( 'HVT', 'Hvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
-                                      spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
+                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.SLVT = self.addGen( Wire( 'SLVT', 'Slvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
-                                      spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
+                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         offset = self.gateDummy*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Offset'] - self.pdk['Poly']['Pitch']//2
         stoppoint = self.gateDummy*self.pdk['Poly']['Pitch'] + self.pdk['Poly']['Offset']-self.pdk['Pc']['PcExt']-self.pdk['Poly']['Width']//2
@@ -125,30 +125,30 @@ class MOSGenerator(DefaultCanvas):
                                             h_grid=self.fin.clg))
 
         self.active_diff = self.addGen( Wire( 'active_diff', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=self.activeWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         self.RVT_diff = self.addGen( Wire( 'RVT_diff', 'Rvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         self.LVT_diff = self.addGen( Wire( 'LVT_diff', 'Lvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         self.HVT_diff = self.addGen( Wire( 'HVT_diff', 'Hvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         self.SLVT_diff = self.addGen( Wire( 'SLVT_diff', 'Slvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
-        stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
+        stoppoint = self.unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
         offset_active_body = (self.lFin//2)*self.pdk['Fin']['Pitch']+self.unitCellHeight-self.pdk['Fin']['Pitch']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                         spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.activeb_diff = self.addGen( Wire( 'activeb_diff', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Active']['activebWidth'], offset=0),
@@ -161,7 +161,7 @@ class MOSGenerator(DefaultCanvas):
         stoppoint = self.unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pb']['pbWidth'], offset=0),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                         spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
 
         self.v1_x = self.addGen( Via( 'v1_x', 'V1',
@@ -184,8 +184,8 @@ class MOSGenerator(DefaultCanvas):
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
         v0pitch = self.pdk['V0']['WidthY'] + self.pdk['V0']['SpaceY']
-        v0Offset = activeOffset - activeWidth//2 + self.pdk['V0']['VencA_L'] + self.pdk['V0']['WidthY']//2
-        v0_number = floor((activeWidth-2*self.pdk['V0']['VencA_L']-self.pdk['V0']['WidthY'])/v0pitch)
+        v0Offset = self.activeOffset - self.activeWidth//2 + self.pdk['V0']['VencA_L'] + self.pdk['V0']['WidthY']//2
+        v0_number = floor((self.activeWidth-2*self.pdk['V0']['VencA_L']-self.pdk['V0']['WidthY'])/v0pitch)
         v0_number = max(v0_number, 1)
         assert v0_number > 0, "V0 can not be placed in the active region"
         #v0_number = v0_number if v0_number < 4 else v0_number - 1 ## To avoid voilation of V0 enclosure by M1 DRC
@@ -196,47 +196,6 @@ class MOSGenerator(DefaultCanvas):
 
     def _addMOS( self, x, y, x_cells,  vt_type, name='M1', reflect=False, **parameters):
 
-        if len(parameters) > 1:
-            device_name = [*parameters.keys()]
-            activeWidth =  float(parameters[device_name[0]]['W'])*1E+9
-        else:
-            activeWidth = self.activeWidth
-        RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
-        
-        stoppoint = ((self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset'])*(1-self.shared_diff)
-        active = Wire( 'active', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=activeWidth, offset=self.activeOffset),
-                                         spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
-
-        RVT = Wire( 'RVT', 'Rvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
-        
-        LVT = Wire( 'LVT', 'Lvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
-
-        HVT = Wire( 'HVT', 'Hvt', 'h',
-                                      clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                      spg=EnclosureGrid( pitch=self.unitCellLength, offset=0, stoppoint=stoppoint, check=True))
-
-        active_diff = Wire( 'active_diff', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=activeWidth, offset=self.activeOffset),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
-        
-        RVT_diff = Wire( 'RVT_diff', 'Rvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)) 
-
-        LVT_diff = Wire( 'LVT_diff', 'Lvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
-   
-        HVT_diff = Wire( 'HVT_diff', 'Hvt', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=self.activePitch, width=RVTWidth, offset=self.activeOffset),
-                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))
-        
-        
         fullname = f'{name}_X{x}_Y{y}'
         self.subinsts[fullname].parameters.update(parameters)
 
@@ -250,7 +209,7 @@ class MOSGenerator(DefaultCanvas):
         if self.shared_diff == 0:
             self.addWire( self.active, None, y, (x,1), (x+1,-1))
         elif self.shared_diff == 1 and x == x_cells-1:
-            self.addWire( active_diff, None, y, 0, self.gate*x_cells+1)
+            self.addWire( self.active_diff, None, y, 0, self.gate*x_cells+1)
         else:
             pass
 
@@ -259,25 +218,25 @@ class MOSGenerator(DefaultCanvas):
 
         def _addRVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( RVT,  None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.RVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( RVT_diff,  None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.RVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
 
         def _addLVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( LVT,  None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.LVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( LVT_diff,  None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.LVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
 
         def _addHVT(x, y, x_cells):
             if self.shared_diff == 0:
-                self.addWire( HVT,  None, y,          (x, 1), (x+1, -1))
+                self.addWire( self.HVT,  None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( HVT_diff,  None, y, 0, self.gate*x_cells+1)
+                self.addWire( self.HVT_diff,  None, y, 0, self.gate*x_cells+1)
             else:
                 pass
         if vt_type == 'RVT':
