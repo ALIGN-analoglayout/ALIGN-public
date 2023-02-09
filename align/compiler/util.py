@@ -8,6 +8,10 @@ from ..schema.graph import Graph
 from ..schema import SubCircuit, Model
 import logging
 import pathlib
+import hashlib
+from flatdict import FlatDict
+import importlib
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -73,16 +77,18 @@ def get_base_model(subckt, node):
 
 
 def get_leaf_connection(subckt, net):
-    assert net in subckt.nets, f"Net {net} not found in subckt {subckt.name} {subckt.nets}"
-    graph = Graph(subckt)
     conn = []
-    for nbr in graph.neighbors(net):
-        for pin in graph.get_edge_data(net, nbr)["pin"]:
-            s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
-            if isinstance(s, SubCircuit):
-                conn.extend(get_leaf_connection(s, pin))
-            else:
-                conn.append(pin)
+    if net in subckt.nets:
+        graph = Graph(subckt)
+        for nbr in graph.neighbors(net):
+            for pin in graph.get_edge_data(net, nbr)["pin"]:
+                s = subckt.parent.find(graph.nodes[nbr].get("instance").model)
+                if isinstance(s, SubCircuit) and s.name != subckt.name:
+                    conn.extend(get_leaf_connection(s, pin))
+                else:
+                    conn.append(pin)
+    else:
+        logger.debug(f"floating net {net} found in subckt {subckt.name} {subckt.nets}")
     return conn
 
 
@@ -108,7 +114,7 @@ def leaf_weights(G, node, nbr):
             conn_type = set(get_leaf_connection(s, p))
         else:
             conn_type = G.get_edge_data(node, nbr)["pin"]
-    return conn_type
+    return set(sorted(conn_type))
 
 
 def reduced_neighbors(G, node, nbr):
@@ -132,10 +138,53 @@ def get_ports_weight(G):
     subckt = G.subckt
     for port in subckt.pins:
         leaf_conn = get_leaf_connection(subckt, port)
-        logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
-        assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
-        ports_weight[port] = set(sorted(leaf_conn))
+        # logger.debug(f"leaf connections of net ({port}): {leaf_conn}")
+        # assert leaf_conn, f"floating port: {port} in subckt {subckt.name}"
+        if leaf_conn:
+            ports_weight[port] = set(sorted(leaf_conn))
+        else:
+            ports_weight[port] = {}
     return ports_weight
+
+
+def gen_key(param):
+    """_gen_key
+    Creates a hex key for combined transistor params
+    Args:
+        param (dict): dictionary of parameters
+    Returns:
+        str: unique hex key
+    """
+    skeys = sorted(param.keys())
+    arg_str = '_'.join([k+':'+str(param[k]) for k in skeys])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
+
+def gen_group_key(multi_param):
+    param = FlatDict(multi_param)
+    arg_str = '_'.join([str(k)+':'+str(param[k]) for k in sorted(param.keys())])
+    key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+    return key
+
+def create_node_id(G, node1, ports_weight=None):
+    instance = G.nodes[node1].get("instance")
+    if instance:
+        properties = {'model': instance.model, 'n_pins': len(set(instance.pins.values()))}
+        if instance.parameters:
+            properties.update(instance.parameters)
+        return gen_key(properties)
+    else:
+        nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
+        properties = [G.nodes[nbr].get("instance").model for nbr in nbrs1]
+        if node1 in ports_weight:
+            properties.extend([str(p) for p in ports_weight[node1]])
+        else:
+            leaf_wt = [leaf_weights(G, node1, nbr) for nbr in nbrs1]
+            properties.extend([str(p) for p in leaf_wt])
+        properties = sorted(properties)
+        arg_str = '_'.join(properties)
+        key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"
+        return key
 
 
 def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
@@ -157,50 +206,44 @@ def compare_two_nodes(G, node1: str, node2: str, ports_weight=None):
         DESCRIPTION. True for matching node
 
     """
-    nbrs1 = [nbr for nbr in G.neighbors(node1) if reduced_SD_neighbors(G, node1, nbr)]
-    nbrs2 = [nbr for nbr in G.neighbors(node2) if reduced_SD_neighbors(G, node2, nbr)]
-    logger.debug(f"comparing_nodes: {node1}, {node2}, {nbrs1}, {nbrs2}")
-    if not ports_weight:
-        ports_weight = get_ports_weight(G)
-    if G.nodes[node1].get("instance"):
-        logger.debug(f"checking match between {node1} {node2}")
-        in1 = G.nodes[node1].get("instance")
-        in2 = G.nodes[node2].get("instance")
-        if (
-            in1.model == in2.model
-            and len(set(in1.pins.values())) == len(set(in2.pins.values()))
-            and in1.parameters == in2.parameters
-        ):
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False
-    else:
-        nbrs1_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs1])
-        nbrs2_type = sorted([G.nodes[nbr].get("instance").model for nbr in nbrs2])
-        if nbrs1_type != nbrs2_type:
-            logger.debug(
-                f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}"
-            )
-            return False
-        if node1 in ports_weight and node2 in ports_weight:
-            if sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}")
-                return False
-        else:
-            weight1 = sorted([leaf_weights(G, node1, nbr) for nbr in nbrs1])
-            weight2 = sorted([leaf_weights(G, node2, nbr) for nbr in nbrs2])
-            if weight2 == weight1:
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f"Internal port weight mismatch {weight1},{weight2}")
-                return False
+    id1 = create_node_id(G, node1, ports_weight=ports_weight)
+    id2 = create_node_id(G, node2, ports_weight=ports_weight)
+    return id1 == id2
 
 
 def get_primitive_spice():
     return pathlib.Path(__file__).resolve().parent.parent / "config" / "basic_template.sp"
+
+
+def get_generator(name, pdkdir):
+    if pdkdir is None:
+        return False
+    pdk_dir_path = pdkdir
+    if isinstance(pdkdir, str):
+        pdk_dir_path = pathlib.Path(pdkdir)
+    pdk_dir_stem = pdk_dir_path.stem
+
+    def _find_generator_class(module, name):
+        generator_class = getattr(module, "generator_class", False)
+        if generator_class and generator_class(name):
+            return generator_class(name)
+        else:
+            res = getattr(module, name, False) or getattr(module, name.lower(), False)
+            return res
+
+    try:  # is pdk an installed module
+        module = importlib.import_module(pdk_dir_stem)
+        return _find_generator_class(module, name)
+    except ImportError:
+        init_file = pdk_dir_path / '__init__.py'
+        if init_file.is_file():  # is pdk a package
+            spec = importlib.util.spec_from_file_location(pdk_dir_stem, pdk_dir_path / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[pdk_dir_stem] = module
+            spec.loader.exec_module(module)
+            return _find_generator_class(module, name)
+        else:  # is pdk old school (backward compatibility)
+            spec = importlib.util.spec_from_file_location("primitive", pdkdir / 'primitive.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return getattr(module, name, False) or getattr(module, name.lower(), False)

@@ -5,7 +5,7 @@
 .model nfet nmos nfin=1 nf=1 l=1 m=1  stack=1 parallel=1
 .model pfet pmos nfin=1 nf=1 l=1 m=1  stack=1 parallel=1
 .model resistor res r=1
-.model capacitor cap c=1
+.model capacitor cap l=1 w=1 m=1
 .model inductor ind ind=1
 .model nmos_vtl nmos l=1 w=1 nfin=1 nf=1 m=1  stack=1 parallel=1
 .model pmos_vtl pmos l=1 w=1 nfin=1 nf=1 m=1  stack=1 parallel=1

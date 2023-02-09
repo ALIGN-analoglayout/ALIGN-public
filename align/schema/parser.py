@@ -144,22 +144,18 @@ class SpiceParser:
                 kwargs['VALUE'] = args.pop()
             else:  # to allow cap/res parameters
                 model = args.pop()
-        elif any(name.startswith(x) for x in ('M', 'X')):
-            assert args, f"empty arguments found {name} {args} {kwargs}"
-            model = args.pop()
         else:
-            raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
+            model = args.pop()
 
         if self.library.find(model):
             model = self.library.find(model)
         else:
-            logger.info(f"unknown device found {model} {kwargs}, creating a generic model for this")
+            logger.warning(f"Unknown device found {model} {kwargs}, creating a generic model for this")
             with set_context(self.library):
-                self.library.append(
-                    Model(name=model, pins=args, parameters={k:'1' for k in kwargs.keys()}, prefix='X')
-                )
+                # Use generic pin names
+                pins = [f"p{i}" for i in range(len(args))]
+                self.library.append(Model(name=model, pins=pins, parameters={k: '1' for k in kwargs.keys()}, prefix=''))
             model = self.library.find(model)
-            # TODO: get it from generator
 
         assert model is not None, (model, name, args, kwargs)
         assert len(args) == len(model.pins), \

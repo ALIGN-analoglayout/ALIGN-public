@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+#include <chrono>
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -13,7 +15,7 @@
 #include <string>
 #include <utility>  // pair, make_pair
 #include <vector>
-#include <chrono>
+#include <cfloat>
 
 #include "../PnRDB/datatype.h"
 #include "../PnRDB/readfile.h"
@@ -29,7 +31,7 @@ using std::string;
 using std::vector;
 
 class design {
- public:
+  public:
   friend class SeqPair;
   friend class SeqPairEnumerator;
   friend class Placer;
@@ -127,7 +129,9 @@ class design {
   int placement_id = -1;
   bool is_first_ILP = true;
   double Aspect_Ratio[2] = {0, 100};
-  double placement_box[2] = {-1.0, -1.0};
+  double placement_box[2] = {DBL_MAX, DBL_MAX};
+  double halo_horizontal = 0;
+  double halo_vertical = 0;
   double maxBlockAreaSum = 0.;
   double maxBlockHPWLSum = 0.;
   string name = "";
@@ -178,8 +182,11 @@ class design {
   vector<MatchBlock> Match_blocks;
   int bias_Hgraph;
   int bias_Vgraph;
+  int grid_unit_x = 1, grid_unit_y = 1;
   bool mixFlag;
   // above is added by yg
+  std::map<std::pair<int, int>, int> hSpread, vSpread;
+
 
   // void readBlockFile(string blockfile);
   // void readNetFile(string netfile);
@@ -197,18 +204,20 @@ class design {
   int GetSizeBlock4Move(int mode);
   std::map<std::vector<int>, size_t> _seqPairHash, _selHash;
   bool _useCache{false};
-  std::set<std::tuple<size_t, size_t, size_t>> _seqPairCache;
+  std::map<std::tuple<size_t, size_t, size_t>, double> _seqPairCache;
   std::vector<size_t> _factorial;
   size_t getSeqIndex(const vector<int>& seq);
   size_t getSelIndex(const vector<int>& sel);
   std::uniform_int_distribution<int>* _rnd{nullptr};
   enum class CompactStyle { L, R, C };
   CompactStyle compact_style = CompactStyle::L;
+  map<string, map<std::tuple<int, int, int, int>, double> > CFValues;
+  int CFdist_type;
 
   public:
   std::chrono::nanoseconds ilp_runtime{0}, gen_valid_runtime{0}, ilp_solve_runtime{0};
   design();
-  design(PnRDB::hierNode& node, const int seed = 0);
+  design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed = 0);
   design(string blockfile, string netfile);
   design(string blockfile, string netfile, string cfile);
   int rand();
@@ -240,8 +249,8 @@ class design {
   string GetBlockPinName(int blockid, int pinid, int sel);
   string GetTerminalName(int termid);
   int GetBlockPinNum(int blockid, int sel);
-  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);               // Get width of block when it's placed
-  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);              // Get height of block when it's placed
+  int GetBlockWidth(int blockid, placerDB::Omark ort, int sel);   // Get width of block when it's placed
+  int GetBlockHeight(int blockid, placerDB::Omark ort, int sel);  // Get height of block when it's placed
   placerDB::point GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL,
                                     int sel);  // Get absolute location of block center when it's placed at LL
   vector<placerDB::point> GetPlacedBlockPinRelPosition(int blockid, int pinid, placerDB::Omark ort,
@@ -285,9 +294,22 @@ class design {
 
   size_t getSeqIndex(const vector<int>& seq) const;
   size_t getSelIndex(const vector<int>& sel) const;
-  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel);
-  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const;
-  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0};
+  void cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel, const double cost = 0.);
+  bool isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel, double *cost) const;
+  size_t _infeasAspRatio{0}, _infeasILPFail{0}, _infeasPlBound{0}, _totalNumCostCalc{0}, _numSnapGridFail{0}, _numILPCalls{0};
+
+  const int getSpread(const int i, const int j, const bool horizon) const
+  {
+    int spread{0};
+    const auto& hvSpread = horizon ? hSpread : vSpread;
+    if (!hvSpread.empty()) {
+      auto it = hvSpread.find(std::make_pair(i, j));
+      if (it != hvSpread.end()) {
+        spread = it->second;
+      }
+    }
+    return spread;
+  }
   // std::ofstream _debugofs;
 };
 

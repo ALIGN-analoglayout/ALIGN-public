@@ -1,0 +1,5 @@
+[
+    {"constraint" : "HorizontalDistance", "abs_distance" : 160},
+    {"constraint" : "VerticalDistance", "abs_distance" : 0}
+
+]

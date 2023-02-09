@@ -92,3 +92,4 @@ tests/cell_fabric/Foo*.cir
 !Viewer/INPUT/mydesign_dr_globalrouting.json
 !Viewer/larger_example/mydesign_dr_globalrouting.json
 _skbuild/
+*.lp

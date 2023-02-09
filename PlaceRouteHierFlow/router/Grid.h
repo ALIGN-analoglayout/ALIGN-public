@@ -32,8 +32,6 @@ class Grid {
   std::vector<int> End_index_metal_vertices;     // ending index in list for each metal layer, if end<start, there is no list for the metal layer
   std::vector<int> Source;                       // index. result from setSrcDest()
   std::vector<int> Dest;                         // index. result from setSrcDest()
-  std::vector<int> SourceGraph;
-  std::vector<int> DestGraph;
   std::vector<int> x_unit;       // grid pitch in X axis, only for metal layers with vertical routing track
   std::vector<int> y_unit;       // grid pitch in Y axis, only for metal layers with horizotal routing track
   std::vector<int> x_min;        // min length in X axis, only for metal layer with horizontal routing track
@@ -52,6 +50,8 @@ class Grid {
   int lowest_metal, highest_metal;  // lower/upper bounds of available metal layers
   int grid_scale;                   // scaling of grids, 1 for detail router, >1 for global router
   int layerNo;                      // max layer number in technology file
+  int center_x = 0, center_y = 0;
+
   public:
   Grid(){};
   Grid(const Grid &other);
@@ -62,7 +62,8 @@ class Grid {
        RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset);
   Grid(GlobalGrid &GG, std::vector<std::pair<int, int>> &ST, PnRDB::Drc_info &drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
        int grid_scale);
-
+  Grid(GlobalGrid &GG, std::vector<std::pair<int, int>> &ST, PnRDB::Drc_info &drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
+       int grid_scale, bool offset);
   void ReduceGrid(std::vector<RouterDB::vertex> &old_vertices, std::vector<RouterDB::vertex> &new_vertices, std::map<int, int> &old2new,
                   std::map<int, int> &new2old, std::vector<int> &old_source, std::vector<int> &old_dest, std::vector<int> &new_source,
                   std::vector<int> &new_dest, std::vector<int> &new_start, std::vector<int> &new_end, int LLx, int LLy, int URx, int URy,
@@ -82,8 +83,6 @@ class Grid {
   void ActivateSourceDest();
   void InactivateSourceDest();
   void CheckVerticesTotal();
-  void CheckMaptotal2graph();
-  void CheckVerticesGraph();
   inline RouterDB::point GetGridLL() { return this->GridLL; };
   inline RouterDB::point GetGridUR() { return this->GridUR; };
   // Grid(Grid& globalGrid, LL, UR);
@@ -121,7 +120,6 @@ class Grid {
   int Find_EndIndex(int start_index, int direction);
   bool Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis);
   void Full_Connected_Vertex();
-  void Check_Full_Connection_Grid();
   bool CheckExtendable(int i, int metal);
   void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point>> &plist, RouterDB::contact &Contacts);
   void InactivePointlist_via(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &plist, bool up);

@@ -132,13 +132,16 @@
       { layer: "m11", master: "M11" },
       { layer: "m12", master: "M12" },
       { layer: "m13", master: "M13" },
-      { layer: "Boundary", master: "diearea" },
-      { layer: "boundary", master: "diearea" },
+      { layer: "Boundary", master: "cellarea" },
+      { layer: "boundary", master: "cellarea" },
       { layer: "diffcon", master: "Diffcon" },
       { layer: "pc", master: "Polycon" },
       { layer: "poly", master: "Poly" },
       { layer: "polycon", master: "Polycon" },
-      { layer: "nwell", master: "Nwell" }
+      { layer: "nwell", master: "Nwell" },
+      { layer: "VG", master: "Polycon" },
+      { layer: "VT", master: "Diffcon" },
+      { layer: "Outline", master: "diearea" },
     ];
 
     var metalStack = [
@@ -183,8 +186,8 @@
       { layer: "LISD", tag: "LSD", color: "orange" },
       { layer: "SDT", tag: "SDT", color: "orange" },
       { layer: "GCUT", tag: "CUT", color: "purple" },
-      { layer: "cellarea", tag: "C", color: colorbrewer.Reds[3][1] },
-      { layer: "diearea", tag: "D", color: colorbrewer.Greens[3][1] },
+      { layer: "cellarea", tag: "C", color: colorbrewer.Reds[7][1] },
+      { layer: "diearea", tag: "D", color: colorbrewer.Greens[7][1] },
       { layer: "Nwell", tag: "NW", color: colorbrewer.Greens[3][1] },
       { layer: "Basepitchid", tag: "BPID", color: "yellow" },
       { layer: "Devflavn1id", tag: "DFNID", color: "orange" },

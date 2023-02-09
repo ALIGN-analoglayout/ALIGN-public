@@ -1,25 +1,28 @@
 [
         {
-          "constraint": "power_ports",
+          "constraint": "PowerPorts",
           "ports": [
             "VDD"
-          ]
+          ],
+          "propagate": true
         },
         {
-          "constraint": "ground_ports",
+          "constraint": "GroundPorts",
           "ports": [
             "VSS"
-          ]
+          ],
+          "propagate": true
         },
         {
-          "constraint": "clock_ports",
+          "constraint": "ClockPorts",
           "ports": [
             "PHI1",
             "PHI2"
-          ]
+          ],
+          "propagate": true
         },
         {
-          "constraint": "symmetric_blocks",
+          "constraint": "SymmetricBlocks",
           "pairs": [
             [
               "XI0"
@@ -68,7 +71,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "NET63",
           "net2": "NET62",
           "pins1": [
@@ -86,7 +89,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "NET64",
           "net2": "NET66",
           "pins1": [
@@ -104,7 +107,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "NET67",
           "net2": "NET68",
           "pins1": [
@@ -120,7 +123,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "NET72",
           "net2": "NET60",
           "pins1": [
@@ -136,7 +139,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "VINN",
           "net2": "VINP",
           "pins1": [
@@ -152,7 +155,7 @@
           "direction": "V"
         },
         {
-          "constraint": "symmetric_nets",
+          "constraint": "SymmetricNets",
           "net1": "VOUTN",
           "net2": "VOUTP",
           "pins1": [

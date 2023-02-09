@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 
-from ..schema.hacks import List, FormalActualMap
+from ..schema.hacks import List, FormalActualMap, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
 
@@ -15,16 +15,16 @@ def check_floating_pins(verilog_d):
         assert set(module["parameters"]).issubset(all_nets), f"floating port found in module {module['name']}"
 
 def check_modules(verilog_d):
-    all_module_pins = {}
-    for mod in verilog_d["modules"]:
-        all_module_pins[mod['name']]=mod["parameters"]
+    ATN = 'abstract_template_name'
+    all_module_pins = {mod['name'] : mod['parameters'] for mod in verilog_d["modules"]}
     for mod in verilog_d["modules"]:
         for inst in mod["instances"]:
-            assert 'abstract_template_name' in inst, f'no generated data for {inst}'
-            if inst["abstract_template_name"] in all_module_pins:
-                assert all(fm["formal"] in all_module_pins[inst["abstract_template_name"]] for fm in inst["fa_map"]), \
-                    f"incorrect instantiation {inst['instance_name']} of module {inst['abstract_template_name']}, \
-                     instance_pins: {inst['fa_map']}, module pins: {all_module_pins[inst['abstract_template_name']]}"
+            atn = inst[ATN] if ATN in inst else None
+            assert atn is not None, f'no generated data for {inst}'
+            if atn in all_module_pins:
+                assert all(fm["formal"] in all_module_pins[atn] for fm in inst["fa_map"]), \
+                    f"incorrect instantiation {inst['instance_name']} of module {atn}, \
+                     instance_pins: {inst['fa_map']}, module pins: {all_module_pins[atn]}"
 
 def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     """remove_pg_pins
@@ -50,13 +50,13 @@ def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
     assert len(modules) == 1, f"duplicate modules are found {modules}"
     module = modules[0]
     # Remove port from subckt level
-    module['parameters'] = [p for p in module['parameters'] if p not in pg_connections.keys()]
+    module['parameters'] = [p for p in module['parameters'] if p not in pg_connections]
     for inst in module['instances']:
         if inst['abstract_template_name'] in modules_dict:
             # Inst pins connected to pg_pins
             hier_pg_connections = {conn["formal"]: pg_connections[conn["actual"]] for conn in inst['fa_map'] if conn["actual"] in pg_connections}
             if len(hier_pg_connections) > 0:
-                logger.debug(f"Removing instance {inst['instance_name']} pins connected to {hier_pg_connections}")
+                logger.debug(f"Removing instance {inst['instance_name']} pins connected to global nets {hier_pg_connections}")
                 inst['fa_map'] = [conn for conn in inst['fa_map'] if conn["formal"] not in hier_pg_connections]
                 # Creates a copy of module with reduced pins
                 new_name = modify_pg_conn_subckt(verilog_d, inst['abstract_template_name'], hier_pg_connections)
@@ -83,7 +83,10 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
     # TODO: remove redundant const
 
-    nm = copy.copy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    # DONOT deepcopy VerilogJson* objects directly. Convert to plain dict and parse again.
+    # nm = copy.deepcopy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    nm_dict = [module for module in verilog_d['modules'] if module['name'] == subckt][0].dict()
+    nm = VerilogJsonModule.parse_obj(nm_dict)
 
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
 
@@ -91,7 +94,7 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     modules_dict = {module['name']: module['parameters'] for module in verilog_d['modules']}
     i = 0
     updated_ckt_name = subckt+'_PG'+str(i)
-    while updated_ckt_name in modules_dict.keys():
+    while updated_ckt_name in modules_dict:
         if modules_dict[updated_ckt_name] == nm['parameters']:
             logger.debug(f"using existing module {updated_ckt_name}")
             return updated_ckt_name
@@ -103,11 +106,31 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     logger.debug(f"new module is added: {nm}")
     verilog_d['modules'].append(nm)
     return updated_ckt_name
-        
+
+
+def add_cap_dummy_connections(verilog_d, cap_map):
+    if not cap_map:
+        return
+
+    cap_abstract_names = { entry['nm'] : entry for entry in cap_map }
+
+    global_gnds = [entry['actual'] for entry in verilog_d['global_signals'] if entry['formal'] == 'supply0']
+
+    for module in verilog_d['modules']:
+        for inst in module['instances']:
+            atn = inst['abstract_template_name']
+            if atn in cap_abstract_names:
+                entry = cap_abstract_names[atn]
+                for pin in ['dummy_gnd_PLUS', 'dummy_gnd_MINUS']:
+                    if entry[pin]:
+                        assert len(global_gnds) == 1, \
+                            f'No or too many global ground signals for dummy_capacitors: {global_gnds}'
+                        inst['fa_map'].append( FormalActualMap(formal=pin, actual=global_gnds[0]))
+
 
 def manipulate_hierarchy(verilog_d, subckt):
     check_modules(verilog_d)
-    check_floating_pins(verilog_d)
+    # check_floating_pins(verilog_d)
     remove_pg_pins(verilog_d, subckt, {p["actual"]:p["actual"] for p in verilog_d['global_signals']})
     clean_if_extra(verilog_d, subckt)
     check_modules(verilog_d)
@@ -131,7 +154,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
         for new_idx, old_idx in enumerate(sorted(cn_indices)):
             tr_tbl[f'{an}_{old_idx}'] = f'{an}_{new_idx}'
 
-    logger.info(f'change_concrete_names_for_routing: {tr_tbl}')
+    logger.debug(f'change_concrete_names_for_routing: {tr_tbl}')
 
     for module in scaled_placement_verilog_d['modules']:
         module['concrete_name'] = tr_tbl[module['concrete_name']]
@@ -142,7 +165,7 @@ def change_concrete_names_for_routing(scaled_placement_verilog_d):
                 instance['abstract_template_name'] = ctn
             else:
                 assert ctn in tr_tbl
-                instance['concrete_template_name'] = tr_tbl[ctn]                   
+                instance['concrete_template_name'] = tr_tbl[ctn]
 
     for leaf in scaled_placement_verilog_d['leaves']:
         leaf['abstract_name'] =leaf['concrete_name']
@@ -160,8 +183,8 @@ def gen_abstract_verilog_d( verilog_d):
         assert 'abstract_name' in module
         assert 'name' not in module
         module['name'] = module['abstract_name']
-        del module['abstract_name']        
-        del module['concrete_name']        
+        del module['abstract_name']
+        del module['concrete_name']
 
         assert 'bbox' in module
         del module['bbox']
@@ -191,7 +214,7 @@ def connectivity_change_for_partial_routing(scaled_placement_verilog_d, primitiv
 
                         new_fa_map = List[FormalActualMap]()
                         for fa in instance['fa_map']:
-                            f, a = fa['formal'], fa['actual'] 
+                            f, a = fa['formal'], fa['actual']
                             for enity_name in by_net.get(f, [f]):
                                 new_fa_map.append(FormalActualMap(formal=enity_name, actual=a))
 

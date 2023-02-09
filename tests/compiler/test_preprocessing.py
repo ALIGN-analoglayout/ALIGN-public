@@ -6,6 +6,7 @@ from align.compiler.preprocess import (
     add_series_devices,
     find_dummy_hier,
     remove_dummies,
+    remove_dummy_devices,
     define_SD
 )
 
@@ -92,9 +93,8 @@ def db():
 def test_parallel(db):
 
     assert db.get_element("C1").name == "C1"
-    add_parallel_devices(db, update=False)
     assert db.get_element("C1").parameters == {"VALUE": "2", "PARALLEL": "1"}
-    add_parallel_devices(db, update=True)
+    add_parallel_devices(db)
     assert db.get_element("C1").parameters == {"VALUE": "2", "PARALLEL": "2"}
     assert db.get_element("C2") is None, 'C2 should have been removed'
     assert db.get_element("R1").parameters == {"VALUE": "10", "PARALLEL": "3"}
@@ -209,14 +209,13 @@ def dbs():
 
 def test_series(dbs):
     assert dbs.get_element("C1").name == "C1"
-    add_series_devices(dbs, update=False)
     assert dbs.get_element("M1").parameters == {
         "PARAM1": "1.0",
         "M": "1",
         "PARAM2": "2",
         "STACK": "1"
     }
-    add_series_devices(dbs, update=True)
+    add_series_devices(dbs)
     assert dbs.get_element("C1").parameters == {"VALUE": "2", "STACK": "2"}
     assert dbs.get_element("R1").parameters == {"VALUE": "10", "STACK": "3"}
     assert dbs.get_element("M1").parameters == {
@@ -378,11 +377,77 @@ def dbswap():
 
 def test_swap(dbswap):
     assert dbswap.get_element("M1").name == "M1"
-    define_SD(dbswap, update=False)
     assert dbswap.get_element("M1").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
-    define_SD(dbswap, update=True)
+    define_SD(dbswap)
     assert dbswap.get_element("M1").pins == {"D": "GND", "G": "G", "S": "VDD", "B": "B"}
     assert dbswap.get_element("M2").pins == {"D": "NET1", "G": "G", "S": "VDD", "B": "B"}
     assert dbswap.get_element("M3").pins == {"D": "GND", "G": "G", "S": "NET1", "B": "B"}
     assert dbswap.get_element("M4").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
     assert dbswap.get_element("M5").pins == {"D": "VDD", "G": "G", "S": "GND", "B": "B"}
+
+
+@pytest.fixture
+def dbdcap():
+    library = Library()
+    with set_context(library):
+        model_pmos = Model(name="PMOS", pins=["D", "G", "S", "B"])
+        library.append(model_pmos)
+        model_nmos = Model(name="NMOS", pins=["D", "G", "S", "B"])
+        library.append(model_nmos)
+        subckt = SubCircuit(name="SUBCKT", pins=["VDD", "G", "OUT", "VSS"], parameters=None)
+        library.append(subckt)
+
+    with set_context(subckt.constraints):
+        subckt.constraints.append(constraint.GroundPorts(ports=["VSS"]))
+        subckt.constraints.append(constraint.PowerPorts(ports=["VDD"]))
+
+    with set_context(subckt.elements):
+        subckt.elements.append(
+            Instance(
+                name="M1",
+                model="PMOS",
+                pins={"D": "OUT", "G": "G", "S": "VDD", "B": "VDD"},
+            )
+        )
+        subckt.elements.append(
+            Instance(
+                name="M2",
+                model="NMOS",
+                pins={"D": "OUT", "G": "G", "S": "VSS", "B": "VSS"},
+            )
+        )
+        subckt.elements.append(  # poly
+            Instance(
+                name="M3",
+                model="NMOS",
+                pins={"D": "OUT", "G": "VSS", "S": "G", "B": "VSS"},
+            )
+        )
+        subckt.elements.append(  # half
+            Instance(
+                name="M4",
+                model="NMOS",
+                pins={"D": "OUT", "G": "VSS", "S": "VSS", "B": "VSS"},
+            )
+        )
+        subckt.elements.append(  # full
+            Instance(
+                name="M5",
+                model="NMOS",
+                pins={"D": "OUT", "G": "OUT", "S": "OUT", "B": "VSS"},
+            )
+        )
+        subckt.elements.append(  # signal
+            Instance(
+                name="M6",
+                model="NMOS",
+                pins={"D": "OUT", "G": "OUT", "S": "OUT", "B": "VSS"},
+            )
+        )
+    return subckt
+
+
+def test_remove_dummy_devices(dbdcap):
+    assert [e.name for e in dbdcap.elements] == ["M1", "M2", "M3", "M4", "M5", "M6"]
+    remove_dummy_devices(dbdcap)
+    assert [e.name for e in dbdcap.elements] == ["M1", "M2"]

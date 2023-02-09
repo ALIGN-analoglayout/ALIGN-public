@@ -88,14 +88,14 @@ class Graph(networkx.Graph):
     def default_edge_match(x, y):
         return x.get('pin') == y.get('pin')
 
-    def find_subgraph_matches(self, graph, node_match=None, edge_match=None):
+    def find_subgraph_matches(self, graph, skip=None, node_match=None, edge_match=None):
         if node_match is None:
             node_match = self.default_node_match
         if edge_match is None:
             edge_match = self.default_edge_match
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, graph, node_match=node_match, edge_match=edge_match)
-        ret = []
+        correct_matches = []
         _temp = len(self.subckt.constraints)
         # Three possible scenarios of non determinism (M1, M2, M3, M4, M5) (Ma, Mb, Mc)
         # 1. Different keys [{M1:Ma, M2:Mb, M3:Mc}, {M4:Ma, M2:Mb, M3:Mc}]
@@ -104,11 +104,13 @@ class Graph(networkx.Graph):
         # Thus sorting based on key,value pair
         matches = sorted(matcher.subgraph_isomorphisms_iter(), key=lambda k: [(x, y)for x, y in k.items()])
         for match in matches:
-            # for match in sorted(matcher.subgraph_isomorphisms_iter(), key=lambda i: tuple(i.keys())):
-            if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
+            if skip and any(k in skip for k in match.keys()):
+                logger.debug(f"skipping skip nodes {skip} {match}")
+                continue
+            if not any(self._is_element(self.nodes[node]) and any(node in x for x in correct_matches) for node in match):
                 try:
                     self.check_constraint_satisfiability(graph, match)
-                    ret.append(match)
+                    correct_matches.append(match)
                 except BaseException:  # Make this more specific
                     # primitives with unsatisfied constraints will not be created
                     logger.debug(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
@@ -116,31 +118,32 @@ class Graph(networkx.Graph):
         # revert any added const TODO: add checker here
         while len(self.subckt.constraints) > _temp:
             self.subckt.constraints.pop()
-        return ret
+        return correct_matches
 
     def check_constraint_satisfiability(self, subgraph, match):
         # Check if the constraints defined at primitive stage are valid for subckt
         subckt_const = subgraph.subckt.constraints
         with set_context(self.subckt.constraints):
             for const in subckt_const:
-                if const.constraint == 'symmetric_blocks':
+                if isinstance(const,constraint.SymmetricBlocks):
                     t = [[self._get_key(ele, match) for ele in pair] for pair in const.pairs]
                     d = const.direction
                     x = constraint.SymmetricBlocks(direction=d, pairs=t)
-                    self.subckt.constraints.append(x)
+                    if not any(c==x for c in self.subckt.constraints):
+                        self.subckt.constraints.append(x)
                     assert x in self.subckt.constraints, f"constraint: {x} not found in {self.subckt.constraints}"
                     self.subckt.constraints.remove(x)
-                elif const.constraint == 'symmetric_nets':
+                elif isinstance(const, constraint.SymmetricNets):
                     pair = [self._get_key(const.net1, match), self._get_key(const.net2, match)]
-                    nbrs1, nbrs2 = self.all_neighbors(pair)
+                    nbrs1, nbrs2 = self.all_neighbors_dist(pair)
                     assert nbrs1 == nbrs2, f"neighbors mismatch {nbrs1} {nbrs2}"
 
-    def all_neighbors(self, pair):
-        nbrs1 = networkx.shortest_path_length(self, source=pair[0])
-        nbrs2 = networkx.shortest_path_length(self, source=pair[1])
+    def all_neighbors_dist(self, pair):
+        nbrs1 = self.neighbors(pair[0])
+        nbrs2 = self.neighbors(pair[1])
         # TODO: Can be modified to flat-distances? gropblock1 != groupblock2
-        nbrs1_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs1.items() if self._is_element(self.nodes[nbr])])
-        nbrs2_type = Counter([(self.element(nbr).model, dist) for nbr, dist in nbrs2.items() if self._is_element(self.nodes[nbr])])
+        nbrs1_type = Counter([self.element(nbr).model for nbr in nbrs1])
+        nbrs2_type = Counter([self.element(nbr).model for nbr in nbrs2])
         logger.debug(f"All neighbors of {pair[0]}: {nbrs1_type} , {pair[1]}: {nbrs2_type}")
         return nbrs1_type, nbrs2_type
 
@@ -151,14 +154,14 @@ class Graph(networkx.Graph):
         return "key doesn't exist"
 
     def replace_matching_subgraph(self, subgraph, skip=None, node_match=None, edge_match=None):
-        matches = self.find_subgraph_matches(subgraph, node_match, edge_match)
+        matches = self.find_subgraph_matches(subgraph, skip, node_match, edge_match)
         return self._replace_matches_with_subckt(matches, subgraph.subckt, skip)
 
     def _replace_matches_with_subckt(self, matches, subckt, skip=None):
         assert isinstance(subckt, SubCircuit)
         new_subckt_names = []
-        for match in matches:
 
+        for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
             assert all(x in self.nodes for x in match)
             assert len(subckt.pins) == len(set(subckt.pins)), f"duplicate pins found in module {subckt.name}, {subckt.pins}"
@@ -187,6 +190,17 @@ class Graph(networkx.Graph):
             nodes_str = '_'.join(nodes)
             instance_name = f'X_{nodes_str}'
             assert instance_name not in self.elements
+            with set_context(self.subckt.constraints):
+                gc = [c for c in subckt.constraints if isinstance(c,constraint.Generator)]
+                if gc:
+                    generator_param = {k: v for k, v in gc[0] if k != 'constraint'}
+                else:
+                    generator_param = None
+                if len(nodes)>=1:
+                    temp = constraint.GroupBlocks(instance_name=instance_name, template_name=subckt.name, instances=nodes, generator=generator_param)
+                    logger.debug(f"adding a generator parameter {temp} for {self.subckt.name}")
+                    if temp not in self.subckt.constraints:
+                        self.subckt.constraints.append(temp)
 
             pin2net_map = {pin: net for net, pin in match.items() if pin in subckt.pins}
             assert all(x in pin2net_map for x in subckt.pins), (match, subckt)
@@ -198,12 +212,11 @@ class Graph(networkx.Graph):
                 pins=pin2net_map
             )
             if self.subckt.name:
-                tr = ConstraintTranslator(self.subckt.parent)
-                tr._update_const(self.subckt.name, removal_candidates, instance_name)
-
+                tr = ConstraintTranslator(self.subckt.parent, self.subckt.name, new_subckt)
+                # tr._top_to_bottom_translation(match)
+                tr._update_const(instance_name, {
+                    k: v for k, v in match.items() if k in removal_candidates})
         return new_subckt_names
-    # TODO: in future use paramaters from generator
-    # HACK can also be moved to end of flow
 
     def create_subckt_instance(self, subckt, match):
         with set_context(self.subckt.parent):
@@ -224,6 +237,9 @@ class Graph(networkx.Graph):
         with set_context(subckt_instance.constraints):
             for const in subckt.constraints:
                 subckt_instance.constraints.append(const)
+        if self.subckt.name:
+            tr = ConstraintTranslator(self.subckt.parent, self.subckt.name, subckt_instance)
+            tr._top_to_bottom_translation(match)
         param = FlatDict(subckt_instance.dict(exclude_unset=True))
         arg_str = '_'.join([k+':'+str(param[k]) for k in sorted(param.keys())])
         key = f"_{str(int(hashlib.sha256(arg_str.encode('utf-8')).hexdigest(), 16) % 10**8)}"

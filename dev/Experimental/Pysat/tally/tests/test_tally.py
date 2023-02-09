@@ -272,6 +272,81 @@ def test_tally_6_2a():
   assert     mgr.nm_map['aa'].val()
   assert     mgr.nm_map['bb'].val()
 
+def test_tally_2_3():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','aa','bb','cc']
+  [a,b,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b],[aa,bb,cc])
+  s.emit_never( a)
+  s.emit_never( b)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+  assert not mgr.nm_map['aa'].val()
+  assert not mgr.nm_map['bb'].val()
+  assert not mgr.nm_map['cc'].val()
+
+def test_tally_2_3_as_0_or_2():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','aa','bb','cc']
+  [a,b,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b],[aa,bb,cc])
+
+  s.add_clause([-aa, -cc])
+  s.add_clause([-aa, bb])
+
+  s.emit_always( a)
+  s.emit_never( b)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+
+  assert mgr.nm_map['aa'].val()
+  assert not mgr.nm_map['bb'].val()
+  assert not mgr.nm_map['cc'].val()
+
+
+def tally_instance(n=2, m=3):
+  s = Tally()
+  mgr = VarMgr( s)
+
+  inps_nms = [chr(ord('a') + i) for i in range(n)]
+  outs_nms = [''.join(chr(ord('a') + i)*2) for i in range(m)]
+
+  inps = [ mgr.add_var( BitVar( s, nm)).var() for nm in inps_nms]
+  outs = [ mgr.add_var( BitVar( s, nm)).var() for nm in outs_nms]
+
+  s.emit_tally(inps, outs)
+
+  return s, mgr, inps_nms + outs_nms, inps, outs
+
+@pytest.mark.parametrize("n,m", [(2, 3), (10,10), (12, 2)])
+def test_tally_exhaustive(n, m):
+
+  for i in range(1<<n):
+    s, mgr, nms, inps, outs = tally_instance(n, m)
+
+    count = 0
+    for j in range(n):
+      if ((1<<j) & i) != 0:
+        count += 1
+        s.emit_always(inps[j])
+      else:
+        s.emit_never(inps[j])
+
+    for j in range(m):
+      if count > j:
+        s.emit_always(outs[j])
+      else:
+        s.emit_never(outs[j])        
+
+    s.solve()
+    assert s.state == 'SAT', (i,count)
+    print( i, count, [ mgr.nm_map[nm].val() for nm in nms])  
+
+
 def test_hard_limited():
   s = Tally()
   m = 15

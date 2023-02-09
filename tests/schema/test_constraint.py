@@ -3,6 +3,7 @@ import pathlib
 from align.schema import constraint, Model, Instance, SubCircuit, Library
 from align.schema.checker import SolutionNotFoundError
 from align.schema.types import set_context
+from pydantic import ValidationError
 
 
 @pytest.fixture
@@ -26,6 +27,7 @@ def db():
         subckt.elements.append(Instance(name='M4', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
         subckt.elements.append(Instance(name='M5', model='TwoTerminalDevice', pins={'A': 'NET1', 'B': 'NET2'}))
         subckt.elements.append(Instance(name='M6', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}))
+        subckt.elements.append(Instance(name='M7', model='TwoTerminalDevice', pins={'A': 'NET2', 'B': 'NET3'}, parameters={"MYPARAMETER": "7"}))
     return subckt.constraints
 
 
@@ -40,7 +42,7 @@ def test_Order_input_sanitation(db):
 def test_Order_constraintname(db):
     with set_context(db):
         x = constraint.Order(direction='left_to_right', instances=['M1', 'M2'])
-    assert x.constraint == 'order'
+    assert x.constraint == 'Order'
 
 
 def test_Order_nblock_checking(db):
@@ -51,7 +53,6 @@ def test_Order_nblock_checking(db):
             constraint.Order(direction='left_to_right', instances=['M1'])
 
 
-@pytest.mark.skip(reason='Cannot activate this yet because of ALIGN1.0 annotation issues')
 def test_Order_validate_instances(db):
     with set_context(db):
         with pytest.raises(Exception):
@@ -103,16 +104,16 @@ def test_AlignInOrder_smt_checking(db):
 
 def test_AspectRatio_input_sanitation(db):
     with set_context(db):
-        constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5)
+        constraint.AspectRatio(ratio_low=0.1, ratio_high=0.5)
         with pytest.raises(Exception):
-            constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=0.5)
+            constraint.AspectRatio(ratio_low=0.6, ratio_high=0.5)
 
 
 def test_AspectRatio_smt_checking(db):
     with set_context(db):
-        db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.1, ratio_high=0.5))
+        db.append(constraint.AspectRatio(ratio_low=0.1, ratio_high=0.5))
         with pytest.raises(SolutionNotFoundError):
-            db.append(constraint.AspectRatio(subcircuit="amplifier", ratio_low=0.6, ratio_high=1.0))
+            db.append(constraint.AspectRatio(ratio_low=0.6, ratio_high=1.0))
 
 
 def test_Floorplan(db):
@@ -121,6 +122,83 @@ def test_Floorplan(db):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M1']]))
         with pytest.raises(AssertionError):
             db.append(constraint.Floorplan(symmetrize=False, regions=[['M1'], ['M2'], ['M1']]))
+
+
+def test_SameTemplate(db):
+    with set_context(db):
+        with pytest.raises(ValidationError):
+            db.append(constraint.SameTemplate(instances=['MMM1', 'M2']))
+        with pytest.raises(ValidationError):
+            db.append(constraint.SameTemplate(instances=['M1', 'M7']))
+
+
+def test_duplicate_append(db):
+    with set_context(db):
+        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+        db.append(constraint.Order(direction='left_to_right', instances=['M1', 'M2']))
+
+
+def test_SymmetricBlocks_perpendicular(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2']]))
+        db.checkpoint()
+        db.append(constraint.Order(direction="left_to_right", instances=['M1', 'M2']))
+        db.revert()
+        ''' M1 and M2 cannot have above/below relationship'''
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.Order(direction="top_to_bottom", instances=['M1', 'M2']))
+
+
+def test_SymmetricBlocks_perpendicular_coord(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2']]))
+        db.append(constraint.AssignBboxVariables(bbox_name='M1', llx=10, lly=0, urx=20, ury=40))
+        db.checkpoint()
+        db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=10, urx=50, ury=30))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, lly=0, urx=50, ury=150))
+
+
+def test_SymmetricBlocks_along(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2'], ['M3']]))
+        db.checkpoint()
+        db.append(constraint.Order(direction="top_to_bottom", instances=['M3', 'M1']))
+        db.revert()
+        db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M1']))
+        ''' M3 cannot preceed or succeed both M1 and M2 '''
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.Order(direction="left_to_right", instances=['M3', 'M2']))
+
+
+def test_SymmetricBlocks_along_coord(db):
+    with set_context(db):
+        db.append(constraint.SymmetricBlocks(direction="V", pairs=[['M1', 'M2'], ['M3']]))
+        db.append(constraint.AssignBboxVariables(bbox_name='M1', llx=10, urx=20, lly=10, ury=40))
+        db.append(constraint.AssignBboxVariables(bbox_name='M2', llx=30, urx=50, lly=10, ury=40))
+        db.checkpoint()
+        db.append(constraint.AssignBboxVariables(bbox_name='M3', llx=15, urx=40, lly=50, ury=60))
+        db.revert()
+        with pytest.raises(SolutionNotFoundError):
+            db.append(constraint.AssignBboxVariables(bbox_name='M3', llx=10, urx=40, lly=50, ury=60))
+
+
+def test_Route(db):
+    with set_context(db):
+        db.append(constraint.Route(max_layer="M5", min_layer="M1"))
+        db.append(constraint.Route(max_layer="M5", min_layer="M1", customize=[constraint.CustomizeRoute(nets=["a", "b"], min_layer="M2", max_layer="M3", shield=True, match=True)]))
+
+
+def test_GroupBlocks(db):
+    with set_context(db):
+        fp = constraint.Floorplan(regions=[["M1"], ["M2"]])
+        pg = constraint.GroupBlocks(
+            instance_name="xyz",
+            instances=["a", "b"],
+            constraints=[fp]
+        )
+        db.append(pg)
 
 
 def test_ConstraintDB_incremental_checking(db):

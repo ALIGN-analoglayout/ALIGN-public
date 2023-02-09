@@ -1,3 +1,4 @@
+import os
 import pytest
 import textwrap
 import json
@@ -9,8 +10,8 @@ from . import circuits
 import time
 
 
-CLEANUP = False
-LOG_LEVEL = 'INFO'
+CLEANUP = True
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
 
 @pytest.mark.skip
@@ -22,20 +23,20 @@ def test_place_cmp_1():
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
-        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["xdp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL,
@@ -104,16 +105,16 @@ def test_place_cmp_2():
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
-        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "ccn"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 1, "ratio_high": 2}
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["x0", "xccn"]},
+        {"constraint": "AspectRatio", "ratio_low": 1, "ratio_high": 2}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -126,9 +127,9 @@ def test_place_cmp_2():
     #     fp.write(setup)
 
     # constraints = [
-    #     {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-    #     {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-    #     {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]}
+    #     {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+    #     {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["xdp"]]},
+    #     {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]}
     # ]
     # with open(example / 'dptail.const.json', 'w') as fp:
     #     fp.write(json.dumps(constraints, indent=2))
@@ -164,21 +165,21 @@ def test_place_cmp_seed(seed, analytical_placer):
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
-        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["xdp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -230,21 +231,21 @@ def test_cmp_analytical():
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "ConfigureCompiler", "auto_constraint": False},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["dp"]]},
-        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["ccp"], ["ccn"], ["invn", "invp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "dp"]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["ccp", "ccn"]},
-        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["dp", "ccn"]},
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["xdp"]]},
+        {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["xccp"], ["xccn"], ["xinvn", "xinvp"], ["mp9", "mp10"], ["mp7", "mp8"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "xdp"]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xccp", "xccn"]},
+        {"constraint": "AlignInOrder", "line": "bottom", "instances": ["xdp", "xccn"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.01, "ratio_high": 100}
+        {"constraint": "AspectRatio", "ratio_low": 0.01, "ratio_high": 100}
     ]
     example = build_example(name, netlist, constraints)
 
@@ -264,18 +265,18 @@ def comparator_constraints(name):
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
         {"constraint": "DoNotRoute", "nets": ["vccx", "vssx"]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.5, "ratio_high": 2},
-        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "name": "dp"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "name": "ccn"},
-        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "name": "ccp"},
-        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "name": "invp"},
-        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "name": "invn"},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2},
+        {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xdp"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xccn"},
+        {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xccp"},
+        {"constraint": "GroupBlocks", "instances": ["mn11", "mp13"], "instance_name": "xinvp"},
+        {"constraint": "GroupBlocks", "instances": ["mn12", "mp14"], "instance_name": "xinvn"},
         {"constraint": "SameTemplate", "instances": ["mp7", "mp8"]},
         {"constraint": "SameTemplate", "instances": ["mp9", "mp10"]},
-        {"constraint": "SameTemplate", "instances": ["invn", "invp"]},
+        {"constraint": "SameTemplate", "instances": ["xinvn", "xinvp"]},
         {"constraint": "SymmetricBlocks", "direction": "V",
-            "pairs": [["ccp"], ["ccn"], ["dp"], ["mn0"], ["invn", "invp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
-        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["invn", "ccp", "ccn", "dp", "mn0"], "abut": True}
+            "pairs": [["xccp"], ["xccn"], ["xdp"], ["mn0"], ["xinvn", "xinvp"], ["mp7", "mp8"], ["mp9", "mp10"]]},
+        {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"], "abut": True}
     ]
     return constraints
 
@@ -315,6 +316,10 @@ def test_hang_1():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "AlignInOrder", "line": "left", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -335,6 +340,10 @@ def test_hang_2():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mn0", "mp0"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mn0", "mn1"]},
         {"constraint": "AlignInOrder", "line": "bottom", "instances": ["mp0", "mp1"]}
@@ -357,11 +366,60 @@ def test_hang_3():
     .END
     """)
     constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mn1"], ["mn2"]]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": [f"mn{i}" for i in range(6)]}
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, additional_args=['--flow_stop', '3_pnr:route'])
+
+
+def test_hang_4():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+    .subckt {name} vssx vccx
+    mp1  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp2  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp3  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp4  o i vssx vccx p w=360e-9 nf=4 m=4
+    mp5  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp6  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp7  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp8  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp9  o i vssx vccx p w=360e-9 nf=2 m=1
+    mp10 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp11 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp12 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp13 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp14 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp15 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp16 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp17 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp18 o i vssx vccx p w=360e-9 nf=2 m=1
+    mp19 o i vssx vccx p w=360e-9 nf=2 m=1
+    .ends {name}
+    .END
+    """)
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler", "auto_constraint": False, 'propagate': True,
+            "merge_series_devices": False, "merge_parallel_devices": False
+        },
+        {"constraint": "DoNotIdentify", "instances": [f"mp{i}" for i in range(1, 20)]},
+        {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [
+            ["mp1"],
+            ["mp3", "mp2", "mp4", "mp5", "mp6"],
+            ["mp7", "mp8", "mp9", "mp10"],
+            ["mp11", "mp12", "mp13", "mp14", "mp15", "mp16"],
+            ["mp17", "mp18"],
+            ["mp19"]
+        ]}
+    ]
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL)
 
 
 def test_sub_1():
@@ -390,10 +448,10 @@ def test_sub_1():
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn0"], ["mp0"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn1"], ["mp1"]]},
         {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mn2"], ["mp2"]]},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1, "ratio_high": 1}
+        {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 1}
     ]
     example = build_example(name, netlist, constraints)
-    _, run_dir = run_example(example, cleanup=False)
+    ckt_dir, run_dir = run_example(example, cleanup=False, log_level=LOG_LEVEL)
 
     with (run_dir / '3_pnr' / 'Results' / f'{name.upper()}_0.scaled_placement_verilog.json').open('rt') as fp:
         placement = json.load(fp)
@@ -401,4 +459,67 @@ def test_sub_1():
         instances = {i['instance_name']: i['transformation'] for i in placement['modules'][0]['instances']}
         assert instances['X_MP0']['oY'] > 0, 'Suboptimal placement: MP0 should be just below MN0'
         assert instances['X_MP1']['oY'] > 0, 'Suboptimal placement: MP1 should be just below MN1'
-    shutil.rmtree(run_dir)
+    if CLEANUP:
+        shutil.rmtree(ckt_dir)
+        shutil.rmtree(run_dir)
+
+
+def test_binary_pfet(caplog):
+    name = "binary"
+    netlist = textwrap.dedent(f"""\
+        .subckt power_cell vccx vcca vg
+        xmp0 vcca vg vccx vccx p m=4 nf=4 nfin=4
+        .ends
+        .subckt {name} vccx vcca vgfix vg[0] vg[1] vg[2] vg[3]
+        xi0fix vccx vcca vgfix power_cell
+        xi0[0] vccx vcca vg[0] power_cell
+        xi1[0] vccx vcca vg[1] power_cell
+        xi1[1] vccx vcca vg[1] power_cell
+        xi2[0] vccx vcca vg[2] power_cell
+        xi2[1] vccx vcca vg[2] power_cell
+        xi2[2] vccx vcca vg[2] power_cell
+        xi2[3] vccx vcca vg[2] power_cell
+        xi3[0] vccx vcca vg[3] power_cell
+        xi3[1] vccx vcca vg[3] power_cell
+        xi3[2] vccx vcca vg[3] power_cell
+        xi3[3] vccx vcca vg[3] power_cell
+        xi3[4] vccx vcca vg[3] power_cell
+        xi3[5] vccx vcca vg[3] power_cell
+        xi3[6] vccx vcca vg[3] power_cell
+        xi3[7] vccx vcca vg[3] power_cell
+        .ends {name}
+        .END
+    """)
+
+    constraints = [
+        {
+            "constraint": "ConfigureCompiler",
+            "propagate": True,
+            "auto_constraint": False,
+            "identify_array": False,
+            "fix_source_drain": False,
+            "merge_series_devices": False,
+            "merge_parallel_devices": False,
+            "remove_dummy_devices": False,
+            "remove_dummy_hierarchies": False,
+            "fix_source_drain": False
+        },
+        {"constraint": "PowerPorts", "ports": ["vccx"]},
+        {"constraint": "GroundPorts", "ports": ["vcca"]},
+        {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+        {
+            "constraint": "Floorplan",
+            "order": True,
+            "regions": [
+                ["xi3[0]", "xi2[0]", "xi0fix", "xi3[4]"],
+                ["xi3[1]", "xi2[1]", "xi0[0]", "xi3[5]"],
+                ["xi3[2]", "xi2[2]", "xi1[0]", "xi3[6]"],
+                ["xi3[3]", "xi2[3]", "xi1[1]", "xi3[7]"]
+            ]
+        }
+    ]
+
+    example = build_example(name, netlist, constraints)
+    run_example(example, cleanup=False, log_level='DEBUG', n=4, additional_args=['--placer_sa_iterations', '10', '--router_mode', 'no_op'])
+    assert 'DEBUG    align.schema.constraint' in caplog.text, 'Log level must be DEBUG for this test'
+    assert 'sa__cost name=BINARY' not in caplog.text, 'Simulated Annealing should be bypassed for this test. Enumeration only.'

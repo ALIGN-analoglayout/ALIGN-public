@@ -29,6 +29,8 @@ class GlobalGraph {
 
   struct Node {
     int src;
+    std::vector<int> metal_layer;
+    bool active = true;
     std::vector<Edge> list;
   };
 
@@ -56,7 +58,7 @@ class GlobalGraph {
   // std::vector<int> Get_Potential_Steiner_node(GlobalGrid &grid);
   void GetWireLength(int &WireLength, int &index, std::vector<int> Pontential_Stiner_node, GlobalGrid &grid);
   void MST(int &WireLength, std::vector<pair<int, int> > &temp_path, GlobalGrid &grid);
-  int Calculate_Weigt(std::vector<std::vector<int> > temp_path);
+  int Calculate_Weight(std::vector<std::vector<int> > temp_path);
   std::vector<std::pair<int, int> > Get_MST_Edges(std::vector<std::vector<int> > temp_path);
   void SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
   void RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
@@ -67,6 +69,9 @@ class GlobalGraph {
   std::vector<std::vector<std::pair<int, int> > > returnPath();
   void InitialSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> &pin_access);
   void clearPath();
+  void select_layers(int l_metal, int h_metal);
+  void refresh_layers();
+  void CreateAdjacentList_New(GlobalGrid &grid, int l_metal, int h_metal);
   // void Path_graph_total(GlobalGrid& grid, std::vector<int> &temp_path);
 };
 

@@ -1,8 +1,6 @@
 import pathlib
 import json
 
-from align import primitive
-
 from ..schema import SubCircuit, constraint
 from .preprocess import preprocess_stack_parallel
 from .create_database import CreateDatabase
@@ -36,9 +34,8 @@ def generate_hierarchy(
     annotate_library(ckt_data, primitive_library)
     primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
     constraint_generator(ckt_data)
-    compiler_output(ckt_data, design_name, output_dir)
-    with open(output_dir/"__primitives_library__.json", "w") as f:
-        json.dump(primitives.dict()["__root__"], f, indent=2)
+    compiler_output(ckt_data, design_name, output_dir, primitives)
+
     return primitives
 
 def compiler_input(
@@ -46,8 +43,7 @@ def compiler_input(
     design_name: str,
     pdk_dir: pathlib.Path,
     config_path: pathlib.Path,
-    flat=0,
-    Debug=False,
+    flat=0
 ):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph
@@ -60,9 +56,6 @@ def compiler_input(
         DESCRIPTION.
     flat : TYPE, flat/hierarchical
         DESCRIPTION. The default is 0.
-    Debug : TYPE, writes output graph for debug
-        DESCRIPTION. The default is False.
-
     Returns
     -------
     updated_ckt_list : list of reduced graphs for each subckt
@@ -116,16 +109,21 @@ def compiler_output(
     ckt_data,
     design_name: str,
     result_dir: pathlib.Path,
+    primitives
 ):
     """compiler_output: write output in verilog format
     Args:
         ckt_data : annotated ckt library  and constraint
         design_name : name of top level design
-        verilog_tbl (dict): verilog dict for PnR
         result_dir : directoy path for writing results
+        primitives : library for primitive generator
     """
     top_ckt = ckt_data.find(design_name)
     assert top_ckt, f"design {top_ckt} not found in database"
+    result_dir.mkdir(exist_ok=True)
+
+    with open(result_dir/"__primitives_library__.json", "w") as f:
+        json.dump(primitives.dict()["__root__"], f, indent=2)
 
     verilog_tbl = {"modules": [], "global_signals": []}
 
@@ -134,6 +132,9 @@ def compiler_output(
             continue
         gen_const = [True for const in subckt.constraints if isinstance(const, constraint.Generator)]
         if not gen_const:
+            with open(result_dir / f"{subckt.name.lower()}.const.json", "w") as f:
+                json.dump(subckt.constraints.dict()["__root__"], f, indent=2)
+            exclude_const(subckt)
             # Create modified netlist
             logger.debug(f"call verilog writer for block: {subckt.name}")
             wv = WriteVerilog(subckt, ckt_data)
@@ -160,7 +161,6 @@ def compiler_output(
                  "formal": f"supply{i}",
                  "actual": nm}
             )
-    result_dir.mkdir(exist_ok=True)
     logger.debug(f"Writing results in dir: {result_dir} {ckt_data}")
     with (result_dir / f"{design_name.upper()}.verilog.json").open("wt") as fp:
         json.dump(verilog_tbl, fp=fp, indent=2)
@@ -169,3 +169,12 @@ def compiler_output(
     results_path = result_dir/design_name.upper()
     logger.debug(f"OUTPUT verilog json netlist at: {results_path}.verilog.json")
     logger.debug(f"OUTPUT const file at: {results_path}.pnr.const.json")
+
+
+def exclude_const(subckt):
+    #Exclude constraints not to be exposed to PnR
+    exclude_const_list = ['DoNotIdentify', 'GroupBlocks', 'DoNotUseLib', 'ConfigureCompiler']
+    remove_const = [c for c in subckt.constraints if c.constraint in exclude_const_list]
+    logger.debug(f"removing annotation only constraints {remove_const}")
+    for const in remove_const:
+        subckt.constraints.remove(const)
