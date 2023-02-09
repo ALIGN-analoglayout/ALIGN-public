@@ -1,9 +1,10 @@
 #include "ILP_solver.h"
 #include "spdlog/spdlog.h"
-#include "symphony.h"
 #include <iostream>
+#include <algorithm>
 #include <malloc.h>
 #include <signal.h>
+#include "ILPSolverIf.h"
 
 ExtremeBlocksOfNet::ExtremeBlocksOfNet(const SeqPair& sp, const int N)
 {
@@ -1144,7 +1145,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
             newp.y += Blocks[connectedj.iter2].y;
             pos.push_back(newp);
           }
-          center_points.push_back(pos);
+          if (!pos.empty()) center_points.push_back(pos);
         } else {
           placerDB::point newp;
           newp.x = mydesign.Blocks[connectedj.iter2][0].width / 2;
@@ -1197,22 +1198,6 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
   double cost = CalculateCost(mydesign);
   return cost;
 }
-
-class TimeMeasure {
-  private:
-    std::chrono::nanoseconds& _rt;
-    std::chrono::high_resolution_clock::time_point _begin;
-  public:
-    TimeMeasure(std::chrono::nanoseconds& rt) : _rt(rt)
-    {
-      _begin = std::chrono::high_resolution_clock::now();
-    }
-    ~TimeMeasure()
-    {
-      auto _end = std::chrono::high_resolution_clock::now();
-      _rt += std::chrono::duration_cast<std::chrono::nanoseconds>(_end - _begin);
-    }
-};
 
 /**
 bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
@@ -1745,9 +1730,10 @@ bool ILP_solver::FrameSolveILPLpsolve(const design& mydesign, const SeqPair& cur
   return true;
 }**/
 
-bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const vector<placerDB::point>* prev) {
+bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, bool flushbl, const SOLVERTOUSE solvertouse, const bool snapGridILP, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPSymphony");
+  ++const_cast<design&>(mydesign)._numILPCalls;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.FrameSolveILPCore");
 
   auto sighandler = signal(SIGINT, nullptr);
   int v_metal_index = -1;
@@ -1783,13 +1769,21 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) place_on_grid_var_count += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
   }
   N_var += place_on_grid_var_count;
+  const auto gridSnapVarStart{N_var};
+  if (place_on_grid_var_count == 0 && snapGridILP) {
+    N_var += (2 * mydesign.Blocks.size());
+  }
   N_var += 2; //Area x and y variables
+  const unsigned N_area_x = N_var - 2;
+  const unsigned N_area_y = N_var - 1;
 
-  const auto infty = sym_get_infinity();
+  ILPSolverIf solverif(solvertouse == SYMPHONY  ? SOLVER_ENUM::SYMPHONY : SOLVER_ENUM::Cbc);
+  const double infty{solverif.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
   std::vector<double> constrvalues[N_var];
   std::vector<double> rhs;
+  std::vector<std::string> rownames;
   std::vector<char> intvars(mydesign.Blocks.size() * 4, TRUE);
   intvars.resize(N_var, FALSE);
   std::vector<char> sens;
@@ -1822,6 +1816,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
+        collb[id * 4] = mydesign.halo_horizontal;
+        colub[id * 4] = mydesign.placement_box[0] - mydesign.halo_horizontal - mydesign.Blocks[id][curr_sp.selected[id]].width;
+        collb[id * 4 + 1] = mydesign.halo_vertical;
+        colub[id * 4 + 1] = mydesign.placement_box[1] - mydesign.halo_vertical - mydesign.Blocks[id][curr_sp.selected[id]].height;
         if (prev) {
           collb[id * 4] = (*prev)[id].x;
           collb[id * 4 + 1] = (*prev)[id].y;
@@ -1849,10 +1847,10 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         collb[ind + j] = -infty; colub[ind + j] = 0;
       }
     }
-    collb[N_var - 1] = -infty;
-    collb[N_var - 2] = -infty;
-    colub[N_var - 1] = 0;
-    colub[N_var - 2] = 0;
+    collb[N_area_y] = -infty;
+    collb[N_area_x] = -infty;
+    colub[N_area_y] = 0;
+    colub[N_area_x] = 0;
   }
 
   Pdatatype hyper;
@@ -1877,7 +1875,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
   //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
   //  objective.at(curr_sp.negPair[i] * 4 + 1) += ((flushbl ? estimated_width : -estimated_width) / 2);
-  //}
+    //}
   // estimate height
   for (unsigned int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
     if (curr_sp.posPair[i] < int(mydesign.Blocks.size())) {
@@ -1888,21 +1886,21 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   //for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
   //  if (curr_sp.negPair[i] >= mydesign.Blocks.size()) continue;
   //  objective.at(curr_sp.negPair[i] * 4) += ((flushbl ? estimated_height : -estimated_height) / 2);
-  //}
+    //}
   if (flushbl) {
-    objective[N_var - 1] = estimated_width;
-    objective[N_var - 2] = estimated_height;
+    objective[N_area_y] = estimated_width;
+    objective[N_area_x] = estimated_height;
   } else {
-    objective[N_var - 1] = -estimated_width;
-    objective[N_var - 2] = -estimated_height;
+    objective[N_area_y] = -estimated_width;
+    objective[N_area_x] = -estimated_height;
   }
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-    if (mydesign.Nets[i].connected.size() < 2) continue;
+    //if (mydesign.Nets[i].connected.size() < 2) continue;
     int ind = int(mydesign.Blocks.size() * 4 + i * 4);
-    objective.at(ind) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 1) = -hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 2) = hyper.LAMBDA * mydesign.Nets[i].weight;
-    objective.at(ind + 3) = hyper.LAMBDA * mydesign.Nets[i].weight;
+    objective.at(ind)     = mydesign.Nets[i].floating_pin ? 0. : -hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 1) = mydesign.Nets[i].floating_pin ? 0. : -hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 2) = mydesign.Nets[i].floating_pin ? 0. :  hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
+    objective.at(ind + 3) = mydesign.Nets[i].floating_pin ? 0. :  hyper.LAMBDA * std::max(1.*mydesign.Nets[i].weight, 1e-3);
   }
 
   int bias_Hgraph = mydesign.bias_Hgraph, bias_Vgraph = mydesign.bias_Vgraph;
@@ -1910,6 +1908,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
   roundup(bias_Vgraph, y_pitch);
   sens.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
   rhs.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
+  rownames.reserve(curr_sp.posPair.size() * curr_sp.posPair.size() * 2);
 
   //place on grid flipping constraint
   for (unsigned int i = 0; i < mydesign.Blocks.size(); i++) {
@@ -1918,22 +1917,56 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       constrvalues[i * 4 + 2].push_back(1);
       sens.push_back('E');
       rhs.push_back(0);
+      rownames.push_back("F");
     } else if (mydesign.Blocks[i][curr_sp.selected[i]].xflip == -1) {
       rowindofcol[i * 4 + 2].push_back(rhs.size());
       constrvalues[i * 4 + 2].push_back(1);
       sens.push_back('E');
       rhs.push_back(1);
+      rownames.push_back("F");
     }
     if (mydesign.Blocks[i][curr_sp.selected[i]].yflip == 1) {
       rowindofcol[i * 4 + 3].push_back(rhs.size());
       constrvalues[i * 4 + 3].push_back(1);
       sens.push_back('E');
       rhs.push_back(0);
+      rownames.push_back("F");
     } else if (mydesign.Blocks[i][curr_sp.selected[i]].yflip == -1) {
       rowindofcol[i * 4 + 3].push_back(rhs.size());
       constrvalues[i * 4 + 3].push_back(1);
       sens.push_back('E');
       rhs.push_back(1);
+      rownames.push_back("F");
+    }
+  }
+
+  // grid snapping constraints
+  if (snapGridILP && place_on_grid_var_count == 0) {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); ++i) {
+      intvars[gridSnapVarStart + i * 2] = 1;
+      intvars[gridSnapVarStart + i * 2 + 1] = 1;
+      rowindofcol[i * 4].push_back(rhs.size());
+      rowindofcol[gridSnapVarStart + i * 2].push_back(rhs.size());
+      constrvalues[i * 4].push_back(1);
+      constrvalues[gridSnapVarStart + i * 2].push_back(x_pitch * -1.);
+      sens.push_back('E');
+      rhs.push_back(0);
+      rownames.push_back("GSX");
+      rowindofcol[i * 4 + 1].push_back(rhs.size());
+      rowindofcol[gridSnapVarStart + i * 2 + 1].push_back(rhs.size());
+      constrvalues[i * 4 + 1].push_back(1);
+      constrvalues[gridSnapVarStart + i * 2 + 1].push_back(y_pitch * -1.);
+      sens.push_back('E');
+      rhs.push_back(0);
+      rownames.push_back("GSY");
+      collb[i * 4] = std::max(Blocks[i].x - x_pitch * 2, 0);
+      colub[i * 4] = (Blocks[i].x + x_pitch * 2);
+      collb[i * 4 + 1] = std::max(Blocks[i].y - y_pitch * 2, 0);
+      colub[i * 4 + 1] = (Blocks[i].y + y_pitch * 2);
+      collb[gridSnapVarStart + i * 2] = std::max(Blocks[i].x / x_pitch - 2, 0);
+      colub[gridSnapVarStart + i * 2] = (Blocks[i].x / x_pitch + 2);
+      collb[gridSnapVarStart + i * 2 + 1] = std::max(Blocks[i].y / y_pitch - 2, 0);
+      colub[gridSnapVarStart + i * 2 + 1] = (Blocks[i].y / y_pitch + 2);
     }
   }
 
@@ -1956,6 +1989,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       }
       sens.push_back('E');
       rhs.push_back(0);
+      rownames.push_back("G");
       // sum(is_ith_offset) = 1
       for(unsigned int j=0;j<mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size();j++){
         rowindofcol[temp_pointer + j].push_back(rhs.size());
@@ -1963,6 +1997,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       }
       sens.push_back('E');
       rhs.push_back(1);
+      rownames.push_back("G");
       temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].xoffset.size()) + 1;
     }
     if (mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) {
@@ -1981,6 +2016,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       }
       sens.push_back('E');
       rhs.push_back(0);
+      rownames.push_back("G");
       // sum(is_ith_offset) = 1
       for (unsigned int j = 0; j < mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size(); j++) {
         rowindofcol[temp_pointer + j].push_back(rhs.size());
@@ -1988,6 +2024,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       }
       sens.push_back('E');
       rhs.push_back(1);
+      rownames.push_back("G");
       temp_pointer += int(mydesign.Blocks[i][curr_sp.selected[i]].yoffset.size()) + 1;
     }
   }
@@ -2039,9 +2076,11 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width);
+            rownames.push_back("O");
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - bias_Hgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+            rownames.push_back("O");
           }
         } else {
           // i is above j
@@ -2053,9 +2092,11 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height);
+            rownames.push_back("O");
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + bias_Vgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
+            rownames.push_back("O");
           }
         }
       } else {
@@ -2069,9 +2110,11 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
             rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height);
+            rownames.push_back("O");
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - bias_Vgraph);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
+            rownames.push_back("O");
           }
         } else {
           // i is right of j
@@ -2083,9 +2126,11 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
               mydesign.Abut_Constraints.end()) {
             sens.push_back('E');
             rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width);
+            rownames.push_back("O");
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + bias_Hgraph);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+            rownames.push_back("O");
           }
         }
       }
@@ -2107,6 +2152,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 3].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
+          rownames.push_back("S");
         }
         // each pair has the same H flip
         {
@@ -2116,6 +2162,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 2].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
+          rownames.push_back("S");
         }
         // x center of blocks in each pair are the same
         {
@@ -2127,6 +2174,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(-first_x_center + second_x_center);
+          rownames.push_back("S");
         }
       }
 
@@ -2151,6 +2199,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_second_id * 4 + 1].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
 
@@ -2172,6 +2221,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
 
@@ -2190,6 +2240,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
     } else {
@@ -2205,6 +2256,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 2].push_back(1);
           sens.push_back('E');
           rhs.push_back(1);
+          rownames.push_back("S");
         }
         // each pair has the same V flip
         {
@@ -2214,6 +2266,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 3].push_back(-1);
           sens.push_back('E');
           rhs.push_back(0);
+          rownames.push_back("S");
         }
         // y center of blocks in each pair are the same
         {
@@ -2225,6 +2278,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[second_id * 4 + 1].push_back(-1);
           sens.push_back('E');
           rhs.push_back(-first_y_center + second_y_center);
+          rownames.push_back("S");
         }
       }
 
@@ -2249,6 +2303,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_second_id * 4].push_back(-0.5);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
 
@@ -2270,6 +2325,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
 
@@ -2288,6 +2344,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           constrvalues[j_id * 4].push_back(-1);
           sens.push_back('E');
           rhs.push_back(bias);
+          rownames.push_back("S");
         }
       }
     }
@@ -2312,6 +2369,7 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         }
         sens.push_back('E');
         rhs.push_back(bias);
+        rownames.push_back("A");
       } else {
         rowindofcol[first_id  * 4].push_back(rhs.size());
         rowindofcol[second_id * 4].push_back(rhs.size());
@@ -2327,20 +2385,60 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
         }
         sens.push_back('E');
         rhs.push_back(bias);
+        rownames.push_back("A");
       }
     }
   }
 
-  ExtremeBlocksOfNet netExtremes(curr_sp, mydesign.Nets.size());
-  for (int i = 0; i < mydesign.Nets.size(); ++i) {
-    netExtremes.FindExtremes(mydesign.Nets[i], i);
+  for (const auto& order : mydesign.Ordering_Constraints) {
+    if (order.second == placerDB::H) {
+      const auto& i = order.first.first;
+      const auto& j = order.first.second;
+      rowindofcol[i * 4].push_back(rhs.size());
+      rowindofcol[j * 4].push_back(rhs.size());
+      constrvalues[i * 4].push_back(1);
+      constrvalues[j * 4].push_back(-1);
+      if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::H)) !=
+          mydesign.Abut_Constraints.end()) {
+        sens.push_back('E');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width);
+        rownames.push_back("OR");
+      } else {
+        sens.push_back('L');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+        rownames.push_back("OR");
+      }
+    }
+    else if (order.second == placerDB::V) {
+      const auto& i = order.first.second;
+      const auto& j = order.first.first;
+      rowindofcol[i * 4 + 1].push_back(rhs.size());
+      rowindofcol[j * 4 + 1].push_back(rhs.size());
+      constrvalues[i * 4 + 1].push_back(1);
+      constrvalues[j * 4 + 1].push_back(-1);
+      if (find(mydesign.Abut_Constraints.begin(), mydesign.Abut_Constraints.end(), make_pair(make_pair(int(i), int(j)), placerDB::V)) !=
+          mydesign.Abut_Constraints.end()) {
+        sens.push_back('E');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height);
+        rownames.push_back("OR");
+      } else {
+        sens.push_back('L');
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Hgraph, mydesign.getSpread(i, j, false)));
+        rownames.push_back("OR");
+      }
+    }
   }
+  //ExtremeBlocksOfNet netExtremes(curr_sp, mydesign.Nets.size());
+  //for (int i = 0; i < mydesign.Nets.size(); ++i) {
+  //  netExtremes.FindExtremes(mydesign.Nets[i], i);
+  //}
 
   // set_add_rowmode(lp, FALSE);
   {
     // add HPWL in cost
     for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
-      if (mydesign.Nets[i].connected.size() < 2) continue;
+      //if (mydesign.Nets[i].connected.size() < 2) continue;
+      if (mydesign.Nets[i].floating_pin) continue;
       int ind = int(mydesign.Blocks.size() * 4 + i * 4);
 
       for (unsigned int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
@@ -2350,54 +2448,57 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
           const auto& blk = mydesign.Blocks[block_id][curr_sp.selected[block_id]];
           int pin_llx = blk.width / 2,  pin_urx = blk.width / 2;
           int pin_lly = blk.height / 2, pin_ury = blk.height / 2;
-          if (blk.blockPins.size()) {
+          if (blk.blockPins.size()
+              && blk.blockPins[pin_id].bbox.LL.x <= blk.blockPins[pin_id].bbox.UR.x
+              && blk.blockPins[pin_id].bbox.LL.y <= blk.blockPins[pin_id].bbox.UR.y) {
             pin_llx = blk.blockPins[pin_id].bbox.LL.x;
             pin_lly = blk.blockPins[pin_id].bbox.LL.y;
             pin_urx = blk.blockPins[pin_id].bbox.UR.x;
             pin_ury = blk.blockPins[pin_id].bbox.UR.y;
+          } else {
+            continue;
           }
-          double deltax = 1.*(blk.width  - pin_llx - pin_urx);
-          double deltay = 1.*(blk.height - pin_lly - pin_ury);
-          if (netExtremes.InLeftExtreme(i, block_id)) {
-            rowindofcol[block_id * 4].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-            rowindofcol[ind].push_back(rhs.size());
-            constrvalues[block_id * 4].push_back(1);
-            constrvalues[block_id * 4 + 2].push_back(deltax);
-            constrvalues[ind].push_back(-1);
-            sens.push_back('G');
-            rhs.push_back(-pin_llx);
-          }
-          if (netExtremes.InBottomExtreme(i, block_id)) {
-            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-            rowindofcol[ind + 1].push_back(rhs.size());
-            constrvalues[block_id * 4 + 1].push_back(1);
-            constrvalues[block_id * 4 + 3].push_back(deltay);
-            constrvalues[ind + 1].push_back(-1);
-            sens.push_back('G');
-            rhs.push_back(-pin_lly);
-          }
-          if (netExtremes.InRightExtreme(i, block_id)) {
-            rowindofcol[block_id * 4].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 2].push_back(rhs.size());
-            rowindofcol[ind + 2].push_back(rhs.size());
-            constrvalues[block_id * 4].push_back(1);
-            constrvalues[block_id * 4 + 2].push_back(deltax);
-            constrvalues[ind + 2].push_back(-1);
-            sens.push_back('L');
-            rhs.push_back(-pin_urx);
-          }
-          if (netExtremes.InTopExtreme(i, block_id)) {
-            rowindofcol[block_id * 4 + 1].push_back(rhs.size());
-            rowindofcol[block_id * 4 + 3].push_back(rhs.size());
-            rowindofcol[ind + 3].push_back(rhs.size());
-            constrvalues[block_id * 4 + 1].push_back(1);
-            constrvalues[block_id * 4 + 3].push_back(deltay);
-            constrvalues[ind + 3].push_back(-1);
-            sens.push_back('L');
-            rhs.push_back(-pin_ury);
-          }
+          double deltax = (blk.width  - pin_llx - pin_urx);
+          double deltay = (blk.height - pin_lly - pin_ury);
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[ind].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(1);
+          constrvalues[block_id * 4 + 2].push_back(deltax);
+          constrvalues[ind].push_back(-1);
+          sens.push_back('G');
+          rhs.push_back(-pin_llx);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[ind + 1].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(1);
+          constrvalues[block_id * 4 + 3].push_back(deltay);
+          constrvalues[ind + 1].push_back(-1);
+          sens.push_back('G');
+          rhs.push_back(-pin_lly);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 2].push_back(rhs.size());
+          rowindofcol[ind + 2].push_back(rhs.size());
+          constrvalues[block_id * 4].push_back(1);
+          constrvalues[block_id * 4 + 2].push_back(deltax);
+          constrvalues[ind + 2].push_back(-1);
+          sens.push_back('L');
+          rhs.push_back(-pin_urx);
+          rownames.push_back("H");
+
+          rowindofcol[block_id * 4 + 1].push_back(rhs.size());
+          rowindofcol[block_id * 4 + 3].push_back(rhs.size());
+          rowindofcol[ind + 3].push_back(rhs.size());
+          constrvalues[block_id * 4 + 1].push_back(1);
+          constrvalues[block_id * 4 + 3].push_back(deltay);
+          constrvalues[ind + 3].push_back(-1);
+          sens.push_back('L');
+          rhs.push_back(-pin_ury);
+          rownames.push_back("H");
         }
       }
     }
@@ -2409,32 +2510,36 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       const auto& blk = mydesign.Blocks[i][curr_sp.selected[i]];
       if (flushbl) {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.width);
+        rownames.push_back("A");
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('G');
         rhs.push_back(blk.height);
+        rownames.push_back("A");
       } else {
         rowindofcol[i * 4].push_back(rhs.size());
-        rowindofcol[N_var - 2].push_back(rhs.size());
+        rowindofcol[N_area_x].push_back(rhs.size());
         constrvalues[i * 4].push_back(-1);
-        constrvalues[N_var - 2].push_back(1);
+        constrvalues[N_area_x].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
+        rownames.push_back("A");
 
         rowindofcol[i * 4 + 1].push_back(rhs.size());
-        rowindofcol[N_var - 1].push_back(rhs.size());
+        rowindofcol[N_area_y].push_back(rhs.size());
         constrvalues[i * 4 + 1].push_back(-1);
-        constrvalues[N_var - 1].push_back(1);
+        constrvalues[N_area_y].push_back(1);
         sens.push_back('L');
         rhs.push_back(0);
+        rownames.push_back("A");
       }
     }
   }
@@ -2450,69 +2555,198 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
       indices.insert(indices.end(), rowindofcol[i].begin(), rowindofcol[i].end());
       values.insert(values.end(), constrvalues[i].begin(), constrvalues[i].end());
     }
-    sym_environment *env = sym_open_environment();
-    sym_explicit_load_problem(env, N_var, (int)rhs.size(), starts.data(), indices.data(),
-        values.data(), collb.data(), colub.data(),
-        intvars.data(), objective.data(), NULL, sens.data(), rhs.data(), NULL, TRUE);
-    sym_set_int_param(env, "verbosity", -2);
-
-    /*//solve the integer program
-    static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
-      char* names[N_var];
-      std::vector<std::string> namesvec(N_var);
-      namesvec[N_var - 2]     = "area_x\0";
-      names[N_var - 2] = &(namesvec[N_var - 2][0]);
-      namesvec[N_var - 1]     = "area_y\0";
-      names[N_var - 1] = &(namesvec[N_var - 1][0]);
+    PlacerHyperparameters hyper;
+    solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(Blocks.size())));
+    if (solvertouse == SYMPHONY) {
+      solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
+          values.data(), collb.data(), colub.data(),
+          intvars.data(), objective.data(), sens.data(), rhs.data());
+    } else if (solvertouse == CBC) {
+      double rhslb[rhs.size()], rhsub[rhs.size()];
+      for (unsigned i = 0;i < sens.size(); ++i) {
+        switch (sens[i]) {
+          case 'E':
+          default:
+            rhslb[i] = rhs[i];
+            rhsub[i] = rhs[i];
+            break;
+          case 'G':
+            rhslb[i] = rhs[i];
+            rhsub[i] = infty;
+            break;
+          case 'L':
+            rhslb[i] = -infty;
+            rhsub[i] = rhs[i];
+            break;
+        }
+      }
+      vector<int> intvarsi(intvars.size());
+      for (unsigned i = 0; i < intvars.size(); ++i) intvarsi[i] = intvars[i];
+      solverif.loadProblem(N_var, (int)rhs.size(), starts.data(), indices.data(),
+          values.data(), collb.data(), colub.data(),
+          objective.data(), rhslb, rhsub, intvarsi.data());
+    } else {
+      lprec* lp = make_lp(0, N_var);
+      set_verbose(lp, IMPORTANT);
+      put_logfunc(lp, &ILP_solver::lpsolve_logger, NULL);
+      double obj[N_var + 1];
+      for (unsigned int i = 0; i < N_var; ++i) {
+        if (intvars[i]) {
+          if (colub[i] == 1) {
+            set_binary(lp, i + 1, TRUE);
+          } else {
+            set_int(lp, i + 1, TRUE);
+          }
+        }
+        obj[i + 1] = objective[i];
+      }
+      std::vector<std::pair<int, double>> rowmap[rhs.size()];
+      for (unsigned int i = 0; i < N_var; ++i) {
+        for (unsigned j = 0; j < rowindofcol[i].size(); ++j) {
+          rowmap[rowindofcol[i][j]].push_back(std::make_pair(i + 1, constrvalues[i][j]));
+        }
+      }
+      for (unsigned int i = 0; i < rhs.size(); ++i) {
+        double weightv[rowmap[i].size()];
+        int indexv[rowmap[i].size()];
+        for (unsigned j = 0; j < rowmap[i].size(); ++j) {
+          indexv[j] = rowmap[i][j].first;
+          weightv[j] = rowmap[i][j].second;
+        }
+        switch (sens[i]) {
+          case 'E':
+          default:
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, EQ, rhs[i])) logger->error("error");
+            }
+            break;
+          case 'G':
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, GE, rhs[i])) logger->error("error");
+            }
+            break;
+          case 'L':
+            {
+              if (!add_constraintex(lp, rowmap[i].size(), weightv, indexv, LE, rhs[i])) logger->error("error");
+            }
+            break;
+        }
+      }
+      set_obj_fn(lp, obj);
+      set_minim(lp);
+      PlacerHyperparameters hyper;
+      set_timeout(lp, std::max(hyper.ILP_runtime_limit, static_cast<int>(Blocks.size())));
+      //static int write_cnt{0};
+      //if (write_cnt < 100) {
+      //  write_lp(lp, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt++) + ".lp").c_str()));
+      //}
+      set_presolve(lp, PRESOLVE_ROWS | PRESOLVE_COLS | PRESOLVE_LINDEP, get_presolveloops(lp));
+      int ret = solve(lp);
+      if (ret != 0 && ret != 1) {
+        delete_lp(lp);
+        ++const_cast<design&>(mydesign)._infeasILPFail;
+        return false;
+      }
+      double var[N_var];
+      for (unsigned i = 0; i < N_var; ++i) var[i] = 0;
+      int Norig_columns, Norig_rows, i;
+      Norig_columns = get_Norig_columns(lp);
+      Norig_rows = get_Norig_rows(lp);
+      for(i = 1; i <= Norig_columns; i++) {
+        var[i - 1] = get_var_primalresult(lp, Norig_rows + i);
+      }
+      delete_lp(lp);
+      area_ilp = var[N_var - 1] * var[N_var - 2];
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
-        int ind = i * 4;
-        namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
+        Blocks[i].x = roundupint(var[i * 4]);
+        Blocks[i].y = roundupint(var[i * 4 + 1]);
+        Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
+        Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
       }
-
+      // calculate HPWL from ILP solution
       for (int i = 0; i < mydesign.Nets.size(); ++i) {
-        int ind = i * 4 + mydesign.Blocks.size() * 4;
-        namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
-        names[ind] = &(namesvec[ind][0]);
-        namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
-        names[ind + 1] = &(namesvec[ind + 1][0]);
-        namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
-        names[ind + 2] = &(namesvec[ind + 2][0]);
-        namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
-        names[ind + 3] = &(namesvec[ind + 3][0]);
+        if (mydesign.Nets[i].floating_pin) continue;
+        int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+        HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
       }
-      sym_set_col_names(env, names);
-      sym_write_lp(env, const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + ".lp").c_str()));
-      ++write_cnt;
-    }*/
+      return true;
+    }
+
+    if (getenv("ALIGN_DEBUG_SA_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_SA_ILP"))) {
+      //solve the integer program
+      static int write_cnt{0};
+      static std::string block_name;
+      if (block_name != mydesign.name) {
+        write_cnt = 0;
+        block_name = mydesign.name;
+      }
+      if (write_cnt < 10) {
+        char* names[N_var];
+        std::vector<std::string> namesvec(N_var);
+        namesvec[N_area_x]     = "area_x\0";
+        names[N_area_x] = &(namesvec[N_area_x][0]);
+        namesvec[N_area_y]     = "area_y\0";
+        names[N_area_y] = &(namesvec[N_area_y][0]);
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          int ind = i * 4;
+          namesvec[ind]     = (mydesign.Blocks[i][0].name + "_x\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Blocks[i][0].name + "_y\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          namesvec[ind + 2] = (mydesign.Blocks[i][0].name + "_flx\0");
+          names[ind + 2] = &(namesvec[ind + 2][0]);
+          namesvec[ind + 3] = (mydesign.Blocks[i][0].name + "_fly\0");
+          names[ind + 3] = &(namesvec[ind + 3][0]);
+        }
+
+        for (int i = 0; i < mydesign.Nets.size(); ++i) {
+          int ind = i * 4 + mydesign.Blocks.size() * 4;
+          namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
+          names[ind] = &(namesvec[ind][0]);
+          namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
+          names[ind + 1] = &(namesvec[ind + 1][0]);
+          namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
+          names[ind + 2] = &(namesvec[ind + 2][0]);
+          namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
+          names[ind + 3] = &(namesvec[ind + 3][0]);
+        }
+        if (rownames.size() < rhs.size()) rownames.resize(rhs.size());
+        char* rownamesarr[rhs.size()];
+        for (unsigned i = 0; i < rhs.size(); ++i) {
+          if (rownames[i].empty()) {
+            rownames[i] = "c" + std::to_string(i) + "\0";
+          } else {
+            rownames[i] += (std::to_string(i) + "\0");
+          }
+          rownamesarr[i] = &(rownames[i][0]);
+        }
+        for (unsigned i = 0; i < N_var; ++i) {
+          if (namesvec[i].empty()) {
+            namesvec[i] = ("var" + std::to_string(i));
+            names[i] = &(namesvec[i])[0];
+          } else if (namesvec[i].find("<") != std::string::npos || namesvec[i].find(">") != std::string::npos) {
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '<', '(');
+            std::replace(namesvec[i].begin(), namesvec[i].end(), '>', ')');
+          }
+        }
+        solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
+        logger->debug("writing ilp file {0}", (mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp"));
+        ++write_cnt;
+      }
+    }
+
+    int status{0};
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      sym_solve(env);
+      status = solverif.solve();
     }
-    int status = sym_get_status(env);
-    if (status != TM_OPTIMAL_SOLUTION_FOUND && status != TM_FOUND_FIRST_FEASIBLE) {
+    const double* var = solverif.solution();
+    if (status != 0 || var == nullptr) {
       ++const_cast<design&>(mydesign)._infeasILPFail;
-      sym_close_environment(env);
       sighandler = signal(SIGINT, sighandler);
       return false;
     }
-    std::vector<double> var(N_var, 0.);
-    sym_get_col_solution(env, var.data());
-    sym_close_environment(env);
     sighandler = signal(SIGINT, sighandler);
-    int minx(INT_MAX), miny(INT_MAX);
     //for (unsigned i = 0; i < (mydesign.Blocks.size() * 4); ++i) {
     //  area_ilp += (objective[i] * var[i]);
     //}
@@ -2520,28 +2754,27 @@ bool ILP_solver::FrameSolveILPSymphony(const design& mydesign, const SeqPair& cu
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
-      minx = std::min(minx, Blocks[i].x);
-      miny = std::min(miny, Blocks[i].y);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
       Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     }
-    /** may fail place on grid constraint
-    for (int i = 0; i < mydesign.Blocks.size(); i++) {
-      Blocks[i].x -= minx;
-      Blocks[i].y -= miny;
-    }
-    **/
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
       int ind = (int(mydesign.Blocks.size()) * 4 + i * 4);
+      if (mydesign.Nets[i].floating_pin) continue;
       HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
     }
   }
+  /** may fail place on grid constraint
+    for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    Blocks[i].x -= minx;
+    Blocks[i].y -= miny;
+    }
+   **/
 
   return true;
 }
 
-bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
+bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool genvalid) {
   std::vector<placerDB::point> slackxy(Blocks.size());
   for (unsigned i = 0; i < Blocks.size(); ++i) {
     slackxy[i].x = Blocks[i].x - blockslocal[i].x;
@@ -2613,30 +2846,30 @@ bool ILP_solver::MoveBlocksUsingSlack(const std::vector<Block>& blockslocal, con
     blockpts[i].x = (Blocks[i].x - slackxy[i].x/2);
     blockpts[i].y = (Blocks[i].y - slackxy[i].y/2);
   }
-  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true, &blockpts)) return false;
+  if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, &blockpts)) return false;
   return true;
 }
 
-double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo) {
-
-  if (mydesign.Blocks.empty()) return -1;
-  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const bool snapGridILP) {
+  if (mydesign.Blocks.empty()) return false;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolutionCore");
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
-  if (mydesign.Blocks.size() == 1) {
-    Blocks[0].x = 0; Blocks[0].y = 0;
+  if (snapGridILP) ++const_cast<design&>(mydesign)._numSnapGridFail;
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
+    Blocks[0].x = mydesign.halo_horizontal; Blocks[0].y = mydesign.halo_vertical;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
     area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, snapGridILP))  return false;
     } else if (mydesign.rightAlign()) {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false)) return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false, snapGridILP)) return false;
     } else {
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, true))  return -1;
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, true, snapGridILP))  return false;
       std::vector<Block> blockslocal{Blocks};
       // frame and solve ILP to flush top/right
-      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, false) 
+      if (!FrameSolveILP(mydesign, curr_sp, drcInfo, num_threads, false, snapGridILP) 
           || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
@@ -2644,11 +2877,58 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
       }
     }
     // snap up coordinates to grid
-    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
-      roundup(Blocks[i].x, x_pitch);
-      roundup(Blocks[i].y, y_pitch);
+    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++) {
+      if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
+      //if sympair center is not on grid
+      {
+        int first_id = mydesign.SPBlocks[i].sympair[0].first;
+        int second_id = mydesign.SPBlocks[i].sympair[0].second;
+        int first_selected = curr_sp.selected[first_id];
+        int second_selected = curr_sp.selected[second_id];
+        int center_line = ((Blocks[first_id].x + mydesign.Blocks[first_id][first_selected].width / 2) +
+                           (Blocks[second_id].x + mydesign.Blocks[second_id][second_selected].width / 2)) /
+                          2;
+        if (center_line % x_pitch == 0) continue;
+      }
+      for (unsigned int j = 0; j < mydesign.SPBlocks[i].sympair.size(); j++) {
+        int first_id = mydesign.SPBlocks[i].sympair[j].first;
+        int second_id = mydesign.SPBlocks[i].sympair[j].second;
+        if (Blocks[first_id].x>Blocks[second_id].x) {
+          roundup(Blocks[first_id].x, x_pitch);
+          rounddown(Blocks[second_id].x, x_pitch);
+        } else {
+          rounddown(Blocks[first_id].x, x_pitch);
+          roundup(Blocks[second_id].x, x_pitch);
+        }
+      }
     }
   }
+  return true;
+}
+
+double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads) {
+
+  if (!GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, false)) return -1;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution");
+  ++const_cast<design&>(mydesign)._totalNumCostCalc;
+  bool snapGridILP{false}, offsetpresent{false};
+  for(unsigned int i = 0; i < mydesign.Blocks.size(); ++i){
+    if (!mydesign.Blocks[i][curr_sp.selected[i]].xoffset.empty() ||
+        !mydesign.Blocks[i][curr_sp.selected[i]].yoffset.empty()) {
+      offsetpresent = true;
+      break;
+    }
+  }
+  if (!offsetpresent && mydesign.Blocks.size() > 1) {
+    for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
+      if ((Blocks[i].x % x_pitch) || (Blocks[i].y % y_pitch)) {
+        snapGridILP = true;
+        break;
+      }
+    }
+  }
+
+  if (snapGridILP && !GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, true)) return -1;
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // calculate LL and UR
@@ -2666,12 +2946,12 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
-  ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
+  ratio = double(UR.x) / double(UR.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
     ++const_cast<design&>(mydesign)._infeasAspRatio;
     return -1;
   }
-  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+  if ((placement_box[0] > 0 && UR.x > placement_box[0]) || (placement_box[1] > 0 && UR.y > placement_box[1])) {
     ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
   }
@@ -2681,6 +2961,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   HPWL_extend_terminal = 0;
 
   for (const auto& neti : mydesign.Nets) {
+    if (neti.floating_pin) continue;
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
     int HPWL_extend_min_x = UR.x, HPWL_extend_min_y = UR.y, HPWL_extend_max_x = 0, HPWL_extend_max_y = 0;
     for (const auto& connectedj : neti.connected) {
@@ -2700,29 +2981,29 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
           HPWL_max_y = std::max(HPWL_max_y, pin_y);
         }
         /*int pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
-        int pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
-        int pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
-        int pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
-        if (Blocks[iter2].H_flip) {
+          int pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
+          int pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
+          int pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
+          if (Blocks[iter2].H_flip) {
           pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.x;
           pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
-        }
-        if (Blocks[iter2].V_flip) {
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.x;
+          }
+          if (Blocks[iter2].V_flip) {
           pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.UR.y;
           pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height -
-            mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
-        }
-        pin_llx += Blocks[iter2].x;
-        pin_urx += Blocks[iter2].x;
-        pin_lly += Blocks[iter2].y;
-        pin_ury += Blocks[iter2].y;
-        HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
-        HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
-        HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
-        HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);*/
+          mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].bbox.LL.y;
+          }
+          pin_llx += Blocks[iter2].x;
+          pin_urx += Blocks[iter2].x;
+          pin_lly += Blocks[iter2].y;
+          pin_ury += Blocks[iter2].y;
+          HPWL_extend_min_x = std::min(HPWL_extend_min_x, pin_llx);
+          HPWL_extend_max_x = std::max(HPWL_extend_max_x, pin_urx);
+          HPWL_extend_min_y = std::min(HPWL_extend_min_y, pin_lly);
+          HPWL_extend_max_y = std::max(HPWL_extend_max_y, pin_ury);*/
         for (const auto& boundaryk : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary) {
           int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
           int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
@@ -2757,6 +3038,10 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
   }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
+  }
 
   // HPWL norm
   if (!mydesign.Nets.empty()) HPWL_norm = HPWL_extend / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
@@ -2778,7 +3063,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
           newp.y += Blocks[connectedj.iter2].y;
           pos.push_back(newp);
         }
-        center_points.push_back(pos);
+        if (!pos.empty()) center_points.push_back(pos);
       } else if (connectedj.type == placerDB::Terminal) {
         center_points.push_back({mydesign.Terminals[connectedj.iter].center});
       }
@@ -2786,9 +3071,9 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
     feature_value.push_back(temp_feature);
     double temp_sum = 0;
-    for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
+    for (int j = 0; j < neti.connected.size(); j++) if (temp_feature.size() > j) temp_sum += neti.connected[j].alpha * temp_feature[j];
     temp_sum = std::max(temp_sum - neti.upperBound, double(0));
-    linear_const += temp_sum;
+    if(!neti.floating_pin) linear_const += temp_sum;
   }
 
   if (!mydesign.Nets.empty()) linear_const /= (mydesign.GetMaxBlockHPWLSum() * double(mydesign.Nets.size()));
@@ -2820,11 +3105,13 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   double calculated_cost = CalculateCost(mydesign, curr_sp);
   cost = calculated_cost;
   if (cost >= 0.) {
-    // logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
-    // logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
+    logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
+    assert(round(HPWL_extend) == round(HPWL_ILP));
   }
   return calculated_cost;
 }
+
 
 double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_sp, PnRDB::Drc_info& drcInfo) {
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.GenerateValidSolution_select");
@@ -3601,6 +3888,10 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
     }
     if (is_terminal_net) HPWL_extend_terminal += (HPWL_extend_max_y - HPWL_extend_min_y) + (HPWL_extend_max_x - HPWL_extend_min_x);
   }
+  
+  if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()){
+    HPWL_ILP = HPWL_extend;
+  }
 
   // HPWL norm
   if (!mydesign.Nets.empty()) HPWL_norm = HPWL_extend / mydesign.GetMaxBlockHPWLSum() / double(mydesign.Nets.size());
@@ -3666,6 +3957,67 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
   return calculated_cost;
 }
 
+double ILP_solver::CalculateCFCost(const design& mydesign, const SeqPair& curr_sp) {
+	double cost(0.);
+  for (const auto& it : mydesign.CFValues) {
+    std::map<std::pair<int, int>, PnRDB::bbox> pinCoords;
+    for (auto& pp : it.second) {
+      for (unsigned i : {0, 1}) {
+        auto iter2 = (i == 0) ? std::get<0>(pp.first) : std::get<2>(pp.first);
+        auto iter  = (i == 0) ? std::get<1>(pp.first) : std::get<3>(pp.first);
+        int x1(INT_MAX), y1(INT_MAX), x2(INT_MIN), y2(INT_MIN);
+        for (const auto& boundaryk : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].boundary) {
+          int pin_llx = boundaryk.polygon[0].x, pin_urx = boundaryk.polygon[2].x;
+          int pin_lly = boundaryk.polygon[0].y, pin_ury = boundaryk.polygon[2].y;
+          if (Blocks[iter2].H_flip) {
+            pin_llx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[2].x;
+            pin_urx = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - boundaryk.polygon[0].x;
+          }
+          if (Blocks[iter2].V_flip) {
+            pin_lly = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[2].y;
+            pin_ury = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - boundaryk.polygon[0].y;
+          }
+          pin_llx += Blocks[iter2].x;
+          pin_urx += Blocks[iter2].x;
+          pin_lly += Blocks[iter2].y;
+          pin_ury += Blocks[iter2].y;
+          x1 = std::min(pin_llx, x1);
+          y1 = std::min(pin_lly, y1);
+          x2 = std::max(pin_urx, x2);
+          y2 = std::max(pin_ury, y2);
+        }
+        if (x1 != INT_MAX) pinCoords[make_pair(iter2, iter)] = PnRDB::bbox(x1, y1, x2, y2);
+      }
+    }
+    for (auto& pp : it.second) {
+      double dist(0.);
+      auto pin1iter2 = std::get<0>(pp.first);
+      auto pin1iter  = std::get<1>(pp.first);
+      auto pin2iter2 = std::get<2>(pp.first);
+      auto pin2iter  = std::get<3>(pp.first);
+      auto it1 = pinCoords.find(std::make_pair(pin1iter2, pin1iter));
+      auto it2 = pinCoords.find(std::make_pair(pin2iter2, pin2iter));
+      if (it1 != pinCoords.end() && it2 != pinCoords.end()) {
+        const auto& b1 = it1->second;
+        const auto& b2 = it2->second;
+        if (mydesign.CFdist_type == 0) {
+          auto center1 = it1->second.center();
+          auto center2 = it2->second.center();
+          double dx = center1.x - center2.x;
+          double dy = center1.y - center2.y;
+          dist = sqrt(dx*dx + dy*dy);
+        } else {
+          double xprl = std::min(it1->second.UR.x, it2->second.UR.x) - std::max(it1->second.LL.x, it2->second.LL.x);
+          double yprl = std::min(it1->second.UR.y, it2->second.UR.y) - std::max(it1->second.LL.y, it2->second.LL.y);
+          dist = (xprl < 0 ? abs(xprl) : 0) + (yprl < 0 ? abs(yprl) : 0);
+        }
+      }
+      cost += dist * pp.second;
+    }
+  }
+  return cost;
+}
+
 double ILP_solver::CalculateCost(const design& mydesign) const {
   Pdatatype hyper;
   double cost = 0;
@@ -3682,6 +4034,7 @@ double ILP_solver::CalculateCost(const design& mydesign) const {
   cost += 0.0 / area * hyper.PHI; //dead_area
   cost += linear_const * hyper.PI;
   cost += multi_linear_const * hyper.PII;
+  assert(!isnan(cost));
   return cost;
 }
 
@@ -3699,6 +4052,10 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
     if (HPWL_extend_net_priority > 0) {
       cost += log(HPWL_extend_net_priority) * hyper.LAMBDA;
     }
+    cfcost = CalculateCFCost(mydesign, curr_sp);
+    if (cfcost > 0) {
+      cost += log(cfcost) * hyper.LAMBDA;
+    }
   }
 
   double match_cost = 0;
@@ -3711,8 +4068,14 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
                   max_dim;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
-  cost += constraint_penalty;
+  if (!isnan(linear_const) && !isnan(multi_linear_const) && !isnan(match_cost)) {
+    constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
+    cost += constraint_penalty;
+  }
+  if (cost > 0 && HPWL_extend_net_priority > 0 && cfcost > 0) {
+    logger->debug("ILP calculate cost hpwl : {0} cfcost : {1} logcosts : {2} {3} {4} {5}", HPWL_extend_net_priority, cfcost, log(HPWL_extend_net_priority) * hyper.LAMBDA,
+        log(cfcost) * hyper.LAMBDA, log(area), cost);
+  }
   return cost;
 }
 
@@ -4040,7 +4403,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
     for (const auto& ci : ni.connected) {
       if (ci.type == placerDB::Terminal) {
         int tno = ci.iter;
-        int bias = 20;
+        int bias = 0;
         fout << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y + bias << endl;
@@ -4680,7 +5043,7 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
       alpha = 1;
     }
     alpha *= mydesign.Nets.at(netIdx).weight;  // add weight to reflect the modification for bigMacros
-    if (sbIdx != -1) {                         // in symmetry group
+    if (sbIdx != -1 && !curr_sp.Enumerate()) {                         // in symmetry group
       placerDB::Smark axis = curr_sp.GetSymmBlockAxis(sbIdx);
       if (cp == (int)i) {  // self-symmetric
         if (axis == placerDB::V) {
@@ -5182,8 +5545,8 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 }
 
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
-  node.width = UR.x;
-  node.height = UR.y;
+  node.width = UR.x + mydesign.halo_horizontal;
+  node.height = UR.y + mydesign.halo_vertical;
   node.HPWL = HPWL;
   node.HPWL_extend = HPWL_extend;
   node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
@@ -5211,10 +5574,12 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
     UpdateBlockinHierNode(mydesign, ort, node, i, curr_sp.GetBlockSelected(i), drcInfo);
   }
   UpdateTerminalinHierNode(mydesign, node, drcInfo);
-  for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
-    int SBidx = mydesign.SNets.at(i).SBidx;
-    placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
-    UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+  if (!curr_sp.Enumerate()) {
+    for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
+      int SBidx = mydesign.SNets.at(i).SBidx;
+      placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
+      UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+    }
   }
 }
 
@@ -5281,10 +5646,10 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
     }
   }
 
-  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
-  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
-  roundup(x, x_pitch);
-  roundup(y, y_pitch);
+  //int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  //int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  //roundup(x, x_pitch);
+  //roundup(y, y_pitch);
 
   placerDB::point LL = {x, y};
   bbox = mydesign.GetPlacedBlockAbsBoundary(i, ort, LL, sel);
@@ -5343,6 +5708,7 @@ void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& nod
     }
   }
   for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    if (node.Terminals[i].netIter == -1) continue;
     auto& tC = node.Terminals.at(i).termContacts;
     tC.clear();
     for (const auto& c : node.Nets[terminal_to_net[i]].connected) {

@@ -1,7 +1,4 @@
-from operator import sub
 import pathlib
-
-from align.schema.types import set_context
 from ..schema.parser import SpiceParser
 from ..schema.subcircuit import SubCircuit
 from ..schema import constraint
@@ -9,7 +6,7 @@ from ..primitive import main
 
 import logging
 from ..schema.library import Library
-from align.primitive.main import get_generator
+from .util import get_generator
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +23,7 @@ def read_models(pdk_dir: pathlib.Path, config_path=None):
     if not model_statements.exists():
         logger.warning(f"Missing {model_statements}, only basic models will be used")
     else:
-        logger.info(f"Using model file from {model_statements}")
+        logger.debug(f"Using model file from {model_statements}")
         with open(model_statements, 'r') as f:
             lines = f.read()
         ckt_parser.parse(lines)

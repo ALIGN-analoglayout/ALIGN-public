@@ -5,11 +5,11 @@
 
 class PlacerHyperparameters {
   public:
-  double T_INT = 1e6;
-  double T_MIN = 1e-6;
+  double T_INT = 0.5;
+  double T_MIN = 0.05;
   double ALPHA = 0.995;
   int SEED = 0;
-  int COUNT_LIMIT = 200;
+  size_t SA_MAX_ITER = 10000;
 
   // this needs to be connected to both the log-based cost funciton and the ILP formulation
   double LAMBDA=1.0;
@@ -18,9 +18,12 @@ class PlacerHyperparameters {
   std::string placement_info_json; // Should be initialized to the empty string
   bool use_external_placement_info = false;
   int max_init_trial_count = 10000, max_cache_hit_count = 10;
+  int NUM_THREADS = 1;
 
   bool select_in_ILP = false;
   int ilp_solver = 0; // 0 : SYMPHONY, 1 : lpsolve
+  bool use_ILP_placer = false;
+  int ILP_runtime_limit = 0;
 
   std::string place_on_grid_constraints_json;
 };

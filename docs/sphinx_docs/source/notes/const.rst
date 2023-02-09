@@ -1,12 +1,12 @@
 Constraints
 ===========================================================
-Analog designers uses constraints to achieve best performance from a layout.
+Analog designers use constraints to achieve the best performance from a layout.
 
 .. image:: ../images/constraints.png
 
-The ALIGN flow identifies symmetries and array structures in the design and generate layout constraints automatically but designers can add their own constraint for better control.
-Here, are the list of constraints used in align. These constraints are applied on the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or on nets.
-These constraints need to be defined seperately for each of the hierachies with name ``<hier name>.const.json``, defined in the schematic.
+The ALIGN flow identifies symmetries and array structures in the design and generates layout constraints automatically but designers can add their constraints for better control.
+Here, is a list of constraints used in align. These constraints are applied to the instances (instances of NMOS/PMOS/Resistor/Capacitor/Subcircuit) or nets.
+These constraints need to be defined separately for each of the hierarchies with the name ``<hier name>.const.json``, defined in the schematic.
 
 Constraint options
 --------------------
@@ -70,11 +70,6 @@ CreateAlias
 GroupBlocks
 ###########
 .. autoclass:: align.schema.constraint.GroupBlocks
-   :noindex:
-
-MatchBlocks
-###########
-.. autoclass:: align.schema.constraint.MatchBlocks
    :noindex:
 
 DoNotIdentify
@@ -147,50 +142,15 @@ DoNotUseLib
 .. autoclass:: align.schema.constraint.DoNotUseLib
    :noindex:
 
-IsDigital
-#############
-.. autoclass:: align.schema.constraint.IsDigital
-   :noindex:
-
-AutoConstraint
-###############
-.. autoclass:: align.schema.constraint.AutoConstraint
-   :noindex:
-
-AutoGroupCaps
-#############
-.. autoclass:: align.schema.constraint.AutoGroupCaps
-   :noindex:
-
-FixSourceDrain
-###############
-.. autoclass:: align.schema.constraint.FixSourceDrain
-   :noindex:
-
-KeepDummyHierarchies
-#####################
-.. autoclass:: align.schema.constraint.KeepDummyHierarchies
-   :noindex:
-
-MergeSeriesDevices
+ConfigureCompiler
 ###################
-.. autoclass:: align.schema.constraint.MergeSeriesDevices
-   :noindex:
-
-MergeParallelDevices
-######################
-.. autoclass:: align.schema.constraint.MergeParallelDevices
-   :noindex:
-
-IdentifyArray
-###################
-.. autoclass:: align.schema.constraint.IdentifyArray
+.. autoclass:: align.schema.constraint.ConfigureCompiler
    :noindex:
 
 Example constraints
 ---------------------
 
-Users can add constraints for each hierarchy levele with a file name ``Subcircuit_name.const.json``. An example file for high_speed_comparator design is shown here.
+Users can add constraints for each hierarchy level with a file name ``Subcircuit_name.const.json``. An example file for high_speed_comparator design is shown here.
 
 .. code-block:: python3
 

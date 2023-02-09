@@ -367,7 +367,20 @@ class SeqPair:
 
             self.s.add_clause([-control]+[-x for x in self.gen_assumptions(p_res, n_res)])
 
+def test_order_mixed():
+    sp = SeqPair(2)
+    sp.order(0,1,'H')
+    sp.order(0,1,'V')
 
+    #    0  
+    #       1
+    #
+    #   01 01
+    # or
+    #   01 10
+
+    assert {((0,1),(0,1)),((0,1),(1,0))} == set(sp.gen_solutions(max_solutions=100))
+    
 def test_order_h():
     sp = SeqPair(4)
     sp.order(3,2,'H')
@@ -376,10 +389,10 @@ def test_order_h():
 
     assert {((3,2,1,0),(3,2,1,0))} == set(sp.gen_solutions(max_solutions=100))
 
+
 def test_order_array_h():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'H')
-
     assert {((3,2,1,0),(3,2,1,0))} == set(sp.gen_solutions(max_solutions=100))
 
 
@@ -396,7 +409,7 @@ def test_order_array_v():
     sp = SeqPair(4)
     sp.order_array([3,2,1,0],'V')
 
-    assert {((3,2,1,0),(0,1,2,3))} == set(sp.gen_solutions(max_solutions=100))
+    assert {((3,2,1,0),(3,2,1,0))} == set(sp.gen_solutions(max_solutions=100))
 
 
 def test_order_bad_axis():

@@ -67,7 +67,7 @@ class BaseModel(pydantic.BaseModel):
         validate_assignment = True
         extra = 'forbid'
         allow_mutation = False
-        copy_on_model_validation = False
+        copy_on_model_validation = 'none'
 
     def __init__(self, *args, **kwargs):
         self._parent = _ctx.get()
@@ -124,6 +124,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
     _commits = pydantic.PrivateAttr()
     _parent = pydantic.PrivateAttr()
+    _cache = pydantic.PrivateAttr()
 
     @property
     def parent(self):
@@ -132,7 +133,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
     class Config:
         validate_assignment = True
         extra = 'forbid'
-        copy_on_model_validation = False
+        copy_on_model_validation = 'none'
         allow_mutation = False
 
     def append(self, item: DataT):
@@ -180,6 +181,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
         with set_context(self):
             super().__init__(*args, **kwargs)
         self._commits = collections.OrderedDict()
+        self._cache = set()
 
     def _gen_commit_id(self, nchar=8):
         id_ = ''.join(random.choices(
@@ -209,7 +211,7 @@ class List(pydantic.generics.GenericModel, typing.Generic[DataT]):
 
 
 class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
-    __root__: typing.Mapping[KeyT, DataT]
+    __root__: typing.Dict[KeyT, DataT]
 
     _parent = pydantic.PrivateAttr()
 
@@ -220,7 +222,7 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
     class Config:
         validate_assignment = True
         extra = 'forbid'
-        copy_on_model_validation = False
+        copy_on_model_validation = 'none'
         allow_mutation = False
 
     def __init__(self, *args, **kwargs):
@@ -257,4 +259,3 @@ class Dict(pydantic.generics.GenericModel, typing.Generic[KeyT, DataT]):
 
     def __contains__(self, v):
         return self.__root__.__contains__(v)
-        #return v in self.__root__

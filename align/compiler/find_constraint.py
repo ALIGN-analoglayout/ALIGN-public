@@ -193,7 +193,7 @@ def recursive_start_points(G, match_pairs, traversed, node1, node2, ports_weight
         logger.debug(f"No pair found from {node1} {node2}")
         return
     match_pairs[(node1, node2)] = pair
-    logger.debug(f"updating match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
+    logger.debug(f"updated match pairs (start): {pprint.pformat(match_pairs, indent=4)}")
     return
 
 
@@ -243,7 +243,6 @@ def constraint_generator(ckt_data):
 
 
 def FindConst(subckt):
-    logger.debug(f"Searching constraints for block {subckt.name}")
     # Read contents of input constraint file
     stop_points = set()
     auto_constraint = True
@@ -257,11 +256,12 @@ def FindConst(subckt):
     logger.debug(f"Stop_points : {stop_points}")
 
     pp = process_input_const(subckt)
+    #TODO make it a set instead of list
     written_symmblocks = pp.process_all()
-
     if not auto_constraint:
         return
 
+    logger.debug(f"Searching constraints for block {subckt.name}")
     # Search symmetry constraints
     match_pairs = FindSymmetry(subckt, stop_points)
     logger.debug(f"match pairs {match_pairs}")
@@ -286,11 +286,12 @@ class process_input_const:
 
     def process_all(self):
         self.process_symmnet()
+        #do not identify captures all instance names from constraints
         self.process_do_not_identify()
         return self.user_constrained_list
 
     def process_do_not_identify(self):
-        for const in self.iconst:
+        for const in constraint.expand_user_constraints(self.iconst):
             if isinstance(const, constraint.DoNotIdentify):
                 self.user_constrained_list.extend(const.instances)
 
@@ -300,52 +301,71 @@ class process_input_const:
         new_symmblock_const = list()
         for const in self.iconst:
             if isinstance(const, constraint.SymmetricNets):
-                # if not getattr(const, 'pins1', None):
-                # TODO: const with pin information should be handled separately
-                logger.debug(f"adding pins to user symmnet constraint {const}")
-                pairs, s1, s2 = symmnet_device_pairs(
-                    self.G,
-                    const.net1.upper(),
-                    const.net2.upper(),
-                    self.user_constrained_list,
-                    None,
-                    True)
-                assert s1, f"no connections found to net {const.net1}, fix user const"
-                assert s2, f"no connections found to net {const.net2}, fix user const"
-                with set_context(self.iconst):
-                    replace_const.append(
-                        (
-                            const,
-                            constraint.SymmetricNets(
-                                direction=const.direction,
-                                net1=const.net1.upper(),
-                                net2=const.net2.upper(),
-                                pins1=s1,
-                                pins2=s2,
-                            ),
+                if not getattr(const, 'pins1', None):
+                    logger.debug(f"adding pins to user symmnet constraint {const}")
+                    pairs, s1, s2 = symmnet_device_pairs(
+                        self.G,
+                        const.net1.upper(),
+                        const.net2.upper(),
+                        self.user_constrained_list,
+                        None,
+                        True)
+                    assert s1, f"no connections found to net {const.net1} in subcircuit {self.subckt}, fix user const"
+                    assert s2, f"no connections found to net {const.net2} in subcircuit {self.subckt}, fix user const"
+                    with set_context(self.iconst):
+                        replace_const.append(
+                            (
+                                const,
+                                constraint.SymmetricNets(
+                                    direction=const.direction,
+                                    net1=const.net1.upper(),
+                                    net2=const.net2.upper(),
+                                    pins1=s1,
+                                    pins2=s2,
+                                ),
+                            )
                         )
-                    )
-                    pairsj = list()
-                    for key, value in pairs.items():
-                        if key in s1:
-                            continue
-                        if key != value and {key, value} not in self.user_constrained_list:
-                            self.user_constrained_list.append({key, value})
-                            pairsj.append([key, value])
-                        elif key not in self.user_constrained_list:
-                            self.user_constrained_list.append(key)
-                            pairsj.append([key])
-                    if len(pairsj) > 0:
+                else: # existing pin information
+                    pin_pairs = {}
+                    remove_duplicate = []
+                    for i in range(len(const.pins1)):
+                        logger.info(f"{i} {pin_pairs}")
+                        if const.pins1[i] in pin_pairs.keys():
+                            remove_duplicate.append(i)
+                        elif not const.pins1[i] in self.subckt.pins:
+                            pin_pairs[const.pins1[i]] = const.pins2[i]
+                    for index in sorted(remove_duplicate, reverse=True):
+                        del const.pins1[index]
+                        del const.pins2[index]
+                    logger.info(f"updated symmetry net const: {const}")
+                    pairs = {k.split("/")[0]: v.split("/")[0] for k,v in pin_pairs.items()}
+                pairsj = list()
+                for key, value in pairs.items():
+                    if key in self.subckt.pins:
+                        continue #net name is same as port name
+                    if key != value and {key, value} not in self.user_constrained_list:
+                        self.user_constrained_list.append({key, value})
+                        pairsj.append([key, value])
+                    elif key not in self.user_constrained_list:
+                        self.user_constrained_list.append(key)
+                        pairsj.append([key])
+                if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
+                    # Do not generate symmetry constraint for a single instance
+                    with set_context(self.iconst):
                         symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
-                        new_symmblock_const.append(symmBlock)
+                    new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
             for k, v in replace_const:
-                self.iconst.remove(k)
-                self.iconst.append(v)
-                self.user_constrained_list.append(v.net1)
-                self.user_constrained_list.append(v.net2)
+                if k!=v: # removing constraint does not remove it from cache and z3 solver, duplicate const is not allowed in solver
+                    self.iconst.remove(k)
+                    self.iconst.append(v)
+                    self.user_constrained_list.append(v.net1)
+                    self.user_constrained_list.append(v.net2)
             for symb in new_symmblock_const:
-                self.iconst.append(symb)
+                #avoid subsets
+                if not any(set(map(tuple, symb.pairs)).issubset(set(map(tuple, const.pairs)))
+                    for const in self.iconst if isinstance(const, constraint.SymmetricBlocks)):
+                    self.iconst.append(symb)
 
 
 class add_symmetry_const:
@@ -382,7 +402,7 @@ class add_symmetry_const:
             add_or_revert_const(pairsj, self.iconst, self.written_symmblocks)
         logger.debug(f"identified constraints of {self.name} are {self.iconst}")
 
-    def pre_fiter(self, key, value):
+    def pre_filter(self, key, value):
         smb_1d = set()
         assert isinstance(key, str), f'invlid instance {key}'
         assert isinstance(value, str), f'invlid instance {value}'
@@ -411,7 +431,7 @@ class add_symmetry_const:
         pairsj = list()
         insts_in_single_symmetry = set()
         for key, value in pairs:
-            if self.pre_fiter(key, value):
+            if self.pre_filter(key, value):
                 continue
             if {key, value} & insts_in_single_symmetry:
                 continue
@@ -431,7 +451,7 @@ class add_symmetry_const:
 
     def filter_symnet_const(self, pairs: list):
         for key, value in pairs:
-            if self.pre_fiter(key, value):
+            if self.pre_filter(key, value):
                 continue
             if not self.G.nodes[key].get("instance"):
                 if key != value:
@@ -462,7 +482,7 @@ class add_symmetry_const:
 
 
 def add_or_revert_const(pairsj: list, iconst, written_symmblocks: list):
-    logger.debug(f"filterd symmetry pairs: {pairsj}")
+    logger.debug(f"filtered symmetry pairs: {pairsj}")
     if len(pairsj) > 1 or (pairsj and len(pairsj[0]) == 2):
         try:
             with set_context(iconst):
@@ -549,7 +569,7 @@ def symmnet_device_pairs(G, net_A, net_B, smb=list(), skip_blocks=None, user=Fal
                         #     f"Skip symmnet: Multiple matches of net {net_B} found"
                         # )
                         return [None, None, None]
-                    elif user == False and {instA_name, instB_name} not in smb:
+                    elif not user and {instA_name, instB_name} not in smb:
                         logger.debug(f"unsymmetrical instances {instA_name, instB_name} {smb}")
                         continue
                     elif ele_A not in pinsA and ele_B not in pinsB:

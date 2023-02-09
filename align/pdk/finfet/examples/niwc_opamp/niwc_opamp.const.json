@@ -1,0 +1,10 @@
+[
+    {"constraint": "PowerPorts", "ports": ["vccx"]},
+    {"constraint": "GroundPorts", "ports": ["vssx"]},
+    {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp"},
+    {"constraint": "GroupBlocks", "instances": ["m7", "m8"], "instance_name": "xnrail"},
+    {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail"},
+    {"constraint": "GroupBlocks", "instances": ["m3", "m4"], "instance_name": "xls"},
+    {"constraint": "GroupBlocks", "instances": ["m5", "m6"], "instance_name": "xostage"},
+    {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["mtail"], ["xnrail"], ["xprail"], ["xdp"], ["xls"], ["xostage"]]}
+]

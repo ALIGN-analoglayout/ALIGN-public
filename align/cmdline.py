@@ -1,13 +1,12 @@
 import argparse
 from .main import schematic2layout
 from . import __version__
-
+import os
 from .utils import logmanager
 
 import logging
 logger = logging.getLogger(__name__)
 
-import os
 
 class CmdlineParser():
 
@@ -104,7 +103,7 @@ class CmdlineParser():
         parser.add_argument('--router_mode',
                             type=str,
                             default='top_down',
-                            choices=['top_down','bottom_up','no_op'],
+                            choices=['top_down','bottom_up','collect_pins','no_op'],
                             help='Router mode')
 
         parser.add_argument('--gui',
@@ -133,9 +132,18 @@ class CmdlineParser():
                             action='store_true',
                             help='Use ILP to determine subcircuit selection.')
 
+        parser.add_argument('--place_using_ILP',
+                            action='store_true',
+                            help='Use ILP to determine subcircuit selection.')
+
         parser.add_argument('--use_analytical_placer',
                             action='store_true',
                             help='Use analytical placer.')
+
+        parser.add_argument('--placer_sa_iterations',
+                            type=int,
+                            default=10000,
+                            help="Iterations used by the placer's SA algorithm.")
 
         parser.add_argument('--seed',
                             type=int,
@@ -148,9 +156,21 @@ class CmdlineParser():
                             choices=['symphony', 'lpsolve'],
                             help='ILP Solver used by placer ')
 
+        parser.add_argument('--placer_ilp_runtime',
+                            type=int,
+                            default=1,
+                            help="Runtime limit in seconds for ILP in each iteration of placement")
+
+        parser.add_argument('--placer',
+                            choices=['cpp', 'python'],
+                            default='cpp',
+                            help='Select the placer engine to use. Default: %(default)s')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
+        if args:
+            logger.debug(f"Command line arguments: {' '.join(args[0])}")
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
             return schematic2layout(**vars(arguments))

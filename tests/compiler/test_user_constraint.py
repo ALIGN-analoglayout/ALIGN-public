@@ -42,15 +42,24 @@ def test_group_block_hsc(dir_name):
     )
     updated_cktlib, prim_lib = compiler_input(test_path, circuit_name, pdk_dir, config_path)
     annotate_library(updated_cktlib, prim_lib)
-    plibs = {"DP", "CCN", "CCP", "INV_P", "INV_N", "DP_NMOS_B", "CCP_S_NMOS_B"}
-    assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
+    HSC = updated_cktlib.find("HIGH_SPEED_COMPARATOR")
+    assert {inst.name for inst in HSC.elements} == {'X_DP_MN1_MN2', 'X_CCN_MN3_MN4',
+                                                'X_CCP_MP5_MP6', 'X_INV_N_MP11_MN13',
+                                                'X_INV_P_MP12_MN14', 'X_MP10', 'X_MP9', 'X_MN0', 'X_MP7', 'X_MP8'}
+    # assert {plib for subckt in updated_cktlib for plib in plibs if plib in subckt.name} == plibs, f"missing primitive"
     result_path = out_path / dir_name
     if result_path.exists() and result_path.is_dir():
         shutil.rmtree(result_path)
     result_path.mkdir(parents=True, exist_ok=False)
     FindConst(updated_cktlib.find("HIGH_SPEED_COMPARATOR"))
     gen_const = updated_cktlib.find("HIGH_SPEED_COMPARATOR").constraints.dict()["__root__"]
+    #TODO file changes in separate branch
+    gen_const = [const for const in gen_const if not const['constraint']=='GroupBlocks']
     gen_const.sort(key=lambda item: item.get("constraint"))
+    for i,const in enumerate(gen_const):
+        if const['constraint'] == 'DoNotIdentify':
+            gen_const[i]['instances'] = sorted(const['instances'])
+    print(gen_const)
     gold_const_path = (
         pathlib.Path(__file__).resolve().parent.parent
         / "files"
@@ -60,6 +69,8 @@ def test_group_block_hsc(dir_name):
     with open(gold_const_path, "r") as const_fp:
         gold_const = json.load(const_fp)
         gold_const.sort(key=lambda item: item.get("constraint"))
+
+
     assert gold_const == gen_const
 
 
@@ -101,6 +112,7 @@ def test_scf():
     assert updated_cktlib.find("SWITCHED_CAPACITOR_FILTER")
     FindConst(updated_cktlib.find("SWITCHED_CAPACITOR_FILTER"))
     gen_const = updated_cktlib.find("SWITCHED_CAPACITOR_FILTER").constraints.dict()["__root__"]
+    gen_const = [const for const in gen_const if const['constraint']!='GroupBlocks']
     gen_const.sort(key=lambda item: item.get("constraint"))
 
     gold_const_path = (
@@ -133,7 +145,8 @@ def test_merged_const():
     example = build_example(name, netlist, constraints)
     constraints = [
         {'subcircuit': name,
-         'constraints': [{"constraint": "GroundPorts", "ports": ["S"]}]
+         'constraints': [{"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
          },
         {'subcircuit': 'PARAM_MOS',
          'constraints': [{"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"]}]
@@ -147,9 +160,11 @@ def test_merged_const():
         [module.name for module in ckt_library if isinstance(module, SubCircuit)]
     )
     assert available_modules == all_modules, f"{available_modules}"
-    assert ckt_library.find(name).constraints.dict()['__root__'] == [{"constraint": "ground_ports", "ports": ["S"]}]
-    assert ckt_library.find('PARAM_MOS').constraints.dict()['__root__'] == [{"constraint": "do_not_use_lib", "libraries": ["DP_NMOS_B"], 'propagate': False},
-                                                                            {"constraint": "ground_ports", "ports": ["S"]}]
+    assert ckt_library.find(name).constraints.dict()['__root__'] == [{"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
+    assert ckt_library.find('PARAM_MOS').constraints.dict()['__root__'] == [{"constraint": "DoNotUseLib", "libraries": ["DP_NMOS_B"], 'propagate': False},
+                                                                            {"constraint": "GroundPorts", "ports": ["S"],
+            "propagate": True}]
     clean_data(name)
 
 
@@ -172,7 +187,7 @@ def test_group_cap():
          }
         ]
     mod_const = [
-        {"constraint": "group_caps", "name": "cap_group1",
+        {"constraint": "GroupCaps", "name": "cap_group1",
          "instances": ["C1", "C2"],
          "num_units": [2, 2],
          "unit_cap": "Cap_12f",
@@ -267,9 +282,10 @@ def test_symmnet_translation():
     cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
     annotate_library(cktlib, prim_lib)
     FindConst(cktlib.find(name))
-    symnet_const = cktlib.find(name).constraints.dict()["__root__"][2]
+    all_const = cktlib.find(name).constraints.dict()["__root__"]
+    symnet_const = [const for const in all_const if const['constraint']=='SymmetricNets'][0]
     modified_symmnet = {
-        "constraint": "symmetric_nets",
+        "constraint": "SymmetricNets",
         "direction": "V",
         "net1": "A",
         "pins1": ["X_MN1/D", "X_MN2/D", "A"],
@@ -277,4 +293,27 @@ def test_symmnet_translation():
         "pins2": ["X_MN3/D", "X_MN4/D", "B"]
     }
     assert symnet_const == modified_symmnet, f"incorrect ports identified for symmnet"
+    clean_data(name)
+
+
+def test_groupblock_generator():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(
+        f"""\
+        .subckt {name} a b g1 g2 vssx
+        mn1 a g1 vssx vssx n w=360e-9 nf=2 m=8
+        mn2 b g2 vssx vssx n w=360e-9 nf=2 m=8
+        .ends {name}
+    """
+    )
+    constraints = [{"constraint": "GroupBlocks",  "instances": ["mn1", "mn2"], "instance_name": "x_dp1_mn1_mn2", "template_name":"DP", "generator":{"name":"MOS", "parameters":{"pattern":"cc"}}},
+    ]
+    example = build_example(name, netlist, constraints)
+    cktlib, prim_lib = compiler_input(example, name, pdk_dir, config_path)
+    annotate_library(cktlib, prim_lib)
+    assert len([sckt for sckt in cktlib if 'DP' in sckt.name]) ==1 , f"no groupblock primitive found {[subckt.name for subckt in cktlib]}"
+    dp1 = [sckt for sckt in cktlib if 'DP' in sckt.name][0]
+    assert dp1.generator["name"] == 'MOS', f"generator definition error {dp1.generator}"
+    assert dp1.constraints.dict()['__root__'][0] == {'constraint':'Generator' , 'name': 'MOS', 'parameters':{'pattern':'cc'}}, f"generator constraint error {dp1.constraints}"
+
     clean_data(name)

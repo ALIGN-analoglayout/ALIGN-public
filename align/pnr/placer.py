@@ -17,12 +17,7 @@ from .build_pnr_model import gen_DB_verilog_d
 logger = logging.getLogger(__name__)
 
 
-PLACER_SA_MAX_ITER = 1e4
-
-
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json):
-
-    logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, placer_sa_iterations, placer_ilp_runtime):
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
@@ -30,25 +25,28 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    hyper.T_INT = 0.5  # Increase for denormalized decision criteria
-    hyper.T_MIN = 0.05
-    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/PLACER_SA_MAX_ITER)
+    # hyper.T_INT = 0.5  # Increase for denormalized decision criteria
+    # hyper.T_MIN = 0.05
+    hyper.SA_MAX_ITER = placer_sa_iterations
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/max(hyper.SA_MAX_ITER, 10000))
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
-    # hyper.ALPHA = 0.99925
     # hyper.max_init_trial_count = 10000
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
-    # hyper.COUNT_LIMIT = 200
-    # hyper.select_in_ILP = False
+    hyper.select_in_ILP = select_in_ILP
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
+    hyper.use_ILP_placer = place_using_ILP
+    hyper.ILP_runtime_limit = placer_ilp_runtime # user specified runtime limit (in seconds) for ILP in each iteration of placer.
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
     if modules_d is not None:
         hyper.use_external_placement_info = True
         hyper.placement_info_json = json.dumps(modules_d, indent=2)
+    else:
+        logger.info(f'Starting bottom-up placement on {DB.hierTree[idx].name} {idx}')
 
     curr_plc = PnR.PlacerIfc( current_node, numLayout, opath, effort, DB.getDrc_info(), hyper)
 
@@ -81,7 +79,7 @@ def subset_verilog_d( verilog_d, nm):
     def aux( module_name):
         found_modules.add( module_name)
         if module_name in modules:
-            for instance in modules[module_name]['instances']:        
+            for instance in modules[module_name]['instances']:
                 atn = instance['abstract_template_name']
                 aux( atn)
 
@@ -93,7 +91,7 @@ def subset_verilog_d( verilog_d, nm):
     for module in new_verilog_d['modules']:
         if module['name'] in found_modules:
             new_modules.append( module)
-    
+
     new_verilog_d['modules'] = new_modules
 
     return new_verilog_d
@@ -121,15 +119,17 @@ def per_placement( placement_verilog_d, *, hN, scale_factor, opath, placement_ve
     concrete_name = next(iter(concrete_names))
 
     scale_and_check_placement( placement_verilog_d=placement_verilog_d, concrete_name=concrete_name, scale_factor=scale_factor, opath=opath, placement_verilog_alternatives=placement_verilog_alternatives, is_toplevel=is_toplevel)
-    
+
 
     nets_d = gen_netlist( placement_verilog_d, concrete_name)
     hpwl_alt = calculate_HPWL_from_placement_verilog_d( placement_verilog_d, concrete_name, nets_d, skip_globals=True)
 
     if hpwl_alt != hN.HPWL_extend:
-        logger.warning( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ!')
+        msg = f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} differ for {concrete_name}!'
+        logger.error(msg)
+        assert False, msg
     else:
-        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal!')
+        logger.debug( f'hpwl: locally computed from netlist {hpwl_alt}, placer computed {hN.HPWL_extend} are equal for {concrete_name}!')
 
     reported_hpwl = hpwl_alt / 2000
 
@@ -162,7 +162,7 @@ def gen_leaf_map(*, DB):
 
             else:
                 logger.error( f'LEF for concrete name {ctn} (of {atn}) missing.')
-    
+
     return leaf_map
 
 def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics):
@@ -283,10 +283,10 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
         gen_constraints(scaled_placement_verilog_d, top_name)
         top_module = next(iter([module for module in scaled_placement_verilog_d['modules'] if module['concrete_name'] == top_name]))
 
-        frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'place_on_grid']
+        frontier[top_name] = [constraint.dict() for constraint in top_module['constraints'] if constraint.constraint == 'PlaceOnGrid']
 
         for constraint in frontier[top_name]:
-            assert constraint['constraint'] == 'place_on_grid'
+            assert constraint['constraint'] == 'PlaceOnGrid'
             # assert constraint['ored_terms'], f'No legal grid locations for {top_name} {constraint}'
             # Warn now and fail at the end for human-readable error message
             if not constraint['ored_terms']:
@@ -297,16 +297,12 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
-                       placement_verilog_d, select_in_ILP, seed, use_analytical_placer, ilp_solver, primitives):
+                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, placer_sa_iterations, placer_ilp_runtime):
 
-    logger.info(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
+    logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
     if placement_verilog_d is not None:
-        #
-        # Need to do this until we fix the PnR set placement code
-        #    scales by 1 if scale_factor is 1, by 10 if scale_factor is 10 (2* compenstates for the automatic divide by 2 in scale_placement_verilog)
-        #
-        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 2*scale_factor, invert=True)        
+        hack_placement_verilog_d = scale_placement_verilog( placement_verilog_d, scale_factor, invert=True)
 
         modules = defaultdict(list)
         for m in hack_placement_verilog_d['modules']:
@@ -323,9 +319,10 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
             modules_d = modules[DB.hierTree[idx].name]
 
         place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
-              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP,
+              lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
-              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str)
+              modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
+              placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
         update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 
@@ -340,8 +337,9 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
 
 def placer_driver(*, cap_map, cap_lef_s,
                   lambda_coeff, scale_factor,
-                  select_in_ILP, seed,
-                  use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir):
+                  select_in_ILP, place_using_ILP, seed,
+                  use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir,
+                  placer_sa_iterations, placer_ilp_runtime):
 
     fpath = toplevel_args_d['input_dir']
 
@@ -380,8 +378,9 @@ def placer_driver(*, cap_map, cap_lef_s,
                                                                                       verilog_d=verilog_d, lambda_coeff=lambda_coeff,
                                                                                       scale_factor=scale_factor,
                                                                                       placement_verilog_d=None,
-                                                                                      select_in_ILP=select_in_ILP, seed=seed,
+                                                                                      select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                                                                                       use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
-                                                                                      primitives=primitives)
+                                                                                      primitives=primitives,
+                                                                                      placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics

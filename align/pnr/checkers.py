@@ -1,9 +1,7 @@
 from ..cell_fabric import transformation, pdk
-from .. import primitive
+from ..compiler.util import get_generator
 import itertools
 import json
-import importlib
-import sys
 import pathlib
 import re
 from .router import NType
@@ -29,11 +27,11 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, extract=False, input_dir=None, markers=False,
                     toplevel=True, pnr_const_ds=None):
 
-    logger.info( f'Checking: {hN.name}')
+    logger.debug(f'Checking: {hN.name}')
 
     global_power_names = set( [ n.name for n in hN.PowerNets])
 
-    generator = primitive.get_generator('MOSGenerator', pdkdir)
+    generator = get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1,1)
@@ -143,8 +141,6 @@ def gen_viewer_json(hN, *, pdkdir, draw_grid=False, global_route_json=None, json
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
                     default_name = nm if nm in global_power_names else formal_name
-                    if nm in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
-                        default_name = hN.Gnd.name
                     term['netName'] = fa_map.get( formal_name, default_name)
                 if 'pin' in term:
                     del term['pin']

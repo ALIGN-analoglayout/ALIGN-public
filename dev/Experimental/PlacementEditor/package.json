@@ -25,20 +25,20 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.5",
-    "@vue/cli-plugin-eslint": "^3.0.5",
-    "@vue/cli-plugin-unit-jest": "^3.9.0",
-    "@vue/cli-service": "^3.8.4",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-plugin-unit-jest": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-prettier": "^4.0.0",
     "@vue/test-utils": "^1.0.0-beta.27",
     "ajv": "^6.12.3",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
-    "babel-jest": "^23.6.0",
+    "babel-jest": "^29.3.1",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
-    "jest": "^23.6.0",
+    "jest": "^29.0.3",
     "prettier": "^1.15.2",
-    "vue-jest": "^3.0.2",
+    "vue-jest": "^4.0.1",
     "vue-template-compiler": "^2.5.17"
   }
 }

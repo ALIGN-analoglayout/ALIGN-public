@@ -1,8 +1,8 @@
 import pathlib
 import json
-from align.schema import SubCircuit
+from align.schema import SubCircuit, constraint
 from align.compiler.compiler import compiler_input, generate_hierarchy, annotate_library
-from utils import ota_six, ota_six_flip, clean_data, build_example, get_test_id
+from utils import ota_six, ota_six_flip, clean_data, build_example, get_test_id, ring_oscillator
 
 pdk_path = (
     pathlib.Path(__file__).resolve().parent.parent.parent
@@ -13,7 +13,7 @@ config_path = pathlib.Path(__file__).resolve().parent.parent / "files"
 out_path = pathlib.Path(__file__).resolve().parent / "Results"
 
 
-def test_ota_six():
+def test_ota_six_basic():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = ota_six(name)
     constraints = [
@@ -23,7 +23,7 @@ def test_ota_six():
     example = build_example(name, netlist, constraints)
     ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
     annotate_library(ckt_lib, prim_lib)
-    all_modules = set(['CKT_OTA', "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
+    all_modules = set(['CKT_OTA_SIX', "SCM_NMOS", "SCM_PMOS", "DP_NMOS_B"])
     available_modules = set(
         ['_'.join(module.name.split('_')[:-1]) for module in ckt_lib if isinstance(module, SubCircuit)]
     )
@@ -87,6 +87,21 @@ def test_skip_digital():
     clean_data(name)
 
 
+def test_ring_osc_sametemplate():
+    name = f'ckt_{get_test_id()}'.upper()
+    netlist = ring_oscillator(name)
+    constraints = [
+        {"constraint": "PowerPorts", "ports": ["VCCX"]},
+        {"constraint": "GroundPorts", "ports": ["VSSX"]}
+    ]
+    example = build_example(name, netlist, constraints)
+    ckt_lib, prim_lib = compiler_input(example, name, pdk_path, config_path)
+    annotate_library(ckt_lib, prim_lib)
+    ring_osc =  ckt_lib.find(name.upper())
+    assert ring_osc, f"no subcircuit found {name.upper()}"
+    assert ring_osc.constraints[2].dict() == {"constraint": "SameTemplate", "instances":["XI0", "XI1", "XI2", "XI3", "XI4"]}
+    clean_data(name)
+
 def test_dont_use_lib_cell():
     name = f'ckt_{get_test_id()}'.upper()
     netlist = ota_six(name)
@@ -119,7 +134,8 @@ def test_dont_const():
     gen_const_path = out_path / f'{name}.verilog.json'
     with open(gen_const_path, "r") as fp:
         gen_const = next(x for x in json.load(fp)['modules'] if x['name'] == name)["constraints"]
-        assert len(gen_const) == 3, f"{gen_const}"
+        gen_const = [c for c in gen_const if not isinstance(c, constraint.GroupBlocks)]
+        assert len(gen_const) == 2, f"{gen_const}"
     clean_data(name)
 
 
@@ -138,22 +154,7 @@ def test_dont_constrain_clk():
     pass
 
 
-def test_identify_array():
-    # TODO Do not identify array when setup set as false
-    name = f'ckt_{get_test_id()}'.upper()
-    netlist = ota_six(name)
-    constraints = [
-        {"constraint": "PowerPorts", "ports": ["VCCX"]},
-        {"constraint": "GroundPorts", "ports": ["VSSX"]},
-        {"constraint": "ConfigureCompiler", "identify_array": False}
-    ]
-    example = build_example(name, netlist, constraints)
-    generate_hierarchy(example, name, out_path, False, pdk_path)
-    clean_data(name)
-    pass
-
-
-def test_keep_duppy():
+def test_keep_dummy():
     # TODO Do not identify array when setup set as false
     name = f'ckt_{get_test_id()}'.upper()
     netlist = ota_six(name)

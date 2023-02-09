@@ -25,7 +25,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4 # number of vCPUs (2)
+      MAX_JOBS: 2 # number of vCPUs (2)
 
     steps:
       - run:
@@ -95,7 +95,8 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4
+      MAX_JOBS: 2
+      BUILD_PLATFORM: manylinux_2_24_x86_64
 
     steps:
       - run:
@@ -154,7 +155,7 @@ jobs:
     environment:
       ALIGN_HOME: /root/ALIGN-public
       ALIGN_WORK_DIR: /root/ALIGN-public/work
-      MAX_JOBS: 4
+      MAX_JOBS: 2
 
     steps:
       - run:
@@ -169,7 +170,7 @@ jobs:
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
-            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --placer_sa_iterations 100 --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports
@@ -226,7 +227,7 @@ workflows:
               ci-level:
                 - "checkin"
               max-errors:
-                - "1"
+                - "0"
       - test-integration:
           name: "test-integration-cp38-<<matrix.pdk>>"
           requires:

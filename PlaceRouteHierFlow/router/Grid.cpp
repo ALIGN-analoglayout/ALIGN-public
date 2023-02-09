@@ -13,8 +13,6 @@ Grid::Grid(const Grid& other)
       End_index_metal_vertices(other.End_index_metal_vertices),
       Source(other.Source),
       Dest(other.Dest),
-      SourceGraph(other.SourceGraph),
-      DestGraph(other.DestGraph),
       x_unit(other.x_unit),
       y_unit(other.y_unit),
       x_min(other.x_min),
@@ -34,13 +32,10 @@ Grid::Grid(const Grid& other)
 //  this->total2graph=other.total2graph;
 //  this->graph2total=other.graph2total;
 //  this->vertices_total=other.vertices_total;
-//  this->vertices_graph=other.vertices_graph;
 //  this->Start_index_metal_vertices=other.Start_index_metal_vertices;
 //  this->End_index_metal_vertices=other.End_index_metal_vertices;
 //  this->Source=other.Source;
 //  this->Dest=other.Dest;
-//  this->SourceGraph=other.SourceGraph;
-//  this->DestGraph=other.DestGraph;
 //  this->x_unit=other.x_unit;
 //  this->y_unit=other.y_unit;
 //  this->x_min= other.x_min;
@@ -67,8 +62,6 @@ Grid& Grid::operator=(const Grid& other) {
   this->End_index_metal_vertices = other.End_index_metal_vertices;
   this->Source = other.Source;
   this->Dest = other.Dest;
-  this->SourceGraph = other.SourceGraph;
-  this->DestGraph = other.DestGraph;
   this->x_unit = other.x_unit;
   this->y_unit = other.y_unit;
   this->x_min = other.x_min;
@@ -85,104 +78,6 @@ Grid& Grid::operator=(const Grid& other) {
   this->layerNo = other.layerNo;
   this->vertices_total_map = other.vertices_total_map;
   return *this;
-}
-
-void Grid::Check_Full_Connection_Grid() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.Check_Full_Connection_Grid");
-
-  for (int i = 0; i < (int)vertices_total_full_connected.size(); i++) {
-    int east_error = 0;
-    int west_error = 0;
-    int south_error = 0;
-    int north_error = 0;
-
-    int east_empty = 0;
-    int west_empty = 0;
-    int south_empty = 0;
-    int north_empty = 0;
-
-    if (drc_info.Metal_info[vertices_total_full_connected[i].metal].direct == 0) {
-      if ((int)vertices_total_full_connected[i].east.size() > 0) {
-        if ((int)vertices_total_full_connected[i].east.size() > 1) {
-          east_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].east[0]].x - vertices_total_full_connected[i].x) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x) {
-          east_error = 1;
-        }
-      } else {
-        east_empty = 1;
-      }
-
-      if ((int)vertices_total_full_connected[i].west.size() > 0) {
-        if ((int)vertices_total_full_connected[i].west.size() > 1) {
-          west_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].west[0]].x - vertices_total_full_connected[i].x) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x) {
-          west_error = 1;
-        }
-
-      } else {
-        west_empty = 1;
-      }
-
-    } else {
-      if ((int)vertices_total_full_connected[i].south.size() > 0) {
-        if ((int)vertices_total_full_connected[i].south.size() > 1) {
-          south_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].south[0]].y - vertices_total_full_connected[i].y) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y) {
-          south_error = 1;
-        }
-      } else {
-        south_empty = 1;
-      }
-
-      if ((int)vertices_total_full_connected[i].north.size() > 0) {
-        if ((int)vertices_total_full_connected[i].north.size() > 1) {
-          north_error = 1;
-        }
-        if (abs(vertices_total_full_connected[vertices_total_full_connected[i].north[0]].y - vertices_total_full_connected[i].y) !=
-            drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y) {
-          north_error = 1;
-        }
-
-      } else {
-        south_empty = 1;
-      }
-    }
-
-    if (east_error == 0 && west_error == 0 && south_error == 0 && north_error == 0 && east_empty == 0 && west_empty == 0 && south_empty == 0 &&
-        north_empty == 0) {
-    } else {
-      if (east_error == 1) {
-        logger->error("east_error ");
-      }
-      if (west_error == 1) {
-        logger->error("west_error ");
-      }
-      if (south_error == 1) {
-        logger->error("south_error ");
-      }
-      if (north_error == 1) {
-        logger->error("north_error ");
-      }
-      if (east_empty == 1) {
-        logger->error("east_empty ");
-      }
-      if (west_empty == 1) {
-        logger->error("west_empty ");
-      }
-      if (south_empty == 1) {
-        logger->error("south_empty ");
-      }
-      if (north_empty == 1) {
-        logger->error("north_empty ");
-      }
-    }
-  }
 }
 
 void Grid::CreateGridData() {
@@ -255,7 +150,6 @@ void Grid::CreateGridData() {
 
   matlabfile.close();
 
-
   std::ofstream matlabfile_via;
   matlabfile_via.open("Grid_via.txt");
 
@@ -272,27 +166,27 @@ void Grid::CreateGridData() {
   };
 
   for (unsigned int i = 0; i < vertices_total.size(); i++) {
-     //std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
-     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 1);
-     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 2);
-     if(vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 3);
-
+    // std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<"
+    // "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
+    if (vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 1);
+    if (vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 2);
+    if (vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 3);
   }
 
   matlabfile_via.close();
-
-
-
 }
 
 void Grid::CreateGridData_new() {
   std::ofstream matlabfile;
   matlabfile.open("Grid_new.txt");
 
-  auto write_out_matlab_file = [&](const auto& p, auto index) { //index 0 grid, index 1 src/dest
+  auto write_out_matlab_file = [&](const auto& p, auto index) {  // index 0 grid, index 1 src/dest
     matlabfile << vertices_total[p].x;
     matlabfile << " ";
     matlabfile << vertices_total[p].y;
@@ -304,8 +198,8 @@ void Grid::CreateGridData_new() {
   };
 
   for (unsigned int i = 0; i < vertices_total.size(); i++) {
-      if (vertices_total[i].active) {
-        write_out_matlab_file(i, 0);
+    if (vertices_total[i].active) {
+      write_out_matlab_file(i, 0);
     }
   }
 
@@ -318,7 +212,6 @@ void Grid::CreateGridData_new() {
   }
 
   matlabfile.close();
-
 
   std::ofstream matlabfile_via;
   matlabfile_via.open("Grid_via_new.txt");
@@ -336,36 +229,36 @@ void Grid::CreateGridData_new() {
   };
 
   for (unsigned int i = 0; i < vertices_total.size(); i++) {
-     //std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
-     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 1);
-     if(vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 2);
-     if(vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
-         write_out_matlab_file_via(i, 3);
-
+    // std::cout<<"vertices_total "<<i<<" "<<vertices_total[i].active<<" "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<"
+    // "<<vertices_total[i].down<<" "<<vertices_total[i].via_active_down<<" "<<vertices_total[i].up<<" "<< vertices_total[i].via_active_up<<std::endl;
+    if (vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 1);
+    if (vertices_total[i].active and (vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        !(vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 2);
+    if (vertices_total[i].active and !(vertices_total[i].down != -1 and vertices_total[i].via_active_down) and
+        (vertices_total[i].up != -1 and vertices_total[i].via_active_up))
+      write_out_matlab_file_via(i, 3);
   }
 
   matlabfile_via.close();
-
-
-
 }
 
-
-void Grid::print_source_dest(){
-
+void Grid::print_source_dest() {
   for (unsigned int i = 0; i < Source.size(); i++) {
     int p = Source[i];
-    std::cout<<"source "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
+    std::cout << "source " << p << " " << vertices_total[p].x << " " << vertices_total[p].y << " " << vertices_total[p].metal << " " << vertices_total[p].active
+              << " " << vertices_total[p].up << " " << vertices_total[p].via_active_up << " " << vertices_total[p].down << " "
+              << vertices_total[p].via_active_down << std::endl;
   }
 
-for (unsigned int i = 0; i < Dest.size(); i++) {
+  for (unsigned int i = 0; i < Dest.size(); i++) {
     int p = Dest[i];
-    std::cout<<"dest "<<p<<" "<<vertices_total[p].x<<" "<<vertices_total[p].y<<" "<<vertices_total[p].metal<<" "<<vertices_total[p].active<<" "<<vertices_total[p].up<<" "<<vertices_total[p].via_active_up<<" "<<vertices_total[p].down<<" "<<vertices_total[p].via_active_down<<std::endl;
+    std::cout << "dest " << p << " " << vertices_total[p].x << " " << vertices_total[p].y << " " << vertices_total[p].metal << " " << vertices_total[p].active
+              << " " << vertices_total[p].up << " " << vertices_total[p].via_active_up << " " << vertices_total[p].down << " "
+              << vertices_total[p].via_active_down << std::endl;
   }
-    
-
 }
 
 int Grid::gcd(int a, int b)  // get greatest common divider of two integers
@@ -382,32 +275,6 @@ void Grid::InactivePointlist(std::vector<std::set<RouterDB::point, RouterDB::poi
     p.y = it->y;
     if (plist.at(mm).find(p) != plist.at(mm).end()) {
       it->active = false;
-      /*
-            int via_integ = 2;
-            int next_index = it->index+1;
-            int history_index = it->index-1;
-            if(drc_info.Metal_info[it->metal].direct==1){//h
-               int via_space = -drc_info.Via_model[it->metal].LowerRect[0].x;
-               if(next_index >= 0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].y ==
-         it->y && abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[next_index].active=false;
-                 }
-               if(history_index >= 0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal &&
-         vertices_total[history_index].y == it->y && abs(vertices_total[history_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[history_index].active=false;
-                 }
-              }else{//v
-               int via_space = -drc_info.Via_model[it->metal].LowerRect[0].y;
-               if(next_index >=0 && next_index<(int)vertices_total.size() && vertices_total[next_index].metal == it->metal && vertices_total[next_index].x ==
-         it->x && abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[next_index].active=false;
-                 }
-               if(history_index >=0 && history_index<(int)vertices_total.size() && vertices_total[history_index].metal == it->metal &&
-         vertices_total[history_index].x == it->x && abs(vertices_total[history_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
-                  vertices_total[history_index].active=false;
-                 }
-              }
-      */
     }
   }
 }
@@ -1718,8 +1585,6 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
   vertices_graph.clear();
   total2graph.clear();
   graph2total.clear();
-  SourceGraph.clear();
-  DestGraph.clear();
   RouterDB::point minP, maxP;
   minP.x = LLx;
   minP.y = LLy;
@@ -1729,61 +1594,19 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
     if (vertices_total_map.at(k).empty()) {
       continue;
     }
-    std::set<int> vSet;
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator low = vertices_total_map.at(k).lower_bound(minP);
     std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator high = vertices_total_map.at(k).upper_bound(maxP);
     for (std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator pit = low; pit != high; ++pit) {
-      vSet.insert(pit->second);
-    }
-    for (std::set<int>::iterator sit = vSet.begin(); sit != vSet.end(); ++sit) {
-      int i = *sit;
+      int i = pit->second;
       if (vertices_total.at(i).active) {
         if (vertices_total.at(i).x >= LLx && vertices_total.at(i).x <= URx && vertices_total.at(i).y >= LLy && vertices_total.at(i).y <= URy) {
-          vertices_graph.push_back(vertices_total.at(i));
+          vertices_graph.emplace_back(vertices_total.at(i));
           total2graph[i] = vertices_graph.size() - 1;
           graph2total[vertices_graph.size() - 1] = i;
         }
-        {
-          auto fit = Source_set.find(i);
-          if (fit != Source_set.end()) {
-            SourceGraph.push_back(vertices_graph.size() - 1);
-          }
-        }
-        {
-          auto fit = Dest_set.find(i);
-          if (fit != Dest_set.end()) {
-            DestGraph.push_back(vertices_graph.size() - 1);
-          }
-        }
-
-        /*
-        for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
-          if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
-        }
-        for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
-          if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
-        }
-        */
       }
     }
   }
-  // for(int i=0; i<(int)vertices_total.size(); i++) {
-  //  if(vertices_total.at(i).active) {
-  //    if(vertices_total.at(i).x>=LLx && vertices_total.at(i).x<=URx && vertices_total.at(i).y>=LLy && vertices_total.at(i).y<=URy) {
-  //      vertices_graph.push_back(vertices_total.at(i));
-  //      total2graph[i]=vertices_graph.size()-1;
-  //      graph2total[vertices_graph.size()-1]=i;
-  //    }
-  //    for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
-  //      if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
-  //    }
-  //    for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
-  //      if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
-  //    }
-  //  }
-  //}
-  // CheckVerticesGraph();
-  // CheckMaptotal2graph();
 }
 
 void Grid::ActivateSourceDest() {
@@ -1820,21 +1643,15 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
   RouterDB::SinkData source, dest;
   // for source
   for (unsigned int i = 0; i < Vsource.size(); i++) {
-    // logger->debug("Router-Info: detecting source- {0}", i);
     source = Vsource[i];
-    // logger->debug("Router-Info: detecting checkpoint1 {0}", i);
     std::vector<int> temp_Source;
     if (source.coord.size() > 1) {
       // for pin
-      // logger->debug("Router-Info: detecting checkpoint2", i);
       temp_Source = Mapping_function_pin(source);
-      // logger->debug("Router-Info: detecting checkpoint2.1 {0}", i);
       for (unsigned int j = 0; j < temp_Source.size(); j++) {
-        // std::cout<<"Source "<<temp_Source.size()<<std::endl;
         Source.push_back(temp_Source[j]);
       }
     } else if (source.metalIdx != -1) {
-      // logger->debug("Router-Info: detecting checkpoint3 {0}", i);
       // for terminal
       int min_dis = INT_MAX;
       // wbxu: another logic problem in the following [fixed]
@@ -1899,14 +1716,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
             for (unsigned int j = 0; j < temp_Source.size(); j++) {
               Source.push_back(temp_Source[j]);
             }
-            /*
-            Vsource[i].coord.clear();
-            RouterDB::point t_point;
-            t_point.x = vertices_total[temp_Source[0]].x;
-            t_point.y = vertices_total[temp_Source[0]].y;
-            Vsource[i].coord.push_back(t_point);
-            Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
-            */
             Smap.insert(map<RouterDB::point, std::vector<int>>::value_type(source.coord[0], temp_Source));
             break;
           } else {
@@ -1915,14 +1724,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
         }
       } else {
         temp_Source = Smap[source.coord[0]];
-        /*
-        Vsource[i].coord.clear();
-        RouterDB::point t_point;
-        t_point.x = vertices_total[temp_Source[0]].x;
-        t_point.y = vertices_total[temp_Source[0]].y;
-        Vsource[i].coord.push_back(t_point);
-        Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
-        */
         for (unsigned int j = 0; j < temp_Source.size(); j++) {
           Source.push_back(temp_Source[j]);
         }
@@ -2014,14 +1815,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
             for (unsigned int j = 0; j < temp_Dest.size(); j++) {
               Dest.push_back(temp_Dest[j]);
             }
-            /*
-            Vdest[i].coord.clear();
-            RouterDB::point t_point;
-            t_point.x = vertices_total[temp_Dest[0]].x;
-            t_point.y = vertices_total[temp_Dest[0]].y;
-            Vdest[i].coord.push_back(t_point);
-            Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
-            */
             Smap.insert(map<RouterDB::point, std::vector<int>>::value_type(dest.coord[0], temp_Dest));
             break;
           } else {
@@ -2030,14 +1823,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
         }
       } else {
         temp_Dest = Smap[dest.coord[0]];
-        /*
-        Vdest[i].coord.clear();
-        RouterDB::point t_point;
-        t_point.x = vertices_total[temp_Dest[0]].x;
-        t_point.y = vertices_total[temp_Dest[0]].y;
-        Vdest[i].coord.push_back(t_point);
-        Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
-        */
         for (unsigned int j = 0; j < temp_Dest.size(); j++) {
           Dest.push_back(temp_Dest[j]);
         }
@@ -2048,8 +1833,6 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData>&
     logger->error("Router-Error: fail to find dest vertices on grids");
     return Terminal_contact;
   }
-
-  // logger->debug("Router-Info: finished detecting");
 
   return Terminal_contact;
 }
@@ -2530,92 +2313,201 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
   // SinkData sourceL;
   // find the grid point nearby and insert it to the grid_seg;
 
-  grid_Lx = Lx / (grid_unit_x * grid_scale_func);
+  grid_Lx = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Lx = grid_Lx / (grid_unit_x * grid_scale_func);
   grid_Lx = grid_Lx * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Lx<<endl;
-  grid_Ux = (int)ceil(double(Ux) / (grid_unit_x * grid_scale_func));
+
+  grid_Ux = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Ux = (int)ceil(double(grid_Ux) / (grid_unit_x * grid_scale_func));
   grid_Ux = grid_Ux * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Ux<<endl;
-  grid_Ly = Ly / (grid_unit_y * grid_scale_func);
+
+  grid_Ly = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly = grid_Ly / (grid_unit_y * grid_scale_func);
   grid_Ly = grid_Ly * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+
   // cout<<grid_Ly<<endl;
-  grid_Uy = (int)ceil(double(Uy) / (grid_unit_y * grid_scale_func));
+
+  grid_Uy = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy<<endl;
-  grid_Lx1 = Lx / (grid_unit_x1 * grid_scale_func);
+
+  grid_Lx1 = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Lx1 = grid_Lx1 / (grid_unit_x1 * grid_scale_func);
   grid_Lx1 = grid_Lx1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Lx1<<endl;
-  grid_Ux1 = (int)ceil(double(Ux) / (grid_unit_x1 * grid_scale_func));
+
+  grid_Ux1 = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Ux1 = (int)ceil(double(grid_Ux1) / (grid_unit_x1 * grid_scale_func));
   grid_Ux1 = grid_Ux1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Ux1<<endl;
-  grid_Ly1 = Ly / (grid_unit_y1 * grid_scale_func);
+
+  grid_Ly1 = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Ly1<<endl;
-  grid_Uy1 = (int)ceil(double(Uy) / (grid_unit_y1 * grid_scale_func));
+
+  grid_Uy1 = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
-      grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
-      grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
-      grid_node_coord.insert(grid_node);
+    grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
+    if (grid_node.x >= Lx && grid_node.x <= Ux) {
+      for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
+        grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
   // wbxu: the following codes can be optimized by using Set
   std::set<RouterDB::point, RouterDB::pointXYComp> new_grid_node_coord;
   for (int i = 0; i <= (grid_Ux1 - grid_Lx1) / (grid_unit_x1 * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
-      grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
-      grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      if (grid_node_coord.find(grid_node) == grid_node_coord.end()) {
-        new_grid_node_coord.insert(grid_node);
+    grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
+    if (grid_node.x >= Lx && grid_node.x <= Ux) {
+      for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
+        grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
       }
     }
   }
-  for (auto p = new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
-    grid_node_coord.insert(*p);
-  }
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
-    if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      covered_node_coord.insert(*p);
-    }
-  }
-  if (covered_node_coord.size() > 0) {
-    grid_node_coord.clear();
-    grid_node_coord = covered_node_coord;
-  }
 
   std::vector<int> sourceL;
-  // wbxu: incorrect startpoint and endpoint [fixed]
-
-  //    std::cout<<"Grid point"<<std::endl;
-
-  int grid_region_llx = INT_MAX;
-  int grid_region_lly = INT_MAX;
-
-  int grid_region_urx = INT_MIN;
-  int grid_region_ury = INT_MIN;
-
   for (int i = index_end_M1_M2; i <= index_end_M3_M3; i++) {
-    // std::cout<<"( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].active<<") ";
-    if (vertices_total[i].x > grid_region_urx) {
-      grid_region_urx = vertices_total[i].x;
-    }
-    if (vertices_total[i].x < grid_region_llx) {
-      grid_region_llx = vertices_total[i].x;
-    }
-    if (vertices_total[i].y > grid_region_ury) {
-      grid_region_ury = vertices_total[i].y;
-    }
-    if (vertices_total[i].y < grid_region_lly) {
-      grid_region_lly = vertices_total[i].y;
-    }
-
     RouterDB::point cand;
     cand.x = vertices_total[i].x;
     cand.y = vertices_total[i].y;
-
     if (grid_node_coord.find(cand) != grid_node_coord.end()) {
       sourceL.push_back(i);
     }
@@ -2640,63 +2532,196 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
   // SinkData sourceL;
   // find the grid point nearby and insert it to the grid_seg;
 
-  grid_Lx = Lx / (grid_unit_x * grid_scale_func);
+  grid_Lx = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Lx = grid_Lx / (grid_unit_x * grid_scale_func);
   grid_Lx = grid_Lx * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Lx += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Lx<<endl;
-  grid_Ux = (int)ceil(double(Ux) / (grid_unit_x * grid_scale_func));
+
+  grid_Ux = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
+  grid_Ux = (int)ceil(double(grid_Ux) / (grid_unit_x * grid_scale_func));
   grid_Ux = grid_Ux * (grid_unit_x * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx > 0)
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ux += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  }
   // cout<<grid_Ux<<endl;
-  grid_Ly = Ly / (grid_unit_y * grid_scale_func);
+
+  grid_Ly = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly = grid_Ly / (grid_unit_y * grid_scale_func);
   grid_Ly = grid_Ly * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Ly += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Ly += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+
   // cout<<grid_Ly<<endl;
-  grid_Uy = (int)ceil(double(Uy) / (grid_unit_y * grid_scale_func));
+
+  grid_Uy = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy = (int)ceil(double(grid_Uy) / (grid_unit_y * grid_scale_func));
   grid_Uy = grid_Uy * (grid_unit_y * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx > 0)
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+    else
+      grid_Uy += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+  } else {
+    grid_Uy += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy<<endl;
-  grid_Lx1 = Lx / (grid_unit_x1 * grid_scale_func);
+
+  grid_Lx1 = Lx;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Lx1 = grid_Lx1 / (grid_unit_x1 * grid_scale_func);
   grid_Lx1 = grid_Lx1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Lx1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Lx1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Lx1<<endl;
-  grid_Ux1 = (int)ceil(double(Ux) / (grid_unit_x1 * grid_scale_func));
+
+  grid_Ux1 = Ux;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
+  grid_Ux1 = (int)ceil(double(grid_Ux1) / (grid_unit_x1 * grid_scale_func));
   grid_Ux1 = grid_Ux1 * (grid_unit_x1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0)
+    grid_Ux1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  else {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ux1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  }
   // cout<<grid_Ux1<<endl;
-  grid_Ly1 = Ly / (grid_unit_y1 * grid_scale_func);
+
+  grid_Ly1 = Ly;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Ly1 = grid_Ly1 / (grid_unit_y1 * grid_scale_func);
   grid_Ly1 = grid_Ly1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Ly1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Ly1<<endl;
-  grid_Uy1 = (int)ceil(double(Uy) / (grid_unit_y1 * grid_scale_func));
+
+  grid_Uy1 = Uy;
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 -= drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
+  grid_Uy1 = (int)ceil(double(grid_Uy1) / (grid_unit_y1 * grid_scale_func));
   grid_Uy1 = grid_Uy1 * (grid_unit_y1 * grid_scale_func);
+  if (drc_info.Metal_info[sourcelist.metalIdx].direct == 0) {
+    if (sourcelist.metalIdx < this->layerNo - 1)
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx + 1].offset;
+    else
+      grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx - 1].offset;
+  } else {
+    grid_Uy1 += drc_info.Metal_info[sourcelist.metalIdx].offset;
+  }
   // cout<<grid_Uy1<<endl;
 
   for (int i = 0; i <= (grid_Ux - grid_Lx) / (grid_unit_x * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
-      grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
-      grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
-      grid_node_coord.insert(grid_node);
-    }
-  }
-  // wbxu: the following codes can be optimized by using Set
-  std::set<RouterDB::point, RouterDB::pointXYComp> new_grid_node_coord;
-  for (int i = 0; i <= (grid_Ux1 - grid_Lx1) / (grid_unit_x1 * grid_scale_func); i++) {
-    for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
-      grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
-      grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
-      if (grid_node_coord.find(grid_node) == grid_node_coord.end()) {
-        new_grid_node_coord.insert(grid_node);
+    grid_node.x = grid_Lx + i * grid_unit_x * grid_scale_func;
+    if (grid_node.x>= Lx && grid_node.x<= Ux) {
+      for (int j = 0; j <= (grid_Uy - grid_Ly) / (grid_unit_y * grid_scale_func); j++) {
+        grid_node.y = grid_Ly + j * grid_unit_y * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
       }
     }
   }
-  for (auto p = new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
-    grid_node_coord.insert(*p);
-  }
-  for (auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
-    if (p->x >= Lx && p->x <= Ux && p->y >= Ly && p->y <= Uy) {
-      covered_node_coord.insert(*p);
+  // wbxu: the following codes can be optimized by using Set
+  for (int i = 0; i <= (grid_Ux1 - grid_Lx1) / (grid_unit_x1 * grid_scale_func); i++) {
+    grid_node.x = grid_Lx1 + i * grid_unit_x1 * grid_scale_func;
+    if (grid_node.x>= Lx && grid_node.x<= Ux) {
+      for (int j = 0; j <= (grid_Uy1 - grid_Ly1) / (grid_unit_y1 * grid_scale_func); j++) {
+        grid_node.y = grid_Ly1 + j * grid_unit_y1 * grid_scale_func;
+        if (grid_node.y >= Ly && grid_node.y <= Uy) grid_node_coord.insert(grid_node);
+      }
     }
   }
-  if (covered_node_coord.size() > 0) {
-    grid_node_coord.clear();
-    grid_node_coord = covered_node_coord;
-  }
+
   std::vector<int> sourceL;
-  // wbxu: incorrect startpoint and endpoint [fixed]
   for (int i = index_end_M1_M2; i <= index_end_M3_M3; i++) {
     if (vertices_total[i].active == 1) {
       RouterDB::point cand;
@@ -3112,41 +3137,423 @@ void Grid::CheckVerticesTotal() {
   }
 };
 
-void Grid::CheckVerticesGraph() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.CheckVerticesGraph");
+Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
+           int grid_scale)
+    : LL(ll), UR(ur) {
+  auto logger = spdlog::default_logger()->clone("router.Grid.Grid");
 
-  logger->debug("===CheckVerticesGraph===");
-  for (std::vector<RouterDB::vertex>::iterator it = this->vertices_graph.begin(); it != this->vertices_graph.end(); ++it) {
-    if (it->index != this->graph2total[it - this->vertices_graph.begin()]) {
-      logger->debug("Unmatched index: in graph {0} in map {1}", it->index, this->graph2total[it - this->vertices_graph.begin()]);
-    }
-    for (std::vector<int>::iterator it2 = it->north.begin(); it2 != it->north.end(); ++it2) {
-      // if(this->graph2total.find(*it2))
+  // 1. Initialize member variables I
+
+  this->GridLL.x = INT_MAX;
+  this->GridLL.y = INT_MAX;
+  this->GridUR.x = INT_MIN;
+  this->GridUR.y = INT_MIN;
+  this->lowest_metal = Lmetal;
+  this->highest_metal = Hmetal;
+  this->grid_scale = grid_scale;
+  this->layerNo = drc_info.Metal_info.size();
+  this->Start_index_metal_vertices.resize(this->layerNo, 0);
+  this->End_index_metal_vertices.resize(this->layerNo, -1);
+  this->routeDirect.resize(this->layerNo);
+  this->vertices_total.clear();
+  this->drc_info = drc_info;
+  // 2. Define member variables II
+  this->x_unit.resize(this->layerNo, 0);
+  this->y_unit.resize(this->layerNo, 0);
+  this->x_min.resize(this->layerNo, 0);
+  this->y_min.resize(this->layerNo, 0);
+  this->vertices_total_map.clear();
+  this->vertices_total_map.resize(this->layerNo);  // improve runtime of up/down edges - [wbxu: 20190505]
+  // 3. Calculate grid unit and min length for each layer
+  for (int i = 0; i < this->layerNo; i++) {
+    // this->Start_index_metal_vertices.at(i)=0;
+    // this->End_index_metal_vertices.at(i)=-1;
+    this->routeDirect.at(i) = drc_info.Metal_info.at(i).direct;
+    if (drc_info.Metal_info.at(i).direct == 0) {  // vertical
+      this->x_unit.at(i) = drc_info.Metal_info.at(i).grid_unit_x * grid_scale;
+      // this->y_min.at(i)=drc_info.Metal_info.at(i).minL;
+      this->y_min.at(i) = 1;
+    } else if (drc_info.Metal_info.at(i).direct == 1) {  // horizontal
+      this->y_unit.at(i) = drc_info.Metal_info.at(i).grid_unit_y * grid_scale;
+      // this->x_min.at(i)=drc_info.Metal_info.at(i).minL;
+      this->x_min.at(i) = 1;
+    } else {
+      logger->error("Router-Error: incorrect routing direction on metal layer {0}", i);
+      continue;
     }
   }
-}
-
-void Grid::CheckMaptotal2graph() {
-  auto logger = spdlog::default_logger()->clone("router.Grid.CheckMaptotal2graph");
-
-  logger->debug("===CheckMaptotal2graph===");
-  for (auto it = this->total2graph.begin(); it != this->total2graph.end(); ++it) {
-    if (this->vertices_total.at(it->first).x != this->vertices_graph.at(it->second).x ||
-        this->vertices_total.at(it->first).y != this->vertices_graph.at(it->second).y) {
-      logger->debug("Mismatch total {0} vs graph {1}", it->first, it->second);
+  // 4. Create Hgrid/Vgrid with x/y index in each tile layer
+  std::vector<std::vector<std::vector<int>>> Hgrid, Vgrid;
+  Hgrid.resize(GG.GetTileLayerNum());
+  Vgrid.resize(GG.GetTileLayerNum());
+  for (int i = 0; i < GG.GetTileLayerNum(); ++i) {
+    std::vector<int> Xarray(GG.GetMaxXidx() + 1, -1);
+    std::vector<int> Yarray(GG.GetMaxYidx() + 1, -1);
+    Hgrid.at(i).resize(GG.GetMaxYidx() + 1, Xarray);
+    Vgrid.at(i).resize(GG.GetMaxXidx() + 1, Yarray);
+  }
+  for (std::vector<std::pair<int, int>>::iterator it = ST.begin(); it != ST.end(); ++it) {
+    int idx = it->first;
+    Hgrid.at(GG.GetTileLayer(idx)).at(GG.GetTileYidx(idx)).at(GG.GetTileXidx(idx)) = idx;
+    Vgrid.at(GG.GetTileLayer(idx)).at(GG.GetTileXidx(idx)).at(GG.GetTileYidx(idx)) = idx;
+    idx = it->second;
+    Hgrid.at(GG.GetTileLayer(idx)).at(GG.GetTileYidx(idx)).at(GG.GetTileXidx(idx)) = idx;
+    Vgrid.at(GG.GetTileLayer(idx)).at(GG.GetTileXidx(idx)).at(GG.GetTileYidx(idx)) = idx;
+  }
+  // 5. Convert Hgrid/Vgrid into tracks in each metal layer
+  std::vector<std::vector<std::pair<int, int>>> tracks(this->layerNo);
+  for (int i = 0; i < GG.GetTileLayerNum(); ++i) {
+    std::set<int> midx = GG.GetMappedMetalIndex(i);
+    for (std::set<int>::iterator it = midx.begin(); it != midx.end(); ++it) {
+      if (drc_info.Metal_info.at(*it).direct == 0) {  // vertical
+        for (unsigned int x = 0; x < Vgrid.at(i).size(); ++x) {
+          int start = -1;
+          for (unsigned int y = 0; y < Vgrid.at(i).at(x).size(); ++y) {
+            if (start == -1) {
+              if (Vgrid.at(i).at(x).at(y) != -1) {
+                start = Vgrid.at(i).at(x).at(y);
+              }
+            } else {
+              if (Vgrid.at(i).at(x).at(y) == -1) {
+                tracks.at(*it).emplace_back(std::make_pair(start, Vgrid.at(i).at(x).at(y - 1)));
+                start = -1;
+              }
+            }
+          }
+          if (start != -1) {
+            tracks.at(*it).emplace_back(std::make_pair(start, Vgrid.at(i).at(x).at(Vgrid.at(i).at(x).size() - 1)));
+          }
+        }
+      } else {  // horizontal
+        for (unsigned int y = 0; y < Hgrid.at(i).size(); ++y) {
+          int start = -1;
+          for (unsigned int x = 0; x < Hgrid.at(i).at(y).size(); ++x) {
+            if (start == -1) {
+              if (Hgrid.at(i).at(y).at(x) != -1) {
+                start = Hgrid.at(i).at(y).at(x);
+              }
+            } else {
+              if (Hgrid.at(i).at(y).at(x) == -1) {
+                tracks.at(*it).emplace_back(std::make_pair(start, Hgrid.at(i).at(y).at(x - 1)));
+                start = -1;
+              }
+            }
+          }
+          if (start != -1) {
+            tracks.at(*it).emplace_back(std::make_pair(start, Hgrid.at(i).at(y).at(Hgrid.at(i).at(y).size() - 1)));
+          }
+        }
+      }
     }
   }
-  logger->debug("===CheckMapgraph2total===");
-  for (auto it = this->graph2total.begin(); it != this->graph2total.end(); ++it) {
-    if (this->vertices_total.at(it->second).x != this->vertices_graph.at(it->first).x ||
-        this->vertices_total.at(it->second).y != this->vertices_graph.at(it->first).y) {
-      logger->debug("Mismatch graph {0} vs total {1}", it->first, it->second);
+  // 6. Create grid vertices
+  RouterDB::point tmpp;                     // improve runtime of up/down edges - [wbxu: 20190505]
+  for (int i = Lmetal; i <= Hmetal; ++i) {  // for each metal layer
+    this->Start_index_metal_vertices.at(i) = this->vertices_total.size();
+    if (tracks.at(i).empty()) {
+      logger->error("Router-Warning: no global tiles on metal layer {0}", i);
+      continue;
+    }
+    for (std::vector<std::pair<int, int>>::iterator it = tracks.at(i).begin(); it != tracks.at(i).end(); ++it) {  // for each independent track (tile pair)
+      int x1 = GG.GetTileX(it->first);
+      int x2 = GG.GetTileX(it->second);
+      int y1 = GG.GetTileY(it->first);
+      int y2 = GG.GetTileY(it->second);
+      int w1 = GG.GetTileWidth(it->first);
+      int w2 = GG.GetTileWidth(it->second);
+      int h1 = GG.GetTileHeight(it->first);
+      int h2 = GG.GetTileHeight(it->second);
+      int track_x = x1 - w1 / 2;
+      int track_X = x2 + w2 / 2;
+      int track_y = y1 - h1 / 2;
+      int track_Y = y2 + h2 / 2;
+      if (track_x < ll.x) {
+        track_x = ll.x;
+      }
+      if (track_y < ll.y) {
+        track_y = ll.y;
+      }
+      if (track_X > ur.x) {
+        track_X = ur.x;
+      }
+      if (track_Y > ur.y) {
+        track_Y = ur.y;
+      }
+      if (drc_info.Metal_info.at(i).direct == 0) {  // vertical
+        if (x1 != x2) {
+          logger->error("Router-Error: vertical tiles not found");
+          continue;
+        }
+        int curlayer_unit = x_unit.at(i);  // current layer direction: vertical
+        int nexlayer_unit;                 // neighboring layer direction: horizontal
+        int LLx = int(ceil(double(track_x - drc_info.Metal_info[i].offset) / curlayer_unit)) * curlayer_unit + drc_info.Metal_info[i].offset;
+        // (LL.x%curlayer_unit==0)?(LL.x):( (LL.x/curlayer_unit)*curlayer_unit<LL.x ? (LL.x/curlayer_unit+1)*curlayer_unit : (LL.x/curlayer_unit)*curlayer_unit
+        // ); // X lower boudary
+        int LLy;  // Y lower boundary
+        set<int> adj_layer_y;
+        if (i == 0) {  // if lowest layer
+          nexlayer_unit = y_unit.at(i + 1);
+          LLy = int(ceil(double(track_y - drc_info.Metal_info[i + 1].offset) / y_unit.at(i + 1))) * y_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
+          //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
+          //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
+          for (int Y = LLy; Y <= track_Y; Y += nexlayer_unit) {
+            adj_layer_y.insert(Y);
+          }
+        } else if (i == this->layerNo - 1) {  // if highest layer
+          nexlayer_unit = y_unit.at(i - 1);
+          LLy = int(ceil(double(track_y - drc_info.Metal_info[i - 1].offset) / y_unit.at(i - 1))) * y_unit.at(i - 1) + drc_info.Metal_info[i - 1].offset;
+          for (int Y = LLy; Y <= track_Y; Y += nexlayer_unit) {
+            adj_layer_y.insert(Y);
+          }
+          //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
+          //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
+        } else {  // if middle layer
+          nexlayer_unit = gcd(y_unit.at(i - 1), y_unit.at(i + 1));
+          int LLy_1 = int(ceil(double(track_y - drc_info.Metal_info[i - 1].offset) / y_unit.at(i - 1))) * y_unit.at(i - 1) + drc_info.Metal_info[i - 1].offset;
+          //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
+          //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
+          for (int Y = LLy_1; Y <= track_Y; Y += y_unit.at(i - 1)) {
+            adj_layer_y.insert(Y);
+          }
+          int LLy_2 = int(ceil(double(track_y - drc_info.Metal_info[i + 1].offset) / y_unit.at(i + 1))) * y_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
+          for (int Y = LLy_2; Y <= track_Y; Y += y_unit.at(i + 1)) {
+            adj_layer_y.insert(Y);
+          }
+          //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
+          //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
+          LLy = (LLy_1 < LLy_2) ? LLy_1 : LLy_2;
+        }
+        for (int X = LLx; X <= track_X; X += curlayer_unit) {
+          int nb_start = -1;
+          // Power = !Power;
+          if (X < this->GridLL.x) {
+            this->GridLL.x = X;
+          }
+          if (X > this->GridUR.x) {
+            this->GridUR.x = X;
+          }
+          for (auto Y : adj_layer_y) {
+            RouterDB::vertex tmpv;
+            bool pmark = false;
+            if (i == 0) {
+              tmpv.gridmetal.emplace_back(i + 1);
+              pmark = true;
+            } else if (i == this->layerNo - 1) {
+              tmpv.gridmetal.emplace_back(i - 1);
+              pmark = true;
+            } else {
+              if (Y % y_unit.at(i - 1) == drc_info.Metal_info[i - 1].offset) {
+                tmpv.gridmetal.emplace_back(i - 1);
+                pmark = true;
+              }
+              if (Y % y_unit.at(i + 1) == drc_info.Metal_info[i + 1].offset) {
+                tmpv.gridmetal.emplace_back(i + 1);
+                pmark = true;
+              }
+            }
+            if (!pmark) {
+              continue;
+            }
+            if (Y < this->GridLL.y) {
+              this->GridLL.y = Y;
+            }
+            if (Y > this->GridUR.y) {
+              this->GridUR.y = Y;
+            }
+            tmpp.x = X;
+            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
+            tmpv.y = Y;
+            tmpv.x = X;
+            tmpv.metal = i;
+            // if(Power){
+            // tmpv.power = 1;
+            //}else{
+            // tmpv.power = 0;
+            //}
+            tmpv.active = true;
+            tmpv.index = this->vertices_total.size();
+            tmpv.up = -1;
+            tmpv.down = -1;
+            tmpv.north.clear();
+            tmpv.south.clear();
+            tmpv.east.clear();
+            tmpv.west.clear();
+            if (nb_start == -1) {
+              nb_start = tmpv.index;
+            } else {
+              bool mark = false;
+              int w;
+              for (w = tmpv.index - 1; w >= nb_start; w--) {
+                if (this->vertices_total.at(w).x == tmpv.x) {
+                  if (tmpv.y - this->vertices_total.at(w).y >= y_min.at(i)) {
+                    mark = true;
+                    break;
+                  }
+                } else {
+                  break;
+                }
+              }
+              if (mark) {
+                tmpv.south.emplace_back(w);
+                this->vertices_total.at(w).north.emplace_back(tmpv.index);
+              }
+            }
+            this->vertices_total.emplace_back(tmpv);
+            this->vertices_total_map.at(i).insert(
+                std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
+          }
+        }
+
+      } else if (drc_info.Metal_info.at(i).direct == 1) {  // horizontal
+        if (y1 != y2) {
+          logger->error("Router-Error: horizontal tiles not found");
+          continue;
+        }
+
+        int curlayer_unit = y_unit.at(i);  // current layer direction: horizontal
+        int nexlayer_unit;                 // neighboring layer direction: vertical
+        int LLy = int(ceil(double(track_y - drc_info.Metal_info[i].offset) / curlayer_unit)) * curlayer_unit + drc_info.Metal_info[i].offset;
+        //(LL.y%curlayer_unit==0)?(LL.y):( (LL.y/curlayer_unit)*curlayer_unit<LL.y ? (LL.y/curlayer_unit+1)*curlayer_unit : (LL.y/curlayer_unit)*curlayer_unit
+        //); // Y lower boudary
+        int LLx;  // X lower boundary
+        set<int> adj_layer_x;
+        if (i == 0) {  // if lowest layer
+          nexlayer_unit = x_unit.at(i + 1);
+          LLx = int(ceil(double(track_x - drc_info.Metal_info[i + 1].offset) / x_unit.at(i + 1))) * x_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
+          for (int X = LLx; X <= track_X; X += nexlayer_unit) {
+            adj_layer_x.insert(X);
+          }
+          //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
+          //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
+        } else if (i == this->layerNo - 1) {  // if highest layer
+          nexlayer_unit = x_unit.at(i - 1);
+          LLx = int(ceil(double(track_x - drc_info.Metal_info[i - 1].offset) / x_unit.at(i - 1))) * x_unit.at(i - 1) + drc_info.Metal_info[i - 1].offset;
+          for (int X = LLx; X <= track_X; X += nexlayer_unit) {
+            adj_layer_x.insert(X);
+          }
+          //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
+          //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
+        } else {  // if middle layer
+          nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
+          int LLx_1 = int(ceil(double(track_x - drc_info.Metal_info[i - 1].offset) / x_unit.at(i - 1))) * x_unit.at(i - 1) + drc_info.Metal_info[i - 1].offset;
+          for (int X = LLx_1; X <= track_X; X += x_unit.at(i - 1)) {
+            adj_layer_x.insert(X);
+          }
+          //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
+          //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
+          int LLx_2 = int(ceil(double(track_x - drc_info.Metal_info[i + 1].offset) / x_unit.at(i + 1))) * x_unit.at(i + 1) + drc_info.Metal_info[i + 1].offset;
+          for (int X = LLx_2; X <= track_X; X += x_unit.at(i + 1)) {
+            adj_layer_x.insert(X);
+          }
+          //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
+          //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
+          LLx = (LLx_1 < LLx_2) ? LLx_1 : LLx_2;
+        }
+        for (int Y = LLy; Y <= track_Y; Y += curlayer_unit) {
+          int nb_start = -1;
+          // Power=!Power;
+          if (Y < this->GridLL.y) {
+            this->GridLL.y = Y;
+          }
+          if (Y > this->GridUR.y) {
+            this->GridUR.y = Y;
+          }
+          for (auto X : adj_layer_x) {
+            RouterDB::vertex tmpv;
+            bool pmark = false;
+            if (i == 0) {
+              tmpv.gridmetal.emplace_back(i + 1);
+              pmark = true;
+            } else if (i == this->layerNo - 1) {
+              tmpv.gridmetal.emplace_back(i - 1);
+              pmark = true;
+            } else {
+              if (X % x_unit.at(i - 1) == drc_info.Metal_info[i - 1].offset) {
+                tmpv.gridmetal.emplace_back(i - 1);
+                pmark = true;
+              }
+              if (X % x_unit.at(i + 1) == drc_info.Metal_info[i + 1].offset) {
+                tmpv.gridmetal.emplace_back(i + 1);
+                pmark = true;
+              }
+            }
+            if (!pmark) {
+              continue;
+            }
+            if (X < this->GridLL.x) {
+              this->GridLL.x = X;
+            }
+            if (X > this->GridUR.x) {
+              this->GridUR.x = X;
+            }
+            tmpp.x = X;
+            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
+            tmpv.y = Y;
+            tmpv.x = X;
+            tmpv.metal = i;
+            // if(Power){
+            // tmpv.power = 1;
+            //}else{
+            // tmpv.power = 0;
+            //}
+            tmpv.active = true;
+            tmpv.index = this->vertices_total.size();
+            tmpv.up = -1;
+            tmpv.down = -1;
+            tmpv.north.clear();
+            tmpv.south.clear();
+            tmpv.east.clear();
+            tmpv.west.clear();
+            if (nb_start == -1) {
+              nb_start = tmpv.index;
+            } else {
+              bool mark = false;
+              int w;
+              for (w = tmpv.index - 1; w >= nb_start; w--) {
+                if (this->vertices_total.at(w).y == tmpv.y) {
+                  if (tmpv.x - this->vertices_total.at(w).x >= x_min.at(i)) {
+                    mark = true;
+                    break;
+                  }
+                } else {
+                  break;
+                }
+              }
+              if (mark) {
+                tmpv.west.emplace_back(w);
+                this->vertices_total.at(w).east.emplace_back(tmpv.index);
+              }
+            }
+            this->vertices_total.emplace_back(tmpv);
+            this->vertices_total_map.at(i).insert(
+                std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
+          }
+        }
+      } else {
+        logger->error("Router-Error: incorrect routing direction on metal layer {0}", i);
+        continue;
+      }
+    }
+    this->End_index_metal_vertices.at(i) = this->vertices_total.size() - 1;
+  }
+  // 7. Add up/down infom for grid points
+  std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit;  // improve runtime of up/down edges - [wbxu: 20190505]
+  for (int k = this->lowest_metal; k < this->highest_metal; k++) {
+    for (int i = this->Start_index_metal_vertices.at(k); i <= this->End_index_metal_vertices.at(k); i++) {
+      // improve runtime of up/down edges - [wbxu: 20190505]
+      tmpp.x = this->vertices_total[i].x;
+      tmpp.y = this->vertices_total[i].y;
+      mit = this->vertices_total_map.at(k + 1).find(tmpp);
+      if (mit != this->vertices_total_map.at(k + 1).end()) {
+        this->vertices_total[i].up = mit->second;
+        this->vertices_total[mit->second].down = i;
+      }
     }
   }
 }
 
 Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal,
-           int grid_scale)
+           int grid_scale, bool offset)
     : LL(ll), UR(ur) {
   auto logger = spdlog::default_logger()->clone("router.Grid.Grid");
 
@@ -3287,6 +3694,18 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
       if (track_Y > ur.y) {
         track_Y = ur.y;
       }
+      int track_y1 = track_y;
+      int track_Y1 = track_Y;
+
+      // without offset, xl <= a*x <= xu
+      // with offset, xl <= a*x + b <= xu, then xl - b <= a*x <= xu -b, finally a*x + b should be grid point
+      // that is the reason why the box need to -b, after that all the point + b
+      // this method works for a single layer, what about muliple layer? b have bl and bu.
+      // track_x = track_x - drc_info.Metal_info.at(i).offset;
+      // track_X = track_X - drc_info.Metal_info.at(i).offset;
+      // track_y = track_y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
+      // track_Y = track_Y - drc_info.Metal_info.at(i+1).offset; // something wrong here, i+1 or i-1
+
       if (drc_info.Metal_info.at(i).direct == 0) {  // vertical
         if (x1 != x2) {
           logger->error("Router-Error: vertical tiles not found");
@@ -3294,77 +3713,124 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
         }
         int curlayer_unit = x_unit.at(i);  // current layer direction: vertical
         int nexlayer_unit;                 // neighboring layer direction: horizontal
-        int LLx = int(ceil(double(track_x) / curlayer_unit)) * curlayer_unit;
+        int nexlayer_unit1;
+        int LLx = int(ceil(double(track_x - drc_info.Metal_info.at(i).offset) / curlayer_unit)) * curlayer_unit;
         // (LL.x%curlayer_unit==0)?(LL.x):( (LL.x/curlayer_unit)*curlayer_unit<LL.x ? (LL.x/curlayer_unit+1)*curlayer_unit : (LL.x/curlayer_unit)*curlayer_unit
         // ); // X lower boudary
         int LLy;       // Y lower boundary
+        int LLy1;      // another Y lower boundary
+        int layers;    // -1 lower, 0 both, 1 upper
         if (i == 0) {  // if lowest layer
-          nexlayer_unit = y_unit.at(i + 1);
-          LLy = int(ceil(double(track_y) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          nexlayer_unit1 = y_unit.at(i + 1);
+          LLy1 = int(ceil(double(track_y - drc_info.Metal_info.at(i + 1).offset) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          layers = 1;
           //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
           //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
         } else if (i == this->layerNo - 1) {  // if highest layer
-          nexlayer_unit = y_unit.at(i - 1);
-          LLy = int(ceil(double(track_y) / y_unit.at(i - 1))) * y_unit.at(i - 1);
+          nexlayer_unit1 = y_unit.at(i - 1);
+          LLy = int(ceil(double(track_y - drc_info.Metal_info.at(i - 1).offset) / y_unit.at(i - 1))) * y_unit.at(i - 1);
           //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
           //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
+          layers = -1;
         } else {  // if middle layer
-          nexlayer_unit = gcd(y_unit.at(i - 1), y_unit.at(i + 1));
-          int LLy_1 = int(ceil(double(track_y) / y_unit.at(i - 1))) * y_unit.at(i - 1);
+          // nexlayer_unit = gcd(y_unit.at(i - 1), y_unit.at(i + 1));
+          nexlayer_unit = y_unit.at(i - 1);
+          nexlayer_unit1 = y_unit.at(i + 1);
+          int LLy_1 = int(ceil(double(track_y - drc_info.Metal_info.at(i - 1).offset) / y_unit.at(i - 1))) * y_unit.at(i - 1);
           //(LL.y%y_unit.at(i-1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i-1))*y_unit.at(i-1)<LL.y ? (LL.y/y_unit.at(i-1)+1)*y_unit.at(i-1) :
           //(LL.y/y_unit.at(i-1))*y_unit.at(i-1) );
-          int LLy_2 = int(ceil(double(track_y) / y_unit.at(i + 1))) * y_unit.at(i + 1);
+          int LLy_2 = int(ceil(double(track_y - drc_info.Metal_info.at(i + 1).offset) / y_unit.at(i + 1))) * y_unit.at(i + 1);
           //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) :
           //(LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
-          LLy = (LLy_1 < LLy_2) ? LLy_1 : LLy_2;
+          LLy = LLy_1;   // lower layer
+          LLy1 = LLy_2;  // higher layer
+          // LLy = (LLy_1 < LLy_2) ? LLy_1 : LLy_2;
+          layers = 0;  // both
         }
-        for (int X = LLx; X <= track_X; X += curlayer_unit) {
+        for (int X = LLx; X <= track_X - drc_info.Metal_info.at(i).offset; X += curlayer_unit) {
           int nb_start = -1;
           // Power = !Power;
-          for (int Y = LLy; Y <= track_Y; Y += nexlayer_unit) {
+          set<int> temp_y;
+          if (layers == -1) {  // this is for lower layer
+
+            for (int Y = LLy; Y < track_Y - drc_info.Metal_info.at(i - 1).offset; Y += nexlayer_unit) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_y.insert(Y + drc_info.Metal_info.at(i - 1).offset);
+            }
+
+          } else if (layers == 1) {  // this is for lower layer
+
+            for (int Y = LLy1; Y < track_Y - drc_info.Metal_info.at(i + 1).offset; Y += nexlayer_unit1) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_y.insert(Y + drc_info.Metal_info.at(i + 1).offset);
+            }
+
+          } else if (layers == 0) {  // this is for both layer
+
+            for (int Y = LLy; Y < track_Y - drc_info.Metal_info.at(i - 1).offset; Y += nexlayer_unit) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_y.insert(Y + drc_info.Metal_info.at(i - 1).offset);
+            }
+
+            for (int Y = LLy1; Y < track_Y - drc_info.Metal_info.at(i + 1).offset; Y += nexlayer_unit1) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_y.insert(Y + drc_info.Metal_info.at(i + 1).offset);
+            }
+
+          } else {
+            std::cout << "Bug for setting up metal layers" << std::endl;
+          }
+
+          // then insert grid
+          for (auto it : temp_y) {
             RouterDB::vertex tmpv;
-            bool pmark = false;
-            if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
-              pmark = true;
-            } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
-              pmark = true;
-            } else {
-              if (Y % y_unit.at(i - 1) == 0) {
-                tmpv.gridmetal.push_back(i - 1);
-                pmark = true;
-              }
-              if (Y % y_unit.at(i + 1) == 0) {
-                tmpv.gridmetal.push_back(i + 1);
-                pmark = true;
-              }
-            }
-            if (!pmark) {
-              continue;
-            }
-            if (X < this->GridLL.x) {
-              this->GridLL.x = X;
-            }
-            if (Y < this->GridLL.y) {
-              this->GridLL.y = Y;
-            }
-            if (X > this->GridUR.x) {
-              this->GridUR.x = X;
-            }
-            if (Y > this->GridUR.y) {
-              this->GridUR.y = Y;
-            }
-            tmpp.x = X;
-            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
-            tmpv.y = Y;
+            tmpv.y = it;
             tmpv.x = X;
             tmpv.metal = i;
-            // if(Power){
-            // tmpv.power = 1;
-            //}else{
-            // tmpv.power = 0;
-            //}
             tmpv.active = true;
             tmpv.index = this->vertices_total.size();
             tmpv.up = -1;
@@ -3398,7 +3864,6 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
                 std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size() - 1));  // improve runtime of up/down edges - [wbxu: 20190505]
           }
         }
-
       } else if (drc_info.Metal_info.at(i).direct == 1) {  // horizontal
         if (y1 != y2) {
           logger->error("Router-Error: horizontal tiles not found");
@@ -3407,77 +3872,126 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int, int>>& ST, PnRDB::Drc_info
 
         int curlayer_unit = y_unit.at(i);  // current layer direction: horizontal
         int nexlayer_unit;                 // neighboring layer direction: vertical
-        int LLy = int(ceil(double(track_y) / curlayer_unit)) * curlayer_unit;
+        int nexlayer_unit1;
+        int layers;
+        int LLy = int(ceil(double(track_y - drc_info.Metal_info.at(i).offset) / curlayer_unit)) * curlayer_unit;
         //(LL.y%curlayer_unit==0)?(LL.y):( (LL.y/curlayer_unit)*curlayer_unit<LL.y ? (LL.y/curlayer_unit+1)*curlayer_unit : (LL.y/curlayer_unit)*curlayer_unit
         //); // Y lower boudary
         int LLx;       // X lower boundary
+        int LLx1;      // another Y lower boundary
         if (i == 0) {  // if lowest layer
-          nexlayer_unit = x_unit.at(i + 1);
-          LLx = int(ceil(double(track_x) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          nexlayer_unit1 = x_unit.at(i + 1);
+          LLx1 = int(ceil(double(track_x - drc_info.Metal_info.at(i + 1).offset) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          layers = 1;
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
           //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
         } else if (i == this->layerNo - 1) {  // if highest layer
           nexlayer_unit = x_unit.at(i - 1);
-          LLx = int(ceil(double(track_x) / x_unit.at(i - 1))) * x_unit.at(i - 1);
+          LLx = int(ceil(double(track_x - drc_info.Metal_info.at(i - 1).offset) / x_unit.at(i - 1))) * x_unit.at(i - 1);
           //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
           //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
+          layers = -1;
         } else {  // if middle layer
-          nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
-          int LLx_1 = int(ceil(double(track_x) / x_unit.at(i - 1))) * x_unit.at(i - 1);
+          // nexlayer_unit = gcd(x_unit.at(i - 1), x_unit.at(i + 1));
+          nexlayer_unit = x_unit.at(i - 1);
+          nexlayer_unit1 = x_unit.at(i + 1);
+          int LLx_1 = int(ceil(double(track_x - drc_info.Metal_info.at(i - 1).offset) / x_unit.at(i - 1))) * x_unit.at(i - 1);
           //(LL.x%x_unit.at(i-1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i-1))*x_unit.at(i-1)<LL.x ? (LL.x/x_unit.at(i-1)+1)*x_unit.at(i-1) :
           //(LL.x/x_unit.at(i-1))*x_unit.at(i-1) );
-          int LLx_2 = int(ceil(double(track_x) / x_unit.at(i + 1))) * x_unit.at(i + 1);
+          int LLx_2 = int(ceil(double(track_x - drc_info.Metal_info.at(i + 1).offset) / x_unit.at(i + 1))) * x_unit.at(i + 1);
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) :
           //(LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
-          LLx = (LLx_1 < LLx_2) ? LLx_1 : LLx_2;
+          LLx = LLx_1;
+          LLx1 = LLx_2;
+          layers = 0;
+          // LLx = (LLx_1 < LLx_2) ? LLx_1 : LLx_2;
         }
-        for (int Y = LLy; Y <= track_Y; Y += curlayer_unit) {
+
+        for (int Y = LLy; Y <= track_Y - drc_info.Metal_info.at(i).offset; Y += curlayer_unit) {
           int nb_start = -1;
           // Power=!Power;
-          for (int X = LLx; X <= track_X; X += nexlayer_unit) {
+          set<int> temp_x;
+
+          if (layers == -1) {  // this is for lower layer
+
+            for (int X = LLx; X <= track_X - drc_info.Metal_info.at(i - 1).offset; X += nexlayer_unit) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_x.insert(X + drc_info.Metal_info.at(i - 1).offset);
+            }
+
+          } else if (layers == 1) {  // this is for lower layer
+
+            for (int X = LLx1; X <= track_X - drc_info.Metal_info.at(i + 1).offset; X += nexlayer_unit1) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_x.insert(X + drc_info.Metal_info.at(i + 1).offset);
+            }
+
+          } else if (layers == 0) {  // this is for both layer
+
+            for (int X = LLx; X <= track_X - drc_info.Metal_info.at(i - 1).offset; X += nexlayer_unit) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_x.insert(X + drc_info.Metal_info.at(i - 1).offset);
+            }
+
+            for (int X = LLx1; X <= track_X - drc_info.Metal_info.at(i + 1).offset; X += nexlayer_unit1) {
+              if (X < this->GridLL.x) {
+                this->GridLL.x = X;
+              }
+              if (Y < this->GridLL.y) {
+                this->GridLL.y = Y;
+              }
+              if (X > this->GridUR.x) {
+                this->GridUR.x = X;
+              }
+              if (Y > this->GridUR.y) {
+                this->GridUR.y = Y;
+              }
+              temp_x.insert(X + drc_info.Metal_info.at(i + 1).offset);
+            }
+
+          } else {
+            std::cout << "Bug for setting up metal layers" << std::endl;
+          }
+
+          // then insert grid
+          for (auto it : temp_x) {
             RouterDB::vertex tmpv;
-            bool pmark = false;
-            if (i == 0) {
-              tmpv.gridmetal.push_back(i + 1);
-              pmark = true;
-            } else if (i == this->layerNo - 1) {
-              tmpv.gridmetal.push_back(i - 1);
-              pmark = true;
-            } else {
-              if (X % x_unit.at(i - 1) == 0) {
-                tmpv.gridmetal.push_back(i - 1);
-                pmark = true;
-              }
-              if (X % x_unit.at(i + 1) == 0) {
-                tmpv.gridmetal.push_back(i + 1);
-                pmark = true;
-              }
-            }
-            if (!pmark) {
-              continue;
-            }
-            if (X < this->GridLL.x) {
-              this->GridLL.x = X;
-            }
-            if (Y < this->GridLL.y) {
-              this->GridLL.y = Y;
-            }
-            if (X > this->GridUR.x) {
-              this->GridUR.x = X;
-            }
-            if (Y > this->GridUR.y) {
-              this->GridUR.y = Y;
-            }
-            tmpp.x = X;
-            tmpp.y = Y;  // improve runtime of up/down edges - [wbxu: 20190505]
             tmpv.y = Y;
-            tmpv.x = X;
+            tmpv.x = it;
             tmpv.metal = i;
-            // if(Power){
-            // tmpv.power = 1;
-            //}else{
-            // tmpv.power = 0;
-            //}
             tmpv.active = true;
             tmpv.index = this->vertices_total.size();
             tmpv.up = -1;

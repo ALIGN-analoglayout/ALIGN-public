@@ -9,7 +9,7 @@ from align.schema.graph import Graph
 from collections import Counter
 from itertools import combinations
 from align.schema import SubCircuit, Instance
-from .util import compare_two_nodes, reduced_SD_neighbors
+from .util import create_node_id, reduced_SD_neighbors
 from ..schema.types import set_context
 from ..schema import constraint
 
@@ -93,10 +93,10 @@ class process_arrays:
             DESCRIPTION.
         """
         if not self.condition:
-            logger.info(f"auto-array generation set to false")
+            logger.debug(f"auto-array generation set to false")
             return
         elif self.is_digital:
-            logger.info(f'cant identify array in digital ckt {self.name}')
+            logger.debug(f'cant identify array in digital ckt {self.name}')
             return
 
         node_hier = {}
@@ -133,26 +133,17 @@ class process_arrays:
             return array_2D
 
     def matching_groups(self, node, lvl1: list):
-        similar_groups = list()
+        similar_groups = {}
         logger.debug(f"creating groups for all neighbors: {lvl1}")
-        # TODO: modify this best case complexity from n*(n-1) to n complexity
-        for l1_node1, l1_node2 in combinations(lvl1, 2):
-            if compare_two_nodes(self.graph, l1_node1, l1_node2) and \
-                    self.graph.get_edge_data(node, l1_node1)['pin'] == \
-                    self.graph.get_edge_data(node, l1_node2)['pin']:
-                found_flag = 0
-                logger.debug(f"similar groups {similar_groups}")
-                for index, sublist in enumerate(similar_groups):
-                    if l1_node1 in sublist and l1_node2 in sublist:
-                        found_flag = 1
-                        break
-                    if l1_node1 in sublist:
-                        similar_groups[index].append(l1_node2)
-                        found_flag = 1
-                        break
-                if found_flag == 0:
-                    similar_groups.append([l1_node1, l1_node2])
-        return similar_groups
+        node_properties = {}
+        for  n in lvl1:
+            node_properties[n] = create_node_id(self.graph, n)+'_'.join(sorted(self.graph.get_edge_data(node, n)['pin']))
+        for k,v in node_properties.items():
+            if v in similar_groups:
+                similar_groups[v].append(k)
+            else:
+                similar_groups[v] = [k]
+        return sorted(list(v for v in similar_groups.values() if len(v)>1))
 
     def trace_template(self, match_grps, visited, template, array):
         next_match = {}
@@ -219,14 +210,26 @@ class process_arrays:
             h_blocks = [inst for inst in inst_list
                         if inst in self.graph]
             if len(h_blocks) > 0:
+                for const in self.iconst:
+                    if isinstance(const, constraint.Align):
+                        if set(const.instances).issubset(set(h_blocks)):
+                            return  # duplicate constraint
+                # TODO: try/except for auto-generated constraints
                 with set_context(self.iconst):
-                    self.iconst.append(constraint.Align(line="h_center", instances=h_blocks))
-            # del self.match_pairs[key]
+                    self.iconst.append(constraint.SameTemplate(instances=h_blocks))
+                    # If the connectivity is identical for all blocks, ordering does not matter
+                    block_0 = self.ckt.get_element(h_blocks[0])
+                    for block in h_blocks:
+                        block_1 = self.ckt.get_element(block)
+                        if block_0.pins != block_1.pins:
+                            self.iconst.append(constraint.Align(line="h_bottom", instances=h_blocks))
+                            break
+                    else:
+                        # TODO: Create a virtual hierarchy rather than Align
+                        self.iconst.append(constraint.AlignInOrder(direction="horizontal", instances=h_blocks))
+
         logger.debug(f"AlignBlock const update {self.iconst}")
-        # hier_keys = [key for key, value in self.match_pairs.items() if "name" in value.keys()]
-        # for key in hier_keys:
-        #     del self.match_pairs[key]
-        # return hier_keys
+
 
     def add_new_array_hier(self):
         logger.debug(f"New hierarchy instances: {self.new_hier_instances}")
@@ -258,7 +261,7 @@ class process_arrays:
         arre_hier_const = self.dl.find(hier).constraints
         with set_context(arre_hier_const):
             instances = ['X_'+module for module in modules]
-            arre_hier_const.append(constraint.Align(line="h_center", instances=instances))
+            arre_hier_const.append(constraint.Align(line="h_bottom", instances=instances))
             arre_hier_const.append(constraint.SameTemplate(instances=instances))
         # template placement constraint
         # for template in modules:
@@ -279,7 +282,7 @@ class process_arrays:
 def create_new_hiearchy(dl, parent_name, child_name, elements, pins_map=None):
     parent = dl.find(parent_name)
     # Create a subckt and add to library
-    logger.info(f"adding new array hierarchy {child_name} elements {elements}")
+    logger.info(f"Adding new array hierarchy {child_name} elements {elements}")
     if not pins_map:
         pins_map = {}
         G = Graph(parent)

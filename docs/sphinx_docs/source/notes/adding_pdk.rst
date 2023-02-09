@@ -2,14 +2,14 @@ PDK abstraction
 ===========================================================
 
 ALIGN uses a gridded mock `PDK <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK>`_ which mimics a FinFET PDK to generate layouts.
-It follows a similar gridded structure for `bulk echnology nodes <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK>`_ .
-A DPK information can be divided into three critical groups: Front End of Line (FEOL), Back End of Line (BEOL), and packaging.
-ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts. These PDK abstarctions are stored in a
+It follows a similar gridded structure for `bulk technology nodes <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK>`_.
+PDK information can be divided into three critical groups: Front End of Line (FEOL), Back End of Line (BEOL), and packaging.
+ALIGN uses an abstract representation of FEOL and BEOL information to generate the layouts. These PDK abstractions are stored in a
 `JSON\-format <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/layers.json>`_ for each PDK.
 
 PDK options
 --------------------
-List of PDKs options available for users.
+List of PDK options available for users.
 
 * `FinFET14nm_Mock_PDK <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/FinFET14nm_Mock_PDK>`_
 * `Bulk65nm_Mock_PDK <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks/Bulk65nm_Mock_PDK>`_
@@ -18,13 +18,13 @@ List of PDKs options available for users.
 Definition of BEOL Design rules
 -------------------------------
 
-* **Layer**: Defines name of a layer e.g. Poly, M1 etc.
+* **Layer**: Defines name of a layer e.g. Poly, M1, etc.
 * **GdsLayerNo**: This number is used for layer mapping in GDSII generation
-* **Direction**: Defines the allowed direction for a layer e.g. V (Vertical) or H (Horizontal); for ‘Via’ layer direction is not applicable
+* **Direction**: Defines the allowed direction for a layer e.g. V (Vertical) or H (Horizontal); for the ‘Via’ layer direction is not applicable
 * **Width**:  Defines valid widths for a layer
 * **Pitch**: Center-to-Center distance for a same layer (Fig. 1); for ‘Via’ pitch is not applicable
 * **EndToEnd**: Minimum end-to-end spacing for a same layer (Fig. 2); NA for ‘Via’ layer
-* **Offset**: Defines a layer offset from X or Y- axis; It is shown in Fig. 3 for a layer in V direction
+* **Offset**: Defines a layer offset from X or Y- axis; It is shown in Fig. 3 for a layer in the vertical direction
 * **MinL**: Minimum required metal length for a metal layer in a defined direction (nm)
 * **MaxL**: Maximum allowed metal length for a metal layer in a defined direction (nm)
 * **UnitC**: Unit capacitance for a metal layer (pF/nm)
@@ -32,9 +32,9 @@ Definition of BEOL Design rules
 * **UnitR**: Unit resistance for a metal layer (ohm/nm)
 * **Color**: List of masks for Double Patterning Technology, DPT
 * **SpaceX/SpaceY**: Minimum spacing between Vias along X/Y direction
-* **Stack**: Metal layers which are connected using the Via
+* **Stack**: Metal layers that are connected using the Via
 * **VencA_L/VencA_H** Minimum enclosure of a Via by a lower/higher metal layer along its ‘Direction’
-* **VencP_L/VencP_H**:  Minimum enclosure of a Via by a lower/higher metal layer along perpendicular to its ‘Direction’
+* **VencP_L/VencP_H**:  Minimum enclosure of a Via by a lower/higher metal layer perpendicular to its ‘Direction’
 
 .. image:: ../images/design_rules.PNG
 
@@ -42,7 +42,7 @@ Definition of BEOL Design rules
 
 .. code-block:: python3
 
-   #Example technology abstarction for a metal layer from layers.json
+   #Example technology abstraction for a metal layer from layers.json
    {
    "Layer": "M2",
    "GdsLayerNo": 15,
@@ -79,16 +79,16 @@ Definition of BEOL Design rules
 Definition of FEOL Design rules
 -------------------------------
 
-These layers are used by the cell generator and may vary based on the PDK. Our placer and router does not use these layers.
+These layers are used by the cell generator and may vary based on the PDK. Our placer and router do not use these layers.
 We are defining here a list of common FEOL layer rules and it is not an exhaustive set. Some technology nodes may have different FEOL layers.
 
-* **Layer**: Defines name of a layer e.g. Nwell, Active, Nselect, Pselect, Gcut, Lisd, Rvt, Lvt, Hvt, Boundary etc.
+* **Layer**: Defines the name of a layer e.g. Nwell, Active, Nselect, Pselect, Gcut, Lisd, Rvt, Lvt, Hvt, Boundary, etc.
 * **PcWidth**: Poly-contact width
 * **PcExt**: Poly-contact extension
 
 .. code-block:: python3
 
-   #Example technology abstarction for a FEOL layer from layers.json
+   #Example technology abstraction for a FEOL layer from layers.json
    {
    "Layer": "Pc",
    "GdsLayerNo": 99,
@@ -100,20 +100,20 @@ We are defining here a list of common FEOL layer rules and it is not an exhausti
 Cell generator
 ================
 
-Cell generator creates layout of primitive cells which are common across analog designs such as transistors, differential pairs, current mirrors.
+Cell generator creates a layout of primitive cells which are common across analog designs such as transistors, differential pairs, and current mirrors.
 A list of `cell generators <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/generators.json>`_ is available for each PDK.
-ALIGN cell generator can also be used as a standalone tool. The image shows some of the align generated primitives.
+ALIGN cell generator can also be used as a standalone tool. The image shows some of the align-generated primitives.
 
 .. image:: ../images/primitives.png
 
 Standalone usage
 -----------------
 
-Individual cells can be generated in ALIGN using primitive generator. During full flow compiler identifies these primitives and
-call primitive generator to create the layout of these primitives.
+Individual cells can be generated in ALIGN using the primitive generator. During full flow, the compiler identifies these primitives and
+call the primitive generator to create the layout of these primitives.
 
 ALIGN generated primitives as an array of individual transistors/resistors. The aspect ratio of generated cells can be controlled using Xcells and Ycells parameters.
-There are four basic cell types which are handled using align cell generrator.
+Four basic cell types are handled using the align cell generator.
 
 * `Transistor <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/Align_primitives.py>`_
 * `Capacitor <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/fabric_Cap.py>`_
@@ -122,7 +122,7 @@ There are four basic cell types which are handled using align cell generrator.
 
 Cell fabric
 ------------
-Cell fabric module defines the common structure for cell generation utilities which are used in the primitive generator. This remains common across PDKs.
+The cell fabric module defines the common structure for cell generation utility that is used in the primitive generator. This remains common across PDKs.
 
 
 Primitive
@@ -132,7 +132,7 @@ Primitive
 These files may need to be modified for each PDK based on the available layers.
 The definitions in these files use the functions defined in the Cell fabric module to create cell layers.
 
-Here is an example on how to add a layer for a `mos generator <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/primitive/default/mos.py>`_.
+Here is an example of how to add a layer for a `mos generator <https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/align/primitive/default/mos.py>`_.
 
 .. code-block:: python3
 

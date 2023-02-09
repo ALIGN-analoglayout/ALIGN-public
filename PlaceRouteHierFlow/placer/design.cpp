@@ -18,8 +18,7 @@ design::design() {
   noSymGroup4FullMove = 0;
 }
 
-
-design::design(PnRDB::hierNode& node, const int seed) {
+design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) {
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   _rng.seed(seed);
   is_first_ILP = node.isFirstILP;
@@ -31,6 +30,10 @@ design::design(PnRDB::hierNode& node, const int seed) {
   memcpy(Aspect_Ratio, node.Aspect_Ratio, sizeof(node.Aspect_Ratio));
   memcpy(placement_box, node.placement_box, sizeof(node.placement_box));
   Same_Template_Constraints = node.Same_Template_Constraints;
+  grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
+  grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
+  halo_horizontal = node.boundary.halo_horizontal;
+  halo_vertical = node.boundary.halo_vertical;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks
@@ -40,6 +43,35 @@ design::design(PnRDB::hierNode& node, const int seed) {
     _useCache = true;
   }
 
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+  int gridx_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int gridy_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  logger->debug("grid pitches : {0} {1}", gridx_pitch, gridy_pitch);
+  bool offsetpresent{false};
+  for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
+    for (int bb = 0; bb < it->instNum; ++bb) {
+      if ((it->instance).at(bb).xoffset.size() > 0 || (it->instance).at(bb).yoffset.size() > 0
+          || ((it->instance).at(bb).width % gridx_pitch != 0)
+          || ((it->instance).at(bb).height % gridy_pitch != 0)) {
+        offsetpresent = true;
+        break;
+      }
+    }
+    if (offsetpresent) break;
+  }
   for (vector<PnRDB::blockComplex>::iterator it = node.Blocks.begin(); it != node.Blocks.end(); ++it) {
     this->Blocks.resize(this->Blocks.size() + 1);
     int WL = 0;
@@ -63,10 +95,14 @@ design::design(PnRDB::hierNode& node, const int seed) {
       tmpblock.width = (it->instance).at(bb).width;
       tmpblock.height = (it->instance).at(bb).height;
       tmpblock.xoffset = (it->instance).at(bb).xoffset;
+      if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
       tmpblock.xpitch = (it->instance).at(bb).xpitch;
+      if (tmpblock.xpitch == 1) tmpblock.xpitch = gridx_pitch;
       tmpblock.xflip = (it->instance).at(bb).xflip;
       tmpblock.yoffset = (it->instance).at(bb).yoffset;
+      if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
       tmpblock.ypitch = (it->instance).at(bb).ypitch;
+      if (tmpblock.ypitch == 1) tmpblock.ypitch = gridy_pitch;
       tmpblock.yflip = (it->instance).at(bb).yflip;
       // cout<<tmpblock.height<<endl;
       // [wbxu] Following lines have be updated to support multi contacts
@@ -141,10 +177,12 @@ design::design(PnRDB::hierNode& node, const int seed) {
     tmpnet.weight = it->weight;
     tmpnet.upperBound = it->upperBound;
     tmpnet.lowerBound = it->lowerBound;
+    bool floating_pin = true;
     for (vector<PnRDB::connectNode>::iterator nit = it->connected.begin(); nit != it->connected.end(); ++nit) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type == PnRDB::Block) {
         tmptype = placerDB::Block;
+        if (Blocks[nit->iter2][0].blockPins[nit->iter].center.size()) floating_pin = false;
       } else if (nit->type == PnRDB::Terminal) {
         tmptype = placerDB::Terminal;
       } else {
@@ -154,6 +192,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
       placerDB::Node tmpnode = {tmptype, nit->iter, nit->iter2, nit->alpha};
       tmpnet.connected.push_back(tmpnode);
     }
+    if (floating_pin == true) tmpnet.floating_pin = true;
     this->Nets.push_back(tmpnet);
   }
 
@@ -276,15 +315,54 @@ design::design(PnRDB::hierNode& node, const int seed) {
     this->Port_Location.back().tid = it->tid;
     this->Port_Location.back().pos = placerDB::Bmark(it->pos);
   }
+  // Add spread constraints
+  for (const auto& it : node.SpreadConstraints) {
+    for (auto itb1 = it.blocks.begin(); itb1 != it.blocks.end(); ++itb1) {
+      for (auto itb2 = std::next(itb1); itb2 != it.blocks.end(); ++itb2) {
+        if (it.horizon) {
+          hSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        } else {
+          vSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+        }
+      }
+    }
+  }
   constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
       Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i]][0].counterpart != order.first[i] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(Blocks[order.first[i]][0].counterpart, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (Blocks[order.first[i + 1]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
+          Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
+        Ordering_Constraints.push_back(
+            make_pair(make_pair(order.first[i], Blocks[order.first[i + 1]][0].counterpart), order.second == PnRDB::H ? placerDB::H : placerDB::V));
       if (Blocks[order.first[i]][0].counterpart != -1 && Blocks[order.first[i + 1]][0].counterpart != -1 &&
+          Blocks[order.first[i]][0].counterpart != order.first[i] && Blocks[order.first[i + 1]][0].counterpart != order.first[i + 1] &&
           Blocks[order.first[i + 1]][0].counterpart != order.first[i] && order.second == PnRDB::V)
         Ordering_Constraints.push_back(make_pair(make_pair(Blocks[order.first[i]][0].counterpart, Blocks[order.first[i + 1]][0].counterpart),
                                                  order.second == PnRDB::H ? placerDB::H : placerDB::V));
+      if (order.second == PnRDB::V) {
+        for (const auto& al : node.Align_blocks) {
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i] && Blocks[order.first[i]][0].height >= Blocks[b][0].height) {
+                Ordering_Constraints.push_back(make_pair(make_pair(b, order.first[i + 1]), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+          if (al.horizon == 1 && find(al.blocks.begin(), al.blocks.end(), order.first[i+1]) != al.blocks.end()) {
+            for (auto b : al.blocks) {
+              if (b != order.first[i+1] && Blocks[order.first[i+1]][0].height >= Blocks[b][0].height) {
+                Ordering_Constraints.push_back(make_pair(make_pair(order.first[i], b), order.second == PnRDB::H ? placerDB::H : placerDB::V));
+              }
+            }
+          }
+        }
+      }
     }
   }
   for (const auto& abut : node.Abut_Constraints) {
@@ -293,7 +371,7 @@ design::design(PnRDB::hierNode& node, const int seed) {
     }
   }
 
-  //PrintDesign();
+  // PrintDesign();
   // std::cout<<"Leaving design2\n";
   hasAsymBlock = checkAsymmetricBlockExist();
   // std::cout<<"Leaving design\n";
@@ -341,6 +419,36 @@ design::design(PnRDB::hierNode& node, const int seed) {
     }
     maxBlockHPWLSum += (width + height);
   }
+  std::map<std::string, std::pair<int, int> > pinName2Index;
+  if (!node.CFValues.empty()) {
+    CFdist_type = node.CFdist_type;
+    for (auto& net : Nets) {
+      if (node.CFValues.find(net.name) == node.CFValues.end()) continue;
+      for (auto& conn : net.connected) {
+        if (conn.type == placerDB::Block) {
+          if (Blocks[conn.iter2].size() > 0 && Blocks[conn.iter2][0].blockPins.size() > conn.iter) {
+            pinName2Index[Blocks[conn.iter2][0].name + '/' + Blocks[conn.iter2][0].blockPins[conn.iter].name] = std::make_pair(conn.iter2, conn.iter);
+          }
+        }
+      }
+    }
+
+    for (auto& it : node.CFValues) {
+      for (int i = 0; i < (int)Nets.size(); ++i) {
+        auto cfit = CFValues.find(Nets[i].name);
+        if (cfit == CFValues.end() && Nets[i].name == it.first) {
+          for (auto& pp : it.second) {
+            auto itp1 = pinName2Index.find(std::get<0>(pp));
+            auto itp2 = pinName2Index.find(std::get<1>(pp));
+            if (itp1 != pinName2Index.end() && itp2 != pinName2Index.end()) {
+              CFValues[Nets[i].name][std::make_tuple(itp1->second.first, itp1->second.second,
+                  itp2->second.first, itp2->second.second)] = std::get<2>(pp);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 int design::rand() {
@@ -381,7 +489,6 @@ int design::GetSizeAsymBlock4Move(int mode) {
   }
   return ss;
 }
-
 
 int design::GetSizeSymGroup4FullMove(int mode) {
   // mode-0: check mapIdx of groups for original design
@@ -461,7 +568,6 @@ design::design(string blockfile, string netfile, string cfile) {
 //  hasAsymBlock=checkAsymmetricBlockExist();
 //  hasSymGroup=(not SBlocks.empty());
 //}
-
 
 //
 
@@ -764,14 +870,13 @@ design::design(string blockfile, string netfile, string cfile) {
 //  }
 //}
 
-
 void design::PrintDesign() {
   auto logger = spdlog::default_logger()->clone("placer.design.PrintDesign");
 
   logger->debug("== Print Design ");
   logger->debug("bias_Vgraph: {0} mixFlag: {1}", bias_Vgraph, mixFlag);
   logger->debug("bias_Hgraph: {0} mixFlag: {1}", bias_Hgraph, mixFlag);
-  //PrintBlocks();
+  // PrintBlocks();
   PrintTerminals();
   PrintNets();
   PrintConstraints();
@@ -888,6 +993,13 @@ void design::PrintConstraints() {
       logger->debug(" {0} ", *it2);
     }
   }
+  logger->debug("=== SpreadConstraints Constraints ===");
+  for (auto it : hSpread) {
+    logger->debug("@h ({0},{1}) {2}", it.first.first, it.first.second, it.second);
+  }
+  for (auto it : vSpread) {
+    logger->debug("@v ({0},{1}) {2}", it.first.first, it.first.second, it.second);
+  }
 }
 
 void design::PrintTerminals() {
@@ -945,7 +1057,6 @@ int design::GetBlockHeight(int blockid, placerDB::Omark ort, int sel) {
     return Blocks.at(blockid).at(sel).width;
   }
 }
-
 
 placerDB::point design::GetBlockAbsCenter(int blockid, placerDB::Omark ort, placerDB::point LL, int sel) {
   placerDB::point p;
@@ -1218,7 +1329,6 @@ vector<pair<int, int>> design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
   // pair<int,int> pp=make_pair(first,second);
   return pp;
 }
-
 
 void design::checkselfsym(vector<pair<int, int>>& tmpsympair, vector<pair<int, placerDB::Smark>>& tmpselfsym, placerDB::Smark tsmark) {
   auto logger = spdlog::default_logger()->clone("placer.design.constructSymmGroup");
@@ -1921,6 +2031,14 @@ size_t design::getSeqIndex(const vector<int>& seq) {
 size_t design::getSeqIndex(const vector<int>& seq) const {
   size_t ind = ULONG_MAX;
   if (seq.size() <= 12) {
+    if (_factorial.size() < seq.size()) {
+      for (unsigned i = _factorial.size(); i < seq.size(); ++i) {
+        if (i > 0)
+          const_cast<vector<size_t>&>(_factorial).push_back(i * _factorial[i - 1]);
+        else
+          const_cast<vector<size_t>&>(_factorial).push_back(1);
+      }
+    }
     ind = 0;
     for (unsigned i = 0; i < seq.size() - 1; ++i) {
       unsigned count = 0;
@@ -1955,20 +2073,24 @@ size_t design::getSelIndex(const vector<int>& sel) const {
   return ind;
 }
 
-void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel) {
+void design::cacheSeq(const vector<int>& p, const vector<int>& n, const vector<int>& sel, const double cost) {
   auto logger = spdlog::default_logger()->clone("placer.design.cacheSeq");
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
   if (_seqPairCache.empty()) {
     logger->debug("Using seq pair cache for {0} to reduce redundancy", name);
   }
-  _seqPairCache.emplace(pindx, nindx, sindx);
+  _seqPairCache[std::make_tuple(pindx, nindx, sindx)] = cost;
 }
 
-bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel) const {
+bool design::isSeqInCache(const vector<int>& p, const vector<int>& n, const vector<int>& sel, double* cost) const {
   if (!_useCache) return false;
   auto pindx = getSeqIndex(p), nindx = getSeqIndex(n), sindx = getSelIndex(sel);
   if (pindx != ULONG_MAX && nindx != ULONG_MAX && sindx != ULONG_MAX) {
-    return _seqPairCache.find(std::make_tuple(pindx, nindx, sindx)) != _seqPairCache.end();
+    const auto it = _seqPairCache.find(std::make_tuple(pindx, nindx, sindx));
+    if (it != _seqPairCache.end()) {
+      if (cost) *cost = it->second;
+      return true;
+    }
   }
   return false;
 }
@@ -1978,10 +2100,11 @@ design::~design() {
   _rnd = nullptr;
   auto logger = spdlog::default_logger()->clone("placer.design.design");
   // logger->debug("sa__seq {0} unique_cnt={1} seq_pair_hash={2} sel_hash={3}", name, _seqPairCache.size(), _seqPairHash.size(), _selHash.size());
-  // logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4}", name, _infeasAspRatio, _infeasILPFail,
-  //               _infeasPlBound, _totalNumCostCalc);
+  // logger->debug("sa__infeasible {0} aspect_ratio={1} ilp_fail={2} placement_boundary={3} total_calls={4} num_ilp_calls={5}", name, _infeasAspRatio, _infeasILPFail,
+  //               _infeasPlBound, _totalNumCostCalc, _numILPCalls);
   // logger->debug("sa_cpp_runtime Block {0} total ILP runtime : {1}", name, ilp_runtime.count());
   // logger->debug("sa_cpp_runtime Block {0} total ILPsolve runtime : {1}", name, ilp_solve_runtime.count());
   // logger->debug("sa_cpp_runtime Block {0} total gen valid runtime : {1}", name, gen_valid_runtime.count());
+  // logger->debug("sa__num_snap_grid_fails : {0}", _numSnapGridFail);
   //_debugofs.close();
 }

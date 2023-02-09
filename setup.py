@@ -1,8 +1,6 @@
 import sys
 import os
 
-import sys
-
 try:
     from skbuild import setup
     from setuptools import find_packages
@@ -67,15 +65,20 @@ setup(name='align',
           'bin/schematic2layout.py',
           'bin/gds2png.sh',
           'bin/analyze_regression.py',
-          'bin/convert_lef_to_layout_json.py'
+          'bin/convert_lef_to_layout_json.py',
+          'bin/gen_gds_from_json.py',
+          'bin/gen_lef_with_obs.py',
+          'bin/gen_primitive_from_gds.py'
       ],
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
+          'gdspy',
           'pyyaml',
           'pybind11',
-          'pydantic>=1.8',
+          'pydantic>=1.9.2',
           'z3-solver',
+          'mip',
           'more-itertools',
           'colorlog',
           'plotly',
@@ -85,7 +88,8 @@ setup(name='align',
           'dash',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict'
+          'flatdict',
+          'mip'
       ],
       extras_require={
           'test': [

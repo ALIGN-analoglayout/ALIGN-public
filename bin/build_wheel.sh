@@ -9,6 +9,7 @@
 set -eo pipefail
 
 export ALIGN_HOME=${ALIGN_HOME:-$PWD}
+export BUILD_PLATFORM=${AUDITWHEEL_PLAT}
 
 # install some dependencies
 case "$AUDITWHEEL_PLAT" in
@@ -23,6 +24,11 @@ case "$AUDITWHEEL_PLAT" in
     "manylinux_2_24_x86_64")
         apt update
         apt -y install libboost-dev lp-solve
+    ;;
+    "manylinux_2_28_x86_64")
+	# Not debian based (AlmaLinux 8)
+        #apt update
+        #apt -y install libboost-dev lp-solve
     ;;
     *)
         echo "WARNING: Unknown environment."
