@@ -52,7 +52,7 @@ class CmdlineParser():
         parser.add_argument("-n",
                             "--nvariants",
                             type=int,
-                            default=1,
+                            default=4,
                             help='Number of layout candidates to (attempt to) generate')
         parser.add_argument("-e",
                             "--effort",
@@ -102,7 +102,7 @@ class CmdlineParser():
 
         parser.add_argument('--router_mode',
                             type=str,
-                            default='top_down',
+                            default='bottom_up',
                             choices=['top_down','bottom_up','collect_pins','no_op'],
                             help='Router mode')
 
@@ -111,7 +111,7 @@ class CmdlineParser():
                             help='Run in GUI mode')
 
         parser.add_argument('--skipGDS',
-                            action='store_true',
+                            action='store_false',
                             help='Don\'t generate GDS files.')
 
         parser.add_argument('--lambda_coeff',
