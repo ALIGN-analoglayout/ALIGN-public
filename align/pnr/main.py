@@ -13,6 +13,7 @@ from .manipulate_hierarchy import manipulate_hierarchy, add_cap_dummy_connection
 from .placer import placer_driver, startup_gui
 from .router import router_driver
 from .cap_placer import cap_placer_driver
+from .placer_pythonic import pythonic_placer_driver
 
 import shutil
 
@@ -154,6 +155,7 @@ def gen_leaf_cell_info( verilog_d, pnr_const_ds):
     logger.debug( f'leaves: {leaves}')
     return leaves, capacitors
 
+
 def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     # Check if collateral files exist
@@ -175,6 +177,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
 
     return leaf_collateral
 
+
 def write_verilog_d(verilog_d):
     return {"modules":[{"name":m.name,
                         "parameters": list(m.parameters),
@@ -182,6 +185,7 @@ def write_verilog_d(verilog_d):
                         "instances": [mi.dict() for mi in m.instances],
                         } for m in verilog_d.modules],
         "global_signals":verilog_d.global_signals}
+
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
@@ -211,7 +215,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         input_dir.mkdir(exist_ok=True)
 
         verilog_d = VerilogJsonTop.parse_file(topology_dir / verilog_file)
-        
+
         manipulate_hierarchy(verilog_d, subckt)
 
         logger.debug(f"updated verilog: {verilog_d}")
@@ -341,16 +345,22 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'nvariants': nvariants,
                            'effort': effort}
 
-        top_level, leaf_map, placement_verilog_alternatives, metrics = \
-            placer_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
-                          lambda_coeff=lambda_coeff, scale_factor=scale_factor,
-                          select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
-                          use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
-                          toplevel_args_d=toplevel_args_d, results_dir=None,
-                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+        if placer == 'python':
+            pva = pythonic_placer_driver(subckt, input_dir, scale_factor=scale_factor)
+            with open("__placement_verilog_alternatives__.json", "wt") as fp2:
+                json.dump(pva, fp=fp2, indent=2)
 
-        with open("__placer_dump__.json", "wt") as fp:
-            json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
+        else:
+            top_level, leaf_map, placement_verilog_alternatives, metrics = \
+                placer_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
+                              lambda_coeff=lambda_coeff, scale_factor=scale_factor,
+                              select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
+                              use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
+                              toplevel_args_d=toplevel_args_d, results_dir=None,
+                              placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+
+            with open("__placer_dump__.json", "wt") as fp:
+                json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
 
         os.chdir(current_working_dir)
 
