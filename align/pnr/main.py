@@ -368,6 +368,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                             metrics=metrics)
         else:
             placements_to_run = None
+
         with open(working_dir/"__placements_to_run__.json", "wt") as fp:
             json.dump(placements_to_run, fp=fp, indent=2)
 
