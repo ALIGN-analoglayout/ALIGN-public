@@ -73,7 +73,7 @@ For ALIGN (C++) Extension developers:
 
 
 .. note::
-    The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
+    The second command doesn't just install ALIGN in-place, it also caches generated object files under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 If you want the build-type to be Release (-O3), you can issue the following three lines:
 
@@ -108,7 +108,7 @@ Then in a python shell:
     p = pstats.Stats('stats')
     p.sort_stats(SortKey.TIME).print_stats(20)
 
-To run tests similar to the checkin and merge-to-master CI runs run:
+To run tests similar to the check-in and merge-to-master CI runs run:
 
 .. code-block:: bash
 
@@ -124,7 +124,7 @@ To run tests similar to the checkin and merge-to-master CI runs run:
 Step 4: Run ALIGN
 --------------------------------------
 You may run the align tool using a simple command line tool named `schematic2layout.py`
-For most common cases, you will simply run:
+For most common cases, you will simply run the:
 
 .. code-block:: bash
 
@@ -146,11 +146,11 @@ For a full list of options supported by the tool, please use the following comma
     schematic2layout.py -h
 
 
-Step 5: View layout
+Step 5: View the layout
 --------------------------------------
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
 
-* `KLayout <https://github.com/KLayout/klayout>`_: GDS viewer (WSL users would need to install xming for display to work)
+* `KLayout <https://github.com/KLayout/klayout>`_: GDS viewer (WSL users would need to install xming for the display to work)
 
 * `Viewer <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/Viewer>`_: Layout viewer to view output JSON file
 

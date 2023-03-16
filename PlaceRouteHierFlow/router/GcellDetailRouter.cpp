@@ -302,14 +302,40 @@ void GcellDetailRouter::SortPinsOrder() {
   //order by the manhattan distance to LL
   for (unsigned int i = 0; i < Nets.size(); i++) {
     if (Nets[i].connected.size() == 0) continue;
-    //order by the manhattan distance to LL
-    std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
-      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
-              Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
-        return true;
-      return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
-             Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
-    });
+    //calculate net pin center
+    int center_x_count = 0, center_y_count = 0;
+    for (unsigned int j = 0; j < Nets[i].connected.size();j++){
+      if (Nets[i].connected[j].type == RouterDB::TERMINAL || Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size() == 0)
+        continue;
+      for (unsigned int k = 0; k<Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size();k++){
+        Nets[i].center_x += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.x;
+        Nets[i].center_y += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.y;
+        center_x_count++;
+        center_y_count++;
+      } 
+    }
+    if (center_x_count) Nets[i].center_x /= center_x_count;
+    if (center_y_count) Nets[i].center_y /= center_y_count;
+
+    // order by the manhattan distance to LL
+    if(Nets[i].symCounterpart != -1 && Nets[i].symCounterpart < i){
+      std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+            Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
+        return (width - Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x) + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+               (width - Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x) + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+      });
+    }else{
+      std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+            Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
+        return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+               Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+      });
+    }
+    
 
     for (unsigned int j = 1; j < Nets[i].connected.size() - 1; j++) {
       std::sort(Nets[i].connected.begin() + j, Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
@@ -375,7 +401,7 @@ void GcellDetailRouter::create_detailrouter_new() {
       Topology_extraction(symmetry_path);
       // logger->debug("sym net index {0} sym part {1} sym axis {2} sym center {3}", i, Nets[i].symCounterpart, Nets[i].sym_H, Nets[i].center);
       // Q: HV_symmetry, center?
-      Mirror_Topology(symmetry_path, Nets[i].sym_H, Nets[i].center);
+      Mirror_Topology(symmetry_path, Nets[i].sym_H, (Nets[i].center_x + Nets[Nets[i].symCounterpart].center_x)/2);
       // logger->debug("symmetry_path size {0}", symmetry_path.size());
     }
 
@@ -1012,7 +1038,9 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i) {
   // Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
   Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, temp_lowest_metal, temp_highest_metal, grid_scale);
   grid.Full_Connected_Vertex();
-
+  grid.center_x = Nets[i].center_x;
+  grid.center_y = Nets[i].center_y;
+  
   return grid;
 };
 
@@ -4367,8 +4395,8 @@ void GcellDetailRouter::InactivateRect2GridPoints(int mIdx, int LLx, int LLy, in
       if (mIdx != obs_l) {
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx - 1).grid_unit_x;
 
-        int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
-        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        int newLLx = LLx  - enclose_length;//- drc_info.Metal_info.at(mIdx).dist_ee
+        int newURx = URx + enclose_length;//+ drc_info.Metal_info.at(mIdx).dist_ee ;
         int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
         if (boundX > newURx) {
           newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;
@@ -4386,8 +4414,8 @@ void GcellDetailRouter::InactivateRect2GridPoints(int mIdx, int LLx, int LLy, in
       if (mIdx != obs_h) {
         int nexlayer_unit = cross_layer_drc_info.Metal_info.at(mIdx + 1).grid_unit_x;
 
-        int newLLx = LLx - drc_info.Metal_info.at(mIdx).dist_ee - enclose_length;
-        int newURx = URx + drc_info.Metal_info.at(mIdx).dist_ee + enclose_length;
+        int newLLx = LLx  - enclose_length;//- drc_info.Metal_info.at(mIdx).dist_ee;
+        int newURx = URx + enclose_length;  //+ drc_info.Metal_info.at(mIdx).dist_ee;
         int boundX = ceil((double)newLLx / nexlayer_unit) * nexlayer_unit;
         if (boundX > newURx) {
           newLLx = floor((double)newLLx / nexlayer_unit) * nexlayer_unit;

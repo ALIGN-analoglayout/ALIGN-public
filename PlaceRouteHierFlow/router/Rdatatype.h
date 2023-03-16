@@ -2,6 +2,7 @@
 #define RDATATYPE_H_
 
 #include <limits.h>
+#include <float.h>
 
 #include <string>
 #include <vector>
@@ -90,7 +91,8 @@ struct vertex {
   int x = -1;
   int y = -1;
   int metal = -1;
-  int Cost = INT_MAX;
+  double Cost = DBL_MAX;
+  double Cost2Source = DBL_MAX;
   // int Cost = -1;
   bool active = false;
   bool via_active_down = true;
@@ -264,6 +266,7 @@ struct Net {
   int min_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or lowest metal layer
   int max_routing_layer = -1;  //-1 means not initialized, then using the general configuration in the layer.json file or highest metal layer
   // void display();
+  int center_x = 0, center_y = 0;
 };
 
 struct Block {
@@ -507,6 +510,16 @@ struct MetalComp {
 };
 struct pairComp {
   bool operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const {
+    if (lhs.first == rhs.first) {
+      return lhs.second < rhs.second;
+    } else {
+      return lhs.first < rhs.first;
+    }
+  }
+};
+
+struct pairCompDBL {
+  bool operator()(const std::pair<double, int>& lhs, const std::pair<double, int>& rhs) const {
     if (lhs.first == rhs.first) {
       return lhs.second < rhs.second;
     } else {

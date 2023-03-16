@@ -32,6 +32,8 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   Same_Template_Constraints = node.Same_Template_Constraints;
   grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
   grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
+  halo_horizontal = node.boundary.halo_horizontal;
+  halo_vertical = node.boundary.halo_vertical;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks

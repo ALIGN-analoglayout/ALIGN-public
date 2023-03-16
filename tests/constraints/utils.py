@@ -82,8 +82,13 @@ def build_example(name, netlist, constraints):
     example.mkdir(parents=True)
     with open(example / f'{name}.sp', 'w') as fp:
         fp.write(netlist)
-    with open(example / f'{name}.const.json', 'w') as fp:
-        fp.write(json.dumps(constraints, indent=2))
+    if isinstance(constraints, dict):
+        for k, v in constraints.items():
+            with open(example / f'{k}.const.json', 'w') as fp:
+                fp.write(json.dumps(v, indent=2))
+    else:
+        with open(example / f'{name}.const.json', 'w') as fp:
+            fp.write(json.dumps(constraints, indent=2))
     return example
 
 
@@ -97,7 +102,7 @@ def _count_pattern(pattern):
     return len(data)
 
 
-def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
+def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO', additional_args=None):
     run_dir = WORK_DIR / f'run_{example.name}'
     if run_dir.exists() and run_dir.is_dir():
         shutil.rmtree(run_dir)
@@ -105,6 +110,13 @@ def run_example(example, n=8, cleanup=True, max_errors=0, log_level='INFO'):
     os.chdir(run_dir)
 
     args = [str(example), '-p', str(PDK_DIR), '-l', log_level, '-n', str(n)]
+
+    if additional_args:
+        for elem in additional_args:
+            if elem:
+                args.append(elem)
+
+    print(f"\nCOMMAND LINE: schematic2layout.py {' '.join(args)}")
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"{example.name}: No results generated"
