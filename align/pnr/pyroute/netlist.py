@@ -228,8 +228,10 @@ class Netlist:
 
     def print(self):
         for (name, m) in self._macros.items():
+            print(f'macro : {name}')
             m.print()
         for (name,m) in self._modules.items():
+            print(f'module : {name}')
             m.print()
         print(f'vpitch : {self._vpitch} hpitch : {self._hpitch}')
 
@@ -284,7 +286,7 @@ class Netlist:
             pldata = json.load(fp)
             if "modules" in pldata:
                 for m in pldata.get("modules"):
-                    mname = m.get("name")
+                    mname = m.get("abstract_name")
                     if mname:
                         if mname not in self._modules:
                             self._modules[mname] = Module(mname)

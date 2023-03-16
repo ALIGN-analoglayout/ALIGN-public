@@ -24,7 +24,8 @@ class Port:
                 for l in lr:
                     if l._layer:
                         if l._layer in self._lr:
-                            self._lr[l._layer].append(l._rects)
+                            for r in l._rects:
+                                self._lr[l._layer].append(r)
                         else:
                             self._lr[l._layer] = l._rects[:]
 
@@ -35,6 +36,28 @@ class Port:
             for r in self._lr[l]:
                 s += ', '    + str(r)
         return s
+
+class Obstacles:
+    def __init__(self, tokens = []):
+        self._lr = dict()
+        if (tokens):
+            for lr in tokens:
+                for l in lr:
+                    if l._layer:
+                        if l._layer in self._lr:
+                            for r in l._rects:
+                                self._lr[l._layer].append(r)
+                        else:
+                            self._lr[l._layer] = l._rects[:]
+
+    def __str__(self):
+        s = ''
+        for l in self._lr:
+            s += ("layer : " + l)
+            for r in self._lr[l]:
+                s += ', '    + str(r)
+        return s
+
 
 
 class Pin:
@@ -70,26 +93,24 @@ class Macro:
         self._width  = 0.
         self._height = 0.
         self._pins   = dict()
-        self._obs    = dict()
+        self._obs    = None
 
         if tokens and len(tokens) > 0:
             token = tokens[0]
             self._name = token.name
-            self._units = int(token.units[0][0]) if token.units else 1.
+            if type(token.units[0]) == str:
+                if ';' in token.units[0]:
+                    self._units = int(token.units[0][0:-1])
+                else:
+                    self._units = int(token.units[0])
+            elif token.unites: self._units = int(token.units[0])
             self._origin = token.origin[0] if token.origin else Point()
             self._width = token.width
             self._height = token.height
             for pin in token.pins:
                 if pin._name and pin._name not in self._pins:
                     self._pins[pin._name] = pin
-            '''        
-            for l in token.obs:
-                if l._layer:
-                    if l._layer not in self._obs:
-                        self._obs[l._layer] = l._rects[:]
-                    else:
-                        self._obs[l._layer] += l._rects
-            '''        
+            self._obs = token.obs[0]._lr
 
     def __repr__(self):
         return self._name
@@ -144,14 +165,18 @@ def parseLef(lefFile = ""):
                 + pp.ZeroOrMore(portparser)("ports") + end_ + pp.Suppress(name)).setParseAction(Pin)
         foreignparser   = pp.Suppress(foreign_ + name + num + num + sc_)
         originparser    = pp.Group(origin_ + pointparser + sc_)
-        obsparser       = pp.Group(obs_ + pp.ZeroOrMore(layerrectparser) + end_)
-        unitparser      = pp.Group(units_ + db_ + microns_ + units_ + num("units") + sc_ + end_ + units_)
+        obsparser       = pp.Group(obs_ + pp.ZeroOrMore(layerrectparser) + end_).setParseAction(Obstacles)
+        numwithsc       = pp.Word(pp.nums + ";")
+        unitparser      = pp.Group(units_ + db_ + microns_ + units_ + numwithsc("units") + end_ + units_).setParseAction(lambda t: int(t[0][0:-1]) if ';' in t[0] else t[0][:])
         macroparser     = pp.Group(macro_ + name("name") + pp.Optional(unitparser)("units")
                 + pp.ZeroOrMore(originparser("origin") | foreignparser | (size_ + num("width") + by_ + num("height") + sc_))
                 + pp.ZeroOrMore(pinparser)("pins") + pp.ZeroOrMore(obsparser)("obs") + end_ + name).setParseAction(Macro)
         macrosparser    = pp.ZeroOrMore(macroparser)
 
-        tmpmacros = macrosparser.parseFile(lefFile)
+        try:
+            tmpmacros = macrosparser.parseFile(lefFile)
+        except pp.ParseException as pe:
+            print(pe.markInputline())
         for m in tmpmacros:
             macros[m._name] = m
     return macros
