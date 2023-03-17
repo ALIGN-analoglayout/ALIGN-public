@@ -15,9 +15,7 @@ print(f"LEF     : {args.lef}")
 print(f"layers  : {args.layers}")
 
 if args.verilog and args.layers and args.lef:
-    nl = Netlist()
-    nl.loadVerilog(args.verilog)
-    nl.loadLayers(args.layers)
-    nl.loadMacros(args.lef)
+    nl = Netlist(args.verilog, args.layers, args.lef)
 
-    nl.print()
+#nl.print()
+    nl.writeDEF()

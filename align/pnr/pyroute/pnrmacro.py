@@ -1,19 +1,6 @@
 import pyparsing as pp
-from geom import Point, Rect
+from geom import Point, Rect, LayerRects
 from logger import logger
-class LayerRects:
-    def __init__(self, tokens = []):
-        self._layer = ''
-        self._rects = []
-        if (tokens and len(tokens) >= 1):
-            self._layer = tokens[0].layer
-            self._rects = tokens[0].rects[:]
-
-    def __str__(self):
-        s = f'layer : {self._layer}'
-        for r in self._rects:
-            s += (' ' + str(r))
-        return s
 
 
 class Port:
@@ -158,7 +145,7 @@ def parseLef(lefFile = ""):
         name            = pp.Word(pp.alphanums + "_")
         num             = pp.pyparsing_common.fnumber
         pointparser     = pp.Group(num("x") + num("y")).setParseAction(lambda t: Point(t[0].x, t[0].y))
-        rectparser      = pp.Group(rect_ + num("llx") + num("lly") + num("urx") + num("ury") + sc_).setParseAction(lambda t: Rect(t[0].llx, t[0].lly, t[0].urx, t[0].ury))
+        rectparser      = pp.Group(rect_ + num("llx") + num("lly") + num("urx") + num("ury") + sc_).setParseAction(lambda t: Rect(Point(t[0].llx, t[0].lly), Point(t[0].urx, t[0].ury)))
         layerrectparser = pp.Group(layer_ + name("layer") + sc_ + pp.ZeroOrMore(rectparser)("rects")).setParseAction(LayerRects)
         portparser      = pp.Group(port_ + pp.ZeroOrMore(layerrectparser) + end_).setParseAction(Port)
         pinparser       = pp.Group(pin_ + name("name") + pp.ZeroOrMore((dir_ + name + sc_)("direction") | (use_ + name + sc_)("use"))
