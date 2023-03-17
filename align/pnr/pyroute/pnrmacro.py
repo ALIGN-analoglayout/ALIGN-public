@@ -87,7 +87,7 @@ class Macro:
             self._name = token.name
             if type(token.units[0]) == str:
                 if ';' in token.units[0]:
-                    self._units = int(token.units[0][0:-1])
+                    self._units = float(token.units[0][0:-1])
                 else:
                     self._units = int(token.units[0])
             elif token.unites: self._units = int(token.units[0])
@@ -121,7 +121,7 @@ class Macro:
 
 
 def parseLef(lefFile = ""):
-    macros = dict()
+    macros = list()
     if lefFile:
         print(f"parsing lef file : {lefFile}")
         sc_      = pp.Suppress(pp.Keyword(';'))
@@ -153,17 +153,15 @@ def parseLef(lefFile = ""):
         foreignparser   = pp.Suppress(foreign_ + name + num + num + sc_)
         originparser    = pp.Group(origin_ + pointparser + sc_)
         obsparser       = pp.Group(obs_ + pp.ZeroOrMore(layerrectparser) + end_).setParseAction(Obstacles)
-        numwithsc       = pp.Word(pp.nums + ";")
-        unitparser      = pp.Group(units_ + db_ + microns_ + units_ + numwithsc("units") + end_ + units_).setParseAction(lambda t: int(t[0][0:-1]) if ';' in t[0] else t[0][:])
+        numwithsc       = pp.Word(pp.nums + ".;")
+        unitparser      = pp.Group(units_ + db_ + microns_ + units_ + numwithsc("units") + end_ + units_).setParseAction(lambda t: float(t[0][0:-1]) if ';' in t[0] else t[0][:])
         macroparser     = pp.Group(macro_ + name("name") + pp.Optional(unitparser)("units")
                 + pp.ZeroOrMore(originparser("origin") | foreignparser | (size_ + num("width") + by_ + num("height") + sc_))
                 + pp.ZeroOrMore(pinparser)("pins") + pp.ZeroOrMore(obsparser)("obs") + end_ + name).setParseAction(Macro)
         macrosparser    = pp.ZeroOrMore(macroparser)
 
         try:
-            tmpmacros = macrosparser.parseFile(lefFile)
+            macros = macrosparser.parseFile(lefFile)
         except pp.ParseException as pe:
             print(pe.markInputline())
-        for m in tmpmacros:
-            macros[m._name] = m
     return macros
