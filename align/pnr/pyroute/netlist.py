@@ -200,6 +200,7 @@ class ViaLayer:
         self._encU  = encU
         self._res   = res
         self._viagen = None
+        self._via  = dict()
 
     def addViaGen(self, width = (0, 0), space = (0, 0), num = (0, 0)):
         class ViaGen:
@@ -213,6 +214,26 @@ class ViaLayer:
         if self._viagen:
             s += f'\n\tViaGen : width : {self._viagen._width} space : {self._viagen._space} num : {self._viagen._num}'
         return s
+
+    def buildVia(self):
+        if self._u and self._l:
+            encL = self._encL if self._l._dir == 'H' else (self._encL[1], self._encL[0])
+            encU = self._encU if self._u._dir == 'H' else (self._encU[1], self._encU[0])
+            if not self._viagen:
+                self._via[self._name] = [Rect(Point(-self._width[0]/2, -self._width[1]/2), Point(self._width[0]/2, self._width[1]/2))]
+                self._via[self._l._name] = [Rect(Point(-self._width[0]/2 - encL[0], -self._width[1]/2 - encL[1]), Point(self._width[0]/2 + encL[0], self._width[1]/2 + encL[1]))]
+                self._via[self._u._name] = [Rect(Point(-self._width[0]/2 - encU[0], -self._width[1]/2 - encU[1]), Point(self._width[0]/2 + encU[0], self._width[1]/2 + encU[1]))]
+            else:
+                width = (self._viagen._width[0] * self._viagen._num[0] + self._viagen._space[0] * (self._viagen._num[0] - 1), \
+                         self._viagen._width[1] * self._viagen._num[1] + self._viagen._space[1] * (self._viagen._num[1] - 1))
+                self._via[self._name] = []
+                for i in range(self._viagen._num[0]):
+                    for j in range(self._viagen._num[1]):
+                        x = -width[0]/2 + i * (self._viagen._width[0] + self._viagen._space[0])
+                        y = -width[1]/2 + j * (self._viagen._width[1] + self._viagen._space[1])
+                        self._via[self._name].append(Rect(Point(x, y), Point(x + self._viagen._width[0], y + self._viagen._width[1])))
+                self._via[self._l._name] = [Rect(Point(-width[0]/2 - encL[0], -width[1]/2 - encL[1]), Point(width[0]/2 + encL[0], width[1]/2 + encL[1]))]
+                self._via[self._u._name] = [Rect(Point(-width[0]/2 - encU[0], -width[1]/2 - encU[1]), Point(width[0]/2 + encU[0], width[1]/2 + encU[1]))]
 
 
 class Netlist:
@@ -322,6 +343,8 @@ class Netlist:
                                     if "Gen" in lV and lV["Gen"] == "ViaArrayGenerator" and "WidthX" in lV and "SpaceX" in lV and "NumX" in lV:
                                         self._vlayers[lD["Layer"]].addViaGen(width = (lV["WidthX"], lV["WidthY"]), space = (lV["SpaceX"], lV["SpaceY"]), \
                                             num = (lV["NumX"], lV["NumY"]))
+        for (l, v) in self._vlayers.items():
+            v.buildVia()
 
     def flatten(self):
         self._flatinst = list()
