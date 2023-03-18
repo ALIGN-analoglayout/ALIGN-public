@@ -37,7 +37,7 @@ class Rect:
         self._ll = ll
         self._ur = ur
 
-    def __str__(self): return f'[{self._ll}--{self._ur}]'
+    def __str__(self): return f'[{self._ll},{self._ur}]'
     def __repr__(self): return f'Rect({self._ll}, {self._ur})'
 
     def fix(self):
@@ -46,7 +46,7 @@ class Rect:
         if self._ll._y > self._ur._y:
             self._ll._y, self._ur._y = self._ur._y, self._ll._y
 
-    def transform(self, tr, w, h):
+    def transform(self, tr, w = 0, h = 0):
         ll = self._ll.transform(tr, w, h)
         ur = self._ur.transform(tr, w, h)
         r = Rect(ll, ur)
@@ -132,3 +132,11 @@ class LayerRects:
         for r in self._rects:
             s += (' ' + str(r))
         return s
+
+    def transform(self, tr, w, h):
+        lr = LayerRects()
+        lr._layer = self._layer
+        for i in range(len(self._rects)):
+            lr._rects[inst] = self._rects[i].transform(tr, w, h)
+        return lr
+

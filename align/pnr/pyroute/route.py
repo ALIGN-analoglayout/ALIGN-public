@@ -17,6 +17,6 @@ print(f"layers  : {args.layers}")
 if args.verilog and args.layers and args.lef:
     nl = Netlist(args.verilog, args.layers, args.lef)
 
-     #nl.print()
-    nl.flatten()
+    #nl.print()
     nl.writeFlatDEF()
+    nl.route()
