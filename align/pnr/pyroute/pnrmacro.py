@@ -1,6 +1,27 @@
 import pyparsing as pp
-from geom import Point, Rect, LayerRects
+from geom import Point, Rect
 from logger import logger
+
+class LayerRects:
+    def __init__(self, tokens = []):
+        self._layer = ''
+        self._rects = []
+        if (tokens and len(tokens) >= 1):
+            self._layer = tokens[0].layer
+            self._rects = tokens[0].rects[:]
+
+    def __str__(self):
+        s = f'layer : {self._layer}'
+        for r in self._rects:
+            s += (' ' + str(r))
+        return s
+
+    def transform(self, tr, w, h):
+        lr = LayerRects()
+        lr._layer = self._layer
+        for i in range(len(self._rects)):
+            lr._rects[inst] = self._rects[i].transform(tr, w, h)
+        return lr
 
 
 class Port:

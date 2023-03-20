@@ -1,22 +1,41 @@
-#! /usr/bin/env python3
+import math
+import networkx as nx
 
-import argparse
-from logger import logger
+from geom import Point, Rect, Transform
+from layers import Layers
 
-from netlist import Netlist
 
-ap = argparse.ArgumentParser()
-ap.add_argument( "-v", "--verilog", type=str, default="", help='<filename.verilog.json>')
-ap.add_argument( "-f", "--lef", type=str, default="", help='<lef files>')
-ap.add_argument( "-l", "--layers", type=str, default="", help='<layers.json>')
-args = ap.parse_args()
-print(f"verilog : {args.verilog}")
-print(f"LEF     : {args.lef}")
-print(f"layers  : {args.layers}")
+class Router:
+    def __init__(self, src, tgt, obs, layers):
+        self._layers = layers
+        self._src    = self.findGridPts(src)
+        self._tgt    = self.findGridPts(tgt)
+        self._obs    = self.snapToGrid(obs)
+        self._sol    = self.findSol()
 
-if args.verilog and args.layers and args.lef:
-    nl = Netlist(args.verilog, args.layers, args.lef)
+    def findSol(self):
+        graph  = None
+        sol    = None
+        return sol
+        
+    def getSol(self):
+        return self._sol
 
-    #nl.print()
-    nl.writeFlatDEF()
-    nl.route()
+    def findGridPts(self, lr):
+        pts = set()
+        for (l, rects) in lr:
+            layer = layers._mlayers[l] if l in layers._mlayers else None
+            if layer and (layer._index <= layers._maxlayer._index) and (layer._index >= layers._minlayer._index):
+                for other in [layers._index - 1, layers._index + 1]:
+                    if other <= layers._maxlayer._index and other >= layers._minlayer._index:
+                        ol = layers._mlarray[other]
+                        for r in rects:
+                            if layer._dir == 'H':
+                                coords = ol._grid.getPointsInRange(r.xmin(), r.xmax())
+                                for c in coords:
+                                    pts.add((c, r.ycenter(), layer._index, other))
+                            else:
+                                coords = ol._grid.getPointsInRange(r.ymin(), r.ymax())
+                                for c in coords:
+                                    pts.add((r.xcenter(), c, layer._index, other))
+                            

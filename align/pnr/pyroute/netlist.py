@@ -1,13 +1,10 @@
 import json
 import logging
-import pathlib
-from collections import OrderedDict
 from geom import Point, Rect, Transform
 import copy
+from layers import Layers
 
 logging.basicConfig(level='ERROR')
-
-
 
 class Constraint:
     def __init__(self, name = "", instances = list(), attr = dict()):
@@ -165,87 +162,14 @@ class Net:
             print(f"      pin : {p[0]}/{p[1]}")
 
 
-class Grid:
-    def __init__(self, offset = 0, pitch = 0):
-        self._offset = offset
-        self._pitch   = pitch
-
-    def snap(self, x, up = True):
-        if not self._pitch: return x
-        rem = (x - self._offset) % self._pitch
-        if rem == 0: return x
-        if up: return x + (self._pitch - rem)
-        return (x - rem)
-
-
-class MetalLayer:
-    def __init__(self, name = '', direction = 'H', width = 0, offset = 0, pitch = 0, res = 1.):
-        self._name  = name
-        self._grid  = Grid(offset, pitch)
-        self._width = width
-        self._dir   = direction
-        self._res   = res
-    def __str__(self):
-        return f'dir : {self._dir} width : {self._width} Grid : {self._grid._offset}, {self._grid._pitch}'
-
-
-class ViaLayer:
-    def __init__(self, name = '', lower = None, upper = None, space = (0,0), width = (0,0), encL = (0,0), encU = (0,0), res = 1.):
-        self._name = name
-        self._l = lower
-        self._u = upper
-        self._space = space
-        self._width = width
-        self._encL  = encL
-        self._encU  = encU
-        self._res   = res
-        self._viagen = None
-        self._via  = dict()
-
-    def addViaGen(self, width = (0, 0), space = (0, 0), num = (0, 0)):
-        class ViaGen:
-            def __init__(self, width, space, num):
-                (self._width, self._space, self._num) = width, space, num
-
-        self._viagen = ViaGen(width, space, num)
-
-    def __str__(self):
-        s = f'l : {self._l._name if self._l else None} u : {self._u._name if self._u else None} space : {self._space} width : {self._width} encL : {self._encL} encU : {self._encU}'
-        if self._viagen:
-            s += f'\n\tViaGen : width : {self._viagen._width} space : {self._viagen._space} num : {self._viagen._num}'
-        return s
-
-    def buildVia(self):
-        if self._u and self._l:
-            encL = self._encL if self._l._dir == 'H' else (self._encL[1], self._encL[0])
-            encU = self._encU if self._u._dir == 'H' else (self._encU[1], self._encU[0])
-            if not self._viagen:
-                self._via[self._name] = [Rect(Point(-self._width[0]/2, -self._width[1]/2), Point(self._width[0]/2, self._width[1]/2))]
-                self._via[self._l._name] = [Rect(Point(-self._width[0]/2 - encL[0], -self._width[1]/2 - encL[1]), Point(self._width[0]/2 + encL[0], self._width[1]/2 + encL[1]))]
-                self._via[self._u._name] = [Rect(Point(-self._width[0]/2 - encU[0], -self._width[1]/2 - encU[1]), Point(self._width[0]/2 + encU[0], self._width[1]/2 + encU[1]))]
-            else:
-                width = (self._viagen._width[0] * self._viagen._num[0] + self._viagen._space[0] * (self._viagen._num[0] - 1), \
-                         self._viagen._width[1] * self._viagen._num[1] + self._viagen._space[1] * (self._viagen._num[1] - 1))
-                self._via[self._name] = []
-                for i in range(self._viagen._num[0]):
-                    for j in range(self._viagen._num[1]):
-                        x = -width[0]/2 + i * (self._viagen._width[0] + self._viagen._space[0])
-                        y = -width[1]/2 + j * (self._viagen._width[1] + self._viagen._space[1])
-                        self._via[self._name].append(Rect(Point(x, y), Point(x + self._viagen._width[0], y + self._viagen._width[1])))
-                self._via[self._l._name] = [Rect(Point(-width[0]/2 - encL[0], -width[1]/2 - encL[1]), Point(width[0]/2 + encL[0], width[1]/2 + encL[1]))]
-                self._via[self._u._name] = [Rect(Point(-width[0]/2 - encU[0], -width[1]/2 - encU[1]), Point(width[0]/2 + encU[0], width[1]/2 + encU[1]))]
-
-
 class Netlist:
     def __init__(self, verilog, layers, lef):
         self._modules = dict()
         self._hpitch = 0
         self._vpitch = 0
-        self._mlayers = dict()
-        self._vlayers = dict()
         self._flatinst = list()
+        self._layers = Layers(layers)
         if verilog: self.loadVerilog(verilog)
-        if layers: self.loadLayers(layers)
         if lef: self.loadMacros(lef)
         self._maxhier = -1
 
@@ -256,10 +180,7 @@ class Netlist:
     def print(self):
         for (name,m) in self._modules.items():
             m.print()
-        for (name, l) in self._mlayers.items():
-            print(f'layer : {name}, {l}')
-        for (name, l) in self._vlayers.items():
-            print(f'layer : {name}, {l}')
+        self._layers.print()
 
 
     def loadMacros(self, leffile):
@@ -316,35 +237,6 @@ class Netlist:
                                 modu._instances[instName]._tr = Transform(tr["oX"], tr["oY"], tr["sX"], tr["sY"])
                     if "parameters" in m:
                         for p in m["parameters"]: modu._pins[p] = Pin(p)
-
-    def loadLayers(self, layersfile):
-        with open(layersfile) as fp:
-            ldata = json.load(fp, object_pairs_hook=OrderedDict)
-            if "Abstraction" in ldata:
-                for lD in ldata["Abstraction"]:
-                    if "Layer" in lD and "Stack" not in lD:
-                            if "Direction" in lD and "Offset" in lD and "Width" in lD and "Pitch" in lD:
-                                self._mlayers[lD["Layer"]] = MetalLayer(lD["Layer"], lD["Direction"], lD["Width"],\
-                                    lD["Offset"], lD["Pitch"], lD["UnitR"]["Mean"] if "UnitR" in lD else 1.)
-
-                for lD in ldata["Abstraction"]:
-                    if "Layer" in lD and "Stack" in lD:
-                            lower = lD["Stack"][0]
-                            upper = lD["Stack"][1]
-                            lower = self._mlayers[lower] if lower in self._mlayers else None
-                            upper = self._mlayers[upper] if upper in self._mlayers else None
-                            if "SpaceX" in lD and "WidthX" in lD and "VencA_L" in lD \
-                              and "VencA_H" in lD and "VencP_L" in lD and "VencP_H" in lD:
-                                self._vlayers[lD["Layer"]] = ViaLayer(lD["Layer"], lower, upper, space = (lD["SpaceX"], lD["SpaceY"]), \
-                                    width = (lD["WidthX"], lD["WidthY"]), encL = (lD["VencA_L"], lD["VencP_L"]), \
-                                    encU = (lD["VencA_H"], lD["VencP_H"]), res = (lD["UnitR"]["Mean"] if "UnitR" in lD else 1.))
-                                if "ViaCut" in lD:
-                                    lV = lD["ViaCut"]
-                                    if "Gen" in lV and lV["Gen"] == "ViaArrayGenerator" and "WidthX" in lV and "SpaceX" in lV and "NumX" in lV:
-                                        self._vlayers[lD["Layer"]].addViaGen(width = (lV["WidthX"], lV["WidthY"]), space = (lV["SpaceX"], lV["SpaceY"]), \
-                                            num = (lV["NumX"], lV["NumY"]))
-        for (l, v) in self._vlayers.items():
-            v.buildVia()
 
     def flatten(self):
         self._flatinst = list()

@@ -64,6 +64,9 @@ class Rect:
     def xmax(self): return self._ur._x
     def ymax(self): return self._ur._y
 
+    def xcenter(self): return (self._ll._x + self._ur._x) / 2
+    def ycenter(self): return (self._ll._y + self._ur._y) / 2
+
     def width(self): return self._ur._x - self._ll._x
 
     def height(self): return self._ur._y - self._ll._y
@@ -94,8 +97,6 @@ class Rect:
         self._ur = self._ur.max(r._ur)
 
 
-
-
 class Transform:
     def __init__(self, oX = 0, oY = 0, sX = 1, sY = 1):
         self._or = Point(oX, oY) 
@@ -118,25 +119,4 @@ class Transform:
         return "S";
         
 
-
-class LayerRects:
-    def __init__(self, tokens = []):
-        self._layer = ''
-        self._rects = []
-        if (tokens and len(tokens) >= 1):
-            self._layer = tokens[0].layer
-            self._rects = tokens[0].rects[:]
-
-    def __str__(self):
-        s = f'layer : {self._layer}'
-        for r in self._rects:
-            s += (' ' + str(r))
-        return s
-
-    def transform(self, tr, w, h):
-        lr = LayerRects()
-        lr._layer = self._layer
-        for i in range(len(self._rects)):
-            lr._rects[inst] = self._rects[i].transform(tr, w, h)
-        return lr
 
