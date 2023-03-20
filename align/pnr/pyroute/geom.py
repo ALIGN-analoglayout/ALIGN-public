@@ -7,11 +7,8 @@ class Point:
     def __str__(self): return f'Point({self._x}, {self._y})'
     def __repr__(self): return f'Point({self._x}, {self._y})'
 
-    def transform(self, tr, w, h):
-        x, y = tr._or._x + self._x, tr._or._y + self._y
-        if tr._sX < 0: x -= w
-        if tr._sY < 0: y -= h
-        return Point(x, y)
+    def transform(self, tr):
+        return Point(tr._or._x + tr._sX * self._x, tr._or._y + tr._sY * self._y)
 
     def moveto(self, x, y):
         self._x = x
@@ -33,9 +30,10 @@ class Point:
 
 
 class Rect:
-    def __init__(self, ll = Point(math.inf, math.inf), ur = Point(-math.inf, -math.inf)):
-        self._ll = ll
-        self._ur = ur
+    def __init__(self, ll = None, ur = None):
+        self._ll = ll if ll else Point(math.inf, math.inf)
+        self._ur = ur if ur else Point(-math.inf, -math.inf)
+        if ll and ur: self.fix()
 
     def __str__(self): return f'[{self._ll},{self._ur}]'
     def __repr__(self): return f'Rect({self._ll}, {self._ur})'
@@ -46,11 +44,8 @@ class Rect:
         if self._ll._y > self._ur._y:
             self._ll._y, self._ur._y = self._ur._y, self._ll._y
 
-    def transform(self, tr, w = 0, h = 0):
-        ll = self._ll.transform(tr, w, h)
-        ur = self._ur.transform(tr, w, h)
-        r = Rect(ll, ur)
-        r.fix()
+    def transform(self, tr):
+        r = Rect(self._ll.transform(tr), self._ur.transform(tr))
         return r
 
     def merge(self, r):

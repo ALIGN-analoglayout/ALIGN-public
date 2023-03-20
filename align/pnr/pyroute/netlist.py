@@ -107,6 +107,7 @@ class HierInstance:
         self._pins = dict()
         self._routed = False
         self._obs = None
+        self._parent = None
 
     def __str__(self):
         return(f'(hier instance : {self._name}, module : {self._modu._concname}, transform : {self._tr})')
@@ -252,6 +253,7 @@ class Netlist:
                     hinst = HierInstance(iname, mname = iname, modu = inst._modu)
                     hinst._tr = copy.deepcopy(inst._tr)
                     hierinst._hierinstances[iname] = hinst
+                    hinst._parent = hierinst
                     queue.append(hinst)
                     self._flatinst.append(hinst)
 
@@ -265,6 +267,7 @@ class Netlist:
                     hinst._tr.apply(q._tr)
                     self._flatinst.append(hinst)
                     q._hierinstances[iname] = hinst
+                    hinst._parent = q
                     tmpq.append(hinst)
             queue = tmpq
 
@@ -291,7 +294,7 @@ class Netlist:
 
         with open(top._modu._concname + '_flat.def', 'w') as fs:
             fs.write(f'VERSION 5.8 ;\nDIVIDERCHAR "/" ;\nBUSBITCHARS "[]" ;\nDESIGN {top._modu._concname} ;\nUNITS DISTANCE MICRONS 1 ;\n')
-            bbox = top._modu._bbox.transform(top._tr, top._modu.width(), top._modu.height)
+            bbox = top._modu._bbox.transform(top._tr)
             fs.write(f"DIEAREA ( {bbox._ll._x} {bbox._ll._y} ) ( {bbox._ur._x} {bbox._ur._y} ) ;\n\n")
             if len(flatinstances) > 0:
                 count = 0
@@ -315,13 +318,13 @@ class Netlist:
             inst._obs = copy.deepcopy(inst._modu._obs)
             for (l, rects) in inst._obs.items():
                 for i in range(len(rects)):
-                    rects[i] = rects[i].transform(inst._tr, inst._modu.width(), inst._modu.height())
+                    rects[i] = rects[i].transform(inst._tr)
             inst._pins = copy.deepcopy(inst._modu._pins)
             for (pname, pin) in inst._pins.items():
                 for port in pin._ports:
                     for (l, rects) in port.items():
                         for i in range(len(rects)):
-                            rects[i] = rects[i].transform(inst._tr, inst._modu.width(), inst._modu.height())
+                            rects[i] = rects[i].transform(inst._tr)
         for i in range(1, len(routeHierOrder)):
             if len(routeHierOrder[i]): print("hier : ", i, routeHierOrder[i])
             for hierinst in routeHierOrder[i]:
