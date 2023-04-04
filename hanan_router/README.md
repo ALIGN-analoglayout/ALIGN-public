@@ -17,9 +17,8 @@ Requirements:
   * A C++ compiler with support for C++14 or higher
   * `make` system
   
-Steps to clone and build:
+Steps to build:
   ```
-  git clone https://github.com/srini229/hanan_router.git
   cd hanan_router
   make -j4
   ```
