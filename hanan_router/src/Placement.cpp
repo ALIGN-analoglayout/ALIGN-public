@@ -226,7 +226,7 @@ void Module::route(Router::Router& router, const std::string& outdir)
     }
     writeDEF(outdir);
   }
-  if (!_leaf) {
+  if (!_leaf && !_top) {
     writeLEF(outdir);
   }
   _routed = 1;

@@ -246,7 +246,7 @@ class Router {
     std::map<int, std::set<Geom::Rect>> _sourceshapes, _targetshapes;
     std::string _modname, _netname;
     int _uu;
-    int _precision{5};
+    int _precision{2};
     Geom::LayerTree _ltree;
     std::set<int> _preflayers;
     bool _usepinwidth{false}, _debugplot{false};
@@ -380,7 +380,7 @@ class Router {
     const Via* isViaValid(const Node* n, const bool up) const;
     void updatendr(const bool usendr, const std::map<int, int>& ndrwidths,
         const std::map<int, int>& ndrspaces, const std::map<int, DRC::Direction>& ndrdirs,
-        const std::set<int>& preflayers, const std::map<int, DRC::ViaArray>& ndrvias, const bool isVirtual);
+        const std::set<int>& preflayers, const std::map<int, DRC::ViaArray>& ndrvias);
     void setModName(const std::string& n) { _modname = n; }
     void setNetName(const std::string& n) { _netname = n; }
     void setuu(const int uu) { _uu = uu; }

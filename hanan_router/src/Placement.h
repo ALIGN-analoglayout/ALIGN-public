@@ -188,6 +188,7 @@ class Module {
     unsigned int _leaf : 1;
     unsigned int _routed : 1;
     unsigned int _usepinwidth : 1;
+    unsigned int _top : 1;
     Nets _nets;
     Pins _pins;
     Instances _instances;
@@ -200,7 +201,7 @@ class Module {
 
     void build();
   public:
-    Module(const std::string& name, const std::string& absname, const unsigned leaf, const int uu) : _name(name), _absname{absname}, _leaf(leaf), _routed{leaf}, _usepinwidth{0}, _bbox{}, _uu{uu} {_instances.reserve(64);}
+    Module(const std::string& name, const std::string& absname, const unsigned leaf, const int uu) : _name(name), _absname{absname}, _leaf(leaf), _routed{leaf}, _usepinwidth{0}, _top{0}, _bbox{}, _uu{uu} {_instances.reserve(64);}
     ~Module();
     Instance* addInstance(const std::string& name, const std::string& mname, const Geom::Transform& tr)
     {
@@ -350,6 +351,7 @@ class Module {
     }
 
     void setusepinwidth(int u) { _usepinwidth = u ? 1 : 0; }
+    void setTop() { _top = 1; }
 
     void print() const;
     void route(Router::Router& r, const std::string& outdir);

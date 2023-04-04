@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include "Geom.h"
 
 namespace DRC {
 
@@ -50,12 +51,31 @@ class gdsDatatype {
     int _draw{0}, _pin{0}, _label{0}, _blockage{0};
 };
 
+class Grid {
+  private:
+    int _pitch, _offset;
+  public:
+    Grid(const int pitch = 0, const int offset = 0) : _pitch{pitch}, _offset{offset} {}
+    void setPitchOffset(const int pitch, const int offset) { _pitch = pitch; _offset = offset; }
+    const int snapUp(const int val) const {
+      auto rem = (val - _offset) % _pitch;
+      return rem ? (val + _pitch - rem) : val;
+    }
+    const int snapDn(const int val) const { return val - ((val - _offset) % _pitch); }
+    bool isPtOnGrid(const int val) const { return ((val - _offset) % _pitch == 0); }
+    void getPointsOnGrid(const int start, const int end, std::vector<int>& pts) const
+    {
+      for (int pt = snapUp(start); pt <= snapDn(end); pt += _pitch) pts.push_back(pt);
+    }
+};
+
 class MetalLayer : public Layer {
   private:
     int _pitch, _width, _minL, _maxL;
     int _e2e, _offset;
     float _c[3], _cc[3];
     Direction _dir;
+    Grid _grid;
   public:
     MetalLayer(const int gdsNo, const std::string& name, const float mur, const float lr, const float ur)
       : Layer(gdsNo, name, mur, lr, ur, LayerType::METAL), _pitch(0), _width(0), _minL(0), _maxL(0), _e2e(0), _offset(0),
@@ -66,12 +86,14 @@ class MetalLayer : public Layer {
     {
       return (_pitch > _width) ? (_pitch - _width) : _pitch;
     }
+    int offset() const { return _offset; }
     void setPitch(const int p) {_pitch = p;}
     void setWidth(const int w) {_width = w;}
     void setMinL(const int l) {_minL = l;}
     void setMaxL(const int l) {_maxL = l;}
     void setE2E(const int e) {_e2e = e;}
     void setOffset(const int o) {_offset = o;}
+    void setGrid() { _grid.setPitchOffset(_pitch, _offset); }
     void setDirection(const int dir) { _dir = (dir == 0 ? Direction::HORIZONTAL : (dir == 1 ? Direction::VERTICAL : Direction::ORTHOGONAL)); }
     void setC(const float muc, const float lc, const float uc) { _c[0] = muc; _c[1] = lc; _c[2] = uc; }
     void setCC(const float muc, const float lc, const float uc) { _cc[0] = muc; _cc[1] = lc; _cc[2] = uc; }
@@ -82,6 +104,22 @@ class MetalLayer : public Layer {
       //std::cout << _pitch << ' ' << _width << ' ' << _minL << ' ' << _maxL << ' ' << _e2e << ' ' << _offset << ' ';
       //std::cout << (_dir == Direction::HORIZONTAL ? "hor" : "ver") << ' ';
     }
+    Geom::Rect snapToGrid(const Geom::Rect& r) const
+    {
+      if (isHorizontal()) {
+        return Geom::Rect(r.xmin(), _grid.snapDn(r.ymin()),
+            r.xmax(), _grid.snapUp(r.ymax()));
+      } else if (isVertical()) {
+        return Geom::Rect(_grid.snapDn(r.xmin()), r.ymin(),
+            _grid.snapUp(r.xmax()), r.ymax());
+      }
+      return r;
+    }
+    const int snapUp(const int val) const { return _grid.snapUp(val); }
+    const int snapDn(const int val) const { return _grid.snapDn(val); }
+    bool isPtOnGrid(const int val) const { return _grid.isPtOnGrid(val); }
+    void getPointsOnGrid(const int start, const int end, std::vector<int>& pts) const { _grid.getPointsOnGrid(start, end, pts); }
+
 };
 typedef std::vector<MetalLayer*> MetalLayers;
 
@@ -223,6 +261,47 @@ class LayerInfo {
         return static_cast<MetalLayer*>(_layers[z])->isHorizontal();
       }
       return true;
+    }
+    Geom::Rect snapToGrid(const Geom::Rect& r, const int layer) const
+    {
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapToGrid(r);
+      return r;
+    }
+    int snapUp(const int r, const int layer) const
+    {
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapUp(r);
+      return r;
+    }
+    int snapDn(const int r, const int layer) const
+    {
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->snapDn(r);
+      return r;
+    }
+    void getPointsOnGrid(const int start, const int end, const int layer, std::vector<int>& pts) const
+    {
+      if (layer < static_cast<int>(_mlayers.size())) return _mlayers[layer]->getPointsOnGrid(start, end, pts);
+    }
+    Geom::Rect snapToGrid(const Geom::Rect& r, const int llayer, const int ulayer) const
+    {
+      if (_mlayers[llayer]->isHorizontal() && _mlayers[ulayer]->isVertical()) {
+        return Geom::Rect(_mlayers[llayer]->snapDn(r.xmin()), _mlayers[ulayer]->snapDn(r.ymin()),
+            _mlayers[llayer]->snapUp(r.xmax()), _mlayers[ulayer]->snapUp(r.ymax()));
+      } else if (_mlayers[llayer]->isVertical() && _mlayers[ulayer]->isHorizontal()) {
+        return Geom::Rect(_mlayers[ulayer]->snapDn(r.xmin()), _mlayers[llayer]->snapDn(r.ymin()),
+            _mlayers[ulayer]->snapUp(r.xmax()), _mlayers[llayer]->snapUp(r.ymax()));
+      }
+      return r;
+    }
+    bool isViaOnGrid(const Geom::Point& p, const int llayer, const int ulayer) const
+    {
+      if (ulayer < static_cast<int>(_mlayers.size())) {
+        if (_mlayers[llayer]->isHorizontal() && _mlayers[ulayer]->isVertical()) {
+          return _mlayers[llayer]->isPtOnGrid(p.y()) && _mlayers[ulayer]->isPtOnGrid(p.x());
+        } else if (_mlayers[llayer]->isVertical() && _mlayers[ulayer]->isHorizontal()) {
+          return _mlayers[llayer]->isPtOnGrid(p.x()) && _mlayers[ulayer]->isPtOnGrid(p.y());
+        }
+      }
+      return false;
     }
 };
 

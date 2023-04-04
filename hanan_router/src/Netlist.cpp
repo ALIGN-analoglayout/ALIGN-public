@@ -24,6 +24,7 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
   }
   ordered_json oj = json::parse(ifs);
   ifs.close();
+  Module* modu{nullptr};
   auto it = oj.find("leaves");
   if (it != oj.end()) {
     for (auto& l : *it) {
@@ -31,7 +32,7 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
       if (_modules.find(*lname) != _modules.end()) continue;
       auto aname = l.find("abstract_name");
       if (lname != l.end()) {
-        auto modu = new Module(*lname, (aname != l.end() ? *aname : *lname), 1, _uu);
+        modu = new Module(*lname, (aname != l.end() ? *aname : *lname), 1, _uu);
         COUT << "adding leaf : " << *lname << '\n';
         auto terms = l.find("terminals");
         if (terms != l.end()) {
@@ -45,6 +46,7 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
       }
     }
   }
+  bool first{true};
   it = oj.find("modules");
   if (it != oj.end()) {
     for (auto& m : *it) {
@@ -52,7 +54,7 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
       if (mname != m.end()) {
         if (_modules.find(*mname) != _modules.end()) continue;
         auto aname = m.find("abstract_name");
-        auto modu = new Module(*mname, (aname != m.end() ? *aname : *mname), 0, _uu);
+        modu = new Module(*mname, (aname != m.end() ? *aname : *mname), 0, _uu);
         auto params = m.find("parameters");
         COUT << "adding module : " << *mname << '\n';
         if (params != m.end()) {
@@ -89,6 +91,10 @@ Netlist::Netlist(const std::string& plfile, const::std::string& leffile, const D
               COUT << "instptr nullptr\n";
             }
           }
+        }
+        if (first) {
+          modu->setTop();
+          first = false;
         }
         _modules[modu->name()] = modu;
       }

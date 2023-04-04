@@ -67,7 +67,7 @@ PortPairs Net::reorderPorts() const
         for (auto& r1 : l1.second) {
           for (auto& l2 : s2) {
             for (auto& r2 : l2.second) {
-              dist = std::min(Geom::Dist(r1, r2)/nethpwl + std::abs(l1.first - l2.first) * ((ports[i]->isVirtualPort() || ports[j]->isVirtualPort()) ? 0.0 : 0.3), dist);
+              dist = std::min(Geom::Dist(r1, r2)/nethpwl + std::abs(l1.first - l2.first) * 0.03, dist);
               /*if (ports[i]->isVirtualPort() || ports[j]->isVirtualPort()) {
                 COUT << ports[i]->name() << ' ' << ports[j]->name() << ' ' <<  Geom::Dist(r1, r2) << ' ' << l1.first << ' ' << l2.first << ' ' << r1.str() << ' ' << r2.str() << ' ' << dist << '\n';
               }*/
@@ -88,7 +88,7 @@ PortPairs Net::reorderPorts() const
       if (ports[i]->isVirtualPort() || ports[j]->isVirtualPort()) dist /= 10;
       portpairdist[i][j] = dist;
       portpairdist[j][i] = dist;
-      COUT << "ports dist : " << ports[i]->name() << ' ' << ports[j]->name() << ' ' << dist << '\n';
+      COUT << "ports dist : " << ports[i]->name() << ' ' << ports[j]->name() << ' ' << dist << std::endl;
       if (mindist > dist) {
         mindist = dist;
         idx1 = static_cast<int>(std::min(i, j));
@@ -244,7 +244,7 @@ void Net::route(Router::Router& router, const Geom::LayerRects& l1, const Geom::
           }
         }
       }
-      router.updatendr(update, _ndrwidths, _ndrspaces, _ndrdirs, _preflayers, _ndrvias, (port1->isVirtualPort() && port2->isVirtualPort()));
+      router.updatendr(update, _ndrwidths, _ndrspaces, _ndrdirs, _preflayers, _ndrvias);
 #if DEBUG
       COUT << "adding line of sight nodes if they exist\n";
 #endif
@@ -319,29 +319,22 @@ void Net::route(Router::Router& router, const Geom::LayerRects& l1, const Geom::
       } else {
         _unroute = 1;
       }
-      if (port1->isVirtualPort() && port2->isVirtualPort()) {
-        Geom::MergeLayerRects(_routeshapeswithpins, port2->shapes(), &_bbox);
-        Geom::MergeLayerRects(_routeshapes, port2->shapes(), &_bbox);
-        Geom::MergeLayerRects(_routeshapeswithpins, port1->shapes(), &_bbox);
-        Geom::MergeLayerRects(_routeshapes, port1->shapes(), &_bbox);
-      } else {
-        if (!port1->isVirtualPort() || !_driver.empty()) {
-          std::cout << "Adding routes to " << port1->name() << ' ' << sol.size() << std::endl;
-          Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port1->shapes()), sol, &_bbox);
-          if (port2->isVirtualPort()) {
-            Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port1->shapes()), port2->shapes(), &_bbox);
-            Geom::MergeLayerRects(_routeshapeswithpins, port2->shapes(), &_bbox);
-            Geom::MergeLayerRects(_routeshapes, port2->shapes(), &_bbox);
-          }
+      if (!port1->isVirtualPort() || !_driver.empty()) {
+        std::cout << "Adding routes to " << port1->name() << ' ' << sol.size() << std::endl;
+        Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port1->shapes()), sol, &_bbox);
+        if (port2->isVirtualPort()) {
+          Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port1->shapes()), port2->shapes(), &_bbox);
+          Geom::MergeLayerRects(_routeshapeswithpins, port2->shapes(), &_bbox);
+          Geom::MergeLayerRects(_routeshapes, port2->shapes(), &_bbox);
         }
-        if (!port2->isVirtualPort() || !_driver.empty()) {
-          std::cout << "Adding routes to " << port2->name() << ' ' << sol.size() << std::endl;
-          Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port2->shapes()), sol, &_bbox);
-          if (port1->isVirtualPort()) {
-            Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port2->shapes()), port1->shapes(), &_bbox);
-            Geom::MergeLayerRects(_routeshapeswithpins, port1->shapes(), &_bbox);
-            Geom::MergeLayerRects(_routeshapes, port1->shapes(), &_bbox);
-          }
+      }
+      if (!port2->isVirtualPort() || !_driver.empty()) {
+        std::cout << "Adding routes to " << port2->name() << ' ' << sol.size() << std::endl;
+        Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port2->shapes()), sol, &_bbox);
+        if (port1->isVirtualPort()) {
+          Geom::MergeLayerRects(const_cast<Geom::LayerRects&>(port2->shapes()), port1->shapes(), &_bbox);
+          Geom::MergeLayerRects(_routeshapeswithpins, port1->shapes(), &_bbox);
+          Geom::MergeLayerRects(_routeshapes, port1->shapes(), &_bbox);
         }
       }
       router.clearObstacles(true);
