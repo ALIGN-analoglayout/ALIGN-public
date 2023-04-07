@@ -19,8 +19,6 @@ ALIGN_WORK_DIR = ALIGN_HOME / 'tests' / 'tmp'
 if 'ALIGN_WORK_DIR' in os.environ:
     ALIGN_WORK_DIR = pathlib.Path(os.environ['ALIGN_WORK_DIR']).resolve()
 
-#TODO track in a separate PR
-@pytest.mark.skip(reason="Empty hierarchies no longer supported in compiler")
 def test_black_box_dp_in_hsc ():
     nm = 'black_box_test'
     run_dir = ALIGN_WORK_DIR / f'{nm}'
