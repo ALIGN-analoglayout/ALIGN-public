@@ -179,7 +179,9 @@ def test_ota_six():
     constraints = [
         {"constraint": "ConfigureCompiler", "auto_constraint": False, "propagate": True},
         {"constraint": "GroupBlocks", "instances": ["mn1", "mn2"], "instance_name": "xtail"},
-        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair"},
+        {"constraint": "GroupBlocks", "instances": ["mn3", "mn4"], "instance_name": "xdiffpair", "template_name": "diffpair", "constraints": [
+            {"constraint": "Boundary", "halo_vertical": 0.63}
+        ]},
         {"constraint": "GroupBlocks", "instances": ["mp5", "mp6"], "instance_name": "xload"},
         {"constraint": "Floorplan", "order": True, "symmetrize": True, "regions": [["xload"], ["xdiffpair"], ["xtail"]]},
         {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 2}
@@ -228,6 +230,7 @@ def test_ro_simple():
     constraints = {
         'ro_stage': [
             {"constraint": "Order", "direction": "top_to_bottom", "instances": ["mp0", "mn0"]},
+            {"constraint": "Boundary", "halo_horizontal": 0.108}
         ],
         name: [
             {"constraint": "Order", "direction": "left_to_right", "instances": [f'xi{k}' for k in range(5)]},
@@ -441,6 +444,61 @@ def test_niwc_opamp_split():
         shutil.rmtree(run_dir)
         shutil.rmtree(ckt_dir)
 
+def test_niwc_opamp_split_collect_pins():
+    # Tests legal size and exact_patterns restrictions
+
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.niwc_opamp_split(name)
+    constraints = [
+    {"constraint": "ConfigureCompiler", "auto_constraint": False, "merge_parallel_devices": False},
+    {"constraint": "Route", "min_layer": "M2", "max_layer": "M3"},
+    {"constraint": "PowerPorts", "ports": ["vccx"]},
+    {"constraint": "GroundPorts", "ports": ["vssx"]},
+    {"constraint": "GroupBlocks", "instances": ["mtail"], "instance_name": "xmtail0", "template_name":"mtail0",
+     "generator": { "name": "MOS", "parameters": { "PARTIAL_ROUTING": True, "single_device_connect_m1": False, "legal_sizes": [{"y": 8}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m1", "m2"], "instance_name": "xdp", "template_name":"dp",
+     "generator": { "name": "MOS", "parameters": { "exact_patterns": [["AbBa",
+                                                                       "BaAb",
+                                                                       "BaAb",
+								       "AbBa"]], "PARTIAL_ROUTING": True}}},
+        {"constraint": "GroupBlocks", "instances": ["m7a", "m8a"], "instance_name": "xnraila", "template_name":"nraila", "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                        "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m7b", "m8b"], "instance_name": "xnrailb", "template_name":"nrailb",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+ 		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m11", "m12"], "instance_name": "xprail", "template_name":"prail",
+     "generator": {"name": "MOS",
+                   "parameters": {"pattern_template": ["AbBa",
+		                                       "BaAb"], "PARTIAL_ROUTING": True, "legal_sizes": [{"y": 8}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m3a", "m4a"], "instance_name": "xlsa",
+            "template_name":"lsa", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m3b", "m4b"], "instance_name": "xlsb", "template_name":"lsb","generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "GroupBlocks", "instances": ["m5a", "m6a"], "instance_name": "xostagea", "template_name":"ostagea","generator": { "name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+        {"constraint": "GroupBlocks", "instances": ["m5b", "m6b"], "instance_name": "xostageb",
+            "template_name":"ostageb", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 4}]}}},
+    {"constraint": "SameTemplate", "instances": ["xlsa", "xlsb"]},
+    {"constraint": "SameTemplate", "instances": ["xostagea", "xostageb"]},
+    {"constraint": "SameTemplate", "instances": ["xnraila", "xnrailb"]},
+    {"constraint": "Floorplan",
+     "order": True,
+     "symmetrize": True,
+     "regions": [
+        ["xprail"],
+        ["xostagea", "xlsa", "xdp", "xlsb", "xostageb"],
+        ["xnraila", "xmtail0", "xnrailb"]
+     ]},
+    {"constraint": "MultiConnection", "nets": ["tail"], "multiplier": 4}
+]
+
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, n=8, cleanup=False, log_level=LOG_LEVEL, additional_args=['--router_mode', 'collect_pins'])
+
+    if False and CLEANUP:
+        shutil.rmtree(run_dir)
+        shutil.rmtree(ckt_dir)
+
 
 def test_niwc_opamp_split_reuse():
     # Tests legal size and exact_patterns restrictions
@@ -635,3 +693,124 @@ def test_folded_cascode():
     ]
     example = build_example(name, netlist, constraints)
     run_example(example, cleanup=CLEANUP, log_level=LOG_LEVEL, n=1)
+
+
+def test_binary():
+    name = "binary"
+    netlist = textwrap.dedent(f"""\
+        .subckt power_cell vg vccx vcca
+        xmp0 vcca vg vccx vccx ppv drain=gnd m=1 nf=4 source=pwr nfin=4
+        .ends
+        .subckt {name} vccx vcca vg[0]
+        xi0 vccx vccx vcca power_cell
+        xi1 vg[0] vccx vcca power_cell
+        .ends {name}
+        .END
+    """)
+
+    constraints = {
+        "power_cell": [
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": False},
+            {"constraint": "GroundPorts", "ports": ["vcca"], "propagate": False},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]}
+        ],
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "propagate": True,
+                "auto_constraint": False,
+                "identify_array": False,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": False,
+                "remove_dummy_hierarchies": False,
+                "fix_source_drain": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"]},
+            {"constraint": "GroundPorts", "ports": ["vcca"]},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+            {
+                "constraint": "Floorplan",
+                "order": True,
+                "regions": [
+                    ["xi0"],
+                    ["xi1"],
+                ]
+            }
+        ]
+    }
+
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False, log_level="DEBUG", additional_args=['--placer_sa_iterations', '100'])
+
+    with (run_dir / '1_topology' / 'power_cell.const.json').open('rt') as fp:
+        constraints = json.load(fp)
+        constraints = {c["constraint"]: c for c in constraints}
+        assert "VG" not in constraints["PowerPorts"]["ports"], "VG is not a power port"
+
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        terminals = set([term['netName'] for term in data['terminals'] if term['netName']])
+        assert 'VG[0]' in terminals, f'VG[0] terminal not found {terminals}'
+
+    # # TODO: Power port should not break SameTemplate. To be addressed in a future PR. 
+    # with (run_dir / "3_pnr" / "inputs" / f"{name.upper()}.verilog.json").open("rt") as fp:
+    #     data = json.load(fp)
+    #     modules = {module['name']: module for module in data['modules']}
+    #     assert len(modules) == 2
+
+
+def test_binary_top():
+    name = "binary_top"
+    netlist = textwrap.dedent(f"""\
+        .subckt power_cell vg vccx vcca
+        xmp0 vcca vg vccx vccx ppv drain=gnd m=1 nf=4 source=pwr nfin=4
+        .ends
+        .subckt {name} vccx vcca vg[0]
+        xi0 vccx vccx vcca power_cell
+        xi1 vg[0] vccx vcca power_cell
+        .ends {name}
+        .END
+    """)
+
+    constraints = {
+        name: [
+            {
+                "constraint": "ConfigureCompiler",
+                "propagate": True,
+                "auto_constraint": False,
+                "identify_array": False,
+                "fix_source_drain": False,
+                "merge_series_devices": False,
+                "merge_parallel_devices": False,
+                "remove_dummy_devices": False,
+                "remove_dummy_hierarchies": False,
+                "fix_source_drain": False
+            },
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": False},
+            {"constraint": "GroundPorts", "ports": ["vcca"], "propagate": False},
+            {"constraint": "DoNotRoute", "nets": ["vccx", "vcca"]},
+            {
+                "constraint": "Floorplan",
+                "order": True,
+                "regions": [
+                    ["xi0"],
+                    ["xi1"],
+                ]
+            }
+        ]
+    }
+
+    example = build_example(name, netlist, constraints)
+    _, run_dir = run_example(example, cleanup=False, log_level="DEBUG")
+
+    with (run_dir / '1_topology' / 'power_cell.const.json').open('rt') as fp:
+        constraints = json.load(fp)
+        constraints = {c["constraint"]: c for c in constraints}
+        assert "PowerPorts" not in constraints, "VG is not a power port"
+
+    with (run_dir / '3_pnr' / f'{name.upper()}_0.json').open('rt') as fp:
+        data = json.load(fp)
+        terminals = set([term['netName'] for term in data['terminals'] if term['netName']])
+        assert 'VG[0]' in terminals, f'VG[0] terminal not found {terminals}'

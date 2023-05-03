@@ -3,7 +3,7 @@ import logging
 import re
 from collections import defaultdict
 
-from ..schema.hacks import List, FormalActualMap
+from ..schema.hacks import List, FormalActualMap, VerilogJsonModule
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def remove_pg_pins(verilog_d: dict, subckt: str, pg_connections: dict):
             # Inst pins connected to pg_pins
             hier_pg_connections = {conn["formal"]: pg_connections[conn["actual"]] for conn in inst['fa_map'] if conn["actual"] in pg_connections}
             if len(hier_pg_connections) > 0:
-                logger.debug(f"Removing instance {inst['instance_name']} pins connected to {hier_pg_connections}")
+                logger.debug(f"Removing instance {inst['instance_name']} pins connected to global nets {hier_pg_connections}")
                 inst['fa_map'] = [conn for conn in inst['fa_map'] if conn["formal"] not in hier_pg_connections]
                 # Creates a copy of module with reduced pins
                 new_name = modify_pg_conn_subckt(verilog_d, inst['abstract_template_name'], hier_pg_connections)
@@ -83,7 +83,10 @@ def modify_pg_conn_subckt(verilog_d, subckt, pp):
     """
     # TODO: remove redundant const
 
-    nm = copy.copy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    # DONOT deepcopy VerilogJson* objects directly. Convert to plain dict and parse again.
+    # nm = copy.deepcopy([module for module in verilog_d['modules'] if module['name'] == subckt][0])
+    nm_dict = [module for module in verilog_d['modules'] if module['name'] == subckt][0].dict()
+    nm = VerilogJsonModule.parse_obj(nm_dict)
 
     nm['parameters'] = [p for p in nm['parameters'] if p not in pp]
 

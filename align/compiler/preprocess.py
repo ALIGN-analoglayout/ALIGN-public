@@ -113,7 +113,7 @@ def remove_dummies(library, dummy_hiers, top):
                                     parameters=y.parameters
                                 )
                             )
-                            logger.info(
+                            logger.debug(
                                 f"updating {other_ckt.name} element {other_ckt.elements[-1]}"
                             )
                             other_ckt.elements.remove(ele)

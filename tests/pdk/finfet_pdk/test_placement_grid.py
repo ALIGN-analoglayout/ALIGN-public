@@ -208,7 +208,6 @@ def test_cs_on_grid_v(place_on_grid_v_half):
     run_example(example, cleanup=CLEANUP)
 
 
-@pytest.mark.skip(reason="This test is too slow. For a future PR.")
 def test_one_to_four():
     name = f'ckt_{get_test_id()}'
     netlist = textwrap.dedent(f"""\
@@ -235,10 +234,11 @@ def test_one_to_four():
         },
         {"constraint": "PowerPorts", "ports": ["vccx"]},
         {"constraint": "GroundPorts", "ports": ["vssx"]},
-        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]}
+        {"constraint": "DoNotRoute", "nets": ["vssx", "vccx"]},
+        {"constraint": "Boundary", "halo_vertical": 0.3, "halo_horizontal": 0.216}
     ]
     example = build_example(name, netlist, constraints)
-    run_example(example, cleanup=CLEANUP, n=1)
+    run_example(example, cleanup=False, n=1)
 
 
 @pytest.mark.skip(reason="This test is too slow. For a future PR.")
@@ -284,8 +284,8 @@ def test_bias_generator(disable_tap):
                 "fix_source_drain": False, "merge_series_devices": False, "merge_parallel_devices": False,
                 "remove_dummy_devices": False, "remove_dummy_hierarchies": False
             },
-            {"constraint": "PowerPorts", "ports": ["vcca"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": True},
+            {"constraint": "GroundPorts", "ports": ["vssx"], "propagate": True},
             {"constraint": "DoNotRoute", "nets": ["vssx", "vcca"]},
             {"constraint": "GroupBlocks", "instances": ["mp0"], "instance_name": "xmp0", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qp1"], "instance_name": "xqp1", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
@@ -312,8 +312,8 @@ def test_bias_generator(disable_tap):
                 "fix_source_drain": False, "merge_series_devices": False, "merge_parallel_devices": False,
                 "remove_dummy_devices": False, "remove_dummy_hierarchies": False
             },
-            {"constraint": "PowerPorts", "ports": ["vcca"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": True},
+            {"constraint": "GroundPorts", "ports": ["vssx"], "propagate": True},
             {"constraint": "DoNotRoute", "nets": ["vssx", "vcca"]},
             {"constraint": "GroupBlocks", "instances": ["mp0"], "instance_name": "xmp0", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qp1"], "instance_name": "xqp1", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
@@ -340,8 +340,8 @@ def test_bias_generator(disable_tap):
                 "fix_source_drain": False, "merge_series_devices": False, "merge_parallel_devices": False,
                 "remove_dummy_devices": False, "remove_dummy_hierarchies": False
             },
-            {"constraint": "PowerPorts", "ports": ["vcca"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": True},
+            {"constraint": "GroundPorts", "ports": ["vssx"], "propagate": True},
             {"constraint": "DoNotRoute", "nets": ["vssx", "vcca"]},
             {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xqp43", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xqp21", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
@@ -369,14 +369,14 @@ def test_bias_generator(disable_tap):
                 "fix_source_drain": False, "merge_series_devices": False, "merge_parallel_devices": False,
                 "remove_dummy_devices": False, "remove_dummy_hierarchies": False
             },
-            {"constraint": "PowerPorts", "ports": ["vcca"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": True},
+            {"constraint": "GroundPorts", "ports": ["vssx"], "propagate": True},
             {"constraint": "DoNotRoute", "nets": ["vssx", "vcca"]},
             {"constraint": "GroupBlocks", "instances": ["qp4", "qp3"], "instance_name": "xqp43", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qp2", "qp1"], "instance_name": "xqp21", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qn4", "qn3"], "instance_name": "xqn43", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "GroupBlocks", "instances": ["qn6", "qn5"], "instance_name": "xqn56", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
-            {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xqn12", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}}, 
+            {"constraint": "GroupBlocks", "instances": ["qn1", "qn2"], "instance_name": "xqn12", "generator": {"name": "MOS", "parameters": {"legal_sizes": [{"y": 2}]}}},
             {"constraint": "SameTemplate", "instances": ["qp5<0>", "qp5<1>"]},
             {"constraint": "SameTemplate", "instances": ["qp6<0>", "qp6<1>"]},
             {
@@ -398,8 +398,8 @@ def test_bias_generator(disable_tap):
                 "fix_source_drain": False, "merge_series_devices": False, "merge_parallel_devices": False,
                 "remove_dummy_devices": False, "remove_dummy_hierarchies": False
             },
-            {"constraint": "PowerPorts", "ports": ["vccd", "vcca"]},
-            {"constraint": "GroundPorts", "ports": ["vssx"]},
+            {"constraint": "PowerPorts", "ports": ["vccd", "vcca"], "propagate": True},
+            {"constraint": "GroundPorts", "ports": ["vssx"], "propagate": True},
             {"constraint": "DoNotRoute", "nets": ["vssx", "vccd", "vcca"]},
             {"constraint": "GroupBlocks", "instances": ["nand0", "nand1", "inv09"], "instance_name": "xdig"},
             {"constraint": "GroupBlocks", "instances": ["R0", "i12", "i21", "i13", "i20", "qn3"], "instance_name": "xoutp"},
