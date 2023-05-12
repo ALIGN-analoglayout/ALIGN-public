@@ -65,9 +65,6 @@ def convert_GDS_GDSjson (name, oname):
                 level = level - 1
 
 
-    for c in cursors:
-        if 'units' in c:
-            c['units'][0] = 1e-09
     json.dump (top, ofile, indent=4)
 
 def usage(prog):
