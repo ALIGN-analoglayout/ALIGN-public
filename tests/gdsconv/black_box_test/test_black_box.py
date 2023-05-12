@@ -34,7 +34,7 @@ def test_black_box_dp_in_hsc ():
     args = ['-p', pdkdir.as_posix(), '--flow_stop', '2_primitives', spdir.as_posix()]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None
-    genprim = GEN_PRIMITIVE_FROM_GDS(gdsdir.as_posix(), (pdkdir / 'layers.json').as_posix(), primdir.as_posix(), topodir.as_posix())
+    genprim = GEN_PRIMITIVE_FROM_GDS(gdsdir.as_posix(), (pdkdir / 'layers.json').as_posix(), primdir.as_posix(), topodir.as_posix(), 1e9)
     args = ['-p', pdkdir.as_posix(), '--flow_start', '3_pnr', '--place_using_ILP', '--skipGDS', spdir.as_posix()]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None
