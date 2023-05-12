@@ -47,6 +47,6 @@ def test_black_box_dp_in_hsc_auto ():
 
     run_dir.mkdir(parents=True, exist_ok=False)
     os.chdir(run_dir)
-    args = ['-s', 'high_speed_comparator', '-f', spdir.as_posix() + '/high_speed_comparator_auto.sp', '-p', pdkdir.as_posix(), '--place_using_ILP', '-b', gdsdir.as_posix(), '--scale', '1e9', spdir.as_posix()]
+    args = ['-s', 'high_speed_comparator', '-f', spdir.as_posix() + '/high_speed_comparator_auto.sp', '-p', pdkdir.as_posix(), '--place_using_ILP', '-b', gdsdir.as_posix(), '--scale', '1e9', '--skipGDS', spdir.as_posix()]
     results = align.CmdlineParser().parse_args(args)
     assert results is not None
