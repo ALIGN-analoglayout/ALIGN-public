@@ -18,6 +18,7 @@ class GDS2_LEF_JSON:
         self._cellname = name if name else (self._cell.name if self._cell else gdsfile[(gdsfile.find('/') + 1):gdsfile.find('.gds')])
         self._units    = gdspy.get_gds_units(gdsfile)[1]
         self._gdsfile  = gdsfile
+        self._ports    = set()
 
     def readLayerInfo(self, layerfile):
         layers = dict()
@@ -120,6 +121,7 @@ class GDS2_LEF_JSON:
                                     jsondict["terminals"].append(pindict)
                                     pincache.add(str([key, box]))
             for k, v in pindata.items():
+                self._ports.add(k.upper())
                 ofs.write(f'  PIN {k}\n    DIRECTION INOUT ;\n    USE SIGNAL ;\n    PORT\n')
                 for p in v:
                     ofs.write(f'      LAYER {p[0]} ;\n')

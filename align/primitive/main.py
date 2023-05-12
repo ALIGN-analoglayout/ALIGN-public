@@ -173,7 +173,7 @@ def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: path
         rc = modules.gen_param(subckt, primitives, pdk_dir)
         assert rc, f"unable to generate primitive {subckt}"
     else:
-        primitives[subckt.name] = {'primitive': 'black_box', 'abstract_template_name' : subckt.name, 'concrete_template_name': subckt.name}
+        primitives[subckt.name] = {'primitive': 'black_box', 'abstract_template_name' : subckt.name, 'concrete_template_name': subckt.name, 'parameters': subckt.pins}
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
@@ -202,6 +202,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
                 layers = pdkdir / 'layers.json'
                 gds2lef = gds2lefjson.GDS2_LEF_JSON(layers, gdsfile, block_name)
                 gds2lef.writeLEFJSON(str(outputdir) + '/', scale)
+                assert set(parameters) == gds2lef._ports, f'mismatch between ports in netlist({parameters}) and gds({gds2lef._ports})'
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name'].upper():
