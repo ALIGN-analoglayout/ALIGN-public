@@ -8,6 +8,8 @@ import shutil
 
 from align.gdsconv.gds2json import convert_GDS_GDSjson
 
+import logging
+logger = logging.getLogger(__name__)
 
 class GDS2_LEF_JSON:
     def __init__(self, layerfile, gdsfile, name):
@@ -47,7 +49,7 @@ class GDS2_LEF_JSON:
     def readGDS(self, gdsfile):
         cell = None
         if not os.path.isfile(gdsfile):
-            print(f'leaf {gdsfile} not found')
+            logger.error(f'leaf {gdsfile} not found')
             exit()
         lib = gdspy.GdsLibrary(infile=gdsfile)
         cell = lib.top_level()[0]
@@ -59,7 +61,7 @@ class GDS2_LEF_JSON:
         leffile = self._cellname + '.lef'
         plleffile = self._cellname + '.placement_lef'
         bbox = self._cell.get_bounding_box() * scale
-        print(f'Generating blackbox data for cell {self._cellname}')
+        logger.info(f'Generating primitive {self._cellname} from black box {self._gdsfile}')
         dim = [round((bbox[1][0] - bbox[0][0])), round((bbox[1][1] - bbox[0][1]))]
         jsondict = dict()
         jsondict["bbox"] = [round(bbox[i][j]) for i in (0,1) for j in (0,1)]
@@ -68,7 +70,7 @@ class GDS2_LEF_JSON:
         jsondict["terminals"] = []
         pindata = dict()
         with open(outdir + leffile, 'wt') as ofs:
-             #print(f'Writing LEF file : {leffile}')
+            logger.debug(f'Writing LEF file : {leffile}')
             ofs.write(f'MACRO {self._cellname}\n')
             ofs.write(f'  UNITS\n    DATABASE MICRONS UNITS {round(1e-6/self._units)};\n  END UNITS\n')
             ofs.write(f'  ORIGIN {round(bbox[0][0], 4)} {round(bbox[0][1], 4)} ;\n')
@@ -146,13 +148,12 @@ class GDS2_LEF_JSON:
             ofs.write(f'END {self._cellname}\n')
         jsonfn = self._cellname + '.json'
         with open(outdir + jsonfn, 'wt') as fp:
-             #print(f'Writing JSON file : {jsonfn}')
+            logger.debug(f'Writing JSON file : {jsonfn}')
             json.dump(jsondict, fp, indent = 2)
-         #print(f'Writing PLACEMENT_LEF file : {plleffile}')
+        logger.debug(f'Writing PLACEMENT_LEF file : {plleffile}')
         shutil.copy(outdir + leffile, outdir + plleffile)
-         #print(f'Writing GDS.JSON file : {self._cellname}.gds.json')
+        logger.debug(f'Writing GDS.JSON file : {self._cellname}.gds.json')
         convert_GDS_GDSjson(self._gdsfile, outdir + self._cellname + '.gds.json')
-         #print('--')
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
