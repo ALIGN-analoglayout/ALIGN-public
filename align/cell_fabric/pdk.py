@@ -75,7 +75,8 @@ class Pdk(object):
                   'Offset',
                   'UnitC',
                   'UnitCC',
-                  'UnitR']
+                  'UnitR',
+                  'LabelLayerNo']
         self._check(params, optional_params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.

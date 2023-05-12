@@ -33,7 +33,7 @@ class GEN_PRIMITIVE_FROM_GDS:
                     if "constraint" in const and const["constraint"] == "ConfigureCompiler" \
                     and "is_digital" in const and const["is_digital"] == True:
                         digital_hiers.add(hiername)
-                        break
+
 
         for vjson in os.listdir(topodir):
             if vjson.endswith(".verilog.json"):
@@ -46,7 +46,7 @@ class GEN_PRIMITIVE_FROM_GDS:
                             and m["name"] in digital_hiers:
                             toremove.append(m)
                             removedmodules.append([m["name"], m["parameters"]])
-                            break
+
                 for m in toremove:
                     vjdata["modules"].remove(m)
                 if len(toremove):
