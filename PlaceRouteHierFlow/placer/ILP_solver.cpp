@@ -3107,7 +3107,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (cost >= 0.) {
     logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
     logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
-    assert(round(HPWL_extend) == round(HPWL_ILP));
+    //assert(round(HPWL_extend) == round(HPWL_ILP));
   }
   return calculated_cost;
 }

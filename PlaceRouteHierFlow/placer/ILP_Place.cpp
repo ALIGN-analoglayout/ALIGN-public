@@ -1696,7 +1696,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
 
-    static int write_cnt{0};
+    /*static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -1793,9 +1793,9 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       }
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()), names, rownames);
       ++write_cnt;
-    }
+    }*/
     int status{0};
-    solverif.setTimeLimit(5 * mydesign.Blocks.size());
+    solverif.setTimeLimit(10 * mydesign.Blocks.size());
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);
