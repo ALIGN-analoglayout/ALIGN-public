@@ -321,8 +321,10 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       for (auto itb2 = std::next(itb1); itb2 != it.blocks.end(); ++itb2) {
         if (it.horizon) {
           hSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+          hSpread[std::make_pair(*itb2, *itb1)] = it.distance;
         } else {
           vSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+          vSpread[std::make_pair(*itb2, *itb1)] = it.distance;
         }
       }
     }

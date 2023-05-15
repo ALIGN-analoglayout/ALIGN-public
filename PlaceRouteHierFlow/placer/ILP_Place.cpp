@@ -656,6 +656,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
 
       bool alignhij = (italignh != align_constr_map_h.end() && italignh->second.find(j) != italignh->second.end());
       bool alignvij = (italignv != align_constr_map_v.end() && italignv->second.find(j) != italignv->second.end());
+      int hspace = mydesign.getSpread(i, j, true);
+      int vspace = mydesign.getSpread(i, j, false);
       if (!alignhij && !alignvij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
         buf_xy_indx_map[std::make_pair(i, j)] = N_var++;
@@ -678,7 +680,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(maxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(hspace);
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -692,7 +694,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(-maxdim);
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxxdim);
+        rhs.push_back(maxxdim - hspace);
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -706,7 +708,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(-maxdim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(-maxdim);
+        rhs.push_back(-maxdim + vspace);
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -720,7 +722,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(maxdim);
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxydim + maxdim);
+        rhs.push_back(maxydim + maxdim - vspace);
         rowtype.push_back('o');
       } else if (alignhij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
@@ -740,7 +742,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(hspace);
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -752,7 +754,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxxdim);
         constrvalues[i * 6 + 4].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxxdim);
+        rhs.push_back(maxxdim - hspace);
         rowtype.push_back('o');
       } else if (alignvij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
@@ -772,7 +774,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxydim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(0);
+        rhs.push_back(vspace);
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -784,7 +786,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxydim);
         constrvalues[i * 6 + 5].push_back(1);
         sens.push_back('L');
-        rhs.push_back(maxydim);
+        rhs.push_back(maxydim - vspace);
         rowtype.push_back('o');
       }
     }
@@ -1028,7 +1030,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       constrvalues[i * 6 + 4 + v].push_back(1);
       constrvalues[j * 6 + v].push_back(-1);
       sens.push_back('L');
-      rhs.push_back(-bias);
+      rhs.push_back(-std::max(bias, mydesign.getSpread(i, j, (v ? false : true))));
+      //rhs.push_back(-bias);
       rowtype.push_back('v');
     }
     for (const auto& it : (v ? abut_v : abut_h)) {
@@ -1693,7 +1696,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
 
-    /*static int write_cnt{0};
+    static int write_cnt{0};
     static std::string block_name;
     if (block_name != mydesign.name) {
       write_cnt = 0;
@@ -1790,7 +1793,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       }
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()), names, rownames);
       ++write_cnt;
-    }*/
+    }
     int status{0};
     solverif.setTimeLimit(5 * mydesign.Blocks.size());
     {

@@ -138,7 +138,7 @@ class GDS2_LEF_JSON:
                     if len(poly) < 2: continue
                     box = [ round(min(r[0] for r in poly) * scale), round(min(r[1] for r in poly) * scale),
                         round(max(r[0] for r in poly) * scale), round(max(r[1] for r in poly) * scale) ]
-                    if 'M' in lname or 'V' in lname and (self._layers[lname][k[1]].lower() not in ('label')):
+                    if (self._layers[lname][k[1]].lower() not in ('label')):
                         if str([k, box]) not in pincache:
                             ofs.write(f'    LAYER {lname} ;\n      RECT {box[0]} {box[1]} {box[2]} {box[3]} ;\n')
                             shapedict = {"layer": lname, "netName": None, "rect": box, "netType": "drawing"}
