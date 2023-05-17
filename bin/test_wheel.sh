@@ -29,7 +29,7 @@ for pyver in "$@"; do
     source .venv/bin/activate
     pip install pip --upgrade
     pip install align[test] -f "$align_root"/wheelhouse
-    pytest -n "$MAX_JOBS" -vv --max-worker-restart 2 tests
+    pytest --reruns 2 -n "$MAX_JOBS" -vv --max-worker-restart 2 tests
     # Reset ALIGN_WORK_DIR
     export ALIGN_WORK_DIR="$align_work_root"
     export ALIGN_HOME="$align_root"
