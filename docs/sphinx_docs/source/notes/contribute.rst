@@ -45,7 +45,7 @@ If you want the build-type to be Release (-O3), you can issue the following thre
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+    pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=Release'
 
 or
 
@@ -53,7 +53,7 @@ or
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+    pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo'
 
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 

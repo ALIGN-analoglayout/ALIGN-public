@@ -87,7 +87,7 @@ For ALIGN (C++) Extension developers:
 ```console
 $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='-DBUILD_TESTING=ON'
+$ pip install -v --no-build-isolation -e . --no-deps --global-option='-DBUILD_TESTING=ON'
 ```
 The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
@@ -95,13 +95,13 @@ If you want the build-type to be Release (-O3), you can issue the following thre
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release' --install-option='-DBUILD_TESTING=ON'
+$ pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=Release' --global-option='-DBUILD_TESTING=ON'
 ```
 or
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DBUILD_TESTING=ON'
+$ pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo' --global-option='-DBUILD_TESTING=ON'
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 

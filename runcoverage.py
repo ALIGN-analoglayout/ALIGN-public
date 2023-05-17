@@ -29,10 +29,10 @@ def main():
         print("WARNING: `lcov` not found. Generating coverage for python components only.")
     elif not CMAKE_BINARY_DIR or not CMAKE_SOURCE_DIR:
         print("WARNING: CPP Source / Binary information not found. Generating coverage for python components only.")
-        print("         Run `pip install -e .[test] --no-build-isolation --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
+        print("         Run `pip install -e .[test] --no-build-isolation --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
     elif next(pathlib.Path(CMAKE_BINARY_DIR).glob('**/*.gcno'), None) is None:
         print("WARNING: Could not find any .gcno files. Generating coverage for python components only.")
-        print("         Run `pip install -e .[test] --no-build-isolation --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
+        print("         Run `pip install -e .[test] --no-build-isolation --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
     else:
         print("INFO: Code coverage for cpp extension has been enabled. Please see coverage-reports/cpp.")
         GCOV_ENABLED = True
