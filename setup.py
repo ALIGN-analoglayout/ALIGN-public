@@ -97,7 +97,7 @@ setup(name='align',
               'pytest-cov',
               'pytest-xdist',
               'pytest-timeout',
-              'pytest-rerunfailures'
+              'pytest-rerunfailures',
               'pytest-cpp'
           ]
       },
