@@ -111,6 +111,7 @@ jobs:
       - run:
           name: "Build align in developer mode"
           command: |
+            pip install --upgrade pip
             pip install setuptools numpy wheel pybind11 scikit-build cmake ninja
             pip install -v --no-build-isolation -e .[test]
             pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo' --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'
