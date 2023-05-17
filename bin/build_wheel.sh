@@ -48,6 +48,7 @@ function repair_wheel {
 
 # Compile all wheels
 for pyver in "$@"; do
+    "/opt/python/${pyver}/bin/pip" install --upgrade pip
     "/opt/python/${pyver}/bin/pip" -v wheel "$ALIGN_HOME" -w /tmp/wheelhouse/ --no-deps
 done
 
