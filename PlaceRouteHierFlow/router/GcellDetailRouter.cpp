@@ -307,22 +307,35 @@ void GcellDetailRouter::SortPinsOrder() {
     for (unsigned int j = 0; j < Nets[i].connected.size();j++){
       if (Nets[i].connected[j].type == RouterDB::TERMINAL || Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size() == 0)
         continue;
-      Nets[i].center_x += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[0].placedCenter.x;
-      Nets[i].center_y += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[0].placedCenter.y;
-      center_x_count++;
-      center_y_count++;
+      for (unsigned int k = 0; k<Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts.size();k++){
+        Nets[i].center_x += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.x;
+        Nets[i].center_y += Blocks[Nets[i].connected[j].iter2].pins[Nets[i].connected[j].iter].pinContacts[k].placedCenter.y;
+        center_x_count++;
+        center_y_count++;
+      } 
     }
     if (center_x_count) Nets[i].center_x /= center_x_count;
     if (center_y_count) Nets[i].center_y /= center_y_count;
 
     // order by the manhattan distance to LL
-    std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
-      if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
-          Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
-        return true;
-      return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
-             Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
-    });
+    if(Nets[i].symCounterpart != -1 && Nets[i].symCounterpart < i){
+      std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+            Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
+        return (width - Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x) + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+               (width - Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x) + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+      });
+    }else{
+      std::sort(Nets[i].connected.begin(), Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
+        if (a.type == RouterDB::TERMINAL || b.type == RouterDB::TERMINAL || Blocks[a.iter2].pins[a.iter].pinContacts.size() == 0 ||
+            Blocks[b.iter2].pins[b.iter].pinContacts.size() == 0)
+          return true;
+        return Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.x + Blocks[a.iter2].pins[a.iter].pinContacts[0].placedCenter.y <
+               Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.x + Blocks[b.iter2].pins[b.iter].pinContacts[0].placedCenter.y;
+      });
+    }
+    
 
     for (unsigned int j = 1; j < Nets[i].connected.size() - 1; j++) {
       std::sort(Nets[i].connected.begin() + j, Nets[i].connected.end(), [&](RouterDB::connectNode &a, RouterDB::connectNode &b) {
@@ -388,7 +401,7 @@ void GcellDetailRouter::create_detailrouter_new() {
       Topology_extraction(symmetry_path);
       // logger->debug("sym net index {0} sym part {1} sym axis {2} sym center {3}", i, Nets[i].symCounterpart, Nets[i].sym_H, Nets[i].center);
       // Q: HV_symmetry, center?
-      Mirror_Topology(symmetry_path, Nets[i].sym_H, Nets[i].center);
+      Mirror_Topology(symmetry_path, Nets[i].sym_H, (Nets[i].center_x + Nets[Nets[i].symCounterpart].center_x)/2);
       // logger->debug("symmetry_path size {0}", symmetry_path.size());
     }
 
