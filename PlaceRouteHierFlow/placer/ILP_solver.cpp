@@ -2754,7 +2754,6 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     for (int i = 0; i < mydesign.Blocks.size(); i++) {
       Blocks[i].x = roundupint(var[i * 4]);
       Blocks[i].y = roundupint(var[i * 4 + 1]);
-      logger->info("{0} {1} {2}", i, Blocks[i].x, Blocks[i].y);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
       Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
     }
