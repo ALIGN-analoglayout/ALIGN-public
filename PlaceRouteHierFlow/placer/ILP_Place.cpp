@@ -1696,13 +1696,11 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
 
-    /*static int write_cnt{0};
-    static std::string block_name;
-    if (block_name != mydesign.name) {
-      write_cnt = 0;
-      block_name = mydesign.name;
-    }
-    if (write_cnt < 10) {
+    if (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP"))) {
+      static std::string block_name;
+      if (block_name != mydesign.name) {
+        block_name = mydesign.name;
+      }
       std::vector<std::string> namesvec(N_var);
       for (int i = 0; i < mydesign.Blocks.size(); i++) {
         int ind = i * 6;
@@ -1784,16 +1782,15 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         //std::replace_if (namesvec[i].begin(), namesvec[i].end(), [](char c){ return (!std::isalnum(c) && c != '\0'); } , '_');
         names[i] = &(namesvec[i][0]);
       }
-      
+
       std::vector<std::string> rownamesvec(rhs.size());
       char* rownames[rhs.size()];
       for (unsigned i = 0; i < rhs.size(); ++i) {
         rownamesvec[i] = ((i < rowtype.size() ? rowtype[i] : 'f') + std::to_string(i) + "\0");
         rownames[i] = &(rownamesvec[i][0]);
       }
-      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt)).c_str()), names, rownames);
-      ++write_cnt;
-    }*/
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_").c_str()), names, rownames);
+    }
     int status{0};
     solverif.setTimeLimit(10 * mydesign.Blocks.size());
     {

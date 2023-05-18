@@ -196,7 +196,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 place_using_ILP=place_using_ILP, seed=seed,
                                 use_analytical_placer=use_analytical_placer,
                                 ilp_solver=ilp_solver,
-                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer)
+                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer, black_box_flow=(blackbox_dir != None))
 
         results.append((subckt, variants))
 

@@ -517,6 +517,7 @@ struct hierNode {
   vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
   Routing_Layers_Info Routing_Layers;
   BoundaryConstraint boundary;
+  bool black_box_flow = false;
 };  // structure of vertex in heirarchical tree
 
 /// Part 3: declaration of structures for constraint data
