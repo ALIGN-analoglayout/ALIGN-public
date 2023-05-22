@@ -1,7 +1,8 @@
-# superlu v5.2.2
+# superlu v6.0.0
 FetchContent_Declare(
     superlu
-    GIT_REPOSITORY https://github.com/srini229/superlu.git
+    GIT_REPOSITORY https://github.com/xiaoyeli/superlu.git
+    GIT_TAG        v6.0.0
 )
 FetchContent_GetProperties(superlu)
 if(NOT superlu_POPULATED)

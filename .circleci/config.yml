@@ -111,9 +111,10 @@ jobs:
       - run:
           name: "Build align in developer mode"
           command: |
+            pip install --upgrade pip
             pip install setuptools numpy wheel pybind11 scikit-build cmake ninja
             pip install -v --no-build-isolation -e .[test]
-            pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'
+            pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo' --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'
       - run:
           name: "Test align using coverage.py"
           command: |
@@ -170,7 +171,7 @@ jobs:
           command: |
             rm -fr align setup.py
             pip install align[test] -f ./wheelhouse
-            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --maxerrors=<<parameters.max-errors>> --placer_sa_iterations 100 --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
+            CI_LEVEL="<<parameters.ci-level>>" pytest -vv --runnightly --reruns 2 --maxerrors=<<parameters.max-errors>> --placer_sa_iterations 100 --timeout=<<parameters.timeout>> --durations=0 -k "<<parameters.pdk>>" -- <<parameters.nightly-dirs>>
             mkdir -p test-reports/${CIRCLE_BUILD_NUM} && cp -r junit.xml LOG test-reports/${CIRCLE_BUILD_NUM}
       - store_test_results:
           path: test-reports

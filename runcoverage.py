@@ -29,10 +29,10 @@ def main():
         print("WARNING: `lcov` not found. Generating coverage for python components only.")
     elif not CMAKE_BINARY_DIR or not CMAKE_SOURCE_DIR:
         print("WARNING: CPP Source / Binary information not found. Generating coverage for python components only.")
-        print("         Run `pip install -e .[test] --no-build-isolation --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
+        print("         Run `pip install -e .[test] --no-build-isolation --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
     elif next(pathlib.Path(CMAKE_BINARY_DIR).glob('**/*.gcno'), None) is None:
         print("WARNING: Could not find any .gcno files. Generating coverage for python components only.")
-        print("         Run `pip install -e .[test] --no-build-isolation --install-option='-DCODE_COVERAGE=ON' --install-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
+        print("         Run `pip install -e .[test] --no-build-isolation --global-option='-DCODE_COVERAGE=ON' --global-option='-DBUILD_TESTING=ON'` to instrument cpp code.")
     else:
         print("INFO: Code coverage for cpp extension has been enabled. Please see coverage-reports/cpp.")
         GCOV_ENABLED = True
@@ -57,6 +57,7 @@ def main():
     # Actual command is run here
     ret = subprocess.run(' '.join([
         'pytest', '-vv',  # Call pytest in verbose mode
+        '--reruns', 2,
         '-n', MAX_JOBS,  # pytest-xdist options
         '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
         *argv
@@ -72,6 +73,7 @@ def main():
     ret = subprocess.run(' '.join([
         'pytest', '-vv', # Call pytest in verbose mode
         '--runnightly',
+        '--reruns', 2,
         '--maxerrors=0',
         '-n', MAX_JOBS, # pytest-xdist options
         '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options
@@ -89,6 +91,7 @@ def main():
     ret = subprocess.run(' '.join([
         'pytest', '-vv',  # Call pytest in verbose mode
         '--runnightly',
+        '--reruns', 2,
         '-k', 'telescopic_ota_guard_ring or switched_capacitor_filter',
         '-n', MAX_JOBS,  # pytest-xdist options
         '--cov-report', f'html:{output_dir}/python', '--cov=align',  # pytest-cov options

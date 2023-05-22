@@ -23,6 +23,18 @@ class GEN_PRIMITIVE_FROM_GDS:
 
     def update_verilog_json(self, topodir):
         removedmodules = []
+        digital_hiers  = set()
+        for constjson in os.listdir(topodir):
+            if constjson.endswith('.const.json'):
+                hiername = constjson[0:constjson.find('.const.json')].upper()
+                with open(topodir + constjson) as fp:
+                    constdata = json.load(fp)
+                for const in constdata:
+                    if "constraint" in const and const["constraint"] == "ConfigureCompiler" \
+                    and "is_digital" in const and const["is_digital"] == True:
+                        digital_hiers.add(hiername)
+                        break
+
         for vjson in os.listdir(topodir):
             if vjson.endswith(".verilog.json"):
                 with open(topodir + vjson) as fp:
@@ -30,12 +42,11 @@ class GEN_PRIMITIVE_FROM_GDS:
                 toremove = []
                 if "modules" in vjdata:
                     for m in vjdata["modules"]:
-                        if "instances" in m and len(m["instances"]) == 0 and "constraints" in m:
-                            for c in m["constraints"]:
-                                if "is_digital" in c and c["is_digital"]:
-                                    toremove.append(m)
-                                    removedmodules.append([m["name"], m["parameters"]])
-                                    break
+                        if "instances" in m and len(m["instances"]) == 0 and "constraints" in m \
+                            and m["name"] in digital_hiers:
+                            toremove.append(m)
+                            removedmodules.append([m["name"], m["parameters"]])
+                            break
                 for m in toremove:
                     vjdata["modules"].remove(m)
                 if len(toremove):
