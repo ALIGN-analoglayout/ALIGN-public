@@ -3,7 +3,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-
 #include "PnRdatabase.h"
 
 using namespace nlohmann;
