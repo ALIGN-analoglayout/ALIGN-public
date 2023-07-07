@@ -357,7 +357,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     elif '3_pnr:gui' in steps_to_run or '3_pnr:route' in steps_to_run:
         with (working_dir / "__placer_dump__.json").open('rt') as fp:
             top_level, leaf_map, placement_verilog_alternatives, metrics = json.load(fp)
-            placement_verilog_alternatives = {nm : VerilogJsonTop.parse_obj(v) for nm, v in placement_verilog_alternatives}
+            placement_verilog_alternatives = {nm: VerilogJsonTop.parse_obj(v) for nm, v in placement_verilog_alternatives}
 
     if '3_pnr:gui' in steps_to_run:
         if gui:
@@ -380,7 +380,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:route' in steps_to_run:
 
-        assert nroutings == 1, f"nroutings other than 1 is currently not working"
+        assert nroutings == 1, "nroutings other than 1 is currently not working"
 
         if placements_to_run is None:
             verilog_ds_to_run = [(f'{top_level}_{i}', placement_verilog_alternatives[f'{top_level}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
@@ -400,7 +400,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'pdk_file': str(pdk_file),
                            'subckt': subckt,
                            'nvariants': nvariants,
-                           'effort': effort}
+                           'effort': effort,
+                           'pdk_dir': pdk_dir}
 
         results_name_map = router_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                                          numLayout=toplevel_args_d['nvariants'], effort=toplevel_args_d['effort'],

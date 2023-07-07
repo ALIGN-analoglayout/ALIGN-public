@@ -22,8 +22,7 @@ case "$AUDITWHEEL_PLAT" in
         #yum -y install boost-devel lpsolve
     ;;
     "manylinux_2_24_x86_64")
-        apt update
-        apt -y install libboost-dev lp-solve
+        apt update && apt -y install libboost-dev lp-solve
     ;;
     "manylinux_2_28_x86_64")
 	# Not debian based (AlmaLinux 8)
@@ -49,6 +48,7 @@ function repair_wheel {
 
 # Compile all wheels
 for pyver in "$@"; do
+    "/opt/python/${pyver}/bin/pip" install --upgrade pip
     "/opt/python/${pyver}/bin/pip" -v wheel "$ALIGN_HOME" -w /tmp/wheelhouse/ --no-deps
 done
 

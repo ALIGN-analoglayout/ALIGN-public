@@ -5,6 +5,7 @@ import json
 import sys
 import http.server
 import socket
+import socket
 import socketserver
 import functools
 
@@ -111,6 +112,10 @@ def start_viewer(working_dir, pnr_dir, variant):
     host_name = socket.getfqdn()
     with socketserver.TCPServer((host_name, 0), Handler) as httpd:
         logger.info(f'Please view layout at http://{host_name}:{httpd.server_address[1]}/?design={variant}')
+
+    host_name = socket.getfqdn()
+    with socketserver.TCPServer((host_name, 0), Handler) as httpd:
+        logger.info(f'Please view layout at http://{host_name}:{httpd.server_address[1]}/?design={variant}')
         logger.info('Please type Ctrl + C to stop viewer and continue')
         with open(os.devnull, 'w') as fp:
             sys.stdout = sys.stderr = fp
@@ -199,7 +204,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         results.append((subckt, variants))
 
-        assert gui or router_mode == 'no_op' or '3_pnr:route' not in sub_steps or len(variants) > 0, \
+        assert gui or router_mode in ['collect_pins','no_op'] or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
