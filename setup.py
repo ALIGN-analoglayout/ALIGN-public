@@ -36,10 +36,19 @@ cmake_args = [f"-DALIGN_VERSION:string={version}"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
+if devmode:
+    build_type = os.environ.get("BUILD_TYPE", None)
+    if build_type: sys.argv.extend(['--build-type', build_type])
+    else: sys.argv.extend(['--build-type', 'Debug'])
+build_testing = os.environ.get('BUILD_TESTING', None)
+if build_testing and build_testing == 'ON':
+    cmake_args.append("-DBUILD_TESTING=ON")
+code_coverage = os.environ.get('CODE_COVERAGE', None)
+if code_coverage and code_coverage == 'ON':
+    cmake_args.append("-DCODE_COVERAGE=ON")
+
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
-if devmode and not any(x.startswith('--build-type') for x in sys.argv):
-    sys.argv.extend(['--build-type', 'Debug'])
 
 setup(name='align',
       version=version,
@@ -76,7 +85,7 @@ setup(name='align',
           'gdspy',
           'pyyaml',
           'pybind11',
-          'pydantic>=1.9.2',
+          'pydantic>=1.9.2,<=1.20',
           'z3-solver',
           'mip',
           'more-itertools',
