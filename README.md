@@ -98,7 +98,14 @@ For ALIGN (C++) Extension developers:
 ```console
 $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --global-option='-DBUILD_TESTING=ON'
+```
+If using `sh` or its derivatives:
+```
+$ BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+```
+If using `csh` or its derivatives:
+```
+$ env BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 ```
 The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
@@ -106,13 +113,27 @@ If you want the build type to be Release (-O3), you can issue the following thre
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=Release' --global-option='-DBUILD_TESTING=ON'
+```
+sh or derivatives:
+```
+$ BUILD_TYPE='Release' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+```
+csh or derivatives:
+```
+$ env BUILD_TYPE='Release' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 ```
 or
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo' --global-option='-DBUILD_TESTING=ON'
+```
+sh or derivatives:
+```
+$ BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+```
+csh or derivatives:
+```
+$ env BUILD_TYPE='Release' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
