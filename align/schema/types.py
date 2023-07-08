@@ -119,7 +119,7 @@ KeyT = typing.TypeVar('KeyT')
 DataT = typing.TypeVar('DataT')
 
 
-class List(BaseModel, typing.Generic[DataT]):
+class List(pydantic.BaseModel, typing.Generic[DataT]):
     __root__: typing.Sequence[DataT]
 
     _commits = pydantic.PrivateAttr()
@@ -210,7 +210,7 @@ class List(BaseModel, typing.Generic[DataT]):
             yield from cast_to_solver(item, solver)
 
 
-class Dict(BaseModel, typing.Generic[KeyT, DataT]):
+class Dict(pydantic.BaseModel, typing.Generic[KeyT, DataT]):
     __root__: typing.Dict[KeyT, DataT]
 
     _parent = pydantic.PrivateAttr()
