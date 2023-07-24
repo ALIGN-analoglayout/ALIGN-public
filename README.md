@@ -155,6 +155,13 @@ For a full list of options supported by the tool, please use the following comma
 $ schematic2layout.py -h
 ```
 
+If you get an error `libOsiCbc.so: cannot open shared object file`, please add `${ALIGN_HOME}/_skbuild/<OSname_Arch_PythonVer>/cmake-install/lib` to your `LD_LIBRARY_PATH`.
+`${ALIGN_HOME}` is the path where ALIGN is installed.
+For e.g.:
+```console
+$ export LD_LIBRARY_PATH=${LD_LIBRAR_PATH}:${ALIGN_HOME}/_skbuild/linux-x86_64-3.8/cmake-install/lib
+```
+
 ## Design database:
 
 * [Examples](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/examples): Contains example circuits with netlists running on CircleCI
