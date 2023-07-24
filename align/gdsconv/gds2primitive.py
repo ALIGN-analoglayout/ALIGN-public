@@ -7,7 +7,7 @@ import shutil
 from .gds2lefjson import GDS2_LEF_JSON
 
 class GEN_PRIMITIVE_FROM_GDS:
-    def __init__(self, gdsdir:str, layers:str, primdir:str, topodir:str):
+    def __init__(self, gdsdir:str, layers:str, primdir:str, topodir:str, scale:int):
         if gdsdir == "" or layers == "" or primdir == "" or topodir == "":
             return
         if topodir[-1] != '/':
@@ -18,7 +18,7 @@ class GEN_PRIMITIVE_FROM_GDS:
            gdsdir += '/'
         self._removedmodules = self.update_verilog_json(topodir)
         self.update_primitives_lib_json(topodir)
-        if not self.update_primitives_json(primdir) or not self.add_primitive_files(gdsdir, layers, primdir):
+        if not self.update_primitives_json(primdir) or not self.add_primitive_files(gdsdir, layers, primdir, scale):
             return
 
     def update_verilog_json(self, topodir):
@@ -33,7 +33,7 @@ class GEN_PRIMITIVE_FROM_GDS:
                     if "constraint" in const and const["constraint"] == "ConfigureCompiler" \
                     and "is_digital" in const and const["is_digital"] == True:
                         digital_hiers.add(hiername)
-                        break
+
 
         for vjson in os.listdir(topodir):
             if vjson.endswith(".verilog.json"):
@@ -46,7 +46,7 @@ class GEN_PRIMITIVE_FROM_GDS:
                             and m["name"] in digital_hiers:
                             toremove.append(m)
                             removedmodules.append([m["name"], m["parameters"]])
-                            break
+
                 for m in toremove:
                     vjdata["modules"].remove(m)
                 if len(toremove):
@@ -87,17 +87,17 @@ class GEN_PRIMITIVE_FROM_GDS:
             return False
         return True
 
-    def add_primitive_files(self, gdsdir, layers, primdir):
+    def add_primitive_files(self, gdsdir, layers, primdir, scale):
         for m in self._removedmodules:
             gdsfile = gdsdir + m[0] + '.gds'
             if os.path.isfile(gdsfile):
                 gds2lef = GDS2_LEF_JSON(layers, gdsfile, m[0])
-                gds2lef.writeLEFJSON(primdir)
+                gds2lef.writeLEFJSON(primdir, scale)
             else:
                 gdsfile = gdsdir + m[0].lower() + '.gds'
                 if os.path.isfile(gdsfile):
                     gds2lef = GDS2_LEF_JSON(layers, gdsfile, m[0])
-                    gds2lef.writeLEFJSON(primdir)
+                    gds2lef.writeLEFJSON(primdir, scale)
                 else:
                       print(f'leaf {gdsfile} not found')
                       return False

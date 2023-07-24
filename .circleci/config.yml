@@ -106,8 +106,7 @@ jobs:
       - run:
           name: "Install coverage dependencies (lcov)"
           command: |
-            apt-get update
-            apt-get -y install lcov
+            apt-get update && apt-get -y install lcov
       - run:
           name: "Build align in developer mode"
           command: |

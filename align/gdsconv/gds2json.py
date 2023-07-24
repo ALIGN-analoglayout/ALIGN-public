@@ -34,7 +34,7 @@ def convert_GDS_GDSjson (name, oname):
     ofile = open (oname, 'wt')
 
     top = {}
-    cursors = [top, {}, {}, {}, {}, {}, {}]
+    cursors = [top, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
 
     with open(name, 'rb') as a_file:
         for rec in Record.iterate(a_file):
@@ -63,6 +63,7 @@ def convert_GDS_GDSjson (name, oname):
             elif tag_name[0:3] == "END":
                 if isinstance(cursors[level - 1], dict): level = level - 1
                 level = level - 1
+
 
     json.dump (top, ofile, indent=4)
 

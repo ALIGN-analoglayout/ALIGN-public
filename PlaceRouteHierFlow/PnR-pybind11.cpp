@@ -263,7 +263,8 @@ PYBIND11_MODULE(PnR, m) {
       .def_readonly("area_norm", &hierNode::area_norm)
       .def_readonly("cost", &hierNode::cost)
       .def_readonly("constraint_penalty", &hierNode::constraint_penalty)
-      .def_readwrite("GuardRings", &hierNode::GuardRings);
+      .def_readwrite("GuardRings", &hierNode::GuardRings)
+      .def_readwrite("black_box_flow", &hierNode::black_box_flow);
   py::class_<Guardring_Const>( m, "Guardring_Const")
     .def( py::init<>())
     .def_readwrite("block_name", &Guardring_Const::block_name)
