@@ -69,8 +69,11 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
         ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
         with open(ret['json'], 'rt') as ifp:
             with open(ret['python_gds_json'], 'wt') as ofp:
+                labels = None
+                if toplevel:
+                    labels = [i.name for i in hN.blockPins].extend([i.name for i in hN.PowerNets])
                 gen_gds_json.translate(
-                    hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+                    hN.name, '', toplevel, ifp, ofp, timestamp=None, p=cnv.pdk, labelOnce=True, reqLabels=labels)
         logger.info(f"OUTPUT gds.json {ret['python_gds_json']}")
 
     return ret
