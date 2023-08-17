@@ -95,10 +95,8 @@ setup(name='align',
           'pandas',
           'werkzeug',
           'dash',
-          'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict',
-          'mip'
+          'flatdict'
       ],
       extras_require={
           'test': [
@@ -110,7 +108,7 @@ setup(name='align',
               'pytest-cpp'
           ]
       },
-      python_requires='>=3.7',
+      python_requires='>=3.8',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
           'Environment :: Console',
