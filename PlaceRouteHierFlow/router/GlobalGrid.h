@@ -47,8 +47,6 @@ class GlobalGrid {
   //    std::vector<int> End_index_metal_vertices; // ending index in list for each metal layer, if end<start, there is no list for the metal layer
   //    std::vector<int> Source;//index. result from setSrcDest()
   //    std::vector<int> Dest;//index. result from setSrcDest()
-  //    std::vector<int> SourceGraph;
-  //    std::vector<int> DestGraph;
   //    std::vector<int> x_unit; // grid pitch in X axis, only for metal layers with vertical routing track
   //    std::vector<int> y_unit; // grid pitch in Y axis, only for metal layers with horizotal routing track
   //    std::vector<int> x_min; // min length in X axis, only for metal layer with horizontal routing track
@@ -121,8 +119,6 @@ class GlobalGrid {
   //    void ActivateSourceDest();
   //    void InactivateSourceDest();
   //    void CheckVerticesTotal();
-  //    void CheckMaptotal2graph();
-  //    void CheckVerticesGraph();
   //    inline RouterDB::point GetGridLL() {return this->GridLL;};
   //    inline RouterDB::point GetGridUR() {return this->GridUR;};
   //    //Grid(Grid& globalGrid, LL, UR);

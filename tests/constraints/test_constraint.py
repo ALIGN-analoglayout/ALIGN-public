@@ -12,7 +12,7 @@ from . import circuits
 def test_aspect_ratio_low():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 3}]
+    constraints = [{"constraint": "AspectRatio", "ratio_low": 3}]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=1)
     name = name.upper()
@@ -30,7 +30,7 @@ def test_aspect_ratio_low():
 def test_aspect_ratio_high():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "AspectRatio", "subcircuit": name, "ratio_high": 1}]
+    constraints = [{"constraint": "AspectRatio", "ratio_high": 1}]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=1)
     name = name.upper()
@@ -49,8 +49,8 @@ def test_aspect_ratio_failure():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.common_source(name)
     constraints = [
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_high": 0.2},
-        {"constraint": "AspectRatio", "subcircuit": name, "ratio_low": 0.1}
+        {"constraint": "AspectRatio", "ratio_high": 0.2},
+        {"constraint": "AspectRatio", "ratio_low": 0.1}
     ]
     example = build_example(name, netlist, constraints)
     with pytest.raises(Exception):
@@ -60,7 +60,7 @@ def test_aspect_ratio_failure():
 def test_boundary_max_width():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "Boundary", "subcircuit": name, "max_width": 3.5}]
+    constraints = [{"constraint": "Boundary", "max_width": 3.5}]
     example = build_example(name, netlist, constraints)
     run_example(example)
 
@@ -68,7 +68,15 @@ def test_boundary_max_width():
 def test_boundary_max_height():
     name = f'ckt_{get_test_id()}'
     netlist = circuits.cascode_amplifier(name)
-    constraints = [{"constraint": "Boundary", "subcircuit": name, "max_height": 1.3}]
+    constraints = [{"constraint": "Boundary", "max_height": 1.3}]
+    example = build_example(name, netlist, constraints)
+    run_example(example)
+
+
+def test_boundary_halo():
+    name = f'ckt_{get_test_id()}'
+    netlist = circuits.cascode_amplifier(name)
+    constraints = [{"constraint": "Boundary", "halo_vertical": 0.63, "halo_horizontal": 0.216}]
     example = build_example(name, netlist, constraints)
     run_example(example)
 
@@ -97,7 +105,7 @@ def test_order_abut():
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "xccp", "xccn", "xdp", "mn0"]},
         {"constraint": "Order", "direction": "top_to_bottom", "instances": ["xinvn", "mp9", "mp7", "mn0"]},
         {"constraint": "MultiConnection", "nets": ["vcom"], "multiplier": 6},
-        {"constraint": "AspectRatio", "subcircuit": "comparator", "ratio_low": 0.5, "ratio_high": 1.5},
+        {"constraint": "AspectRatio", "ratio_low": 0.5, "ratio_high": 1.5},
         {"constraint": "Order", "abut": True, "direction": "left_to_right", "instances": ["xinvn", "xinvp"]}
     ]
     example = build_example(name, netlist, constraints)
@@ -405,7 +413,7 @@ def test_enumerate():
         {"constraint": "DoNotRoute", "nets": ["vccx"]},
         {"constraint": "SameTemplate", "instances": ["xmp1", "xmp2"]},
         {"constraint": "Align", "line": "h_bottom", "instances": ["xmp1", "xmp2"]},
-        {"constraint": "Boundary", "subcircuit": name, "max_height": 1.26}
+        {"constraint": "Boundary", "max_height": 1.26}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=6, log_level='DEBUG')
@@ -442,7 +450,7 @@ def test_enumerate_2():
         {"constraint": "NetPriority", "nets": ["vo"], "weight": 2},
         {"constraint": "NetPriority", "nets": ["vi"], "weight": 1},
         {"constraint": "PortLocation", "ports": ["v1"], "location": "RC"},
-        {"constraint": "Boundary", "subcircuit": name, "max_height": 2.52, "max_width": 1.296}
+        {"constraint": "Boundary", "max_height": 2.52, "max_width": 1.296}
         ]
     example = build_example(name, netlist, constraints)
     ckt_dir, run_dir = run_example(example, cleanup=False, n=30, log_level='DEBUG')
@@ -470,3 +478,36 @@ def test_missing_power_port():
         run_example(example)
     except BaseException:
         assert False, 'This should not happen'
+
+
+def test_power_propagation():
+    name = f'ckt_{get_test_id()}'
+    netlist = textwrap.dedent(f"""\
+        .subckt ckt_a vin vop vgg vcca vssa
+        mn0 vop vop vcca vssa n w=720e-9 nf=4 m=5
+        mn1 vin vop vcca vssa n w=720e-9 nf=4 m=5
+        mn2 vgg vop vgg  vssa n w=720e-9 nf=4 m=5
+        .ends
+        .subckt {name} vin vop vccx vssx nbs pbs
+        xi0 vin vop vgg vccx vssx ckt_a
+        xi1 vin vop vccx vccx vssx ckt_a
+        .ends {name}
+        """)
+    constraints = {
+        "ckt_a": [
+            {"constraint": "PowerPorts", "ports": ["vcca"], "propagate": False}
+        ],
+        name: [
+            {"constraint": "PowerPorts", "ports": ["vccx"], "propagate": True}
+        ]
+    }
+    example = build_example(name, netlist, constraints)
+    ckt_dir, run_dir = run_example(example, cleanup=False, additional_args=['--flow_stop', '3_pnr:prep'])
+    name = name.upper()
+    with (run_dir / "3_pnr" / "inputs" / f"{name}.verilog.json").open("rt") as fp:
+        data = json.load(fp)
+        modules = {module['name']: module for module in data['modules']}
+        assert set(modules.keys()) == {'CKT_A', name}
+        power_const = modules['CKT_A']['constraints'][0]
+        assert power_const['constraint'] == 'PowerPorts'
+        assert power_const['ports'] == ['VCCA']

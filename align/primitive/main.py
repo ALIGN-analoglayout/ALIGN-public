@@ -10,6 +10,7 @@ import datetime
 import pathlib
 import logging
 import importlib.util
+from ..gdsconv import gds2lefjson
 
 logger = logging.getLogger(__name__)
 
@@ -137,20 +138,22 @@ def generate_generic(pdkdir, parameters, netlistdir=None):
     return uc, parameters["ports"]
 
 
-def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
+def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir, blackbox_dir, scale):
     primitives = dict()
     for primitive in primitive_lib:
         if isinstance(primitive, SubCircuit):
             generate_primitive_param(primitive, primitives, pdk_dir)
     for block_name, block_args in primitives.items():
-        if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring':
+        if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring' and block_args['primitive'] != 'black_box':
             primitive_def = primitive_lib.find(block_args['abstract_template_name'])
             assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
+        elif block_args['primitive'] == 'black_box':
+            primitive_def = block_args['primitive']
         else:
             primitive_def = block_args['primitive']
         block_args.pop("primitive", None)
         uc = generate_primitive(block_name, primitive_def,  ** block_args,
-                                pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir)
+                                pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, blackbox_dir=blackbox_dir, scale=scale)
         if hasattr(uc, 'metadata'):
             primitives[block_name]['metadata'] = copy.deepcopy(uc.metadata)
     return primitives
@@ -159,24 +162,47 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir):
 def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: pathlib.Path, uniform_height=False):
     """ Return commands to generate parameterized lef"""
     assert isinstance(subckt, SubCircuit), f"invalid input for primitive generator {subckt}"
-    spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
-    modules = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(modules)
-    rc = modules.gen_param(subckt, primitives, pdk_dir)
-    assert rc, f"unable to generate primitive {subckt}"
+    blackbox = False
+    for c in subckt.constraints:
+        if isinstance(c, constraint.Generator) and c.name == 'black_box':
+            blackbox = True
+    if not blackbox:
+        spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
+        modules = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modules)
+        rc = modules.gen_param(subckt, primitives, pdk_dir)
+        assert rc, f"unable to generate primitive {subckt}"
+    else:
+        primitives[subckt.name] = {'primitive': 'black_box', 'abstract_template_name' : subckt.name, 'concrete_template_name': subckt.name, 'parameters': subckt.pins}
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None,
                        pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd(), netlistdir=pathlib.Path.cwd(),
-                       abstract_template_name=None, concrete_template_name=None):
+                       blackbox_dir = None, abstract_template_name=None, concrete_template_name=None, scale=1e3):
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     assert isinstance(primitive, SubCircuit) \
         or primitive == 'generic' \
+        or primitive == 'black_box' \
         or 'ring' in primitive, f"{block_name} definition: {primitive}"
+    if blackbox_dir:
+        blackbox_dir = pathlib.Path(blackbox_dir).resolve()
+        if not blackbox_dir.is_dir():
+            logger.error(f"Black box directory {blackbox_dir} doesn't exist. Please enter a valid directory path")
+            raise FileNotFoundError(2, 'No such black box directory', blackbox_dir)
 
+    blackbox = False
     if primitive == 'generic':
         uc, _ = generate_generic(pdkdir, parameters, netlistdir=netlistdir)
+    elif 'black_box' == primitive:
+        blackbox = True
+        if blackbox_dir:
+            gdsfile = blackbox_dir / (block_name + '.gds')
+            if gdsfile.is_file():
+                layers = pdkdir / 'layers.json'
+                gds2lef = gds2lefjson.GDS2_LEF_JSON(layers, gdsfile, block_name)
+                gds2lef.writeLEFJSON(str(outputdir) + '/', scale)
+                assert set(parameters) == gds2lef._ports, f'mismatch between ports in netlist({parameters}) and gds({gds2lef._ports})'
     elif 'ring' in primitive:
         uc, _ = generate_Ring(pdkdir, block_name, x_cells, y_cells)
     elif 'MOS' == primitive.generator['name'].upper():
@@ -190,18 +216,20 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
-    uc.computeBbox()
-
-    with open(outputdir / (block_name + '.json'), "wt") as fp:
-        uc.writeJSON(fp)
-
-    blockM = 1 if 'cap' in primitive else 0
-    positive_coord.json_pos(outputdir / (block_name + '.json'))
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
-
-    with open(outputdir / (block_name + ".json"), "rt") as fp0, \
-            open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:
-        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), uc.pdk)
-
-    return uc
+    if not blackbox:
+        uc.computeBbox()
+    
+        with open(outputdir / (block_name + '.json'), "wt") as fp:
+            uc.writeJSON(fp)
+    
+        blockM = 1 if 'cap' in primitive else 0
+        positive_coord.json_pos(outputdir / (block_name + '.json'))
+        gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='placement')
+        gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, bodyswitch, blockM, uc.pdk, mode='routing')
+    
+        with open(outputdir / (block_name + ".json"), "rt") as fp0, \
+                open(outputdir / (block_name + ".gds.json"), 'wt') as fp1:
+            gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime(2019, 1, 1, 0, 0, 0), uc.pdk)
+    
+        return uc
+    return None

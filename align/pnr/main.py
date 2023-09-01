@@ -1,35 +1,22 @@
 import pathlib
 import os
-import io
-import sys
 import logging
 import json
-import re
-import itertools
-
-import copy
-
 from collections import defaultdict
 
-from ..cell_fabric.pdk import Pdk
-
-from .checkers import gen_viewer_json, gen_transformation
-from ..cell_fabric import gen_gds_json, transformation
+from .checkers import gen_viewer_json
+from ..cell_fabric import gen_gds_json
 from .write_constraint import PnRConstraintWriter
-from .. import PnR
-from ..schema import constraint
-from ..schema.hacks import List, FormalActualMap, VerilogJsonTop, VerilogJsonModule
-from .manipulate_hierarchy import manipulate_hierarchy
+from ..schema.hacks import VerilogJsonTop
+from .manipulate_hierarchy import manipulate_hierarchy, add_cap_dummy_connections
 
 from .placer import placer_driver, startup_gui
 from .router import router_driver
 from .cap_placer import cap_placer_driver
 
-import copy
+import shutil
 
 logger = logging.getLogger(__name__)
-
-from memory_profiler import profile
 
 
 def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=False, input_dir=None, toplevel=True, gds_json=True,
@@ -44,8 +31,8 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
     if gds_json and toplevel:
         # Hack in Outline layer
         # Should be part of post processor
-        d['terminals'].append(
-            {"layer": "Outline", "netName": None, "netType": "drawing", "rect": d['bbox']})
+        # insert is slower than append but it improves the visulazation by drawing outline behind the other rectangles
+        d['terminals'].insert(0, {"layer": "Outline", "netName": None, "netType": "drawing", "rect": d['bbox']})
 
     ret = {}
 
@@ -82,8 +69,11 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
         ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
         with open(ret['json'], 'rt') as ifp:
             with open(ret['python_gds_json'], 'wt') as ofp:
+                labels = None
+                if toplevel:
+                    labels = [i.name for i in hN.blockPins].extend([i.name for i in hN.PowerNets])
                 gen_gds_json.translate(
-                    hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+                    hN.name, '', toplevel, ifp, ofp, timestamp=None, p=cnv.pdk, labelOnce=True, reqLabels=labels)
         logger.info(f"OUTPUT gds.json {ret['python_gds_json']}")
 
     return ret
@@ -199,7 +189,7 @@ def write_verilog_d(verilog_d):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False):
 
     subckt = subckt.upper()
 
@@ -218,6 +208,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
     if '3_pnr:prep' in steps_to_run:
         # Create working & input directories
+        shutil.rmtree(working_dir, ignore_errors=True)
+        shutil.rmtree(input_dir, ignore_errors=True)
         working_dir.mkdir(exist_ok=True)
         input_dir.mkdir(exist_ok=True)
 
@@ -300,11 +292,31 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         os.chdir(current_working_dir)
 
+
         with (working_dir / "__cap_map__.json").open("wt") as fp:
             json.dump(cap_map, fp, indent=2)
 
         with (working_dir / "__cap_lef__").open("wt") as fp:
             fp.write(cap_lef_s)
+
+
+        new_cap_map = []
+        for nm, gdsFile in cap_map:
+            p = working_dir / gdsFile
+            with (p.parent / (p.stem + '.json')).open("rt") as fp:
+                layout_d = json.load(fp)
+
+            entry = { 'nm' : nm, 'gdsFile' : gdsFile }
+            for pin in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
+                entry[pin] = any(term['netName'] == pin for term in layout_d['terminals'])
+
+            new_cap_map.append(entry)
+
+        add_cap_dummy_connections(verilog_d, new_cap_map)
+
+        with (input_dir/verilog_file).open("wt") as fp:
+            json.dump(write_verilog_d(verilog_d), fp=fp, indent=2, default=str)
+
 
     else:
         pnr_const_ds = load_constraint_files(input_dir)
@@ -338,9 +350,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                           select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
                           toplevel_args_d=toplevel_args_d, results_dir=None,
-                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
-        with open("__placer_dump__.json", "wt") as fp:
+        with open(working_dir/"__placer_dump__.json", "wt") as fp:
             json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
 
         os.chdir(current_working_dir)
@@ -348,7 +360,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     elif '3_pnr:gui' in steps_to_run or '3_pnr:route' in steps_to_run:
         with (working_dir / "__placer_dump__.json").open('rt') as fp:
             top_level, leaf_map, placement_verilog_alternatives, metrics = json.load(fp)
-            placement_verilog_alternatives = {nm : VerilogJsonTop.parse_obj(v) for nm, v in placement_verilog_alternatives}
+            placement_verilog_alternatives = {nm: VerilogJsonTop.parse_obj(v) for nm, v in placement_verilog_alternatives}
 
     if '3_pnr:gui' in steps_to_run:
         if gui:
@@ -359,19 +371,19 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                                             metrics=metrics)
         else:
             placements_to_run = None
-        
-        with open("__placements_to_run__.json", "wt") as fp:
+
+        with open(working_dir/"__placements_to_run__.json", "wt") as fp:
             json.dump(placements_to_run, fp=fp, indent=2)
 
     elif '3_pnr:route' in steps_to_run:
-        with open("__placements_to_run__.json", "rt") as fp:
+        with open(working_dir/"__placements_to_run__.json", "rt") as fp:
             placements_to_run = json.load(fp)
 
     variants = defaultdict(defaultdict)
 
     if '3_pnr:route' in steps_to_run:
 
-        assert nroutings == 1, f"nroutings other than 1 is currently not working"
+        assert nroutings == 1, "nroutings other than 1 is currently not working"
 
         if placements_to_run is None:
             verilog_ds_to_run = [(f'{top_level}_{i}', placement_verilog_alternatives[f'{top_level}_{i}']) for i in range(min(nroutings, len(placement_verilog_alternatives)))]
@@ -391,7 +403,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                            'pdk_file': str(pdk_file),
                            'subckt': subckt,
                            'nvariants': nvariants,
-                           'effort': effort}
+                           'effort': effort,
+                           'pdk_dir': pdk_dir}
 
         results_name_map = router_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                                          numLayout=toplevel_args_d['nvariants'], effort=toplevel_args_d['effort'],

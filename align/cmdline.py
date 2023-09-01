@@ -103,7 +103,7 @@ class CmdlineParser():
         parser.add_argument('--router_mode',
                             type=str,
                             default='top_down',
-                            choices=['top_down','bottom_up','no_op'],
+                            choices=['top_down','bottom_up','collect_pins','no_op'],
                             help='Router mode')
 
         parser.add_argument('--gui',
@@ -165,6 +165,16 @@ class CmdlineParser():
                             choices=['cpp', 'python'],
                             default='cpp',
                             help='Select the placer engine to use. Default: %(default)s')
+
+        parser.add_argument('-b',
+                            '--blackbox_dir',
+                            default=None,
+                            help='directory containing black box GDS files')
+
+        parser.add_argument('--scale',
+                            type=float,
+                            default=1e3,
+                            help='black box LEF scaling')
 
         self.parser = parser
 

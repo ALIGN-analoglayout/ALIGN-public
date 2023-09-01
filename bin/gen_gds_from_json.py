@@ -115,28 +115,29 @@ if (args.gds_dir):
             m._cell = lib.top_level()[0]
             m._cell.flatten()
             m._added = True
-        with open(m._fname) as fp:
-            leafdata = json.load(fp)
-            m._cell = gdspy.Cell(j)
-            if 'bgnlib' in leafdata:
-                for bl in leafdata['bgnlib']:
-                    if 'bgnstr' in bl:
-                        for bstr in bl['bgnstr']:
-                            if 'elements' in bstr:
-                                elements = bstr['elements']
-                                for el in elements:
-                                    layer = el['layer'] if 'layer' in el else 0
-                                    ldata = el['datatype'] if 'datatype' in el else 0
-                                    xy = el['xy'] if 'xy' in el else None
-                                    if xy and len(xy) == 10:
-                                        xmin = min([xy[k] for k in range(0, len(xy), 2)])/args.scale
-                                        ymin = min([xy[k] for k in range(1, len(xy), 2)])/args.scale
-                                        xmax = max([xy[k] for k in range(0, len(xy), 2)])/args.scale
-                                        ymax = max([xy[k] for k in range(1, len(xy), 2)])/args.scale
-                                        m._cell.add(gdspy.Rectangle((xmin, ymin), (xmax, ymax), layer=layer, datatype=ldata))
-                                    else:
-                                        pts = [(xy[k]/args.scale, xy[k + 1]/args.scale) for k in range(0, len(xy), 2)]
-                                        m._cell.add(gdspy.Polygon(pts, layer=layer, datatype=ldata))
+        else:
+            with open(m._fname) as fp:
+                leafdata = json.load(fp)
+                m._cell = gdspy.Cell(j)
+                if 'bgnlib' in leafdata:
+                    for bl in leafdata['bgnlib']:
+                        if 'bgnstr' in bl:
+                            for bstr in bl['bgnstr']:
+                                if 'elements' in bstr:
+                                    elements = bstr['elements']
+                                    for el in elements:
+                                        layer = el['layer'] if 'layer' in el else 0
+                                        ldata = el['datatype'] if 'datatype' in el else 0
+                                        xy = el['xy'] if 'xy' in el else None
+                                        if xy and len(xy) == 10:
+                                            xmin = min([xy[k] for k in range(0, len(xy), 2)])/args.scale
+                                            ymin = min([xy[k] for k in range(1, len(xy), 2)])/args.scale
+                                            xmax = max([xy[k] for k in range(0, len(xy), 2)])/args.scale
+                                            ymax = max([xy[k] for k in range(1, len(xy), 2)])/args.scale
+                                            m._cell.add(gdspy.Rectangle((xmin, ymin), (xmax, ymax), layer=layer, datatype=ldata))
+                                        else:
+                                            pts = [(xy[k]/args.scale, xy[k + 1]/args.scale) for k in range(0, len(xy), 2)]
+                                            m._cell.add(gdspy.Polygon(pts, layer=layer, datatype=ldata))
             m._added = True
 
 

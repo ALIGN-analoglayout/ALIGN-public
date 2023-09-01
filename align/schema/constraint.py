@@ -201,6 +201,9 @@ class Order(HardConstraint):
                     cc(b1, b2, 'y'),
                     cc(b2, b1, 'y'))
 
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
+
 
 class Align(HardConstraint):
     '''
@@ -287,77 +290,8 @@ class Align(HardConstraint):
                     solver.And(b2.lly >= b1.lly, b2.ury <= b1.ury)
                 )
 
-
-class Enclose(HardConstraint):
-    '''
-    Enclose `instances` within a flexible bounding box
-    with `min_` & `max_` bounds
-
-    Args:
-        instances (list[str], optional): List of `instances`
-        min_height (int, optional):  assign minimum height to the subcircuit
-        max_height (int, optional):  assign maximum height to the subcircuit
-        min_width (int, optional):  assign minimum width to the subcircuit
-        max_width (int, optional):  assign maximum width to the subcircuit
-        min_aspect_ratio (float, optional):  assign minimum aspect ratio to the subcircuit
-        max_aspect_ratio (float, optional):  assign maximum aspect ratio to the subcircuit
-
-    Note: Specifying any one of the following variables
-    makes it a valid constraint but you may wish to
-    specify more than one for practical purposes
-
-    Example: ::
-
-        {"constraint":"Enclose", "instances": ['MN0', 'MN1', 'MN2'], "min_aspect_ratio": 0.1, "max_aspect_ratio": 10 }
-    '''
-    instances: Optional[List[str]]
-    min_height: Optional[int]
-    max_height: Optional[int]
-    min_width: Optional[int]
-    max_width: Optional[int]
-    min_aspect_ratio: Optional[float]
-    max_aspect_ratio: Optional[float]
-
-    _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
-
-    @types.validator('max_aspect_ratio', allow_reuse=True)
-    def bound_in_box_optional_fields(cls, value, values):
-        assert value or any(
-            getattr(values, x, None)
-            for x in (
-                'min_height',
-                'max_height',
-                'min_width',
-                'max_width',
-                'min_aspect_ratio'
-            )
-        ), 'Too many optional fields'
-        return value
-
-    def translate(self, solver):
-        bb = solver.bbox_vars(solver.label(self))
-        if self.min_width:
-            yield bb.urx - bb.llx >= self.min_width
-        if self.min_height:
-            yield bb.ury - bb.lly >= self.min_height
-        if self.max_width:
-            yield bb.urx - bb.llx <= self.max_width
-        if self.max_height:
-            yield bb.ury - bb.lly <= self.max_height
-        if self.min_aspect_ratio:
-            yield solver.cast(
-                (bb.ury - bb.lly) / (bb.urx - bb.llx),
-                float) >= self.min_aspect_ratio
-        if self.max_aspect_ratio:
-            yield solver.cast(
-                (bb.ury - bb.lly) / (bb.urx - bb.llx),
-                float) <= self.max_aspect_ratio
-        bvars = solver.iter_bbox_vars(self.instances)
-        for b in bvars:
-            yield b.urx <= bb.urx
-            yield b.llx >= bb.llx
-            yield b.ury <= bb.ury
-            yield b.lly >= bb.lly
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
 
 
 class Spread(HardConstraint):
@@ -417,6 +351,9 @@ class Spread(HardConstraint):
             else:
                 assert False, "Please speficy direction"
 
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
+
 
 class AssignBboxVariables(HardConstraint):
     bbox_name: str
@@ -450,7 +387,6 @@ class AspectRatio(HardConstraint):
     `ratio_low` <= width/height <= `ratio_high`
 
     Args:
-        subcircuit (str) : Name of subciruit
         ratio_low (float): Minimum aspect ratio (default 0.1)
         ratio_high (float): Maximum aspect ratio (default 10)
         weight (int): Weigth of this constraint (default 1)
@@ -459,7 +395,6 @@ class AspectRatio(HardConstraint):
 
         {"constraint": "AspectRatio", "ratio_low": 0.1, "ratio_high": 10, "weight": 1 }
     """
-    subcircuit: str
     ratio_low: float = 0.1
     ratio_high: float = 10
     weight: int = 1
@@ -482,28 +417,44 @@ class Boundary(HardConstraint):
     Define `max_height` and/or `max_width` on a subcircuit in micrometers.
 
     Args:
-        subcircuit (str) : Name of subcircuit
         max_width (float, Optional) = 10000
         max_height (float, Optional) = 10000
 
     Example: ::
 
-        {"constraint": "Boundary", "subcircuit": "OTA", "max_height": 100 }
+        {"constraint": "Boundary", "max_height": 100 }
     """
-    subcircuit: str
-    max_width: Optional[float] = 10000
-    max_height: Optional[float] = 10000
+    max_width: Optional[float] = 100000  # 100mm
+    max_height: Optional[float] = 100000  # 100mm
+    halo_horizontal: Optional[float] = 0
+    halo_vertical: Optional[float] = 0
 
     _max_width = types.validator('max_width', allow_reuse=True)(assert_non_negative)
     _max_height = types.validator('max_height', allow_reuse=True)(assert_non_negative)
+    _halo_horizontal = types.validator('halo_horizontal', allow_reuse=True)(assert_non_negative)
+    _halo_vertical = types.validator('halo_vertical', allow_reuse=True)(assert_non_negative)
+
+    @types.validator('halo_horizontal', 'halo_horizontal', allow_reuse=True)
+    def validate_halo(cls, value, values, field):
+        if field.name == 'halo_horizontal':
+            key = 'max_width'
+        else:
+            key = 'max_height'
+        assert values[key] > value, f'Halo should be smaller than the {key}'
+        return value
 
     def translate(self, solver):
-        bvar = solver.bbox_vars('subcircuit')
-        if self.max_width is not None:
-            yield solver.cast(bvar.urx-bvar.llx, float) <= 1000*self.max_width  # in nanometer
-        if self.max_height is not None:
-            yield solver.cast(bvar.ury-bvar.lly, float) <= 1000*self.max_height  # in nanometer
+        bbox = solver.bbox_vars('subcircuit')
+        yield solver.cast(bbox.urx-bbox.llx, float) <= 1000*self.max_width  # convert to nanometer
+        yield solver.cast(bbox.ury-bbox.lly, float) <= 1000*self.max_height  # convert to nanometer
 
+        instances = get_instances_from_hacked_dataclasses(self)
+        bvars = solver.iter_bbox_vars(instances)
+        for b in bvars:
+            yield b.llx >= bbox.llx + int(1000*self.halo_horizontal)
+            yield b.urx <= bbox.urx - int(1000*self.halo_horizontal)
+            yield b.lly >= bbox.lly + int(1000*self.halo_vertical)
+            yield b.ury <= bbox.ury - int(1000*self.halo_vertical)
 
 # You may chain constraints together for more complex constraints by
 #     1) Assigning default values to certain attributes
@@ -590,6 +541,7 @@ class AlignInOrder(UserConstraint):
                 direction='left_to_right' if self.direction == 'horizontal' else 'top_to_bottom',
                 abut=self.abut
             )
+            yield DoNotIdentify(instances=self.instances)
 
 
 class Floorplan(UserConstraint):
@@ -654,6 +606,12 @@ class Floorplan(UserConstraint):
                             pairs.append([region[i+1]])
                 logger.debug(f'Symmetric blocks:\n{pairs}')
                 yield SymmetricBlocks(pairs=pairs, direction='V')
+            # Do not identify these instances if both ordered and symmetric
+            if self.symmetrize and self.order:
+                instances = list()
+                for region in self.regions:
+                    instances.extend(region)
+                yield DoNotIdentify(instances=instances)
 
 
 #
@@ -763,34 +721,15 @@ class SameTemplate(SoftConstraint):
         return instances
 
 
-class CreateAlias(SoftConstraint):
-    """CreateAlias
-
-    Creates an alias for list of instances. You can use this
-    alias later while defining constraints
-
-    Args:
-      instances (list[str]): List of :obj:`instances`
-      name (str): alias for the list of :obj:`instances`
-
-    Example: ::
-
-        {
-            "constraint":"CreateAlias",
-            "instances": ["MN0", "MN1", "MN3"],
-            "name": "alias1"
-        }
-    """
-    instances: List[str]
-    name: str
-
-
 class PlaceCloser(SoftConstraint):
     '''
         `instances` are preferred to be placed closer.
     '''
     instances: List[str]
     _inst_validator = types.validator('instances', allow_reuse=True)(validate_instances)
+
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
 
 
 class PlaceOnBoundary(SoftConstraint):
@@ -823,6 +762,10 @@ class PlaceOnBoundary(SoftConstraint):
                     sublist.append(value)
         return sublist
 
+    def yield_constraints(self):
+        instances = self.instances_on(['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest'])
+        yield DoNotIdentify(instances=instances)
+
 
 class PowerPorts(SoftConstraint):
     '''
@@ -833,6 +776,7 @@ class PowerPorts(SoftConstraint):
             The first port of top hierarchy will be used for power grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -842,6 +786,7 @@ class PowerPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -856,6 +801,7 @@ class GroundPorts(SoftConstraint):
             The first port of top hierarchy will be used for ground grid creation.
             Power ports are used to identify source and drain of transistors
             by identifying the terminal at higher potential.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -865,6 +811,7 @@ class GroundPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
     _ports = types.validator('ports', allow_reuse=True)(validate_ports)
@@ -878,6 +825,7 @@ class ClockPorts(SoftConstraint):
 
     Args:
         ports (list[str]): List of :obj:`ports`.
+        propagate: Copy this constraint to sub-hierarchies
 
     Example: ::
 
@@ -887,6 +835,7 @@ class ClockPorts(SoftConstraint):
         }
     '''
     ports: List[str]
+    propagate: bool = True
 
     _upper_case = types.validator('ports', allow_reuse=True)(upper_case)
 
@@ -986,6 +935,10 @@ class DoNotIdentify(SoftConstraint):
     instances: List[str]
     _instance_attribute: str = "instances"
 
+    @types.validator('instances', allow_reuse=True, always=True)
+    def _check_instance(cls, value):
+        return value
+
 
 class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
@@ -1081,6 +1034,11 @@ class SymmetricBlocks(HardConstraint):
                 expression = (reference == centerline)
                 yield expression
 
+    def yield_constraints(cls):
+        instances = list()
+        [instances.extend(pair) for pair in cls.pairs]
+        yield DoNotIdentify(instances=instances)
+
 
 class OffsetsScalings(BaseModel):
     offsets: List[int] = Field(default_factory=lambda: [0])
@@ -1103,8 +1061,6 @@ class PlaceOnGrid(SoftConstraint):
 
 class BlockDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed gap.
     Also used in situations when routing is congested.
 
@@ -1128,8 +1084,6 @@ class BlockDistance(SoftConstraint):
 
 class VerticalDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed vertical gap.
     Also used in situations when routing is congested.
 
@@ -1154,8 +1108,6 @@ class VerticalDistance(SoftConstraint):
 
 class HorizontalDistance(SoftConstraint):
     '''
-    TODO: Replace with Spread
-
     Places the instances with a fixed horizontal gap.
     Also used in situations when routing is congested.
 
@@ -1481,6 +1433,7 @@ class GroupBlocks(HardConstraint):
     constraints: Optional[List[Union[
         Align,
         Order,
+        Boundary,
         AlignInOrder,
         Floorplan,
         SymmetricBlocks,
@@ -1517,8 +1470,7 @@ class GroupBlocks(HardConstraint):
 
 ConstraintType = Union[
     # ALIGN Internal DSL
-    Order, Align, Floorplan,
-    Enclose, Spread,
+    Order, Align, Floorplan, Spread,
     AssignBboxVariables,
     AspectRatio,
     Boundary,
@@ -1529,7 +1481,6 @@ ConstraintType = Union[
     CompactPlacement,
     Generator,
     SameTemplate,
-    CreateAlias,
     GroupBlocks,
     PlaceCloser,
     PlaceOnBoundary,
@@ -1611,7 +1562,8 @@ class ConstraintDB(types.List[ConstraintType]):
 def expand_user_constraints(const_list):
     for const in const_list:
         if hasattr(const, 'yield_constraints'):
+            logger.debug(f'expanding: {const}')
             with types.set_context(const.parent):
                 yield from const.yield_constraints()
-        else:
+        if not isinstance(const, UserConstraint):
             yield const

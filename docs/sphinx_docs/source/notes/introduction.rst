@@ -1,7 +1,7 @@
 Introduction by Example
 ========================
 
-Run your first design from example directory:
+Run your first design from the example directory:
 
 .. code-block:: bash
 
@@ -10,7 +10,7 @@ Run your first design from example directory:
 	e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK
 
 .. note::
-	ALIGN assumes folder name, file name, design name to be identical unless provided specifically. You can also specify them using command line arguments.
+	ALIGN assumes folder name, file name, and top design name to be identical unless provided specifically. You can also specify them using command line arguments.
 
 .. code-block:: bash
 

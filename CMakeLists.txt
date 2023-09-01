@@ -14,7 +14,7 @@ option(
     OFF)
 option(
     CODE_COVERAGE
-    "Instruments code coverage (pip install -e . --no-build-isolation --install-option='-DCODE_COVERAGE=ON')"
+    "Instruments code coverage (pip install -e . --no-build-isolation --global-option='-DCODE_COVERAGE=ON')"
     OFF)
 # High verbosity for debug
 set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)

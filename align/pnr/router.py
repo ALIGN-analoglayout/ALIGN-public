@@ -1,7 +1,11 @@
+import plotly.graph_objects as go
+import plotly.express as px
+
 import logging
 import pathlib
 import json
 import re
+from ..cell_fabric import transformation
 
 from collections import defaultdict
 
@@ -10,6 +14,9 @@ from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstrac
 
 from .build_pnr_model import gen_DB_verilog_d
 from .placer import hierarchical_place
+
+from .pythonic_router import collect_pins
+
 
 logger = logging.getLogger(__name__)
 
@@ -372,7 +379,7 @@ def router_driver(*, cap_map, cap_lef_s,
         idir = pathlib.Path(fpath)
          
         cap_ctns = { str(pathlib.Path(gdsFile).stem) : gdsFile for atn, gdsFile in cap_map }
-        print(cap_ctns)
+
         map_d_in = []
         for leaf in scaled_placement_verilog_d['leaves']:
             ctn = leaf['concrete_name']
@@ -392,28 +399,39 @@ def router_driver(*, cap_map, cap_lef_s,
 
         # create a fresh DB and populate it with a placement verilog d    
 
-        DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
-        
-        assert new_verilog_d == abstract_verilog_d
+        if router_mode in ['top_down', 'bottom_up']:
+            DB, new_verilog_d, new_fpath, opath, _, _ = gen_DB_verilog_d(toplevel_args_d, results_dir, verilog_d_in=abstract_verilog_d, map_d_in=map_d_in, lef_s_in=lef_s_in)
 
-        assert new_fpath == fpath
+            assert new_verilog_d == abstract_verilog_d
 
-        # populate new DB with placements to run
+            assert new_fpath == fpath
 
-        hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
-                           verilog_d=abstract_verilog_d, lambda_coeff=1,
-                           scale_factor=scale_factor,
-                           placement_verilog_d=scaled_placement_verilog_d.dict(),
-                           select_in_ILP=False, place_using_ILP=False, seed=0,
-                           use_analytical_placer=False, ilp_solver='symphony',
-                           primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1)
+            # populate new DB with placements to run
 
-        placements_to_run = None
+            hierarchical_place(DB=DB, opath=opath, fpath=fpath, numLayout=1, effort=effort,
+                               verilog_d=abstract_verilog_d, lambda_coeff=1,
+                               scale_factor=scale_factor,
+                               placement_verilog_d=scaled_placement_verilog_d.dict(),
+                               select_in_ILP=False, place_using_ILP=False, seed=0,
+                               use_analytical_placer=False, ilp_solver='symphony',
+                               primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1, black_box_flow=False)
 
-        res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                     router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+            placements_to_run = None
 
-        res_dict.update(res)
+            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+
+            res_dict.update(res)
     
+        elif router_mode in ['collect_pins']:
+
+            print(f'toplevel_args_d: {toplevel_args_d}')
+            print(f'results_dir: {results_dir}')
+            print(f'map_d_in: {map_d_in}')
+            print(f'lef_s_in: {lef_s_in}')
+
+            collect_pins(map_d_in, scaled_placement_verilog_d, toplevel_args_d)
+
+
     return res_dict
 

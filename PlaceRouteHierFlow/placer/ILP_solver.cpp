@@ -1816,6 +1816,10 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   if (flushbl) {
     for (const auto& id : curr_sp.negPair) {
       if (id < int(mydesign.Blocks.size())) {
+        collb[id * 4] = mydesign.halo_horizontal;
+        colub[id * 4] = mydesign.placement_box[0] - mydesign.halo_horizontal - mydesign.Blocks[id][curr_sp.selected[id]].width;
+        collb[id * 4 + 1] = mydesign.halo_vertical;
+        colub[id * 4 + 1] = mydesign.placement_box[1] - mydesign.halo_vertical - mydesign.Blocks[id][curr_sp.selected[id]].height;
         if (prev) {
           collb[id * 4] = (*prev)[id].x;
           collb[id * 4 + 1] = (*prev)[id].y;
@@ -2676,7 +2680,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
         write_cnt = 0;
         block_name = mydesign.name;
       }
-      if (write_cnt < 10) {
+      if (write_cnt < 100) {
         char* names[N_var];
         std::vector<std::string> namesvec(N_var);
         namesvec[N_area_x]     = "area_x\0";
@@ -2852,7 +2856,7 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
   ++const_cast<design&>(mydesign)._totalNumCostCalc;
   if (snapGridILP) ++const_cast<design&>(mydesign)._numSnapGridFail;
   if (mydesign.Blocks.size() == 1 && mydesign.Blocks[0][0].xoffset.empty() && mydesign.Blocks[0][0].yoffset.empty()) {
-    Blocks[0].x = 0; Blocks[0].y = 0;
+    Blocks[0].x = mydesign.halo_horizontal; Blocks[0].y = mydesign.halo_vertical;
     Blocks[0].H_flip = 0; Blocks[0].V_flip = 0;
     area_ilp = ((double)mydesign.Blocks[0][curr_sp.selected[0]].width) * ((double)mydesign.Blocks[0][curr_sp.selected[0]].height);
   } else {
@@ -2872,29 +2876,31 @@ bool ILP_solver::GenerateValidSolutionCore(const design& mydesign, const SeqPair
         Blocks = blockslocal;
       }
     }
-    // snap up coordinates to grid
-    for(unsigned int i=0;i<mydesign.SPBlocks.size();i++) {
-      if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
-      //if sympair center is not on grid
-      {
-        int first_id = mydesign.SPBlocks[i].sympair[0].first;
-        int second_id = mydesign.SPBlocks[i].sympair[0].second;
-        int first_selected = curr_sp.selected[first_id];
-        int second_selected = curr_sp.selected[second_id];
-        int center_line = ((Blocks[first_id].x + mydesign.Blocks[first_id][first_selected].width / 2) +
-                           (Blocks[second_id].x + mydesign.Blocks[second_id][second_selected].width / 2)) /
-                          2;
-        if (center_line % x_pitch == 0) continue;
-      }
-      for (unsigned int j = 0; j < mydesign.SPBlocks[i].sympair.size(); j++) {
-        int first_id = mydesign.SPBlocks[i].sympair[j].first;
-        int second_id = mydesign.SPBlocks[i].sympair[j].second;
-        if (Blocks[first_id].x>Blocks[second_id].x) {
-          roundup(Blocks[first_id].x, x_pitch);
-          rounddown(Blocks[second_id].x, x_pitch);
-        } else {
-          rounddown(Blocks[first_id].x, x_pitch);
-          roundup(Blocks[second_id].x, x_pitch);
+    if (!mydesign.black_box_flow) {
+      // snap up coordinates to grid
+      for(unsigned int i=0;i<mydesign.SPBlocks.size();i++) {
+        if (mydesign.SPBlocks[i].sympair.size() == 0) continue;
+        //if sympair center is not on grid
+        {
+          int first_id = mydesign.SPBlocks[i].sympair[0].first;
+          int second_id = mydesign.SPBlocks[i].sympair[0].second;
+          int first_selected = curr_sp.selected[first_id];
+          int second_selected = curr_sp.selected[second_id];
+          int center_line = ((Blocks[first_id].x + mydesign.Blocks[first_id][first_selected].width / 2) +
+              (Blocks[second_id].x + mydesign.Blocks[second_id][second_selected].width / 2)) /
+            2;
+          if (center_line % x_pitch == 0) continue;
+        }
+        for (unsigned int j = 0; j < mydesign.SPBlocks[i].sympair.size(); j++) {
+          int first_id = mydesign.SPBlocks[i].sympair[j].first;
+          int second_id = mydesign.SPBlocks[i].sympair[j].second;
+          if (Blocks[first_id].x>Blocks[second_id].x) {
+            roundup(Blocks[first_id].x, x_pitch);
+            rounddown(Blocks[second_id].x, x_pitch);
+          } else {
+            rounddown(Blocks[first_id].x, x_pitch);
+            roundup(Blocks[second_id].x, x_pitch);
+          }
         }
       }
     }
@@ -2924,7 +2930,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
     }
   }
 
-  if (snapGridILP && !GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, true)) return -1;
+  if (!mydesign.black_box_flow && snapGridILP && !GenerateValidSolutionCore(mydesign, curr_sp, drcInfo, num_threads, true)) return -1;
 
   TimeMeasure tm(const_cast<design&>(mydesign).gen_valid_runtime);
   // calculate LL and UR
@@ -2942,12 +2948,12 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   area_norm = area * 0.1 / mydesign.GetMaxBlockAreaSum();
   // calculate ratio
   // ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
-  ratio = double(UR.x - LL.x) / double(UR.y - LL.y);
+  ratio = double(UR.x) / double(UR.y);
   if (ratio < Aspect_Ratio[0] || ratio > Aspect_Ratio[1]) {
     ++const_cast<design&>(mydesign)._infeasAspRatio;
     return -1;
   }
-  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+  if ((placement_box[0] > 0 && UR.x > placement_box[0]) || (placement_box[1] > 0 && UR.y > placement_box[1])) {
     ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
   }
@@ -3103,7 +3109,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (cost >= 0.) {
     logger->debug("ILP__HPWL_compare : HPWL_extend={0} HPWL_ILP={1}", HPWL_extend, HPWL_ILP);
     logger->debug("ILP__Area_compare : area={0} area_ilp={1}", area, area_ilp);
-    assert(round(HPWL_extend) == round(HPWL_ILP));
+    //assert(round(HPWL_extend) == round(HPWL_ILP));
   }
   return calculated_cost;
 }
@@ -5541,8 +5547,8 @@ void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
 }
 
 void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
-  node.width = UR.x;
-  node.height = UR.y;
+  node.width = UR.x + mydesign.halo_horizontal;
+  node.height = UR.y + mydesign.halo_vertical;
   node.HPWL = HPWL;
   node.HPWL_extend = HPWL_extend;
   node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL

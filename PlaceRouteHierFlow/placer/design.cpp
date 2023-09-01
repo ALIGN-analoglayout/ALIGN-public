@@ -32,6 +32,8 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
   Same_Template_Constraints = node.Same_Template_Constraints;
   grid_unit_x = drcInfo.Metal_info[0].grid_unit_x;
   grid_unit_y = drcInfo.Metal_info[1].grid_unit_y;
+  halo_horizontal = node.boundary.halo_horizontal;
+  halo_vertical = node.boundary.halo_vertical;
   mixFlag = false;
   double averageWL = 0;
   double macroThreshold = 0.5;  // threshold to filter out small blocks
@@ -92,16 +94,19 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       tmpblock.type = (it->instance).at(bb).type;
       tmpblock.width = (it->instance).at(bb).width;
       tmpblock.height = (it->instance).at(bb).height;
-      tmpblock.xoffset = (it->instance).at(bb).xoffset;
-      if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
-      tmpblock.xpitch = (it->instance).at(bb).xpitch;
-      if (tmpblock.xpitch == 1) tmpblock.xpitch = gridx_pitch;
-      tmpblock.xflip = (it->instance).at(bb).xflip;
-      tmpblock.yoffset = (it->instance).at(bb).yoffset;
-      if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
-      tmpblock.ypitch = (it->instance).at(bb).ypitch;
-      if (tmpblock.ypitch == 1) tmpblock.ypitch = gridy_pitch;
-      tmpblock.yflip = (it->instance).at(bb).yflip;
+      if (!node.black_box_flow) {
+        tmpblock.xoffset = (it->instance).at(bb).xoffset;
+        if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
+        tmpblock.xpitch = (it->instance).at(bb).xpitch;
+        if (tmpblock.xpitch == 1) tmpblock.xpitch = gridx_pitch;
+        tmpblock.xflip = (it->instance).at(bb).xflip;
+        tmpblock.yoffset = (it->instance).at(bb).yoffset;
+        if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
+        tmpblock.ypitch = (it->instance).at(bb).ypitch;
+        if (tmpblock.ypitch == 1) tmpblock.ypitch = gridy_pitch;
+        tmpblock.yflip = (it->instance).at(bb).yflip;
+      }
+      black_box_flow = node.black_box_flow;
       // cout<<tmpblock.height<<endl;
       // [wbxu] Following lines have be updated to support multi contacts
       for (vector<PnRDB::pin>::iterator pit = (it->instance).at(bb).blockPins.begin(); pit != (it->instance).at(bb).blockPins.end(); ++pit) {
@@ -319,8 +324,10 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       for (auto itb2 = std::next(itb1); itb2 != it.blocks.end(); ++itb2) {
         if (it.horizon) {
           hSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+          hSpread[std::make_pair(*itb2, *itb1)] = it.distance;
         } else {
           vSpread[std::make_pair(*itb1, *itb2)] = it.distance;
+          vSpread[std::make_pair(*itb2, *itb1)] = it.distance;
         }
       }
     }

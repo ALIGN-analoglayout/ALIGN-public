@@ -17,7 +17,7 @@ from .build_pnr_model import gen_DB_verilog_d
 logger = logging.getLogger(__name__)
 
 
-def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, placer_sa_iterations, placer_ilp_runtime):
+def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_ILP, place_using_ILP, seed, use_analytical_placer, modules_d=None, ilp_solver, place_on_grid_constraints_json, placer_sa_iterations, placer_ilp_runtime, black_box_flow):
 
     current_node = DB.CheckoutHierNode(idx,-1)
 
@@ -25,21 +25,21 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
 
     hyper = PnR.PlacerHyperparameters()
     # Defaults; change (and uncomment) as required
-    hyper.T_INT = 0.5  # Increase for denormalized decision criteria
-    hyper.T_MIN = 0.05
-    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/placer_sa_iterations)
+    # hyper.T_INT = 0.5  # Increase for denormalized decision criteria
+    # hyper.T_MIN = 0.05
+    hyper.SA_MAX_ITER = placer_sa_iterations
+    hyper.ALPHA = math.exp(math.log(hyper.T_MIN/hyper.T_INT)/max(hyper.SA_MAX_ITER, 10000))
     # hyper.T_MIN = hyper.T_INT*(hyper.ALPHA**1e4)    # 10k iterations
-    # hyper.ALPHA = 0.99925
     # hyper.max_init_trial_count = 10000
     # hyper.max_cache_hit_count = 10
     hyper.SEED = seed  # if seed==0, C++ code will use its default value. Else, C++ code will use the provided value.
-    # hyper.COUNT_LIMIT = 200
     hyper.select_in_ILP = select_in_ILP
     hyper.ilp_solver = 0 if ilp_solver == 'symphony' else 1
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
     hyper.use_ILP_placer = place_using_ILP
     hyper.ILP_runtime_limit = placer_ilp_runtime # user specified runtime limit (in seconds) for ILP in each iteration of placer.
+    current_node.black_box_flow = black_box_flow
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json
 
@@ -298,7 +298,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
-                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, placer_sa_iterations, placer_ilp_runtime):
+                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, placer_sa_iterations, placer_ilp_runtime, black_box_flow):
 
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
@@ -323,7 +323,7 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
-              placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+              placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
         update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor)
 
@@ -340,7 +340,7 @@ def placer_driver(*, cap_map, cap_lef_s,
                   lambda_coeff, scale_factor,
                   select_in_ILP, place_using_ILP, seed,
                   use_analytical_placer, ilp_solver, primitives, toplevel_args_d, results_dir,
-                  placer_sa_iterations, placer_ilp_runtime):
+                  placer_sa_iterations, placer_ilp_runtime, black_box_flow):
 
     fpath = toplevel_args_d['input_dir']
 
@@ -382,6 +382,6 @@ def placer_driver(*, cap_map, cap_lef_s,
                                                                                       select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                                                                                       use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                                       primitives=primitives,
-                                                                                      placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+                                                                                      placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics

@@ -75,7 +75,7 @@ To update pip and install align again:
 .. note::
     remove _skbuild directory
 
-Error due to g++ package not updated
+Error due to g++ package not being updated
 ------------------------------------------------------------
 .. code-block:: none
 

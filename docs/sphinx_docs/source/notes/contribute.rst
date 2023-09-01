@@ -1,7 +1,7 @@
 Contribute to ALIGN
 ===========================================================
 
-ALIGN is an open source tool for analog layout generation. We appreciate any contribution to ALIGN.
+ALIGN is an open-source tool for analog layout generation. We appreciate any contribution to ALIGN.
 Layout generation requires multiple components for the flow to produce a good layout. There are multiple ways you can contribute.
 
 Some example contributions
@@ -37,7 +37,7 @@ For ALIGN (C++) Extension developers:
     pip install -v -e .[test] --no-build-isolation
 
 .. note::
-    The second command doesn't just install ALIGN inplace, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
+    The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 If you want the build-type to be Release (-O3), you can issue the following three lines:
 
@@ -45,7 +45,7 @@ If you want the build-type to be Release (-O3), you can issue the following thre
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release'
+    pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=Release'
 
 or
 
@@ -53,7 +53,7 @@ or
 
     pip install setuptools wheel pybind11 scikit-build cmake ninja
     pip install -v -e .[test] --no-build-isolation
-    pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo'
+    pip install -v --no-build-isolation -e . --no-deps --global-option='--build-type=RelWithDebInfo'
 
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
