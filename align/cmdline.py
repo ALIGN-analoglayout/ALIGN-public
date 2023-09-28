@@ -166,6 +166,16 @@ class CmdlineParser():
                             default='cpp',
                             help='Select the placer engine to use. Default: %(default)s')
 
+        parser.add_argument('-b',
+                            '--blackbox_dir',
+                            default=None,
+                            help='directory containing black box GDS files')
+
+        parser.add_argument('--scale',
+                            type=float,
+                            default=1e3,
+                            help='black box LEF scaling')
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

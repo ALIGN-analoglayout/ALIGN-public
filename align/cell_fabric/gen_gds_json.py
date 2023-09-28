@@ -6,7 +6,7 @@ from . import pdk
 import logging
 logger = logging.getLogger(__name__)
 
-def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_gen_tbl, timestamp=None):
+def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_gen_tbl, timestamp=None, labelOnce = False, reqLabels = None):
   j = pdk.Pdk().load(pdkfile)
   with open(pdkfile, "rt") as fp1:
     j1 = json.load(fp1)
@@ -70,6 +70,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   def exclude_based_on_name( nm):
     return pat and nm is not None and pat.match( nm)
 
+  labels = set()
   # non-vias
   for obj in data['terminals']:
       k = obj['layer']
@@ -89,11 +90,14 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
                         "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
           if 'Label' in j[k]['GdsDatatype']:
-              bbox = list(map(scale, obj['rect']))
-              xy = [int((bbox[0] + bbox[2])/ 2), int((bbox[1] + bbox[3]) /2)]
-              strct["elements"].append ({"layer" : j[k]['GdsLayerNo'], "type": "text",
-                           "texttype" : j[k]['GdsDatatype']['Label'], "string" : obj["netName"],
-                           "xy" : xy})
+              if None == reqLabels or (obj["netName"] in reqLabels):
+                  if (not labelOnce) or (labelOnce and obj["netName"] not in labels):
+                      bbox = list(map(scale, obj['rect']))
+                      xy = [int((bbox[0] + bbox[2])/ 2), int((bbox[1] + bbox[3]) /2)]
+                      strct["elements"].append ({"layer" : j[k]['GdsLayerNo'], "type": "text",
+                                   "texttype" : j[k]['GdsDatatype']['Label'], "string" : obj["netName"],
+                                   "xy" : xy})
+                      labels.add(obj["netName"])
       else:
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
@@ -120,5 +124,5 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   return top
 
-def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None):
-  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None, labelOnce=False, reqLabels=None):
+  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), {}, timestamp, labelOnce, reqLabels), ofile, indent=4)
