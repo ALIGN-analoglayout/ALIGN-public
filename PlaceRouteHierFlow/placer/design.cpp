@@ -332,7 +332,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       }
     }
   }
-  constructSymmGroup();
+  //constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {

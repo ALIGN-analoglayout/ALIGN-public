@@ -5579,8 +5579,10 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   if (!curr_sp.Enumerate()) {
     for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
       int SBidx = mydesign.SNets.at(i).SBidx;
-      placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
-      UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+      if (SBidx >= 0) {
+        placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
+        UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+      }
     }
   }
 }
