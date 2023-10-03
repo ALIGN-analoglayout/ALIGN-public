@@ -298,7 +298,7 @@ class process_input_const:
     def process_symmnet(self):
         logger.debug(f"input const {self.iconst}")
         replace_const = list()
-        new_symmblock_const = list()
+         #new_symmblock_const = list()
         for const in self.iconst:
             if isinstance(const, constraint.SymmetricNets):
                 if not getattr(const, 'pins1', None):
@@ -339,21 +339,21 @@ class process_input_const:
                         del const.pins2[index]
                     logger.info(f"updated symmetry net const: {const}")
                     pairs = {k.split("/")[0]: v.split("/")[0] for k,v in pin_pairs.items()}
-                pairsj = list()
-                for key, value in pairs.items():
-                    if key in self.subckt.pins:
-                        continue #net name is same as port name
-                    if key != value and {key, value} not in self.user_constrained_list:
-                        self.user_constrained_list.append({key, value})
-                        pairsj.append([key, value])
-                    elif key not in self.user_constrained_list:
-                        self.user_constrained_list.append(key)
-                        pairsj.append([key])
-                if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
-                    # Do not generate symmetry constraint for a single instance
-                    with set_context(self.iconst):
-                        symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
-                    new_symmblock_const.append(symmBlock)
+                 #pairsj = list()
+                 #for key, value in pairs.items():
+                 #    if key in self.subckt.pins:
+                 #        continue #net name is same as port name
+                 #    if key != value and {key, value} not in self.user_constrained_list:
+                 #        self.user_constrained_list.append({key, value})
+                 #        pairsj.append([key, value])
+                 #    elif key not in self.user_constrained_list:
+                 #        self.user_constrained_list.append(key)
+                 #        pairsj.append([key])
+                 #if len(pairsj) > 0 and not (len(pairsj) == 1 and len(pairsj[0]) == 1):
+                 #    # Do not generate symmetry constraint for a single instance
+                 #    with set_context(self.iconst):
+                 #        symmBlock = constraint.SymmetricBlocks(direction="V", pairs=pairsj)
+                 #    new_symmblock_const.append(symmBlock)
         with set_context(self.iconst):
             for k, v in replace_const:
                 if k!=v: # removing constraint does not remove it from cache and z3 solver, duplicate const is not allowed in solver
@@ -361,11 +361,11 @@ class process_input_const:
                     self.iconst.append(v)
                     self.user_constrained_list.append(v.net1)
                     self.user_constrained_list.append(v.net2)
-            for symb in new_symmblock_const:
-                #avoid subsets
-                if not any(set(map(tuple, symb.pairs)).issubset(set(map(tuple, const.pairs)))
-                    for const in self.iconst if isinstance(const, constraint.SymmetricBlocks)):
-                    self.iconst.append(symb)
+             #for symb in new_symmblock_const:
+             #    #avoid subsets
+             #    if not any(set(map(tuple, symb.pairs)).issubset(set(map(tuple, const.pairs)))
+             #        for const in self.iconst if isinstance(const, constraint.SymmetricBlocks)):
+             #        self.iconst.append(symb)
 
 
 class add_symmetry_const:
