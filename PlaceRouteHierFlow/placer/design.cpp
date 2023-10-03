@@ -332,7 +332,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       }
     }
   }
-  //constructSymmGroup();
+  constructSymmGroup();
   this->ML_Constraints = node.ML_Constraints;
   for (const auto& order : node.Ordering_Constraints) {
     for (unsigned int i = 0; i < order.first.size() - 1; i++) {
@@ -1416,7 +1416,7 @@ void design::constructSymmGroup() {
   vector<pair<int, placerDB::Smark>> tmpselfsym;
   vector<placerDB::SymmBlock> SBs;
   placerDB::Smark axis_dir;
-  for (vector<SymmNet>::iterator sni = SNets.begin(); sni != SNets.end(); ++sni) {
+  /*for (vector<SymmNet>::iterator sni = SNets.begin(); sni != SNets.end(); ++sni) {
     axis_dir = sni->axis_dir;
     tmpsympair.clear();
     tmpselfsym.clear();
@@ -1550,7 +1550,7 @@ void design::constructSymmGroup() {
     //    }
     //  }
     //}
-  }
+  }*/
   for (vector<SymmPairBlock>::iterator sni = SPBlocks.begin(); sni != SPBlocks.end(); ++sni) {
     MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets, sni->axis_dir);
   }
