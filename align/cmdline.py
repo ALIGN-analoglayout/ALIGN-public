@@ -106,10 +106,6 @@ class CmdlineParser():
                             choices=['top_down','bottom_up','collect_pins','no_op'],
                             help='Router mode')
 
-        parser.add_argument('--gui',
-                            action='store_true',
-                            help='Run in GUI mode')
-
         parser.add_argument('--skipGDS',
                             action='store_true',
                             help='Don\'t generate GDS files.')

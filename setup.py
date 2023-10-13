@@ -80,36 +80,17 @@ setup(name='align',
           'bin/gen_primitive_from_gds.py'
       ],
       install_requires=[
-          'networkx>=2.4',
+          'networkx',
           'python-gdsii',
           'gdspy',
-          'pyyaml',
           'pybind11',
           'pydantic>=1.9.2,<=1.20',
           'z3-solver',
           'mip',
-          'more-itertools',
           'colorlog',
-          'plotly',
-          'numpy',
-          'pandas',
-          'werkzeug',
-          'dash',
-          'typing_extensions; python_version<"3.8"',
-          'memory_profiler',
           'flatdict',
-          'mip'
+          'more-itertools'
       ],
-      extras_require={
-          'test': [
-              'pytest',
-              'pytest-cov',
-              'pytest-xdist',
-              'pytest-timeout',
-              'pytest-rerunfailures',
-              'pytest-cpp'
-          ]
-      },
       python_requires='>=3.7',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

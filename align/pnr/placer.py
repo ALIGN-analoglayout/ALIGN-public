@@ -7,7 +7,6 @@ from collections import defaultdict
 from .. import PnR
 from .render_placement import gen_placement_verilog, scale_placement_verilog, gen_boxes_and_hovertext, standalone_overlap_checker, scalar_rational_scaling, round_to_angstroms
 from .checker import check_placement, check_place_on_grid
-from ..gui.mockup import run_gui
 from .hpwl import calculate_HPWL_from_placement_verilog_d, gen_netlist
 from .grid_constraints import gen_constraints
 import math
@@ -166,55 +165,6 @@ def gen_leaf_map(*, DB):
 
     return leaf_map
 
-def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics):
-
-    tagged_bboxes = defaultdict(dict)
-
-    for concrete_name, placement_verilog_d in placement_verilog_alternatives.items():
-        nets_d = gen_netlist(placement_verilog_d, concrete_name)
-
-        def r2wh( r):
-            return (round_to_angstroms(r[2]-r[0]), round_to_angstroms(r[3]-r[1]))
-
-        # placement_verilog_d is in hN units
-        # gui_scaled_placement_verilog_d is in microns
-        gui_scaled_placement_verilog_d = scale_placement_verilog( placement_verilog_d, 0.001)
-
-        modules = { x['concrete_name']: x for x in gui_scaled_placement_verilog_d['modules']}
-
-        p = r2wh(modules[concrete_name]['bbox'])
-
-        metrics[concrete_name].update( {'width': p[0], 'height': p[1]})
-
-        abstract_name = metrics[concrete_name]['abstract_name']
-
-        tagged_bboxes[abstract_name][concrete_name] = metrics[concrete_name], list(gen_boxes_and_hovertext( gui_scaled_placement_verilog_d, concrete_name, nets_d)), nets_d
-
-
-    placements_to_run = None
-    tagged_bboxes.update( leaf_map)
-
-    print( f"Press Ctrl-C to end the GUI interaction. If current selection is a toplevel placement, the routing engine will be called on that placement. If the current selection is not toplevel (an intermediate hierarchy or a leaf), the router call will be skipped.")
-
-    selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
-
-    # Don't like name hacking; make we can do this another way
-    p = re.compile( r'^(\S+)_(\d+)$')
-
-    placements_to_run = []
-    m = p.match(selected_concrete_name)
-    if m:
-        if m.groups()[0] == top_level:
-            sel = int(m.groups()[1])
-            placements_to_run = [sel]
-    else:
-        if selected_concrete_name in placement_verilog_alternatives:
-            placements_to_run = None
-
-    return placements_to_run
-
-
-
 def process_placements(*, DB, verilog_d, lambda_coeff, scale_factor, opath):
 
     placement_verilog_alternatives = {}
@@ -241,12 +191,6 @@ def process_placements(*, DB, verilog_d, lambda_coeff, scale_factor, opath):
 
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics
-
-
-
-
-
-
 
 def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, scale_factor):
     assert verilog_d is not None

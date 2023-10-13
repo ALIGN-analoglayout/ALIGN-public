@@ -3,7 +3,7 @@ import json
 import logging
 import copy
 import pathlib
-import plotly.graph_objects as go
+
 from itertools import combinations
 from collections import defaultdict
 from ..cell_fabric import transformation
@@ -262,45 +262,4 @@ def standalone_overlap_checker( placement_verilog_d, top_cell):
             # logger.error( f'Leaves {a} and {b} intersect')
             assert False, f'Leaves {a} and {b} intersect'
     return ok
-
-def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
-    lst = list(boxes_and_hovertext)
-
-    pat = re.compile( r'^Net: (\S+)<br>')
-
-    for r, hovertext, isleaf, lvl, ispin in lst:
-        if leaves_only and not isleaf:
-            continue
-        if levels is not None and lvl >= levels:
-            continue
-
-        [x0, y0, x1, y1] = r
-        x = [x0, x1, x1, x0, x0]
-        y = [y0, y0, y1, y1, y0]
-
-        opacity=0.8 if isleaf else 0.4
-
-        if not ispin:
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines', opacity=opacity,
-                                     name=hovertext, fill="toself", showlegend=False))
-
-    for r, hovertext, isleaf, lvl, ispin in lst:
-        if leaves_only and not isleaf:
-            continue
-        if levels is not None and lvl >= levels:
-            continue
-
-        [x0, y0, x1, y1] = r
-        x = [x0, x1, x1, x0, x0]
-        y = [y0, y0, y1, y1, y0]
-
-        if ispin:
-            m = pat.match(hovertext)
-            if m:
-                pinname = m.groups()[0]
-                if netnames is not None and (netnames == [] or pinname in netnames):
-                    fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
-                                             name=hovertext, fill="toself", showlegend=False))
-
-
 

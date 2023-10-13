@@ -1,6 +1,3 @@
-import plotly.graph_objects as go
-import plotly.express as px
-
 import logging
 import pathlib
 import json
@@ -14,8 +11,6 @@ from .manipulate_hierarchy import change_concrete_names_for_routing, gen_abstrac
 
 from .build_pnr_model import gen_DB_verilog_d
 from .placer import hierarchical_place
-
-from .pythonic_router import collect_pins
 
 
 logger = logging.getLogger(__name__)
@@ -423,15 +418,5 @@ def router_driver(*, cap_map, cap_lef_s,
 
             res_dict.update(res)
     
-        elif router_mode in ['collect_pins']:
-
-            print(f'toplevel_args_d: {toplevel_args_d}')
-            print(f'results_dir: {results_dir}')
-            print(f'map_d_in: {map_d_in}')
-            print(f'lef_s_in: {lef_s_in}')
-
-            collect_pins(map_d_in, scaled_placement_verilog_d, toplevel_args_d)
-
-
     return res_dict
 

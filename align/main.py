@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def build_steps(flow_start, flow_stop):
     steps = ['1_topology', '2_primitives', '3_pnr']
-    sub_steps = {'3_pnr': ['prep', 'place', 'gui', 'route']}
+    sub_steps = {'3_pnr': ['prep', 'place', 'route']}
 
     unimplemented_start_points = set()
     unimplemented_stop_points = set()
@@ -124,7 +124,7 @@ def start_viewer(working_dir, pnr_dir, variant):
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, nvariants=1, effort=0, extract=False,
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
-                     flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
+                     flow_stop=None, router_mode='top_down', skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
                      placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, blackbox_dir=None, scale=1e3):
 
@@ -190,7 +190,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
-                                extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, gui=gui, skipGDS=skipGDS,
+                                extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, skipGDS=skipGDS,
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
                                 nroutings=nroutings, select_in_ILP=select_in_ILP,
                                 place_using_ILP=place_using_ILP, seed=seed,
@@ -200,7 +200,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
         results.append((subckt, variants))
 
-        assert gui or router_mode in ['collect_pins','no_op'] or '3_pnr:route' not in sub_steps or len(variants) > 0, \
+        assert router_mode in ['collect_pins','no_op'] or '3_pnr:route' not in sub_steps or len(variants) > 0, \
             f"No layouts were generated for {subckt}. Cannot proceed further. See LOG/align.log for last error."
 
         # Generate necessary output collateral into current directory
