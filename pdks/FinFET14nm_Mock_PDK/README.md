@@ -1,6 +1,6 @@
 # A MockPDK inspired by advanced FinFET processes
 
-The abstraction details are provided in the presentation [FinFET_Mock_PDK_Abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/documentation_update/pdks/FinFET14nm_Mock_PDK).
+The abstraction details are provided in the presentation [FinFET_Mock_PDK_Abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.ppt).
 
 ## Key files
 
