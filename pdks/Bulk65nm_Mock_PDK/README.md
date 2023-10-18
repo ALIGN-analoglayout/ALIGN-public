@@ -1,6 +1,6 @@
 # A MockPDK inspired by 65nm bulk technology
 
-The abstraction details are provided in the presentation [PDK_Abstraction_guide](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/bug/fix_link_PDK/pdks/PDK_Abstraction_Guide.pptx).
+The abstraction details are provided in the presentation [PDK_Abstraction_guide](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/pdks/PDK_Abstraction_Guide.pptx).
 
 ## Key files
 
