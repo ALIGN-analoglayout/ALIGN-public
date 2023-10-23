@@ -1,0 +1,18 @@
+FROM python:3.10-bookworm AS env
+
+RUN apt update -y
+RUN apt install -y git python3 python3-pip gcc g++ lp-solve sudo liblpsolve55-dev
+RUN apt clean
+WORKDIR /
+RUN git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git
+WORKDIR /ALIGN-public
+RUN mkdir -p /data/wheels
+RUN pip download setuptools wheel pybind11 scikit-build cmake ninja networkx python-gdsii gdspy pyyaml pybind11 'pydantic>=1.9.2,<=1.20' z3-solver mip more-itertools colorlog plotly numpy pandas werkzeug dash memory_profiler flatdict pytest pytest-cov pytest-xdist pytest-timeout pytest-rerunfailures pytest-cpp pip --destination-dir=/data/wheels
+RUN pip install --find-links=/data/wheels --no-index --upgrade pip
+RUN pip install --find-links=/data/wheels --no-index setuptools wheel pybind11 scikit-build cmake ninja networkx python-gdsii gdspy pyyaml pybind11 'pydantic>=1.9.2,<=1.20' z3-solver mip more-itertools colorlog plotly numpy pandas werkzeug dash memory_profiler flatdict pytest pytest-cov pytest-xdist pytest-timeout pytest-rerunfailures pytest-cpp pip
+RUN env BUILD_TYPE='Release' pip install -v --no-build-isolation -e . --no-deps
+RUN echo '#!/bin/bash\nif [[ -d "${ALIGN_PDK_DIR}" ]] && [[ -d "${ALIGN_CKT_DIR}" ]]; then\n\techo "PDK directory : ${ALIGN_PDK_DIR}"\n\techo "Netlist directory : ${ALIGN_CKT_DIR}"\n\tschematic2layout.py -p ${ALIGN_PDK_DIR} ${ALIGN_CKT_DIR}\nfi' > /usr/local/bin/run_align
+RUN chmod +x /usr/local/bin/run_align
+RUN echo "export OPENBLAS_NUM_THREADS=1" >> /etc/bash.bashrc
+RUN rm -rf /data/wheels /ALIGN-public/_skbuild
+WORKDIR /work
