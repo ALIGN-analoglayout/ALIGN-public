@@ -1,0 +1,7 @@
+FROM darpaalign/align-public:latest AS env
+ARG USERID=0
+ARG GROUPID=0
+RUN if [ "$GROUPID" -ne "0" ] ; then echo $GROUPID && groupadd -g $GROUPID -o align; fi
+RUN if [ "$USERID" -ne "0" ] ; then useradd -m -u $USERID -g $GROUPID -p align -o -s /bin/bash align; chown -R align /work; fi
+USER align
+WORKDIR /work
