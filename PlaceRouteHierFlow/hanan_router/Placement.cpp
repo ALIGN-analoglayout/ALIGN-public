@@ -154,11 +154,11 @@ void Module::route(HRouter::Router& router, const std::string& outdir)
     std::sort(nets.begin(), nets.end(), [](const Net* a, const Net* b) -> bool
         { return a->halfpm() < b->halfpm(); });
     nets.insert(nets.begin(), _routeorder.begin(), _routeorder.end());
-    COUT << " routing : " << _name << "; num nets : " << nets.size() << "; use pin width : " << ((_usepinwidth == 1) ? 1 : 0) << '\n';
+    //COUT << " routing : " << _name << "; num nets : " << nets.size() << "; use pin width : " << ((_usepinwidth == 1) ? 1 : 0) << '\n';
     //router.addObstacles(_obstacles);
     Geom::LayerRects netObstaclesRouted, netObstaclesUnrouted;
     router.setModName(_name);
-    COUT << "setting module name : " << _name << '\n';
+    //COUT << "setting module name : " << _name << '\n';
     router.setusepinwidth((_usepinwidth == 1) ? true : false);
     static std::set<std::string> debugnet(splitString((getenv("HANAN_DEBUG_NET") ? std::string(getenv("HANAN_DEBUG_NET")) : std::string("")), ','));
     for (auto it = nets.begin(); it != nets.end(); ++it) {
@@ -207,11 +207,11 @@ void Module::route(HRouter::Router& router, const std::string& outdir)
         //std::cout << "DEBUG found net : " << itn->second.name() << ' ' << itn->second.routeShapesWithPins().size() << '\n';
         if (!itn->second.excluded()) p.second->copyRects(itn->second.routeShapesWithPins());
         else {
-          COUT << "excluded : " << itn->second.name() << "\n";
+          //COUT << "excluded : " << itn->second.name() << "\n";
           for (auto& pin : itn->second.pins()) {
-            COUT << "pin : " << pin->name() << '\n';
+            //COUT << "pin : " << pin->name() << '\n';
             for (auto& port : pin->ports()) {
-              COUT << "port : " << port->name() << '\n';
+              //COUT << "port : " << port->name() << '\n';
               p.second->copyRects(port->shapes(), true);
             }
           }
@@ -237,7 +237,7 @@ void Module::plot() const
 {
   std::ofstream ofs(_name + ".gplt");
   if (ofs.is_open()) {
-    COUT << "plotting module " << _name << " to " << _name << ".gplt\n";
+    //COUT << "plotting module " << _name << " to " << _name << ".gplt\n";
     ofs << "unset key\n";
     ofs << "set title '" << _name << "' noenhanced\n";
     unsigned cnt{1};
@@ -330,7 +330,7 @@ void Module::plot() const
 
 void Module::checkShort() const
 {
-  COUT << "Checking SHORT for module : " << _name << '\n';
+  //COUT << "Checking SHORT for module : " << _name << '\n';
   for (auto it1 = _nets.begin(); it1 != _nets.end(); ++it1) {
     for (auto it2 = std::next(it1); it2 != _nets.end(); ++it2) {
       auto& s1 = it1->second.routeShapesWithPins();
@@ -341,8 +341,8 @@ void Module::checkShort() const
         for (auto& o1 : l.second) {
           for (auto& o2 : its2->second) {
             if (o1.overlaps(o2)) {
-              COUT << "SHORT between " << it1->second.name() << " & " << it2->second.name() << " @ layer : " << l.first << '\n';
-              COUT << o1.str() << ' ' << o2.str() << '\n';
+              //COUT << "SHORT between " << it1->second.name() << " & " << it2->second.name() << " @ layer : " << l.first << '\n';
+              //COUT << o1.str() << ' ' << o2.str() << '\n';
             }
           }
         }
@@ -358,8 +358,8 @@ void Module::checkShort() const
       for (auto& o1 : l.second) {
         for (auto& o2 : its2->second) {
           if (o1.overlaps(o2)) {
-            COUT << "SHORT between " << it1->second.name() << " & obstacle @ layer : " << l.first << '\n';
-            COUT << o1.str() << ' ' << o2.str() << '\n';
+            //COUT << "SHORT between " << it1->second.name() << " & obstacle @ layer : " << l.first << '\n';
+            //COUT << o1.str() << ' ' << o2.str() << '\n';
           }
         }
       }

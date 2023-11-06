@@ -299,8 +299,8 @@ class Router {
       }
       _nodes.clear();
       _nodes.resize(_maxLayer + 1);
-      COUT << "flushing nodes\n";
 #if DEBUG
+      COUT << "flushing nodes\n";
       COUT << " remaining " << Node::_nodectr << ' ' << _nodeset.size() << "\n";
       for (auto& n : _nodeset) {
         n->print("rem node : ");

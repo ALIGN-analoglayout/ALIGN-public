@@ -114,17 +114,17 @@ CostFn::CostFn(const DRC::LayerInfo& lf)
       }
     }
   }
-  for (int i = 0; i <= _topRoutingLayer; ++i) {
-    COUT << "layer : " << i << " cost : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
-  }
-  for (int i = 0; i <= _topRoutingLayer; ++i) {
-    if (i > 0) {
-      COUT << "layerPairCost : " << i << ' ' << i - 1 << ' ' << _layerPairCost[i][i-1] << '\n';
-    }
-    if (i < _topRoutingLayer) {
-      COUT << "layerPairCost : " << i << ' ' << i + 1 << ' ' << _layerPairCost[i][i+1] << '\n';
-    }
-  }
+  //for (int i = 0; i <= _topRoutingLayer; ++i) {
+  //  COUT << "layer : " << i << " cost : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
+  //}
+  //for (int i = 0; i <= _topRoutingLayer; ++i) {
+  //  if (i > 0) {
+  //    COUT << "layerPairCost : " << i << ' ' << i - 1 << ' ' << _layerPairCost[i][i-1] << '\n';
+  //  }
+  //  if (i < _topRoutingLayer) {
+  //    COUT << "layerPairCost : " << i << ' ' << i + 1 << ' ' << _layerPairCost[i][i+1] << '\n';
+  //  }
+  //}
 }
 
 CostType CostFn::deltaCost(const Node& n1, const Node& n2) const
@@ -296,11 +296,11 @@ void CostFn::updatendr(const std::map<int, DRC::Direction>& ndrdir, const std::s
       }
     }
   }
-  if (!preflayers.empty() || !ndrdir.empty()) {
-    for (int i = 0; i <= _topRoutingLayer; ++i) {
-      COUT << "layer cost (" << i << ") : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
-    }
-  }
+  //if (!preflayers.empty() || !ndrdir.empty()) {
+  //  for (int i = 0; i <= _topRoutingLayer; ++i) {
+  //    COUT << "layer cost (" << i << ") : " << _layerHCost[i] << ' ' << _layerVCost[i] << '\n';
+  //  }
+  //}
 }
 
 Router::Router(const DRC::LayerInfo& lf) : _cf{lf}, _sol{nullptr}, _minLayer{INT_MAX}, _maxLayer{0}, _maxRoutingLayer{0}, _name{}, _lf{lf}
@@ -321,7 +321,7 @@ Router::Router(const DRC::LayerInfo& lf) : _cf{lf}, _sol{nullptr}, _minLayer{INT
       _widthy.push_back(mlayer->width());
       _spacex.push_back(mlayer->space());
       _spacey.push_back(mlayer->space());
-      COUT << "layer : " << i << " width : " << _widthx.back() << " space : " << _spacex.back() << " v : " << _cf.isVert(i) << " h : " << _cf.isHor(i) << '\n';
+      //COUT << "layer : " << i << " width : " << _widthx.back() << " space : " << _spacex.back() << " v : " << _cf.isVert(i) << " h : " << _cf.isHor(i) << '\n';
     }
   }
   _aboveViaLayer.resize(_widthx.size(), -1);
@@ -338,13 +338,13 @@ Router::Router(const DRC::LayerInfo& lf) : _cf{lf}, _sol{nullptr}, _minLayer{INT
       _spacey.push_back(vlayer->spacey());
     }
   }
-  for (unsigned i = 0; i < _aboveViaLayer.size(); ++i) {
-      COUT << "layer : " << i << " above : " << _aboveViaLayer[i] << " below : " << _belowViaLayer[i] << '\n';
-  }
+  //for (unsigned i = 0; i < _aboveViaLayer.size(); ++i) {
+  //    COUT << "layer : " << i << " above : " << _aboveViaLayer[i] << " below : " << _belowViaLayer[i] << '\n';
+  //}
   _minLayer = lf.signalBottomLayer();
   _maxLayer = lf.signalTopLayer();
   _maxRoutingLayer = static_cast<int>(_widthx.size()) - 1;
-  COUT << "min routing layer : " << LAYER_NAMES[_minLayer] << " max routing layer : " << LAYER_NAMES[_maxLayer] << '\n';
+  //COUT << "min routing layer : " << LAYER_NAMES[_minLayer] << " max routing layer : " << LAYER_NAMES[_maxLayer] << '\n';
   _nodes.clear();
   _nodes.resize(_maxLayer + 1);
   constructVias();
@@ -1394,8 +1394,8 @@ Geom::LayerRects Router::findSol()
   if (!debugplot.empty() && (debugplot == "1" || debugplot == _name))
 #endif
   {
-    plot();
-    printSol();
+    //plot();
+    //printSol();
     writeLEF(&sol);
   }
   clearSourceTargets();
@@ -1429,7 +1429,7 @@ void Router::plot() const
 {
   std::ofstream ofs(_name + "_route.gplt");
   if (ofs.is_open()) {
-    COUT << "plotting route to " << _name << "_route.gplt\n";
+    //COUT << "plotting route to " << _name << "_route.gplt\n";
     ofs << "unset key\n";
     unsigned cnt{1};
     for (auto& l : _tobstacles) {
@@ -1498,7 +1498,7 @@ void Router::plot() const
 void Router::writeSTO() const
 {
   std::ofstream ofs(_name + "_route.sto");
-  COUT << "writing sto to " << _name << "_route.sto\n";
+  //COUT << "writing sto to " << _name << "_route.sto\n";
   if (ofs.is_open()) {
     for (auto& s : _sources) {
       ofs << "Source " << s->x() << ' ' << s->y() << ' ' << s->z() << '\n';
@@ -1599,7 +1599,7 @@ void Router::addObstacles(const Geom::LayerRects& lr, const bool temp)
         if (olsrcortgt) break;
       }
       auto obs = _lf.snapToGrid(r.bloatby(hwx, hwy, hwx, hwy), l.first);
-      COUT << "rect : " << r.str() << ' ' << obs.str() << '\n';
+      //COUT << "rect : " << r.str() << ' ' << obs.str() << '\n';
       if (!olsrcortgt && _bbox.overlaps(obs)) {
         if (temp) {
           _tobstacles[layer].push_back(obs);
@@ -1705,7 +1705,7 @@ void Router::updatendr(const bool usendr, const std::map<int, int>& ndrwidths,
         }
       }
     }
-    for (unsigned i = 0; i < _ndrwidthx.size(); ++i) {
+    /*for (unsigned i = 0; i < _ndrwidthx.size(); ++i) {
       COUT << "after updatendr layer : " << i << " width : " << _widthx[i] << ' ' << _widthy[i];
       if (_ndrwidthx[i] != INT_MAX) {
         COUT << " ndr widthx : " << _ndrwidthx[i] ;
@@ -1720,19 +1720,19 @@ void Router::updatendr(const bool usendr, const std::map<int, int>& ndrwidths,
         COUT << " ndr spacey : " << _ndrspacey[i];
       }
       COUT << '\n';
-    }
+    }*/
   }
 //#if DEBUG
-  for (unsigned i = 0; i < _ndrwidthx.size(); ++i) {
-    COUT << "layer : " << i << " width : " << _widthx[i] << ' ' << _widthy[i];
-    if (_ndrwidthx[i] != INT_MAX) {
-      COUT << " ndr widthx : " << _ndrwidthx[i] ;
-    }
-    if (_ndrwidthy[i] != INT_MAX) {
-      COUT << " ndr widthy : " << _ndrwidthy[i];
-    }
-    COUT << '\n';
-  }
+  //for (unsigned i = 0; i < _ndrwidthx.size(); ++i) {
+  //  COUT << "layer : " << i << " width : " << _widthx[i] << ' ' << _widthy[i];
+  //  if (_ndrwidthx[i] != INT_MAX) {
+  //    COUT << " ndr widthx : " << _ndrwidthx[i] ;
+  //  }
+  //  if (_ndrwidthy[i] != INT_MAX) {
+  //    COUT << " ndr widthy : " << _ndrwidthy[i];
+  //  }
+  //  COUT << '\n';
+  //}
 //#endif
   /*if (_targetshapes.size() == 1) {
     auto it = _targetshapes.begin();
@@ -1968,16 +1968,16 @@ void Router::constructVias(const std::map<int, DRC::ViaArray>* ndrvias)
     }
   }
 
-  for (auto& v : _vias) {
-    COUT << "via : " << v->str() << '\n';
-  }
+  //for (auto& v : _vias) {
+  //  COUT << "via : " << v->str() << '\n';
+  //}
 }
 
 void Router::writeLEF(const Geom::LayerRects* sol) const
 {
   auto name(_modname + "_" + _name);
   std::replace(name.begin(), name.end(), '/', '+');
-  COUT << "writing LEF file : " << name << ".lef\n";
+  //COUT << "writing LEF file : " << name << ".lef\n";
   std::ofstream ofs(name + (sol ? "_sol.lef" : ".lef"));
   if (ofs.is_open()) {
     ofs << "MACRO " << name << "\n";

@@ -42,7 +42,7 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
           MetalLayer* mlayer(nullptr);
           if (it != l.end() && it->is_number_integer()) {
             mlayer = new MetalLayer(gdsNo, name, mur, lr, ur);
-            COUT << "layer resistance : " << name << ' ' << mur << ' ' << lr << ' ' << ur << std::endl;
+            //COUT << "layer resistance : " << name << ' ' << mur << ' ' << lr << ' ' << ur << std::endl;
             mlayer->setPitch(static_cast<int>(*it));
           }
           if (mlayer != nullptr) {
@@ -173,13 +173,13 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
     _layers[i]->setIndex(i);
     LAYER_NAMES.push_back(_layers[i]->name());
     _layerIndex[_layers[i]->name()] = static_cast<int>(i);
-    COUT << "layer : " << _layers[i]->name() << " index : " << i << '\n';
+    //COUT << "layer : " << _layers[i]->name() << " index : " << i << '\n';
     if (_layers[i]->isVia()) {
       auto vl = static_cast<ViaLayer*>(_layers[i]);
-      for (auto& it : vl->viaArray()) {
-        COUT << "\t va : " << it._sw._space.first << ' ' << it._sw._space.second << ' ' << it._nx << ' ' << it._ny << '\n';
-      }
-      COUT << " cover : l: " << vl->coverlx() << ',' << vl->coverly() << " u: " << vl->coverux() << ',' << vl->coveruy() << '\n';
+      //for (auto& it : vl->viaArray()) {
+      //  COUT << "\t va : " << it._sw._space.first << ' ' << it._sw._space.second << ' ' << it._nx << ' ' << it._ny << '\n';
+      //}
+      //COUT << " cover : l: " << vl->coverlx() << ',' << vl->coverly() << " u: " << vl->coverux() << ',' << vl->coveruy() << '\n';
       auto lp = vl->layers();
       if (lp.first && lp.first->isVertical()) {
         vl->swapcover(false);
@@ -189,10 +189,10 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
       }
     }
   }
-  COUT << "top metal layer : " << LAYER_NAMES[_topMetal] << '\n';
-  COUT << "signal routing layers : " << (_sbottom? _sbottom->name() : "unsp") << " : " << (_stop ? _stop->name() : "unsp") << "\n";
-  COUT << "power  routing layers : " << (_pbottom? _pbottom->name() : "unsp") << " : " << (_ptop ? _ptop->name() : "unsp") << "\n";
-  COUT << "clock  routing layers : " << (_cbottom? _cbottom->name() : "unsp") << " : " << (_ctop ? _ctop->name() : "unsp") << "\n";
+  //COUT << "top metal layer : " << LAYER_NAMES[_topMetal] << '\n';
+  //COUT << "signal routing layers : " << (_sbottom? _sbottom->name() : "unsp") << " : " << (_stop ? _stop->name() : "unsp") << "\n";
+  //COUT << "power  routing layers : " << (_pbottom? _pbottom->name() : "unsp") << " : " << (_ptop ? _ptop->name() : "unsp") << "\n";
+  //COUT << "clock  routing layers : " << (_cbottom? _cbottom->name() : "unsp") << " : " << (_ctop ? _ctop->name() : "unsp") << "\n";
   _populated = true;
 }
 

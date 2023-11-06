@@ -29,7 +29,7 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
       auto aname = l.find("abstract_name");
       if (lname != l.end()) {
         auto modu = new Module(*lname, (aname != l.end() ? *aname : *lname), 1, _uu);
-        COUT << "adding leaf : " << *lname << '\n';
+        //COUT << "adding leaf : " << *lname << '\n';
         auto terms = l.find("terminals");
         if (terms != l.end()) {
           for (auto& term : *terms) {
@@ -51,7 +51,7 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
         auto aname = m.find("abstract_name");
         auto modu = new Module(*mname, (aname != m.end() ? *aname : *mname), 0, _uu);
         auto params = m.find("parameters");
-        COUT << "adding module : " << *mname << '\n';
+        //COUT << "adding module : " << *mname << '\n';
         if (params != m.end()) {
           for (auto& p : *params) {
             modu->addPin(p);
@@ -83,7 +83,7 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
                 }
               }
             } else {
-              COUT << "instptr nullptr\n";
+              //COUT << "instptr nullptr\n";
             }
           }
         }
@@ -153,7 +153,7 @@ void Netlist::loadLEFFromString(const std::string& lefdata, const DRC::LayerInfo
     std::stringstream ss(line);
     if (line.find("MACRO") != npos) {
       ss >> str >> macroName;
-      COUT << "macro " << macroName << '\n';
+      //COUT << "macro " << macroName << '\n';
       if (_loadedMacros.find(macroName) != _loadedMacros.end()) {
         while (std::getline(ifs, line)) {
           if (line.find("END") != npos && line.find(macroName) != npos) break;
@@ -162,7 +162,7 @@ void Netlist::loadLEFFromString(const std::string& lefdata, const DRC::LayerInfo
       auto it = _modules.find(macroName);
       if (it != _modules.end()) {
         curr_module =  it->second;
-        COUT << "loading macro " << macroName << '\n';
+        //COUT << "loading macro " << macroName << '\n';
         _loadedMacros.insert(macroName);
       }
       inMacro = true;
@@ -433,7 +433,7 @@ void Netlist::readNDR(const std::string& ndrfile, const DRC::LayerInfo& lf)
                     if (layer >= 0) {
                       for (auto& r : l.value()) {
                         if (r.size() == 4) {
-                          COUT << "Adding obstacle to module " << modit->second->name() << " layer : " << l.key() << " : [" << r[0] << ' ' << r[1] << ' ' << r[2] << ' ' << r[3] << "]\n";
+                          //COUT << "Adding obstacle to module " << modit->second->name() << " layer : " << l.key() << " : [" << r[0] << ' ' << r[1] << ' ' << r[2] << ' ' << r[3] << "]\n";
                           modit->second->addObstacle(layer, Geom::Rect(std::round(static_cast<double>(r[0]) * _uu), std::round(static_cast<double>(r[1]) * _uu),
                                 std::round(static_cast<double>(r[2]) * _uu), std::round(static_cast<double>(r[3]) * _uu))); 
                         }
