@@ -415,7 +415,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
 
         os.chdir(current_working_dir)
-        if router_mode != "hanan":
+        if router != "hanan":
             for variant, (path_name, layout_idx, DB) in results_name_map.items():
 
                 hN = DB.hierTree[layout_idx]
