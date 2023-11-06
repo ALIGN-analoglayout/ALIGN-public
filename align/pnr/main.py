@@ -69,8 +69,11 @@ def _generate_json(*, hN, variant, primitive_dir, pdk_dir, output_dir, extract=F
         ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
         with open(ret['json'], 'rt') as ifp:
             with open(ret['python_gds_json'], 'wt') as ofp:
+                labels = None
+                if toplevel:
+                    labels = [i.name for i in hN.blockPins].extend([i.name for i in hN.PowerNets])
                 gen_gds_json.translate(
-                    hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+                    hN.name, '', toplevel, ifp, ofp, timestamp=None, p=cnv.pdk, labelOnce=True, reqLabels=labels)
         logger.info(f"OUTPUT gds.json {ret['python_gds_json']}")
 
     return ret
@@ -186,7 +189,7 @@ def write_verilog_d(verilog_d):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', router='astar', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False):
 
     subckt = subckt.upper()
 
@@ -347,7 +350,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                           select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
                           toplevel_args_d=toplevel_args_d, results_dir=None,
-                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime)
+                          placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
         with open(working_dir/"__placer_dump__.json", "wt") as fp:
             json.dump((top_level, leaf_map, [(nm, verilog_d.dict()) for nm, verilog_d in placement_verilog_alternatives.items()],metrics), fp=fp, indent=2)
@@ -412,29 +415,29 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
 
         os.chdir(current_working_dir)
+        if router_mode != "hanan":
+            for variant, (path_name, layout_idx, DB) in results_name_map.items():
 
-        for variant, (path_name, layout_idx, DB) in results_name_map.items():
+                hN = DB.hierTree[layout_idx]
+                result = _generate_json(hN=hN,
+                                        variant=variant,
+                                        pdk_dir=pdk_dir,
+                                        primitive_dir=input_dir,
+                                        input_dir=working_dir,
+                                        output_dir=working_dir,
+                                        extract=extract,
+                                        gds_json=gds_json,
+                                        toplevel=hN.isTop,
+                                        pnr_const_ds=pnr_const_ds)
 
-            hN = DB.hierTree[layout_idx]
-            result = _generate_json(hN=hN,
-                                    variant=variant,
-                                    pdk_dir=pdk_dir,
-                                    primitive_dir=input_dir,
-                                    input_dir=working_dir,
-                                    output_dir=working_dir,
-                                    extract=extract,
-                                    gds_json=gds_json,
-                                    toplevel=hN.isTop,
-                                    pnr_const_ds=pnr_const_ds)
+                if hN.isTop:
+                    variants[variant].update(result)
 
-            if hN.isTop:
-                variants[variant].update(result)
-
-                if not skipGDS:
-                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                        path = results_dir / (variant + suffix)
-                        assert path.exists()
-                        variants[variant][tag] = path
+                    if not skipGDS:
+                        for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                            path = results_dir / (variant + suffix)
+                            assert path.exists()
+                            variants[variant][tag] = path
 
 
     return variants

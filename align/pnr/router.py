@@ -433,7 +433,7 @@ def router_driver(*, cap_map, cap_lef_s,
                                placement_verilog_d=scaled_placement_verilog_d.dict(),
                                select_in_ILP=False, place_using_ILP=False, seed=0,
                                use_analytical_placer=False, ilp_solver='symphony',
-                               primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1)
+                               primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1, black_box_flow=False)
 
             placements_to_run = None
 

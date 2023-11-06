@@ -98,7 +98,7 @@ For ALIGN (C++) Extension developers:
 ```console
 $ pip install setuptools wheel pybind11 scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='-DBUILD_TESTING=ON'
+$ env BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 ```
 The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
@@ -106,13 +106,12 @@ If you want the build type to be Release (-O3), you can issue the following thre
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=Release' --install-option='-DBUILD_TESTING=ON'
-```
+$ env BUILD_TYPE='Release' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 or
 ```console
 $ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
 $ pip install -v -e .[test] --no-build-isolation
-$ pip install -v --no-build-isolation -e . --no-deps --install-option='--build-type=RelWithDebInfo' --install-option='-DBUILD_TESTING=ON'
+$ env BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
@@ -154,6 +153,13 @@ $ schematic2layout.py ../examples/telescopic_ota -p ../pdks/FinFET14nm_Mock_PDK/
 For a full list of options supported by the tool, please use the following command:
 ```console
 $ schematic2layout.py -h
+```
+
+If you get an error `libOsiCbc.so: cannot open shared object file`, please add `${ALIGN_HOME}/_skbuild/<OSname_Arch_PythonVer>/cmake-install/lib` to your `LD_LIBRARY_PATH`.
+`${ALIGN_HOME}` is the path where ALIGN is installed.
+For e.g.:
+```console
+$ export LD_LIBRARY_PATH=${LD_LIBRAR_PATH}:${ALIGN_HOME}/_skbuild/linux-x86_64-3.8/cmake-install/lib
 ```
 
 ## Design database:

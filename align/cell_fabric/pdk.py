@@ -61,7 +61,7 @@ class Pdk(object):
         self.pdk[layername] = {key: None if value == 'NA' else value for key, value in kwargs.items()}
 
     def addMetal(self, **kwargs):
-        optional_params = ['AdjacentAttacker','Space','Stop_point','Stop_pitch','Stop_offset']
+        optional_params = ['AdjacentAttacker','Space','Stop_point','Stop_pitch','Stop_offset','LabelLayerNo']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',
@@ -75,8 +75,7 @@ class Pdk(object):
                   'Offset',
                   'UnitC',
                   'UnitCC',
-                  'UnitR',
-                  'LabelLayerNo']
+                  'UnitR']
         self._check(params, optional_params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
