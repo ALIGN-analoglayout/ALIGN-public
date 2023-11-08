@@ -437,11 +437,10 @@ def router_driver(*, cap_map, cap_lef_s,
 
             placements_to_run = None
 
-        if router == 'astar':
-            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
-
-            res_dict.update(res)
+            if router == 'astar':
+                res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                             router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+                res_dict.update(res)
     
         elif router_mode in ['collect_pins']:
 

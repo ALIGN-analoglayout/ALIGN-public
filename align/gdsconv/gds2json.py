@@ -35,7 +35,6 @@ def convert_GDS_GDSjson (name, oname):
 
     top = {}
     cursors = [top, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
-    dummy = []
 
     with open(name, 'rb') as a_file:
         for rec in Record.iterate(a_file):
@@ -66,9 +65,6 @@ def convert_GDS_GDSjson (name, oname):
                 level = level - 1
 
 
-    for c in cursors:
-        if 'units' in c:
-            c['units'][0] = 1e-09
     json.dump (top, ofile, indent=4)
 
 def usage(prog):
