@@ -34,9 +34,15 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
           it = l.find("UnitR");
           float mur(0), lr(0), ur(0);
           if (it != l.end()) {
-            mur = (*it)["Mean"];
-            lr = (*it)["L_3Sigma"];
-            ur = (*it)["U_3Sigma"];
+            if (it->is_number_integer()) {
+              mur = (*it);
+              lr = (*it);
+              ur = (*it);
+            } else {
+              mur = (it->find("Mean") != it->end()) ? static_cast<int>((*it)["Mean"]) : 0;
+              lr = (it->find("L_3Sigma") != it->end()) ? static_cast<int>((*it)["L_3Sigma"]) : 0;
+              ur = (it->find("U_3Sigma") != it->end()) ? static_cast<int>((*it)["U_3Sigma"]) : 0;
+            }
           }
           it = l.find("Pitch");
           MetalLayer* mlayer(nullptr);
@@ -93,9 +99,15 @@ LayerInfo::LayerInfo(const std::string& ljfile, const int uu) : _sbottom{nullptr
             it = l.find("R");
             float mur(0), lr(0), ur(0);
             if (it != l.end()) {
-              mur = (*it)["Mean"];
-              lr = (*it)["L_3Sigma"];
-              ur = (*it)["U_3Sigma"];
+              if (it->is_number_integer()) {
+                mur = (*it);
+                lr = (*it);
+                ur = (*it);
+              } else {
+                mur = (it->find("Mean") != it->end()) ? static_cast<int>((*it)["Mean"]) : 0;
+                lr = (it->find("L_3Sigma") != it->end()) ? static_cast<int>((*it)["L_3Sigma"]) : 0;
+                ur = (it->find("U_3Sigma") != it->end()) ? static_cast<int>((*it)["U_3Sigma"]) : 0;
+              }
             }
             ViaLayer* vlayer = new ViaLayer(gdsNo, name, mur, lr, ur);
             vlayer->setLayerPair(layer1, layer2);
