@@ -116,6 +116,11 @@ class GDS2_LEF_JSON:
                                 if len(poly) < 2: continue
                                 box = [round(min(r[0] for r in poly) * scale), round(min(r[1] for r in poly) * scale),
                                        round(max(r[0] for r in poly) * scale), round(max(r[1] for r in poly) * scale)]
+                                if box[0] <= pos[0] and box[1] <= pos[1] and box[2] >= pos[0] and box[3] >= pos[1]:
+                                    pindict = {"layer": lname, "netName": lbl.text, "rect": box, "netType": "drawing"}
+                                    jsondict["terminals"].append(pindict)
+                                    pincache.add(str([key, box]))
+            for k, v in pindata.items():
                 self._ports.add(k.upper())
                 ofs.write(f'  PIN {k}\n    DIRECTION INOUT ;\n    USE SIGNAL ;\n    PORT\n')
                 for p in v:
