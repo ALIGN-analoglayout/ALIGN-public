@@ -21,7 +21,6 @@
 #include "GlobalRouter.h"
 #include "PowerRouter.h"
 #include "Rdatatype.h"
-#include "HananRouter.h"
 // using std::cout;
 // using std::endl;
 
@@ -59,8 +58,5 @@ void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData
   } else if (mode == 7) {  // this is for dc simulation
     logger->info("RouteWork {0}", mode);
     PowerRouter(node, drcData, Lmetal, Hmetal, 1, inputfile);
-  } else if (mode == 8) {
-    logger->info("RouteWork {8}", mode);
-    HananRouter::HananRoute(node, drcData, Lmetal, Hmetal);
   }
 };
