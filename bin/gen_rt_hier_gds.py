@@ -7,7 +7,7 @@ import argparse
 import os
 
 ap = argparse.ArgumentParser()
-ap.add_argument( "-p", "--pl_file", type=str, default="", help='<filename.placement_verilog.json>')
+ap.add_argument( "-p", "--pl_file", type=str, default="", help='<filename.scaled_placement_verilog.json>')
 ap.add_argument( "-g", "--gds_dir", type=str, default="", help='<dir with all leaf gds files>')
 ap.add_argument( "-i", "--def_dir", type=str, default="", help='<dir with all hier def files>')
 ap.add_argument( "-t", "--top_cell", type=str, default="library", help='<top cell>')
