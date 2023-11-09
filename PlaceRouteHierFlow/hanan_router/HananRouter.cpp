@@ -2072,9 +2072,9 @@ void HananRouter::LoadLayers(const std::string& layersjson)
   if (_linfo) _router = new HRouter::Router(*_linfo);
 }
 
-void HananRouter::LoadPlacement(const std::string& plfile, const std::string& leffile)
+void HananRouter::LoadPlacement(const std::string& plfile, const std::string& leffile, const std::string& ndrfile)
 {
-  if (_linfo) _netlist = new Placement::Netlist(plfile, leffile, *_linfo, 1);
+  if (_linfo) _netlist = new Placement::Netlist(plfile, leffile, *_linfo, 1, ndrfile);
 }
 
 void HananRouter::Route(const std::string& outdir)

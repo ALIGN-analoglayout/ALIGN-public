@@ -189,7 +189,7 @@ def write_verilog_d(verilog_d):
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
                  gds_json=False, PDN_mode=False, router_mode='top_down', router='astar', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False, ndrfn=None):
 
     subckt = subckt.upper()
 
@@ -201,6 +201,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
     placement_lef_file = f'{subckt}.placement_lef'
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
+    ndr_file = 'ndr.json'
 
     working_dir = output_dir
     input_dir = working_dir / 'inputs'
@@ -259,6 +260,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         # Copy pdk file
         (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+        if ndrfn.exists(): (input_dir / ndr_file).write_text(ndrfn.read_text())
 
         # Copy primitive json files
         for k,v in leaf_collateral.items():

@@ -189,6 +189,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if sub_steps:
         pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
+        ndrfn = pathlib.Path(netlist_dir).resolve() / 'ndr.json'
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, primitives=primitives, nvariants=nvariants, effort=effort,
                                 extract=extract, gds_json=not skipGDS, PDN_mode=PDN_mode, router_mode=router_mode, router=router, gui=gui, skipGDS=skipGDS,
                                 steps_to_run=sub_steps, lambda_coeff=lambda_coeff,
@@ -196,7 +197,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 place_using_ILP=place_using_ILP, seed=seed,
                                 use_analytical_placer=use_analytical_placer,
                                 ilp_solver=ilp_solver,
-                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer, black_box_flow=(blackbox_dir != None))
+                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer, black_box_flow=(blackbox_dir != None), ndrfn=ndrfn)
 
         results.append((subckt, variants))
 

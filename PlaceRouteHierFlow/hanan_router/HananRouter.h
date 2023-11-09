@@ -405,7 +405,7 @@ class HananRouter {
     HananRouter() : _linfo{nullptr}, _router{nullptr}, _netlist{nullptr} {}
     ~HananRouter();
     void LoadLayers(const std::string& layersjson);
-    void LoadPlacement(const std::string& plfile, const std::string& leffile);
+    void LoadPlacement(const std::string& plfile, const std::string& leffile, const std::string& ndrfile);
     void Route(const std::string& outdir);
 };
 #endif
