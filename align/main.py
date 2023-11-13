@@ -126,7 +126,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                      log_level=None, verbosity=None, generate=False, regression=False, uniform_height=False, PDN_mode=False, flow_start=None,
                      flow_stop=None, router_mode='top_down', gui=False, skipGDS=False, lambda_coeff=1.0,
                      nroutings=1, viewer=False, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                     placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None):
+                     placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, blackbox_dir=None, scale=1e3):
 
     steps_to_run = build_steps(flow_start, flow_stop)
 
@@ -178,7 +178,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if '2_primitives' in steps_to_run:
         shutil.rmtree(primitive_dir, ignore_errors=True)
         primitive_dir.mkdir(exist_ok=True)
-        primitives = generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir)
+        primitives = generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir, blackbox_dir, scale)
         with (primitive_dir / '__primitives__.json').open('wt') as fp:
             json.dump(primitives, fp=fp, indent=2)
     elif sub_steps:
@@ -196,7 +196,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                                 place_using_ILP=place_using_ILP, seed=seed,
                                 use_analytical_placer=use_analytical_placer,
                                 ilp_solver=ilp_solver,
-                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer)
+                                placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, placer=placer, black_box_flow=(blackbox_dir != None))
 
         results.append((subckt, variants))
 

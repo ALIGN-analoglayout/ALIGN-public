@@ -14,6 +14,7 @@ if __name__ == '__main__':
     ap.add_argument( "-l", "--layers",  type=str, default="", help='<layers.json file>')
     ap.add_argument( "-p", "--primdir", type=str, default="", help="<primitive directory to write outputs>")
     ap.add_argument( "-t", "--topodir", type=str, default="", help="<1_topology directory with verilog.json>")
+    ap.add_argument( "-s", "--scale",   type=float, default=1e3,help="<scaling factor for LEF files>")
     args = ap.parse_args()
     
     
@@ -21,4 +22,4 @@ if __name__ == '__main__':
         ap.print_help()
         exit(0)
 
-    GEN_PRIMITIVE_FROM_GDS(args.gdsdir, args.layers, args.primdir, args.topodir)
+    GEN_PRIMITIVE_FROM_GDS(args.gdsdir, args.layers, args.primdir, args.topodir, args.scale)

@@ -310,6 +310,7 @@ class design {
     }
     return spread;
   }
+  bool black_box_flow = false;
   // std::ofstream _debugofs;
 };
 
