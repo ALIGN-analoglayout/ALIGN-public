@@ -28,7 +28,7 @@ class GDS2_LEF_JSON:
             layerdata = json.load(fp)
             if "Abstraction" in layerdata:
                 for l in layerdata["Abstraction"]:
-                    if "Layer" in l and "GdsLayerNo" in l:
+                    if "Layer" in l and "GdsLayerNo" in l and "Direction" in l:
                         layer = l["Layer"]
                         glno1 = l["GdsLayerNo"]
                         glno2 = dict()
