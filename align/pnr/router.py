@@ -340,7 +340,7 @@ def route( *, DB, idx, opath, adr_mode, PDN_mode, router_mode, skipGDS, placemen
 
 def router_driver(*, cap_map, cap_lef_s, 
                   numLayout, effort, adr_mode, PDN_mode,
-                  router_mode, skipGDS, scale_factor,
+                  router_mode, router, skipGDS, scale_factor,
                   nroutings, primitives, toplevel_args_d, results_dir, verilog_ds_to_run):
 
     fpath = toplevel_args_d['input_dir']
@@ -418,10 +418,31 @@ def router_driver(*, cap_map, cap_lef_s,
 
             placements_to_run = None
 
-            res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
-                         router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+            if router == 'hanan':
+                logger.info(f"hanan router started")
+                hrouter = PnR.HananRouter()
+                ipath = pathlib.Path("./inputs")
+                hrouter.LoadLayers(str(ipath / 'layers.json'))
+                ndrfn = ipath / 'ndr.json'
+                ndrfn = str(ndrfn) if ndrfn.exists() else ""
+                
+                with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("r") as fp:
+                    pldata = fp.read()
+                    if lef_s_in:
+                        hrouter.LoadPlacement(pldata, lef_s_in)
+                    else:
+                        with (idir/new_lef_file).open("r") as lfp:
+                            lefdata = lfp.read()
+                            hrouter.LoadPlacement(pldata, lefdata, ndrfn)
+                
+                    hrouter.Route("./Results/")
+                logger.info(f"hanan router ended")
 
-            res_dict.update(res)
+        
+            if router == 'astar':
+                res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
+                             router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+                res_dict.update(res)
     
         elif router_mode in ['collect_pins']:
 

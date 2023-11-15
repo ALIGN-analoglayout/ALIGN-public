@@ -78,6 +78,7 @@ setup(name='align',
           'bin/gen_gds_from_json.py',
           'bin/gen_lef_with_obs.py',
           'bin/gen_primitive_from_gds.py',
+          'bin/gen_rt_hier_gds.py',
           'bin/gen_pl_gds.py'
       ],
       install_requires=[

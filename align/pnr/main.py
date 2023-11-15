@@ -187,20 +187,21 @@ def write_verilog_d(verilog_d):
         "global_signals":verilog_d.global_signals}
 
 def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, primitives, nvariants=1, effort=0, extract=False,
-                 gds_json=False, PDN_mode=False, router_mode='top_down', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
+                 gds_json=False, PDN_mode=False, router_mode='top_down', router='astar', gui=False, skipGDS=False, steps_to_run,lambda_coeff,
                  nroutings=1, select_in_ILP=False, place_using_ILP=False, seed=0, use_analytical_placer=False, ilp_solver='symphony',
-                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False):
+                 placer_sa_iterations=10000, placer_ilp_runtime=1, placer=None, black_box_flow=False, ndrfn=None):
 
     subckt = subckt.upper()
 
     logger.info(f"Running Place & Route for {subckt}")
-    logger.debug(f"Running Place & Route for {subckt} {router_mode} {steps_to_run}")
+    logger.debug(f"Running Place & Route for {subckt} {router_mode} {router} {steps_to_run}")
 
     map_file = f'{subckt}.map'
     lef_file = f'{subckt}.lef'
     placement_lef_file = f'{subckt}.placement_lef'
     verilog_file = f'{subckt}.verilog.json'
     pdk_file = 'layers.json'
+    ndr_file = 'ndr.json'
 
     working_dir = output_dir
     input_dir = working_dir / 'inputs'
@@ -259,6 +260,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
 
         # Copy pdk file
         (input_dir / pdk_file).write_text((pdk_dir / pdk_file).read_text())
+        if ndrfn.exists(): (input_dir / ndr_file).write_text(ndrfn.read_text())
 
         # Copy primitive json files
         for k,v in leaf_collateral.items():
@@ -409,35 +411,35 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         results_name_map = router_driver(cap_map=cap_map, cap_lef_s=cap_lef_s,
                                          numLayout=toplevel_args_d['nvariants'], effort=toplevel_args_d['effort'],
                                          adr_mode=False, PDN_mode=PDN_mode,
-                                         router_mode=router_mode, skipGDS=skipGDS, scale_factor=scale_factor,
+                                         router_mode=router_mode, router=router, skipGDS=skipGDS, scale_factor=scale_factor,
                                          nroutings=nroutings, primitives=primitives, toplevel_args_d=toplevel_args_d, results_dir=None,
                                          verilog_ds_to_run=verilog_ds_to_run)
 
 
         os.chdir(current_working_dir)
+        if router != "hanan":
+            for variant, (path_name, layout_idx, DB) in results_name_map.items():
 
-        for variant, (path_name, layout_idx, DB) in results_name_map.items():
+                hN = DB.hierTree[layout_idx]
+                result = _generate_json(hN=hN,
+                                        variant=variant,
+                                        pdk_dir=pdk_dir,
+                                        primitive_dir=input_dir,
+                                        input_dir=working_dir,
+                                        output_dir=working_dir,
+                                        extract=extract,
+                                        gds_json=gds_json,
+                                        toplevel=hN.isTop,
+                                        pnr_const_ds=pnr_const_ds)
 
-            hN = DB.hierTree[layout_idx]
-            result = _generate_json(hN=hN,
-                                    variant=variant,
-                                    pdk_dir=pdk_dir,
-                                    primitive_dir=input_dir,
-                                    input_dir=working_dir,
-                                    output_dir=working_dir,
-                                    extract=extract,
-                                    gds_json=gds_json,
-                                    toplevel=hN.isTop,
-                                    pnr_const_ds=pnr_const_ds)
+                if hN.isTop:
+                    variants[variant].update(result)
 
-            if hN.isTop:
-                variants[variant].update(result)
-
-                if not skipGDS:
-                    for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
-                        path = results_dir / (variant + suffix)
-                        assert path.exists()
-                        variants[variant][tag] = path
+                    if not skipGDS:
+                        for tag, suffix in [('lef', '.lef'), ('gdsjson', '.gds.json')]:
+                            path = results_dir / (variant + suffix)
+                            assert path.exists()
+                            variants[variant][tag] = path
 
 
     return variants

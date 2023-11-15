@@ -2,6 +2,7 @@ add_subdirectory(PnRDB)
 add_subdirectory(placer)
 add_subdirectory(EA_placer)
 add_subdirectory(router)
+add_subdirectory(hanan_router)
 add_subdirectory(cap_placer)
 add_subdirectory(guard_ring)
 add_subdirectory(MNA)
@@ -18,6 +19,7 @@ target_link_libraries(
      placer
      EA_placer
      router
+     hanan_router
      cap_placer
      guard_ring
      MNA
@@ -47,6 +49,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
           PnRDB
           placer
           router
+          hanan_router
           cap_placer
           guard_ring
           MNA
