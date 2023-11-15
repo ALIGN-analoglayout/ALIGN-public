@@ -418,25 +418,25 @@ def router_driver(*, cap_map, cap_lef_s,
 
             placements_to_run = None
 
-        if router == 'hanan':
-            logger.info(f"hanan router started")
-            hrouter = PnR.HananRouter()
-            ipath = pathlib.Path("./inputs")
-            hrouter.LoadLayers(str(ipath / 'layers.json'))
-            ndrfn = ipath / 'ndr.json'
-            ndrfn = str(ndrfn) if ndrfn.exists() else ""
-            
-            with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("r") as fp:
-                pldata = fp.read()
-                if lef_s_in:
-                    hrouter.LoadPlacement(pldata, lef_s_in)
-                else:
-                    with (idir/new_lef_file).open("r") as lfp:
-                        lefdata = lfp.read()
-                        hrouter.LoadPlacement(pldata, lefdata, ndrfn)
-            
-                hrouter.Route("./Results/")
-            logger.info(f"hanan router ended")
+            if router == 'hanan':
+                logger.info(f"hanan router started")
+                hrouter = PnR.HananRouter()
+                ipath = pathlib.Path("./inputs")
+                hrouter.LoadLayers(str(ipath / 'layers.json'))
+                ndrfn = ipath / 'ndr.json'
+                ndrfn = str(ndrfn) if ndrfn.exists() else ""
+                
+                with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("r") as fp:
+                    pldata = fp.read()
+                    if lef_s_in:
+                        hrouter.LoadPlacement(pldata, lef_s_in)
+                    else:
+                        with (idir/new_lef_file).open("r") as lfp:
+                            lefdata = lfp.read()
+                            hrouter.LoadPlacement(pldata, lefdata, ndrfn)
+                
+                    hrouter.Route("./Results/")
+                logger.info(f"hanan router ended")
 
         
             if router == 'astar':
