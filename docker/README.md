@@ -13,7 +13,7 @@ The source code of the ALIGN version installed is in the directory `/home/align/
 # Building a personalized image
 Create a dockerfile with the following contents:
 ```
-FROM darpaalign/align-public AS env
+FROM darpaalign/align-public:latest AS env
 ARG UID=0
 ARG GID=0
 RUN if [ "$GID" -ne "0" ] ; then echo $GID && groupadd -g $GID -o align; else  echo 1000 && groupadd -g 1000 -o align; fi
@@ -23,6 +23,7 @@ USER align
 WORKDIR /work
 ```
 Run the command  `docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t <your_preferred_name> .` to create a corresponding docker image that generates files with appropriate file permissions in Linux.
+You can do this using the build.sh script in the `${ALIGN_HOME}/install` directory.
 
 ## Mount host directories inside the image
 Use the following command to mount a custom PDK/schematic directory in the host machine inside the docker image:
