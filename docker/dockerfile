@@ -1,4 +1,4 @@
-FROM python:3.10-bookworm AS env
+FROM ubuntu:22.04 AS env
 
 RUN apt update -y
 RUN apt install -y git python3 python3-pip gcc g++ lp-solve sudo liblpsolve55-dev
