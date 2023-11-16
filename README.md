@@ -58,7 +58,7 @@ Use the image `darpaalign/align-public:latest` for the latest version of ALIGN. 
 You can do this using using the `dockerfile` and `build.sh` script in the  `install/` directory.
 Detailed instructions to pull, build, and run the docker image are in [docker/README](docker/README.md).
 
-Steps 1-3 below re to install ALIGN locally. Step 4 is to run ALIGN both locally and inside a docker container.
+Steps 0-3 below are to install ALIGN locally. Step 4 is to run ALIGN either locally or inside a docker container.
 
 ### Step 0: Check prerequisites
 The following dependencies must be met by your system:
