@@ -54,7 +54,7 @@ The ALIGN flow includes the following steps:
 
 ### Docker image
 The recommended method to use ALIGN, if you are an user who does not require any changes to the source code, is the docker image hosted in: [darpaalign/align-public:latest](https://hub.docker.com/r/darpaalign/align-public).
-The instructions to pull, build, and run the docker image are in [docker/README.md](docker/README.md).
+The instructions to pull, build, and run the docker image are in [docker/README](docker/README.md).
 Steps 1-3 in the below instructions are to install ALIGN locally on your system. Refer to step 4 is the same whether you run ALIGN locally or inside a docker container.
 
 ### Step 0: Check prerequisites
