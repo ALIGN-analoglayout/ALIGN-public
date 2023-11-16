@@ -230,6 +230,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
     if (!oData.empty()) {
       ReshapeSeqPairMap(oData, nodeSize);
       return oData;
+    } else {
+      logger->info("Falling back to SA placer; no solution found by ILP placer in time limit!");
     }
   }
 
