@@ -8,7 +8,7 @@ docker pull darpaalign/align-public:latest
 To create your own image with modifications, use the `dockerfile` in this directory.
 
 ## Source code
-The source code of the ALIGN version installed is in the directory `/home/align/ALIGN-public` in the docker image. The examples and mock PDK that are packaged with ALIGN are available in this directory.
+The source code of the ALIGN version installed is in the directory `/ALIGN-public` in the docker image. The examples and mock PDK that are packaged with ALIGN are available in this directory.
 
 # Building a personalized image
 Create a dockerfile with the following contents:
@@ -23,7 +23,7 @@ USER align
 WORKDIR /work
 ```
 Run the command  `docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t <your_preferred_name> .` to create a corresponding docker image that generates files with appropriate file permissions in Linux.
-You can do this using the build.sh script in the `${ALIGN_HOME}/install` directory.
+You can do this in the `${ALIGN_HOME}/install` directory using the `build.sh` script.
 
 ## Mount host directories inside the image
 Use the following command to mount a custom PDK/schematic directory in the host machine inside the docker image:
