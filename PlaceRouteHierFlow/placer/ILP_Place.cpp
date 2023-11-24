@@ -405,7 +405,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   colub[N_aspect_ratio_max - 1] = std::max(maxhierwidth, maxhierheight);
   colub[N_aspect_ratio_max - 2] = std::max(maxhierwidth, maxhierheight);
 
-  Pdatatype hyper;
+  PlacerHyperparameters hyper;
   std::vector<double> objective(N_var_max, 0);
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -1795,7 +1795,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_").c_str()), names, rownames);
     }
     int status{0};
-    solverif.setTimeLimit(10 * mydesign.Blocks.size());
+    solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);
