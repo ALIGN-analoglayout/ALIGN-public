@@ -68,30 +68,30 @@ You may optionally install [Boost](https://www.boost.org/) & [lp_solve](http://l
 
 Note: In case you have multiple gcc versions installed on your system, we recommend explicitly setting the compiler paths as follows:
 ```console
-$ export CC=/path/to/your/gcc
-$ export CXX=/path/to/your/g++
+export CC=/path/to/your/gcc
+export CXX=/path/to/your/g++
 ```
 
 ### Step 1: Clone the ALIGN source code to your local environment
 ```console
-$ git clone https://github.com/ALIGN-analoglayout/ALIGN-public
-$ cd ALIGN-public
+git clone https://github.com/ALIGN-analoglayout/ALIGN-public
+cd ALIGN-public
 ```
 
 ### Step 2: Create a [Python virtualenv](https://docs.python.org/3/tutorial/venv.html) and install dependencies
 Note: You may choose to skip this step if you are doing a system-wide install for multiple users.
       Please DO NOT skip this step if you are installing for personal use and/or you are a developer.
 ```console
-$ python -m venv general
-$ source general/bin/activate
-$ python -m pip install pip --upgrade
-$ source install_deps.sh
+python -m venv general
+source general/bin/activate
+python -m pip install pip --upgrade
+source install_deps.sh
 ```
 
 ### Step 3a: Install ALIGN as a USER
 If you already have a working installation of Python 3.8 or above, the easiest way to install ALIGN is:
 ```console
-$ pip install -v .
+pip install -v .
 ```
 
 ### Step 3b: Install ALIGN as a DEVELOPER
@@ -99,24 +99,24 @@ If you are a developer, you may wish to install ALIGN with some additional flags
 
 For Python/C++ developers:
 ```console
-$ python setup.py develop -v
+python setup.py develop -v
 ```
 This installs align as an editable package in your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that is below.
 
 If you would like to build the C++ version with the debug symbols in the object files (to see the symbols in a debugger):
 ```console
-$ env BUILD_TYPE='Debug' python setup.py develop -v
+env BUILD_TYPE='Debug' python setup.py develop -v
 ```
 
 The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `python setup.py install -v` commands will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 If you want the build type to be Release (-O3), you can issue the following three lines:
 ```console
-$ env BUILD_TYPE='Release' BUILD_TESTING='ON' python setup.py develop -v
+env BUILD_TYPE='Release' BUILD_TESTING='ON' python setup.py develop -v
 ```
 or
 ```console
-$ env BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' python setup.py develop -v
+env BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' python setup.py develop -v
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
@@ -146,25 +146,25 @@ CI_LEVEL='merge' pytest -n 8 -s -vv --runnightly --maxerrors=20 --placer_sa_iter
 You may run the align tool using a simple command line tool named `schematic2layout.py`
 For most common cases, you will simply run:
 ```console
-$ schematic2layout.py <NETLIST_DIR> -p <PDK_DIR> -c
+schematic2layout.py <NETLIST_DIR> -p <PDK_DIR> -c
 ```
 
 For instance, to build the layout for telescopic_ota:
 ```console
-$ mkdir work && cd work
-$ schematic2layout.py ../examples/telescopic_ota -p ../pdks/FinFET14nm_Mock_PDK/
+mkdir work && cd work
+schematic2layout.py ../examples/telescopic_ota -p ../pdks/FinFET14nm_Mock_PDK/
 ```
 
 For a full list of options supported by the tool, please use the following command:
 ```console
-$ schematic2layout.py -h
+schematic2layout.py -h
 ```
 
 If you get an error `libOsiCbc.so: cannot open shared object file`, please add `${ALIGN_HOME}/_skbuild/<OSname_Arch_PythonVer>/cmake-install/lib` to your `LD_LIBRARY_PATH`.
 `${ALIGN_HOME}` is the path where ALIGN is installed.
 For e.g.:
 ```console
-$ export LD_LIBRARY_PATH=${LD_LIBRAR_PATH}:${ALIGN_HOME}/_skbuild/linux-x86_64-3.8/cmake-install/lib
+export LD_LIBRARY_PATH=${LD_LIBRAR_PATH}:${ALIGN_HOME}/_skbuild/linux-x86_64-3.8/cmake-install/lib
 ```
 
 ## Design database:
