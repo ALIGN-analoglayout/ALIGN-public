@@ -78,13 +78,14 @@ $ git clone https://github.com/ALIGN-analoglayout/ALIGN-public
 $ cd ALIGN-public
 ```
 
-### Step 2: Create a [Python virtualenv](https://docs.python.org/3/tutorial/venv.html)
+### Step 2: Create a [Python virtualenv](https://docs.python.org/3/tutorial/venv.html) and install dependencies
 Note: You may choose to skip this step if you are doing a system-wide install for multiple users.
       Please DO NOT skip this step if you are installing for personal use and/or you are a developer.
 ```console
 $ python -m venv general
 $ source general/bin/activate
 $ python -m pip install pip --upgrade
+$ source install_deps.sh
 ```
 
 ### Step 3a: Install ALIGN as a USER
@@ -98,28 +99,28 @@ If you are a developer, you may wish to install ALIGN with some additional flags
 
 For python developers:
 ```console
-$ pip install -e .[test]
+$ python setup.py develop -v
 ```
-The `-e` or `--editable` flag generates links to the align package within your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that is below.
+This installs align as an editable package in your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that is below.
 
 For ALIGN (C++) Extension developers:
 ```console
-$ pip install setuptools wheel pybind11 scikit-build cmake ninja
-$ pip install -v -e .[test] --no-build-isolation
-$ env BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+$ python setup.py develop -v
 ```
-The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `pip install -v -e .[test] --no-build-isolation` will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
+If you would like to build the C++ version with the debug symbols in the object files (to see the symbols in a debugger):
+```console
+$ env BUILD_TYPE='Debug' python setup.py develop -v
+```
+
+The second command doesn't just install ALIGN in-place, it also caches generated object files etc. under an `_skbuild` subdirectory. Re-running `python setup.py install -v` commands will reuse this cache to perform an incremental build. We add the `-v` or `--verbose` flag to be able to see build flags in the terminal.
 
 If you want the build type to be Release (-O3), you can issue the following three lines:
 ```console
-$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
-$ pip install -v -e .[test] --no-build-isolation
-$ env BUILD_TYPE='Release' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+$ env BUILD_TYPE='Release' BUILD_TESTING='ON' python setup.py develop -v
+```
 or
 ```console
-$ pip install setuptools wheel pybind11 numpy scikit-build cmake ninja
-$ pip install -v -e .[test] --no-build-isolation
-$ env BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' pip install -v --no-build-isolation -e . --no-deps
+$ env BUILD_TYPE='RelWithDebInfo' BUILD_TESTING='ON' python setup.py develop -v
 ```
 Use the `Release` mode if you are mostly developing in Python and don't need the C++ debugging symbols. Use the `RelWithDebInfo` if you need both debug symbols and optimized code.
 
