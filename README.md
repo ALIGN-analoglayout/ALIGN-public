@@ -97,16 +97,12 @@ $ pip install -v .
 ### Step 3b: Install ALIGN as a DEVELOPER
 If you are a developer, you may wish to install ALIGN with some additional flags.
 
-For python developers:
+For Python/C++ developers:
 ```console
 $ python setup.py develop -v
 ```
 This installs align as an editable package in your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that is below.
 
-For ALIGN (C++) Extension developers:
-```console
-$ python setup.py develop -v
-```
 If you would like to build the C++ version with the debug symbols in the object files (to see the symbols in a debugger):
 ```console
 $ env BUILD_TYPE='Debug' python setup.py develop -v
