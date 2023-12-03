@@ -112,6 +112,7 @@ if (args.gds_dir):
         lib = gdspy.GdsLibrary(infile=m._fname)
         m._cell = lib.top_level()[0]
         m._cell.flatten()
+        m._cell.name = m._name
         m._added = True
 
 
