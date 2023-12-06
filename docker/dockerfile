@@ -13,6 +13,6 @@ RUN pip install --find-links=/data/wheels --no-index setuptools wheel pybind11 s
 RUN env BUILD_TYPE='Release' pip install -v . --no-deps
 RUN echo '#!/bin/bash\nif [[ -d "${ALIGN_PDK_DIR}" ]] && [[ -d "${ALIGN_CKT_DIR}" ]]; then\n\techo "PDK directory : ${ALIGN_PDK_DIR}"\n\techo "Netlist directory : ${ALIGN_CKT_DIR}"\n\tschematic2layout.py -p ${ALIGN_PDK_DIR} ${ALIGN_CKT_DIR}\nfi' > /usr/local/bin/run_align
 RUN chmod +x /usr/local/bin/run_align
-RUN echo "export OPENBLAS_NUM_THREADS=1" >> /etc/bash.bashrc
+ENV OPENBLAS_NUM_THREADS 1
 RUN rm -rf /data/wheels /ALIGN-public/_skbuild
 WORKDIR /work
