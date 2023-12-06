@@ -89,7 +89,24 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
-          if 'Label' in j[k]['GdsDatatype']:
+          labelNotAdded = True
+          if 'LabelLayerNo' in j[k]:
+              llayer = j[k]['LabelLayerNo']
+              llGdsNo, llTType = None, 0
+              if len(llayer) > 0:
+                  llGdsNo = llayer[0][0]
+                  if len(llayer[0]) > 1: llTType = llayer[0][1]
+              if llGdsNo:
+                  if None == reqLabels or (obj["netName"] in reqLabels):
+                      if (not labelOnce) or (labelOnce and obj["netName"] not in labels):
+                          labelNotAdded = False
+                          bbox = list(map(scale, obj['rect']))
+                          xy = [int((bbox[0] + bbox[2])/ 2), int((bbox[1] + bbox[3]) /2)]
+                          strct["elements"].append ({"layer" : llGdsNo, "type": "text",
+                                       "texttype" : llTType, "string" : obj["netName"],
+                                       "xy" : xy})
+                          labels.add(obj["netName"])
+          if labelNotAdded and 'Label' in j[k]['GdsDatatype']:
               if None == reqLabels or (obj["netName"] in reqLabels):
                   if (not labelOnce) or (labelOnce and obj["netName"] not in labels):
                       bbox = list(map(scale, obj['rect']))
