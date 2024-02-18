@@ -13,7 +13,7 @@ class Wire:
         if eS is None: eS=self.spg
 
         (c,(w,clr)) = self.clg.value( center)
-        c0 = c - w//2
+        c0 = c - w//2 - w % 2
         c1 = c + w//2
         bPhys = bS.value(bIdx)[0]
         ePhys = eS.value(eIdx)[0]

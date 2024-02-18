@@ -85,7 +85,7 @@ class CenteredGrid(Grid):
 class CenterLineGrid(Grid):
 
     def addCenterLine( self, value, width, isLegal=True, *, color=None):
-        assert width % 2 == 0
+         #assert width % 2 == 0
         self.addGridLine( value, isLegal, (width, color))
 
     def semantic( self):
