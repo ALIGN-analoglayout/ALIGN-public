@@ -610,14 +610,14 @@ def find_free_port():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
 
-def run_gui( *, tagged_bboxes, module_name, lambda_coeff):
+def run_gui( *, tagged_bboxes, module_name, lambda_coeff, port):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
 
     hostname = socket.gethostname()
     fully_qualified_domain_name = socket.getfqdn(hostname)
-    free_port = find_free_port()
+    if None == port: port = find_free_port()
 
-    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=free_port)
+    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=port)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel

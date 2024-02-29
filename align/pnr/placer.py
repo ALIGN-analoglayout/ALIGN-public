@@ -166,7 +166,7 @@ def gen_leaf_map(*, DB):
 
     return leaf_map
 
-def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics):
+def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_coeff, metrics, port):
 
     tagged_bboxes = defaultdict(dict)
 
@@ -196,7 +196,7 @@ def startup_gui(*, top_level, leaf_map, placement_verilog_alternatives, lambda_c
 
     print( f"Press Ctrl-C to end the GUI interaction. If current selection is a toplevel placement, the routing engine will be called on that placement. If the current selection is not toplevel (an intermediate hierarchy or a leaf), the router call will be skipped.")
 
-    selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff)
+    selected_concrete_name = run_gui( tagged_bboxes=tagged_bboxes, module_name=top_level, lambda_coeff=lambda_coeff, port=port)
 
     # Don't like name hacking; make we can do this another way
     p = re.compile( r'^(\S+)_(\d+)$')

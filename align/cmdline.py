@@ -116,6 +116,11 @@ class CmdlineParser():
                             action='store_true',
                             help='Run in GUI mode')
 
+        parser.add_argument('--port',
+                            type=int,
+                            action=None,
+                            help='Port for GUI mode')
+
         parser.add_argument('--skipGDS',
                             action='store_true',
                             help='Don\'t generate GDS files.')
