@@ -13,6 +13,8 @@ if(NOT ilpsolverif_POPULATED)
   set (solver_search_path ${ilpsolverif_SOURCE_DIR}/lib)
   if (DEFINED ENV{BUILD_PLATFORM})
     set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{BUILD_PLATFORM}/lib)
+  elseif(DEFINED ENV{ALIGN_ILP_PATH})
+    set (solver_search_path $ENV{ALIGN_ILP_PATH}/lib)
   endif()
   find_library(
     ilp_solver_lib
