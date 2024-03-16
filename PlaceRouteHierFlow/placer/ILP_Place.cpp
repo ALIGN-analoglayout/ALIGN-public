@@ -62,7 +62,8 @@ double ILP_solver::UpdateAreaHPWLCost(const design& mydesign, const SeqPair& cur
     ++const_cast<design&>(mydesign)._infeasAspRatio;
     return -1;
   }
-  if (placement_box[0] > 0 && (UR.x - LL.x > placement_box[0]) || placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])) {
+  if (placement_box[0] < DBL_MAX && placement_box[1] < DBL_MAX &&
+      ((placement_box[0] > 0 && (UR.x - LL.x > placement_box[0])) || (placement_box[1] > 0 && (UR.y - LL.y > placement_box[1])))) {
     ++const_cast<design&>(mydesign)._infeasPlBound;
     return -1;
   }
@@ -404,7 +405,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   colub[N_aspect_ratio_max - 1] = std::max(maxhierwidth, maxhierheight);
   colub[N_aspect_ratio_max - 2] = std::max(maxhierwidth, maxhierheight);
 
-  Pdatatype hyper;
+  PlacerHyperparameters hyper;
   std::vector<double> objective(N_var_max, 0);
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -422,11 +423,11 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     objective[ind + 3] = hyper.LAMBDA;
   }
   if (flushbl) {
-    objective[N_area_max - 1] = 1. * mydesign.Nets.size();
-    objective[N_area_max - 2] = 1. * mydesign.Nets.size();
+    objective[N_area_max - 1] = 10. * mydesign.Nets.size();
+    objective[N_area_max - 2] = 10. * mydesign.Nets.size();
   } else {
-    objective[N_area_max - 1] = -1. * mydesign.Nets.size();
-    objective[N_area_max - 2] = -1. * mydesign.Nets.size();
+    objective[N_area_max - 1] = -10. * mydesign.Nets.size();
+    objective[N_area_max - 2] = -10. * mydesign.Nets.size();
   }
   objective[N_aspect_ratio_max - 1] = .1 * mydesign.Nets.size();
   objective[N_aspect_ratio_max - 2] = .1 * mydesign.Nets.size();
@@ -477,14 +478,14 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     sens.push_back('L');
     rhs.push_back(0.);
     rowtype.push_back('a');
-    if (placement_box[0] > 0) {
+    if (placement_box[0] > 0 && placement_box[0] < DBL_MAX) {
       rowindofcol[N_area_max - 2].push_back(rhs.size());
       constrvalues[N_area_max - 2].push_back(1);
       sens.push_back('L');
       rhs.push_back(placement_box[0]);
       rowtype.push_back('p');
     }
-    if (placement_box[1] > 0) {
+    if (placement_box[1] > 0 && placement_box[1] < DBL_MAX) {
       rowindofcol[N_area_max - 1].push_back(rhs.size());
       constrvalues[N_area_max - 1].push_back(1);
       sens.push_back('L');
@@ -506,14 +507,14 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     sens.push_back('G');
     rhs.push_back(0.);
     rowtype.push_back('a');
-    if (placement_box[0] > 0) {
+    if (placement_box[0] > 0 && placement_box[0] < DBL_MAX) {
       rowindofcol[N_area_max - 2].push_back(rhs.size());
       constrvalues[N_area_max - 2].push_back(-1);
       sens.push_back('L');
       rhs.push_back(placement_box[0]);
       rowtype.push_back('p');
     }
-    if (placement_box[1] > 0) {
+    if (placement_box[1] > 0 && placement_box[1] < DBL_MAX) {
       rowindofcol[N_area_max - 1].push_back(rhs.size());
       constrvalues[N_area_max - 1].push_back(-1);
       sens.push_back('L');
@@ -1738,10 +1739,12 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
 
       for (int i = 0; i < mydesign.Nets.size(); ++i) {
         int ind = i * 4 + N_block_vars_max;
-        namesvec[ind]     = (mydesign.Nets[i].name + "_ll_x\0");
-        namesvec[ind + 1] = (mydesign.Nets[i].name + "_ll_y\0");
-        namesvec[ind + 2] = (mydesign.Nets[i].name + "_ur_x\0");
-        namesvec[ind + 3] = (mydesign.Nets[i].name + "_ur_y\0");
+        std::string netName = mydesign.Nets[i].name;
+        if (netName == "0") netName = "gnd";
+        namesvec[ind]     = (netName + "_ll_x\0");
+        namesvec[ind + 1] = (netName + "_ll_y\0");
+        namesvec[ind + 2] = (netName + "_ur_x\0");
+        namesvec[ind + 3] = (netName + "_ur_y\0");
       }
 
       for (auto& it : buf_indx_map) {
@@ -1792,7 +1795,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_").c_str()), names, rownames);
     }
     int status{0};
-    solverif.setTimeLimit(10 * mydesign.Blocks.size());
+    solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
     {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(num_threads);
