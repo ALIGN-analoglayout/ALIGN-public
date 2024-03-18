@@ -98,6 +98,9 @@ If you are a developer, you may wish to install ALIGN with some additional flags
 
 For python developers:
 ```console
+$ mkdir build && cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=.. ..
+$ make -j8 && make install
 $ pip install -e .[test]
 ```
 The `-e` or `--editable` flag generates links to the align package within your current directory. This allows you to modify python files and test them out immediately. You will still need to re-run this command to build your C++ collateral (when you are changing branches for example). More on that is below.
