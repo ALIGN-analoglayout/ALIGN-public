@@ -298,7 +298,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
         int viaNo = this->tiles_total.at(i).metal.back();
         int viaSize = (drc_info.Via_info.at(viaNo).width + drc_info.Via_info.at(viaNo).dist_ss) *
                       (drc_info.Via_info.at(viaNo).width_y + drc_info.Via_info.at(viaNo).dist_ss_y);
-        int tileSize = this->tiles_total.at(i).width * this->tiles_total.at(i).height;
+        long tileSize = this->tiles_total.at(i).width * this->tiles_total.at(i).height;
         int cap = tileSize / viaSize;
         tmpE.next = mit->second;
         tmpE.capacity = cap;

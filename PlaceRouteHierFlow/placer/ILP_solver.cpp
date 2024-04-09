@@ -1848,7 +1848,7 @@ double ILP_solver::CalculateCost(const design& mydesign) const {
   cost += 0.0 / area * hyper.PHI; //dead_area
   cost += linear_const * hyper.PI;
   cost += multi_linear_const * hyper.PII;
-  assert(!isnan(cost));
+  assert(!std::isnan(cost));
   return cost;
 }
 
@@ -1882,7 +1882,7 @@ double ILP_solver::CalculateCost(const design& mydesign, const SeqPair& curr_sp)
                   max_dim;
   }
   if (!mydesign.Match_blocks.empty()) match_cost /= (mydesign.Match_blocks.size());
-  if (!isnan(linear_const) && !isnan(multi_linear_const) && !isnan(match_cost)) {
+  if (!std::isnan(linear_const) && !std::isnan(multi_linear_const) && !std::isnan(match_cost)) {
     constraint_penalty = match_cost * hyper.BETA + linear_const * hyper.PI + multi_linear_const * hyper.PII;
     cost += constraint_penalty;
   }

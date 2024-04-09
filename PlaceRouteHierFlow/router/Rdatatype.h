@@ -75,8 +75,8 @@ struct tileEdge {
 struct tile {
   int x = -1;
   int y = -1;
-  int width;
-  int height;
+  long width;
+  long height;
   std::vector<int> metal;
   std::vector<int> origin_metal;
   int tileLayer = -1;
