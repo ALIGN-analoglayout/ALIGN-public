@@ -33,7 +33,7 @@ def generate_hierarchy(
     )
     annotate_library(ckt_data, primitive_library)
     primitives = PrimitiveLibrary(ckt_data, pdk_dir).gen_primitive_collateral()
-    constraint_generator(ckt_data)
+    # constraint_generator(ckt_data) # Intentionally turned off due to suboptimalities
     compiler_output(ckt_data, design_name, output_dir, primitives)
 
     return primitives
