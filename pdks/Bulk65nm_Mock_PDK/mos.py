@@ -19,10 +19,11 @@ class MOSGenerator(DefaultCanvas):
         exact_length = None
         length_diff = 0
         dynamic_space = 0
+        fin = max(fin, 2)
         if self.primitive_parameters:
             device_names = [*self.primitive_parameters.keys()]
             exact_width = self.primitive_parameters[device_names[0]]['W']
-            exact_width = int(float(exact_width)*1E9)  ### Width in nanometers
+            exact_width = round(float(exact_width)*1E9)  ### Width in nanometers
             exact_length = self.primitive_parameters[device_names[0]]['L']
             exact_length = round(float(exact_length)*1E9)  ### Length in nanometers
             assert exact_length % 2 ==0, f"Transistor gate length {exact_length} must be even"
