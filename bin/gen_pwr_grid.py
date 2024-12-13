@@ -78,28 +78,14 @@ class PowerGridData:
     return set([l._shapeGDS for l in self._vlayers.values()])
 
 
-if __name__ == "__main__":
-  ap = argparse.ArgumentParser()
-  ap.add_argument( "-g", "--gds",    type=str,  default="", help='<top-level layout for which the power grid has to be inserted>')
-  ap.add_argument( "-l", "--layers", type=str,  default="", help='<path to layers.json file>')
-  ap.add_argument( "-c", "--constr", type=str,  default="", help='<constraints .const.json file>')
-  ap.add_argument( "-o", "--out",    type=str,  default="", help='<output GDS file>')
-  args = ap.parse_args()
-  print(f"input GDS  : {args.gds}")
-  print(f"layers     : {args.layers}")
-  print(f"output GDS : {args.out}")
-  if (args.gds):
-    if not os.path.isfile(args.gds):
-      print(f'{args.gds} not found')
-      exit()
-  
-  gdslib = gdstk.read_gds(args.gds)
+def constructPG(infile, outfile, layersfile, constrfile):
+  gdslib = gdstk.read_gds(infile)
   topcell = gdslib.top_level()[0] if len(gdslib.top_level()) > 0 else None
   if topcell:
     topcell.flatten()
   bbox = topcell.bounding_box()
 
-  p = PowerGridData(args.layers, args.constr)
+  p = PowerGridData(layersfile, constrfile)
 
   mlayers = p.mGDS()
   vlayers = p.vGDS()
@@ -208,7 +194,23 @@ if __name__ == "__main__":
         c = ((b[0][0] + b[1][0])/2, (b[0][1] + b[1][1])/2)
         tc.add(gdstk.Label(net, c, layer = gd[0], texttype=gd[1]))
 
-  print(f"Writing power grid to file: {args.out}")
-  writer = gdstk.GdsWriter(args.out)
+  print(f"Writing power grid to file: {outfile}")
+  writer = gdstk.GdsWriter(outfile)
   writer.write(tc)
   writer.close()
+
+if __name__ == "__main__":
+  ap = argparse.ArgumentParser()
+  ap.add_argument( "-g", "--gds",    type=str,  default="", help='<top-level layout for which the power grid has to be inserted>')
+  ap.add_argument( "-l", "--layers", type=str,  default="", help='<path to layers.json file>')
+  ap.add_argument( "-c", "--constr", type=str,  default="", help='<constraints .const.json file>')
+  ap.add_argument( "-o", "--out",    type=str,  default="", help='<output GDS file>')
+  args = ap.parse_args()
+  print(f"input GDS  : {args.gds}")
+  print(f"layers     : {args.layers}")
+  print(f"output GDS : {args.out}")
+  if (args.gds):
+    if not os.path.isfile(args.gds):
+      print(f'{args.gds} not found')
+      exit()
+  constructPG(args.gds, args.out, args.layers, args.constr)

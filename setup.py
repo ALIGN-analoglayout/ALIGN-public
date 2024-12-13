@@ -83,6 +83,7 @@ setup(name='align',
           'networkx>=2.4',
           'python-gdsii',
           'gdspy',
+          'gdstk',
           'pyyaml',
           'pybind11',
           'pydantic>=1.9.2,<=1.20',
@@ -97,8 +98,7 @@ setup(name='align',
           'dash',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict',
-          'mip'
+          'flatdict'
       ],
       extras_require={
           'test': [
