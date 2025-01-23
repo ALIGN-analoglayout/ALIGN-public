@@ -108,7 +108,6 @@ def start_viewer(working_dir, pnr_dir, variant):
 
     stderr = sys.stderr
     Handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(working_dir/'Viewer'))
-
     host_name = socket.getfqdn()
     with socketserver.TCPServer((host_name, 0), Handler) as httpd:
         logger.info(f'Please view layout at http://{host_name}:{httpd.server_address[1]}/?design={variant}')
