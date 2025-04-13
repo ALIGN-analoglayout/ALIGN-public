@@ -38,9 +38,7 @@ def place( *, DB, opath, fpath, numLayout, effort, idx, lambda_coeff, select_in_
     hyper.LAMBDA = lambda_coeff
     hyper.use_analytical_placer = use_analytical_placer
     hyper.use_ILP_placer = place_using_ILP
-    logger.info(f'ILP runtime : {placer_ilp_runtime}')
     hyper.ILP_runtime_limit = placer_ilp_runtime # user specified runtime limit (in seconds) for ILP in each iteration of placer.
-    logger.info(f'ILP runtime : {hyper.ILP_runtime_limit}')
     current_node.black_box_flow = black_box_flow
 
     hyper.place_on_grid_constraints_json = place_on_grid_constraints_json

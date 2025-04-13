@@ -32,7 +32,7 @@ version = get_version(
     os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
         'align'))
-cmake_args = [f"-DALIGN_VERSION:string={version}"]
+cmake_args = [f"-DALIGN_VERSION:string={version}", "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
