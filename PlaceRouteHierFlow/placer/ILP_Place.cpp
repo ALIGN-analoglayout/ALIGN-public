@@ -1698,7 +1698,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         objective.data(), rhslb, rhsub, intvars.data());
 
     int ret = -1;
-    if (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP"))) {
+    if ((getenv("ALIGN_USE_GUROBI") != nullptr && std::atoi(getenv("ALIGN_USE_GUROBI"))) ||
+        (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP")))) {
       static std::string block_name;
       if (block_name != mydesign.name) {
         block_name = mydesign.name;
@@ -1795,20 +1796,23 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         rownames[i] = &(rownamesvec[i][0]);
       }
       solverif.writelp(const_cast<char*>((mydesign.name + "_ilp").c_str()), names, rownames);
-      std::string cmd("gurobi_cl ResultFile=");
-      cmd += mydesign.name;
-      cmd += "_ilp.sol TimeLimit=";
-      cmd += std::to_string(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
-      cmd += " ";
-      cmd += mydesign.name;
-      cmd += "_ilp.lp";
-      logger->info("ILP runtime limit : {0}", hyper.ILP_runtime_limit);
-      ret = system(cmd.c_str());
-      std::cout << "Gurobi return status : " << ret << std::endl;
+      if (getenv("ALIGN_USE_GUROBI") != nullptr) {
+        std::string cmd(getenv("ALIGN_USE_GUROBI"));
+        cmd.reserve(1024);
+        cmd += " ResultFile=";
+        cmd += mydesign.name;
+        cmd += "_ilp.sol TimeLimit=";
+        cmd += std::to_string(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
+        cmd += " ";
+        cmd += mydesign.name;
+        cmd += "_ilp.lp";
+        logger->info("ILP runtime limit : {0}", hyper.ILP_runtime_limit);
+        ret = system(cmd.c_str());
+      }
     }
     int status{0};
     solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
-    if (ret < 0) {
+    if (ret != 0) {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
       status = solverif.solve(hyper.NUM_THREADS);
     }
@@ -1825,7 +1829,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     //const int numsaved = model.numberSavedSolutions();
     sighandler = signal(SIGINT, sighandler);
 
-    if (ret < 0) {
+    if (ret != 0) {
       for (int i = 0;  i < 1; ++i) {
         //logger->info("obj : {0}", model.savedSolutionObjective(i));
         const double* var = solverif.solution();
