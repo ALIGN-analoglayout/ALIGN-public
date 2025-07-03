@@ -1698,7 +1698,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         objective.data(), rhslb, rhsub, intvars.data());
 
     int ret = -1;
-    if ((getenv("ALIGN_USE_GUROBI") != nullptr && std::atoi(getenv("ALIGN_USE_GUROBI"))) ||
+    if ((getenv("ALIGN_USE_GUROBI") != nullptr) ||
         (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP")))) {
       static std::string block_name;
       if (block_name != mydesign.name) {
