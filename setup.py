@@ -46,6 +46,7 @@ if build_testing and build_testing == 'ON':
 code_coverage = os.environ.get('CODE_COVERAGE', None)
 if code_coverage and code_coverage == 'ON':
     cmake_args.append("-DCODE_COVERAGE=ON")
+cmake_args.append("-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
 
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
@@ -99,8 +100,7 @@ setup(name='align',
           'dash',
           'typing_extensions; python_version<"3.8"',
           'memory_profiler',
-          'flatdict',
-          'mip'
+          'flatdict'
       ],
       extras_require={
           'test': [
