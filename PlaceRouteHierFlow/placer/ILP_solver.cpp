@@ -2079,7 +2079,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             rownames.push_back("O");
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+            auto spread = mydesign.getSpread(i, j, true);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
             rownames.push_back("O");
           }
         } else {
@@ -2095,7 +2096,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             rownames.push_back("O");
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
+            auto spread = mydesign.getSpread(i, j, false);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + (spread > 0 ? std::max(bias_Vgraph, spread) : spread));
             rownames.push_back("O");
           }
         }
@@ -2113,7 +2115,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             rownames.push_back("O");
           } else {
             sens.push_back('L');
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Vgraph, mydesign.getSpread(i, j, false)));
+            auto spread = mydesign.getSpread(i, j, false);
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - (spread > 0 ? std::max(bias_Vgraph, spread) : spread));
             rownames.push_back("O");
           }
         } else {
@@ -2129,7 +2132,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
             rownames.push_back("O");
           } else {
             sens.push_back('G');
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+            auto spread = mydesign.getSpread(i, j, true);
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
             rownames.push_back("O");
           }
         }
@@ -2405,7 +2409,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
         rownames.push_back("OR");
       } else {
         sens.push_back('L');
-        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - std::max(bias_Hgraph, mydesign.getSpread(i, j, true)));
+        auto spread = mydesign.getSpread(i, j, true);
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
         rownames.push_back("OR");
       }
     }
@@ -2423,7 +2428,8 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
         rownames.push_back("OR");
       } else {
         sens.push_back('L');
-        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - std::max(bias_Hgraph, mydesign.getSpread(i, j, false)));
+        auto spread = mydesign.getSpread(i, j, false);
+        rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
         rownames.push_back("OR");
       }
     }

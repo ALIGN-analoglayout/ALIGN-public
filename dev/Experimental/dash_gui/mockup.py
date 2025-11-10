@@ -118,7 +118,7 @@ def run_gui( DB, bboxes):
     logging.info( f'histo: {histo}')
 
     awcas = AppWithCallbacksAndState( [], histo, pairs, max_x, max_y)
-    awcas.app.run_server(debug=False)
+    awcas.app.run(debug=False)
 
 
 if __name__ == '__main__':
@@ -128,4 +128,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    AppWithCallbacksAndState( *main(args.block_str)).app.run_server(debug=True)
+    AppWithCallbacksAndState( *main(args.block_str)).app.run(debug=True)
