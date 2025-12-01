@@ -393,7 +393,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
 
             for formal_actual in instances[instance_name]['fa_map']:
                 formal, actual = formal_actual['formal'], formal_actual['actual']
-                if actual not in module['global_signals']:
+                if 'global_signals' not in module or actual not in module['global_signals']:
                     wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
 
         solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid,
@@ -426,7 +426,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
             # Annotate bounding box of pins to the module
             for formal_actual in instance['fa_map']:
                 formal, actual = formal_actual['formal'], formal_actual['actual']
-                if actual not in module['global_signals']:
+                if 'global_signals' not in module or actual not in module['global_signals']:
                     rect = concrete_template['pin_bbox'][formal]
                     if not rect:
                         continue
