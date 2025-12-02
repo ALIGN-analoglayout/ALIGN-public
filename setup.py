@@ -36,10 +36,8 @@ cmake_args = [f"-DALIGN_VERSION:string={version}"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
-if devmode:
-    build_type = os.environ.get("BUILD_TYPE", None)
-    if build_type: sys.argv.extend(['--build-type', build_type])
-    else: sys.argv.extend(['--build-type', 'Debug'])
+build_type = os.environ.get("BUILD_TYPE", None)
+if build_type: sys.argv.extend(['--build-type', build_type])
 build_testing = os.environ.get('BUILD_TESTING', None)
 if build_testing and build_testing == 'ON':
     cmake_args.append("-DBUILD_TESTING=ON")
@@ -80,7 +78,8 @@ setup(name='align',
           'bin/gen_lef_with_obs.py',
           'bin/gen_primitive_from_gds.py',
           'bin/gen_rt_hier_gds.py',
-          'bin/gen_pl_gds.py'
+          'bin/gen_pl_gds.py',
+          'bin/pythonic_placer_wrapper.py'
       ],
       install_requires=[
           'networkx>=2.4',
