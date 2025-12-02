@@ -206,7 +206,7 @@ def ota():
     return data
 
 
-DRAW = False
+DRAW = True
 
 
 def draw_placement(placement_data, module_name):
@@ -293,7 +293,7 @@ def test_place_spread():  # Test relies on ALIGN's constraint checker
     modules['ring_oscillator_stage']['constraints'].append({
         'constraint': 'Spread',
         'direction': 'vertical',
-        'distance': 100,
+        'distance': -500,
         'instances': [i['instance_name'] for i in modules['ring_oscillator_stage']['instances']]
         })
     placement_data = pythonic_placer('ring_oscillator_stage', input_data, scale_factor=10)
