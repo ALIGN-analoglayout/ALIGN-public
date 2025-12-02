@@ -107,6 +107,7 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
             continue
 
         # Select and call placement algorithm here
+        print(f'Placing {name}')
         place_using_sequence_pairs(placement_data, modules[name], top_level)
 
     check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)

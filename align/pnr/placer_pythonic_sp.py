@@ -141,7 +141,7 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
 def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=None, place_on_grid=None, scale_factor=1):
 
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
-    model.verbose = 0  # set to one to see more progress output with the solver
+    model.verbose = 0 # set to one to see more progress output with the solver
 
     upper_bound = 1e9  # 100mm=100e6nm=1e9 angstrom
     model.add_var(name='W', lb=0, ub=upper_bound)
@@ -158,12 +158,12 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             model.add_var(name=f'{name}_{tag}', var_type=mip.BINARY)
 
         # Instance width and height
-        model += model.var_by_name(f'{name}_urx') - model.var_by_name(f'{name}_llx') == size['x']
-        model += model.var_by_name(f'{name}_ury') - model.var_by_name(f'{name}_lly') == size['y']
+        model += model.var_by_name(f'{name}_urx') - model.var_by_name(f'{name}_llx') == size['x'], f'size_x_{name}'
+        model += model.var_by_name(f'{name}_ury') - model.var_by_name(f'{name}_lly') == size['y'], f'size_y_{name}'
 
         # All instances within the bounding box
-        model += model.var_by_name(f'{name}_urx') <= model.var_by_name('W')
-        model += model.var_by_name(f'{name}_ury') <= model.var_by_name('H')
+        model += model.var_by_name(f'{name}_urx') <= model.var_by_name('W'), f'{name}_W'
+        model += model.var_by_name(f'{name}_ury') <= model.var_by_name('H'), f'{name}_H'
 
         # PlaceOnGrid constraints
         if place_on_grid and name in place_on_grid:
@@ -186,7 +186,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     var = model.add_var(var_type=mip.BINARY)
                     offset_variables.append((offset, var))
                     if set(scalings) == {1}:
-                        model += var + flip <= 1
+                        model += var + flip <= 1 
                     elif set(scalings) == {-1}:
                         model += var <= flip
 
@@ -204,35 +204,36 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         name1 = reverse_map[index1]
         assert name0 != name1
         if instance_pos[name0] < instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:    # bb = LEFT
-            model += model.var_by_name(f'{name0}_urx') <= model.var_by_name(f'{name1}_llx')
+            model += model.var_by_name(f'{name0}_urx') <= model.var_by_name(f'{name1}_llx'), f'bb_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # aa = RIGHT
-            model += model.var_by_name(f'{name1}_urx') <= model.var_by_name(f'{name0}_llx')
+            model += model.var_by_name(f'{name1}_urx') <= model.var_by_name(f'{name0}_llx'), f'aa_{name0}_{name1}'
         elif instance_pos[name0] < instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # ba = ABOVE
-            model += model.var_by_name(f'{name1}_ury') <= model.var_by_name(f'{name0}_lly')
+            model += model.var_by_name(f'{name1}_ury') <= model.var_by_name(f'{name0}_lly'), f'ba_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:  # ab = BELOW
-            model += model.var_by_name(f'{name0}_ury') <= model.var_by_name(f'{name1}_lly')
+            model += model.var_by_name(f'{name0}_ury') <= model.var_by_name(f'{name1}_lly'), f'ab_{name0}_{name1}'
         else:
             assert False
 
     # Parse constraints
     net_priority = dict()
+    ctr = 0
     for constraint in constraint_schema.expand_user_constraints(constraints):
 
         if isinstance(constraint, constraint_schema.Boundary):
             if max_width := getattr(constraint, 'max_width', False):
-                model += model.var_by_name('W') <= max_width
+                model += model.var_by_name('W') <= max_width, f'boundary_W'
             if max_height := getattr(constraint, 'max_height', False):
-                model += model.var_by_name('H') <= max_height
+                model += model.var_by_name('H') <= max_height, f'boundary_H'
 
         elif isinstance(constraint, constraint_schema.PlaceOnBoundary):
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
-                model += model.var_by_name(f'{name}_ury') == model.var_by_name('H')
+                model += model.var_by_name(f'{name}_ury') == model.var_by_name('H'), f'boundary_ury_{name}'
             for name in constraint.instances_on(['south', 'southwest', 'southeast']):
-                model += model.var_by_name(f'{name}_lly') == 0
+                model += model.var_by_name(f'{name}_lly') == 0, f'boundary_lly_{name}'
             for name in constraint.instances_on(['east', 'northeast', 'southeast']):
-                model += model.var_by_name(f'{name}_urx') == model.var_by_name('W')
+                model += model.var_by_name(f'{name}_urx') == model.var_by_name('W'), f'boundary_urx_{name}'
             for name in constraint.instances_on(['west', 'northwest', 'southwest']):
-                model += model.var_by_name(f'{name}_llx') == 0
+                model += model.var_by_name(f'{name}_llx') == 0, f'boundary_llx_{name}'
 
         elif isinstance(constraint, constraint_schema.NetPriority):
             nets = getattr(constraint, 'nets')
@@ -248,7 +249,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             axis = supported_lines[line]
             i0 = instances[0]
             for i1 in instances[1:]:
-                model += model.var_by_name(f'{i0}_{axis}') == model.var_by_name(f'{i1}_{axis}')
+                model += model.var_by_name(f'{i0}_{axis}') == model.var_by_name(f'{i1}_{axis}'), f'{i0}_{i1}_{axis}'
 
         elif isinstance(constraint, constraint_schema.SymmetricBlocks):
             pairs = getattr(constraint, 'pairs')
@@ -256,13 +257,15 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             symmetry_line = model.add_var(lb=0, ub=upper_bound)
             for pair in pairs:
                 if len(pair) == 1:
-                    rel_tol = 10  # max distance from symmetry line should be less than 1/10th the block width
-                    model += (1-1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) <= 2*symmetry_line
-                    model += (1+1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) >= 2*symmetry_line
+                     #rel_tol = 10  # max distance from symmetry line should be less than 1/10th the block width
+                     #model += (1-1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) <= 2*symmetry_line
+                     #model += (1+1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) >= 2*symmetry_line
+                    model += (model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) == 2*symmetry_line, f'symm_{pair[0]}_{ctr}'
                 else:
                     model += model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}') + \
                              model.var_by_name(f'{pair[1]}_ll{axis}') + model.var_by_name(f'{pair[1]}_ur{axis}') == \
-                             4*symmetry_line
+                             4*symmetry_line, f'symm_{pair[0]}_{pair[1]}_{ctr}'
+            ctr += 1
 
         elif isinstance(constraint, constraint_schema.Spread):
             instances = getattr(constraint, 'instances')
@@ -271,8 +274,8 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             # TODO: If the elements are already ordered in sequence pair, no need to introduce a binary variable!
             for i0, i1 in itertools.combinations(instances, 2):
                 var = model.add_var(var_type=mip.BINARY)
-                model += distance - model.var_by_name(f'{i1}_ll{axis}') + model.var_by_name(f'{i0}_ur{axis}') - upper_bound*var <= 0
-                model += distance - model.var_by_name(f'{i0}_ll{axis}') + model.var_by_name(f'{i1}_ur{axis}') - upper_bound*(1-var) <= 0
+                model += distance - model.var_by_name(f'{i1}_ll{axis}') + model.var_by_name(f'{i0}_ur{axis}') - upper_bound*var <= 0, f'spread_{i0}_{i1}_{axis}0'
+                model += distance - model.var_by_name(f'{i0}_ll{axis}') + model.var_by_name(f'{i1}_ur{axis}') - upper_bound*(1-var) <= 0, f'spread_{i0}_{i1}_{axis}1'
 
     # Half perimeter wire length
     model.add_var(name='HPWL', lb=0, ub=upper_bound)
@@ -285,13 +288,13 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                 size = dict(zip("xy", instance_sizes[instance]))
                 for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
                     eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
-                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}')
-                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn
+                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}'), f'wl_{wire_name}_ur{axis}_{instance}_{offset}'
+                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn, f'wl_{wire_name}_ll{axis}_{instance}_{offset}'
 
         model += \
             mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - \
             mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == \
-            model.var_by_name('HPWL')
+            model.var_by_name('HPWL'), f'HPWL_{wire_name}'
 
     else:
         model += model.var_by_name('HPWL') == 0
@@ -301,24 +304,25 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     model.objective += model.var_by_name('W') + model.var_by_name('H') + scale_hpwl * model.var_by_name('HPWL')
 
-    model.write('model.lp')
+    model.write(f'model.lp')
 
     # Solve
+    model.verbose = 0
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
     if status == mip.OptimizationStatus.OPTIMAL:
         print(f'optimal solution found: cost={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
         print(f'solution with cost {model.objective_value} current lower bound: {model.objective_bound}')
     else:
-        print('No solution to ILP')
+          #print('No solution to ILP')
         return False
 
-    # if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
-    #     if model.verbose:
-    #         print('Solution:')
-    #         for v in model.vars:
-    #             print('\t', v.name, v.x)
-    #         print(f'Number of solutions: {model.num_solutions}')
+    if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
+        if model.verbose:
+            print('Solution:')
+            for v in model.vars:
+                print('\t', v.name, v.x)
+            print(f'Number of solutions: {model.num_solutions}')
 
     # Extract solution
     transformations = dict()
@@ -328,10 +332,10 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         oy = model.var_by_name(f'{name}_lly').x + fy * instance_sizes[name][1]
         sx = 1 if fx == 0 else -1
         sy = 1 if fy == 0 else -1
-        transformations[name] = {'oX': int(ox), 'oY': int(oy), 'sX': sx, 'sY': sy}
+        transformations[name] = {'oX': round(ox), 'oY': round(oy), 'sX': sx, 'sY': sy}
 
-    w = int(model.var_by_name('W').x)
-    h = int(model.var_by_name('H').x)
+    w = round(model.var_by_name('W').x)
+    h = round(model.var_by_name('H').x)
     solution = {
         'cost': model.objective.x,
         'width': w,
@@ -393,7 +397,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
 
             for formal_actual in instances[instance_name]['fa_map']:
                 formal, actual = formal_actual['formal'], formal_actual['actual']
-                if actual not in module['global_signals']:
+                if 'global_signals' not in module or actual not in module['global_signals']:
                     wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
 
         solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, place_on_grid=place_on_grid,
@@ -404,7 +408,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
             solution['block_variant'] = block_variant
             solutions.append(solution)
 
-    assert solutions, f'No placement solution found for {module}'
+    assert solutions, f'No placement solution found for {module["name"]}'
 
     # Annotate best K solutions to placement_data
     solutions.sort(key=lambda x: x['cost'])
@@ -426,7 +430,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
             # Annotate bounding box of pins to the module
             for formal_actual in instance['fa_map']:
                 formal, actual = formal_actual['formal'], formal_actual['actual']
-                if actual not in module['global_signals']:
+                if 'global_signals' not in module or actual not in module['global_signals']:
                     rect = concrete_template['pin_bbox'][formal]
                     if not rect:
                         continue

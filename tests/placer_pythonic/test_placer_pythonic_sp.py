@@ -12,7 +12,7 @@ from align.pnr.placer_pythonic_sp import enumerate_sequence_pairs, enumerate_blo
 
 DISABLE_TESTS = os.getenv('ENABLE_PYTHONIC_PLACER_TESTS', None) is None
 
-DRAW = False
+DRAW = True
 
 
 def draw(model, instance_map, instance_sizes=None, wires=None):
