@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "spdlog/spdlog.h"
+#include <array>
 
 std::mt19937_64 design::_rng{0};
 
@@ -78,6 +79,7 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
     for (int bb = 0; bb < it->instNum; ++bb) {
       block tmpblock;
       tmpblock.name = (it->instance).at(bb).name;
+      std::copy((it->instance).at(bb).wellType, (it->instance).at(bb).wellType + 4, tmpblock.wellType);
       // cout<<tmpblock.name<<endl;
       /*
       for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {
@@ -96,12 +98,12 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
       tmpblock.height = (it->instance).at(bb).height;
       if (!node.black_box_flow) {
         tmpblock.xoffset = (it->instance).at(bb).xoffset;
-        if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
+        //if (offsetpresent && tmpblock.xoffset.size() == 0) tmpblock.xoffset.push_back(0);
         tmpblock.xpitch = (it->instance).at(bb).xpitch;
         if (tmpblock.xpitch == 1) tmpblock.xpitch = gridx_pitch;
         tmpblock.xflip = (it->instance).at(bb).xflip;
         tmpblock.yoffset = (it->instance).at(bb).yoffset;
-        if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
+        //if (offsetpresent && tmpblock.yoffset.size() == 0) tmpblock.yoffset.push_back(0);
         tmpblock.ypitch = (it->instance).at(bb).ypitch;
         if (tmpblock.ypitch == 1) tmpblock.ypitch = gridy_pitch;
         tmpblock.yflip = (it->instance).at(bb).yflip;
@@ -330,6 +332,25 @@ design::design(PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo, const int seed) 
           vSpread[std::make_pair(*itb2, *itb1)] = it.distance;
         }
       }
+    }
+  }
+  // Add well type constraints
+  {
+    for (const auto& it : node.WellTypeConstraints) {
+      for (const auto& blkid : it.second.blocks) {
+        for (int i = 0; i < Blocks[blkid].size(); ++i) {
+          auto& bb = Blocks[blkid][i].wellType;
+          if (bb[0] == "NULL" && bb[1] == "NULL" && bb[2] == "NULL" && bb[3] == "NULL") {
+            bb[0] = it.first;
+            bb[1] = it.first;
+            bb[2] = it.first;
+            bb[3] = it.first;
+          }
+          //logger->info("block : {0} {1},{2},{3},{4}", i, bb[0], bb[1], bb[2], bb[3]);
+        }
+      }
+      wellSpacing[it.first] = std::make_pair(it.second.hdist, it.second.vdist);
+      //logger->info("well : {0} {1} {2}", it.first, it.second.hdist, it.second.vdist);
     }
   }
   constructSymmGroup();

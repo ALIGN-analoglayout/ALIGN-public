@@ -349,7 +349,7 @@ class Spread(HardConstraint):
             elif self.direction == 'vertical':
                 yield cc(b1, b2, 'y')
             else:
-                assert False, "Please speficy direction"
+                assert False, "Please specify direction"
 
     def yield_constraints(self):
         yield DoNotIdentify(instances=self.instances)
@@ -940,6 +940,94 @@ class DoNotIdentify(SoftConstraint):
         return value
 
 
+class WellType(SoftConstraint):
+    '''
+    Specify well type of `instances` that allows devices of same well type to overlap using a
+    a negative spacing between the blocks of same well type.
+
+    Args:
+        name (str) : Name of well
+        instances (list[str]): Optional List of `instances`
+        directions (str, optional): Direction for placement spread.
+            (:obj:`'horizontal'` or :obj:`'vertical'` or :obj:`None`)
+        distances (int): Distance in nanometer
+
+    Example: ::
+
+        {
+            "constraint": "WellType",
+            "name": "pwell",
+            "instances": ["MN0", "MN1", "MN2"],
+            "directions": ["horizontal", "vertical"],
+            "distances": [100, -100]
+        }
+    '''
+    name: str # well name
+    instances: Optional[List[str]]
+    directions: List[Literal['horizontal', 'vertical']]
+    distances: List[int]  # in nm
+
+    @types.validator('instances', allow_reuse=True)
+    def well_instances_validator(cls, value):
+        assert len(value) >= 1, 'Must contain at least one instance'
+        return validate_instances(cls, value)
+
+    def translate(self, solver):
+        assert len(self.directions) == len(self.distances), 'Length of directions must match distances'
+
+        def cc(b1, b2, d='x'):
+            od = 'y' if d == 'x' else 'x'
+            dist = [0, 0]
+            if d == 'x':
+                for i in range(len(self.directions)):
+                    if self.directions[i] == 'horizontal':
+                        dist[0] = self.distances[i]
+                    elif self.directions[i] == 'vertical':
+                        dist[1] = self.distances[i]
+            elif d == 'y':
+                for i in range(len(self.directions)):
+                    if self.directions[i] == 'horizontal':
+                        dist[1] = self.distances[i]
+                    elif self.directions[i] == 'vertical':
+                        dist[0] = self.distances[i]
+
+            return solver.Implies(
+                solver.And(  # distance between sidewalls in direction od
+                    solver.Abs(getattr(b1, f'll{od}') - getattr(b2, f'ur{od}')) >= dist[1],
+                    solver.Abs(getattr(b2, f'll{od}') - getattr(b1, f'ur{od}')) >= dist[1],
+                ),
+                solver.And(  # distance between sidewalls in direction d
+                    solver.Abs(getattr(b1, f'll{d}') - getattr(b2, f'ur{d}')) >= dist[0],
+                    solver.Abs(getattr(b2, f'll{d}') - getattr(b1, f'ur{d}')) >= dist[0],
+                )
+            )
+
+        if None != self.instances and len(self.instances) > 0:
+            bvars = solver.iter_bbox_vars(self.instances)
+            single = True
+            for b1, b2 in plain_itertools.combinations(bvars, 2):
+                single = False
+                for d in self.directions:
+                    if d == 'horizontal':
+                        yield cc(b1, b2, 'x')
+                    elif d == 'vertical':
+                        yield cc(b1, b2, 'y')
+                    else:
+                        assert False, "Please specify direction"
+            if single:
+                bv = solver.bbox_vars(self.instances)
+                x = solver.And(
+                        solver.Abs(getattr(bv, f'urx') - getattr(bv, f'llx')) >= 0,
+                        solver.Abs(getattr(bv, f'ury') - getattr(bv, f'lly')) >= 0,
+                    )
+                yield x
+        yield solver.And(True, True)
+
+    def yield_constraints(self):
+        yield DoNotIdentify(instances=self.instances)
+
+
+
 class SymmetricBlocks(HardConstraint):
     """SymmetricBlocks
 
@@ -1497,6 +1585,7 @@ ConstraintType = Union[
     SymmetricNets,
     MultiConnection,
     DoNotRoute,
+    WellType,
     # Setup constraints
     PowerPorts,
     GroundPorts,

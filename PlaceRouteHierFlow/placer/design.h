@@ -54,6 +54,7 @@ class design {
     string name = "";
     placerDB::bbox boundary;
     string type = "";
+    string wellType[4] = {"NULL", "NULL", "NULL", "NULL"};
     int width = 0;
     int height = 0;
     int SBidx = -1;
@@ -186,6 +187,7 @@ class design {
   bool mixFlag;
   // above is added by yg
   std::map<std::pair<int, int>, int> hSpread, vSpread;
+  std::map<std::string, std::pair<int, int> > wellSpacing;
 
 
   // void readBlockFile(string blockfile);
@@ -309,6 +311,27 @@ class design {
       }
     }
     return spread;
+  }
+  const int getWellSpacing(const int i, const int j, const int seli, const int selj, const bool horiz, const bool flipi = false, const bool flipj = false) const
+
+  // assumption is i is left of j or i is below j depending on horiz
+  {
+    if (!wellSpacing.empty()) {
+      if (horiz) {
+        auto& iwell = flipi ? Blocks[i][seli].wellType[2] : Blocks[i][seli].wellType[3];
+        auto& jwell = flipj ? Blocks[j][selj].wellType[3] : Blocks[j][selj].wellType[2];
+        if (iwell != "NULL" && jwell != "NULL" && iwell == jwell) {
+          return wellSpacing.at(iwell).first;
+        }
+      } else {
+        auto& iwell = flipi ? Blocks[i][seli].wellType[0] : Blocks[i][seli].wellType[1];
+        auto& jwell = flipj ? Blocks[j][selj].wellType[1] : Blocks[j][selj].wellType[0];
+        if (iwell != "NULL" && jwell != "NULL" && iwell == jwell) {
+          return wellSpacing.at(iwell).first;
+        }
+      }
+    }
+    return 0;
   }
   bool black_box_flow = false;
   // std::ofstream _debugofs;

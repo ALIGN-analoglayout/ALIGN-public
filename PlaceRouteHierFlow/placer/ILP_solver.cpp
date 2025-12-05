@@ -2080,7 +2080,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           } else {
             sens.push_back('L');
             auto spread = mydesign.getSpread(i, j, true);
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
+            if (spread == 0 ) {
+              spread = mydesign.getWellSpacing(i, j, curr_sp.selected[i], curr_sp.selected[j], true);
+            }
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - (spread >= 0 ? std::max(bias_Hgraph, spread) : spread));
+            //logger->info("{0} {1} hspce {2} {3} {4}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, spread, rhs.back(), -mydesign.Blocks[i][curr_sp.selected[i]].width);
             rownames.push_back("O");
           }
         } else {
@@ -2097,7 +2101,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           } else {
             sens.push_back('G');
             auto spread = mydesign.getSpread(i, j, false);
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + (spread > 0 ? std::max(bias_Vgraph, spread) : spread));
+            if (spread == 0 ) {
+              spread = mydesign.getWellSpacing(j, i, curr_sp.selected[j], curr_sp.selected[i], false);
+            }
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].height + (spread >= 0 ? std::max(bias_Vgraph, spread) : spread));
+            //logger->info("{0} {1} vspce {2} {3} {4}", mydesign.Blocks[j][0].name, mydesign.Blocks[i][0].name, spread, rhs.back(), mydesign.Blocks[j][curr_sp.selected[j]].height );
             rownames.push_back("O");
           }
         }
@@ -2116,7 +2124,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           } else {
             sens.push_back('L');
             auto spread = mydesign.getSpread(i, j, false);
-            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - (spread > 0 ? std::max(bias_Vgraph, spread) : spread));
+            if (spread == 0 ) {
+              spread = mydesign.getWellSpacing(i, j, curr_sp.selected[i], curr_sp.selected[j], false);
+            }
+            rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - (spread >= 0 ? std::max(bias_Vgraph, spread) : spread));
+            //logger->info("{0} {1} vspce {2} {3} {4}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, spread, rhs.back(), -mydesign.Blocks[i][curr_sp.selected[i]].height);
             rownames.push_back("O");
           }
         } else {
@@ -2133,7 +2145,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           } else {
             sens.push_back('G');
             auto spread = mydesign.getSpread(i, j, true);
-            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
+            if (spread == 0 ) {
+              spread = mydesign.getWellSpacing(j, i, curr_sp.selected[j], curr_sp.selected[i], false);
+            }
+            rhs.push_back(mydesign.Blocks[j][curr_sp.selected[j]].width + (spread >= 0 ? std::max(bias_Hgraph, spread) : spread));
+            //logger->info("{0} {1} hspce {2} {3} {4}", mydesign.Blocks[j][0].name, mydesign.Blocks[i][0].name, spread, rhs.back(), mydesign.Blocks[j][curr_sp.selected[j]].width);
             rownames.push_back("O");
           }
         }
@@ -2410,7 +2426,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       } else {
         sens.push_back('L');
         auto spread = mydesign.getSpread(i, j, true);
+        if (spread == 0 ) {
+          spread = mydesign.getWellSpacing(i, j, curr_sp.selected[i], curr_sp.selected[j], true);
+        }
         rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].width - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
+        //logger->info("{0} {1} spce {2} {3}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, spread, rhs.back(), -mydesign.Blocks[i][curr_sp.selected[i]].width);
         rownames.push_back("OR");
       }
     }
@@ -2429,7 +2449,11 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       } else {
         sens.push_back('L');
         auto spread = mydesign.getSpread(i, j, false);
+        if (spread == 0 ) {
+          spread = mydesign.getWellSpacing(i, j, curr_sp.selected[i], curr_sp.selected[j], false);
+        }
         rhs.push_back(-mydesign.Blocks[i][curr_sp.selected[i]].height - (spread > 0 ? std::max(bias_Hgraph, spread) : spread));
+        //logger->info("{0} {1} spce {2} {3}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, spread, rhs.back(), -mydesign.Blocks[i][curr_sp.selected[i]].height);
         rownames.push_back("OR");
       }
     }
@@ -2736,7 +2760,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
           }
         }
         solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp").c_str()), names, rownamesarr);
-        logger->debug("writing ilp file {0}", (mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp"));
+        logger->info("writing ilp file {0}", (mydesign.name + "_ilp_" + std::to_string(write_cnt) + "__" + std::to_string(snapGridILP) + ".lp"));
         ++write_cnt;
       }
     }
@@ -2762,6 +2786,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
       Blocks[i].y = roundupint(var[i * 4 + 1]);
       Blocks[i].H_flip = roundupint(var[i * 4 + 2]);
       Blocks[i].V_flip = roundupint(var[i * 4 + 3]);
+      //logger->info("Block {0} {1} {2},{3} {4},{5}", i, mydesign.Blocks[i][0].name, Blocks[i].x, Blocks[i].y, Blocks[i].H_flip, Blocks[i].V_flip);
     }
     // calculate HPWL from ILP solution
     for (int i = 0; i < mydesign.Nets.size(); ++i) {
@@ -2930,7 +2955,7 @@ double ILP_solver::GenerateValidSolution(const design& mydesign, const SeqPair& 
   if (!offsetpresent && mydesign.Blocks.size() > 1) {
     for (unsigned i = 0; i < mydesign.Blocks.size(); i++) {
       if ((Blocks[i].x % x_pitch) || (Blocks[i].y % y_pitch)) {
-        snapGridILP = true;
+        //snapGridILP = true;
         break;
       }
     }
@@ -5556,18 +5581,60 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
   node.width = UR.x + mydesign.halo_horizontal;
   node.height = UR.y + mydesign.halo_vertical;
   node.HPWL = HPWL;
+  // TODO : update edge well type from the constituent blocks
   node.HPWL_extend = HPWL_extend;
   node.HPWL_extend_wo_terminal = node.HPWL_extend - HPWL_extend_terminal;  // HPWL without terminal nets' HPWL
   node.area_norm = area_norm;
   node.HPWL_norm = HPWL_norm;
   node.constraint_penalty = constraint_penalty;
   node.cost = cost;
+  auto logger = spdlog::default_logger()->clone("placer.ILP_solver.UpdateHierNode");
 
   for (unsigned int i = 0; i < mydesign.Blocks.size(); ++i) {
     node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
     node.HPWL_extend += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     node.HPWL_extend_wo_terminal += node.Blocks[i].instance[node.Blocks.at(i).selectedInstance].HPWL_extend_wo_terminal;
     placerDB::Omark ort;
+    auto& selBlock = mydesign.Blocks[i][curr_sp.GetBlockSelected(i)];
+    //{
+    //  auto& bb = selBlock.wellType;
+    //  logger->info("block : {0} {1},{2},{3},{4}", i, bb[0], bb[1], bb[2], bb[3]);
+    //}
+    if (Blocks[i].x == 0) {
+      if (node.wellType[3] == "NULL") {
+        node.wellType[3] = selBlock.wellType[3];
+      } else {
+        if (selBlock.wellType[3] != "NULL" && selBlock.wellType[3] != node.wellType[3])
+          node.wellType[3] = "NULL";
+      }
+    }
+    if (Blocks[i].y == 0) {
+      if (node.wellType[1] == "NULL") {
+        node.wellType[1] = selBlock.wellType[1];
+      } else {
+        if (selBlock.wellType[1] != "NULL" && selBlock.wellType[1] != node.wellType[1])
+          node.wellType[1] = "NULL";
+      }
+    }
+    int width = node.Blocks.at(i).instance.at(node.Blocks.at(i).selectedInstance).width;
+    int height = node.Blocks.at(i).instance.at(node.Blocks.at(i).selectedInstance).height;
+    if (Blocks[i].x + width == UR.x) {
+      if (node.wellType[2] == "NULL") {
+        node.wellType[2] = selBlock.wellType[2];
+      } else {
+        if (selBlock.wellType[2] != "NULL" && selBlock.wellType[2] != node.wellType[2])
+          node.wellType[2] = "NULL";
+      }
+    }
+    if (Blocks[i].y + height == UR.y) {
+      if (node.wellType[0] == "NULL") {
+        node.wellType[0] = selBlock.wellType[0];
+      } else {
+        if (selBlock.wellType[0] != "NULL" && selBlock.wellType[0] != node.wellType[0])
+          node.wellType[0] = "NULL";
+      }
+    }
+    //logger->info("edge wells : {0},{1},{2},{3}", node.wellType[0], node.wellType[1], node.wellType[2], node.wellType[3]);
     if (Blocks[i].H_flip) {
       if (Blocks[i].V_flip)
         ort = placerDB::S;
@@ -5665,6 +5732,11 @@ void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, Pn
   bbox = mydesign.GetPlacedBlockAbsBoundary(i, ort, LL, sel);
   bpoint = mydesign.GetBlockAbsCenter(i, ort, LL, sel);
   auto& nd = node.Blocks.at(i).instance.at(sel);
+  auto & selBlock = mydesign.Blocks[i][sel];
+  nd.wellType[0] = selBlock.wellType[0];
+  nd.wellType[1] = selBlock.wellType[1];
+  nd.wellType[2] = selBlock.wellType[2];
+  nd.wellType[3] = selBlock.wellType[3];
 
   nd.orient = PnRDB::Omark(ort);
   nd.placedBox = ConvertBoundaryData(bbox);

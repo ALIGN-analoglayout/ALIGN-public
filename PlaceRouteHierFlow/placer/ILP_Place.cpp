@@ -658,7 +658,18 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       bool alignhij = (italignh != align_constr_map_h.end() && italignh->second.find(j) != italignh->second.end());
       bool alignvij = (italignv != align_constr_map_v.end() && italignv->second.find(j) != italignv->second.end());
       int hspace = mydesign.getSpread(i, j, true);
+      int hspace1 = hspace;
+      //if (hspace == 0) {
+      //  hspace = mydesign.getWellSpacing(i, j, true);
+      //  hspace1 = mydesign.getWellSpacing(j, i, true);
+      //}
       int vspace = mydesign.getSpread(i, j, false);
+      int vspace1 = vspace;
+      //if (vspace == 0) {
+      //  vspace = mydesign.getWellSpacing(i, j, false);
+      //  vspace1 = mydesign.getWellSpacing(j, i, false);
+      //}
+      logger->info("{0} {1} hspce {2},{3} vspace {4},{5}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, hspace, hspace1, vspace, vspace1);
       if (!alignhij && !alignvij) {
         buf_indx_map[std::make_pair(i, j)] = N_var++;
         buf_xy_indx_map[std::make_pair(i, j)] = N_var++;
@@ -681,7 +692,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(maxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(hspace);
+        rhs.push_back(hspace1);
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -709,7 +720,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[indxy].push_back(-maxdim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(-maxdim + vspace);
+        rhs.push_back(-maxdim + vspace1);
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -743,7 +754,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxxdim);
         constrvalues[j * 6 + 4].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(hspace);
+        rhs.push_back(hspace1);
         rowtype.push_back('o');
 
         rowindofcol[i * 6].push_back(rhs.size());
@@ -775,7 +786,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         constrvalues[ind].push_back(maxydim);
         constrvalues[j * 6 + 5].push_back(-1);
         sens.push_back('G');
-        rhs.push_back(vspace);
+        rhs.push_back(vspace1);
         rowtype.push_back('o');
 
         rowindofcol[i * 6 + 1].push_back(rhs.size());
@@ -1031,8 +1042,13 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
       constrvalues[i * 6 + 4 + v].push_back(1);
       constrvalues[j * 6 + v].push_back(-1);
       sens.push_back('L');
-      rhs.push_back(-std::max(bias, mydesign.getSpread(i, j, (v ? false : true))));
+      int space = mydesign.getSpread(i, j, (v ? false : true));
+      //if (space == 0) {
+      //  space = mydesign.getWellSpacing(i, j, (v ? false : true));
+      //}
+      rhs.push_back(-(space > 0 ? std::max(bias, space) : space));
       //rhs.push_back(-bias);
+      logger->info("{0} {1} spce {2} {3}", mydesign.Blocks[i][0].name, mydesign.Blocks[j][0].name, space, rhs.back());
       rowtype.push_back('v');
     }
     for (const auto& it : (v ? abut_v : abut_h)) {
@@ -1781,8 +1797,7 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
 
       char* names[N_var];
       for (unsigned i = 0; i < namesvec.size(); ++i) {
-        //if (namesvec[i].empty())
-        namesvec[i] = "x_" + std::to_string(i) + "\0";
+        if (namesvec[i].empty()) namesvec[i] = "x_" + std::to_string(i) + "\0";
         std::replace (namesvec[i].begin(), namesvec[i].end(), '<', '(');
         std::replace (namesvec[i].begin(), namesvec[i].end(), '>', ')');
         //std::replace_if (namesvec[i].begin(), namesvec[i].end(), [](char c){ return (!std::isalnum(c) && c != '\0'); } , '_');

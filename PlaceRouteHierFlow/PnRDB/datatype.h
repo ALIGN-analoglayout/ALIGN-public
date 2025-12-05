@@ -43,6 +43,7 @@ struct AlignBlock;
 struct Abument;
 struct MatchBlock;
 struct SpreadConstraint;
+struct WellTypeConstraint;
 struct BoundaryConstraint;
 struct lefMacro;
 struct blockComplex;
@@ -346,6 +347,7 @@ struct block {
   bbox originBox;
   point originCenter;
   string gdsFile = "";
+  string wellType[4] = {"NULL", "NULL", "NULL", "NULL"};
   // Placement information
   Omark orient;
   bbox placedBox;
@@ -449,6 +451,7 @@ struct hierNode {
   int height = 0;
   point LL;                 // hiernode absolute LL in topnode coordinate
   point UR;                 // hiernode absolute UR in topnode coordinate
+  string wellType[4] = {"NULL", "NULL", "NULL", "NULL"};   // well type of each edge; indices of edge: {0:N, 1:S, 2:W, 3:E}
   PnRDB::Omark abs_orient;  // hiernode absolute orient in topnode coordinate
   int n_copy = 0;           // number of hiernodes of the same type used in the whole design
   int numPlacement = 0;
@@ -513,6 +516,7 @@ struct hierNode {
   map<string, vector<std::tuple<string, string, double> > > CFValues;
   int CFdist_type = 0; // 0 : Manhattan 1 : Euclidean
   vector<SpreadConstraint> SpreadConstraints;
+  map<string, WellTypeConstraint> WellTypeConstraints;
 //  vector<Min_Max_Routing_Layer> Routing_Layers;
   vector<Min_Max_Routing_Layer_Per_Net> Routing_Layer_Per_Net;
   Routing_Layers_Info Routing_Layers;
@@ -581,6 +585,11 @@ struct SpreadConstraint {
   std::set<int> blocks;
   int horizon;
   int distance;
+};
+
+struct WellTypeConstraint {
+  std::set<int> blocks;
+  int hdist, vdist;
 };
 
 struct PortPos {

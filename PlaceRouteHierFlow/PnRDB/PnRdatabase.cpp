@@ -849,6 +849,7 @@ for(unsigned int i=0;i<hierTree[nodeID].Nets.size();i++){
         }
 
         auto& b = lhs.instance.back();
+        std::copy(updatedNode.wellType, updatedNode.wellType + 4, b.wellType);
 
         lhs.instNum++;
         b.gdsFile = updatedNode.gdsFile;

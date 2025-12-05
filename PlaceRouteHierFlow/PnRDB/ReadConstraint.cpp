@@ -659,6 +659,28 @@ void PnRdatabase::ReadConstraint_Json(PnRDB::hierNode& node, const string& jsonS
         if (!found) logger->error("Block {0} in Spread not found in netlist", block);
       }
       node.SpreadConstraints.push_back(s);
+    } else if (constraint["const_name"] == "WellType") {
+      PnRDB::WellTypeConstraint w;
+      w.hdist = 0;
+      w.vdist = 0;
+      std::string wellName = constraint["name"];
+      assert(constraint["directions"].size() == constraint["distances"]);
+      for (unsigned i = 0; i < constraint["directions"].size(); ++i) {
+        if (constraint["directions"][i] == "horizontal") w.hdist = constraint["distances"][i];
+        else w.vdist = constraint["distances"][i];
+      }
+      for (auto block : constraint["blocks"]) {
+        bool found{false};
+        for (int i = 0; i < (int)node.Blocks.size(); i++) {
+          if (node.Blocks.at(i).instance.back().name.compare(block) == 0) {
+            w.blocks.insert(i);
+            found = true;
+            break;
+          }
+        }
+        if (!found) logger->error("Block {0} in WellType not found in netlist", block);
+      }
+      node.WellTypeConstraints[wellName]=w;
     } else if (constraint["const_name"] == "Route") {
       PnRDB::Routing_Layers_Info tmp_routing;
       tmp_routing.global_min_layer = constraint["min_layer"];
