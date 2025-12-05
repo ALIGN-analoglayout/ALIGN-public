@@ -10,6 +10,9 @@ import itertools
 import more_itertools
 import networkx as nx
 from collections import defaultdict
+import numpy
+import random
+import z3
 
 import align.schema.constraint as constraint_schema
 from align.schema.hacks import VerilogJsonTop
@@ -18,10 +21,15 @@ from align.pnr.grid_constraints import gen_constraints_for_module
 from align.cell_fabric.transformation import Transformation, Rect
 
 class HyperParameters:
-    max_sequence_pairs = 100
+    max_sequence_pairs = 10000
     max_block_variants = 100
     max_candidates = 10000
-    max_solutions = 1
+    max_solutions = 4
+    Tmax = 0.5
+    Tmin = 0.05
+    alpha = 0.9995
+
+    LAMBDA=1.0
 
 def measure_time(func):
     def wrapper(*args, **kwargs):
@@ -32,9 +40,158 @@ def measure_time(func):
         return returned_value
     return wrapper
 
+class sequence_pair_enumerator:
+    def __init__(self, N:int, order:defaultdict, symmetry:defaultdict):
+        self.pseq = [z3.Int("p_%s" % i) for i in range(N)]
+        self.nseq = [z3.Int("n_%s" % i) for i in range(N)]
+        self.solver = z3.Solver()
+        self.N = N
+        pseq, nseq = self.pseq, self.nseq
+        self.solver.add([z3.And(0 <= pseq[i], pseq[i] <= (N-1), 0 <= nseq[i], nseq[i] <= (N-1)) for i in range(N)])
+    
+        self.solver.add(z3.Distinct([pseq[i] for i in range(N)]))
+        self.solver.add(z3.Distinct([nseq[i] for i in range(N)]))
+    
+    # ordering constraint
+        for key, val in order.items():
+            for blocks in val:
+                nblocks = len(blocks) - 1
+                if key == 'left_to_right':  # (before, before)
+                    self.solver.add(z3.And([pseq[blocks[i]] < pseq[blocks[i + 1]] for i in range(nblocks)]))
+                    self.solver.add(z3.And([nseq[blocks[i]] < nseq[blocks[i + 1]] for i in range(nblocks)]))
+                elif key == 'right_to_left': # (after, after)
+                    self.solver.add(z3.And([pseq[blocks[i]] > pseq[blocks[i + 1]] for i in range(nblocks)]))
+                    self.solver.add(z3.And([nseq[blocks[i]] > nseq[blocks[i + 1]] for i in range(nblocks)]))
+                elif key == 'bottom_to_top': # (after, before)
+                    self.solver.add(z3.And([pseq[blocks[i]] > pseq[blocks[i + 1]] for i in range(nblocks)]))
+                    self.solver.add(z3.And([nseq[blocks[i]] < nseq[blocks[i + 1]] for i in range(nblocks)]))
+                elif key == 'top_to_bottom': # (before, after)
+                    self.solver.add(z3.And([pseq[blocks[i]] < pseq[blocks[i + 1]] for i in range(nblocks)]))
+                    self.solver.add(z3.And([nseq[blocks[i]] > nseq[blocks[i + 1]] for i in range(nblocks)]))
+    # symmetry constraint: 'V': pairs should be left or right and pairs should be both above or below self_sym
+    # symmetry constraint: 'H': pairs should be above or below and pairs should be both left or right self_sym
+        for key, val in symmetry.items():
+            for blocks in val:
+                units = [blocks[i][0] for i in range(len(blocks)) if len(blocks[i]) == 1]
+                pairs = [blocks[i] for i in range(len(blocks)) if len(blocks[i]) == 2]
+                for u in units:
+                    for p in pairs:
+                        if key == 'V':
+                            # self_sym either above or below the pair or sandwiched
+                            self.solver.add(
+                                    z3.Or(
+                                        z3.And(pseq[u] > pseq[p[0]], pseq[u] > pseq[p[1]], nseq[u] < nseq[p[0]], nseq[u] < nseq[p[1]]),
+                                        z3.And(pseq[u] < pseq[p[0]], pseq[u] < pseq[p[1]], nseq[u] > nseq[p[0]], nseq[u] > nseq[p[1]]),
+                                        z3.And(pseq[u] > pseq[p[0]], pseq[u] < pseq[p[1]], nseq[u] > nseq[p[0]], nseq[u] < nseq[p[1]]),
+                                        z3.And(pseq[u] < pseq[p[0]], pseq[u] > pseq[p[1]], nseq[u] < nseq[p[0]], nseq[u] > nseq[p[1]])
+                                        )
+                                    )
+                        elif key == 'H':
+                            # self_sym either left or right of the pair or sandwiched
+                            self.solver.add(
+                                    z3.Or(
+                                        z3.And(pseq[u] > pseq[p[0]], pseq[u] > pseq[p[1]], nseq[u] > nseq[p[0]], nseq[u] > nseq[p[1]]),
+                                        z3.And(pseq[u] < pseq[p[0]], pseq[u] < pseq[p[1]], nseq[u] < nseq[p[0]], nseq[u] < nseq[p[1]]),
+                                        z3.And(pseq[u] > pseq[p[0]], pseq[u] < pseq[p[1]], nseq[u] < nseq[p[0]], nseq[u] > nseq[p[1]]),
+                                        z3.And(pseq[u] < pseq[p[0]], pseq[u] > pseq[p[1]], nseq[u] > nseq[p[0]], nseq[u] < nseq[p[1]])
+                                        )
+                                    )
+    
+                if len(units):
+                    for i in range(len(units)):
+                        for j in range(i + 1, len(units)):
+                            if key == 'V':
+                                # units are vertical
+                                self.solver.add(
+                                        z3.Or(
+                                            z3.And(pseq[units[i]] > pseq[units[j]], nseq[units[i]] < nseq[units[j]]),
+                                            z3.And(pseq[units[i]] < pseq[units[j]], nseq[units[i]] > nseq[units[j]])
+                                            )
+                                        )
+                            elif key == 'H':
+                                # units are horizontal
+                                self.solver.add(
+                                        z3.Or(
+                                            z3.And(units[i][units[i]] > pseq[units[j]], nseq[units[i]] > nseq[units[j]]),
+                                            z3.And(units[i][units[i]] < pseq[units[j]], nseq[units[i]] < nseq[units[j]])
+                                            )
+                                        )
+    
+                for p in pairs:
+                    if key == 'V':
+                        # pair is horizontal
+                        self.solver.add(
+                                z3.Or(
+                                    z3.And([pseq[p[0]] > pseq[p[1]], nseq[p[0]] > nseq[p[1]]]),
+                                    z3.And([pseq[p[0]] < pseq[p[1]], nseq[p[0]] < nseq[p[1]]])
+                                    )
+                                )
+                    elif key == 'H':
+                        # pair is vertical
+                        self.solver.add(
+                                z3.Or(
+                                    z3.And([pseq[p[0]] > pseq[p[1]], nseq[p[0]] < nseq[p[1]]]),
+                                    z3.And([pseq[p[0]] < pseq[p[1]], nseq[p[0]] > nseq[p[1]]])
+                                    )
+                                )
+                for i in range(len(pairs)):
+                    p = pairs[i]
+                    for j in range(i + 1, len(pairs)):
+                        q = pairs[j]
+                        if key == 'V':
+                            # pairs or above/below or sandwiched
+                            self.solver.add(
+                                    z3.Or(
+                                        z3.And(
+                                            pseq[p[0]] > pseq[q[0]], pseq[p[1]] > pseq[q[0]], nseq[p[0]] < nseq[q[0]], nseq[p[1]] < nseq[q[0]],
+                                            pseq[p[0]] > pseq[q[1]], pseq[p[1]] > pseq[q[0]], nseq[p[0]] < nseq[q[1]], nseq[p[1]] < nseq[q[1]]
+                                            ), # above/below
+                                        z3.And(
+                                            pseq[p[0]] < pseq[q[0]], pseq[p[1]] < pseq[q[0]], nseq[p[0]] > nseq[q[0]], nseq[p[1]] > nseq[q[0]],
+                                            pseq[p[0]] < pseq[q[1]], pseq[p[1]] < pseq[q[1]], nseq[p[0]] > nseq[q[1]], nseq[p[1]] > nseq[q[1]]
+                                            ),
+                                        z3.And(pseq[p[0]] < pseq[q[0]], pseq[p[1]] > pseq[q[1]], nseq[p[0]] < nseq[q[0]], nseq[p[1]] > nseq[q[1]]), # sandwiched
+                                        z3.And(pseq[p[0]] < pseq[q[1]], pseq[p[1]] > pseq[q[0]], nseq[p[1]] < nseq[q[0]], nseq[p[1]] > nseq[q[0]]), 
+                                        z3.And(pseq[p[0]] > pseq[q[0]], pseq[p[1]] < pseq[q[1]], nseq[p[0]] > nseq[q[0]], nseq[p[1]] < nseq[q[1]]),
+                                        z3.And(pseq[p[0]] > pseq[q[1]], pseq[p[1]] < pseq[q[0]], nseq[p[0]] > nseq[q[1]], nseq[p[1]] < nseq[q[0]])
+                                        )
+                                    )
+                        elif key == 'H':
+                            # self_sym either left or right of the pair or sandwiched
+                            self.solver.add(
+                                    z3.Or(
+                                        z3.And(
+                                            pseq[p[0]] > pseq[q[0]], pseq[p[1]] > pseq[q[0]], nseq[p[0]] > nseq[q[0]], nseq[p[1]] > nseq[q[0]],
+                                            pseq[p[0]] > pseq[q[1]], pseq[p[1]] > pseq[q[1]], nseq[p[0]] > nseq[q[1]], nseq[p[1]] > nseq[q[1]]
+                                            ), # left/right
+                                        z3.And(
+                                            pseq[p[0]] < pseq[q[0]], pseq[p[1]] < pseq[q[0]], nseq[p[0]] < nseq[q[0]], nseq[p[1]] < nseq[q[0]],
+                                            pseq[p[0]] < pseq[q[1]], pseq[p[1]] < pseq[q[1]], nseq[p[0]] < nseq[q[1]], nseq[p[1]] < nseq[q[1]]
+                                            ),
+                                        z3.And(pseq[p[0]] < pseq[q[0]], pseq[p[1]] > pseq[q[1]], nseq[p[0]] > nseq[q[0]], nseq[p[1]] < nseq[q[1]]), # sandwiched
+                                        z3.And(pseq[p[0]] < pseq[q[1]], pseq[p[1]] > pseq[q[0]], nseq[p[1]] > nseq[q[0]], nseq[p[1]] < nseq[q[0]]), 
+                                        z3.And(pseq[p[0]] > pseq[q[0]], pseq[p[1]] < pseq[q[1]], nseq[p[0]] < nseq[q[0]], nseq[p[1]] > nseq[q[1]]),
+                                        z3.And(pseq[p[0]] > pseq[q[1]], pseq[p[1]] < pseq[q[0]], nseq[p[0]] < nseq[q[1]], nseq[p[1]] > nseq[q[0]])
+                                        )
+                                    )
+    
+    def get_seq(self):
+        if self.solver.check() == z3.sat:
+            pos_seq = [0] * self.N
+            neg_seq = [0] * self.N
+            model = self.solver.model()
+            for i in range(self.N):
+                pos_seq[model[self.pseq[i]].as_long()] = i
+                neg_seq[model[self.nseq[i]].as_long()] = i
+            sol = z3.And([v == z3.IntVal(model[v]) for v in (self.pseq + self.nseq) ])
+            self.solver.append(z3.Not(sol))
+            return (pos_seq, neg_seq)
+        return None
+
 
 def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int):
 
+    """
     # Initialize constraint graphs
     pos_graph = nx.DiGraph()
     neg_graph = nx.DiGraph()
@@ -70,10 +227,27 @@ def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int
         for neg in nx.all_topological_sorts(neg_graph):
             sequence_pairs.append((tuple(pos), tuple(neg)))
             count += 1
-            if count > max_sequences:
+            if count > 10*max_sequences:
                 break
-        if count > max_sequences:
+        if count > 10*max_sequences:
             break
+    """
+    order = defaultdict(list)
+    symm  = defaultdict(list)
+    for constraint in constraint_schema.expand_user_constraints(constraints):
+        if isinstance(constraint, constraint_schema.Order):
+            order[constraint.direction].append([instance_map[i] for i in constraint.instances])
+        elif isinstance(constraint, constraint_schema.SymmetricBlocks):
+            pairs = getattr(constraint, 'pairs')
+            symm[getattr(constraint, 'direction')].append([[instance_map[i] for i in pair] for pair in pairs])
+    sp_enum = sequence_pair_enumerator(len(instance_map), order, symm)
+    sequence_pairs = list()
+    count = 1
+    ps = sp_enum.get_seq()
+    while (count <= max_sequences) and ps:
+        sequence_pairs.append(ps)
+        ps = sp_enum.get_seq()
+        count += 1
 
     return sequence_pairs
 
@@ -208,6 +382,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         elif isinstance(constraint, constraint_schema.SymmetricBlocks):
             pairs = getattr(constraint, 'pairs')
             axis = 'x' if getattr(constraint, 'direction') == 'V' else 'y'
+            orth = 'y' if getattr(constraint, 'direction') == 'V' else 'x'
             symmetry_line = model.add_var(lb=0, ub=upper_bound)
             for pair in pairs:
                 if len(pair) == 1:
@@ -219,6 +394,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}') + \
                              model.var_by_name(f'{pair[1]}_ll{axis}') + model.var_by_name(f'{pair[1]}_ur{axis}') == \
                              4*symmetry_line, f'symm_{pair[0]}_{pair[1]}_{ctr}'
+                    model += model.var_by_name(f'{pair[0]}_ll{orth}') == model.var_by_name(f'{pair[1]}_ll{orth}'), f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
             ctr += 1
 
         elif isinstance(constraint, constraint_schema.Spread):
@@ -264,9 +440,9 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     model.verbose = 0
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
     if status == mip.OptimizationStatus.OPTIMAL:
-        print(f'optimal solution found: cost={model.objective_value}')
+        print(f'optimal solution found : objective={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
-        print(f'solution with cost {model.objective_value} current lower bound: {model.objective_bound}')
+        print(f'solution with objective {model.objective_value} current lower bound: {model.objective_bound}')
     else:
           #print('No solution to ILP')
         return False
@@ -290,8 +466,9 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     w = round(model.var_by_name('W').x)
     h = round(model.var_by_name('H').x)
+    hyper_params = HyperParameters()
     solution = {
-        'cost': model.objective.x,
+        'cost': (w*h + model.var_by_name('HPWL').x * hyper_params.LAMBDA),
         'width': w,
         'height': h,
         'area': w*h,
@@ -301,6 +478,10 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     }
     return solution
 
+def accept(delC, T):
+    if delC <= 0: return True
+    delC = numpy.exp(delC)
+    return random.random() < numpy.exp(-delC/T)
 
 def place_using_sequence_pairs(placement_data, module, top_level):
 
@@ -320,7 +501,10 @@ def place_using_sequence_pairs(placement_data, module, top_level):
         cnt += 1
     assert cnt > 0, f'Module has no instances: {module}'
 
-    reverse_instance_map = {v: k for k, v in instance_map.items()}
+    reverse_instance_map = [None] * len(instance_map)
+    for k, v in instance_map.items():
+        reverse_instance_map[v] = k
+     #reverse_instance_map = {v: k for k, v in instance_map.items()}
 
     variant_map = defaultdict(list)
     for leaf in placement_data['leaves'] + placement_data['modules']:
@@ -338,7 +522,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
 
     solutions = list()
-    for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
+    def get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module):
         instance_sizes = dict()
         wires = defaultdict(list)
         for idx, selected in enumerate(block_variant):
@@ -351,22 +535,84 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                 formal, actual = formal_actual['formal'], formal_actual['actual']
                 if 'global_signals' not in module or actual not in module['global_signals']:
                     wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
+        return instance_sizes, wires
 
-        solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+    if True: #len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates: # enumerative placer
+        for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
-        if solution:
-            solution['sequence_pair'] = sequence_pair
-            solution['block_variant'] = block_variant
-            solutions.append(solution)
+            instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
+            solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+
+            if solution:
+                solution['sequence_pair'] = sequence_pair
+                solution['block_variant'] = block_variant
+                solutions.append(solution)
+    else:
+        assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
+        def perturb(sp, bv):
+            seq_pair = [list(sp[0]), list(sp[1])]
+            block_variant = copy.deepcopy(bv)
+            if len(seq_pair) <= 1: return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
+            s = random.randint(0, 2)
+            if s <= 1:
+                i = random.randint(0, len(seq_pair[0]) - 1)
+                j = random.randint(0, len(seq_pair[0]) - 1)
+                while j == i:
+                    j = random.randint(0, len(seq_pair[0]) - 1)
+                pi, pj = seq_pair[0][i], seq_pair[0][j]
+                seq_pair[0][i], seq_pair[0][j] = seq_pair[0][j], seq_pair[0][i]
+                if s == 1:
+                    i, j = seq_pair[1].index(pi), seq_pair[1].index(pj)
+                    seq_pair[1][i], seq_pair[1][j] = seq_pair[1][j], seq_pair[1][i]
+            elif s == 2:
+                block_variant = copy.deepcopy(bv)
+            return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
+        T = hyper_params.Tmax
+        solution = False
+        sequence_pair = sequence_pairs[0]
+        block_variant = [0] * len(sequence_pair[0])
+        count = 0
+        while count < hyper_params.max_candidates:
+            count += 1
+            instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
+            solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+            if solution:
+                solution['sequence_pair'] = sequence_pair
+                solution['block_variant'] = block_variant
+                solutions.append(solution)
+                break
+            else:
+                sequence_pair, block_variant = perturb(sequence_pair, block_variant)
+        if solution: print(f'Found sol {sequence_pair}')
+        else: print('No sol found')
+        C = solution['cost'] if solution else 0
+        minC = C
+
+        while T >= hyper_params.Tmin:
+            for i in range(10):
+                seq_pair_n, block_variant_n = perturb(sequence_pair, block_variant)
+                instance_sizes_n, wires_n = get_instances_wires(block_variant_n, reverse_instance_map, variant_map, instances, module)
+                solution = place_sequence_pair(constraints, instance_map, instance_sizes_n, seq_pair_n, wires=wires_n, scale_factor=placement_data['scale_factor'])
+                if solution:
+                    solution['sequence_pair'] = sequence_pair
+                    solution['block_variant'] = block_variant
+                    solutions.append(solution)
+                    Cnew = solution['cost']
+                    if accept(Cnew - C, T):
+                        C = Cnew
+                        sequence_pair, block_variant = seq_pair_n, block_variant_n
+                        if minC >= Cnew:
+                            minC = Cnew
+            T = T * hyper_params.alpha
 
     assert solutions, f'No placement solution found for {module["name"]}'
 
     # Annotate best K solutions to placement_data
     solutions.sort(key=lambda x: x['cost'])
+    if len(solutions) > hyper_params.max_solutions:
+        solutions = solutions[:hyper_params.max_solutions]
 
-    max_solutions = hyper_params.max_solutions if module['name'] == top_level else 1
-
-    for i in range(max_solutions):
+    for i in range(len(solutions)):
         solution = solutions[i]
         new_module = copy.deepcopy(module)
         pin_bbox = dict()
