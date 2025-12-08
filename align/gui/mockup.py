@@ -616,8 +616,9 @@ def run_gui( *, tagged_bboxes, module_name, lambda_coeff, port):
     hostname = socket.gethostname()
     fully_qualified_domain_name = socket.getfqdn(hostname)
     if None == port: port = find_free_port()
+    print(fully_qualified_domain_name)
 
-    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=port)
+    awcas.app.run(debug=True,use_reloader=False,host='127.0.0.1', port=port)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel
