@@ -23,11 +23,7 @@ from align.cell_fabric.transformation import Transformation, Rect
 class HyperParameters:
     max_sequence_pairs = 10000
     max_block_variants = 100
-<<<<<<< HEAD
-    max_candidates = 100
-=======
     max_candidates = 10000
->>>>>>> origin/dev/pythonic_placer_expt
     max_solutions = 4
     Tmax = 0.5
     Tmin = 0.05
@@ -357,7 +353,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             if max_height := getattr(constraint, 'max_height', False):
                 model += model.var_by_name('H') <= max_height, f'boundary_H'
 
-<<<<<<< HEAD
         elif isinstance(constraint, constraint_schema.Order):
             for i in range(len(constraint.instances) - 1):
                 i0 = constraint.instances[i]
@@ -371,8 +366,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                 elif constraint.direction == 'top_to_bottom':
                     model += model.var_by_name(f'{i0}_lly') >= model.var_by_name(f'{i1}_ury'), f'order_tb_{i0}_{i1}'
 
-=======
->>>>>>> origin/dev/pythonic_placer_expt
         elif isinstance(constraint, constraint_schema.PlaceOnBoundary):
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
                 model += model.var_by_name(f'{name}_ury') == model.var_by_name('H'), f'boundary_ury_{name}'
@@ -438,13 +431,8 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                 size = dict(zip("xy", instance_sizes[instance]))
                 for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
                     eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
-<<<<<<< HEAD
                     model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}'), f'wl_{wire_name}_ur{axis}_{instance}_{abs(offset)}'
                     model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn, f'wl_{wire_name}_ll{axis}_{instance}_{abs(offset)}'
-=======
-                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}'), f'wl_{wire_name}_ur{axis}_{instance}_{offset}'
-                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn, f'wl_{wire_name}_ll{axis}_{instance}_{offset}'
->>>>>>> origin/dev/pythonic_placer_expt
 
         model += \
             mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - \
@@ -457,11 +445,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Minimize the perimeter of the bounding box and normalized HPWL
     scale_hpwl = 1/len(wires) if wires else 1
 
-<<<<<<< HEAD
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
-=======
-    model.objective += model.var_by_name('W') + model.var_by_name('H') + scale_hpwl * model.var_by_name('HPWL')
->>>>>>> origin/dev/pythonic_placer_expt
 
     model.write(f'model.lp')
 
@@ -486,17 +470,12 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Extract solution
     transformations = dict()
     for name, _ in instance_map.items():
-<<<<<<< HEAD
         fx, fy = (1 if model.var_by_name(f'{name}_fx').x > 0.5 else 0), (1 if model.var_by_name(f'{name}_fy').x > 0.5 else 0)
-=======
-        fx, fy = model.var_by_name(f'{name}_fx').x, model.var_by_name(f'{name}_fy').x
->>>>>>> origin/dev/pythonic_placer_expt
         ox = model.var_by_name(f'{name}_llx').x + fx * instance_sizes[name][0]
         oy = model.var_by_name(f'{name}_lly').x + fy * instance_sizes[name][1]
         sx = 1 if fx == 0 else -1
         sy = 1 if fy == 0 else -1
         transformations[name] = {'oX': round(ox), 'oY': round(oy), 'sX': sx, 'sY': sy}
-<<<<<<< HEAD
          #print(name, transformations[name], instance_sizes[name])
     # overlap checker
     for inst0 in instance_map.keys():
@@ -511,8 +490,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
                 print(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
                 exit()
-=======
->>>>>>> origin/dev/pythonic_placer_expt
 
     w = round(model.var_by_name('W').x)
     h = round(model.var_by_name('H').x)
@@ -533,7 +510,6 @@ def accept(delC, T):
     delC = numpy.exp(delC)
     return random.random() < numpy.exp(-delC/T)
 
-<<<<<<< HEAD
 
 class block_enumerator:
     def __init__(self, constraints, instance_map, variant_counts_map, max_variants):
@@ -606,9 +582,6 @@ def perturb(sp, bv, benumerator):
     return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
 
 def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
-=======
-def place_using_sequence_pairs(placement_data, module, top_level):
->>>>>>> origin/dev/pythonic_placer_expt
 
     ATN = 'abstract_template_name'
     CTN = 'concrete_template_name'
@@ -629,10 +602,6 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     reverse_instance_map = [None] * len(instance_map)
     for k, v in instance_map.items():
         reverse_instance_map[v] = k
-<<<<<<< HEAD
-=======
-     #reverse_instance_map = {v: k for k, v in instance_map.items()}
->>>>>>> origin/dev/pythonic_placer_expt
 
     variant_map = defaultdict(list)
     for leaf in placement_data['leaves'] + placement_data['modules']:
@@ -665,13 +634,8 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                     wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
         return instance_sizes, wires
 
-<<<<<<< HEAD
     if enum_placer or (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
         for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates*10):
-=======
-    if True: #len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates: # enumerative placer
-        for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
->>>>>>> origin/dev/pythonic_placer_expt
 
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
             solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
@@ -682,37 +646,13 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                 solutions.append(solution)
     else:
         assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
-<<<<<<< HEAD
-=======
-        def perturb(sp, bv):
-            seq_pair = [list(sp[0]), list(sp[1])]
-            block_variant = copy.deepcopy(bv)
-            if len(seq_pair) <= 1: return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
-            s = random.randint(0, 2)
-            if s <= 1:
-                i = random.randint(0, len(seq_pair[0]) - 1)
-                j = random.randint(0, len(seq_pair[0]) - 1)
-                while j == i:
-                    j = random.randint(0, len(seq_pair[0]) - 1)
-                pi, pj = seq_pair[0][i], seq_pair[0][j]
-                seq_pair[0][i], seq_pair[0][j] = seq_pair[0][j], seq_pair[0][i]
-                if s == 1:
-                    i, j = seq_pair[1].index(pi), seq_pair[1].index(pj)
-                    seq_pair[1][i], seq_pair[1][j] = seq_pair[1][j], seq_pair[1][i]
-            elif s == 2:
-                block_variant = copy.deepcopy(bv)
-            return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
->>>>>>> origin/dev/pythonic_placer_expt
         T = hyper_params.Tmax
         solution = False
         sequence_pair = sequence_pairs[0]
         block_variant = [0] * len(sequence_pair[0])
         count = 0
-<<<<<<< HEAD
         benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
 # try and get a legal sequence pair using 
-=======
->>>>>>> origin/dev/pythonic_placer_expt
         while count < hyper_params.max_candidates:
             count += 1
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
@@ -721,22 +661,15 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                 solution['sequence_pair'] = sequence_pair
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
-<<<<<<< HEAD
                 print(f'Found a legal sequence pair in {count} iterations')
                 break
             else:
                 sequence_pair, block_variant = perturb(sequence_pair, block_variant, benumerator)
-=======
-                break
-            else:
-                sequence_pair, block_variant = perturb(sequence_pair, block_variant)
->>>>>>> origin/dev/pythonic_placer_expt
         if solution: print(f'Found sol {sequence_pair}')
         else: print('No sol found')
         C = solution['cost'] if solution else 0
         minC = C
 
-<<<<<<< HEAD
         count = 0
         while T >= hyper_params.Tmin:
             for i in range(10):
@@ -746,16 +679,6 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                 if solution:
                     solution['sequence_pair'] = seq_pair_n
                     solution['block_variant'] = block_variant_n
-=======
-        while T >= hyper_params.Tmin:
-            for i in range(10):
-                seq_pair_n, block_variant_n = perturb(sequence_pair, block_variant)
-                instance_sizes_n, wires_n = get_instances_wires(block_variant_n, reverse_instance_map, variant_map, instances, module)
-                solution = place_sequence_pair(constraints, instance_map, instance_sizes_n, seq_pair_n, wires=wires_n, scale_factor=placement_data['scale_factor'])
-                if solution:
-                    solution['sequence_pair'] = sequence_pair
-                    solution['block_variant'] = block_variant
->>>>>>> origin/dev/pythonic_placer_expt
                     solutions.append(solution)
                     Cnew = solution['cost']
                     if accept(Cnew - C, T):
@@ -763,14 +686,11 @@ def place_using_sequence_pairs(placement_data, module, top_level):
                         sequence_pair, block_variant = seq_pair_n, block_variant_n
                         if minC >= Cnew:
                             minC = Cnew
-<<<<<<< HEAD
                 count += 1
                 if count >= hyper_params.max_candidates:
                     break
             if count >= hyper_params.max_candidates:
                 break
-=======
->>>>>>> origin/dev/pythonic_placer_expt
             T = T * hyper_params.alpha
 
     assert solutions, f'No placement solution found for {module["name"]}'
@@ -887,11 +807,7 @@ def propagate_down_global_signals(modules: dict, module_name: str, global_signal
                 propagate_down_global_signals(modules, sub_module_name, signals_to_propagate)
 
 
-<<<<<<< HEAD
 def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
-=======
-def pythonic_placer(top_level, input_data, scale_factor=1):
->>>>>>> origin/dev/pythonic_placer_expt
 
     placement_data = dict()
     placement_data['modules'] = list()
@@ -932,14 +848,9 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
 
         # Select and call placement algorithm here
         print(f'Placing {name}')
-<<<<<<< HEAD
         place_using_sequence_pairs(placement_data, modules[name], top_level, enum_placer)
 
      #print(placement_data)
-=======
-        place_using_sequence_pairs(placement_data, modules[name], top_level)
-
->>>>>>> origin/dev/pythonic_placer_expt
     check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
 
     # Trim unused modules and leaves
@@ -994,11 +905,7 @@ def draw_placement(placement_data, module_name):
     fig.show()
 
 
-<<<<<<< HEAD
 def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
-=======
-def placer_wrapper(verilog, top, vmap, inputs, output, draw):
->>>>>>> origin/dev/pythonic_placer_expt
     with open(verilog, 'r') as fp:
         input_data = json.load(fp)
     with open(vmap, 'r') as fp:
@@ -1018,11 +925,7 @@ def placer_wrapper(verilog, top, vmap, inputs, output, draw):
     
     #with open('placement_input.json', "wt") as fp:
     #    fp.write(json.dumps(input_data, indent=2) + '\n')
-<<<<<<< HEAD
     placement_data = pythonic_placer(top, input_data, not sa)
-=======
-    placement_data = pythonic_placer(top, input_data)
->>>>>>> origin/dev/pythonic_placer_expt
     placement_data = trim_placement_data(placement_data, top)
     with open(output, "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
@@ -1036,10 +939,7 @@ if __name__ == '__main__':
   ap.add_argument( "-m", "--map", type=str, default="", help='<map file in the 3_pnr/inputs directory>')
   ap.add_argument( "-i", "--inputs", type=str, default="3_pnr/inputs", help='<path of 3_pnr/inputs directory>')
   ap.add_argument( "-o", "--output", type=str, default="placement_output.json", help='<output placement file>')
-<<<<<<< HEAD
   ap.add_argument( "-s", "--sa", action='store_true', help='<use simulated annealing placer>')
-=======
->>>>>>> origin/dev/pythonic_placer_expt
   ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
   args = ap.parse_args()
   print(f"verilog file : {args.verilog}")
@@ -1050,8 +950,4 @@ if __name__ == '__main__':
   if args.verilog == "" or args.inputs == "" or args.map == "" or args.top == "":
       ap.print_help()
       exit()
-<<<<<<< HEAD
   placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.sa, args.draw)
-=======
-  placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.draw)
->>>>>>> origin/dev/pythonic_placer_expt
