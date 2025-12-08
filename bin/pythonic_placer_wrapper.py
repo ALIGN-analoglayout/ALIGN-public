@@ -42,6 +42,9 @@ class Rect:
   def __repr__( self):
       return str(self.toList())
 
+  def overlaps(self, r):
+      return self.urx > r.llx and self.llx < r.urx and self.ury > r.lly and self.lly < r.ury
+
 class Transformation:
     @staticmethod
     def genTr( tag, *, w, h):
@@ -440,7 +443,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}') + \
                              model.var_by_name(f'{pair[1]}_ll{axis}') + model.var_by_name(f'{pair[1]}_ur{axis}') == \
                              4*symmetry_line, f'symm_{pair[0]}_{pair[1]}_{ctr}'
-                    model += model.var_by_name(f'{pair[0]}_ll{orth}') == model.var_by_name(f'{pair[1]}_ll{orth}'), f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
+                    model += model.var_by_name(f'{pair[0]}_ll{orth}') + model.var_by_name(f'{pair[0]}_ur{orth}') - model.var_by_name(f'{pair[1]}_ll{orth}') - model.var_by_name(f'{pair[1]}_ur{orth}') == 0, f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
             ctr += 1
 
         elif constraint['constraint'] == "Spread":
@@ -668,7 +671,7 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
         return instance_sizes, wires
 
     if enum_placer or (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
-        print("Choosing enumerative placer")
+        print("Enumerative placer")
         for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
@@ -679,7 +682,7 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
     else:
-        print("Choosing SA placer")
+        print("SA placer")
         assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
         T = hyper_params.Tmax
         solution = False
@@ -697,8 +700,9 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
                 solutions.append(solution)
                 print(f'Found a legal sequence pair in {count} iterations')
                 break
-        if solution: print(f'Found sol {sequence_pair}')
-        else: print('No sol found')
+        if not solution:
+            print('No sol found')
+            exit()
         C = solution['cost'] if solution else 0
         minC = C
 
@@ -816,6 +820,7 @@ def trim_placement_data(placement_data, top_level):
                 del elem['pin_bbox']
             if 'global_signals' in elem:
                 elem['global_signals'] = list(elem['global_signals'])
+    new_placement_data['scale_factor'] = placement_data['scale_factor']
 
     return new_placement_data
 
@@ -882,7 +887,6 @@ def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
         print(f'Placing {name}')
         place_using_sequence_pairs(placement_data, modules[name], top_level, enum_placer)
 
-     #print(placement_data)
 #check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
 
     # Trim unused modules and leaves
@@ -958,10 +962,96 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
     #with open('placement_input.json', "wt") as fp:
     #    fp.write(json.dumps(input_data, indent=2) + '\n')
     placement_data = pythonic_placer(top, input_data, not sa)
-    placement_data = trim_placement_data(placement_data, top)
     with open(output, "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
-    if draw: draw_placement(placement_data, f'{top}_0')
+    check_placement(placement_data)
+    if draw:
+        for module in placement_data['modules']:
+            if top in module["concrete_name"]:
+                draw_placement(placement_data, module["concrete_name"])
+
+def check_placement(placement_data):
+    leaves = {x['concrete_name']: x for x in placement_data['leaves']}
+    modules = {x['concrete_name']: x for x in placement_data['modules']}
+    scale_factor = placement_data['scale_factor']
+    for mname, module in modules.items():
+        bboxes = [None] * len(module['instances'])
+        instance_map = dict()
+        for i, instance in enumerate(module['instances']):
+            instance_map[instance['instance_name']] = i
+            concrete_name = instance['concrete_template_name']
+            if concrete_name in leaves:
+                bbox = leaves[concrete_name]['bbox']
+            elif concrete_name in modules:
+                bbox = modules[concrete_name]['bbox']
+            else:
+                assert False
+
+            bboxes[i] = Transformation( instance['transformation']['oX'], instance['transformation']['oY'],
+                instance['transformation']['sX'], instance['transformation']['sY']).hitRect(Rect(*bbox)).canonical()
+        for i in range(len(bboxes)):
+            for j in range(i + 1, len(bboxes)):
+                assert not bboxes[i].overlaps(bboxes[j]), f'{module["instances"][i]} and {module["instances"][j]} overlap'
+        for constraint in module['constraints']:
+            if constraint['constraint'] == 'Order':
+                instances = constraint['instances']
+                for i in range(len(instances) - 1):
+                    if constraint['direction'] == 'left_to_right':
+                        assert bboxes[instance_map[instances[i]]].urx <= bboxes[instance_map[instances[i + 1]]].llx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                    elif constraint['direction'] == 'right_to_left':
+                        assert bboxes[instance_map[instances[i]]].llx >= bboxes[instance_map[instances[i + 1]]].urx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                    elif constraint['direction'] == 'bottom_to_top':
+                        assert bboxes[instance_map[instances[i]]].ury <= bboxes[instance_map[instances[i + 1]]].lly, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                    elif constraint['direction'] == 'top_to_bottom':
+                        assert bboxes[instance_map[instances[i]]].lly >= bboxes[instance_map[instances[i + 1]]].ury, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+            elif constraint['constraint'] == 'SymmetricBlocks':
+                pairs = constraint['pairs']
+                for i in range(len(pairs)):
+                    bbox1 = bboxes[instance_map[pairs[i][0]]]
+                    bbox2 = bboxes[instance_map[pairs[i][0]]]
+                    if len(pairs[i]) == 2:
+                        bbox2 = bboxes[instance_map[pairs[i][1]]]
+                    if constraint['direction'] == 'V':
+                        assert bbox1.lly + bbox1.ury == bbox2.lly + bbox2.ury, f"Center Y's don't match for symm blocks {pairs[i]}"
+                    else:
+                        assert bbox1.llx + bbox1.urx == bbox2.llx + bbox2.urx, f"Center X's don't match for symm blocks {pairs[i]}"
+                bbox1 = bboxes[instance_map[pairs[0][0]]]
+                bbox2 = bboxes[instance_map[pairs[0][0]]]
+                if len(pairs[0]) == 2:
+                    bbox2 = bboxes[instance_map[pairs[0][1]]]
+                for pair in pairs[1:]:
+                    bbox3 = bboxes[instance_map[pair[0]]]
+                    bbox4 = bboxes[instance_map[pair[0]]]
+                    if len(pair) == 2:
+                        bbox4 = bboxes[instance_map[pair[1]]]
+                    if constraint['direction'] == 'V':
+                        assert bbox1.llx + bbox1.urx + bbox2.llx + bbox2.urx == bbox3.llx + bbox3.urx + bbox4.llx + bbox4.urx, f"Center X's don't match for symm blocks {pairs[0]} {pair}"
+                    else:
+                        assert bbox1.lly + bbox1.ury + bbox2.lly + bbox2.ury == bbox3.lly + bbox3.ury + bbox4.lly + bbox4.ury, f"Center Y's don't match for symm blocks {pairs[0]} {pair}"
+            elif constraint['constraint'] == "Align":
+                instances = constraint['instances']
+                line = constraint['line']
+                i0 = instances[0]
+                for i1 in instances[1:]:
+                    if line == 'h_bottom':
+                        assert bboxes[instance_map[i0]].lly == bboxes[instance_map[i1]].lly, f'Align h_bottom violation {i0} {i1}'
+                    elif line == 'h_top':
+                        assert bboxes[instance_map[i0]].ury == bboxes[instance_map[i1]].ury, f'Align h_top violation {i0} {i1}'
+                    elif line == 'v_left':
+                        assert bboxes[instance_map[i0]].llx == bboxes[instance_map[i1]].llx, f'Align v_left violation {i0} {i1}'
+                    elif line == 'v_right':
+                        assert bboxes[instance_map[i0]].urx == bboxes[instance_map[i1]].urx, f'Align v_right violation {i0} {i1}'
+            elif constraint['constraint'] == "Spread":
+                instances = constraint['instances']
+                distance = constraint['distance'] * scale_factor
+                for i0, i1 in itertools.combinations(instances, 2):
+                    bbox0, bbox1 = bboxes[instance_map[i0]], bboxes[instance_map[i1]]
+                    if constraint['direction'] == 'horizontal':
+                        assert bbox0.urx + distance <= bbox1.llx or bbox1.urx + distance <= bbox0.llx, f'Horizontal spread violation {i0} {i1}'
+                    else:
+                        assert bbox0.ury + distance <= bbox1.lly or bbox1.ury + distance <= bbox0.lly, f'Vertical spread violation {i0} {i1}'
+
+                    
 
 if __name__ == '__main__':
   import argparse
