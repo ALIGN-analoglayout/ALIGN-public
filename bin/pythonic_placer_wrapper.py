@@ -2,43 +2,116 @@
 import json
 import plotly.graph_objects as go
 import plotly.express as px
-
 import mip
-import time
 import copy
 import itertools
-import more_itertools
-import networkx as nx
 from collections import defaultdict
 import numpy
 import random
 import z3
 
-import align.schema.constraint as constraint_schema
-from align.schema.hacks import VerilogJsonTop
-from align.pnr.checker import check_placement
-from align.pnr.grid_constraints import gen_constraints_for_module
-from align.cell_fabric.transformation import Transformation, Rect
+#from align.pnr.checker import check_placement
+random.seed(0)
 
 class HyperParameters:
     max_sequence_pairs = 10000
     max_block_variants = 100
-    max_candidates = 10000
+    max_candidates = 1000
     max_solutions = 4
     Tmax = 0.5
     Tmin = 0.05
     alpha = 0.9995
-
     LAMBDA=1.0
 
-def measure_time(func):
-    def wrapper(*args, **kwargs):
-        s = time.time()
-        returned_value = func(*args, **kwargs)
-        e = time.time() - s
-        print(f'Elapsed time: {e:.3f} secs')
-        return returned_value
-    return wrapper
+class Rect:
+  def __init__( self, llx=None, lly=None, urx=None, ury=None):
+      self.llx = llx
+      self.lly = lly
+      self.urx = urx
+      self.ury = ury
+
+  def canonical( self):
+      [llx,lly,urx,ury] = self.toList()
+      if llx > urx: llx,urx = urx,llx
+      if lly > ury: lly,ury = ury,lly
+      return Rect( llx,lly,urx,ury)
+
+  def toList( self):
+      return [self.llx, self.lly, self.urx, self.ury]
+
+  def __repr__( self):
+      return str(self.toList())
+
+class Transformation:
+    @staticmethod
+    def genTr( tag, *, w, h):
+      sX,sY = { 'FN': (-1,1), 'FS': (1,-1), 'N': (1,1), 'S': (-1,-1)}[tag]
+      return Transformation( sX=sX, sY=sY, oX=0 if sX==1 else w, oY=0 if sY==1 else h)
+
+    def __init__( self, oX=0, oY=0, sX=1, sY=1):
+        self.oX = oX
+        self.oY = oY
+        self.sX = sX
+        self.sY = sY
+
+    def __repr__( self):
+      return f'Transformation(oX={self.oX}, oY={self.oY}, sX={self.sX}, sY={self.sY})'
+
+    def toTuple(self):
+      return self.oX, self.oY, self.sX, self.sY
+
+    def toDict(self):
+      return { 'oX':self.oX, 'oY':self.oY, 'sX':self.sX, 'sY':self.sY}
+
+    def __eq__(self, other):
+      return self.toTuple() == other.toTuple()
+
+    def __hash__(self):
+      return self.toTuple().__hash__()
+
+    def hit( self, p):
+        x,y = p
+        return self.sX * x + self.oX, self.sY * y + self.oY
+
+    def hitRect( self, r):
+        llx,lly = self.hit( (r.llx, r.lly))
+        urx,ury = self.hit( (r.urx, r.ury))
+        return Rect( llx, lly, urx, ury)
+
+    def inv(self):
+        # A.sX 0    A.oX     B.sX 0    B.oX      1 0 0
+        # 0    A.sY A.oY     0    B.sY B.oY      0 1 0
+        # 0    0    1        0    0    1         0 0 1
+        #
+        # A.sX = B.sX
+        # A.sY = B.sY
+        # A.sX B.oX + A.oX = 0
+        # A.sY B.oY + A.oY = 0
+        # =>
+        # B.oX = -A.oX / A.sX = -A.oX * A.sX
+        # B.oY = -A.oY / A.sY = -A.oY * A.sY
+        return Transformation( sX=self.sX,          sY=self.sY,
+                               oX=-self.oX*self.sX, oY=-self.oY*self.sY)
+
+
+    @staticmethod
+    def mult( A, B):
+        # A.sX 0    A.oX     B.sX 0    B.oX
+        # 0    A.sY A.oY     0    B.sY B.oY
+        # 0    0    1        0    0    1
+        C = Transformation()
+        C.sX = A.sX * B.sX
+        C.sY = A.sY * B.sY
+        C.oX = A.sX * B.oX + A.oX
+        C.oY = A.sY * B.oY + A.oY
+        return C
+
+    def preMult( self, A):
+      return self.__class__.mult( A, self)
+
+    def postMult( self, A):
+      return self.__class__.mult( self, A)
+
 
 class sequence_pair_enumerator:
     def __init__(self, N:int, order:defaultdict, symmetry:defaultdict):
@@ -191,55 +264,14 @@ class sequence_pair_enumerator:
 
 def enumerate_sequence_pairs(constraints, instance_map: dict, max_sequences: int):
 
-    """
-    # Initialize constraint graphs
-    pos_graph = nx.DiGraph()
-    neg_graph = nx.DiGraph()
-    pos_graph.add_nodes_from(range(len(instance_map)))
-    neg_graph.add_nodes_from(range(len(instance_map)))
-
-    # Add edges to constraint graphs
-    for constraint in constraint_schema.expand_user_constraints(constraints):
-        if isinstance(constraint, constraint_schema.Order):
-            for i0, i1 in more_itertools.pairwise(constraint.instances):
-                if constraint.direction == 'left_to_right':    # (before,before)
-                    pos_graph.add_edge(instance_map[i0], instance_map[i1])
-                    neg_graph.add_edge(instance_map[i0], instance_map[i1])
-
-                elif constraint.direction == 'right_to_left':  # (after, after)
-                    pos_graph.add_edge(instance_map[i1], instance_map[i0])
-                    neg_graph.add_edge(instance_map[i1], instance_map[i0])
-
-                elif constraint.direction == 'bottom_to_top':  # (after, before)
-                    pos_graph.add_edge(instance_map[i1], instance_map[i0])
-                    neg_graph.add_edge(instance_map[i0], instance_map[i1])
-
-                elif constraint.direction == 'top_to_bottom':  # (before, after)
-                    pos_graph.add_edge(instance_map[i0], instance_map[i1])
-                    neg_graph.add_edge(instance_map[i1], instance_map[i0])
-                else:
-                    pass
-
-    # Generate sequences using topological sort
-    count = 1
-    sequence_pairs = list()
-    for pos in nx.all_topological_sorts(pos_graph):
-        for neg in nx.all_topological_sorts(neg_graph):
-            sequence_pairs.append((tuple(pos), tuple(neg)))
-            count += 1
-            if count > 10*max_sequences:
-                break
-        if count > 10*max_sequences:
-            break
-    """
     order = defaultdict(list)
     symm  = defaultdict(list)
-    for constraint in constraint_schema.expand_user_constraints(constraints):
-        if isinstance(constraint, constraint_schema.Order):
-            order[constraint.direction].append([instance_map[i] for i in constraint.instances])
-        elif isinstance(constraint, constraint_schema.SymmetricBlocks):
-            pairs = getattr(constraint, 'pairs')
-            symm[getattr(constraint, 'direction')].append([[instance_map[i] for i in pair] for pair in pairs])
+    for constraint in constraints:
+        if constraint['constraint'] == "Order":
+            order[constraint['direction']].append([instance_map[i] for i in constraint["instances"]])
+        elif constraint['constraint'] == "SymmetricBlocks":
+            pairs = constraint['pairs']
+            symm[constraint['direction']].append([[instance_map[i] for i in pair] for pair in pairs])
     sp_enum = sequence_pair_enumerator(len(instance_map), order, symm)
     sequence_pairs = list()
     count = 1
@@ -257,9 +289,9 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
     # Group instances that should use the same concrete template
     groups = list()
     grouped_instances = set()
-    for constraint in constraint_schema.expand_user_constraints(constraints):
-        if isinstance(constraint, constraint_schema.SameTemplate):
-            set_of_instances = set(constraint.instances)
+    for constraint in constraints:
+        if constraint['constraint'] == "SameTemplate":
+            set_of_instances = set(constraint["instances"])
             grouped_instances = set.union(grouped_instances, set_of_instances)
             group_exists = False
             for i, group in enumerate(groups):
@@ -345,28 +377,29 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Parse constraints
     net_priority = dict()
     ctr = 0
-    for constraint in constraint_schema.expand_user_constraints(constraints):
-
-        if isinstance(constraint, constraint_schema.Boundary):
-            if max_width := getattr(constraint, 'max_width', False):
+    for constraint in constraints:
+        if constraint['constraint'] == "Boundary":
+            if max_width := constraint['max_width'] if 'max_width' in constraint else False:
                 model += model.var_by_name('W') <= max_width, f'boundary_W'
-            if max_height := getattr(constraint, 'max_height', False):
+            if max_height := constraint['max_height'] if 'max_height' in constraint else False:
                 model += model.var_by_name('H') <= max_height, f'boundary_H'
 
-        elif isinstance(constraint, constraint_schema.Order):
-            for i in range(len(constraint.instances) - 1):
-                i0 = constraint.instances[i]
-                i1 = constraint.instances[i + 1]
-                if constraint.direction == 'left_to_right':
+        elif constraint['constraint'] == "Order":
+            insts = constraint["instances"]
+            for i in range(len(insts) - 1):
+                i0 = insts[i]
+                i1 = insts[i + 1]
+                if constraint["direction"] == 'left_to_right':
                     model += model.var_by_name(f'{i0}_urx') <= model.var_by_name(f'{i1}_llx'), f'order_lr_{i0}_{i1}'
-                elif constraint.direction == 'right_to_left':
+                elif constraint["direction"] == 'right_to_left':
                     model += model.var_by_name(f'{i0}_llx') >= model.var_by_name(f'{i1}_urx'), f'order_rl_{i0}_{i1}'
-                elif constraint.direction == 'bottom_to_top':
+                elif constraint["direction"] == 'bottom_to_top':
                     model += model.var_by_name(f'{i0}_ury') <= model.var_by_name(f'{i1}_lly'), f'order_bt_{i0}_{i1}'
-                elif constraint.direction == 'top_to_bottom':
+                elif constraint["direction"] == 'top_to_bottom':
                     model += model.var_by_name(f'{i0}_lly') >= model.var_by_name(f'{i1}_ury'), f'order_tb_{i0}_{i1}'
 
-        elif isinstance(constraint, constraint_schema.PlaceOnBoundary):
+        elif constraint == "PlaceOnBoundary":
+# TODO : fix this
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
                 model += model.var_by_name(f'{name}_ury') == model.var_by_name('H'), f'boundary_ury_{name}'
             for name in constraint.instances_on(['south', 'southwest', 'southeast']):
@@ -376,15 +409,15 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             for name in constraint.instances_on(['west', 'northwest', 'southwest']):
                 model += model.var_by_name(f'{name}_llx') == 0, f'boundary_llx_{name}'
 
-        elif isinstance(constraint, constraint_schema.NetPriority):
-            nets = getattr(constraint, 'nets')
-            weight = getattr(constraint, 'weight')
+        elif constraint['constraint'] == "NetPriority":
+            nets = constraint['nets']
+            weight = constraint['weight']
             for net in nets:
                 net_priority[net] = weight
 
-        elif isinstance(constraint, constraint_schema.Align):
-            instances = getattr(constraint, 'instances')
-            line = getattr(constraint, 'line')
+        elif constraint['constraint'] == "Align":
+            instances = constraint['instances']
+            line = constraint['line']
             supported_lines = {'h_bottom': 'lly', 'h_top': 'ury', 'v_left': 'llx', 'v_right': 'urx'}
             assert line in supported_lines, f'{line} not supported. Please choose among {supported_lines.keys()}'
             axis = supported_lines[line]
@@ -392,10 +425,10 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             for i1 in instances[1:]:
                 model += model.var_by_name(f'{i0}_{axis}') == model.var_by_name(f'{i1}_{axis}'), f'{i0}_{i1}_{axis}'
 
-        elif isinstance(constraint, constraint_schema.SymmetricBlocks):
-            pairs = getattr(constraint, 'pairs')
-            axis = 'x' if getattr(constraint, 'direction') == 'V' else 'y'
-            orth = 'y' if getattr(constraint, 'direction') == 'V' else 'x'
+        elif constraint['constraint'] == "SymmetricBlocks":
+            pairs = constraint['pairs']
+            axis = 'x' if constraint['direction'] == 'V' else 'y'
+            orth = 'y' if constraint['direction'] == 'V' else 'x'
             symmetry_line = model.add_var(lb=0, ub=upper_bound)
             for pair in pairs:
                 if len(pair) == 1:
@@ -410,10 +443,10 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{pair[0]}_ll{orth}') == model.var_by_name(f'{pair[1]}_ll{orth}'), f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
             ctr += 1
 
-        elif isinstance(constraint, constraint_schema.Spread):
-            instances = getattr(constraint, 'instances')
-            distance = getattr(constraint, 'distance') * scale_factor
-            axis = 'x' if getattr(constraint, 'direction') == 'horizontal' else 'y'
+        elif constraint['constraint'] == "Spread":
+            instances = constraint['instances']
+            distance = constraint['distance'] * scale_factor
+            axis = 'x' if constraint['direction'] == 'horizontal' else 'y'
             # TODO: If the elements are already ordered in sequence pair, no need to introduce a binary variable!
             for i0, i1 in itertools.combinations(instances, 2):
                 var = model.add_var(var_type=mip.BINARY)
@@ -518,9 +551,9 @@ class block_enumerator:
         self.variant_counts = list()
         grouped_instances = set()
         reverse_map = {v: k for k, v in instance_map.items()}
-        for constraint in constraint_schema.expand_user_constraints(constraints):
-            if isinstance(constraint, constraint_schema.SameTemplate):
-                set_of_instances = set([instance_map[i] for i in constraint.instances])
+        for constraint in constraints:
+            if constraint['constraint'] == "SameTemplate":
+                set_of_instances = set([instance_map[i] for i in constraint["instances"]])
                 grouped_instances = set.union(grouped_instances, set_of_instances)
                 group_exists = False
                 for i, group in enumerate(self.groups):
@@ -612,7 +645,7 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
     for instance in module['instances']:
         variant_counts[instance['instance_name']] = len(variant_map[instance[ATN]])
 
-    verilog_json = VerilogJsonTop.parse_obj({'modules': [module]})
+    verilog_json = {'modules': [module]}
     constraints = verilog_json['modules'][0]['constraints']
 
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
@@ -635,7 +668,8 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
         return instance_sizes, wires
 
     if enum_placer or (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
-        for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates*10):
+        print("Choosing enumerative placer")
+        for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
             solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
@@ -645,31 +679,30 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
     else:
+        print("Choosing SA placer")
         assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
         T = hyper_params.Tmax
         solution = False
         sequence_pair = sequence_pairs[0]
         block_variant = [0] * len(sequence_pair[0])
         count = 0
-        benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
-# try and get a legal sequence pair using 
-        while count < hyper_params.max_candidates:
+# try and get a legal sequence pair using z3
+        for sequence_pair in sequence_pairs:
             count += 1
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
             solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
-            if solution:
+            if solution or count >= hyper_params.max_candidates:
                 solution['sequence_pair'] = sequence_pair
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
                 print(f'Found a legal sequence pair in {count} iterations')
                 break
-            else:
-                sequence_pair, block_variant = perturb(sequence_pair, block_variant, benumerator)
         if solution: print(f'Found sol {sequence_pair}')
         else: print('No sol found')
         C = solution['cost'] if solution else 0
         minC = C
 
+        benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
         count = 0
         while T >= hyper_params.Tmin:
             for i in range(10):
@@ -677,13 +710,13 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
                 instance_sizes_n, wires_n = get_instances_wires(block_variant_n, reverse_instance_map, variant_map, instances, module)
                 solution = place_sequence_pair(constraints, instance_map, instance_sizes_n, seq_pair_n, wires=wires_n, scale_factor=placement_data['scale_factor'])
                 if solution:
-                    solution['sequence_pair'] = seq_pair_n
-                    solution['block_variant'] = block_variant_n
+                    solution['sequence_pair'] = copy.deepcopy(seq_pair_n)
+                    solution['block_variant'] = copy.deepcopy(block_variant_n)
                     solutions.append(solution)
                     Cnew = solution['cost']
                     if accept(Cnew - C, T):
                         C = Cnew
-                        sequence_pair, block_variant = seq_pair_n, block_variant_n
+                        sequence_pair, block_variant = copy.deepcopy(seq_pair_n), copy.deepcopy(block_variant_n)
                         if minC >= Cnew:
                             minC = Cnew
                 count += 1
@@ -743,7 +776,6 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
 
         modules = {module['concrete_name']: module for module in placement_data['modules']}
         leaves = {leaf['concrete_name']: leaf for leaf in placement_data['leaves']}
-        gen_constraints_for_module(new_module, modules, leaves)
 
 def compute_topoorder(modules, concrete_name, key='abstract_template_name'):
     found_modules, found_leaves = set(), set()
@@ -851,7 +883,7 @@ def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
         place_using_sequence_pairs(placement_data, modules[name], top_level, enum_placer)
 
      #print(placement_data)
-    check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
+#check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
 
     # Trim unused modules and leaves
     placement_data = trim_placement_data(placement_data, top_level)
