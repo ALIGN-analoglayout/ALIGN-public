@@ -9,9 +9,14 @@ from collections import defaultdict
 import numpy
 import random
 import z3
+import bisect
+import logging
 
 #from align.pnr.checker import check_placement
 random.seed(0)
+ATN = 'abstract_template_name'
+CTN = 'concrete_template_name'
+
 
 class HyperParameters:
     max_sequence_pairs = 10000
@@ -483,25 +488,25 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
 
-    model.write(f'model.lp')
+#model.write(f'model.lp')
 
     # Solve
     model.verbose = 0
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
     if status == mip.OptimizationStatus.OPTIMAL:
-        print(f'optimal solution found : objective={model.objective_value}')
+        logging.debug(f'optimal solution found : objective={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
-        print(f'solution with objective {model.objective_value} current lower bound: {model.objective_bound}')
+        logging.debug(f'solution with objective {model.objective_value} current lower bound: {model.objective_bound}')
     else:
-          #print('No solution to ILP')
+        logging.debug('No solution to ILP')
         return False
 
     if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
         if model.verbose:
-            print('Solution:')
+            logging.debug('Solution:')
             for v in model.vars:
-                print('\t', v.name, v.x)
-            print(f'Number of solutions: {model.num_solutions}')
+                logging.debug(f'\t{v.name} {v.x}')
+            logging.debug(f'Number of solutions: {model.num_solutions}')
 
     # Extract solution
     transformations = dict()
@@ -524,7 +529,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             model.var_by_name(f'{inst1}_urx').x, model.var_by_name(f'{inst1}_ury').x]
             r1 = [round(i) for i in r1]
             if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
-                print(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
+                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
                 exit()
 
     w = round(model.var_by_name('W').x)
@@ -537,8 +542,236 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         'area': w*h,
         'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
         'transformations': transformations,
-        'model': model
+        'model': model,
+        'sequence_pair': copy.deepcopy(sequence_pair),
     }
+    return solution
+
+
+def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all, instance_pins_all, scale_factor):
+    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
+    model.verbose = 0 # set to one to see more progress output with the solver
+
+    upper_bound = 1e9  # 100mm=100e6nm=1e9 angstrom
+    model.add_var(name='W', lb=0, ub=upper_bound)
+    model.add_var(name='H', lb=0, ub=upper_bound)
+
+    instance_names = list(instance_map.keys())
+    for name in instance_names:
+        # Define instance variables
+        for tag in ['x', 'y', 'width', 'height']:
+            model.add_var(name=f'{name}_{tag}', lb=0, ub=upper_bound)
+        for tag in ['fx', 'fy']:
+            model.add_var(name=f'{name}_{tag}', var_type=mip.BINARY)
+        numvariants = len(instance_sizes_all[name])
+        if numvariants > 1:
+            sel_vars = [model.add_var(name=f'{name}_sel_{i}', var_type=mip.BINARY) for i in range(len(instance_sizes_all[name]))]
+            model += mip.xsum(sel_vars) == 1, f'select_{name}'
+            model += model.var_by_name(f'{name}_width') == mip.xsum([instance_sizes_all[name][i][0] * sel_vars[i] for i in range(len(sel_vars))]), f'width_sel_{name}'
+            model += model.var_by_name(f'{name}_height') == mip.xsum([instance_sizes_all[name][i][1] * sel_vars[i] for i in range(len(sel_vars))]), f'height_sel_{name}'
+        elif numvariants == 1:
+            model += model.var_by_name(f'{name}_width') == instance_sizes_all[name][0][0], f'width_sel_{name}'
+            model += model.var_by_name(f'{name}_height') == instance_sizes_all[name][0][1], f'height_sel_{name}'
+        else:
+            assert False, f'Num variants of {name} is 0'
+        model += model.var_by_name(f'{name}_width') + model.var_by_name(f'{name}_x') <= model.var_by_name('W'), f'width_{name}'
+        model += model.var_by_name(f'{name}_height') + model.var_by_name(f'{name}_y') <= model.var_by_name('H'), f'height_{name}'
+
+    # Parse constraints
+    net_priority = dict()
+    ctr = 0
+    symmctr = 0
+    spreadx = defaultdict(int)
+    spready = defaultdict(int)
+    for constraint in constraints:
+        if constraint['constraint'] == "Spread":
+            instances = constraint['instances']
+            distance = constraint['distance'] * scale_factor
+            for i0, i1 in itertools.combinations(instances, 2):
+                if constraint['direction'] == 'horizontal':
+                    spreadx[(i0, i1)] = distance
+                    spreadx[(i1, i0)] = distance
+                elif constraint['direction'] == 'horizontal':
+                    spready[(i0, i1)] = distance
+                    spready[(i1, i0)] = distance
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Boundary":
+            if max_width := constraint['max_width'] if 'max_width' in constraint else False:
+                model += model.var_by_name('W') <= max_width, f'boundary_W'
+            if max_height := constraint['max_height'] if 'max_height' in constraint else False:
+                model += model.var_by_name('H') <= max_height, f'boundary_H'
+
+        elif constraint['constraint'] == "Order":
+            insts = constraint["instances"]
+            for i in range(len(insts) - 1):
+                i0 = insts[i]
+                i1 = insts[i + 1]
+                if constraint["direction"] == 'left_to_right':
+                    model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') <= model.var_by_name(f'{i1}_x'), f'order_lr_{i0}_{i1}'
+                elif constraint["direction"] == 'right_to_left':
+                    model += model.var_by_name(f'{i0}_x') >= model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'order_rl_{i0}_{i1}'
+                elif constraint["direction"] == 'bottom_to_top':
+                    model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') <= model.var_by_name(f'{i1}_y'), f'order_bt_{i0}_{i1}'
+                elif constraint["direction"] == 'top_to_bottom':
+                    model += model.var_by_name(f'{i0}_y') >= model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height') , f'order_tb_{i0}_{i1}'
+
+        elif constraint == "PlaceOnBoundary":
+# TODO : fix this
+            for name in constraint.instances_on(['north', 'northwest', 'northeast']):
+                model += model.var_by_name(f'{name}_y') + model.var_by_name(f'{name}_height') == model.var_by_name('H'), f'boundary_ury_{name}'
+            for name in constraint.instances_on(['south', 'southwest', 'southeast']):
+                model += model.var_by_name(f'{name}_y') == 0, f'boundary_lly_{name}'
+            for name in constraint.instances_on(['east', 'northeast', 'southeast']):
+                model += model.var_by_name(f'{name}_x') + model.var_by_name(f'{name}_width') == model.var_by_name('W'), f'boundary_urx_{name}'
+            for name in constraint.instances_on(['west', 'northwest', 'southwest']):
+                model += model.var_by_name(f'{name}_x') == 0, f'boundary_llx_{name}'
+
+        elif constraint['constraint'] == "NetPriority":
+            nets = constraint['nets']
+            weight = constraint['weight']
+            for net in nets:
+                net_priority[net] = weight
+
+        elif constraint['constraint'] == "Align":
+            instances = constraint['instances']
+            line = constraint['line']
+            supported_lines = {'h_bottom': 'lly', 'h_top': 'ury', 'v_left': 'llx', 'v_right': 'urx'}
+            assert line in supported_lines, f'{line} not supported. Please choose among {supported_lines.keys()}'
+            axis = supported_lines[line]
+            i0 = instances[0]
+            for i1 in instances[1:]:
+                if line == 'h_bottom':
+                    model += model.var_by_name(f'{i0}_y') == model.var_by_name(f'{i1}_y'), f'{i0}_{i1}_lly'
+                elif line == 'h_top':
+                    model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') == model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height'), f'{i0}_{i1}_ury'
+                elif line == 'v_left':
+                    model += model.var_by_name(f'{i0}_x') == model.var_by_name(f'{i1}_x'), f'{i0}_{i1}_llx'
+                elif line == 'v_right':
+                    model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') == model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'{i0}_{i1}_urx'
+
+        elif constraint['constraint'] == "SymmetricBlocks":
+            pairs = constraint['pairs']
+            (axis, orth, dim, dim_orth) = ('x', 'y', 'width', 'height') if constraint['direction'] == 'V' else ('y', 'x', 'height', 'width')
+            symmetry_line = model.add_var(name=f'symm_{symmctr}', lb=0, ub=upper_bound)
+            symmctr += 1
+            for pair in pairs:
+                if len(pair) == 1:
+                    model += (2 * model.var_by_name(f'{pair[0]}_{axis}') + model.var_by_name(f'{pair[0]}_{dim}')) == 2 * symmetry_line, f'symm_{pair[0]}_{ctr}'
+                else:
+                    model += model.var_by_name(f'{pair[0]}_f{axis}') + model.var_by_name(f'{pair[1]}_f{axis}') == 1
+                    model += 2 * model.var_by_name(f'{pair[0]}_{axis}') + model.var_by_name(f'{pair[0]}_{dim}') + \
+                             2 * model.var_by_name(f'{pair[1]}_{axis}') + model.var_by_name(f'{pair[1]}_{dim}') == \
+                             4*symmetry_line, f'symm_{pair[0]}_{pair[1]}_{ctr}'
+                    model += 2 * model.var_by_name(f'{pair[0]}_{orth}') + model.var_by_name(f'{pair[0]}_{dim_orth}') == 2 * model.var_by_name(f'{pair[1]}_{orth}') + model.var_by_name(f'{pair[1]}_{dim_orth}'), f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
+            ctr += 1
+
+    for i in range(len(instance_names)):
+        insti = instance_names[i]
+        xi, yi, wi, hi = model.var_by_name(f'{insti}_x'), model.var_by_name(f'{insti}_y'), model.var_by_name(f'{insti}_width'), model.var_by_name(f'{insti}_height')
+        for j in range(i + 1, len(instance_names)):
+            instj = instance_names[j]
+            xj, yj, wj, hj = model.var_by_name(f'{instj}_x'), model.var_by_name(f'{instj}_y'), model.var_by_name(f'{instj}_width'), model.var_by_name(f'{instj}_height')
+            t1 = model.add_var(name=f't1_{insti}_{instj}', var_type=mip.BINARY)
+            t2 = model.add_var(name=f't2_{insti}_{instj}', var_type=mip.BINARY)
+            sx = spreadx[(insti, instj)]
+            sy = spready[(insti, instj)]
+            model += xi + wi + sx - xj - upper_bound * t1 - upper_bound * t2 <= 0, f'{insti}_{instj}_x_nooverlap'
+            model += xj + wj + (-upper_bound + sx) - xi + upper_bound * t1 - upper_bound * t2 <= 0, f'{instj}_{insti}_x_nooverlap'
+            model += yi + hi + (-upper_bound + sy) - yj - upper_bound * t1 + upper_bound * t2 <= 0, f'{insti}_{instj}_y_nooverlap'
+            model += yj + hj + (-2 * upper_bound + sy) - yi + upper_bound * t1 + upper_bound * t2 <= 0, f'{instj}_{insti}_y_nooverlap'
+
+
+    # Half perimeter wire length
+    model.add_var(name='HPWL', lb=0, ub=upper_bound)
+    if wires:
+        for wire_name, inst_pins in wires.items():
+            for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
+                model.add_var(name=f'{wire_name}_{tag}{axis}')
+        model += mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == model.var_by_name('HPWL'), f'HPWL'
+
+    else:
+        model += model.var_by_name('HPWL') == 0
+
+    """
+            for instance, bbox in instance_bbox:
+                size = dict(zip("xy", instance_sizes[instance]))
+                for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
+                    eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
+                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}'), f'wl_{wire_name}_ur{axis}_{instance}_{abs(offset)}'
+                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn, f'wl_{wire_name}_ll{axis}_{instance}_{abs(offset)}'
+
+    """
+
+    # Minimize the perimeter of the bounding box and normalized HPWL
+    scale_hpwl = 1/len(wires) if wires else 1
+
+    model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
+
+    model.write('x.lp')
+
+    # Solve
+    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
+    if status == mip.OptimizationStatus.OPTIMAL:
+        logging.debug(f'optimal solution found : objective={model.objective_value}')
+    elif status == mip.OptimizationStatus.FEASIBLE:
+        logging.debug(f'solution with objective {model.objective_value} current lower bound: {model.objective_bound}')
+    else:
+        logging.debug('No solution to ILP')
+        return False
+
+    if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
+        if model.verbose:
+            logging.debug('Solution:')
+            for v in model.vars:
+                logging.debug(f'\t{v.name} {v.x}')
+            logging.debug(f'Number of solutions: {model.num_solutions}')
+
+    # Extract solution
+    transformations = dict()
+    for name, _ in instance_map.items():
+        fx, fy = (1 if model.var_by_name(f'{name}_fx').x > 0.5 else 0), (1 if model.var_by_name(f'{name}_fy').x > 0.5 else 0)
+        ox = model.var_by_name(f'{name}_x').x + fx * model.var_by_name(f'{name}_width').x
+        oy = model.var_by_name(f'{name}_y').x + fy * model.var_by_name(f'{name}_height').x
+        sx = 1 if fx == 0 else -1
+        sy = 1 if fy == 0 else -1
+        transformations[name] = {'oX': round(ox), 'oY': round(oy), 'sX': sx, 'sY': sy}
+         #print(name, transformations[name], instance_sizes[name])
+    # overlap checker
+    for inst0 in instance_map.keys():
+        r0 = [model.var_by_name(f'{inst0}_x').x, model.var_by_name(f'{inst0}_y').x,
+        model.var_by_name(f'{inst0}_width').x, model.var_by_name(f'{inst0}_height').x]
+        r0 = [round(i) for i in r0]
+        r0 = [r0[0], r0[1], r0[0] + r0[2], r0[1] + r0[3]]
+        for inst1 in instance_map.keys():
+            if inst0 == inst1: continue
+            r1 = [model.var_by_name(f'{inst1}_x').x, model.var_by_name(f'{inst1}_y').x,
+            model.var_by_name(f'{inst1}_width').x, model.var_by_name(f'{inst1}_height').x]
+            r1 = [round(i) for i in r1]
+            r1 = [r1[0], r1[1], r1[0] + r1[2], r1[1] + r1[3]]
+            if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
+                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
+                exit()
+
+    w = round(model.var_by_name('W').x)
+    h = round(model.var_by_name('H').x)
+    hyper_params = HyperParameters()
+    solution = {
+        'cost': (w*h + model.var_by_name('HPWL').x * hyper_params.LAMBDA),
+        'width': w,
+        'height': h,
+        'area': w*h,
+        'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
+        'transformations': transformations,
+        'model': model,
+        'block_variant':[0]*len(instance_names)
+    }
+    for i, name in enumerate(instance_names):
+        if len(instance_sizes_all[name]) > 1:
+            for j in range(len(instance_sizes_all[name])):
+                if model.var_by_name(f'{name}_sel_{j}').x > 0.5:
+                    solution['block_variant'][i] = j
+                    break
     return solution
 
 def accept(delC, T):
@@ -617,10 +850,56 @@ def perturb(sp, bv, benumerator):
         block_variant = benumerator.get_random_variant()
     return (tuple(seq_pair[0]), tuple(seq_pair[1])), block_variant
 
-def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
+class solution_array():
+    def __init__(self, N):
+        self.slist = list()
+        self.N = N
 
-    ATN = 'abstract_template_name'
-    CTN = 'concrete_template_name'
+    def append(self, solution):
+        bisect.insort(self.slist, solution, key=lambda x:x['cost'])
+        self.slist = self.slist[0:self.N]
+
+    def array(self):
+        return self.slist
+
+def get_all_instances_pins_wires(reverse_instance_map, variant_map, instances, module):
+    instance_sizes = dict()
+    instance_pins = dict()
+    wires = defaultdict(list)
+    for idx in range(len(reverse_instance_map)):
+        instance_name = reverse_instance_map[idx]
+        sizes = list()
+        pindicts = list()
+        for ct in variant_map[instances[instance_name][ATN]]:
+            bbox = ct['bbox']
+            sizes.append([bbox[2] - bbox[0], bbox[3] - bbox[1]])
+            pindicts.append(ct['pin_bbox'])
+        instance_sizes[instance_name] = sizes
+        instance_pins[instance_name] = pindicts
+
+        for formal_actual in instances[instance_name]['fa_map']:
+            formal, actual = formal_actual['formal'], formal_actual['actual']
+            if 'global_signals' not in module or actual not in module['global_signals']:
+                wires[actual].append((instance_name, formal))
+    return instance_sizes, instance_pins, wires
+
+def get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module):
+    instance_sizes = dict()
+    wires = defaultdict(list)
+    for idx, selected in enumerate(block_variant):
+        instance_name = reverse_instance_map[idx]
+        concrete_template = variant_map[instances[instance_name][ATN]][selected]
+        bbox = concrete_template['bbox']
+        instance_sizes[instance_name] = [bbox[2] - bbox[0], bbox[3] - bbox[1]]
+
+        for formal_actual in instances[instance_name]['fa_map']:
+            formal, actual = formal_actual['formal'], formal_actual['actual']
+            if 'global_signals' not in module or actual not in module['global_signals']:
+                wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
+    return instance_sizes, wires
+
+
+def place_using_sequence_pairs(placement_data, module, enum_placer):
 
     hyper_params = HyperParameters()
 
@@ -654,91 +933,85 @@ def place_using_sequence_pairs(placement_data, module, top_level, enum_placer):
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
 
-    solutions = list()
-    def get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module):
-        instance_sizes = dict()
-        wires = defaultdict(list)
-        for idx, selected in enumerate(block_variant):
-            instance_name = reverse_instance_map[idx]
-            concrete_template = variant_map[instances[instance_name][ATN]][selected]
-            bbox = concrete_template['bbox']
-            instance_sizes[instance_name] = [bbox[2] - bbox[0], bbox[3] - bbox[1]]
-
-            for formal_actual in instances[instance_name]['fa_map']:
-                formal, actual = formal_actual['formal'], formal_actual['actual']
-                if 'global_signals' not in module or actual not in module['global_signals']:
-                    wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
-        return instance_sizes, wires
+    solutions = solution_array(hyper_params.max_solutions)
 
     if enum_placer or (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
-        print("Enumerative placer")
+        logging.info("Enumerative placer")
         for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
             instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
             solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
 
             if solution:
-                solution['sequence_pair'] = sequence_pair
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
     else:
-        print("SA placer")
-        assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
-        T = hyper_params.Tmax
-        solution = False
-        sequence_pair = sequence_pairs[0]
-        block_variant = [0] * len(sequence_pair[0])
-        count = 0
+        logging.info("ILP placer")
+        instance_sizes_all, instance_pins_all, wires = get_all_instances_pins_wires(reverse_instance_map, variant_map, instances, module)
+        solution = place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
+        if solution:
+            solutions.append(solution)
+        else:
+            logging.info("SA placer")
+            assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
+            T = hyper_params.Tmax
+            solution = False
+            sequence_pair = sequence_pairs[0]
+            block_variant = [0] * len(sequence_pair[0])
+            count = 0
+            numfails = 0
 # try and get a legal sequence pair using z3
-        for sequence_pair in sequence_pairs:
-            count += 1
-            instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
-            solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
-            if solution or count >= hyper_params.max_candidates:
-                solution['sequence_pair'] = sequence_pair
-                solution['block_variant'] = block_variant
-                solutions.append(solution)
-                print(f'Found a legal sequence pair in {count} iterations')
-                break
-        if not solution:
-            print('No sol found')
-            exit()
-        C = solution['cost'] if solution else 0
-        minC = C
-
-        benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
-        count = 0
-        while T >= hyper_params.Tmin:
-            for i in range(10):
-                seq_pair_n, block_variant_n = perturb(sequence_pair, block_variant, benumerator)
-                instance_sizes_n, wires_n = get_instances_wires(block_variant_n, reverse_instance_map, variant_map, instances, module)
-                solution = place_sequence_pair(constraints, instance_map, instance_sizes_n, seq_pair_n, wires=wires_n, scale_factor=placement_data['scale_factor'])
-                if solution:
-                    solution['sequence_pair'] = copy.deepcopy(seq_pair_n)
-                    solution['block_variant'] = copy.deepcopy(block_variant_n)
-                    solutions.append(solution)
-                    Cnew = solution['cost']
-                    if accept(Cnew - C, T):
-                        C = Cnew
-                        sequence_pair, block_variant = copy.deepcopy(seq_pair_n), copy.deepcopy(block_variant_n)
-                        if minC >= Cnew:
-                            minC = Cnew
+            for sequence_pair in sequence_pairs:
                 count += 1
+                instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
+                solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+                if solution or count >= hyper_params.max_candidates:
+                    solution['block_variant'] = block_variant
+                    solutions.append(solution)
+                    logging.info(f'Found a legal sequence pair in {count} iterations')
+                    break
+                if not solution: numfails += 1
+            if not solution:
+                logging.error('No sol found')
+                exit()
+            C = solution['cost'] if solution else 0
+            minC = C
+
+            numfails = 0
+            benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
+            count = 0
+            while T >= hyper_params.Tmin:
+                for i in range(10):
+                    seq_pair_n, block_variant_n = perturb(sequence_pair, block_variant, benumerator)
+                    instance_sizes_n, wires_n = get_instances_wires(block_variant_n, reverse_instance_map, variant_map, instances, module)
+                    solution = place_sequence_pair(constraints, instance_map, instance_sizes_n, seq_pair_n, wires=wires_n, scale_factor=placement_data['scale_factor'])
+                    if solution:
+                        solution['block_variant'] = copy.deepcopy(block_variant_n)
+                        solutions.append(solution)
+                        Cnew = solution['cost']
+                        if accept(Cnew - C, T):
+                            C = Cnew
+                            sequence_pair, block_variant = copy.deepcopy(seq_pair_n), copy.deepcopy(block_variant_n)
+                            if minC >= Cnew:
+                                minC = Cnew
+                    if not solution:
+                        numfails += 1
+                    count += 1
+                    if count >= hyper_params.max_candidates:
+                        break
                 if count >= hyper_params.max_candidates:
                     break
-            if count >= hyper_params.max_candidates:
-                break
-            T = T * hyper_params.alpha
+                T = T * hyper_params.alpha
+            logging.info(f'Number of infeasible ILPs : {numfails} out of {count}')
 
-    assert solutions, f'No placement solution found for {module["name"]}'
+    assert len(solutions.array()) > 0, f'No placement solution found for {module["name"]}'
 
-    # Annotate best K solutions to placement_data
-    solutions.sort(key=lambda x: x['cost'])
-    if len(solutions) > hyper_params.max_solutions:
-        solutions = solutions[:hyper_params.max_solutions]
+     ## Annotate best K solutions to placement_data
+     #solutions.sort(key=lambda x: x['cost'])
+     #if len(solutions) > hyper_params.max_solutions:
+     #    solutions = solutions[:hyper_params.max_solutions]
 
-    for i in range(len(solutions)):
-        solution = solutions[i]
+    for i, solution in enumerate(solutions.array()):
         new_module = copy.deepcopy(module)
         pin_bbox = dict()
         for instance in new_module['instances']:
@@ -884,8 +1157,8 @@ def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
             continue
 
         # Select and call placement algorithm here
-        print(f'Placing {name}')
-        place_using_sequence_pairs(placement_data, modules[name], top_level, enum_placer)
+        logging.info(f'Placing {name}')
+        place_using_sequence_pairs(placement_data, modules[name], enum_placer)
 
 #check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
 
@@ -962,6 +1235,7 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
     #with open('placement_input.json', "wt") as fp:
     #    fp.write(json.dumps(input_data, indent=2) + '\n')
     placement_data = pythonic_placer(top, input_data, not sa)
+    logging.info(f'Writing output file : {output}')
     with open(output, "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
     check_placement(placement_data)
@@ -1054,22 +1328,25 @@ def check_placement(placement_data):
                     
 
 if __name__ == '__main__':
-  import argparse
-  ap = argparse.ArgumentParser()
-  ap.add_argument( "-v", "--verilog", type=str, default="", help='<filename.verilog.json>')
-  ap.add_argument( "-t", "--top", type=str, default="", help='<top module name>')
-  ap.add_argument( "-m", "--map", type=str, default="", help='<map file in the 3_pnr/inputs directory>')
-  ap.add_argument( "-i", "--inputs", type=str, default="3_pnr/inputs", help='<path of 3_pnr/inputs directory>')
-  ap.add_argument( "-o", "--output", type=str, default="placement_output.json", help='<output placement file>')
-  ap.add_argument( "-s", "--sa", action='store_true', help='<use simulated annealing placer>')
-  ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
-  args = ap.parse_args()
-  print(f"verilog file : {args.verilog}")
-  print(f"map file     : {args.map}")
-  print(f"top module   : {args.top}")
-  print(f"input dir    : {args.inputs}")
-  print(f"output       : {args.output}")
-  if args.verilog == "" or args.inputs == "" or args.map == "" or args.top == "":
-      ap.print_help()
-      exit()
-  placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.sa, args.draw)
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument( "-v", "--verilog", type=str, default="", help='<filename.verilog.json>')
+    ap.add_argument( "-t", "--top", type=str, default="", help='<top module name>')
+    ap.add_argument( "-m", "--map", type=str, default="", help='<map file in the 3_pnr/inputs directory>')
+    ap.add_argument( "-i", "--inputs", type=str, default="3_pnr/inputs", help='<path of 3_pnr/inputs directory>')
+    ap.add_argument( "-o", "--output", type=str, default="placement_output.json", help='<output placement file>')
+    ap.add_argument( "-s", "--sa", action='store_true', help='<use simulated annealing placer>')
+    ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
+    ap.add_argument( "-l", "--loglevel", type=str, choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default="INFO", help="logging level (default: %(default)s)")
+    args = ap.parse_args()
+    print(logging.getLevelName(args.loglevel), args.loglevel)
+    logging.basicConfig(format="{asctime}-{levelname} {message}", style="{", datefmt="%Y-%m-%d,%H:%M:%S", level=logging.getLevelName(args.loglevel))
+    logging.info(f"verilog file : {args.verilog}")
+    logging.info(f"map file     : {args.map}")
+    logging.info(f"top module   : {args.top}")
+    logging.info(f"input dir    : {args.inputs}")
+    logging.info(f"output       : {args.output}")
+    if args.verilog == "" or args.inputs == "" or args.map == "" or args.top == "":
+        ap.print_help()
+        exit()
+    placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.sa, args.draw)
