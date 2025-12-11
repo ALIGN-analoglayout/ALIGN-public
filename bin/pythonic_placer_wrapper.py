@@ -19,9 +19,9 @@ CTN = 'concrete_template_name'
 
 
 class HyperParameters:
-    max_sequence_pairs = 10000
+    max_sequence_pairs = 1000
     max_block_variants = 100
-    max_candidates = 1000
+    max_candidates = 10000
     max_solutions = 4
     Tmax = 0.5
     Tmin = 0.05
@@ -331,6 +331,7 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
             for instance in groups[i]:
                 selection[instance_map[instance]] = v
         variants.append(tuple(selection))
+        count += 1
         if count > max_variants:
             break
     return variants
@@ -552,7 +553,9 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
     model.verbose = 0 # set to one to see more progress output with the solver
 
-    upper_bound = 1e9  # 100mm=100e6nm=1e9 angstrom
+    maxW = sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
+    maxH = sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
+    upper_bound = max(maxW, maxH)  # 100mm=100e6nm=1e9 angstrom
     model.add_var(name='W', lb=0, ub=upper_bound)
     model.add_var(name='H', lb=0, ub=upper_bound)
 
@@ -676,10 +679,10 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
             t2 = model.add_var(name=f't2_{insti}_{instj}', var_type=mip.BINARY)
             sx = spreadx[(insti, instj)]
             sy = spready[(insti, instj)]
-            model += xi + wi + sx - xj - upper_bound * t1 - upper_bound * t2 <= 0, f'{insti}_{instj}_x_nooverlap'
-            model += xj + wj + (-upper_bound + sx) - xi + upper_bound * t1 - upper_bound * t2 <= 0, f'{instj}_{insti}_x_nooverlap'
-            model += yi + hi + (-upper_bound + sy) - yj - upper_bound * t1 + upper_bound * t2 <= 0, f'{insti}_{instj}_y_nooverlap'
-            model += yj + hj + (-2 * upper_bound + sy) - yi + upper_bound * t1 + upper_bound * t2 <= 0, f'{instj}_{insti}_y_nooverlap'
+            model += xi + wi + sx - xj - maxW * t1 - maxH * t2 <= 0, f'{insti}_{instj}_x_nooverlap'
+            model += xj + wj + (sx - maxW) - xi + maxW * t1 - maxH * t2 <= 0, f'{instj}_{insti}_x_nooverlap'
+            model += yi + hi + (sy - maxH) - yj - maxW * t1 + maxH * t2 <= 0, f'{insti}_{instj}_y_nooverlap'
+            model += yj + hj + (sy - maxW - maxH) - yi + maxW * t1 + maxH * t2 <= 0, f'{instj}_{insti}_y_nooverlap'
 
 
     # Half perimeter wire length
