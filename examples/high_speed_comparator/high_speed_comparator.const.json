@@ -16,53 +16,5 @@
         "ports": [
             "clk"
         ]
-    },
-    {
-        "constraint": "HorizontalDistance",
-        "abs_distance": 0
-    },
-    {
-        "constraint": "VerticalDistance",
-        "abs_distance": 0
-    },
-    {
-        "constraint": "GroupBlocks",
-        "instances": [
-            "mn1",
-            "mn2"
-        ],
-        "instance_name": "xdp"
-    },
-    {
-        "constraint": "GroupBlocks",
-        "instances": [
-            "mn3",
-            "mn4"
-        ],
-        "instance_name": "xccn"
-    },
-    {
-        "constraint": "GroupBlocks",
-        "instances": [
-            "mp5",
-            "mp6"
-        ],
-        "instance_name": "xccp"
-    },
-    {
-        "constraint": "GroupBlocks",
-        "instances": [
-            "mp11",
-            "mn13"
-        ],
-        "instance_name": "xinv_n"
-    },
-    {
-        "constraint": "GroupBlocks",
-        "instances": [
-            "mp12",
-            "mn14"
-        ],
-        "instance_name": "xinv_p"
     }
 ]

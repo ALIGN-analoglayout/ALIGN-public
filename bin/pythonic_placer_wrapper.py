@@ -22,7 +22,7 @@ class HyperParameters:
     max_sequence_pairs = 1000
     max_block_variants = 100
     max_candidates = 10000
-    max_solutions = 4
+    max_solutions = 8
     Tmax = 0.5
     Tmin = 0.05
     alpha = 0.9995
@@ -549,7 +549,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     return solution
 
 
-def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all, instance_pins_all, scale_factor):
+def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor):
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
     model.verbose = 0 # set to one to see more progress output with the solver
 
@@ -586,6 +586,7 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
     symmctr = 0
     spreadx = defaultdict(int)
     spready = defaultdict(int)
+    orderpairs = set()
     for constraint in constraints:
         if constraint['constraint'] == "Spread":
             instances = constraint['instances']
@@ -607,6 +608,9 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
 
         elif constraint['constraint'] == "Order":
             insts = constraint["instances"]
+            for i0, i1 in itertools.combinations(insts, 2):
+                orderpairs.add((i0, i1))
+                orderpairs.add((i1, i0))
             for i in range(len(insts) - 1):
                 i0 = insts[i]
                 i1 = insts[i + 1]
@@ -674,6 +678,7 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
         xi, yi, wi, hi = model.var_by_name(f'{insti}_x'), model.var_by_name(f'{insti}_y'), model.var_by_name(f'{insti}_width'), model.var_by_name(f'{insti}_height')
         for j in range(i + 1, len(instance_names)):
             instj = instance_names[j]
+            if (insti, instj) in orderpairs: continue
             xj, yj, wj, hj = model.var_by_name(f'{instj}_x'), model.var_by_name(f'{instj}_y'), model.var_by_name(f'{instj}_width'), model.var_by_name(f'{instj}_height')
             t1 = model.add_var(name=f't1_{insti}_{instj}', var_type=mip.BINARY)
             t2 = model.add_var(name=f't2_{insti}_{instj}', var_type=mip.BINARY)
@@ -685,36 +690,41 @@ def place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all
             model += yj + hj + (sy - maxW - maxH) - yi + maxW * t1 + maxH * t2 <= 0, f'{instj}_{insti}_y_nooverlap'
 
 
-    # Half perimeter wire length
+    # Half perimeter wire length; ignoring effect of flip here
     model.add_var(name='HPWL', lb=0, ub=upper_bound)
-    if wires:
-        for wire_name, inst_pins in wires.items():
-            for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
-                model.add_var(name=f'{wire_name}_{tag}{axis}')
-        model += mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ur{axis}') for wire_name in wires for axis in ['x', 'y']) - mip.xsum(net_priority.get(wire_name, 1) * model.var_by_name(f'{wire_name}_ll{axis}') for wire_name in wires for axis in ['x', 'y']) == model.var_by_name('HPWL'), f'HPWL'
+    if nets:
+        for net_name, inst_pins in nets.items():
+            hpwlvars = [model.add_var(name=f'{net_name}_{coord}') for coord in ['llx', 'lly', 'urx', 'ury']]
+            for ipin in inst_pins:
+                curr_inst_pins = instance_pins_all[ipin[0]]
+                if len(curr_inst_pins) > 1:
+                    model += hpwlvars[0] <= model.var_by_name(f'{ipin[0]}_x') +\
+                             mip.xsum([curr_inst_pins[i][ipin[1]][0] * model.var_by_name(f'{ipin[0]}_sel_{i}') for i in range(len(curr_inst_pins))]), f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_llx'
+                    model += hpwlvars[1] <= model.var_by_name(f'{ipin[0]}_y') +\
+                             mip.xsum([curr_inst_pins[i][ipin[1]][1] * model.var_by_name(f'{ipin[0]}_sel_{i}') for i in range(len(curr_inst_pins))]), f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_lly'
+                    model += hpwlvars[2] >= model.var_by_name(f'{ipin[0]}_x') +\
+                             mip.xsum([curr_inst_pins[i][ipin[1]][2] * model.var_by_name(f'{ipin[0]}_sel_{i}') for i in range(len(curr_inst_pins))]), f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_urx'
+                    model += hpwlvars[3] >= model.var_by_name(f'{ipin[0]}_y') +\
+                             mip.xsum([curr_inst_pins[i][ipin[1]][3] * model.var_by_name(f'{ipin[0]}_sel_{i}') for i in range(len(curr_inst_pins))]), f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_ury'
+                elif len(curr_inst_pins) == 1:
+                    model += hpwlvars[0] <= model.var_by_name(f'{ipin[0]}_x') + curr_inst_pins[0][ipin[1]][0], f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_llx'
+                    model += hpwlvars[1] <= model.var_by_name(f'{ipin[0]}_y') + curr_inst_pins[0][ipin[1]][1], f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_lly'
+                    model += hpwlvars[2] >= model.var_by_name(f'{ipin[0]}_x') + curr_inst_pins[0][ipin[1]][2], f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_urx'
+                    model += hpwlvars[3] >= model.var_by_name(f'{ipin[0]}_y') + curr_inst_pins[0][ipin[1]][3], f'hpwl_{net_name}_{ipin[0]}_{ipin[1]}_ury'
+        model += mip.xsum(net_priority.get(net_name, 1) * model.var_by_name(f'{net_name}_ur{axis}') for net_name in nets for axis in ['x', 'y']) - mip.xsum(net_priority.get(net_name, 1) * model.var_by_name(f'{net_name}_ll{axis}') for net_name in nets for axis in ['x', 'y']) == model.var_by_name('HPWL'), f'HPWL'
 
     else:
         model += model.var_by_name('HPWL') == 0
 
-    """
-            for instance, bbox in instance_bbox:
-                size = dict(zip("xy", instance_sizes[instance]))
-                for (tag, axis), offset in zip(itertools.product(['ll', 'ur'], ['x', 'y']), bbox):
-                    eqn = model.var_by_name(f'{instance}_ll{axis}') + offset + (size[axis] - 2*offset) * model.var_by_name(f'{instance}_f{axis}')
-                    model += eqn <= model.var_by_name(f'{wire_name}_ur{axis}'), f'wl_{wire_name}_ur{axis}_{instance}_{abs(offset)}'
-                    model += model.var_by_name(f'{wire_name}_ll{axis}') <= eqn, f'wl_{wire_name}_ll{axis}_{instance}_{abs(offset)}'
-
-    """
-
     # Minimize the perimeter of the bounding box and normalized HPWL
-    scale_hpwl = 1/len(wires) if wires else 1
+    scale_hpwl = 1/len(nets) if nets else 1
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
 
-    model.write('x.lp')
+    model.write(f'{module["name"]}_ilp_formulation.lp')
 
     # Solve
-    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
+    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=100 * len(instance_names))
     if status == mip.OptimizationStatus.OPTIMAL:
         logging.debug(f'optimal solution found : objective={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
@@ -865,10 +875,10 @@ class solution_array():
     def array(self):
         return self.slist
 
-def get_all_instances_pins_wires(reverse_instance_map, variant_map, instances, module):
+def get_all_instances_pins_nets(reverse_instance_map, variant_map, instances, module):
     instance_sizes = dict()
     instance_pins = dict()
-    wires = defaultdict(list)
+    nets = defaultdict(list)
     for idx in range(len(reverse_instance_map)):
         instance_name = reverse_instance_map[idx]
         sizes = list()
@@ -883,8 +893,8 @@ def get_all_instances_pins_wires(reverse_instance_map, variant_map, instances, m
         for formal_actual in instances[instance_name]['fa_map']:
             formal, actual = formal_actual['formal'], formal_actual['actual']
             if 'global_signals' not in module or actual not in module['global_signals']:
-                wires[actual].append((instance_name, formal))
-    return instance_sizes, instance_pins, wires
+                nets[actual].append((instance_name, formal))
+    return instance_sizes, instance_pins, nets
 
 def get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module):
     instance_sizes = dict()
@@ -950,8 +960,8 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
                 solutions.append(solution)
     else:
         logging.info("ILP placer")
-        instance_sizes_all, instance_pins_all, wires = get_all_instances_pins_wires(reverse_instance_map, variant_map, instances, module)
-        solution = place_using_ilp(constraints, instance_map, module, wires, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
+        instance_sizes_all, instance_pins_all, nets = get_all_instances_pins_nets(reverse_instance_map, variant_map, instances, module)
+        solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
         if solution:
             solutions.append(solution)
         else:
