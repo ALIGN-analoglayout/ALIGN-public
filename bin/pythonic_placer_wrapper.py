@@ -339,7 +339,7 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
 
 def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=None, scale_factor=1):
 
-    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
+    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.GRB)
     model.verbose = 0 # set to one to see more progress output with the solver
 
     upper_bound = 1e9  # 100mm=100e6nm=1e9 angstrom
@@ -550,7 +550,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
 
 def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor):
-    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
+    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.GRB)
     model.verbose = 0 # set to one to see more progress output with the solver
 
     maxW = sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])

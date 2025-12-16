@@ -5,11 +5,11 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro> &lefData) {
   auto logger = spdlog::default_logger()->clone("guard_ring.GuardRing.Pcell_info");
 
   logger->debug("step1.0");
-  if (lefData.find("guard_ring") == lefData.end()) {
-    logger->error("Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file");
+  if (lefData.find("GUARD_RING") == lefData.end()) {
+    logger->error("GUARD_RING primitive cell error, check guard ring primitive cell in lef, gds, and const file");
     assert(0);
   } else {
-    const auto &uc = lefData.at("guard_ring");
+    const auto &uc = lefData.at("GUARD_RING");
     pcell_metal_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x -
                              uc.macroPins[0].pinContacts[0].originBox.LL.x;  // calculate metal layer width of guard ring primitive cell
     pcell_metal_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y -
