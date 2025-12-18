@@ -11,6 +11,7 @@ import random
 import z3
 import bisect
 import logging
+import os.path
 
 #from align.pnr.checker import check_placement
 random.seed(0)
@@ -463,7 +464,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                 model += distance - model.var_by_name(f'{i0}_ll{axis}') + model.var_by_name(f'{i1}_ur{axis}') - upper_bound*(1-var) <= 0, f'spread_{i0}_{i1}_{axis}1'
 
     # Half perimeter wire length
-    model.add_var(name='HPWL', lb=0, ub=upper_bound)
+    model.add_var(name='HPWL', lb=0, ub=len(wires)*upper_bound)
     if wires:
         for wire_name, instance_bbox in wires.items():
             for tag, axis in itertools.product(['ll', 'ur'], ['x', 'y']):
@@ -492,7 +493,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 #model.write(f'model.lp')
 
     # Solve
-    model.verbose = 0
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
     if status == mip.OptimizationStatus.OPTIMAL:
         logging.debug(f'optimal solution found : objective={model.objective_value}')
@@ -549,12 +549,12 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     return solution
 
 
-def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor):
+def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor, mwidth = 0, mheight = 0):
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
     model.verbose = 0 # set to one to see more progress output with the solver
 
-    maxW = sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
-    maxH = sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
+    maxW = 2 * sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
+    maxH = 2 * sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
     upper_bound = max(maxW, maxH)  # 100mm=100e6nm=1e9 angstrom
     model.add_var(name='W', lb=0, ub=upper_bound)
     model.add_var(name='H', lb=0, ub=upper_bound)
@@ -598,6 +598,11 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
                 elif constraint['direction'] == 'horizontal':
                     spready[(i0, i1)] = distance
                     spready[(i1, i0)] = distance
+
+    if mwidth != 0:
+      model += model.var_by_name('W') <= mwidth, 'limit_W'
+    if mheight != 0:
+      model += model.var_by_name('H') <= mheight, 'limit_H'
 
     for constraint in constraints:
         if constraint['constraint'] == "Boundary":
@@ -691,7 +696,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
 
 
     # Half perimeter wire length; ignoring effect of flip here
-    model.add_var(name='HPWL', lb=0, ub=upper_bound)
+    model.add_var(name='HPWL', lb=0, ub=len(nets) * upper_bound)
     if nets:
         for net_name, inst_pins in nets.items():
             hpwlvars = [model.add_var(name=f'{net_name}_{coord}') for coord in ['llx', 'lly', 'urx', 'ury']]
@@ -721,7 +726,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
 
-    model.write(f'{module["name"]}_ilp_formulation.lp')
+    model.write(f'{module["name"]}_ilp_formulation_{int(mwidth)}_{int(mheight)}.lp')
 
     # Solve
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=100 * len(instance_names))
@@ -941,7 +946,7 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
         variant_counts[instance['instance_name']] = len(variant_map[instance[ATN]])
 
     verilog_json = {'modules': [module]}
-    constraints = verilog_json['modules'][0]['constraints']
+    constraints = verilog_json['modules'][0]['constraints'] if 'constraints' in verilog_json['modules'][0] else list()
 
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
@@ -964,6 +969,19 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
         solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
         if solution:
             solutions.append(solution)
+            width, height = solution['width'], solution['height']
+            for w in [i * 0.1 * width for i in range(9, 4, -1)]:
+              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
+              if solution: solutions.append(solution)
+              else:
+                print("infeasible")
+                break
+            for h in [i * 0.1 * height for i in range(9, 4, -1)]:
+              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
+              if solution: solutions.append(solution)
+              else:
+                print("infeasible")
+                break
         else:
             logging.info("SA placer")
             assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
@@ -1235,15 +1253,16 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
         for line in lines:
             line = line.split()
             ln = line[1].replace(".gds", "")
-            with open(f'{inputs}/{ln}.json', 'r') as fp1:
-                leaf_json = json.load(fp1)
-                leaf_data = {'abstract_template_name':line[0], 'concrete_template_name':ln}
-                leaf_data['bbox'] = leaf_json['bbox'] if 'bbox' in leaf_json else None
-                leaf_data['terminals'] = [t for t in leaf_json['terminals'] if t['netType'] == 'pin'] if 'terminals' in leaf_json else None
-                leaf_data['constraints'] = []
-                if 'leaves' not in input_data:
-                    input_data['leaves'] = []
-                input_data['leaves'].append(leaf_data)
+            if os.path.isfile(f'{inputs}/{ln}.json'):
+                with open(f'{inputs}/{ln}.json', 'r') as fp1:
+                    leaf_json = json.load(fp1)
+                    leaf_data = {'abstract_template_name':line[0], 'concrete_template_name':ln}
+                    leaf_data['bbox'] = leaf_json['bbox'] if 'bbox' in leaf_json else None
+                    leaf_data['terminals'] = [t for t in leaf_json['terminals'] if t['netType'] == 'pin'] if 'terminals' in leaf_json else None
+                    leaf_data['constraints'] = []
+                    if 'leaves' not in input_data:
+                        input_data['leaves'] = []
+                    input_data['leaves'].append(leaf_data)
     
     #with open('placement_input.json', "wt") as fp:
     #    fp.write(json.dumps(input_data, indent=2) + '\n')
