@@ -12,6 +12,7 @@ import z3
 import bisect
 import logging
 import os.path
+from ortools.sat.python import cp_model
 
 #from align.pnr.checker import check_placement
 random.seed(0)
@@ -340,7 +341,7 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
 
 def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=None, scale_factor=1):
 
-    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
+    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.GRB)
     model.verbose = 0 # set to one to see more progress output with the solver
 
     upper_bound = 1e9  # 100mm=100e6nm=1e9 angstrom
@@ -490,7 +491,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
 
-#model.write(f'model.lp')
+     #model.write(f'model.lp')
 
     # Solve
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
@@ -541,16 +542,15 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         'width': w,
         'height': h,
         'area': w*h,
-        'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
+        'hpwl': model.var_by_name('HPWL').x,
         'transformations': transformations,
         'model': model,
         'sequence_pair': copy.deepcopy(sequence_pair),
     }
     return solution
 
-
 def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor, mwidth = 0, mheight = 0):
-    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
+    model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.GRB)
     model.verbose = 0 # set to one to see more progress output with the solver
 
     maxW = 2 * sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
@@ -611,6 +611,17 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
             if max_height := constraint['max_height'] if 'max_height' in constraint else False:
                 model += model.var_by_name('H') <= max_height, f'boundary_H'
 
+        elif constraint['constraint'] == "SameTemplate":
+            insts = constraint["instances"]
+            if len(insts) > 1:
+                i0 = insts[0]
+                sel_vars0 = [model.var_by_name(f'{i0}_sel_{i}') for i in range(len(instance_sizes_all[i0]))]
+                for i1 in insts[1:]:
+                    sel_vars1 = [model.var_by_name(f'{i1}_sel_{i}') for i in range(len(instance_sizes_all[i1]))]
+                    assert len(sel_vars0) == len(sel_vars1), f"num variants of {i0} {i1} do not match"
+                    for i in range(len(sel_vars0)):
+                        model += sel_vars0[i] == sel_vars1[i], f'same_template_{i0}_{i1}_{i}'
+
         elif constraint['constraint'] == "Order":
             insts = constraint["instances"]
             for i0, i1 in itertools.combinations(insts, 2):
@@ -629,7 +640,6 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
                     model += model.var_by_name(f'{i0}_y') >= model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height') , f'order_tb_{i0}_{i1}'
 
         elif constraint == "PlaceOnBoundary":
-# TODO : fix this
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
                 model += model.var_by_name(f'{name}_y') + model.var_by_name(f'{name}_height') == model.var_by_name('H'), f'boundary_ury_{name}'
             for name in constraint.instances_on(['south', 'southwest', 'southeast']):
@@ -729,7 +739,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
     model.write(f'{module["name"]}_ilp_formulation_{int(mwidth)}_{int(mheight)}.lp')
 
     # Solve
-    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=100 * len(instance_names))
+    status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=50 * len(instance_names))
     if status == mip.OptimizationStatus.OPTIMAL:
         logging.debug(f'optimal solution found : objective={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
@@ -779,7 +789,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
         'width': w,
         'height': h,
         'area': w*h,
-        'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
+        'hpwl': model.var_by_name('HPWL').x,
         'transformations': transformations,
         'model': model,
         'block_variant':[0]*len(instance_names)
@@ -792,10 +802,265 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
                     break
     return solution
 
-def accept(delC, T):
-    if delC <= 0: return True
-    delC = numpy.exp(delC)
-    return random.random() < numpy.exp(-delC/T)
+
+def place_using_cpsat(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor, mwidth = 0, mheight = 0):
+    model = cp_model.CpModel()
+    model.verbose = 0 # set to one to see more progress output with the solver
+
+    maxW = 2 * sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
+    maxH = 2 * sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
+    upper_bound = max(maxW, maxH)  # 100mm=100e6nm=1e9 angstrom
+    W = model.new_int_var(0, maxW, name="W")
+    H = model.new_int_var(0, maxH, name="H")
+
+    instance_names = list(instance_map.keys())
+    instance_index = {name:i for i, name in enumerate(instance_names)}
+    inst_vars = list()
+    sel_vars = list()
+    w_vars = [model.new_int_var(0, max([x[0] for x in instance_sizes_all[name]]), name=f"w_{name}") for name in instance_names]
+    h_vars = [model.new_int_var(0, max([x[1] for x in instance_sizes_all[name]]), name=f"h_{name}") for name in instance_names]
+    for i, name in enumerate(instance_names):
+        # Define instance variables
+        ivars = [model.new_int_var(0, upper_bound, name=f'{name}_{tag}') for tag in ['xmin', 'ymin', 'xmax', 'ymax']]
+        ivars.append(model.new_int_var(0, 1, name=f'{name}_flipx'))
+        ivars.append(model.new_int_var(0, 1, name=f'{name}_flipy'))
+        inst_vars.append(ivars)
+        numvariants = len(instance_sizes_all[name])
+        if numvariants > 1:
+            sel_vars.append([model.new_int_var(0, 1, name=f'{name}_sel_{j}') for j in range(len(instance_sizes_all[name]))])
+            model.add_exactly_one(sel_vars[-1])
+            model.add(w_vars[i] == cp_model.LinearExpr.weighted_sum(sel_vars[-1], [instance_sizes_all[name][j][0] for j in range(len(sel_vars[-1]))]))
+            model.add(h_vars[i] == cp_model.LinearExpr.weighted_sum(sel_vars[-1], [instance_sizes_all[name][j][1] for j in range(len(sel_vars[-1]))]))
+        elif numvariants == 1:
+            sel_vars.append(list())
+            model.add(w_vars[i] == instance_sizes_all[name][0][0])
+            model.add(h_vars[i] == instance_sizes_all[name][0][1])
+        else:
+            assert False, f'Num variants of {name} is 0'
+        model.add(inst_vars[i][2] <= W)
+        model.add(inst_vars[i][3] <= H)
+
+    # Parse constraints
+    net_priority = dict()
+    ctr = 0
+    symmctr = 0
+    spreadx = defaultdict(int)
+    spready = defaultdict(int)
+    orderpairs = set()
+    for constraint in constraints:
+        if constraint['constraint'] == "Spread":
+            instances = constraint['instances']
+            distance = constraint['distance'] * scale_factor
+            for i0, i1 in itertools.combinations(instances, 2):
+                if constraint['direction'] == 'horizontal':
+                    spreadx[(i0, i1)] = distance
+                    spreadx[(i1, i0)] = distance
+                elif constraint['direction'] == 'horizontal':
+                    spready[(i0, i1)] = distance
+                    spready[(i1, i0)] = distance
+
+    if mwidth != 0:
+      model.add(W <= mwidth)
+    if mheight != 0:
+      model.add(H <= mheight)
+
+    for constraint in constraints:
+        if constraint['constraint'] == "Boundary":
+            if max_width := constraint['max_width'] if 'max_width' in constraint else False:
+                model.add(W <= max_width)
+            if max_height := constraint['max_height'] if 'max_height' in constraint else False:
+                model.add(H <= max_height)
+
+        elif constraint['constraint'] == "SameTemplate":
+            insts = constraint["instances"]
+            if len(insts) > 1:
+                i0 = instance_index[insts[0]]
+                sel_vars0 = sel_vars[i0]
+                for i1name in insts[1:]:
+                    i1 = instance_index[i1name]
+                    sel_vars1 = sel_vars[i1]
+                    assert len(sel_vars0) == len(sel_vars1), f"num variants of {i0} {i1} do not match"
+                    for i in range(len(sel_vars0)):
+                        model.add(sel_vars0[i] == sel_vars1[i])
+        elif constraint['constraint'] == "Order":
+            insts = constraint["instances"]
+            for i0, i1 in itertools.combinations(insts, 2):
+                orderpairs.add((i0, i1))
+                orderpairs.add((i1, i0))
+            for i in range(len(insts) - 1):
+                i0 = instance_index[insts[i]]
+                i1 = instance_index[insts[i + 1]]
+                if constraint["direction"] == 'left_to_right':
+                    model.add(inst_vars[i0][2] <= inst_vars[i1][0])
+                     #model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') <= model.var_by_name(f'{i1}_x'), f'order_lr_{i0}_{i1}'
+                elif constraint["direction"] == 'right_to_left':
+                    model.add(inst_vars[i0][0] >= inst_vars[i1][2])
+                     #model += model.var_by_name(f'{i0}_x') >= model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'order_rl_{i0}_{i1}'
+                elif constraint["direction"] == 'bottom_to_top':
+                    model.add(inst_vars[i0][3] <= inst_vars[i1][1])
+                     #model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') <= model.var_by_name(f'{i1}_y'), f'order_bt_{i0}_{i1}'
+                elif constraint["direction"] == 'top_to_bottom':
+                    model.add(inst_vars[i0][1] >= inst_vars[i1][3])
+                     #model += model.var_by_name(f'{i0}_y') >= model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height') , f'order_tb_{i0}_{i1}'
+
+        elif constraint == "PlaceOnBoundary":
+            for name in constraint.instances_on(['north', 'northwest', 'northeast']):
+                model.add(inst_vars[instance_index[name]][3] == H)
+                 #model += model.var_by_name(f'{name}_y') + model.var_by_name(f'{name}_height') == model.var_by_name('H'), f'boundary_ury_{name}'
+            for name in constraint.instances_on(['south', 'southwest', 'southeast']):
+                model.add(inst_vars[instance_index[name]][1] == 0)
+                 #model += model.var_by_name(f'{name}_y') == 0, f'boundary_lly_{name}'
+            for name in constraint.instances_on(['east', 'northeast', 'southeast']):
+                model.add(inst_vars[instance_index[name]][2] == W)
+                 #model += model.var_by_name(f'{name}_x') + model.var_by_name(f'{name}_width') == model.var_by_name('W'), f'boundary_urx_{name}'
+            for name in constraint.instances_on(['west', 'northwest', 'southwest']):
+                model.add(inst_vars[instance_index[name]][0] == 0)
+                 #model += model.var_by_name(f'{name}_x') == 0, f'boundary_llx_{name}'
+
+        elif constraint['constraint'] == "NetPriority":
+            nets = constraint['nets']
+            weight = constraint['weight']
+            for net in nets:
+                net_priority[net] = weight
+
+        elif constraint['constraint'] == "Align":
+            instances = constraint['instances']
+            line = constraint['line']
+            supported_lines = {'h_bottom': 'lly', 'h_top': 'ury', 'v_left': 'llx', 'v_right': 'urx'}
+            assert line in supported_lines, f'{line} not supported. Please choose among {supported_lines.keys()}'
+            axis = supported_lines[line]
+            i0 = instance_index[instances[0]]
+            for i1name in instances[1:]:
+                i1 = instance_index[i1name]
+                if line == 'h_bottom':
+                    model.add(inst_vars[i0][1] == inst_vars[i1][1])
+                     #model += model.var_by_name(f'{i0}_y') == model.var_by_name(f'{i1}_y'), f'{i0}_{i1}_lly'
+                elif line == 'h_top':
+                    model.add(inst_vars[i0][3] == inst_vars[i1][3])
+                     #model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') == model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height'), f'{i0}_{i1}_ury'
+                elif line == 'v_left':
+                    model.add(inst_vars[i0][0] == inst_vars[i1][0])
+                     #model += model.var_by_name(f'{i0}_x') == model.var_by_name(f'{i1}_x'), f'{i0}_{i1}_llx'
+                elif line == 'v_right':
+                    model.add(inst_vars[i0][2] == inst_vars[i1][2])
+                     #model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') == model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'{i0}_{i1}_urx'
+
+        elif constraint['constraint'] == "SymmetricBlocks":
+            pairs = constraint['pairs']
+            (axis, orth) = (0, 1) if constraint['direction'] == 'V' else (1, 0)
+            symmetry_line = model.new_int_var(0, upper_bound, name=f'symm_{symmctr}')
+            symmctr += 1
+            for pair in pairs:
+                i0 = instance_index[pair[0]]
+                if len(pair) == 1:
+                    model.add(inst_vars[i0][axis] + inst_vars[i0][axis + 2] == 2 * symmetry_line)
+                else:
+                    i1 = instance_index[pair[1]]
+                    model.add(inst_vars[i0][axis + 4] + inst_vars[i1][axis + 4] == 1)
+                    model.add(inst_vars[i0][axis] + inst_vars[i0][axis + 2] + inst_vars[i1][axis] + inst_vars[i1][axis + 2] == 4*symmetry_line)
+                    model.add(inst_vars[i0][orth] + inst_vars[i0][orth + 2] == inst_vars[i1][orth] + inst_vars[i1][orth + 2])
+            ctr += 1
+
+    x_interval_vars = [model.new_interval_var(start=inst_vars[i][0], size=w_vars[i], end=inst_vars[i][2], name=f"x_interval_{i}") for i in range(len(inst_vars))]
+    y_interval_vars = [model.new_interval_var(start=inst_vars[i][1], size=h_vars[i], end=inst_vars[i][3], name=f"y_interval_{i}") for i in range(len(inst_vars))]
+    model.add_no_overlap_2d(x_interval_vars, y_interval_vars)
+
+
+    # Half perimeter wire length; ignoring effect of flip here
+    hpwl = model.new_int_var(0, len(nets) * upper_bound, name='HPWL')
+     #if nets:
+     #    hpwlvars = list()
+     #    netpr = list()
+     #    for net_name, inst_pins in nets.items():
+     #        hpwlvar = [model.new_int_var(0, upper_bound, name=f'{net_name}_{coord}') for coord in ['llx', 'lly', 'urx', 'ury']]
+     #        hpwlvars.append(hpwlvar)
+     #        netpr.append(net_priority.get(net_name, 1))
+     #        for ipin in inst_pins:
+     #            curr_inst_pins = instance_pins_all[ipin[0]]
+     #            i0 = instance_index[ipin[0]]
+     #            if len(curr_inst_pins) > 1:
+     #                model.add(hpwlvar[0] <= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][0] for i in range(len(curr_inst_pins))]))
+     #                model.add(hpwlvar[1] <= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][1] for i in range(len(curr_inst_pins))]))
+     #                model.add(hpwlvar[2] >= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][2] for i in range(len(curr_inst_pins))]))
+     #                model.add(hpwlvar[3] >= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][3] for i in range(len(curr_inst_pins))]))
+     #            elif len(curr_inst_pins) == 1:
+     #                model.add(hpwlvar[0] <= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][0])
+     #                model.add(hpwlvar[1] <= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][1])
+     #                model.add(hpwlvar[2] >= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][2])
+     #                model.add(hpwlvar[3] >= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][3])
+     #    model.add(hpwl == cp_model.LinearExpr.weighted_sum([x[3] for x in hpwlvars], netpr)\
+     #            + cp_model.LinearExpr.weighted_sum([x[2] for x in hpwlvars], netpr)\
+     #            - cp_model.LinearExpr.weighted_sum([x[1] for x in hpwlvars], netpr)\
+     #            - cp_model.LinearExpr.weighted_sum([x[0] for x in hpwlvars], netpr))
+
+     #else:
+     #    model.add(hpwl == 0)
+
+    # Minimize the perimeter of the bounding box and normalized HPWL
+    scale = len(nets) if nets else 1
+
+    model.minimize(scale * (W + H) + hpwl)
+
+    model.ExportToFile(f'{module["name"]}_cpsat_formulation_{int(mwidth)}_{int(mheight)}.pb.txt')
+    solver = cp_model.CpSolver()
+    solver.parameters.log_search_progress = False
+    solver.log_callback = print
+    status = solver.solve(model)
+
+    if status == cp_model.OPTIMAL:
+        logging.debug(f'optimal solution found : objective={solver.ObjectiveValue()}')
+    elif status == cp_model.FEASIBLE:
+        logging.debug(f'solution with objective {solver.ObjectiveValue()} current lower bound: {solver.BestObjectiveBound()}')
+    else:
+        logging.debug('No solution to CP-SAT')
+        return False
+
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        logging.debug('Solution:')
+        for i, v in enumerate(inst_vars):
+            logging.debug(f'\t{instance_names[i]} {[solver.value(x) for x in inst_vars[i]]}')
+
+    # Extract solution
+    transformations = dict()
+    for name, _ in instance_map.items():
+        idx = instance_index[name]
+        ivars = inst_vars[idx]
+        fx, fy = (1 if solver.value(ivars[4]) > 0.5 else 0), (1 if solver.value(ivars[5]) > 0.5 else 0)
+        ox = solver.value(ivars[0]) + fx * solver.value(w_vars[idx])
+        oy = solver.value(ivars[1]) + fy * solver.value(h_vars[idx])
+        sx = 1 if fx == 0 else -1
+        sy = 1 if fy == 0 else -1
+        transformations[name] = {'oX': round(ox), 'oY': round(oy), 'sX': sx, 'sY': sy}
+         #print(name, transformations[name], instance_sizes[name])
+    # overlap checker
+    for i0 in range(len(instance_names)):
+        r0 = [solver.value(inst_vars[i0][j]) for j in range(4)]
+        for i1 in range(i0 + 1, len(instance_names)):
+            r1 = [solver.value(inst_vars[i1][j]) for j in range(4)]
+            if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
+                logging.error(f'Blocks {instance_names[i0]} {instance_names[i1]} {r0} {r1} overlap')
+                exit()
+
+    w = solver.value(W)
+    h = solver.value(H)
+    hyper_params = HyperParameters()
+    solution = {
+        'cost': (w*h + solver.value(hpwl) * hyper_params.LAMBDA),
+        'width': w,
+        'height': h,
+        'area': w*h,
+        'hpwl': solver.value(hpwl),
+        'transformations': transformations,
+        'model': model,
+        'block_variant':[0]*len(instance_names)
+    }
+    for i, name in enumerate(instance_names):
+        if len(instance_sizes_all[name]) > 1:
+            for j in range(len(instance_sizes_all[name])):
+                if solver.value(sel_vars[i][j]) > 0.5:
+                    solution['block_variant'][i] = j
+                    break
+    return solution
 
 
 class block_enumerator:
@@ -917,7 +1182,7 @@ def get_instances_wires(block_variant, reverse_instance_map, variant_map, instan
     return instance_sizes, wires
 
 
-def place_using_sequence_pairs(placement_data, module, enum_placer):
+def place_using_sequence_pairs(placement_data, module, placer_type):
 
     hyper_params = HyperParameters()
 
@@ -953,7 +1218,7 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
 
     solutions = solution_array(hyper_params.max_solutions)
 
-    if enum_placer or (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
+    if (len(sequence_pairs) * len(block_variants) <= hyper_params.max_candidates): # enumerative placer
         logging.info("Enumerative placer")
         for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
@@ -964,24 +1229,29 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
                 solution['block_variant'] = block_variant
                 solutions.append(solution)
     else:
-        logging.info("ILP placer")
+        logging.info(f"{placer_type} placer")
         instance_sizes_all, instance_pins_all, nets = get_all_instances_pins_nets(reverse_instance_map, variant_map, instances, module)
-        solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
+        placer = place_using_ilp
+        if placer_type == 'CPSAT':
+            placer = place_using_cpsat
+        solution = placer(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor']) if placer_type != 'SA' else None
         if solution:
             solutions.append(solution)
             width, height = solution['width'], solution['height']
-            for w in [i * 0.1 * width for i in range(9, 4, -1)]:
-              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
-              if solution: solutions.append(solution)
-              else:
-                print("infeasible")
-                break
-            for h in [i * 0.1 * height for i in range(9, 4, -1)]:
-              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
-              if solution: solutions.append(solution)
-              else:
-                print("infeasible")
-                break
+            for w in [int(i * 0.1 * width) for i in range(9, 4, -1)]:
+                logging.info(f"Trying width : {w}")
+                solution = placer(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
+                if solution: solutions.append(solution)
+                else:
+                    print("infeasible")
+                    break
+            for h in [int(i * 0.1 * height) for i in range(9, 4, -1)]:
+                logging.info(f"Trying height : {h}")
+                solution = placer(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
+                if solution: solutions.append(solution)
+                else:
+                    print("infeasible")
+                    break
         else:
             logging.info("SA placer")
             assert(hyper_params.alpha < 1. and hyper_params.Tmin < hyper_params.Tmax)
@@ -1007,6 +1277,11 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
                 exit()
             C = solution['cost'] if solution else 0
             minC = C
+
+            def accept(delC, T):
+                if delC <= 0: return True
+                delC = numpy.exp(delC)
+                return random.random() < numpy.exp(-delC/T)
 
             numfails = 0
             benumerator = block_enumerator(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
@@ -1148,7 +1423,7 @@ def propagate_down_global_signals(modules: dict, module_name: str, global_signal
                 propagate_down_global_signals(modules, sub_module_name, signals_to_propagate)
 
 
-def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
+def pythonic_placer(top_level, input_data, placer_type, scale_factor=1):
 
     placement_data = dict()
     placement_data['modules'] = list()
@@ -1189,7 +1464,7 @@ def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
 
         # Select and call placement algorithm here
         logging.info(f'Placing {name}')
-        place_using_sequence_pairs(placement_data, modules[name], enum_placer)
+        place_using_sequence_pairs(placement_data, modules[name], placer_type)
 
 #check_placement(VerilogJsonTop.parse_obj(placement_data), scale_factor)
 
@@ -1245,7 +1520,7 @@ def draw_placement(placement_data, module_name):
     fig.show()
 
 
-def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
+def placer_wrapper(verilog, top, vmap, inputs, output, placer_type, draw):
     with open(verilog, 'r') as fp:
         input_data = json.load(fp)
     with open(vmap, 'r') as fp:
@@ -1266,7 +1541,7 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
     
     #with open('placement_input.json', "wt") as fp:
     #    fp.write(json.dumps(input_data, indent=2) + '\n')
-    placement_data = pythonic_placer(top, input_data, not sa)
+    placement_data = pythonic_placer(top, input_data, placer_type)
     logging.info(f'Writing output file : {output}')
     with open(output, "wt") as fp:
         json.dump(placement_data, fp=fp, indent=2)
@@ -1367,10 +1642,13 @@ if __name__ == '__main__':
     ap.add_argument( "-m", "--map", type=str, default="", help='<map file in the 3_pnr/inputs directory>')
     ap.add_argument( "-i", "--inputs", type=str, default="3_pnr/inputs", help='<path of 3_pnr/inputs directory>')
     ap.add_argument( "-o", "--output", type=str, default="placement_output.json", help='<output placement file>')
-    ap.add_argument( "-s", "--sa", action='store_true', help='<use simulated annealing placer>')
-    ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
+    ap.add_argument( "-p", "--placer", type=str, choices=['SA', 'ILP', 'CPSAT'], default="ILP", help="placer to use if enumeration fails (default : %(default)s)")
     ap.add_argument( "-l", "--loglevel", type=str, choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default="INFO", help="logging level (default: %(default)s)")
+    ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
     args = ap.parse_args()
+    if args.verilog == "" or args.inputs == "" or args.map == "" or args.top == "":
+        ap.print_help()
+        exit()
     print(logging.getLevelName(args.loglevel), args.loglevel)
     logging.basicConfig(format="{asctime}-{levelname} {message}", style="{", datefmt="%Y-%m-%d,%H:%M:%S", level=logging.getLevelName(args.loglevel))
     logging.info(f"verilog file : {args.verilog}")
@@ -1378,7 +1656,4 @@ if __name__ == '__main__':
     logging.info(f"top module   : {args.top}")
     logging.info(f"input dir    : {args.inputs}")
     logging.info(f"output       : {args.output}")
-    if args.verilog == "" or args.inputs == "" or args.map == "" or args.top == "":
-        ap.print_help()
-        exit()
-    placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.sa, args.draw)
+    placer_wrapper(args.verilog, args.top, args.map, args.inputs, args.output, args.placer, args.draw)
