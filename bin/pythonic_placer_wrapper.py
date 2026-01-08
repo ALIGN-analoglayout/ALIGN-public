@@ -556,6 +556,11 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
     maxW = 2 * sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
     maxH = 2 * sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
     upper_bound = max(maxW, maxH)  # 100mm=100e6nm=1e9 angstrom
+
+    if mwidth == 0 and mheight == 0:
+        maxArea = sum([max([wh[0] * wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
+        upper_bound = int((maxArea ** 0.5) * 1.1)
+
     model.add_var(name='W', lb=0, ub=upper_bound)
     model.add_var(name='H', lb=0, ub=upper_bound)
 
@@ -810,8 +815,12 @@ def place_using_cpsat(constraints, instance_map, module, nets, instance_sizes_al
     maxW = 2 * sum([max([wh[0] for wh in v]) for k, v in instance_sizes_all.items()])
     maxH = 2 * sum([max([wh[1] for wh in v]) for k, v in instance_sizes_all.items()])
     upper_bound = max(maxW, maxH)  # 100mm=100e6nm=1e9 angstrom
+
+    maxArea = int(sum([max([wh[0] * wh[1] for wh in v]) for k, v in instance_sizes_all.items()]) * 1.2)
     W = model.new_int_var(0, maxW, name="W")
     H = model.new_int_var(0, maxH, name="H")
+    Area = model.new_int_var(0, maxArea, name="Area")
+    model.add_multiplication_equality(Area, [W, H])
 
     instance_names = list(instance_map.keys())
     instance_index = {name:i for i, name in enumerate(instance_names)}
@@ -892,30 +901,22 @@ def place_using_cpsat(constraints, instance_map, module, nets, instance_sizes_al
                 i1 = instance_index[insts[i + 1]]
                 if constraint["direction"] == 'left_to_right':
                     model.add(inst_vars[i0][2] <= inst_vars[i1][0])
-                     #model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') <= model.var_by_name(f'{i1}_x'), f'order_lr_{i0}_{i1}'
                 elif constraint["direction"] == 'right_to_left':
                     model.add(inst_vars[i0][0] >= inst_vars[i1][2])
-                     #model += model.var_by_name(f'{i0}_x') >= model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'order_rl_{i0}_{i1}'
                 elif constraint["direction"] == 'bottom_to_top':
                     model.add(inst_vars[i0][3] <= inst_vars[i1][1])
-                     #model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') <= model.var_by_name(f'{i1}_y'), f'order_bt_{i0}_{i1}'
                 elif constraint["direction"] == 'top_to_bottom':
                     model.add(inst_vars[i0][1] >= inst_vars[i1][3])
-                     #model += model.var_by_name(f'{i0}_y') >= model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height') , f'order_tb_{i0}_{i1}'
 
         elif constraint == "PlaceOnBoundary":
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
                 model.add(inst_vars[instance_index[name]][3] == H)
-                 #model += model.var_by_name(f'{name}_y') + model.var_by_name(f'{name}_height') == model.var_by_name('H'), f'boundary_ury_{name}'
             for name in constraint.instances_on(['south', 'southwest', 'southeast']):
                 model.add(inst_vars[instance_index[name]][1] == 0)
-                 #model += model.var_by_name(f'{name}_y') == 0, f'boundary_lly_{name}'
             for name in constraint.instances_on(['east', 'northeast', 'southeast']):
                 model.add(inst_vars[instance_index[name]][2] == W)
-                 #model += model.var_by_name(f'{name}_x') + model.var_by_name(f'{name}_width') == model.var_by_name('W'), f'boundary_urx_{name}'
             for name in constraint.instances_on(['west', 'northwest', 'southwest']):
                 model.add(inst_vars[instance_index[name]][0] == 0)
-                 #model += model.var_by_name(f'{name}_x') == 0, f'boundary_llx_{name}'
 
         elif constraint['constraint'] == "NetPriority":
             nets = constraint['nets']
@@ -926,24 +927,19 @@ def place_using_cpsat(constraints, instance_map, module, nets, instance_sizes_al
         elif constraint['constraint'] == "Align":
             instances = constraint['instances']
             line = constraint['line']
-            supported_lines = {'h_bottom': 'lly', 'h_top': 'ury', 'v_left': 'llx', 'v_right': 'urx'}
-            assert line in supported_lines, f'{line} not supported. Please choose among {supported_lines.keys()}'
-            axis = supported_lines[line]
+            supported_lines = ('h_bottom', 'h_top', 'v_left', 'v_right')
+            assert line in supported_lines, f'{line} not supported. Please choose among {supported_lines}'
             i0 = instance_index[instances[0]]
             for i1name in instances[1:]:
                 i1 = instance_index[i1name]
                 if line == 'h_bottom':
                     model.add(inst_vars[i0][1] == inst_vars[i1][1])
-                     #model += model.var_by_name(f'{i0}_y') == model.var_by_name(f'{i1}_y'), f'{i0}_{i1}_lly'
                 elif line == 'h_top':
                     model.add(inst_vars[i0][3] == inst_vars[i1][3])
-                     #model += model.var_by_name(f'{i0}_y') + model.var_by_name(f'{i0}_height') == model.var_by_name(f'{i1}_y') + model.var_by_name(f'{i1}_height'), f'{i0}_{i1}_ury'
                 elif line == 'v_left':
                     model.add(inst_vars[i0][0] == inst_vars[i1][0])
-                     #model += model.var_by_name(f'{i0}_x') == model.var_by_name(f'{i1}_x'), f'{i0}_{i1}_llx'
                 elif line == 'v_right':
                     model.add(inst_vars[i0][2] == inst_vars[i1][2])
-                     #model += model.var_by_name(f'{i0}_x') + model.var_by_name(f'{i0}_width') == model.var_by_name(f'{i1}_x') + model.var_by_name(f'{i1}_width'), f'{i0}_{i1}_urx'
 
         elif constraint['constraint'] == "SymmetricBlocks":
             pairs = constraint['pairs']
@@ -968,45 +964,46 @@ def place_using_cpsat(constraints, instance_map, module, nets, instance_sizes_al
 
     # Half perimeter wire length; ignoring effect of flip here
     hpwl = model.new_int_var(0, len(nets) * upper_bound, name='HPWL')
-     #if nets:
-     #    hpwlvars = list()
-     #    netpr = list()
-     #    for net_name, inst_pins in nets.items():
-     #        hpwlvar = [model.new_int_var(0, upper_bound, name=f'{net_name}_{coord}') for coord in ['llx', 'lly', 'urx', 'ury']]
-     #        hpwlvars.append(hpwlvar)
-     #        netpr.append(net_priority.get(net_name, 1))
-     #        for ipin in inst_pins:
-     #            curr_inst_pins = instance_pins_all[ipin[0]]
-     #            i0 = instance_index[ipin[0]]
-     #            if len(curr_inst_pins) > 1:
-     #                model.add(hpwlvar[0] <= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][0] for i in range(len(curr_inst_pins))]))
-     #                model.add(hpwlvar[1] <= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][1] for i in range(len(curr_inst_pins))]))
-     #                model.add(hpwlvar[2] >= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][2] for i in range(len(curr_inst_pins))]))
-     #                model.add(hpwlvar[3] >= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][3] for i in range(len(curr_inst_pins))]))
-     #            elif len(curr_inst_pins) == 1:
-     #                model.add(hpwlvar[0] <= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][0])
-     #                model.add(hpwlvar[1] <= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][1])
-     #                model.add(hpwlvar[2] >= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][2])
-     #                model.add(hpwlvar[3] >= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][3])
-     #    model.add(hpwl == cp_model.LinearExpr.weighted_sum([x[3] for x in hpwlvars], netpr)\
-     #            + cp_model.LinearExpr.weighted_sum([x[2] for x in hpwlvars], netpr)\
-     #            - cp_model.LinearExpr.weighted_sum([x[1] for x in hpwlvars], netpr)\
-     #            - cp_model.LinearExpr.weighted_sum([x[0] for x in hpwlvars], netpr))
+    if nets:
+        hpwlvars = list()
+        netpr = list()
+        for net_name, inst_pins in nets.items():
+            hpwlvar = [model.new_int_var(0, upper_bound, name=f'{net_name}_{coord}') for coord in ['llx', 'lly', 'urx', 'ury']]
+            hpwlvars.append(hpwlvar)
+            netpr.append(net_priority.get(net_name, 1))
+            for ipin in inst_pins:
+                curr_inst_pins = instance_pins_all[ipin[0]]
+                i0 = instance_index[ipin[0]]
+                if len(curr_inst_pins) > 1:
+                    model.add(hpwlvar[0] <= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][0] for i in range(len(curr_inst_pins))]))
+                    model.add(hpwlvar[1] <= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][1] for i in range(len(curr_inst_pins))]))
+                    model.add(hpwlvar[2] >= inst_vars[i0][0] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][2] for i in range(len(curr_inst_pins))]))
+                    model.add(hpwlvar[3] >= inst_vars[i0][1] + cp_model.LinearExpr.weighted_sum(sel_vars[i0], [curr_inst_pins[i][ipin[1]][3] for i in range(len(curr_inst_pins))]))
+                elif len(curr_inst_pins) == 1:
+                    model.add(hpwlvar[0] <= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][0])
+                    model.add(hpwlvar[1] <= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][1])
+                    model.add(hpwlvar[2] >= inst_vars[i0][0] + curr_inst_pins[0][ipin[1]][2])
+                    model.add(hpwlvar[3] >= inst_vars[i0][1] + curr_inst_pins[0][ipin[1]][3])
+        model.add(hpwl == cp_model.LinearExpr.weighted_sum([x[3] for x in hpwlvars], netpr)\
+                + cp_model.LinearExpr.weighted_sum([x[2] for x in hpwlvars], netpr)\
+                - cp_model.LinearExpr.weighted_sum([x[1] for x in hpwlvars], netpr)\
+                - cp_model.LinearExpr.weighted_sum([x[0] for x in hpwlvars], netpr))
+    else:
+        model.add(hpwl == 0)
 
-     #else:
-     #    model.add(hpwl == 0)
-
-    # Minimize the perimeter of the bounding box and normalized HPWL
     scale = len(nets) if nets else 1
 
-    model.minimize(scale * (W + H) + hpwl)
+    model.minimize(scale * Area + hpwl)
 
     model.ExportToFile(f'{module["name"]}_cpsat_formulation_{int(mwidth)}_{int(mheight)}.pb.txt')
     solver = cp_model.CpSolver()
     solver.parameters.log_search_progress = False
     solver.log_callback = print
-    status = solver.solve(model)
+    solver.parameters.max_time_in_seconds = 30 * len(instance_names)
+    solver.parameters.relative_gap_limit = 0.005
+    solver.parameters.num_workers = 16
 
+    status = solver.solve(model)
     if status == cp_model.OPTIMAL:
         logging.debug(f'optimal solution found : objective={solver.ObjectiveValue()}')
     elif status == cp_model.FEASIBLE:
@@ -1238,14 +1235,14 @@ def place_using_sequence_pairs(placement_data, module, placer_type):
         if solution:
             solutions.append(solution)
             width, height = solution['width'], solution['height']
-            for w in [int(i * 0.1 * width) for i in range(9, 4, -1)]:
+            for w in [int(i * 0.1 * width) for i in range(9, 1, -1)]:
                 logging.info(f"Trying width : {w}")
                 solution = placer(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
                 if solution: solutions.append(solution)
                 else:
                     print("infeasible")
                     break
-            for h in [int(i * 0.1 * height) for i in range(9, 4, -1)]:
+            for h in [int(i * 0.1 * height) for i in range(9, 1, -1)]:
                 logging.info(f"Trying height : {h}")
                 solution = placer(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
                 if solution: solutions.append(solution)
