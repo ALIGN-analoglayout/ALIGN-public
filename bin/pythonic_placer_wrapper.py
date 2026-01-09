@@ -1265,10 +1265,21 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
             ln = line[1].replace(".gds", "")
             if os.path.isfile(f'{inputs}/{ln}.json'):
                 with open(f'{inputs}/{ln}.json', 'r') as fp1:
+                    print(ln)
                     leaf_json = json.load(fp1)
                     leaf_data = {'abstract_template_name':line[0], 'concrete_template_name':ln}
                     leaf_data['bbox'] = leaf_json['bbox'] if 'bbox' in leaf_json else None
+                    origin = None
+                    if leaf_data['bbox']:
+                        origin = (leaf_data['bbox'][0], leaf_data['bbox'][1])
+                        leaf_data['bbox'] = [0, 0, (leaf_data['bbox'][2] - origin[0]), (leaf_data['bbox'][3] - origin[1])]
+                        print(origin, leaf_data['bbox'])
                     leaf_data['terminals'] = [t for t in leaf_json['terminals'] if t['netType'] == 'pin'] if 'terminals' in leaf_json else None
+                    if origin:
+                        for t in leaf_data['terminals']:
+                            if "rect" in t:
+                                r = t["rect"]
+                                t["rect"] = [r[i] - origin[i%2] for i in range(len(r))]
                     leaf_data['constraints'] = []
                     if 'leaves' not in input_data:
                         input_data['leaves'] = []
