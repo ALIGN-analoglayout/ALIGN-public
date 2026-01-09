@@ -48,8 +48,8 @@ class Rect:
   def __repr__( self):
       return str(self.toList())
 
-  def overlaps(self, r):
-      return self.urx > r.llx and self.llx < r.urx and self.ury > r.lly and self.lly < r.ury
+  def overlaps(self, r, sx = 0, sy = 0):
+      return self.urx + sx > r.llx and self.llx - sx < r.urx and self.ury + sy > r.lly and self.lly - sy < r.ury
 
 class Transformation:
     @staticmethod
@@ -365,6 +365,21 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         model += model.var_by_name(f'{name}_urx') <= model.var_by_name('W'), f'{name}_W'
         model += model.var_by_name(f'{name}_ury') <= model.var_by_name('H'), f'{name}_H'
 
+
+    spreadx = defaultdict(int)
+    spready = defaultdict(int)
+    for constraint in constraints:
+        if constraint['constraint'] == "Spread":
+            instances = constraint['instances']
+            distance = constraint['distance'] * scale_factor
+            for i0, i1 in itertools.combinations(instances, 2):
+                if constraint['direction'] == 'horizontal':
+                    spreadx[(i0, i1)] = distance
+                    spreadx[(i1, i0)] = distance
+                elif constraint['direction'] == 'vertical':
+                    spready[(i0, i1)] = distance
+                    spready[(i1, i0)] = distance
+
     # Constraints implied by the sequence pairs
     reverse_map = {v: k for k, v in instance_map.items()}
     instance_pos = {reverse_map[index]: i for i, index in enumerate(sequence_pair[0])}
@@ -372,15 +387,16 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     for index0, index1 in itertools.combinations(reverse_map, 2):
         name0 = reverse_map[index0]
         name1 = reverse_map[index1]
+        sx, sy = spreadx[(name0, name1)], spready[(name0, name1)]
         assert name0 != name1
         if instance_pos[name0] < instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:    # bb = LEFT
-            model += model.var_by_name(f'{name0}_urx') <= model.var_by_name(f'{name1}_llx'), f'bb_{name0}_{name1}'
+            model += model.var_by_name(f'{name0}_urx') + sx <= model.var_by_name(f'{name1}_llx'), f'bb_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # aa = RIGHT
-            model += model.var_by_name(f'{name1}_urx') <= model.var_by_name(f'{name0}_llx'), f'aa_{name0}_{name1}'
+            model += model.var_by_name(f'{name1}_urx') + sx <= model.var_by_name(f'{name0}_llx'), f'aa_{name0}_{name1}'
         elif instance_pos[name0] < instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # ba = ABOVE
-            model += model.var_by_name(f'{name1}_ury') <= model.var_by_name(f'{name0}_lly'), f'ba_{name0}_{name1}'
+            model += model.var_by_name(f'{name1}_ury') + sy <= model.var_by_name(f'{name0}_lly'), f'ba_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:  # ab = BELOW
-            model += model.var_by_name(f'{name0}_ury') <= model.var_by_name(f'{name1}_lly'), f'ab_{name0}_{name1}'
+            model += model.var_by_name(f'{name0}_ury') + sy <= model.var_by_name(f'{name1}_lly'), f'ab_{name0}_{name1}'
         else:
             assert False
 
@@ -453,16 +469,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{pair[0]}_ll{orth}') + model.var_by_name(f'{pair[0]}_ur{orth}') - model.var_by_name(f'{pair[1]}_ll{orth}') - model.var_by_name(f'{pair[1]}_ur{orth}') == 0, f'symm_1_{pair[0]}_{pair[1]}_{ctr}'
             ctr += 1
 
-        elif constraint['constraint'] == "Spread":
-            instances = constraint['instances']
-            distance = constraint['distance'] * scale_factor
-            axis = 'x' if constraint['direction'] == 'horizontal' else 'y'
-            # TODO: If the elements are already ordered in sequence pair, no need to introduce a binary variable!
-            for i0, i1 in itertools.combinations(instances, 2):
-                var = model.add_var(var_type=mip.BINARY)
-                model += distance - model.var_by_name(f'{i1}_ll{axis}') + model.var_by_name(f'{i0}_ur{axis}') - upper_bound*var <= 0, f'spread_{i0}_{i1}_{axis}0'
-                model += distance - model.var_by_name(f'{i0}_ll{axis}') + model.var_by_name(f'{i1}_ur{axis}') - upper_bound*(1-var) <= 0, f'spread_{i0}_{i1}_{axis}1'
-
     # Half perimeter wire length
     model.add_var(name='HPWL', lb=0, ub=len(wires)*upper_bound)
     if wires:
@@ -488,9 +494,9 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Minimize the perimeter of the bounding box and normalized HPWL
     scale_hpwl = 1/len(wires) if wires else 1
 
-    model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * model.var_by_name('HPWL')])
+    model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * 0.01 * model.var_by_name('HPWL')])
 
-#model.write(f'model.lp')
+    model.write(f'model_{"_".join([str(x) for x in sequence_pair[0]])}__{"_".join([str(x) for x in sequence_pair[1]])}.lp')
 
     # Solve
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
@@ -529,8 +535,9 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
             r1 = [model.var_by_name(f'{inst1}_llx').x, model.var_by_name(f'{inst1}_lly').x,
             model.var_by_name(f'{inst1}_urx').x, model.var_by_name(f'{inst1}_ury').x]
             r1 = [round(i) for i in r1]
-            if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
-                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
+            sx, sy = spreadx[(inst0, inst1)], spready[(inst0, inst1)]
+            if r0[2] + sx > r1[0] and r0[0] - sx < r1[2] and r0[3] + sy > r1[1] and r0[1] - sy < r1[3]:
+                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} {sx} {sy} overlap')
                 exit()
 
     w = round(model.var_by_name('W').x)
@@ -586,7 +593,6 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
     symmctr = 0
     spreadx = defaultdict(int)
     spready = defaultdict(int)
-    orderpairs = set()
     for constraint in constraints:
         if constraint['constraint'] == "Spread":
             instances = constraint['instances']
@@ -595,7 +601,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
                 if constraint['direction'] == 'horizontal':
                     spreadx[(i0, i1)] = distance
                     spreadx[(i1, i0)] = distance
-                elif constraint['direction'] == 'horizontal':
+                elif constraint['direction'] == 'vertical':
                     spready[(i0, i1)] = distance
                     spready[(i1, i0)] = distance
 
@@ -604,6 +610,7 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
     if mheight != 0:
       model += model.var_by_name('H') <= mheight, 'limit_H'
 
+    orderpairs = set()
     for constraint in constraints:
         if constraint['constraint'] == "Boundary":
             if max_width := constraint['max_width'] if 'max_width' in constraint else False:
@@ -767,8 +774,9 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
             model.var_by_name(f'{inst1}_width').x, model.var_by_name(f'{inst1}_height').x]
             r1 = [round(i) for i in r1]
             r1 = [r1[0], r1[1], r1[0] + r1[2], r1[1] + r1[3]]
-            if r0[2] > r1[0] and r0[0] < r1[2] and r0[3] > r1[1] and r0[1] < r1[3]:
-                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} overlap')
+            sx, sy = spreadx[(inst0, inst1)], spready[(inst0, inst1)]
+            if r0[2] + sx > r1[0] and r0[0] - sx < r1[2] and r0[3] + sy > r1[1] and r0[1] - sy < r1[3]:
+                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} {sx} {sy} overlap')
                 exit()
 
     w = round(model.var_by_name('W').x)
@@ -949,7 +957,9 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
     constraints = verilog_json['modules'][0]['constraints'] if 'constraints' in verilog_json['modules'][0] else list()
 
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
+    print(sequence_pairs)
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
+    print(block_variants)
 
     solutions = solution_array(hyper_params.max_solutions)
 
@@ -1295,9 +1305,24 @@ def check_placement(placement_data):
 
             bboxes[i] = Transformation( instance['transformation']['oX'], instance['transformation']['oY'],
                 instance['transformation']['sX'], instance['transformation']['sY']).hitRect(Rect(*bbox)).canonical()
+        spreadx = defaultdict(int)
+        spready = defaultdict(int)
+        for constraint in module["constraints"]:
+            if constraint['constraint'] == "Spread":
+                instances = constraint['instances']
+                distance = constraint['distance'] * scale_factor
+                for i0, i1 in itertools.combinations(instances, 2):
+                    if constraint['direction'] == 'horizontal':
+                        spreadx[(i0, i1)] = distance
+                        spreadx[(i1, i0)] = distance
+                    elif constraint['direction'] == 'vertical':
+                        spready[(i0, i1)] = distance
+                        spready[(i1, i0)] = distance
         for i in range(len(bboxes)):
             for j in range(i + 1, len(bboxes)):
-                assert not bboxes[i].overlaps(bboxes[j]), f'{module["instances"][i]} and {module["instances"][j]} overlap'
+                sx = spreadx[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
+                sy = spready[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
+                assert not bboxes[i].overlaps(bboxes[j], sx, sy), f'{module["instances"][i]} and {module["instances"][j]} overlap'
         for constraint in module['constraints']:
             if constraint['constraint'] == 'Order':
                 instances = constraint['instances']
@@ -1347,15 +1372,6 @@ def check_placement(placement_data):
                         assert bboxes[instance_map[i0]].llx == bboxes[instance_map[i1]].llx, f'Align v_left violation {i0} {i1}'
                     elif line == 'v_right':
                         assert bboxes[instance_map[i0]].urx == bboxes[instance_map[i1]].urx, f'Align v_right violation {i0} {i1}'
-            elif constraint['constraint'] == "Spread":
-                instances = constraint['instances']
-                distance = constraint['distance'] * scale_factor
-                for i0, i1 in itertools.combinations(instances, 2):
-                    bbox0, bbox1 = bboxes[instance_map[i0]], bboxes[instance_map[i1]]
-                    if constraint['direction'] == 'horizontal':
-                        assert bbox0.urx + distance <= bbox1.llx or bbox1.urx + distance <= bbox0.llx, f'Horizontal spread violation {i0} {i1}'
-                    else:
-                        assert bbox0.ury + distance <= bbox1.lly or bbox1.ury + distance <= bbox0.lly, f'Vertical spread violation {i0} {i1}'
 
                     
 
@@ -1371,7 +1387,6 @@ if __name__ == '__main__':
     ap.add_argument( "-d", "--draw", action='store_true', help='<draw layout on browser canvas>')
     ap.add_argument( "-l", "--loglevel", type=str, choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default="INFO", help="logging level (default: %(default)s)")
     args = ap.parse_args()
-    print(logging.getLevelName(args.loglevel), args.loglevel)
     logging.basicConfig(format="{asctime}-{levelname} {message}", style="{", datefmt="%Y-%m-%d,%H:%M:%S", level=logging.getLevelName(args.loglevel))
     logging.info(f"verilog file : {args.verilog}")
     logging.info(f"map file     : {args.map}")
