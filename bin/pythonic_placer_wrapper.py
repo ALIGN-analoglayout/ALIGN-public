@@ -338,7 +338,7 @@ def enumerate_block_variants(constraints, instance_map: dict, variant_counts: di
     return variants
 
 
-def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=None, scale_factor=1):
+def place_sequence_pair(constraints, instance_map, instance_well_type, instance_sizes, sequence_pair, wires=None, scale_factor=1):
 
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
     model.verbose = 0 # set to one to see more progress output with the solver
@@ -368,6 +368,14 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     spreadx = defaultdict(int)
     spready = defaultdict(int)
+    for i0, i1 in itertools.combinations(instance_map.keys(), 2):
+        w0 = instance_well_type[i0] if i0 in instance_well_type else None
+        w1 = instance_well_type[i1] if i1 in instance_well_type else None
+        if w0 and w1 and w0[0] == w1[0]:
+            spreadx[(i0, i1)] = w0[1]
+            spreadx[(i1, i0)] = w0[1]
+            spready[(i0, i1)] = w0[2]
+            spready[(i1, i0)] = w0[2]
     for constraint in constraints:
         if constraint['constraint'] == "Spread":
             instances = constraint['instances']
@@ -425,7 +433,6 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
                     model += model.var_by_name(f'{i0}_lly') >= model.var_by_name(f'{i1}_ury'), f'order_tb_{i0}_{i1}'
 
         elif constraint == "PlaceOnBoundary":
-# TODO : fix this
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
                 model += model.var_by_name(f'{name}_ury') == model.var_by_name('H'), f'boundary_ury_{name}'
             for name in constraint.instances_on(['south', 'southwest', 'southeast']):
@@ -525,23 +532,47 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         sy = 1 if fy == 0 else -1
         transformations[name] = {'oX': round(ox), 'oY': round(oy), 'sX': sx, 'sY': sy}
          #print(name, transformations[name], instance_sizes[name])
-    # overlap checker
-    for inst0 in instance_map.keys():
-        r0 = [model.var_by_name(f'{inst0}_llx').x, model.var_by_name(f'{inst0}_lly').x,
-        model.var_by_name(f'{inst0}_urx').x, model.var_by_name(f'{inst0}_ury').x]
-        r0 = [round(i) for i in r0]
-        for inst1 in instance_map.keys():
-            if inst0 == inst1: continue
-            r1 = [model.var_by_name(f'{inst1}_llx').x, model.var_by_name(f'{inst1}_lly').x,
-            model.var_by_name(f'{inst1}_urx').x, model.var_by_name(f'{inst1}_ury').x]
-            r1 = [round(i) for i in r1]
-            sx, sy = spreadx[(inst0, inst1)], spready[(inst0, inst1)]
-            if r0[2] + sx > r1[0] and r0[0] - sx < r1[2] and r0[3] + sy > r1[1] and r0[1] - sy < r1[3]:
-                logging.error(f'Blocks {inst0} {inst1} {r0} {r1} {sx} {sy} overlap')
-                exit()
-
     w = round(model.var_by_name('W').x)
     h = round(model.var_by_name('H').x)
+    # overlap checker
+    well_type = [None, None, None, None]
+    for inst0 in instance_map.keys():
+        r0 = [model.var_by_name(f'{inst0}_llx').x, model.var_by_name(f'{inst0}_lly').x, \
+             model.var_by_name(f'{inst0}_urx').x, model.var_by_name(f'{inst0}_ury').x]
+        r0 = [round(i) for i in r0]
+        if inst0 in instance_well_type:
+            if r0[0] == 0:
+                if not well_type[0]:
+                    well_type[0] = instance_well_type[inst0][0]
+                elif well_type[0][0] != instance_well_type[inst0][0][0]:
+                    well_type[0] = (None, 0)
+            if r0[1] == 0:
+                if not well_type[1]:
+                    well_type[1] = instance_well_type[inst0][1]
+                elif well_type[1][0] != instance_well_type[inst0][1][0]:
+                    well_type[1] = (None, 0)
+            if r0[2] == w:
+                if not well_type[2]:
+                    well_type[2] = instance_well_type[inst0][2]
+                elif well_type[2][0] != instance_well_type[inst0][2][0]:
+                    well_type[2] = (None, 0)
+            if r0[3] == h:
+                if not well_type[3]:
+                    well_type[3] = instance_well_type[inst0][3]
+                elif well_type[3][0] != instance_well_type[inst0][3][0]:
+                    well_type[3] = (None, 0)
+    for inst0, inst1 in itertools.combinations(instance_map.keys(), 2):
+        r0 = [model.var_by_name(f'{inst0}_llx').x, model.var_by_name(f'{inst0}_lly').x, \
+             model.var_by_name(f'{inst0}_urx').x, model.var_by_name(f'{inst0}_ury').x]
+        r0 = [round(i) for i in r0]
+        r1 = [model.var_by_name(f'{inst1}_llx').x, model.var_by_name(f'{inst1}_lly').x,
+        model.var_by_name(f'{inst1}_urx').x, model.var_by_name(f'{inst1}_ury').x]
+        r1 = [round(i) for i in r1]
+        sx, sy = spreadx[(inst0, inst1)], spready[(inst0, inst1)]
+        if r0[2] + sx > r1[0] and r0[0] - sx < r1[2] and r0[3] + sy > r1[1] and r0[1] - sy < r1[3]:
+            logging.error(f'Blocks {inst0} {inst1} {r0} {r1} {sx} {sy} overlap')
+            exit()
+
     hyper_params = HyperParameters()
     solution = {
         'cost': (w*h + model.var_by_name('HPWL').x * hyper_params.LAMBDA),
@@ -552,11 +583,12 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         'transformations': transformations,
         'model': model,
         'sequence_pair': copy.deepcopy(sequence_pair),
+        'well_type': well_type
     }
     return solution
 
 
-def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, scale_factor, mwidth = 0, mheight = 0):
+def place_using_ilp(constraints, instance_map, instance_well_type, module, nets, instance_sizes_all, instance_pins_all, scale_factor, mwidth = 0, mheight = 0):
     model = mip.Model(sense=mip.MINIMIZE, solver_name=mip.CBC)
     model.verbose = 0 # set to one to see more progress output with the solver
 
@@ -790,7 +822,8 @@ def place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all,
         'hpwl': model.var_by_name('HPWL').x / scale_hpwl,
         'transformations': transformations,
         'model': model,
-        'block_variant':[0]*len(instance_names)
+        'block_variant':[0]*len(instance_names),
+        'well_type':[None, None, None, None] # East, West, South, North
     }
     for i, name in enumerate(instance_names):
         if len(instance_sizes_all[name]) > 1:
@@ -909,20 +942,22 @@ def get_all_instances_pins_nets(reverse_instance_map, variant_map, instances, mo
                 nets[actual].append((instance_name, formal))
     return instance_sizes, instance_pins, nets
 
-def get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module):
+def get_instances_wires(instance_well_type, block_variant, reverse_instance_map, variant_map, instances, module):
     instance_sizes = dict()
     wires = defaultdict(list)
     for idx, selected in enumerate(block_variant):
         instance_name = reverse_instance_map[idx]
         concrete_template = variant_map[instances[instance_name][ATN]][selected]
         bbox = concrete_template['bbox']
+        if instance_name not in instance_well_type:
+            instance_well_type[instance_name] = concrete_template['well_type']
         instance_sizes[instance_name] = [bbox[2] - bbox[0], bbox[3] - bbox[1]]
 
         for formal_actual in instances[instance_name]['fa_map']:
             formal, actual = formal_actual['formal'], formal_actual['actual']
             if 'global_signals' not in module or actual not in module['global_signals']:
                 wires[actual].append((instance_name, tuple(x for x in concrete_template['pin_bbox'][formal])))
-    return instance_sizes, wires
+    return instance_sizes, wires, instance_well_type
 
 
 def place_using_sequence_pairs(placement_data, module, enum_placer):
@@ -955,11 +990,21 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
 
     verilog_json = {'modules': [module]}
     constraints = verilog_json['modules'][0]['constraints'] if 'constraints' in verilog_json['modules'][0] else list()
+    instance_well_type = dict()
+    for constraint in constraints:
+        if constraint['constraint'] == "WellType":
+            dist = [0, 0]
+            for i in range(len(constraint['directions'])):
+                if constraint['directions'][i] == 'horizontal':
+                    dist[0] = constraint['distances'][i]
+                elif constraint['directions'][i] == 'vertical':
+                    dist[1] = constraint['distances'][i]
+            for inst in constraint['instances']:
+                instance_well_type[inst] = [(constraint['name'], dist[0]), (constraint['name'], dist[1]),\
+                                            (constraint['name'], dist[0]), (constraint['name'], dist[1])]
 
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
-    print(sequence_pairs)
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
-    print(block_variants)
 
     solutions = solution_array(hyper_params.max_solutions)
 
@@ -967,8 +1012,8 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
         logging.info("Enumerative placer")
         for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
 
-            instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
-            solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+            instance_sizes, wires, instance_well_type = get_instances_wires(instance_well_type, block_variant, reverse_instance_map, variant_map, instances, module)
+            solution = place_sequence_pair(constraints, instance_map, instance_well_type, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
 
             if solution:
                 solution['block_variant'] = block_variant
@@ -976,18 +1021,18 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
     else:
         logging.info("ILP placer")
         instance_sizes_all, instance_pins_all, nets = get_all_instances_pins_nets(reverse_instance_map, variant_map, instances, module)
-        solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
+        solution = place_using_ilp(constraints, instance_map, instance_well_type, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'])
         if solution:
             solutions.append(solution)
             width, height = solution['width'], solution['height']
             for w in [i * 0.1 * width for i in range(9, 4, -1)]:
-              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
+              solution = place_using_ilp(constraints, instance_map, instance_well_type, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], w)
               if solution: solutions.append(solution)
               else:
                 print("infeasible")
                 break
             for h in [i * 0.1 * height for i in range(9, 4, -1)]:
-              solution = place_using_ilp(constraints, instance_map, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
+              solution = place_using_ilp(constraints, instance_map, instance_well_type, module, nets, instance_sizes_all, instance_pins_all, placement_data['scale_factor'], 0, h)
               if solution: solutions.append(solution)
               else:
                 print("infeasible")
@@ -1004,8 +1049,8 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
 # try and get a legal sequence pair using z3
             for sequence_pair in sequence_pairs:
                 count += 1
-                instance_sizes, wires = get_instances_wires(block_variant, reverse_instance_map, variant_map, instances, module)
-                solution = place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
+                instance_sizes, wires, instance_well_type = get_instances_wires(instance_well_type, block_variant, reverse_instance_map, variant_map, instances, module)
+                solution = place_sequence_pair(constraints, instance_map, instance_well_type, instance_sizes, sequence_pair, wires=wires, scale_factor=placement_data['scale_factor'])
                 if solution or count >= hyper_params.max_candidates:
                     solution['block_variant'] = block_variant
                     solutions.append(solution)
@@ -1088,12 +1133,13 @@ def place_using_sequence_pairs(placement_data, module, enum_placer):
         new_module['abstract_name'] = new_module['name']
         new_module['concrete_name'] = new_module['name'] + f'_{i}'
         new_module['pin_bbox'] = pin_bbox
+        new_module['well_type'] = solution['well_type']
         del new_module['name']
 
         placement_data['modules'].append(new_module)
 
-        modules = {module['concrete_name']: module for module in placement_data['modules']}
-        leaves = {leaf['concrete_name']: leaf for leaf in placement_data['leaves']}
+         #modules = {module['concrete_name']: module for module in placement_data['modules']}
+         #leaves = {leaf['concrete_name']: leaf for leaf in placement_data['leaves']}
 
 def compute_topoorder(modules, concrete_name, key='abstract_template_name'):
     found_modules, found_leaves = set(), set()
@@ -1130,8 +1176,8 @@ def trim_placement_data(placement_data, top_level):
     for key in ['leaves', 'modules']:
         new_placement_data[key] = [x for x in placement_data[key] if x['concrete_name'] in all_modules_leaves]
         for elem in new_placement_data[key]:
-            if 'pin_bbox' in elem:
-                del elem['pin_bbox']
+             #if 'pin_bbox' in elem:
+             #    del elem['pin_bbox']
             if 'global_signals' in elem:
                 elem['global_signals'] = list(elem['global_signals'])
     new_placement_data['scale_factor'] = placement_data['scale_factor']
@@ -1184,7 +1230,8 @@ def pythonic_placer(top_level, input_data, enum_placer=True, scale_factor=1):
             'constraints': leaf['constraints'],
             'bbox': leaf['bbox'],
             'terminals': leaf['terminals'],
-            'pin_bbox': pin_bbox})
+            'pin_bbox': pin_bbox,
+            'well_type': None})
 
     modules = {module['name']: module for module in input_data['modules']}
     topological_order, found_modules, _ = compute_topoorder(modules, top_level)
