@@ -503,7 +503,7 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * 0.01 * model.var_by_name('HPWL')])
 
-    model.write(f'model_{"_".join([str(x) for x in sequence_pair[0]])}__{"_".join([str(x) for x in sequence_pair[1]])}.lp')
+     #model.write(f'model_{"_".join([str(x) for x in sequence_pair[0]])}__{"_".join([str(x) for x in sequence_pair[1]])}.lp')
 
     # Solve
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
@@ -1312,7 +1312,6 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
             ln = line[1].replace(".gds", "")
             if os.path.isfile(f'{inputs}/{ln}.json'):
                 with open(f'{inputs}/{ln}.json', 'r') as fp1:
-                    print(ln)
                     leaf_json = json.load(fp1)
                     leaf_data = {'abstract_template_name':line[0], 'concrete_template_name':ln}
                     leaf_data['bbox'] = leaf_json['bbox'] if 'bbox' in leaf_json else None
