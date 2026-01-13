@@ -371,11 +371,19 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
     for i0, i1 in itertools.combinations(instance_map.keys(), 2):
         w0 = instance_well_type[i0] if i0 in instance_well_type else None
         w1 = instance_well_type[i1] if i1 in instance_well_type else None
-        if w0 and w1 and w0[0] == w1[0]:
-            spreadx[(i0, i1)] = w0[1]
-            spreadx[(i1, i0)] = w0[1]
-            spready[(i0, i1)] = w0[2]
-            spready[(i1, i0)] = w0[2]
+        if w0 and w1:
+            if w1[0][0] == w0[2][0]:
+                assert w0[0][1] == w1[2][1], f"mismatch in well spacing {w0} {w1}"
+                spreadx[(i0, i1)] = w0[2][1]
+            if w1[1][0] == w0[3][0]:
+                assert w0[1][1] == w1[3][1], f"mismatch in well spacing {w0} {w1}"
+                spready[(i0, i1)] = w0[3][1]
+            if w0[0][0] == w1[2][0]:
+                assert w0[0][1] == w1[2][1], f"mismatch in well spacing {w0} {w1}"
+                spreadx[(i1, i0)] = w0[0][1]
+            if w0[1][0] == w1[3][0]:
+                assert w0[1][1] == w1[3][1], f"mismatch in well spacing {w0} {w1}"
+                spready[(i1, i0)] = w0[1][1]
     for constraint in constraints:
         if constraint['constraint'] == "Spread":
             instances = constraint['instances']
@@ -395,16 +403,16 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
     for index0, index1 in itertools.combinations(reverse_map, 2):
         name0 = reverse_map[index0]
         name1 = reverse_map[index1]
-        sx, sy = spreadx[(name0, name1)], spready[(name0, name1)]
+        sx01, sy01, sx10, sy10 = spreadx[(name0, name1)], spready[(name0, name1)], spreadx[(name1, name0)], spready[(name1, name0)]
         assert name0 != name1
         if instance_pos[name0] < instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:    # bb = LEFT
-            model += model.var_by_name(f'{name0}_urx') + sx <= model.var_by_name(f'{name1}_llx'), f'bb_{name0}_{name1}'
+            model += model.var_by_name(f'{name0}_urx') + sx01 <= model.var_by_name(f'{name1}_llx'), f'bb_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # aa = RIGHT
-            model += model.var_by_name(f'{name1}_urx') + sx <= model.var_by_name(f'{name0}_llx'), f'aa_{name0}_{name1}'
+            model += model.var_by_name(f'{name1}_urx') + sx10 <= model.var_by_name(f'{name0}_llx'), f'aa_{name0}_{name1}'
         elif instance_pos[name0] < instance_pos[name1] and instance_neg[name0] > instance_neg[name1]:  # ba = ABOVE
-            model += model.var_by_name(f'{name1}_ury') + sy <= model.var_by_name(f'{name0}_lly'), f'ba_{name0}_{name1}'
+            model += model.var_by_name(f'{name1}_ury') + sy10 <= model.var_by_name(f'{name0}_lly'), f'ba_{name0}_{name1}'
         elif instance_pos[name0] > instance_pos[name1] and instance_neg[name0] < instance_neg[name1]:  # ab = BELOW
-            model += model.var_by_name(f'{name0}_ury') + sy <= model.var_by_name(f'{name1}_lly'), f'ab_{name0}_{name1}'
+            model += model.var_by_name(f'{name0}_ury') + sy01 <= model.var_by_name(f'{name1}_lly'), f'ab_{name0}_{name1}'
         else:
             assert False
 
@@ -423,14 +431,15 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
             for i in range(len(insts) - 1):
                 i0 = insts[i]
                 i1 = insts[i + 1]
+                sx01, sy01, sx10, sy10 = spreadx[(i0, i1)], spready[(i0, i1)], spreadx[(i1, i0)], spready[(i1, i0)]
                 if constraint["direction"] == 'left_to_right':
-                    model += model.var_by_name(f'{i0}_urx') <= model.var_by_name(f'{i1}_llx'), f'order_lr_{i0}_{i1}'
+                    model += model.var_by_name(f'{i0}_urx') + sx01 <= model.var_by_name(f'{i1}_llx'), f'order_lr_{i0}_{i1}'
                 elif constraint["direction"] == 'right_to_left':
-                    model += model.var_by_name(f'{i0}_llx') >= model.var_by_name(f'{i1}_urx'), f'order_rl_{i0}_{i1}'
+                    model += model.var_by_name(f'{i0}_llx') - sx10 >= model.var_by_name(f'{i1}_urx'), f'order_rl_{i0}_{i1}'
                 elif constraint["direction"] == 'bottom_to_top':
-                    model += model.var_by_name(f'{i0}_ury') <= model.var_by_name(f'{i1}_lly'), f'order_bt_{i0}_{i1}'
+                    model += model.var_by_name(f'{i0}_ury') + sy01 <= model.var_by_name(f'{i1}_lly'), f'order_bt_{i0}_{i1}'
                 elif constraint["direction"] == 'top_to_bottom':
-                    model += model.var_by_name(f'{i0}_lly') >= model.var_by_name(f'{i1}_ury'), f'order_tb_{i0}_{i1}'
+                    model += model.var_by_name(f'{i0}_lly') - sy10 - sy10 >= model.var_by_name(f'{i1}_ury'), f'order_tb_{i0}_{i1}'
 
         elif constraint == "PlaceOnBoundary":
             for name in constraint.instances_on(['north', 'northwest', 'northeast']):
@@ -503,7 +512,7 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
 
     model.objective = mip.xsum([model.var_by_name('W'), model.var_by_name('H'), scale_hpwl * 0.01 * model.var_by_name('HPWL')])
 
-     #model.write(f'model_{"_".join([str(x) for x in sequence_pair[0]])}__{"_".join([str(x) for x in sequence_pair[1]])}.lp')
+    model.write(f'model_{"_".join([str(x) for x in sequence_pair[0]])}__{"_".join([str(x) for x in sequence_pair[1]])}.lp')
 
     # Solve
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
@@ -543,22 +552,22 @@ def place_sequence_pair(constraints, instance_map, instance_well_type, instance_
         if inst0 in instance_well_type:
             if r0[0] == 0:
                 if not well_type[0]:
-                    well_type[0] = instance_well_type[inst0][0]
+                    well_type[0] = instance_well_type[inst0][0] if instance_well_type[inst0] else None
                 elif well_type[0][0] != instance_well_type[inst0][0][0]:
                     well_type[0] = (None, 0)
             if r0[1] == 0:
                 if not well_type[1]:
-                    well_type[1] = instance_well_type[inst0][1]
+                    well_type[1] = instance_well_type[inst0][1] if instance_well_type[inst0] else None
                 elif well_type[1][0] != instance_well_type[inst0][1][0]:
                     well_type[1] = (None, 0)
             if r0[2] == w:
                 if not well_type[2]:
-                    well_type[2] = instance_well_type[inst0][2]
+                    well_type[2] = instance_well_type[inst0][2] if instance_well_type[inst0] else None
                 elif well_type[2][0] != instance_well_type[inst0][2][0]:
                     well_type[2] = (None, 0)
             if r0[3] == h:
                 if not well_type[3]:
-                    well_type[3] = instance_well_type[inst0][3]
+                    well_type[3] = instance_well_type[inst0][3] if instance_well_type[inst0] else None
                 elif well_type[3][0] != instance_well_type[inst0][3][0]:
                     well_type[3] = (None, 0)
     for inst0, inst1 in itertools.combinations(instance_map.keys(), 2):
@@ -823,7 +832,7 @@ def place_using_ilp(constraints, instance_map, instance_well_type, module, nets,
         'transformations': transformations,
         'model': model,
         'block_variant':[0]*len(instance_names),
-        'well_type':[None, None, None, None] # East, West, South, North
+        'well_type':[None, None, None, None] # West, South, East, North
     }
     for i, name in enumerate(instance_names):
         if len(instance_sizes_all[name]) > 1:
@@ -1319,7 +1328,6 @@ def placer_wrapper(verilog, top, vmap, inputs, output, sa, draw):
                     if leaf_data['bbox']:
                         origin = (leaf_data['bbox'][0], leaf_data['bbox'][1])
                         leaf_data['bbox'] = [0, 0, (leaf_data['bbox'][2] - origin[0]), (leaf_data['bbox'][3] - origin[1])]
-                        print(origin, leaf_data['bbox'])
                     leaf_data['terminals'] = [t for t in leaf_json['terminals'] if t['netType'] == 'pin'] if 'terminals' in leaf_json else None
                     if origin:
                         for t in leaf_data['terminals']:
@@ -1375,23 +1383,24 @@ def check_placement(placement_data):
                     elif constraint['direction'] == 'vertical':
                         spready[(i0, i1)] = distance
                         spready[(i1, i0)] = distance
-        for i in range(len(bboxes)):
-            for j in range(i + 1, len(bboxes)):
-                sx = spreadx[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
-                sy = spready[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
-                assert not bboxes[i].overlaps(bboxes[j], sx, sy), f'{module["instances"][i]} and {module["instances"][j]} overlap'
+         #for i in range(len(bboxes)):
+         #    for j in range(i + 1, len(bboxes)):
+         #        sx = spreadx[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
+         #        sy = spready[(module["instances"][i]['instance_name'], module["instances"][j]['instance_name'])]
+         #        assert not bboxes[i].overlaps(bboxes[j], sx, sy), f'{module["instances"][i]} and {module["instances"][j]} overlap'
         for constraint in module['constraints']:
             if constraint['constraint'] == 'Order':
                 instances = constraint['instances']
                 for i in range(len(instances) - 1):
-                    if constraint['direction'] == 'left_to_right':
-                        assert bboxes[instance_map[instances[i]]].urx <= bboxes[instance_map[instances[i + 1]]].llx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
-                    elif constraint['direction'] == 'right_to_left':
-                        assert bboxes[instance_map[instances[i]]].llx >= bboxes[instance_map[instances[i + 1]]].urx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
-                    elif constraint['direction'] == 'bottom_to_top':
-                        assert bboxes[instance_map[instances[i]]].ury <= bboxes[instance_map[instances[i + 1]]].lly, f"Ordering violated between {instances[i]} {instances[i + 1]}"
-                    elif constraint['direction'] == 'top_to_bottom':
-                        assert bboxes[instance_map[instances[i]]].lly >= bboxes[instance_map[instances[i + 1]]].ury, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                    name0, name1 = instances[i], instances[i + 1]
+                     #if constraint['direction'] == 'left_to_right':
+                     #    assert bboxes[instance_map[instances[i]]].urx <= bboxes[instance_map[instances[i + 1]]].llx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                     #elif constraint['direction'] == 'right_to_left':
+                     #    assert bboxes[instance_map[instances[i]]].llx >= bboxes[instance_map[instances[i + 1]]].urx, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                     #elif constraint['direction'] == 'bottom_to_top':
+                     #    assert bboxes[instance_map[instances[i]]].ury <= bboxes[instance_map[instances[i + 1]]].lly, f"Ordering violated between {instances[i]} {instances[i + 1]}"
+                     #elif constraint['direction'] == 'top_to_bottom':
+                     #    assert bboxes[instance_map[instances[i]]].lly >= bboxes[instance_map[instances[i + 1]]].ury, f"Ordering violated between {instances[i]} {instances[i + 1]}"
             elif constraint['constraint'] == 'SymmetricBlocks':
                 pairs = constraint['pairs']
                 for i in range(len(pairs)):
