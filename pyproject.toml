@@ -18,7 +18,7 @@ build-verbosity = 1
 archs = ["x86_64"]
 manylinux-x86_64-image = "manylinux_2_28"
 before-all = "dnf install -y epel-release && dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel"
-repair-wheel-command = "find /project/_skbuild -name 'libCbc.so*' -exec cp {} /usr/local/lib/ \\; 2>/dev/null; ldconfig 2>/dev/null; auditwheel repair -w {dest_dir} {wheel}"
+repair-wheel-command = "find /project/_skbuild -name 'lib*.so*' -exec cp {} /usr/local/lib/ \\; 2>/dev/null; ldconfig 2>/dev/null; auditwheel repair -w {dest_dir} {wheel}"
 environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
 
 [tool.cibuildwheel.macos]
