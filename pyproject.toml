@@ -16,8 +16,9 @@ build-verbosity = 1
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
-manylinux-x86_64-image = "manylinux_2_28"
-before-all = "dnf install -y boost-devel || yum install -y boost-devel"
+manylinux-x86_64-image = "manylinux_2_24"
+before-all = "apt-get update && apt-get install -y libboost-dev lp-solve"
+environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
