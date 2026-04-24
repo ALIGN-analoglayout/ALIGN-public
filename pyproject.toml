@@ -22,7 +22,7 @@ repair-wheel-command = "find /project/_skbuild -name 'lib*.so*' -exec cp {} /usr
 environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
+archs = ["auto"]
 environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
 before-all = "brew install boost lp_solve || true"
 
