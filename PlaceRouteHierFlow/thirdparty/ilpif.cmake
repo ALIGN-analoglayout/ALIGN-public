@@ -24,14 +24,17 @@ if(NOT ilpsolverif_POPULATED)
     message(STATUS "Building ILP solver interface from source.")
     # SYMPHONY 5.6.17 (used by ILPSolverInterface) predates Apple Silicon; its config.sub
     # does not recognise arm64-apple-darwin and produces a broken build on macOS arm64.
-    # Declare 5.7.3 here so cmake's first-declaration-wins rule supersedes the 5.6.17
-    # URL inside ILPSolverInterface's symphony.cmake. Linux is unaffected (pre-built libs
-    # are found above and add_subdirectory is never reached).
-    FetchContent_Declare(
-      symphony
-      URL https://github.com/coin-or/SYMPHONY/archive/refs/tags/releases/5.7.3.tar.gz
-      URL_HASH SHA256=a42edebce10321b299fabd2ae3487c8e55f8b69e074b18c2976c1165d552be89
-    )
+    # Declare 5.7.3 here (Apple only) so cmake's first-declaration-wins rule supersedes
+    # the 5.6.17 URL inside ILPSolverInterface's symphony.cmake.
+    # On Linux, 5.7.3's configure requires CoinUtils via pkg-config which is unavailable
+    # during the build (CoinUtils is compiled as part of CBC), so we keep 5.6.17 there.
+    if (APPLE)
+      FetchContent_Declare(
+        symphony
+        URL https://github.com/coin-or/SYMPHONY/archive/refs/tags/releases/5.7.3.tar.gz
+        URL_HASH SHA256=a42edebce10321b299fabd2ae3487c8e55f8b69e074b18c2976c1165d552be89
+      )
+    endif()
     add_subdirectory(${ilpsolverif_SOURCE_DIR} ${ilpsolverif_BINARY_DIR})
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_SOURCE_DIR}/ILPSolverIf)
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_LIBRARY_DIR})
