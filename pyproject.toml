@@ -25,7 +25,9 @@ environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
 archs = ["auto"]
 # CPPFLAGS/LDFLAGS cover both arm64 (/opt/homebrew) and x86_64 (/usr/local) Homebrew prefixes
 # so CBC's ./configure --enable-openmp can find libomp with Apple Clang on both runners.
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
+# -DNO_AVX_HARDWARE prevents CBC ClpPackedMatrix from defining HASWELL/SKYLAKE x86 SIMD
+# paths that pull in mmintrin.h builtins unavailable on arm64.
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
 before-all = "brew install boost lp_solve libomp || true"
 
 [tool.cibuildwheel.windows]
