@@ -23,9 +23,11 @@ environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
 
 [tool.cibuildwheel.macos]
 archs = ["auto"]
-# CPPFLAGS/LDFLAGS cover both arm64 (/opt/homebrew) and x86_64 (/usr/local) Homebrew prefixes
-# so CBC's ./configure --enable-openmp can find libomp with Apple Clang on both runners.
-# -DNO_AVX_HARDWARE prevents CBC ClpPackedMatrix from defining HASWELL/SKYLAKE x86 SIMD
-# paths that pull in mmintrin.h builtins unavailable on arm64.
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
-before-all = "brew install boost lp_solve libomp || true"
+# /tmp/arm64-stubs/immintrin.h is an empty stub that shadows the x86-only Xcode
+# header.  SYMPHONY 5.6.17's bundled Clp includes immintrin.h unconditionally in
+# ClpPackedMatrix.cpp and ClpSimplexDual.cpp; on arm64 the real header emits
+# #error "only meant to be used on x86".  -DNO_AVX_HARDWARE prevents the HASWELL/
+# SKYLAKE intrinsics blocks from being compiled so the stub can be truly empty.
+# CPPFLAGS/LDFLAGS also cover both Homebrew prefixes so CBC --enable-openmp works.
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
+before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h && brew install boost lp_solve libomp || true"

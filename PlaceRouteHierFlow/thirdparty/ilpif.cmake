@@ -22,30 +22,6 @@ if(NOT ilpsolverif_POPULATED)
     PATHS ${solver_search_path})
   if (NOT ilp_solver_lib)
     message(STATUS "Building ILP solver interface from source.")
-    if(APPLE)
-      # On arm64 macOS, AC_CHECK_HEADERS([immintrin.h]) in both SYMPHONY's and
-      # CBC's bundled CLP configure scripts can spuriously succeed (the header
-      # exists in Xcode but is x86-only), causing ClpPackedMatrix.cpp to include
-      # it and fail with "only meant to be used on x86".  Force the autoconf cache
-      # variable to "no" for both before add_subdirectory processes them.
-      set(_ilpif_symphony_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/symphony.cmake")
-      file(READ "${_ilpif_symphony_cmake}" _ilpif_symphony_content)
-      string(REPLACE
-        "--disable-openmp --disable-zlib"
-        "--disable-openmp --disable-zlib CPPFLAGS=-DNO_AVX_HARDWARE ac_cv_header_immintrin_h=no"
-        _ilpif_symphony_content "${_ilpif_symphony_content}")
-      file(WRITE "${_ilpif_symphony_cmake}" "${_ilpif_symphony_content}")
-
-      set(_ilpif_cbc_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/cbc.cmake")
-      if(EXISTS "${_ilpif_cbc_cmake}")
-        file(READ "${_ilpif_cbc_cmake}" _ilpif_cbc_content)
-        string(REPLACE
-          "--enable-cbc-parallel"
-          "--enable-cbc-parallel ac_cv_header_immintrin_h=no"
-          _ilpif_cbc_content "${_ilpif_cbc_content}")
-        file(WRITE "${_ilpif_cbc_cmake}" "${_ilpif_cbc_content}")
-      endif()
-    endif()
     add_subdirectory(${ilpsolverif_SOURCE_DIR} ${ilpsolverif_BINARY_DIR})
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_SOURCE_DIR}/ILPSolverIf)
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_LIBRARY_DIR})
