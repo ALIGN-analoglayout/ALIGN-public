@@ -29,6 +29,3 @@ archs = ["auto"]
 # paths that pull in mmintrin.h builtins unavailable on arm64.
 environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
 before-all = "brew install boost lp_solve libomp || true"
-
-[tool.cibuildwheel.windows]
-archs = ["AMD64"]
