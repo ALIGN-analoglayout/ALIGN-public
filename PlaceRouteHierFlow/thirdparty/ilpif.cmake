@@ -23,21 +23,29 @@ if(NOT ilpsolverif_POPULATED)
   if (NOT ilp_solver_lib)
     message(STATUS "Building ILP solver interface from source.")
     if(APPLE)
+      # cbc.cmake hardcodes Linux-style versioned dylib symlinks (libCbc.dylib.3.10.5
+      # etc.) in cbc_LIBRARIES.  macOS libtool creates libCbc.3.10.5.dylib instead,
+      # so those paths never exist.  Append a one-line filter to cbc.cmake so that
+      # cbc_LIBRARIES is clean everywhere it is used: target_link_libraries,
+      # install(FILES ...), and the new ILPSolverIf_shared PRIVATE entry below.
+      set(_ilpif_cbc_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/cbc.cmake")
+      file(READ "${_ilpif_cbc_cmake}" _ilpif_cbc_content)
+      string(APPEND _ilpif_cbc_content [=[
+if(APPLE)
+  list(FILTER cbc_LIBRARIES EXCLUDE REGEX ".*\\.dylib\\.[0-9]")
+endif()
+]=])
+      file(WRITE "${_ilpif_cbc_cmake}" "${_ilpif_cbc_content}")
+
+      # ILPSolverIf/CMakeLists.txt adds build deps on cbc/symphony for
+      # ILPSolverIf_shared but never calls target_link_libraries for it.
       # macOS ld requires all symbols resolved at shared-lib link time.
-      # ILPSolverIf/CMakeLists.txt adds dependencies on cbc/symphony for
-      # ILPSolverIf_shared but never calls target_link_libraries for it,
-      # causing undefined-symbol errors.  Patch the file before add_subdirectory.
       set(_ilpif_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/CMakeLists.txt")
       file(READ "${_ilpif_cmake}" _ilpif_content)
-      # ${cbc_LIBRARIES} includes versioned symlinks like libCbc.dylib.3.10.5
-      # that only exist on Linux.  Replace the INTERFACE link for ILPSolverIf
-      # with a filtered list, and add the missing PRIVATE link for ILPSolverIf_shared.
       string(REPLACE
         [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
-        [=[set(_cbc_libs_filtered ${cbc_LIBRARIES})
-list(FILTER _cbc_libs_filtered EXCLUDE REGEX ".*\\.dylib\\.[0-9]")
-target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${_cbc_libs_filtered})
-target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${_cbc_libs_filtered})]=]
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})
+target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
         _ilpif_content "${_ilpif_content}")
       file(WRITE "${_ilpif_cmake}" "${_ilpif_content}")
     endif()
