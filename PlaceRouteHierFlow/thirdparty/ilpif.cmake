@@ -22,6 +22,20 @@ if(NOT ilpsolverif_POPULATED)
     PATHS ${solver_search_path})
   if (NOT ilp_solver_lib)
     message(STATUS "Building ILP solver interface from source.")
+    if(APPLE)
+      # macOS ld requires all symbols resolved at shared-lib link time.
+      # ILPSolverIf/CMakeLists.txt adds dependencies on cbc/symphony for
+      # ILPSolverIf_shared but never calls target_link_libraries for it,
+      # causing undefined-symbol errors.  Patch the file before add_subdirectory.
+      set(_ilpif_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/CMakeLists.txt")
+      file(READ "${_ilpif_cmake}" _ilpif_content)
+      string(REPLACE
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})
+target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
+        _ilpif_content "${_ilpif_content}")
+      file(WRITE "${_ilpif_cmake}" "${_ilpif_content}")
+    endif()
     add_subdirectory(${ilpsolverif_SOURCE_DIR} ${ilpsolverif_BINARY_DIR})
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_SOURCE_DIR}/ILPSolverIf)
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_LIBRARY_DIR})
