@@ -35,7 +35,8 @@ before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h &&
 # Homebrew on the macos-14 (arm64) runner builds lp_solve targeting macOS 14.0.
 # delocate-wheel rejects bundling a lib whose min-target exceeds the wheel's
 # MACOSX_DEPLOYMENT_TARGET, so override to 14.0 for arm64 wheels only.
-# Other environment keys (CPPFLAGS, LDFLAGS) are inherited from the base section.
+# All environment keys must be repeated here because overrides replace, not merge.
+# arm64 runners only have Homebrew at /opt/homebrew, not /usr/local.
 [[tool.cibuildwheel.overrides]]
 select = "*-macosx_arm64"
-environment = { MACOSX_DEPLOYMENT_TARGET = "14.0" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "14.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib" }
