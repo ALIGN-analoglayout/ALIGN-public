@@ -31,3 +31,11 @@ archs = ["auto"]
 # CPPFLAGS/LDFLAGS also cover both Homebrew prefixes so CBC --enable-openmp works.
 environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
 before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h && brew install boost lp_solve libomp || true"
+
+# Homebrew on the macos-14 (arm64) runner builds lp_solve targeting macOS 14.0.
+# delocate-wheel rejects bundling a lib whose min-target exceeds the wheel's
+# MACOSX_DEPLOYMENT_TARGET, so override to 14.0 for arm64 wheels only.
+# Other environment keys (CPPFLAGS, LDFLAGS) are inherited from the base section.
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_arm64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "14.0" }
