@@ -2,7 +2,7 @@
 #include "spdlog/spdlog.h"
 #include <iostream>
 #include <algorithm>
-#include <malloc.h>
+#include <cstdlib>
 #include <signal.h>
 #include "ILPSolverIf.h"
 
