@@ -30,12 +30,13 @@ if(NOT ilpsolverif_POPULATED)
       set(_ilpif_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/CMakeLists.txt")
       file(READ "${_ilpif_cmake}" _ilpif_content)
       # ${cbc_LIBRARIES} includes versioned symlinks like libCbc.dylib.3.10.5
-      # that only exist on Linux; filter them out before linking the shared lib.
+      # that only exist on Linux.  Replace the INTERFACE link for ILPSolverIf
+      # with a filtered list, and add the missing PRIVATE link for ILPSolverIf_shared.
       string(REPLACE
         [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
-        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})
-set(_cbc_libs_filtered ${cbc_LIBRARIES})
+        [=[set(_cbc_libs_filtered ${cbc_LIBRARIES})
 list(FILTER _cbc_libs_filtered EXCLUDE REGEX ".*\\.dylib\\.[0-9]")
+target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${_cbc_libs_filtered})
 target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${_cbc_libs_filtered})]=]
         _ilpif_content "${_ilpif_content}")
       file(WRITE "${_ilpif_cmake}" "${_ilpif_content}")
