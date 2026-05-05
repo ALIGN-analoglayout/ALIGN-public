@@ -22,6 +22,33 @@ if(NOT ilpsolverif_POPULATED)
     PATHS ${solver_search_path})
   if (NOT ilp_solver_lib)
     message(STATUS "Building ILP solver interface from source.")
+    if(APPLE)
+      # cbc.cmake hardcodes Linux-style versioned dylib symlinks (libCbc.dylib.3.10.5
+      # etc.) in cbc_LIBRARIES.  macOS libtool creates libCbc.3.10.5.dylib instead,
+      # so those paths never exist.  Append a one-line filter to cbc.cmake so that
+      # cbc_LIBRARIES is clean everywhere it is used: target_link_libraries,
+      # install(FILES ...), and the new ILPSolverIf_shared PRIVATE entry below.
+      set(_ilpif_cbc_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/cbc.cmake")
+      file(READ "${_ilpif_cbc_cmake}" _ilpif_cbc_content)
+      string(APPEND _ilpif_cbc_content [=[
+if(APPLE)
+  list(FILTER cbc_LIBRARIES EXCLUDE REGEX ".*\\.dylib\\.[0-9]")
+endif()
+]=])
+      file(WRITE "${_ilpif_cbc_cmake}" "${_ilpif_cbc_content}")
+
+      # ILPSolverIf/CMakeLists.txt adds build deps on cbc/symphony for
+      # ILPSolverIf_shared but never calls target_link_libraries for it.
+      # macOS ld requires all symbols resolved at shared-lib link time.
+      set(_ilpif_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/CMakeLists.txt")
+      file(READ "${_ilpif_cmake}" _ilpif_content)
+      string(REPLACE
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})
+target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
+        _ilpif_content "${_ilpif_content}")
+      file(WRITE "${_ilpif_cmake}" "${_ilpif_content}")
+    endif()
     add_subdirectory(${ilpsolverif_SOURCE_DIR} ${ilpsolverif_BINARY_DIR})
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_SOURCE_DIR}/ILPSolverIf)
     target_include_directories(ILPSolverIf INTERFACE ${ilpsolverif_LIBRARY_DIR})
