@@ -2,7 +2,7 @@
 #include "spdlog/spdlog.h"
 #include <iostream>
 #include <algorithm>
-#include <malloc.h>
+#include <cstdlib>
 #include <signal.h>
 #include "ILPSolverIf.h"
 
@@ -905,7 +905,7 @@ double ILP_solver::GenerateValidSolutionAnalytical(design& mydesign, PnRDB::Drc_
 
   // set_add_rowmode(lp, FALSE);
   {
-    double row[N_var + 1] = {0};
+    double row[N_var + 1]; memset(row, 0, (N_var + 1) * sizeof(double));
     Pdatatype hyper;
     #ifndef min_displacement
     // add HPWL in cost
@@ -3610,7 +3610,7 @@ double ILP_solver::GenerateValidSolution_select(design& mydesign, SeqPair& curr_
 
   // set_add_rowmode(lp, FALSE);
   {
-    double row[N_var + 1] = {0};
+    double row[N_var + 1]; memset(row, 0, (N_var + 1) * sizeof(double));
     Pdatatype hyper;
 
     // add HPWL in cost

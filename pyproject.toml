@@ -4,7 +4,39 @@ requires = [
     "wheel",
     "pybind11",
     "scikit-build",
-    "cmake",
+    "cmake>=3.26,<4.0",
     "ninja"
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-*"
+skip = "*-musllinux*"
+build-verbosity = 1
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+manylinux-x86_64-image = "manylinux_2_28"
+before-all = "dnf install -y epel-release && dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel"
+repair-wheel-command = "find /project/_skbuild -name 'lib*.so*' -exec cp {} /usr/local/lib/ \\; 2>/dev/null; ldconfig 2>/dev/null; auditwheel repair -w {dest_dir} {wheel}"
+environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
+
+[tool.cibuildwheel.macos]
+archs = ["auto"]
+# /tmp/arm64-stubs/immintrin.h is an empty stub that shadows the x86-only Xcode
+# header.  SYMPHONY 5.6.17's bundled Clp includes immintrin.h unconditionally in
+# ClpPackedMatrix.cpp and ClpSimplexDual.cpp; on arm64 the real header emits
+# #error "only meant to be used on x86".  -DNO_AVX_HARDWARE prevents the HASWELL/
+# SKYLAKE intrinsics blocks from being compiled so the stub can be truly empty.
+# CPPFLAGS/LDFLAGS also cover both Homebrew prefixes so CBC --enable-openmp works.
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
+before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h && brew install boost lp_solve libomp || true"
+
+# Homebrew on the macos-14 (arm64) runner builds lp_solve targeting macOS 14.0.
+# delocate-wheel rejects bundling a lib whose min-target exceeds the wheel's
+# MACOSX_DEPLOYMENT_TARGET, so override to 14.0 for arm64 wheels only.
+# All environment keys must be repeated here because overrides replace, not merge.
+# arm64 runners only have Homebrew at /opt/homebrew, not /usr/local.
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_arm64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "14.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib" }
