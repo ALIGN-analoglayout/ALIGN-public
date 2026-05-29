@@ -14,7 +14,7 @@
     "test": "src/views/__tests__/*.spec.js"
   },
   "dependencies": {
-    "axios": "^1.15.2",
+    "axios": "^1.16.0",
     "bootstrap": "^4.3.1",
     "gsap": "^3.6.0",
     "jest-junit": "^6.3.0",
