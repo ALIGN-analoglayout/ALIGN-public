@@ -57,8 +57,9 @@ void JSONExtractUit(string GDSData, double& unit) {
         json strAry = lib["units"];
         if (strAry.is_array()) {
           // logger->debug("Unit {0} ", to_string(strAry));
-          json::iterator xyI = strAry.begin();
-          double xyU = *xyI;
+          // units[1] = db-unit in meters (tool-independent, 1e-9 for 1nm dbu); units[0] is
+          // user-units, tool-dependent: klayout blackbox GDS writes 0.001 and poisons unitScale.
+          double xyU = (strAry.size() > 1 ? strAry.at(1) : strAry.at(0)).get<double>();
           unit = 0.5 * 0.000000001 / xyU;
           return;
         }
