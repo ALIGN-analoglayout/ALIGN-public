@@ -1,7 +1,7 @@
 FetchContent_Declare(
   ilpsolverif
   GIT_REPOSITORY https://github.com/ALIGN-analoglayout/ILPSolverInterface.git
-  GIT_TAG 4d82906a97a971c3ab54a7629a4c96edeed71cac
+  GIT_TAG 57de83f43dd1d05fa63295d7d55f58da2edf632c
 )
 include(ProcessorCount)
 ProcessorCount(N)
