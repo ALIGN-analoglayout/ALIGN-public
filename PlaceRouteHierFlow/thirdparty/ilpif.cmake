@@ -38,15 +38,15 @@ endif()
 ]=])
       file(WRITE "${_ilpif_cbc_cmake}" "${_ilpif_cbc_content}")
 
-      # ILPSolverIf/CMakeLists.txt adds build deps on cbc/symphony for
-      # ILPSolverIf_shared but never calls target_link_libraries for it.
-      # macOS ld requires all symbols resolved at shared-lib link time.
+      # ILPSolverIf/CMakeLists.txt adds a build dep on cbc for ILPSolverIf_shared
+      # but never calls target_link_libraries for it.  macOS ld requires all
+      # symbols resolved at shared-lib link time.
       set(_ilpif_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/CMakeLists.txt")
       file(READ "${_ilpif_cmake}" _ilpif_content)
       string(REPLACE
-        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
-        [=[target_link_libraries(ILPSolverIf INTERFACE ${symphony_LIBRARIES} ${cbc_LIBRARIES})
-target_link_libraries(ILPSolverIf_shared PRIVATE ${symphony_LIBRARIES} ${cbc_LIBRARIES})]=]
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${cbc_LIBRARIES})]=]
+        [=[target_link_libraries(ILPSolverIf INTERFACE ${cbc_LIBRARIES})
+target_link_libraries(ILPSolverIf_shared PRIVATE ${cbc_LIBRARIES})]=]
         _ilpif_content "${_ilpif_content}")
       file(WRITE "${_ilpif_cmake}" "${_ilpif_content}")
     endif()
