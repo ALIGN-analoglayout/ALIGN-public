@@ -97,10 +97,6 @@ void JSONReaderWrite_subcells(string GDSData, long int& rndnum, vector<string>& 
           string strname = nm + "_" + std::to_string(rndnum);
           // json elements = str["elements"];
           for (json::iterator elmI = str["elements"].begin(); elmI != str["elements"].end(); ++elmI) {
-            TJ_llx = INT_MAX;
-            TJ_lly = INT_MAX;
-            TJ_urx = INT_MIN;
-            TJ_ury = INT_MIN;
             json elm = *elmI;
             if (elm["xy"].is_array()) {
               json xyAry = elm["xy"];
@@ -132,10 +128,21 @@ void JSONReaderWrite_subcells(string GDSData, long int& rndnum, vector<string>& 
     // DAK: This means we will have a missing subcell!
     // DAK: Should error here
   }
-  llx.push_back(TJ_llx);
-  lly.push_back(TJ_lly);
-  urx.push_back(TJ_urx);
-  ury.push_back(TJ_ury);
+  // The sref placement formula in PnRdatabase::WriteJSON (bOrient branches
+  // around the unitScale*box.LL/UR.x/y terms) assumes the cell-LEF origin
+  // sits at the sub-cell's LEF (0,0) corner. The previous code derived llx /
+  // lly from cell geometry, which "luckily" landed at 0 for ALIGN-native
+  // primitives (last element was a power rail at the origin) and produced
+  // large per-cell offsets for gLayout-baked black_box cells (their last
+  // element was an internal stub far from the origin). With the per-element
+  // reset removed above, accumulating the true cell bbox instead shifted
+  // ALIGN-native cells (whose power rails extend into cell-y < 0) by the
+  // negative LL. Forcing llx/lly to zero is the only treatment that places
+  // both primitive families at their planned (oX, oY) without polishing.
+  llx.push_back(0);
+  lly.push_back(0);
+  urx.push_back(0);
+  ury.push_back(0);
 };
 
 /**
