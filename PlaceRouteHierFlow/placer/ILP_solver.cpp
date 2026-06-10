@@ -1777,7 +1777,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
   const unsigned N_area_x = N_var - 2;
   const unsigned N_area_y = N_var - 1;
 
-  ILPSolverIf solverif(solvertouse == SYMPHONY  ? SOLVER_ENUM::SYMPHONY : SOLVER_ENUM::Cbc);
+  ILPSolverIf solverif;
   const double infty{solverif.getInfinity()};
   // set integer constraint, H_flip and V_flip can only be 0 or 1
   std::vector<int> rowindofcol[N_var];
@@ -2557,11 +2557,7 @@ bool ILP_solver::FrameSolveILPCore(const design& mydesign, const SeqPair& curr_s
     }
     PlacerHyperparameters hyper;
     solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(Blocks.size())));
-    if (solvertouse == SYMPHONY) {
-      solverif.loadProblemSym(N_var, (int)rhs.size(), starts.data(), indices.data(),
-          values.data(), collb.data(), colub.data(),
-          intvars.data(), objective.data(), sens.data(), rhs.data());
-    } else if (solvertouse == CBC) {
+    if (solvertouse == SYMPHONY || solvertouse == CBC) {
       double rhslb[rhs.size()], rhsub[rhs.size()];
       for (unsigned i = 0;i < sens.size(); ++i) {
         switch (sens[i]) {
