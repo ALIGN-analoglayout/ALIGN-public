@@ -122,7 +122,7 @@ class CmdlineParser():
                             help='Port for GUI mode')
 
         parser.add_argument('--skipGDS',
-                            action='store_false',
+                            action='store_true',
                             help='Don\'t generate GDS files.')
 
         parser.add_argument('--lambda_coeff',
