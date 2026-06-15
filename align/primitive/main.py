@@ -60,8 +60,21 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     pattern_map = {'single_device':0, 'cc':1, 'id':2,'ratio_devices':3,'ncc':4}
     pattern = pattern_map[input_pattern]
     if len(primitive.elements) ==2:
-        x_cells = 2*x_cells
-        pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        # For ratio current-mirrors (SCM with unequal finger counts), the PDK gen_param sizes
+        # x_cells to the EXACT total finger count (no ceil over-provision). Skip the *2 doubling
+        # here: doubling assumes an equal A/B split and re-introduces a 4-finger granularity that
+        # over-provisions any mirror whose finger sum isn't a multiple of 4. Pass ratio_a_cells
+        # (cells for device 'M1') so the generator can split the array proportionally.
+        def _fcount(e):
+            p = e.parameters
+            return int(float(p.get('NF', 1))) * int(float(p.get('M', 1)))
+        _is_ratio_scm = ('SCM' in primitive.name) and (_fcount(primitive.elements[0]) != _fcount(primitive.elements[1]))
+        if not _is_ratio_scm:
+            x_cells = 2*x_cells
+            pattern = 2 if x_cells % 4 != 0 else pattern  # CC is not possible; default is interdigitated
+        else:
+            _elem = {e.name: e for e in primitive.elements}
+            parameters['ratio_a_cells'] = _fcount(_elem.get('M1', primitive.elements[0])) // 2
         #TODO do this double during x_cells generation in gen_param.py/add_primitive()
 
     logger.debug(
