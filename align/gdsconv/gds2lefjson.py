@@ -108,9 +108,9 @@ class GDS2_LEF_JSON:
                         drawidx = None
                         for idx, k in self._layers[lname].items():
                             if k == 'Draw':
-                                drawinidx = idx
+                                drawidx = idx
                                 break
-                        key = (llayer, drawinidx)
+                        key = (llayer, drawidx)
                         if key in polygons:
                             for poly in polygons[key]:
                                 if len(poly) < 2: continue

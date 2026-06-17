@@ -614,10 +614,10 @@ def run_gui( *, tagged_bboxes, module_name, lambda_coeff, port):
     awcas = AppWithCallbacksAndState( tagged_bboxes=tagged_bboxes, module_name=module_name, lambda_coeff=lambda_coeff)
 
     hostname = socket.gethostname()
-    fully_qualified_domain_name = socket.getfqdn(hostname)
+#fully_qualified_domain_name = socket.getfqdn(hostname)
     if None == port: port = find_free_port()
 
-    awcas.app.run_server(debug=True,use_reloader=False,host=fully_qualified_domain_name, port=port)
+    awcas.app.run_server(debug=True,use_reloader=False,host=hostname, port=port)
 
     logger.info( f'final selection: {awcas.sel} We have access to any state from the GUI object here.')
     return awcas.sel

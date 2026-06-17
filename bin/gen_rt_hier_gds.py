@@ -12,7 +12,7 @@ ap.add_argument( "-g", "--gds_dir", type=str, default="", help='<dir with all le
 ap.add_argument( "-i", "--def_dir", type=str, default="", help='<dir with all hier def files>')
 ap.add_argument( "-t", "--top_cell", type=str, default="library", help='<top cell>')
 ap.add_argument( "-u", "--units", type=float, default=1e-6, help='<units in m>')
-ap.add_argument( "-s", "--scale", type=float, default=1, help='<scale>')
+ap.add_argument( "-s", "--scale", type=float, default=1000, help='<scale>')
 ap.add_argument( "-l", "--layers", type=str, default="", help='<layers.json>')
 ap.add_argument( "-d", "--deff", type=str, default="", help='<route def file>')
 args = ap.parse_args()
@@ -205,7 +205,7 @@ if args.layers:
                         glno2 = 0
                     layers[layer] = (glno1,glno2)
                     if "LabelLayerNo" in l:
-                        labellayers[layer] = l["LabelLayerNo"]
+                        labellayers[layer] = l["LabelLayerNo"][0] if len(l["LabelLayerNo"]) > 0 else None
 
         
 for j,m in modules.items():

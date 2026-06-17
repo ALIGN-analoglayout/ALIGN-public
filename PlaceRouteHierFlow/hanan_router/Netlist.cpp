@@ -21,7 +21,18 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
     return;
   }
   auto oj = json::parse(ifs);
-  auto it = oj.find("leaves");
+  auto it = oj.find("global_signals");
+  std::vector<std::string> globalNets;
+  globalNets.reserve(8);
+  if (it != oj.end()) {
+    for (auto& l : *it) {
+      auto act = l.find("actual");
+      if (act != l.end()) {
+        globalNets.push_back(*act);
+      }
+    }
+  }
+  it = oj.find("leaves");
   if (it != oj.end()) {
     for (auto& l : *it) {
       auto lname = l.find("concrete_name");
@@ -30,6 +41,11 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
       if (lname != l.end()) {
         auto modu = new Module(*lname, (aname != l.end() ? *aname : *lname), 1, _uu);
         //COUT << "adding leaf : " << *lname << '\n';
+        for (auto& g : globalNets) {
+          auto p = modu->addPin(g);
+          modu->addNet(g);
+          modu->net(g)->addPin(p);
+        }
         auto terms = l.find("terminals");
         if (terms != l.end()) {
           for (auto& term : *terms) {
@@ -56,6 +72,11 @@ Netlist::Netlist(const std::string& pldata, const::std::string& lefdata, const D
           for (auto& p : *params) {
             modu->addPin(p);
           }
+        }
+        for (auto& g : globalNets) {
+          auto p = modu->addPin(g);
+          modu->addNet(g);
+          modu->net(g)->addPin(p);
         }
         auto bbox = m.find("bbox");
         if (bbox != m.end()) {

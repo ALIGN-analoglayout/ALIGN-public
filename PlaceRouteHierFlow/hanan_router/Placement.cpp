@@ -412,6 +412,25 @@ void Module::writeDEF(const std::string& outdir, const std::string& nstr, const 
               ofs << " ( " << r.xmin() << ' ' << r.ymin() << " ) ( " << r.xmax() << ' ' << r.ymax() << " )\n";
             }
           }
+        } else {
+          ofs << "\n";
+          for (auto& pin : n.second.pins()) {
+            for (auto& p : pin->ports()) {
+              const auto& shapes = p->shapes();
+              if (!shapes.empty()) {
+                for (auto& l : shapes) {
+                  if (LAYER_NAMES[l.first][0] == 'M') {
+                    ofs << "  + RECT " << LAYER_NAMES[l.first];
+                    for (auto& r : l.second) {
+                      ofs << " ( " << r.xmin() << ' ' << r.ymin() << " ) ( " << r.xmax() << ' ' << r.ymax() << " )\n";
+                      break;
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          }
         }
         ofs << " ;\n";
       }

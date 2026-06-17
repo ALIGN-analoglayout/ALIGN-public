@@ -206,7 +206,7 @@ def ota():
     return data
 
 
-DRAW = False
+DRAW = True
 
 
 def draw_placement(placement_data, module_name):
