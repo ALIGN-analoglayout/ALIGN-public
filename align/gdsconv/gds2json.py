@@ -34,7 +34,7 @@ def convert_GDS_GDSjson (name, oname):
     ofile = open (oname, 'wt')
 
     top = {}
-    cursors = [top, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
+    cursors = [top, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
 
     with open(name, 'rb') as a_file:
         for rec in Record.iterate(a_file):

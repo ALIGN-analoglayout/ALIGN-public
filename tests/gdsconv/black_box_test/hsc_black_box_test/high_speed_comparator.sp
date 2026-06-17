@@ -4,6 +4,7 @@ mn1 vo vi vss vss n nfin=6 nf=2 l=14e-9 m=1
 .ends invhs
 
 .subckt dp da db ga gb s b
+* @: Generator(name='black_box')
 .ends dp
 
 .subckt high_speed_comparator clk vcc vin vip von vop vss

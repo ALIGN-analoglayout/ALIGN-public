@@ -21,7 +21,7 @@
 .model LVTNFET_DNW nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model NCH_DNW nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model PCH pmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
-.model NCH pmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
+.model NCH nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model PCH_HVT pmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model NCH_HVT nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model phvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
