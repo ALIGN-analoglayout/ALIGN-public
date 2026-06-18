@@ -12,8 +12,12 @@ import json, sys, glob, pathlib
 def load_artifacts(artifacts_dir):
     results = {}
     for f in glob.glob(f"{artifacts_dir}/**/metrics.json", recursive=True):
-        with open(f) as fp:
-            data = json.load(fp)
+        try:
+            with open(f) as fp:
+                data = json.load(fp)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"WARNING: failed to load {f}: {e}", file=sys.stderr)
+            continue
         circuit = data.get('circuit')
         if circuit:
             results[circuit] = data
@@ -32,10 +36,10 @@ def check_regressions(current, previous, thresholds):
         for key, val in metrics.items():
             if key in ('circuit', 'version', 'timestamp'):
                 continue
-            if not isinstance(val, (int, float)) or val is None:
+            if not isinstance(val, (int, float)):
                 continue
             prev_val = prev.get(key)
-            if not isinstance(prev_val, (int, float)) or prev_val is None or prev_val <= 0:
+            if not isinstance(prev_val, (int, float)) or prev_val <= 0:
                 continue
             pct = (val - prev_val) / prev_val * 100
             entry = {'circuit': circuit, 'metric': key,
@@ -55,8 +59,15 @@ def main():
 
     artifacts_dir, history_file, version, config_file = sys.argv[1:]
 
-    with open(config_file) as f:
-        config = json.load(f)
+    try:
+        with open(config_file) as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        print(f"ERROR: config file not found: {config_file}", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: config file is not valid JSON: {e}", file=sys.stderr)
+        sys.exit(1)
 
     current = load_artifacts(artifacts_dir)
     if not current:
@@ -67,8 +78,12 @@ def main():
     history_path = pathlib.Path(history_file)
     history_path.parent.mkdir(parents=True, exist_ok=True)
     if history_path.exists():
-        with open(history_path) as f:
-            history = json.load(f)
+        try:
+            with open(history_path) as f:
+                history = json.load(f)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"ERROR: failed to load history file {history_file}: {e}", file=sys.stderr)
+            sys.exit(1)
 
     previous = {}
     if history:
