@@ -62,6 +62,7 @@ end
 cifoutput
   style gds
   scalefactor 1
+  layer 66 20 poly
   layer 67 20 m1
   layer 68 20 m2
   layer 69 20 m3
