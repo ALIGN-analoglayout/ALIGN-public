@@ -64,7 +64,7 @@ jobs:
           sudo make install
 
       - name: Install ngspice and COIN-OR runtime libs
-        run: sudo apt-get install -y ngspice coinor-libcgl1 coinor-libcbc3 coinor-libosi1v5
+        run: sudo apt-get install -y ngspice coinor-libcgl1 coinor-libcbc3.1 coinor-libosi1v5
 
       - name: Install ALIGN from PyPI
         run: |
@@ -151,7 +151,7 @@ jobs:
           sudo make install
 
       - name: Install ngspice and COIN-OR runtime libs
-        run: sudo apt-get install -y ngspice coinor-libcgl1 coinor-libcbc3 coinor-libosi1v5
+        run: sudo apt-get install -y ngspice coinor-libcgl1 coinor-libcbc3.1 coinor-libosi1v5
 
       - name: Install ALIGN from PyPI
         run: |
