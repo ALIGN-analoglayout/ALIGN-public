@@ -101,10 +101,102 @@ jobs:
           name: metrics-${{ matrix.circuit }}
           path: work/${{ matrix.circuit }}/metrics.json
 
+  benchmark-sky130:
+    name: Benchmark sky130 ${{ matrix.circuit }}
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        circuit:
+          - buffer
+          - five_transistor_ota
+          - current_mirror_ota
+          - telescopic_ota
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get release version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="$(git describe --tags --abbrev=0)"
+          fi
+          # Strip leading 'v' for PyPI install
+          VERSION=${VERSION#v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "full_version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Cache Magic VLSI
+        id: cache-magic
+        uses: actions/cache@v4
+        with:
+          path: /usr/local
+          key: magic-7.3.456-ubuntu-22.04-v1
+
+      - name: Build Magic VLSI from source
+        if: steps.cache-magic.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y tcl-dev tk-dev libcairo2-dev libncurses-dev
+          git clone --depth 1 --branch 7.3.456 https://github.com/RTimothyEdwards/magic magic-src
+          cd magic-src
+          ./configure --prefix=/usr/local
+          make -j4
+          sudo make install
+
+      - name: Install ngspice
+        run: sudo apt-get install -y ngspice
+
+      - name: Install ALIGN from PyPI
+        run: |
+          pip install align-analoglayout==${{ steps.version.outputs.version }}
+
+      - name: Set up work directory
+        run: mkdir -p work/${{ matrix.circuit }}
+
+      - name: Clone sky130 PDK
+        run: git clone --depth 1 https://github.com/ALIGN-analoglayout/ALIGN-pdk-sky130 sky130-pdk
+
+      - name: Run ALIGN layout
+        run: |
+          bash benchmarks/scripts/run_align.sh \
+            ${{ matrix.circuit }} \
+            work/${{ matrix.circuit }} \
+            $GITHUB_WORKSPACE \
+            ${{ steps.version.outputs.version }} \
+            $GITHUB_WORKSPACE/sky130-pdk/SKY130_PDK \
+            $GITHUB_WORKSPACE/sky130-pdk/examples/${{ matrix.circuit }}
+
+      - name: Run Magic extraction
+        run: |
+          bash benchmarks/scripts/run_extraction.sh \
+            ${{ matrix.circuit }} \
+            work/${{ matrix.circuit }} \
+            benchmarks/magic_tech/SKY130_PDK
+
+      - name: Run ngspice simulation
+        run: |
+          bash benchmarks/scripts/run_simulation.sh \
+            ${{ matrix.circuit }} \
+            work/${{ matrix.circuit }} \
+            benchmarks/testbenches/sky130
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-sky130-${{ matrix.circuit }}
+          path: work/${{ matrix.circuit }}/metrics.json
+
   aggregate-and-publish:
     name: Aggregate and Publish Dashboard
     runs-on: ubuntu-latest
-    needs: benchmark
+    needs: [benchmark, benchmark-sky130]
     permissions:
       contents: write
 
