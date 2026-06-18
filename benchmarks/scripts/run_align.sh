@@ -31,6 +31,8 @@ echo "[run_align] PDK:        ${PDK_PATH}"
 echo "[run_align] Design dir: ${DESIGN_DIR}"
 START_MS=$(python3 -c "import time; print(int(time.time()*1000))")
 
+[[ -d "$DESIGN_DIR" ]] || { echo "ERROR: design directory not found: $DESIGN_DIR"; exit 1; }
+
 python3 -m align \
   "${DESIGN_DIR}" \
   -f "${DESIGN_DIR}/${CIRCUIT}.sp" \
