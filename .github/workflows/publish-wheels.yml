@@ -72,4 +72,4 @@ jobs:
           name: sdist
           path: dist/
 
-      - uses: pypa/gh-action-pypi-publish@f7600653596e4cd83f0ea59b8070d4a8676c49a0  # release/v1
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # v1.14.0 (release/v1 tip)
