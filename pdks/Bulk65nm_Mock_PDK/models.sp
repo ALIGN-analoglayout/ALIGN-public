@@ -24,6 +24,8 @@
 .model NCH nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model PCH_HVT pmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model NCH_HVT nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
+.model PCH_MAC pmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
+.model NCH_MAC nmos l=1 w=1 nf=1 m=1  stack=1 parallel=1
 .model phvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model nhvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model psvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1

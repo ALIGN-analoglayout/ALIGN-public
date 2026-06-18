@@ -163,7 +163,7 @@ def gen_leaf_collateral( leaves, primitives, primitive_dir):
     leaf_collateral = defaultdict(list)
     for k, v in primitives.items():
         atn = v['abstract_template_name']
-        if atn not in leaves:
+        if atn != 'GUARD_RING' and atn not in leaves:
             logger.debug( f'abstract_template_name {atn} of {v} not in {leaves}')
             continue
         leaf = v['concrete_template_name']
@@ -239,7 +239,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                 c = v['concrete_template_name']
                 if c in leaf_collateral:
                     assert '.lef' in leaf_collateral[c]
-                else:
+                elif a != 'GUARD_RING':
                     logger.warning( f'Unused primitive: {a} {c} excluded from map file')
                 print( f'{a} {c}.gds', file=mp)
 

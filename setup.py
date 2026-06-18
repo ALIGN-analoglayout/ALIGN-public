@@ -44,6 +44,7 @@ if build_testing and build_testing == 'ON':
 code_coverage = os.environ.get('CODE_COVERAGE', None)
 if code_coverage and code_coverage == 'ON':
     cmake_args.append("-DCODE_COVERAGE=ON")
+cmake_args.append("-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
 
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
@@ -77,7 +78,8 @@ setup(name='align-analoglayout',
           'bin/gen_lef_with_obs.py',
           'bin/gen_primitive_from_gds.py',
           'bin/gen_rt_hier_gds.py',
-          'bin/gen_pl_gds.py'
+          'bin/gen_pl_gds.py',
+          'bin/pythonic_placer_wrapper.py'
       ],
       install_requires=[
           'networkx>=2.4',

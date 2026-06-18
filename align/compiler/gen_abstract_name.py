@@ -51,6 +51,15 @@ class PrimitiveLibrary():
                     logger.debug(f"group cap instance {ele}")
                 else:
                     self.gen_primitive_def(ele)
+        new_subckt = None
+        for ckt in self.ckt_lib:
+            if not isinstance(ckt, SubCircuit):
+                continue
+            for const in ckt.constraints:
+                if isinstance(const, constraint.GuardRing):
+                    new_subckt = SubCircuit(name="guard_ring", pins=[const.global_pin], generator={"name": 'guard_ring'})
+        if new_subckt: self.plib.append(new_subckt)
+
         return self.plib
 
     def group_cap_subcircuit(self, unit_cap):

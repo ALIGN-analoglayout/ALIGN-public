@@ -113,6 +113,7 @@ def generate_Res(pdkdir, block_name, height, x_cells, y_cells, nfin, unit_res):
 
 
 def generate_Ring(pdkdir, block_name, x_cells, y_cells):
+    logger.debug("Inside ring generator")
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('RingGenerator', pdkdir)
@@ -147,10 +148,10 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir, blac
         if block_args['primitive'] != 'generic' and block_args['primitive'] != 'guard_ring' and block_args['primitive'] != 'black_box':
             primitive_def = primitive_lib.find(block_args['abstract_template_name'])
             assert primitive_def is not None, f"unavailable primitive definition {block_name} of type {block_args['abstract_template_name']}"
-        elif block_args['primitive'] == 'black_box':
+        elif block_args['primitive'] == 'guard_ring' or block_args['primitive'] == 'black_box':
             primitive_def = block_args['primitive']
-        else:
-            primitive_def = block_args['primitive']
+         #else:
+         #    primitive_def = block_args['primitive']
         block_args.pop("primitive", None)
         uc = generate_primitive(block_name, primitive_def,  ** block_args,
                                 pdkdir=pdk_dir, outputdir=primitive_dir, netlistdir=netlist_dir, blackbox_dir=blackbox_dir, scale=scale)
@@ -162,18 +163,23 @@ def generate_primitives(primitive_lib, pdk_dir, primitive_dir, netlist_dir, blac
 def generate_primitive_param(subckt: SubCircuit, primitives: list, pdk_dir: pathlib.Path, uniform_height=False):
     """ Return commands to generate parameterized lef"""
     assert isinstance(subckt, SubCircuit), f"invalid input for primitive generator {subckt}"
-    blackbox = False
+    guardring, blackbox = False, False
     for c in subckt.constraints:
-        if isinstance(c, constraint.Generator) and c.name == 'black_box':
+        if isinstance(c, constraint.Generator):
+          if c.name == 'black_box':
             blackbox = True
-    if not blackbox:
+    if 'name' in subckt.generator and subckt.generator['name'] == 'guard_ring':
+            guardring = True
+    if not blackbox and not guardring:
         spec = importlib.util.spec_from_file_location("gen_param", pdk_dir / 'gen_param.py')
         modules = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modules)
         rc = modules.gen_param(subckt, primitives, pdk_dir)
         assert rc, f"unable to generate primitive {subckt}"
-    else:
+    elif blackbox:
         primitives[subckt.name] = {'primitive': 'black_box', 'abstract_template_name' : subckt.name, 'concrete_template_name': subckt.name, 'parameters': subckt.pins}
+    else:
+        primitives[subckt.name] = {'primitive': 'guard_ring', 'abstract_template_name' : subckt.name, 'concrete_template_name': subckt.name, 'parameters': subckt.pins}
 
 
 # WARNING: Bad code. Changing these default values breaks functionality.

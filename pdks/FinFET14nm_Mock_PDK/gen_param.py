@@ -118,8 +118,8 @@ def gen_param(subckt, primitives, pdk_dir):
             generator_constraint = const
 
     block_name = subckt.name
-    vt = subckt.elements[0].model
-    values = subckt.elements[0].parameters
+     #vt = subckt.elements[0].model
+     #values = subckt.elements[0].parameters
     generator_name = subckt.generator["name"]
     block_name = subckt.name
     logger.debug(f"Getting generator parameters for: {subckt.name}")
@@ -175,7 +175,7 @@ def gen_param(subckt, primitives, pdk_dir):
         }
         add_primitive(primitives, block_name, block_args, generator_constraint)
 
-    else:
+    elif generator_name == 'MOS':
         assert 'MOS' == generator_name, f'{generator_name} is not recognized'
         unit_size_mos = design_config["unit_size_mos"]
 
