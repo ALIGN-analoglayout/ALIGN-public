@@ -33,7 +33,17 @@ START_MS=$(python3 -c "import time; print(int(time.time()*1000))")
 
 [[ -d "$DESIGN_DIR" ]] || { echo "ERROR: design directory not found: $DESIGN_DIR"; exit 1; }
 
-schematic2layout \
+SCHEMATIC2LAYOUT=$(python3 -c "
+import shutil, sysconfig, site, pathlib
+candidates = [
+    pathlib.Path(sysconfig.get_path('scripts')) / 'schematic2layout',
+    pathlib.Path(site.getusersitepackages()).parent.parent / 'bin' / 'schematic2layout',
+]
+found = next((str(p) for p in candidates if p.exists()), None)
+print(found or shutil.which('schematic2layout') or '')
+")
+[[ -n "$SCHEMATIC2LAYOUT" ]] || { echo "ERROR: schematic2layout not found"; exit 1; }
+python3 "${SCHEMATIC2LAYOUT}" \
   "${DESIGN_DIR}" \
   -f "${DESIGN_DIR}/${CIRCUIT}.sp" \
   -s "${CIRCUIT}" \
