@@ -1,0 +1,23 @@
+{
+  "magic_version": "7.3.456",
+  "ngspice_version": "43",
+  "pdk": "FinFET14nm_Mock_PDK",
+  "circuits": [
+    "buffer",
+    "five_transistor_ota",
+    "current_mirror_ota",
+    "high_speed_comparator",
+    "variable_gain_amplifier",
+    "switched_capacitor_filter"
+  ],
+  "sky130_circuits": [
+    "buffer",
+    "five_transistor_ota",
+    "current_mirror_ota",
+    "telescopic_ota"
+  ],
+  "regression_thresholds": {
+    "warning_pct": 10,
+    "failure_pct": 25
+  }
+}
