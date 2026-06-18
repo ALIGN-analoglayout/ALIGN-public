@@ -1,5 +1,5 @@
 {
-  "magic_version": "7.3.456",
+  "magic_version": "8.3.664",
   "ngspice_version": "43",
   "pdk": "FinFET14nm_Mock_PDK",
   "circuits": [

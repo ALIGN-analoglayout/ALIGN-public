@@ -50,14 +50,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /usr/local
-          key: magic-7.3.456-ubuntu-22.04-v1
+          key: magic-8.3.664-ubuntu-22.04-v1
 
       - name: Build Magic VLSI from source
         if: steps.cache-magic.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y tcl-dev tk-dev libcairo2-dev libncurses-dev
-          git clone --depth 1 --branch 7.3.456 https://github.com/RTimothyEdwards/magic magic-src
+          git clone --depth 1 --branch 8.3.664 https://github.com/RTimothyEdwards/magic magic-src
           cd magic-src
           ./configure --prefix=/usr/local
           make -j4
@@ -137,14 +137,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /usr/local
-          key: magic-7.3.456-ubuntu-22.04-v1
+          key: magic-8.3.664-ubuntu-22.04-v1
 
       - name: Build Magic VLSI from source
         if: steps.cache-magic.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y tcl-dev tk-dev libcairo2-dev libncurses-dev
-          git clone --depth 1 --branch 7.3.456 https://github.com/RTimothyEdwards/magic magic-src
+          git clone --depth 1 --branch 8.3.664 https://github.com/RTimothyEdwards/magic magic-src
           cd magic-src
           ./configure --prefix=/usr/local
           make -j4
