@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALIGN Release Benchmarks</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 0 20px;
+    color: #333;
+    background: #f8f9fa;
+  }
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  h1 { color: #007bff; margin-bottom: 8px; }
+  p  { color: #666; line-height: 1.6; }
+  .badge {
+    display: inline-block;
+    background: #e9f3ff;
+    color: #007bff;
+    border: 1px solid #b3d4ff;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    margin: 4px;
+  }
+  .docs-link {
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .docs-link a { color: #007bff; text-decoration: none; }
+  .docs-link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>ALIGN Release Benchmarks</h1>
+  <p>
+    This dashboard will show post-layout quality and simulation metrics
+    tracked across PyPI releases of <strong>align-analoglayout</strong>.
+  </p>
+  <p>
+    Metrics are collected automatically after every release using
+    Magic VLSI parasitic extraction and ngspice simulation.
+  </p>
+  <div style="margin: 24px 0;">
+    <span class="badge">FinFET14nm_Mock_PDK</span>
+    <span class="badge">SKY130_PDK</span>
+    <span class="badge">6 + 4 circuits</span>
+    <span class="badge">Layout + Simulation</span>
+  </div>
+  <p style="color:#aaa; font-size:13px;">
+    Dashboard will populate after the first benchmark run.<br>
+    Trigger one via <strong>Actions → Release Benchmarks → Run workflow</strong>.
+  </p>
+  <div class="docs-link">
+    <a href="../index.html">← ALIGN Documentation</a>
+  </div>
+</div>
+</body>
+</html>
