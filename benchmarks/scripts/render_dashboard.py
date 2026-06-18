@@ -3,7 +3,7 @@
 render_dashboard.py <history_json> <output_html>
 Generates static Chart.js dashboard from benchmark history.
 """
-import json, sys, pathlib
+import json, sys, pathlib, html as _html
 
 LAYOUT_METRICS = ['area_um2', 'wirelength_um', 'via_count', 'runtime_s']
 SIM_METRICS = {
@@ -14,6 +14,11 @@ SIM_METRICS = {
     'variable_gain_amplifier':  ['gain_db', 'bandwidth_mhz'],
     'switched_capacitor_filter':['f3db_mhz', 'passband_ripple_db'],
 }
+
+def json_for_html(data):
+    """Serialize JSON safely for embedding in HTML <script> blocks.
+    Escapes </ to <\\/ to prevent premature script termination."""
+    return json.dumps(data).replace('</', '<\\/')
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -172,13 +177,20 @@ def main():
 
     history_file, output_file = sys.argv[1], sys.argv[2]
 
-    with open(history_file) as f:
-        history = json.load(f)
+    try:
+        with open(history_file) as f:
+            history = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: history file not found: {history_file}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: invalid JSON in {history_file}: {e}")
+        sys.exit(1)
 
     html = HTML_TEMPLATE \
-        .replace('__HISTORY__', json.dumps(history)) \
-        .replace('__LAYOUT_METRICS__', json.dumps(LAYOUT_METRICS)) \
-        .replace('__SIM_METRICS__', json.dumps(SIM_METRICS))
+        .replace('__HISTORY__', json_for_html(history)) \
+        .replace('__LAYOUT_METRICS__', json_for_html(LAYOUT_METRICS)) \
+        .replace('__SIM_METRICS__', json_for_html(SIM_METRICS))
 
     out = pathlib.Path(output_file)
     out.parent.mkdir(parents=True, exist_ok=True)
