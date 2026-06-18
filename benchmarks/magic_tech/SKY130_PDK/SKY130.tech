@@ -1,0 +1,94 @@
+tech
+  format 31
+  sky130
+end
+
+planes
+  active
+  metal1
+  metal2
+  metal3
+  metal4
+  metal5
+  via0
+  via1
+  via2
+  via3
+  via4
+end
+
+types
+  active  poly
+  metal1  m1
+  metal2  m2
+  metal3  m3
+  metal4  m4
+  metal5  m5
+  via0    via0
+  via1    via1
+  via2    via2
+  via3    via3
+  via4    via4
+end
+
+contact
+  via0  170 m1  active
+  via1  170 m2  metal1
+  via2  150 m3  metal2
+  via3  200 m4  metal3
+  via4  200 m5  metal4
+end
+
+styles
+  styletype mos
+end
+
+cifinput
+  style gds
+  scalefactor 1 calmadefault
+  layer poly  66 20
+  layer m1    67 20
+  layer m2    68 20
+  layer m3    69 20
+  layer m4    70 20
+  layer m5    71 20
+  layer via0  66 44
+  layer via1  67 44
+  layer via2  68 44
+  layer via3  69 44
+  layer via4  70 44
+end
+
+cifoutput
+  style gds
+  scalefactor 1
+  layer 67 20 m1
+  layer 68 20 m2
+  layer 69 20 m3
+  layer 70 20 m4
+  layer 71 20 m5
+  layer 66 44 via0
+  layer 67 44 via1
+  layer 68 44 via2
+  layer 69 44 via3
+  layer 70 44 via4
+end
+
+extract
+  style default
+  resist m1  0.080
+  resist m2  0.060
+  resist m3  0.040
+  resist m4  0.040
+  resist m5  0.030
+  areacap m1 30
+  areacap m2 24
+  areacap m3 18
+  areacap m4 18
+  areacap m5 14
+  contact via0 8
+  contact via1 8
+  contact via2 8
+  contact via3 8
+  contact via4 8
+end
