@@ -32,7 +32,7 @@ version = get_version(
     os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
         'align'))
-cmake_args = [f"-DALIGN_VERSION:string={version}"]
+cmake_args = [f"-DALIGN_VERSION:string={version}", "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"]
 
 # Enable unit-tests for all in-place builds (pip install -e . --no-build-isolation)
 devmode = 'develop' in sys.argv
@@ -49,12 +49,12 @@ cmake_args.append("-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
 
-setup(name='align',
+setup(name='align-analoglayout',
       version=version,
       description='Analog Layout Synthesis Package',
       long_description=get_readme_text(),
       long_description_content_type="text/markdown",
-      url='ALIGN-analoglayout/ALIGN-public.git',
+      url='https://github.com/ALIGN-analoglayout/ALIGN-public',
       author='Parijat Mukherjee',
       author_email='parijat.mukherjee@intel.com',
       license='BSD-3-Clause',
@@ -87,7 +87,7 @@ setup(name='align',
           'gdspy',
           'pyyaml',
           'pybind11',
-          'pydantic>=1.9.2,<=1.20',
+          'pydantic>=1.9.2,<2.0',
           'z3-solver',
           'mip',
           'more-itertools',
@@ -97,10 +97,8 @@ setup(name='align',
           'pandas',
           'werkzeug',
           'dash',
-          'typing_extensions; python_version<"3.8"',
           'memory_profiler',
           'flatdict',
-          'mip'
       ],
       extras_require={
           'test': [
@@ -112,14 +110,19 @@ setup(name='align',
               'pytest-cpp'
           ]
       },
-      python_requires='>=3.7',
+      python_requires='>=3.10',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
           'Environment :: Console',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: BSD License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 3 :: Only',
+          'Programming Language :: Python :: 3.10',
+          'Programming Language :: Python :: 3.11',
+          'Programming Language :: Python :: 3.12',
+          'Programming Language :: Python :: 3.13',
           'Programming Language :: C++',
           'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
       ],

@@ -1,6 +1,7 @@
 #include "ILP_solver.h"
 
 #include <stdexcept>
+#include <cstdlib>
 
 #include "spdlog/spdlog.h"
 #include "ILPSolverIf.h"
@@ -192,7 +193,7 @@ double ILP_solver::UpdateAreaHPWLCost(const design& mydesign, const SeqPair& cur
   return cost;
 }
 
-SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, const int numsol) {
+SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper, const int numsol) {
 
   SolutionMap sol;
   if (mydesign.Blocks.empty()) return sol;
@@ -205,16 +206,16 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   } else {
     if (mydesign.leftAlign()) {
       // frame and solve ILP to flush bottom/left
-      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, hyper, true, numsol))  return sol;
     } else if (mydesign.rightAlign()) {
-      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol)) return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, hyper, false, numsol)) return sol;
     } else {
-      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, true, numsol))  return sol;
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, hyper, true, numsol))  return sol;
       std::vector<Block> blockslocal{Blocks};
       auto selectedlocal = curr_sp.selected;
       // frame and solve ILP to flush top/right
-      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, num_threads, false, numsol) 
-          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, num_threads, false)) {
+      if (!PlaceILPCbc_select(sol, mydesign, curr_sp, drcInfo, hyper, false, numsol) 
+          || !MoveBlocksUsingSlack(blockslocal, mydesign, curr_sp, drcInfo, hyper.NUM_THREADS, false)) {
         // if unable to solve flush top/right or if the solution changed significantly,
         // use the bottom/left flush solution
         Blocks = blockslocal;
@@ -232,7 +233,7 @@ SolutionMap ILP_solver::PlaceUsingILP(const design& mydesign, const SeqPair& cur
   return sol;
 }
 
-bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const int num_threads, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
+bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, const SeqPair& curr_sp, const PnRDB::Drc_info& drcInfo, const PlacerHyperparameters& hyper, bool flushbl, const int numsol, const vector<placerDB::point>* prev) {
   TimeMeasure tm(const_cast<design&>(mydesign).ilp_runtime);
   auto logger = spdlog::default_logger()->clone("placer.ILP_solver.PlaceILPCbc_select");
 
@@ -405,7 +406,6 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
   colub[N_aspect_ratio_max - 1] = std::max(maxhierwidth, maxhierheight);
   colub[N_aspect_ratio_max - 2] = std::max(maxhierwidth, maxhierheight);
 
-  PlacerHyperparameters hyper;
   std::vector<double> objective(N_var_max, 0);
   for (unsigned int i = 0; i < mydesign.Nets.size(); i++) {
     if (mydesign.Nets[i].connected.size() < 2) continue;
@@ -1697,7 +1697,9 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         values.data(), collb.data(), colub.data(),
         objective.data(), rhslb, rhsub, intvars.data());
 
-    if (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP"))) {
+    int ret = -1;
+    if ((getenv("ALIGN_USE_GUROBI") != nullptr) ||
+        (getenv("ALIGN_DEBUG_ILP") != nullptr && std::atoi(getenv("ALIGN_DEBUG_ILP")))) {
       static std::string block_name;
       if (block_name != mydesign.name) {
         block_name = mydesign.name;
@@ -1779,7 +1781,8 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
 
       char* names[N_var];
       for (unsigned i = 0; i < namesvec.size(); ++i) {
-        if (namesvec[i].empty()) namesvec[i] = "x_" + std::to_string(i) + "\0";
+        //if (namesvec[i].empty())
+        namesvec[i] = "x_" + std::to_string(i) + "\0";
         std::replace (namesvec[i].begin(), namesvec[i].end(), '<', '(');
         std::replace (namesvec[i].begin(), namesvec[i].end(), '>', ')');
         //std::replace_if (namesvec[i].begin(), namesvec[i].end(), [](char c){ return (!std::isalnum(c) && c != '\0'); } , '_');
@@ -1792,13 +1795,26 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
         rownamesvec[i] = ((i < rowtype.size() ? rowtype[i] : 'f') + std::to_string(i) + "\0");
         rownames[i] = &(rownamesvec[i][0]);
       }
-      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp_").c_str()), names, rownames);
+      solverif.writelp(const_cast<char*>((mydesign.name + "_ilp").c_str()), names, rownames);
+      if (getenv("ALIGN_USE_GUROBI") != nullptr) {
+        std::string cmd(getenv("ALIGN_USE_GUROBI"));
+        cmd.reserve(1024);
+        cmd += " ResultFile=";
+        cmd += mydesign.name;
+        cmd += "_ilp.sol TimeLimit=";
+        cmd += std::to_string(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
+        cmd += " ";
+        cmd += mydesign.name;
+        cmd += "_ilp.lp";
+        logger->info("ILP runtime limit : {0}", hyper.ILP_runtime_limit);
+        ret = system(cmd.c_str());
+      }
     }
     int status{0};
     solverif.setTimeLimit(std::max(hyper.ILP_runtime_limit, static_cast<int>(5 * mydesign.Blocks.size())));
-    {
+    if (ret != 0) {
       TimeMeasure tm(const_cast<design&>(mydesign).ilp_solve_runtime);
-      status = solverif.solve(num_threads);
+      status = solverif.solve(hyper.NUM_THREADS);
     }
     //logger->info("status : {0} {1} {2} {3}", status, Cbc_secondaryStatus(model), Cbc_numberSavedSolutions(model), Cbc_getMaximumSolutions(model));
     //const double* var = Cbc_bestSolution(model);
@@ -1812,10 +1828,68 @@ bool ILP_solver::PlaceILPCbc_select(SolutionMap& sol, const design& mydesign, co
     //sym_get_col_solution(env, var.data());
     //const int numsaved = model.numberSavedSolutions();
     sighandler = signal(SIGINT, sighandler);
-    for (int i = 0;  i < 1; ++i) {
-      //logger->info("obj : {0}", model.savedSolutionObjective(i));
-      const double* var = solverif.solution();
-      if (!var) break;
+
+    if (ret != 0) {
+      for (int i = 0;  i < 1; ++i) {
+        //logger->info("obj : {0}", model.savedSolutionObjective(i));
+        const double* var = solverif.solution();
+        if (!var) break;
+        int minx(INT_MAX), miny(INT_MAX);
+        area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
+        //logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          Blocks[i].x = roundupint(var[i * 6]);
+          Blocks[i].y = roundupint(var[i * 6 + 1]);
+          minx = std::min(minx, Blocks[i].x);
+          miny = std::min(miny, Blocks[i].y);
+          Blocks[i].H_flip = roundupint(var[i * 6 + 2]);
+          Blocks[i].V_flip = roundupint(var[i * 6 + 3]);
+          if (mydesign.Blocks[i].size() > 1) {
+            int select{-1};
+            for (int j = 0; j < mydesign.Blocks[i].size(); ++j) {
+              if (roundupint(var[blk_select_idx[i] + j]) > 0.5) {
+                select = j;
+                break;
+              }
+            }
+            if (select >= 0) {
+              const_cast<SeqPair&>(curr_sp).selected[i] = select;
+            }
+          }
+        }
+        for (int i = 0; i < mydesign.Blocks.size(); i++) {
+          Blocks[i].x -= minx;
+          Blocks[i].y -= miny;
+        }
+        // calculate HPWL from ILP solution
+        for (int i = 0; i < mydesign.Nets.size(); ++i) {
+          int ind = int(N_block_vars_max + i * 4);
+          HPWL_ILP += (var[ind + 3] + var[ind + 2] - var[ind + 1] - var[ind]);
+        }
+        //Cbc_deleteModel(model);
+
+        cost = UpdateAreaHPWLCost(mydesign, curr_sp);
+        if (cost >= 0) {
+          if (sol.find(cost) == sol.end()) {
+            sol[cost] = std::make_pair(curr_sp, ILP_solver(*this));
+          }
+          //logger->info("cost : {0} {1} {2}", cost, xdim(), ydim());
+        }
+      }
+    } else {
+      std::vector<double> var(N_var, 0.);
+      std::ifstream ifs(mydesign.name + "_ilp.sol");
+      logger->info("reading {0}_ilp.sol", mydesign.name);
+      double val{0.};
+      int ind{-1};
+      std::string line;
+      while (std::getline(ifs, line)) {
+        if (line[0] == 'x' && line[1] == '_') {
+          std::istringstream  iss(line.substr(2));
+          iss >> ind >> val;
+          var[ind] = val;
+        }
+      }
       int minx(INT_MAX), miny(INT_MAX);
       area_ilp = (var[N_area_max - 1] * var[N_area_max - 2]);
       //logger->info("area : {0} {1}", var[N_area_max - 2], var[N_area_max - 1]);

@@ -15,7 +15,7 @@ from align.cell_fabric.transformation import Transformation, Rect
 class HyperParameters:
     max_sequence_pairs = 100
     max_block_variants = 100
-    max_candidates = 10000
+    max_candidates = 100
     max_solutions = 1
 
 
@@ -216,7 +216,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
 
     # Parse constraints
     net_priority = dict()
-    ctr = 0
+    cnt = 0
     for constraint in constraint_schema.expand_user_constraints(constraints):
 
         if isinstance(constraint, constraint_schema.Boundary):
@@ -254,18 +254,18 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
         elif isinstance(constraint, constraint_schema.SymmetricBlocks):
             pairs = getattr(constraint, 'pairs')
             axis = 'x' if getattr(constraint, 'direction') == 'V' else 'y'
-            symmetry_line = model.add_var(lb=0, ub=upper_bound)
+            orth = 'y' if getattr(constraint, 'direction') == 'V' else 'x'
+            symmetry_line = model.add_var(name=f'symm{cnt}', lb=0, ub=upper_bound)
+            cnt += 1
             for pair in pairs:
                 if len(pair) == 1:
-                     #rel_tol = 10  # max distance from symmetry line should be less than 1/10th the block width
-                     #model += (1-1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) <= 2*symmetry_line
-                     #model += (1+1/rel_tol)*(model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) >= 2*symmetry_line
-                    model += (model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) == 2*symmetry_line, f'symm_{pair[0]}_{ctr}'
+                    rel_tol = 10  # max distance from symmetry line should be less than 1/10th the block width
+                    model += (model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}')) == 2*symmetry_line
                 else:
                     model += model.var_by_name(f'{pair[0]}_ll{axis}') + model.var_by_name(f'{pair[0]}_ur{axis}') + \
                              model.var_by_name(f'{pair[1]}_ll{axis}') + model.var_by_name(f'{pair[1]}_ur{axis}') == \
-                             4*symmetry_line, f'symm_{pair[0]}_{pair[1]}_{ctr}'
-            ctr += 1
+                             4*symmetry_line
+                    model += model.var_by_name(f'{pair[0]}_ll{orth}') == model.var_by_name(f'{pair[1]}_ll{orth}')
 
         elif isinstance(constraint, constraint_schema.Spread):
             instances = getattr(constraint, 'instances')
@@ -309,6 +309,9 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     # Solve
     model.verbose = 0
     status = model.optimize(max_seconds_same_incumbent=60.0, max_seconds=300)
+    if status != mip.OptimizationStatus.OPTIMAL and status != mip.OptimizationStatus.FEASIBLE:
+      return False
+    """
     if status == mip.OptimizationStatus.OPTIMAL:
         print(f'optimal solution found: cost={model.objective_value}')
     elif status == mip.OptimizationStatus.FEASIBLE:
@@ -316,6 +319,7 @@ def place_sequence_pair(constraints, instance_map, instance_sizes, sequence_pair
     else:
           #print('No solution to ILP')
         return False
+    """
 
     if status == mip.OptimizationStatus.OPTIMAL or status == mip.OptimizationStatus.FEASIBLE:
         if model.verbose:
@@ -383,8 +387,14 @@ def place_using_sequence_pairs(placement_data, module, top_level):
     sequence_pairs = enumerate_sequence_pairs(constraints, instance_map, hyper_params.max_sequence_pairs)
     block_variants = enumerate_block_variants(constraints, instance_map, variant_counts, hyper_params.max_block_variants)
 
+    print(sequence_pairs)
+
     solutions = list()
+    cnt = 0
+    print(cnt)
     for block_variant, sequence_pair in itertools.islice(itertools.product(block_variants, sequence_pairs), hyper_params.max_candidates):
+        if cnt % 10 == 0:
+          print(cnt)
         instance_sizes = dict()
         place_on_grid = dict()
         wires = defaultdict(list)
@@ -408,7 +418,7 @@ def place_using_sequence_pairs(placement_data, module, top_level):
             solution['block_variant'] = block_variant
             solutions.append(solution)
 
-    assert solutions, f'No placement solution found for {module["name"]}'
+    assert solutions, f'No placement solution found for {module}'
 
     # Annotate best K solutions to placement_data
     solutions.sort(key=lambda x: x['cost'])

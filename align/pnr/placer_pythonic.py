@@ -106,6 +106,7 @@ def pythonic_placer(top_level, input_data, scale_factor=1):
         if name not in found_modules:
             continue
 
+        print(name)
         # Select and call placement algorithm here
         print(f'Placing {name}')
         place_using_sequence_pairs(placement_data, modules[name], top_level)
