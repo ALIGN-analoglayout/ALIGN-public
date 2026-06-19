@@ -16,6 +16,7 @@ on:
       - 'PlaceRouteHierFlow/thirdparty/superlu.cmake'
       - 'ci/build_cpp_deps.sh'
       - 'ci/cpp_deps_common.sh'
+      - '.github/workflows/build-cpp-deps.yml'
   workflow_dispatch:
 
 jobs:
