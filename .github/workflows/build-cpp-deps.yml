@@ -2,7 +2,8 @@ name: Build C++ Dependency Cache
 
 # Runs whenever the pinned versions of the solver or SuperLU change, or
 # manually.  Produces per-platform prebuilt tarballs published as assets on a
-# single, mutable GitHub Release in ALIGN-analoglayout/ALIGN-public.
+# single, mutable GitHub Release tagged "cpp-deps" in this same repository
+# (ALIGN-analoglayout/ALIGN-public).
 #
 # Each asset name encodes a 12-char signature of the exact dependency revisions
 # (see ci/cpp_deps_common.sh).  The wheel and Docker build jobs download the
@@ -23,6 +24,8 @@ jobs:
   build-deps:
     name: Build deps on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write   # needed to upload release assets via GITHUB_TOKEN
     strategy:
       fail-fast: false
       matrix:
@@ -36,13 +39,6 @@ jobs:
             container: quay.io/pypa/manylinux_2_28_x86_64
             platform_key: manylinux_2_28_x86_64
             py_bin: /opt/python/cp311-cp311/bin
-            sys_deps: >-
-              dnf install -y epel-release &&
-              dnf install -y boost-devel lpsolve-devel ||
-              dnf install -y boost-devel
-              dnf install -y 'dnf-command(config-manager)' &&
-              dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo &&
-              dnf install -y git gh
 
           # ---------------------------------------------------------------
           # macOS arm64 – same runner as cibuildwheel macos-14
@@ -52,9 +48,6 @@ jobs:
             container: ''
             platform_key: macosx_arm64
             py_bin: ''
-            sys_deps: >-
-              mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h &&
-              brew install boost lp_solve libomp || true
 
           # ---------------------------------------------------------------
           # Ubuntu 22.04 – for the Docker image build path
@@ -64,13 +57,6 @@ jobs:
             container: ''
             platform_key: ubuntu-22.04-x86_64
             py_bin: ''
-            sys_deps: >-
-              sudo apt-get update -qq &&
-              sudo apt-get install -y libboost-dev liblpsolve55-dev curl gpg &&
-              sudo mkdir -p -m 755 /etc/apt/keyrings &&
-              curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg &&
-              sudo apt update -y &&
-              sudo apt install gh -y
 
     container: ${{ matrix.container || '' }}
 
@@ -82,8 +68,32 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install system dependencies
-        run: ${{ matrix.sys_deps }}
+      # Per-platform system dependency setup.
+      # Separate steps with if: avoid YAML folded-scalar concatenation bugs.
+      - name: Install system deps (manylinux)
+        if: matrix.name == 'manylinux_2_28_x86_64'
+        run: |
+          dnf install -y epel-release
+          # lpsolve-devel is in EPEL; fall back gracefully if unavailable
+          dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel
+          # Install gh CLI for the release-upload step
+          dnf install -y 'dnf-command(config-manager)'
+          dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+          dnf install -y gh
+
+      - name: Install system deps (macOS)
+        if: matrix.name == 'macosx_arm64'
+        run: |
+          mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h
+          brew install boost lp_solve libomp || true
+          # gh CLI is pre-installed on GitHub-hosted macOS runners
+
+      - name: Install system deps (Ubuntu)
+        if: matrix.name == 'ubuntu-22.04-x86_64'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libboost-dev liblpsolve55-dev
+          # gh CLI is pre-installed on GitHub-hosted Ubuntu runners
 
       # Python + build tools ---------------------------------------------------
       - name: Set up Python (native runner only)
@@ -122,10 +132,10 @@ jobs:
           source ci/cpp_deps_common.sh
           echo "asset=$(cpp_deps_asset_name)" >> "$GITHUB_OUTPUT"
 
-      # Publish to the cache repo release -------------------------------------
-      - name: Upload bundle to cache repo release
+      # Publish to this repo's release ----------------------------------------
+      - name: Upload bundle to release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ALIGN_CPP_DEPS_REPO: ALIGN-analoglayout/ALIGN-public
           ALIGN_CPP_DEPS_TAG: cpp-deps
         run: |

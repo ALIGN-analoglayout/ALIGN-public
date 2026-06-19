@@ -1,17 +1,16 @@
-c
-          ALIGN_CPP_DEPS_TAG# ALIGN C++ Dependency Cache
+# ALIGN C++ Dependency Cache
 
 ALIGN's C++ build compiles two heavy dependencies from source — the
-COIN-OR/Cbc/SYMPHONY solver stack (via `ALIGN-public`) and SuperLU — on
+COIN-OR/Cbc/SYMPHONY solver stack (via `ILPSolverInterface`) and SuperLU — on
 every CI run.  This directory implements a binary cache that pre-builds those
-artifacts once and stores them as GitHub Release assets in a separate
-repository, so wheel and Docker builds can download and skip the compile.
+artifacts once and stores them as GitHub Release assets in this same repository,
+so wheel and Docker builds can download and skip the compile.
 
 ## Cache repository
 
-**`ALIGN-analoglayout/ALIGN-public`** holds a single, mutable release tagged
-`cpp-deps`.  Each asset in that release is a `.tar.gz` bundle for a specific
-combination of dependency versions and target platform.
+Release assets are stored in a tag called **`cpp-deps`** inside
+**`ALIGN-analoglayout/ALIGN-public`** (this repo).  Each asset is a `.tar.gz`
+bundle for a specific combination of dependency versions and target platform.
 
 ## Asset naming and the dependency signature
 
@@ -78,10 +77,22 @@ miss), CMake's `find_library` silently falls back to the from-source build.
 1. Builds ALIGN from source (with `ALIGN_ILP_PATH`/`ALIGN_SUPERLU_PATH`
    unset) on each matrix platform.
 2. Runs `ci/build_cpp_deps.sh` to harvest the artifacts.
-3. Uploads the tarball to the `ALIGN-analoglayout/ALIGN-public` release.
+3. Uploads the tarball to the `cpp-deps` release in this repo.
 
-**Required secret**: `CPP_DEPS_CACHE_TOKEN` — a GitHub PAT with `Contents:
-write` permission on `ALIGN-analoglayout/ALIGN-public`.
+**No extra secret is required.**  The workflow uses the built-in
+`GITHUB_TOKEN` with `permissions: contents: write` declared at the job level.
+
+## One-time setup: create the release tag
+
+The `cpp-deps` release tag must exist before the first upload.  Create it once:
+
+```bash
+gh release create cpp-deps \
+  --repo ALIGN-analoglayout/ALIGN-public \
+  --title "C++ prebuilt dependency bundles" \
+  --notes "Managed automatically by build-cpp-deps.yml. Do not edit manually." \
+  --prerelease
+```
 
 ## How to force a rebuild
 
