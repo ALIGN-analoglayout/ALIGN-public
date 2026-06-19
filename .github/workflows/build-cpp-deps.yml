@@ -4,7 +4,6 @@ name: Build C++ Dependency Cache
 # manually.  Produces per-platform prebuilt tarballs published as assets on a
 # single, mutable GitHub Release tagged "cpp-deps" in this same repository
 # (ALIGN-analoglayout/ALIGN-public).
-#
 # Each asset name encodes a 12-char signature of the exact dependency revisions
 # (see ci/cpp_deps_common.sh).  The wheel and Docker build jobs download the
 # matching asset via ci/fetch_cpp_deps.sh; if the asset is absent the cmake
