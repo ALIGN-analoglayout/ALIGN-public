@@ -4,7 +4,7 @@
 # (layout: lib/libsuperlu.a [lib/libblas.a]  include/*.h) we import those instead
 # of cloning + building from source.  This is the hot path in CI; the from-source
 # path below is the fallback.
-if (DEFINED ENV{ALIGN_SUPERLU_PATH})
+if (DEFINED ENV{ALIGN_SUPERLU_PATH} AND NOT "$ENV{ALIGN_SUPERLU_PATH}" STREQUAL "")
   find_library(
     superlu_prebuilt_lib
     NAMES libsuperlu.a
