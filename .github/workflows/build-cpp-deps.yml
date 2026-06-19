@@ -40,6 +40,9 @@ jobs:
               dnf install -y epel-release &&
               dnf install -y boost-devel lpsolve-devel ||
               dnf install -y boost-devel
+              dnf install -y 'dnf-command(config-manager)' &&
+              dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo &&
+              dnf install -y git gh
 
           # ---------------------------------------------------------------
           # macOS arm64 – same runner as cibuildwheel macos-14
@@ -63,7 +66,11 @@ jobs:
             py_bin: ''
             sys_deps: >-
               sudo apt-get update -qq &&
-              sudo apt-get install -y libboost-dev liblpsolve55-dev
+              sudo apt-get install -y libboost-dev liblpsolve55-dev curl gpg &&
+              sudo mkdir -p -m 755 /etc/apt/keyrings &&
+              curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/githubcli-archive-keyring.gpg &&
+              sudo apt update -y &&
+              sudo apt install gh -y
 
     container: ${{ matrix.container || '' }}
 
@@ -84,8 +91,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - uses: actions4gh/setup-gh@v1
 
       - name: Install Python build deps
         run: |
