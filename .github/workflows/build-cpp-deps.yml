@@ -77,15 +77,14 @@ jobs:
       - name: Install system dependencies
         run: ${{ matrix.sys_deps }}
 
-      - name: Install GitHub CLI
-        uses: actions4gh/setup-gh@v1
-
       # Python + build tools ---------------------------------------------------
       - name: Set up Python (native runner only)
         if: matrix.container == ''
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - uses: actions4gh/setup-gh@v1
 
       - name: Install Python build deps
         run: |
