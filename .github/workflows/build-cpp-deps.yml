@@ -2,7 +2,7 @@ name: Build C++ Dependency Cache
 
 # Runs whenever the pinned versions of the solver or SuperLU change, or
 # manually.  Produces per-platform prebuilt tarballs published as assets on a
-# single, mutable GitHub Release in ALIGN-analoglayout/ILPSolverInterFace.
+# single, mutable GitHub Release in ALIGN-analoglayout/ALIGN-public.
 #
 # Each asset name encodes a 12-char signature of the exact dependency revisions
 # (see ci/cpp_deps_common.sh).  The wheel and Docker build jobs download the
@@ -119,7 +119,7 @@ jobs:
       - name: Upload bundle to cache repo release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ALIGN_CPP_DEPS_REPO: ALIGN-analoglayout/ILPSolverInterFace
+          ALIGN_CPP_DEPS_REPO: ALIGN-analoglayout/ALIGN-public
           ALIGN_CPP_DEPS_TAG: cpp-deps
         run: |
           gh release upload "${ALIGN_CPP_DEPS_TAG}" \

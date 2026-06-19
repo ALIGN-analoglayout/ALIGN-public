@@ -17,7 +17,7 @@
 #   ALIGN_CPP_DEPS_TAG       release tag whose assets hold the bundles
 #   ALIGN_CPP_DEPS_PLATFORM  platform key override (else auto-detected)
 
-: "${ALIGN_CPP_DEPS_REPO:=ALIGN-analoglayout/ILPSolverInterface}"
+: "${ALIGN_CPP_DEPS_REPO:=ALIGN-analoglayout/ALIGN-public}"
 : "${ALIGN_CPP_DEPS_TAG:=cpp-deps}"
 
 # Capture this file's directory at *source* time, when BASH_SOURCE[0] is
@@ -83,7 +83,7 @@ _cpp_deps_git_tag() {
 }
 
 # A short, stable signature of the *exact* dependency versions this checkout
-# would build from source.  Bumping the ILPSolverInterface or SuperLU revision
+# would build from source.  Bumping the ALIGN-public or SuperLU revision
 # changes the signature, which transparently invalidates the binary cache (the
 # new asset name simply won't exist yet, so CI rebuilds and republishes it).
 cpp_deps_signature() {

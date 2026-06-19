@@ -1,14 +1,15 @@
-# ALIGN C++ Dependency Cache
+c
+          ALIGN_CPP_DEPS_TAG# ALIGN C++ Dependency Cache
 
 ALIGN's C++ build compiles two heavy dependencies from source — the
-COIN-OR/Cbc/SYMPHONY solver stack (via `ILPSolverInterface`) and SuperLU — on
+COIN-OR/Cbc/SYMPHONY solver stack (via `ALIGN-public`) and SuperLU — on
 every CI run.  This directory implements a binary cache that pre-builds those
 artifacts once and stores them as GitHub Release assets in a separate
 repository, so wheel and Docker builds can download and skip the compile.
 
 ## Cache repository
 
-**`ALIGN-analoglayout/ILPSolverInterface`** holds a single, mutable release tagged
+**`ALIGN-analoglayout/ALIGN-public`** holds a single, mutable release tagged
 `cpp-deps`.  Each asset in that release is a `.tar.gz` bundle for a specific
 combination of dependency versions and target platform.
 
@@ -77,26 +78,10 @@ miss), CMake's `find_library` silently falls back to the from-source build.
 1. Builds ALIGN from source (with `ALIGN_ILP_PATH`/`ALIGN_SUPERLU_PATH`
    unset) on each matrix platform.
 2. Runs `ci/build_cpp_deps.sh` to harvest the artifacts.
-3. Uploads the tarball to the `ALIGN-analoglayout/ILPSolverInterface` release.
+3. Uploads the tarball to the `ALIGN-analoglayout/ALIGN-public` release.
 
 **Required secret**: `CPP_DEPS_CACHE_TOKEN` — a GitHub PAT with `Contents:
-write` permission on `ALIGN-analoglayout/ILPSolverInterface`.
-
-## How to set up the cache repo (first time)
-
-```bash
-# Create the repo (one time)
-gh repo create ALIGN-analoglayout/ILPSolverInterface --public
-
-# Create the mutable release tag (one time)
-gh release create cpp-deps \
-  --repo ALIGN-analoglayout/ILPSolverInterface \
-  --title "C++ prebuilt dependency bundles" \
-  --notes "Managed automatically by build-cpp-deps.yml. Do not edit manually." \
-  --prerelease
-```
-
-Then add `CPP_DEPS_CACHE_TOKEN` as a repository secret in ALIGN-public.
+write` permission on `ALIGN-analoglayout/ALIGN-public`.
 
 ## How to force a rebuild
 
