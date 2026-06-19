@@ -4,10 +4,15 @@ name: Build C++ Dependency Cache
 # manually.  Produces per-platform prebuilt tarballs published as assets on a
 # single, mutable GitHub Release tagged "cpp-deps" in this same repository
 # (ALIGN-analoglayout/ALIGN-public).
+#
 # Each asset name encodes a 12-char signature of the exact dependency revisions
 # (see ci/cpp_deps_common.sh).  The wheel and Docker build jobs download the
 # matching asset via ci/fetch_cpp_deps.sh; if the asset is absent the cmake
 # build falls back to compiling from source transparently.
+#
+# Architecture: build-deps (matrix, no release permissions) → upload-release
+# (single job, contents: write).  Splitting build from publish prevents
+# concurrent matrix jobs from racing to overwrite each other's release assets.
 
 on:
   push:
@@ -23,8 +28,8 @@ jobs:
   build-deps:
     name: Build deps on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write   # needed to upload release assets via GITHUB_TOKEN
+    # No contents: write here — bundles are passed via artifacts, not direct
+    # release uploads, so this job needs only the default read permissions.
     strategy:
       fail-fast: false
       matrix:
@@ -73,26 +78,19 @@ jobs:
         if: matrix.name == 'manylinux_2_28_x86_64'
         run: |
           dnf install -y epel-release
-          # lpsolve-devel is in EPEL; fall back gracefully if unavailable
           dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel
-          # Install gh CLI for the release-upload step
-          dnf install -y 'dnf-command(config-manager)'
-          dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-          dnf install -y gh
 
       - name: Install system deps (macOS)
         if: matrix.name == 'macosx_arm64'
         run: |
           mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h
           brew install boost lp_solve libomp || true
-          # gh CLI is pre-installed on GitHub-hosted macOS runners
 
       - name: Install system deps (Ubuntu)
         if: matrix.name == 'ubuntu-22.04-x86_64'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y libboost-dev liblpsolve55-dev
-          # gh CLI is pre-installed on GitHub-hosted Ubuntu runners
 
       # Python + build tools ---------------------------------------------------
       - name: Set up Python (native runner only)
@@ -113,7 +111,6 @@ jobs:
           # Ensure we never short-circuit to a prebuilt bundle during this build
           ALIGN_ILP_PATH: ''
           ALIGN_SUPERLU_PATH: ''
-          # manylinux sets AUDITWHEEL_PLAT itself; for macOS set deployment target
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.name == 'macosx_arm64' && '14.0' || '' }}
           CPPFLAGS: ${{ matrix.name == 'macosx_arm64' && '-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -DNO_AVX_HARDWARE' || '' }}
           LDFLAGS: ${{ matrix.name == 'macosx_arm64' && '-L/opt/homebrew/opt/libomp/lib' || '' }}
@@ -121,9 +118,11 @@ jobs:
           PIP="${{ matrix.py_bin && format('{0}/pip', matrix.py_bin) || 'pip' }}"
           BUILD_TYPE=Release "${PIP}" wheel . --no-deps -w /tmp/wheelhouse -v
 
-      # Harvest artifacts into bundle tarball ---------------------------------
+      # Harvest artifacts into bundle tarball and stash as a workflow artifact.
+      # Write to GITHUB_WORKSPACE so the JavaScript upload-artifact action
+      # (which runs on the host, not inside the manylinux container) can read it.
       - name: Pack prebuilt bundle
-        run: bash ci/build_cpp_deps.sh /tmp/bundle.tar.gz
+        run: bash ci/build_cpp_deps.sh "${GITHUB_WORKSPACE}/bundle.tar.gz"
 
       - name: Compute asset name
         id: names
@@ -131,14 +130,51 @@ jobs:
           source ci/cpp_deps_common.sh
           echo "asset=$(cpp_deps_asset_name)" >> "$GITHUB_OUTPUT"
 
-      # Publish to this repo's release ----------------------------------------
-      - name: Upload bundle to release
+      # Use the asset name as the artifact name so the upload job can reconstruct
+      # the correct release-asset filename without any extra coordination.
+      - name: Stash bundle as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.names.outputs.asset }}
+          path: bundle.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # Single job: download all per-platform bundles and upload to the release.
+  # Running uploads sequentially from one job eliminates the race condition
+  # where concurrent matrix jobs clobber each other's release assets.
+  # ---------------------------------------------------------------------------
+  upload-release:
+    name: Upload bundles to cpp-deps release
+    runs-on: ubuntu-latest
+    needs: build-deps
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all bundles
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cpp-deps-*
+          path: bundles/
+          merge-multiple: false
+
+      - name: Upload bundles to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ALIGN_CPP_DEPS_REPO: ALIGN-analoglayout/ALIGN-public
           ALIGN_CPP_DEPS_TAG: cpp-deps
         run: |
-          gh release upload "${ALIGN_CPP_DEPS_TAG}" \
-            /tmp/bundle.tar.gz#${{ steps.names.outputs.asset }} \
-            --repo "${ALIGN_CPP_DEPS_REPO}" \
-            --clobber
+          # Each artifact was named with the exact asset filename, so the
+          # subdirectory name under bundles/ is the release asset name.
+          for dir in bundles/cpp-deps-*/; do
+            asset="$(basename "${dir}")"
+            echo "Uploading ${asset} ..."
+            gh release upload "${ALIGN_CPP_DEPS_TAG}" \
+              "${dir}bundle.tar.gz#${asset}" \
+              --repo "${ALIGN_CPP_DEPS_REPO}" \
+              --clobber
+          done

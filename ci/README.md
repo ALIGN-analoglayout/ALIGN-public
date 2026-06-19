@@ -72,15 +72,25 @@ miss), CMake's `find_library` silently falls back to the from-source build.
 ## Producer workflow
 
 `.github/workflows/build-cpp-deps.yml` runs automatically whenever
-`ilpif.cmake` or `superlu.cmake` changes (and on `workflow_dispatch`).  It:
+`ilpif.cmake` or `superlu.cmake` changes (and on `workflow_dispatch`).  It
+has two jobs:
 
-1. Builds ALIGN from source (with `ALIGN_ILP_PATH`/`ALIGN_SUPERLU_PATH`
-   unset) on each matrix platform.
-2. Runs `ci/build_cpp_deps.sh` to harvest the artifacts.
-3. Uploads the tarball to the `cpp-deps` release in this repo.
+1. **`build-deps`** (matrix: manylinux / macos-14 / ubuntu-22.04) — builds
+   ALIGN from source (with `ALIGN_ILP_PATH`/`ALIGN_SUPERLU_PATH` unset),
+   runs `ci/build_cpp_deps.sh` to harvest the artifacts, then uploads the
+   tarball as a **GitHub Actions workflow artifact** named after the release
+   asset (e.g. `cpp-deps-<sig>-manylinux_2_28_x86_64.tar.gz`).  No release
+   permissions needed in this job.
 
-**No extra secret is required.**  The workflow uses the built-in
-`GITHUB_TOKEN` with `permissions: contents: write` declared at the job level.
+2. **`upload-release`** (single job, runs after all matrix jobs finish) —
+   downloads all per-platform bundles, then uploads them to the `cpp-deps`
+   release **sequentially** with `--clobber`.  Running uploads from one job
+   eliminates the race condition where concurrent matrix runners overwrite
+   each other's release assets.
+
+**No extra secret is required.**  Only `upload-release` holds
+`permissions: contents: write`; the build matrix uses only the default
+read permissions.
 
 ## One-time setup: create the release tag
 
