@@ -77,6 +77,9 @@ jobs:
       - name: Install system dependencies
         run: ${{ matrix.sys_deps }}
 
+      - name: Install GitHub CLI
+        uses: actions4gh/setup-gh@v1
+
       # Python + build tools ---------------------------------------------------
       - name: Set up Python (native runner only)
         if: matrix.container == ''
@@ -115,7 +118,6 @@ jobs:
           echo "asset=$(cpp_deps_asset_name)" >> "$GITHUB_OUTPUT"
 
       # Publish to the cache repo release -------------------------------------
-#GH_TOKEN: ${{ secrets.CPP_DEPS_CACHE_TOKEN }}
       - name: Upload bundle to cache repo release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
