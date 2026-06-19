@@ -1,0 +1,301 @@
+[
+  {
+    "name": "DP",
+    "base": null,
+    "pins": [
+      "DA",
+      "DB",
+      "GA",
+      "GB",
+      "S",
+      "B"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [],
+    "generator": {},
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "black_box",
+        "parameters": null
+      },
+      {
+        "constraint": "ConfigureCompiler",
+        "is_digital": true,
+        "auto_constraint": true,
+        "identify_array": true,
+        "fix_source_drain": true,
+        "remove_dummy_hierarchies": true,
+        "remove_dummy_devices": true,
+        "merge_series_devices": true,
+        "merge_parallel_devices": true,
+        "same_template": true,
+        "propagate": true
+      },
+      {
+        "constraint": "GroundPorts",
+        "ports": [
+          "B"
+        ],
+        "propagate": true
+      }
+    ]
+  },
+  {
+    "name": "N",
+    "base": "NMOS",
+    "pins": [
+      "D",
+      "G",
+      "S",
+      "B"
+    ],
+    "parameters": {
+      "W": "1",
+      "L": "1",
+      "NFIN": "1",
+      "NF": "1",
+      "M": "1",
+      "PARALLEL": "1",
+      "STACK": "1"
+    },
+    "prefix": ""
+  },
+  {
+    "name": "NMOS_S_57588283",
+    "base": null,
+    "pins": [
+      "D",
+      "G",
+      "S"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [
+      {
+        "model": "N",
+        "name": "M1",
+        "pins": {
+          "D": "D",
+          "G": "G",
+          "S": "S",
+          "B": "S"
+        },
+        "parameters": {
+          "W": "1",
+          "L": "1.4E-08",
+          "NFIN": "6",
+          "NF": "2",
+          "M": "8",
+          "PARALLEL": "1",
+          "STACK": "1"
+        },
+        "abstract_name": null
+      }
+    ],
+    "generator": {
+      "name": "MOS"
+    },
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "MOS",
+        "parameters": null
+      }
+    ]
+  },
+  {
+    "name": "P",
+    "base": "PMOS",
+    "pins": [
+      "D",
+      "G",
+      "S",
+      "B"
+    ],
+    "parameters": {
+      "W": "1",
+      "L": "1",
+      "NFIN": "1",
+      "NF": "1",
+      "M": "1",
+      "PARALLEL": "1",
+      "STACK": "1"
+    },
+    "prefix": ""
+  },
+  {
+    "name": "PMOS_S_6864576",
+    "base": null,
+    "pins": [
+      "D",
+      "G",
+      "S"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [
+      {
+        "model": "P",
+        "name": "M1",
+        "pins": {
+          "D": "D",
+          "G": "G",
+          "S": "S",
+          "B": "S"
+        },
+        "parameters": {
+          "W": "1",
+          "L": "1.4E-08",
+          "NFIN": "6",
+          "NF": "2",
+          "M": "1",
+          "PARALLEL": "1",
+          "STACK": "1"
+        },
+        "abstract_name": null
+      }
+    ],
+    "generator": {
+      "name": "MOS"
+    },
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "MOS",
+        "parameters": null
+      }
+    ]
+  },
+  {
+    "name": "NMOS_4T_38370980",
+    "base": null,
+    "pins": [
+      "D",
+      "G",
+      "S",
+      "B"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [
+      {
+        "model": "N",
+        "name": "M1",
+        "pins": {
+          "D": "D",
+          "G": "G",
+          "S": "S",
+          "B": "B"
+        },
+        "parameters": {
+          "W": "1",
+          "L": "1.4E-08",
+          "NFIN": "6",
+          "NF": "2",
+          "M": "8",
+          "PARALLEL": "1",
+          "STACK": "1"
+        },
+        "abstract_name": null
+      }
+    ],
+    "generator": {
+      "name": "MOS"
+    },
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "MOS",
+        "parameters": null
+      }
+    ]
+  },
+  {
+    "name": "PMOS_S_35973488",
+    "base": null,
+    "pins": [
+      "D",
+      "G",
+      "S"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [
+      {
+        "model": "P",
+        "name": "M1",
+        "pins": {
+          "D": "D",
+          "G": "G",
+          "S": "S",
+          "B": "S"
+        },
+        "parameters": {
+          "W": "1",
+          "L": "1.4E-08",
+          "NFIN": "6",
+          "NF": "2",
+          "M": "4",
+          "PARALLEL": "1",
+          "STACK": "1"
+        },
+        "abstract_name": null
+      }
+    ],
+    "generator": {
+      "name": "MOS"
+    },
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "MOS",
+        "parameters": null
+      }
+    ]
+  },
+  {
+    "name": "NMOS_S_50912494",
+    "base": null,
+    "pins": [
+      "D",
+      "G",
+      "S"
+    ],
+    "parameters": {},
+    "prefix": "",
+    "elements": [
+      {
+        "model": "N",
+        "name": "M1",
+        "pins": {
+          "D": "D",
+          "G": "G",
+          "S": "S",
+          "B": "S"
+        },
+        "parameters": {
+          "W": "1",
+          "L": "1.4E-08",
+          "NFIN": "6",
+          "NF": "2",
+          "M": "1",
+          "PARALLEL": "1",
+          "STACK": "1"
+        },
+        "abstract_name": null
+      }
+    ],
+    "generator": {
+      "name": "MOS"
+    },
+    "constraints": [
+      {
+        "constraint": "Generator",
+        "name": "MOS",
+        "parameters": null
+      }
+    ]
+  }
+]

@@ -101,7 +101,7 @@
       ]
     },
     {
-      "name": "bottom_plate_4path_beamforming_hierarchical",
+      "name": "BOTTOM_PLATE_4PATH_BEAMFORMING_HIERARCHICAL",
       "parameters": [
         "CLK_X1_M",
         "CLK_X1_P",
@@ -127,7 +127,7 @@
       ],
 	"constraints": [
 	  {"constraint": "Order", "direction": "top_to_bottom", "instances": ["X1","X2","X3","X4","XI0"]},
-	  {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["X1"],["X2"],["X3"],["X4"],["CPtoM","CMtoP"],["RPtoM","RMtoP"],["XI0"]]},
+	  {"constraint": "SymmetricBlocks", "direction": "V", "pairs": [["X1"],["X2"],["X3"],["X4"],["CPTOM","CMTOP"],["RPTOM","RMTOP"],["XI0"]]},
           { "constraint": "SameTemplate", "instances": ["X1","X2","X3","X4"]}
 	],
       "instances": [
@@ -201,7 +201,7 @@
         },
         {
           "abstract_template_name": "CAP_MIM_wt32_lt32",
-          "instance_name": "CMtoP",
+          "instance_name": "CMTOP",
           "fa_map": [
             {
               "formal": "MINUS", "actual": "OUT_M"},
@@ -210,7 +210,7 @@
         },
         {
           "abstract_template_name": "CAP_MIM_wt32_lt32",
-          "instance_name": "CPtoM",
+          "instance_name": "CPTOM",
           "fa_map": [
             { "formal": "MINUS", "actual": "OUT_P"},
             { "formal": "PLUS", "actual": "M"}
@@ -218,7 +218,7 @@
         },
         {
           "abstract_template_name": "RES_w1u_l14u",
-          "instance_name": "RMtoP",
+          "instance_name": "RMTOP",
           "fa_map": [
             { "formal": "MINUS", "actual": "OUT_M"},
             { "formal": "PLUS", "actual": "P"}
@@ -226,7 +226,7 @@
         },
         {
           "abstract_template_name": "RES_w1u_l14u",
-          "instance_name": "RPtoM",
+          "instance_name": "RPTOM",
           "fa_map": [
             { "formal": "MINUS", "actual": "OUT_P"},
             { "formal": "PLUS", "actual": "M"}

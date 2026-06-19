@@ -1,0 +1,18 @@
+{
+  "RES_w1u_l14u": {
+    "abstract_template_name": "RES_w1u_l14u",
+    "concrete_template_name": "RES_w1u_l14u"
+  },
+  "CAP_MIM_wt32_lt32": {
+    "abstract_template_name": "CAP_MIM_wt32_lt32",
+    "concrete_template_name": "CAP_MIM_wt32_lt32"
+  },
+  "TIA_1": {
+    "abstract_template_name": "TIA_1",
+    "concrete_template_name": "TIA_1"
+  },
+  "SW_NMOS_wr2u_lr60n_nr16": {
+    "abstract_template_name": "SW_NMOS_wr2u_lr60n_nr16",
+    "concrete_template_name": "SW_NMOS_wr2u_lr60n_nr16"
+  }
+}
