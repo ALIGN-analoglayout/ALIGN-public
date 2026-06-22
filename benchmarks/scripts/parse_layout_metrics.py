@@ -10,14 +10,13 @@ import sys, json, pathlib, struct, argparse
 # For SKY130_PDK: (layer, datatype) pairs are required because multiple
 # logical layers share GDS layer numbers and are distinguished by datatype.
 PDK_LAYERS = {
+    # FinFET14nm: M3=19/dt20, V2=16/dt20; all others datatype 0
     'FinFET14nm_Mock_PDK': {
-        'wire': {13, 15, 19, 21, 23},   # M1-M5
-        'via':  {12, 14, 16, 17, 22},   # V0-V4
+        'wire_dt': {(13,0),(15,0),(19,20),(21,0),(23,0)},  # M1-M5
+        'via_dt':  {(12,0),(14,0),(16,20),(17,0),(22,0)},  # V0-V4
     },
+    # SKY130: M1-M5 layers 67-71 dt20; V0-V4 layers 66-70 dt44
     'SKY130_PDK': {
-        # wire: M1-M5 are layers 67-71 with datatype 20
-        # via:  V0-V4 are layers 66-70 with datatype 44
-        # GDS parser checks (layer, datatype) pairs
         'wire_dt': {(67,20),(68,20),(69,20),(70,20),(71,20)},
         'via_dt':  {(66,44),(67,44),(68,44),(69,44),(70,44)},
     },
@@ -49,8 +48,11 @@ def parse_gds_metrics(gds_path, layer_spec):
     total_wire_length = 0.0
     via_count = 0
     db_unit = 1e-9  # default, overridden by UNITS record
-    # bbox extraction: collect all rectangles on GDS layer 100 (ALIGN Bbox layer)
+    # bbox: collect BOUNDARY records on layer 100/dt5 (Bbox) or 101/dt0 (Boundary)
     bbox_coords = []      # list of (x0, y0, x1, y1) in db units
+    # all_geom_xs/ys: fallback — overall extent of all geometry
+    all_geom_xs = []
+    all_geom_ys = []
     in_boundary = False
 
     with open(gds_path, 'rb') as f:
@@ -99,9 +101,15 @@ def parse_gds_metrics(gds_path, layer_spec):
                     dx = abs(pts[j+1][0] - pts[j][0])
                     dy = abs(pts[j+1][1] - pts[j][1])
                     total_wire_length += (dx + dy) * db_unit * 1e6
-            elif in_boundary and current_layer == 100:  # Bbox layer → cell outline
-                xs = coords[0::2]
-                ys = coords[1::2]
+            if in_path or in_boundary:
+                xs = coords[0::2]; ys = coords[1::2]
+                all_geom_xs.extend(xs); all_geom_ys.extend(ys)
+            # Bbox layer 100/dt5 or Boundary layer 101/dt0 → cell outline
+            is_bbox = (in_boundary and
+                       ((current_layer == 100 and current_datatype == 5) or
+                        (current_layer == 101 and current_datatype == 0)))
+            if is_bbox:
+                xs = coords[0::2]; ys = coords[1::2]
                 if xs and ys:
                     bbox_coords.append((min(xs), min(ys), max(xs), max(ys)))
         elif record_type == 0x11:  # ENDEL
@@ -112,12 +120,18 @@ def parse_gds_metrics(gds_path, layer_spec):
 
         i += length
 
-    # Derive cell dimensions from the largest Bbox boundary found
+    # Derive cell dimensions from the largest Bbox/Boundary record found.
+    # Fallback: overall extent of all geometry (wire/via/boundary records).
     w_um = h_um = area_um2 = None
     if bbox_coords:
-        # Use the bbox with the largest area (top-level cell outline)
         largest = max(bbox_coords, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
         x0, y0, x1, y1 = largest
+    elif all_geom_xs and all_geom_ys:
+        x0, y0 = min(all_geom_xs), min(all_geom_ys)
+        x1, y1 = max(all_geom_xs), max(all_geom_ys)
+    else:
+        x0 = y0 = x1 = y1 = None
+    if x0 is not None and x1 != x0 and y1 != y0:
         w_um  = round((x1 - x0) * db_unit * 1e6, 4)
         h_um  = round((y1 - y0) * db_unit * 1e6, 4)
         area_um2 = round(w_um * h_um, 4)
@@ -152,7 +166,9 @@ def main():
     version    = args.version
     layer_spec = PDK_LAYERS[args.pdk]
 
-    gds_files = list(work_dir.rglob('*.gds'))
+    gds_files = [f for f in work_dir.rglob('*.gds') if not f.name.endswith('.python.gds')]
+    if not gds_files:
+        gds_files = list(work_dir.rglob('*.gds'))
     if not gds_files:
         print(f'ERROR: no GDS file found in {work_dir}', file=sys.stderr)
         sys.exit(1)

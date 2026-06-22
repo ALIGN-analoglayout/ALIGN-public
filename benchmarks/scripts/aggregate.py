@@ -19,8 +19,9 @@ def load_artifacts(artifacts_dir):
             print(f"WARNING: failed to load {f}: {e}", file=sys.stderr)
             continue
         circuit = data.get('circuit')
+        pdk = data.get('pdk', 'unknown')
         if circuit:
-            results[circuit] = data
+            results[f"{circuit}|{pdk}"] = data
     return results
 
 def check_regressions(current, previous, thresholds):
@@ -88,7 +89,8 @@ def main():
     previous = {}
     if history:
         for c in history[-1].get('circuits', []):
-            previous[c['circuit']] = c
+            key = f"{c['circuit']}|{c.get('pdk', 'unknown')}"
+            previous[key] = c
 
     warnings, failures = check_regressions(current, previous, config['regression_thresholds'])
 

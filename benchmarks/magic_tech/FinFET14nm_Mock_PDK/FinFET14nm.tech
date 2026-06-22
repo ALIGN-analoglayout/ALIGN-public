@@ -60,7 +60,7 @@ cifinput
   layer m2    m2
   calma m2    15 0
   layer m3    m3
-  calma m3    19 0
+  calma m3    19 20
   layer m4    m4
   calma m4    21 0
   layer m5    m5
@@ -70,7 +70,7 @@ cifinput
   layer via12 via12
   calma via12 14 0
   layer via23 via23
-  calma via23 16 0
+  calma via23 16 20
   layer via34 via34
   calma via34 17 0
 end
