@@ -227,7 +227,6 @@ jobs:
         with:
           pattern: metrics-*
           path: artifacts/
-          merge-multiple: true
 
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
