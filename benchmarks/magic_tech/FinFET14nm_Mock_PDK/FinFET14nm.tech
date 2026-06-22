@@ -13,7 +13,6 @@ planes
   via12,v12
   via23,v23
   via34,v34
-  via45,v45
 end
 
 types
@@ -26,7 +25,6 @@ types
   via12     via12
   via23     via23
   via34     via34
-  via45     via45
 end
 
 contact
@@ -42,7 +40,7 @@ end
 
 cifoutput
   style gds2
-  scalefactor 1000 calmaunit 1
+  scalefactor 200 calmaunit 1
   layer 13 m1
   layer 15 m2
   layer 19 m3
@@ -52,22 +50,29 @@ cifoutput
   layer 14 via12
   layer 16 via23
   layer 17 via34
-  layer 22 via45
 end
 
 cifinput
   style gds2
-  scalefactor 1000 calmaunit 1
+  scalefactor 200 calmaunit 1
+  layer m1    m1
   calma m1    13 0
+  layer m2    m2
   calma m2    15 0
+  layer m3    m3
   calma m3    19 0
+  layer m4    m4
   calma m4    21 0
+  layer m5    m5
   calma m5    23 0
+  layer via01 via01
   calma via01 12 0
+  layer via12 via12
   calma via12 14 0
+  layer via23 via23
   calma via23 16 0
+  layer via34 via34
   calma via34 17 0
-  calma via45 22 0
 end
 
 compose
@@ -98,7 +103,6 @@ extract
   planeorder via12 6
   planeorder via23 7
   planeorder via34 8
-  planeorder via45 9
   resist m1   0.12
   resist m2   0.10
   resist m3   0.08
@@ -108,7 +112,6 @@ extract
   contact via12 5
   contact via23 5
   contact via34 5
-  contact via45 5
   areacap m1   35
   areacap m2   28
   areacap m3   22

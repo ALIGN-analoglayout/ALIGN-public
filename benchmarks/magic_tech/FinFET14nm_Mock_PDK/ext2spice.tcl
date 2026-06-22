@@ -8,7 +8,6 @@ set input_gds $env(INPUT_GDS)
 set output_dir $env(OUTPUT_DIR)
 
 gds readonly true
-gds rescale false
 gds read $input_gds
 
 # Get top cell (last in the list is the top-level)
