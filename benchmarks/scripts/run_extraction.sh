@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# run_extraction.sh <circuit> <work_dir> <align_home>
+# run_extraction.sh <circuit> <work_dir> <tech_dir>
 # Runs Magic extraction on ALIGN GDS output → extracted.spice
 set -euo pipefail
 
 CIRCUIT="$1"
 WORK_DIR="$2"
-ALIGN_HOME="$3"
-TECH_DIR="${ALIGN_HOME}/benchmarks/magic_tech/FinFET14nm_Mock_PDK"
+TECH_DIR="$(realpath "$3")"
 
 GDS_FILE=$(find "$WORK_DIR" -name "*.gds" | head -1)
 if [ -z "$GDS_FILE" ]; then
@@ -22,10 +21,13 @@ cd "$WORK_DIR"
 export INPUT_GDS="$GDS_FILE"
 export OUTPUT_DIR="$WORK_DIR"
 
+MAGICRC=$(find "${TECH_DIR}" -name "*.magicrc" | head -1)
+[[ -n "$MAGICRC" ]] || { echo "ERROR: no .magicrc found in ${TECH_DIR}"; exit 1; }
+
 magic \
   -dnull \
   -noconsole \
-  -rcfile "${TECH_DIR}/FinFET14nm.magicrc" \
+  -rcfile "${MAGICRC}" \
   < "${TECH_DIR}/ext2spice.tcl" \
   2>&1
 
