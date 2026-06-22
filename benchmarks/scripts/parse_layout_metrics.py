@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Parse ALIGN output LEF and GDS for layout quality metrics."""
+"""Parse ALIGN output GDS for layout quality metrics."""
 
-import re, sys, json, pathlib, struct, argparse
+import sys, json, pathlib, struct, argparse
 
 # ---------------------------------------------------------------------------
 # PDK layer definitions
@@ -23,25 +23,19 @@ PDK_LAYERS = {
     },
 }
 
-def parse_lef_area(lef_path):
-    """Extract MACRO SIZE from top-level LEF. Returns (width, height, area) in µm²."""
-    text = pathlib.Path(lef_path).read_text()
-    m = re.search(r'SIZE\s+([\d.]+)\s+BY\s+([\d.]+)', text)
-    if not m:
-        return None, None, None
-    w, h = float(m.group(1)), float(m.group(2))
-    return w, h, round(w * h, 4)
-
 def parse_gds_metrics(gds_path, layer_spec):
     """
-    Parse binary GDS II file for total wirelength and via count.
+    Parse binary GDS II file for cell area, total wirelength, and via count.
 
-    layer_spec is a dict from PDK_LAYERS with either:
-      - 'wire' / 'via' keys (sets of layer numbers) for layer-only matching, or
-      - 'wire_dt' / 'via_dt' keys (sets of (layer, datatype) tuples) for
-        layer+datatype matching (e.g. SKY130_PDK).
+    Cell area is extracted from BOUNDARY records on GDS layer 100 (Bbox layer
+    used by all ALIGN PDKs). Wirelength and via count use layer_spec.
 
-    Returns dict with wirelength_um and via_count.
+    layer_spec keys:
+      'wire'/'via'       — sets of layer numbers (FinFET14nm_Mock_PDK)
+      'wire_dt'/'via_dt' — sets of (layer, datatype) tuples (SKY130_PDK)
+
+    Returns dict with area_um2, cell_width_um, cell_height_um,
+    wirelength_um, via_count.
     """
     use_dt = 'wire_dt' in layer_spec  # datatype-aware matching
 
@@ -55,6 +49,9 @@ def parse_gds_metrics(gds_path, layer_spec):
     total_wire_length = 0.0
     via_count = 0
     db_unit = 1e-9  # default, overridden by UNITS record
+    # bbox extraction: collect all rectangles on GDS layer 100 (ALIGN Bbox layer)
+    bbox_coords = []      # list of (x0, y0, x1, y1) in db units
+    in_boundary = False
 
     with open(gds_path, 'rb') as f:
         data = f.read()
@@ -87,29 +84,50 @@ def parse_gds_metrics(gds_path, layer_spec):
             db_unit = struct.unpack_from('>d', payload, 8)[0]
         elif record_type == 0x0D and len(payload) >= 2:
             current_layer = struct.unpack_from('>H', payload)[0]
-            current_datatype = None  # reset until DATATYPE record arrives
+            current_datatype = None
         elif record_type == 0x0E and len(payload) >= 2:
-            # DATATYPE record (0x0E xx) — follows LAYER for most element types
             current_datatype = struct.unpack_from('>H', payload)[0]
-        elif record_type == 0x09:
+        elif record_type == 0x08:  # BOUNDARY start
+            in_boundary = True
+        elif record_type == 0x09:  # PATH start
             in_path = True
-        elif record_type == 0x10 and in_path and _in_wire():
+        elif record_type == 0x10:  # XY data
             coords = struct.unpack_from('>' + 'i' * (len(payload) // 4), payload)
-            pts = [(coords[j], coords[j+1]) for j in range(0, len(coords)-1, 2)]
-            for j in range(len(pts) - 1):
-                dx = abs(pts[j+1][0] - pts[j][0])
-                dy = abs(pts[j+1][1] - pts[j][1])
-                total_wire_length += (dx + dy) * db_unit * 1e6
-        elif record_type == 0x11:
+            if in_path and _in_wire():
+                pts = [(coords[j], coords[j+1]) for j in range(0, len(coords)-1, 2)]
+                for j in range(len(pts) - 1):
+                    dx = abs(pts[j+1][0] - pts[j][0])
+                    dy = abs(pts[j+1][1] - pts[j][1])
+                    total_wire_length += (dx + dy) * db_unit * 1e6
+            elif in_boundary and current_layer == 100:  # Bbox layer → cell outline
+                xs = coords[0::2]
+                ys = coords[1::2]
+                if xs and ys:
+                    bbox_coords.append((min(xs), min(ys), max(xs), max(ys)))
+        elif record_type == 0x11:  # ENDEL
+            if in_boundary and _in_via():
+                via_count += 1
             in_path = False
-        elif record_type in (0x08, 0x06) and _in_via():
-            via_count += 1
+            in_boundary = False
 
         i += length
 
+    # Derive cell dimensions from the largest Bbox boundary found
+    w_um = h_um = area_um2 = None
+    if bbox_coords:
+        # Use the bbox with the largest area (top-level cell outline)
+        largest = max(bbox_coords, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
+        x0, y0, x1, y1 = largest
+        w_um  = round((x1 - x0) * db_unit * 1e6, 4)
+        h_um  = round((y1 - y0) * db_unit * 1e6, 4)
+        area_um2 = round(w_um * h_um, 4)
+
     return {
+        'area_um2':      area_um2,
+        'cell_width_um': w_um,
+        'cell_height_um': h_um,
         'wirelength_um': round(total_wire_length, 2),
-        'via_count': via_count,
+        'via_count':     via_count,
     }
 
 def main():
@@ -134,34 +152,30 @@ def main():
     version    = args.version
     layer_spec = PDK_LAYERS[args.pdk]
 
-    lef_files = list(work_dir.glob(f'{circuit}.lef'))
-    if not lef_files:
-        lef_files = list(work_dir.rglob('*.lef'))
-    if not lef_files:
-        print(f'ERROR: no LEF file found in {work_dir}', file=sys.stderr)
-        sys.exit(1)
-    lef_path = lef_files[0]
-
     gds_files = list(work_dir.rglob('*.gds'))
-    gds_metrics = {'wirelength_um': None, 'via_count': None}
-    if gds_files:
-        try:
-            gds_metrics = parse_gds_metrics(str(gds_files[0]), layer_spec)
-        except Exception as e:
-            print(f'WARNING: GDS parse failed: {e}', file=sys.stderr)
+    if not gds_files:
+        print(f'ERROR: no GDS file found in {work_dir}', file=sys.stderr)
+        sys.exit(1)
 
-    w, h, area = parse_lef_area(str(lef_path))
+    gds_metrics = {
+        'area_um2': None, 'cell_width_um': None,
+        'cell_height_um': None, 'wirelength_um': None, 'via_count': None,
+    }
+    try:
+        gds_metrics = parse_gds_metrics(str(gds_files[0]), layer_spec)
+    except Exception as e:
+        print(f'WARNING: GDS parse failed: {e}', file=sys.stderr)
 
     metrics = {
-        'circuit': circuit,
-        'version': version,
-        'pdk': args.pdk,
-        'area_um2': area,
-        'cell_width_um': w,
-        'cell_height_um': h,
-        'wirelength_um': gds_metrics['wirelength_um'],
-        'via_count': gds_metrics['via_count'],
-        'runtime_s': round(runtime_ms / 1000, 2),
+        'circuit':        circuit,
+        'version':        version,
+        'pdk':            args.pdk,
+        'area_um2':       gds_metrics['area_um2'],
+        'cell_width_um':  gds_metrics['cell_width_um'],
+        'cell_height_um': gds_metrics['cell_height_um'],
+        'wirelength_um':  gds_metrics['wirelength_um'],
+        'via_count':      gds_metrics['via_count'],
+        'runtime_s':      round(runtime_ms / 1000, 2),
     }
 
     out_path = work_dir / 'layout_metrics.json'
