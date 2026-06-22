@@ -56,18 +56,18 @@ cifoutput
 end
 
 cifinput
-  style gds
+  style gds2
   scalefactor 1000 calmaunit 1
-  layer m1    13 0
-  layer m2    15 0
-  layer m3    19 0
-  layer m4    21 0
-  layer m5    23 0
-  layer via01 12 0
-  layer via12 14 0
-  layer via23 16 0
-  layer via34 17 0
-  layer via45 22 0
+  calma m1    13 0
+  calma m2    15 0
+  calma m3    19 0
+  calma m4    21 0
+  calma m5    23 0
+  calma via01 12 0
+  calma via12 14 0
+  calma via23 16 0
+  calma via34 17 0
+  calma via45 22 0
 end
 
 compose
@@ -84,8 +84,21 @@ connect
   m5,via34 via34,m5
 end
 
+drc
+end
+
 extract
   style default
+  planeorder metal1 0
+  planeorder metal2 1
+  planeorder metal3 2
+  planeorder metal4 3
+  planeorder metal5 4
+  planeorder via01 5
+  planeorder via12 6
+  planeorder via23 7
+  planeorder via34 8
+  planeorder via45 9
   resist m1   0.12
   resist m2   0.10
   resist m3   0.08
