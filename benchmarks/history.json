@@ -62,5 +62,124 @@
       "warnings": [],
       "failures": []
     }
+  },
+  {
+    "version": "0.9.8",
+    "circuits": [
+      {
+        "circuit": "buffer",
+        "version": "0.9.8",
+        "pdk": "SKY130_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 230,
+        "runtime_s": 42.2
+      },
+      {
+        "circuit": "five_transistor_ota",
+        "version": "0.9.8",
+        "pdk": "SKY130_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 786,
+        "runtime_s": 16.86
+      },
+      {
+        "circuit": "high_speed_comparator",
+        "version": "0.9.8",
+        "pdk": "FinFET14nm_Mock_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 717,
+        "runtime_s": 85.36
+      },
+      {
+        "circuit": "current_mirror_ota",
+        "version": "0.9.8",
+        "pdk": "SKY130_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 672,
+        "runtime_s": 24.97
+      },
+      {
+        "circuit": "buffer",
+        "version": "0.9.8",
+        "pdk": "FinFET14nm_Mock_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 131,
+        "runtime_s": 40.64
+      },
+      {
+        "circuit": "five_transistor_ota",
+        "version": "0.9.8",
+        "pdk": "FinFET14nm_Mock_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 455,
+        "runtime_s": 21.7
+      },
+      {
+        "circuit": "telescopic_ota",
+        "version": "0.9.8",
+        "pdk": "SKY130_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 197,
+        "runtime_s": 51.8
+      },
+      {
+        "circuit": "current_mirror_ota",
+        "version": "0.9.8",
+        "pdk": "FinFET14nm_Mock_PDK",
+        "area_um2": 0.0,
+        "cell_width_um": 0.0,
+        "cell_height_um": 0.0,
+        "wirelength_um": 0.0,
+        "via_count": 452,
+        "runtime_s": 49.22
+      }
+    ],
+    "regressions": {
+      "warnings": [
+        {
+          "circuit": "buffer|FinFET14nm_Mock_PDK",
+          "metric": "via_count",
+          "current": 131,
+          "previous": 113,
+          "pct_change": 15.93
+        },
+        {
+          "circuit": "telescopic_ota|SKY130_PDK",
+          "metric": "via_count",
+          "current": 197,
+          "previous": 176,
+          "pct_change": 11.93
+        },
+        {
+          "circuit": "current_mirror_ota|FinFET14nm_Mock_PDK",
+          "metric": "runtime_s",
+          "current": 49.22,
+          "previous": 41.42,
+          "pct_change": 18.83
+        }
+      ],
+      "failures": []
+    }
   }
 ]
