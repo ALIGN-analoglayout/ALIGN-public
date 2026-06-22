@@ -24,6 +24,7 @@ DESIGN_DIR="${6:-${ALIGN_HOME}/examples/${CIRCUIT}}"
 PDK_NAME="$(basename "${PDK_PATH}")"
 
 mkdir -p "$WORK_DIR"
+WORK_DIR="$(realpath "$WORK_DIR")"
 cd "$WORK_DIR"
 
 echo "[run_align] Running ALIGN on ${CIRCUIT} ..."
