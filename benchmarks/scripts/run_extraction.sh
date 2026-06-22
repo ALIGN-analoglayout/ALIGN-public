@@ -20,18 +20,16 @@ fi
 
 echo "[run_extraction] Extracting from: ${GDS_FILE}"
 
-MAGICRC=$(find "${TECH_DIR}" -name "*.magicrc" | head -1)
-[[ -n "$MAGICRC" ]] || { echo "ERROR: no .magicrc found in ${TECH_DIR}"; exit 1; }
+TECH_FILE=$(find "${TECH_DIR}" -name "*.tech" | head -1)
+[[ -n "$TECH_FILE" ]] || { echo "ERROR: no .tech file found in ${TECH_DIR}"; exit 1; }
 
 export INPUT_GDS="$GDS_FILE"
 export OUTPUT_DIR="$WORK_DIR"
-# MAGICPATH tells Magic where to find the .tech file referenced in magicrc
-export MAGICPATH="$TECH_DIR"
 
 magic \
   -dnull \
   -noconsole \
-  -rcfile "${MAGICRC}" \
+  -T "${TECH_FILE}" \
   < "${TECH_DIR}/ext2spice.tcl" \
   2>&1
 
