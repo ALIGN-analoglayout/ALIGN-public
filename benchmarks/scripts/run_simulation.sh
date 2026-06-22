@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# run_simulation.sh <circuit> <work_dir> <align_home> <version>
+# run_simulation.sh <circuit> <work_dir> <testbench_dir>
 # Runs ngspice on testbench → metrics.json
 set -euo pipefail
 
 CIRCUIT="$1"
 WORK_DIR="$2"
-ALIGN_HOME="$3"
-VERSION="${4:-unknown}"
-TB_SRC="${ALIGN_HOME}/benchmarks/testbenches/${CIRCUIT}/tb.sp"
+TESTBENCH_DIR="$3"
+TB_SRC="${TESTBENCH_DIR}/${CIRCUIT}/tb.sp"
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ ! -f "$TB_SRC" ]; then
   echo "[run_simulation] ERROR: testbench not found: ${TB_SRC}" >&2
@@ -30,5 +31,5 @@ ngspice -b "${WORK_DIR}/tb.sp" \
 
 echo "[run_simulation] ngspice done."
 
-python3 "${ALIGN_HOME}/benchmarks/scripts/parse_sim_metrics.py" \
+python3 "${SCRIPT_DIR}/parse_sim_metrics.py" \
   "$CIRCUIT" "$WORK_DIR" "$NGSPICE_OUT"
