@@ -4,7 +4,6 @@ tech
 end
 
 planes
-  active,a
   metal1,m1
   metal2,m2
   metal3,m3
@@ -18,17 +17,16 @@ planes
 end
 
 types
-  active    ndiff,pdiff
   metal1    m1
   metal2    m2
   metal3    m3
   metal4    m4
   metal5    m5
   via01     via01
-  via12     via12,via1
-  via23     via23,via2
-  via34     via34,via3
-  via45     via45,via4
+  via12     via12
+  via23     via23
+  via34     via34
+  via45     via45
 end
 
 contact
@@ -40,15 +38,6 @@ end
 
 styles
   styletype mos
-  m1  blue
-  m2  green
-  m3  red
-  m4  cyan
-  m5  magenta
-  via01  white
-  via12  white
-  via23  white
-  via34  white
 end
 
 cifoutput
@@ -67,18 +56,32 @@ cifoutput
 end
 
 cifinput
-  style gds2
+  style gds
   scalefactor 1000 calmaunit 1
   layer m1    13 0
   layer m2    15 0
-  layer m3    19 20
+  layer m3    19 0
   layer m4    21 0
   layer m5    23 0
   layer via01 12 0
   layer via12 14 0
-  layer via23 16 20
+  layer via23 16 0
   layer via34 17 0
   layer via45 22 0
+end
+
+compose
+end
+
+connect
+  m1,via01 via01,m1
+  m2,via01 via01,m2
+  m2,via12 via12,m2
+  m3,via12 via12,m3
+  m3,via23 via23,m3
+  m4,via23 via23,m4
+  m4,via34 via34,m4
+  m5,via34 via34,m5
 end
 
 extract

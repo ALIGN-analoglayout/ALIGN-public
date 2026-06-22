@@ -43,6 +43,22 @@ styles
   styletype mos
 end
 
+cifoutput
+  style gds
+  scalefactor 1
+  layer 66 20 poly
+  layer 67 20 m1
+  layer 68 20 m2
+  layer 69 20 m3
+  layer 70 20 m4
+  layer 71 20 m5
+  layer 66 44 via0
+  layer 67 44 via1
+  layer 68 44 via2
+  layer 69 44 via3
+  layer 70 44 via4
+end
+
 cifinput
   style gds
   scalefactor 1 calmadefault
@@ -59,20 +75,18 @@ cifinput
   layer via4  70 44
 end
 
-cifoutput
-  style gds
-  scalefactor 1
-  layer 66 20 poly
-  layer 67 20 m1
-  layer 68 20 m2
-  layer 69 20 m3
-  layer 70 20 m4
-  layer 71 20 m5
-  layer 66 44 via0
-  layer 67 44 via1
-  layer 68 44 via2
-  layer 69 44 via3
-  layer 70 44 via4
+compose
+end
+
+connect
+  m1,via0 via0,m1
+  m2,via0 via0,m2
+  m2,via1 via1,m2
+  m3,via1 via1,m3
+  m3,via2 via2,m3
+  m4,via2 via2,m4
+  m4,via3 via3,m4
+  m5,via3 via3,m5
 end
 
 extract
