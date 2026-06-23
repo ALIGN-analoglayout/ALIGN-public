@@ -26,8 +26,8 @@ cp "$TB_SRC" "${WORK_DIR}/tb.sp"
 
 NGSPICE_OUT="${WORK_DIR}/ngspice_out.txt"
 
-ngspice -b "${WORK_DIR}/tb.sp" \
-  2>&1 | tee "$NGSPICE_OUT" || true
+# Run from WORK_DIR so .include extracted.spice resolves correctly
+( cd "${WORK_DIR}" && ngspice -b tb.sp 2>&1 ) | tee "$NGSPICE_OUT" || true
 
 echo "[run_simulation] ngspice done."
 
