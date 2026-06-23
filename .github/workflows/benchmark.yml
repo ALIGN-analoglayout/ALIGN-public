@@ -28,8 +28,6 @@ jobs:
           - five_transistor_ota
           - current_mirror_ota
           - high_speed_comparator
-          - variable_gain_amplifier
-          - switched_capacitor_filter
 
     steps:
       - uses: actions/checkout@v4

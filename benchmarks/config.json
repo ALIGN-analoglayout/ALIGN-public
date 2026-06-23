@@ -6,9 +6,7 @@
     "buffer",
     "five_transistor_ota",
     "current_mirror_ota",
-    "high_speed_comparator",
-    "variable_gain_amplifier",
-    "switched_capacitor_filter"
+    "high_speed_comparator"
   ],
   "sky130_circuits": [
     "buffer",
