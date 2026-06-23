@@ -30,12 +30,15 @@ def check_regressions(current, previous, thresholds):
     fail_pct = thresholds['failure_pct']
     warnings, failures = [], []
 
+    # Keys that are non-deterministic on shared CI runners and must not gate CI
+    skip_keys = {'circuit', 'version', 'timestamp', 'runtime_s', 'pdk'}
+
     for circuit, metrics in current.items():
         if circuit not in previous:
             continue
         prev = previous[circuit]
         for key, val in metrics.items():
-            if key in ('circuit', 'version', 'timestamp'):
+            if key in skip_keys:
                 continue
             if not isinstance(val, (int, float)):
                 continue
