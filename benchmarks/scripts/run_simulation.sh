@@ -52,6 +52,11 @@ elif schematic_sp:
     sp = pathlib.Path(schematic_sp)
     if sp.exists():
         schematic = sp.read_text()
+        # Strip FinFET-specific MOSFET instance parameters that ngspice rejects.
+        # These are layout hints (nfin=fins, nf=fingers, stack, parallel) that
+        # don't map to standard SPICE MOSFET parameters.
+        for param in ('nfin', 'nf', 'stack', 'parallel'):
+            schematic = re.sub(rf'\s+{param}=\S+', '', schematic)
         # Prepend schematic; parasitics in extracted.spice remain as RC overlay
         open(path, 'w').write(schematic + '\n' + content)
         print(f'[run_simulation] no subckt in extracted.spice — prepended schematic {schematic_sp}')
