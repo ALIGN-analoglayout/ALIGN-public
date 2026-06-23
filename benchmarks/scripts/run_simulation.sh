@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
-# run_simulation.sh <circuit> <work_dir> <testbench_dir>
+# run_simulation.sh <circuit> <work_dir> <testbench_dir> [schematic_sp]
 # Runs ngspice on testbench → metrics.json
+#
+# If extracted.spice (from Magic) has no .subckt definition (common for
+# mock PDKs with metal-only layers), <schematic_sp> is prepended so the
+# testbench can instantiate the circuit using schematic-level transistors.
 set -euo pipefail
 
 CIRCUIT="$1"
 WORK_DIR="$2"
 TESTBENCH_DIR="$3"
+SCHEMATIC_SP="${4:-}"
 TB_SRC="${TESTBENCH_DIR}/${CIRCUIT}/tb.sp"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -22,17 +27,13 @@ fi
 
 echo "[run_simulation] Running ngspice for ${CIRCUIT} ..."
 
-# ALIGN names the top-level GDS cell with an uppercase suffix (e.g. BUFFER_0).
-# Rename it to $CIRCUIT so the testbench .include + instantiation matches.
-python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" <<'PYEOF'
+# If extracted.spice lacks a .subckt (metal-only PDK — only RC parasitics),
+# prepend the schematic .sp so the testbench can instantiate the circuit.
+python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" "${SCHEMATIC_SP}" <<'PYEOF'
 import re, sys
-path, circuit = sys.argv[1], sys.argv[2]
+path, circuit, schematic_sp = sys.argv[1], sys.argv[2], sys.argv[3]
 content = open(path).read()
-lines = content.splitlines()
-print(f'[run_simulation] extracted.spice: {len(lines)} lines')
-print(f'[run_simulation] first 5 lines: {lines[:5]}')
 subckts = re.findall(r'^\.subckt\s+(\S+)', content, re.MULTILINE | re.IGNORECASE)
-print(f'[run_simulation] subckt names found: {subckts}')
 if subckts:
     topcell = subckts[-1]
     if topcell.lower() != circuit.lower():
@@ -45,9 +46,19 @@ if subckts:
         open(path, 'w').write(content)
         print(f'[run_simulation] renamed subckt {topcell!r} -> {circuit!r}')
     else:
-        print(f'[run_simulation] subckt {topcell!r} already matches circuit name, no rename needed')
+        print(f'[run_simulation] subckt already named {circuit!r}, no rename needed')
+elif schematic_sp:
+    import pathlib
+    sp = pathlib.Path(schematic_sp)
+    if sp.exists():
+        schematic = sp.read_text()
+        # Prepend schematic; parasitics in extracted.spice remain as RC overlay
+        open(path, 'w').write(schematic + '\n' + content)
+        print(f'[run_simulation] no subckt in extracted.spice — prepended schematic {schematic_sp}')
+    else:
+        print(f'[run_simulation] WARNING: schematic not found: {schematic_sp}')
 else:
-    print(f'[run_simulation] WARNING: no .subckt found in extracted.spice')
+    print(f'[run_simulation] WARNING: no .subckt in extracted.spice and no schematic provided')
 PYEOF
 
 cp "$TB_SRC" "${WORK_DIR}/tb.sp"

@@ -93,7 +93,8 @@ jobs:
           bash benchmarks/scripts/run_simulation.sh \
             ${{ matrix.circuit }} \
             work/${{ matrix.circuit }} \
-            benchmarks/testbenches
+            benchmarks/testbenches \
+            $GITHUB_WORKSPACE/examples/${{ matrix.circuit }}/${{ matrix.circuit }}.sp
 
       - name: Upload metrics artifact
         uses: actions/upload-artifact@v4
@@ -187,7 +188,8 @@ jobs:
           bash benchmarks/scripts/run_simulation.sh \
             ${{ matrix.circuit }} \
             work/${{ matrix.circuit }} \
-            benchmarks/testbenches/sky130
+            benchmarks/testbenches/sky130 \
+            $GITHUB_WORKSPACE/sky130-pdk/examples/${{ matrix.circuit }}/${{ matrix.circuit }}.sp
 
       - name: Upload metrics artifact
         uses: actions/upload-artifact@v4
