@@ -24,11 +24,9 @@ echo "[run_simulation] Running ngspice for ${CIRCUIT} ..."
 
 # ALIGN names the top-level GDS cell with an uppercase suffix (e.g. BUFFER_0).
 # Rename it to $CIRCUIT so the testbench .include + instantiation matches.
-python3 - <<'PYEOF'
-import re, os, sys
-work_dir = os.environ['WORK_DIR']
-circuit  = os.environ['CIRCUIT']
-path = os.path.join(work_dir, 'extracted.spice')
+python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" <<'PYEOF'
+import re, sys
+path, circuit = sys.argv[1], sys.argv[2]
 content = open(path).read()
 subckts = re.findall(r'^\.subckt\s+(\S+)', content, re.MULTILINE | re.IGNORECASE)
 if subckts:
@@ -41,7 +39,7 @@ if subckts:
                          rf'\g<1>{circuit}\2', content,
                          flags=re.MULTILINE | re.IGNORECASE)
         open(path, 'w').write(content)
-        print(f'[run_simulation] renamed subckt {topcell!r} → {circuit!r}')
+        print(f'[run_simulation] renamed subckt {topcell!r} -> {circuit!r}')
 PYEOF
 
 cp "$TB_SRC" "${WORK_DIR}/tb.sp"
