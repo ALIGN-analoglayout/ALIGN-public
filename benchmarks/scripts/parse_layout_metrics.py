@@ -22,12 +22,23 @@ PDK_LAYERS = {
     },
 }
 
+def _ibm_float(data, offset):
+    """Decode an IBM System/360 8-byte floating-point value (used in GDS UNITS record)."""
+    b = data[offset:offset + 8]
+    sign = (b[0] >> 7) & 1
+    exp = (b[0] & 0x7F) - 64
+    mant = int.from_bytes(b[1:], 'big')
+    value = mant / (16 ** 14) * (16 ** exp)
+    return -value if sign else value
+
+
 def parse_gds_metrics(gds_path, layer_spec):
     """
     Parse binary GDS II file for cell area, total wirelength, and via count.
 
-    Cell area is extracted from BOUNDARY records on GDS layer 100 (Bbox layer
-    used by all ALIGN PDKs). Wirelength and via count use layer_spec.
+    Cell area is extracted from BOUNDARY records on GDS layer 100/dt5 (Bbox
+    layer used by all ALIGN PDKs). Wirelength uses BOUNDARY records on metal
+    layers (ALIGN writes wires as closed rectangles, not PATH records).
 
     layer_spec keys:
       'wire'/'via'       — sets of layer numbers (FinFET14nm_Mock_PDK)
@@ -36,7 +47,7 @@ def parse_gds_metrics(gds_path, layer_spec):
     Returns dict with area_um2, cell_width_um, cell_height_um,
     wirelength_um, via_count.
     """
-    use_dt = 'wire_dt' in layer_spec  # datatype-aware matching
+    use_dt = 'wire_dt' in layer_spec
 
     if use_dt:
         wire_set = layer_spec['wire_dt']
@@ -47,13 +58,12 @@ def parse_gds_metrics(gds_path, layer_spec):
 
     total_wire_length = 0.0
     via_count = 0
-    db_unit = 1e-9  # default, overridden by UNITS record
-    # bbox: collect BOUNDARY records on layer 100/dt5 (Bbox) or 101/dt0 (Boundary)
-    bbox_coords = []      # list of (x0, y0, x1, y1) in db units
-    # all_geom_xs/ys: fallback — overall extent of all geometry
+    db_unit = 1e-9  # default: 1 nm/unit; overridden by UNITS record (IBM float)
+    bbox_coords = []   # (x0, y0, x1, y1) from Bbox layer 100/dt5
     all_geom_xs = []
     all_geom_ys = []
     in_boundary = False
+    in_path = False
 
     with open(gds_path, 'rb') as f:
         data = f.read()
@@ -61,7 +71,6 @@ def parse_gds_metrics(gds_path, layer_spec):
     i = 0
     current_layer = None
     current_datatype = None
-    in_path = False
 
     def _in_wire():
         if use_dt:
@@ -83,7 +92,10 @@ def parse_gds_metrics(gds_path, layer_spec):
         record_type = rtype >> 8
 
         if record_type == 0x03 and len(payload) >= 16:
-            db_unit = struct.unpack_from('>d', payload, 8)[0]
+            # UNITS record: physical db unit in metres (IBM float, NOT IEEE 754)
+            db_unit = _ibm_float(payload, 8)
+            if db_unit <= 0:
+                db_unit = 1e-9
         elif record_type == 0x0D and len(payload) >= 2:
             current_layer = struct.unpack_from('>H', payload)[0]
             current_datatype = None
@@ -95,21 +107,27 @@ def parse_gds_metrics(gds_path, layer_spec):
             in_path = True
         elif record_type == 0x10:  # XY data
             coords = struct.unpack_from('>' + 'i' * (len(payload) // 4), payload)
+            xs = coords[0::2]
+            ys = coords[1::2]
+            if in_boundary or in_path:
+                all_geom_xs.extend(xs)
+                all_geom_ys.extend(ys)
+            # Wire length: ALIGN writes metal wires as closed BOUNDARY rectangles.
+            # Measure each rectangle as max(width, height) — the longer dimension
+            # approximates the segment contribution without double-counting overlap.
+            if in_boundary and _in_wire() and xs and ys:
+                w = (max(xs) - min(xs)) * db_unit * 1e6
+                h = (max(ys) - min(ys)) * db_unit * 1e6
+                total_wire_length += max(w, h)
+            # PATH wires (uncommon in ALIGN but handled for completeness)
             if in_path and _in_wire():
-                pts = [(coords[j], coords[j+1]) for j in range(0, len(coords)-1, 2)]
+                pts = list(zip(xs, ys))
                 for j in range(len(pts) - 1):
                     dx = abs(pts[j+1][0] - pts[j][0])
                     dy = abs(pts[j+1][1] - pts[j][1])
                     total_wire_length += (dx + dy) * db_unit * 1e6
-            if in_path or in_boundary:
-                xs = coords[0::2]; ys = coords[1::2]
-                all_geom_xs.extend(xs); all_geom_ys.extend(ys)
-            # Bbox layer 100/dt5 or Boundary layer 101/dt0 → cell outline
-            is_bbox = (in_boundary and
-                       ((current_layer == 100 and current_datatype == 5) or
-                        (current_layer == 101 and current_datatype == 0)))
-            if is_bbox:
-                xs = coords[0::2]; ys = coords[1::2]
+            # Bbox layer 100/dt5 → cell outline
+            if in_boundary and current_layer == 100 and current_datatype == 5:
                 if xs and ys:
                     bbox_coords.append((min(xs), min(ys), max(xs), max(ys)))
         elif record_type == 0x11:  # ENDEL
@@ -120,28 +138,28 @@ def parse_gds_metrics(gds_path, layer_spec):
 
         i += length
 
-    # Derive cell dimensions from the largest Bbox/Boundary record found.
-    # Fallback: overall extent of all geometry (wire/via/boundary records).
-    w_um = h_um = area_um2 = None
+    # Use the largest Bbox record; fall back to overall geometry extent.
     if bbox_coords:
-        largest = max(bbox_coords, key=lambda b: (b[2]-b[0]) * (b[3]-b[1]))
+        largest = max(bbox_coords, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
         x0, y0, x1, y1 = largest
     elif all_geom_xs and all_geom_ys:
         x0, y0 = min(all_geom_xs), min(all_geom_ys)
         x1, y1 = max(all_geom_xs), max(all_geom_ys)
     else:
         x0 = y0 = x1 = y1 = None
+
+    w_um = h_um = area_um2 = None
     if x0 is not None and x1 != x0 and y1 != y0:
-        w_um  = round((x1 - x0) * db_unit * 1e6, 4)
-        h_um  = round((y1 - y0) * db_unit * 1e6, 4)
+        w_um     = round((x1 - x0) * db_unit * 1e6, 4)
+        h_um     = round((y1 - y0) * db_unit * 1e6, 4)
         area_um2 = round(w_um * h_um, 4)
 
     return {
-        'area_um2':      area_um2,
-        'cell_width_um': w_um,
+        'area_um2':       area_um2,
+        'cell_width_um':  w_um,
         'cell_height_um': h_um,
-        'wirelength_um': round(total_wire_length, 2),
-        'via_count':     via_count,
+        'wirelength_um':  round(total_wire_length, 2),
+        'via_count':      via_count,
     }
 
 def main():
