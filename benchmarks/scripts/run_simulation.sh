@@ -28,7 +28,11 @@ python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" <<'PYEOF'
 import re, sys
 path, circuit = sys.argv[1], sys.argv[2]
 content = open(path).read()
+lines = content.splitlines()
+print(f'[run_simulation] extracted.spice: {len(lines)} lines')
+print(f'[run_simulation] first 5 lines: {lines[:5]}')
 subckts = re.findall(r'^\.subckt\s+(\S+)', content, re.MULTILINE | re.IGNORECASE)
+print(f'[run_simulation] subckt names found: {subckts}')
 if subckts:
     topcell = subckts[-1]
     if topcell.lower() != circuit.lower():
@@ -40,6 +44,10 @@ if subckts:
                          flags=re.MULTILINE | re.IGNORECASE)
         open(path, 'w').write(content)
         print(f'[run_simulation] renamed subckt {topcell!r} -> {circuit!r}')
+    else:
+        print(f'[run_simulation] subckt {topcell!r} already matches circuit name, no rename needed')
+else:
+    print(f'[run_simulation] WARNING: no .subckt found in extracted.spice')
 PYEOF
 
 cp "$TB_SRC" "${WORK_DIR}/tb.sp"
