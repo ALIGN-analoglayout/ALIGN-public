@@ -10,7 +10,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 203.46,
       "via_count": 230,
-      "runtime_s": 38.29
+      "runtime_s": 39.86
     },
     {
       "circuit": "five_transistor_ota",
@@ -21,7 +21,7 @@
       "cell_height_um": 13.44,
       "wirelength_um": 1372.27,
       "via_count": 786,
-      "runtime_s": 18.18
+      "runtime_s": 20.43
     },
     {
       "circuit": "high_speed_comparator",
@@ -32,7 +32,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 269.99,
       "via_count": 717,
-      "runtime_s": 215.13
+      "runtime_s": 235.79
     },
     {
       "circuit": "current_mirror_ota",
@@ -43,7 +43,7 @@
       "cell_height_um": 25.2,
       "wirelength_um": 1091.9,
       "via_count": 672,
-      "runtime_s": 25.04
+      "runtime_s": 27.58
     },
     {
       "circuit": "buffer",
@@ -54,7 +54,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 33.81,
       "via_count": 131,
-      "runtime_s": 41.25
+      "runtime_s": 37.72
     },
     {
       "circuit": "five_transistor_ota",
@@ -65,7 +65,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 178.35,
       "via_count": 455,
-      "runtime_s": 23.64
+      "runtime_s": 24.4
     },
     {
       "circuit": "telescopic_ota",
@@ -76,7 +76,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 278.98,
       "via_count": 197,
-      "runtime_s": 49.47
+      "runtime_s": 49.63
     },
     {
       "circuit": "current_mirror_ota",
@@ -87,7 +87,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 115.73,
       "via_count": 452,
-      "runtime_s": 50.88
+      "runtime_s": 46.12
     }
   ],
   "regressions": {
