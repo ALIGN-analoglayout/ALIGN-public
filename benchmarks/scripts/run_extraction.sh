@@ -25,6 +25,7 @@ TECH_FILE=$(find "${TECH_DIR}" -name "*.tech" | head -1)
 
 export INPUT_GDS="$GDS_FILE"
 export OUTPUT_DIR="$WORK_DIR"
+export CIRCUIT="$CIRCUIT"
 
 magic \
   -dnull \

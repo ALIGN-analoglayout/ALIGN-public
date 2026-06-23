@@ -10,9 +10,22 @@ set output_dir $env(OUTPUT_DIR)
 gds readonly true
 gds read $input_gds
 
-# Get top cell (last in the list is the top-level)
+# Find the top-level cell: ALIGN writes it first in the GDS and names it
+# {CIRCUIT_UPPER}_0. Match by prefix so layout variants are handled.
 set cells [cellname list allcells]
-set topcell [lindex $cells end]
+set circuit_upper [string toupper $env(CIRCUIT)]
+set topcell ""
+foreach cell $cells {
+    if {[string match "${circuit_upper}_*" $cell]} {
+        set topcell $cell
+        break
+    }
+}
+# Fallback: first cell in list (ALIGN top-level is written first)
+if {$topcell eq ""} {
+    set topcell [lindex $cells 0]
+}
+puts "ext2spice: loading top cell '$topcell'"
 
 load $topcell
 select top cell
