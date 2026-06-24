@@ -11,4 +11,4 @@ m20s vbiasnd net16 m20stack vdd pmos_rvt w=27e-9 l=20e-9 nfin=10 nf=24
 m19 net27 net27 vdd vdd pmos_rvt w=27e-9 l=20e-9 nfin=10 nf=6
 m18 m18stack net27 vdd vdd pmos_rvt w=27e-9 l=20e-9 nfin=10 nf=24
 m18s voutp net27 m18stack vdd pmos_rvt w=27e-9 l=20e-9 nfin=10 nf=24
-.END
+.ends current_mirror_ota
