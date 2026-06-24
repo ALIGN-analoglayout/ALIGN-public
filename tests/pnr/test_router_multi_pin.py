@@ -108,3 +108,63 @@ def test_ru_multi_3():
         cv.addWire(cv.m1, 'A', x, (1, -1), (4, 1), netType=PIN)
 
     run_postamble(name, cv, constraints=[{"constraint": "Route", "min_layer": "M1", "max_layer": "M4"}])
+
+
+def test_ru_multi_4():
+    """ Partially routed single net """
+    name = get_test_id()
+    cv = CanvasPDK()
+
+    for i in range(1, 4, 2):
+        cv.addWire(cv.m2, 'S',  i, (3, -1),  (6, 1), netType='pin')
+
+    for i in range(9, 14, 2):
+        cv.addWire(cv.m2, 'S',  i, (1, -1),  (8, 1), netType='pin')
+
+    cv.addWire(cv.m3, None,  3, (6, -1),  (8, 1), netType='blockage')
+    cv.addWire(cv.m3, None,  4, (12, -1),  (13, 1), netType='blockage')
+
+    data = run_postamble(name, cv, constraints=[{"constraint": "Route", "min_layer": "M2", "max_layer": "M3"}])
+
+    cvr = CanvasPDK()
+    cvr.terminals = data['terminals']
+    cvr.removeDuplicates(allow_opens=True, silence_errors=True)
+    # Quantify route quality
+    segment_count = 0
+    for term in cvr.terminals:
+        if term['layer'] == 'M3' and 'netName' in term and term['netName'] == 'S':
+            segment_count += 1
+    assert segment_count == 1, f'One M3 segments suffice to complete routing {segment_count}'
+
+
+def test_ru_multi_5():
+    name = get_test_id()
+
+    # Routing problem
+    def _routing_problem():
+        cv = CanvasPDK()
+        cv.addWire(cv.m2, 'B',  13, (8, -1),  (12, 1), netType='pin')
+        cv.addWire(cv.m2, 'B',  11, (2, -1),  (6, 1), netType='pin')
+        cv.addWire(cv.m2, 'B',  3, (2, -1),  (6, 1), netType='pin')
+        cv.addWire(cv.m2, 'B',  1, (8, -1),  (12, 1), netType='pin')
+        return cv
+
+    # A hand-crafted solution
+    cv = _routing_problem()
+    cv.addWire(cv.m2, 'B',  13, (7, -1),  (12, 1), netType='pin')
+    cv.addWire(cv.m2, 'B',  11, (2, -1),  (7, 1), netType='pin')
+    cv.addWire(cv.m2, 'B',  3, (2, -1),  (7, 1), netType='pin')
+    cv.addWire(cv.m2, 'B',  1, (7, -1),  (12, 1), netType='pin')
+    cv.addWire(cv.m3, 'B', 7, (1, -1), (13, 1), netType='pin')
+    cv.drop_via(cv.v2)
+
+    data = run_postamble(name+'_GOLD', cv)
+    res1 = extract_parasitics(cv, ['B'])
+
+    # Routing problem
+    cv = _routing_problem()
+    data = run_postamble(name, cv, constraints=[{"constraint": "Route", "min_layer": "M3", "max_layer": "M4"}])
+    res2 = extract_parasitics(data, ['B'])
+
+    r = res2['total_cap']['B'] / res1['total_cap']['B']
+    assert r <= 1.10, f'Capacitance is {r*100-100:.1f}% higher than optimal'
