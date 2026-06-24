@@ -44,11 +44,11 @@ vin vin 0 pulse(0 1.0 0 10p 10p 500p 1n)
 .tran 1p 2n
 
 .measure tran tphl_ns
-+ trig v(vin)  val=0.5 rise=1
++ trig v(vin)  val=0.5 fall=1
 + targ v(vout) val=0.5 fall=1
 
 .measure tran tplh_ns
-+ trig v(vin)  val=0.5 fall=1
++ trig v(vin)  val=0.5 rise=1
 + targ v(vout) val=0.5 rise=1
 
 .end

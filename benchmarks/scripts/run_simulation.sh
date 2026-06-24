@@ -57,9 +57,13 @@ elif schematic_sp:
         # don't map to standard SPICE MOSFET parameters.
         for param in ('nfin', 'nf', 'stack', 'parallel'):
             schematic = re.sub(rf'\s+{param}=\S+', '', schematic)
-        # Prepend schematic; parasitics in extracted.spice remain as RC overlay
-        open(path, 'w').write(schematic + '\n' + content)
-        print(f'[run_simulation] no subckt in extracted.spice — prepended schematic {schematic_sp}')
+        # Replace extracted.spice with just the schematic subckt.
+        # The RC-only extracted.spice from mock PDKs contains ".option scale=1n"
+        # which rescales device widths/lengths to attometer range, causing DC OP
+        # failure before AC analysis even starts. Metal RC parasitics are
+        # meaningless without real transistor physics anyway.
+        open(path, 'w').write(schematic + '\n')
+        print(f'[run_simulation] replaced extracted.spice with schematic {schematic_sp}')
     else:
         print(f'[run_simulation] WARNING: schematic not found: {schematic_sp}')
 else:
