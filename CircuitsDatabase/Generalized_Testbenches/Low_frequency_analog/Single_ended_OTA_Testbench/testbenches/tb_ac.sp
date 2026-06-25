@@ -1,9 +1,9 @@
 *******************************************************
 * tb_ac_final.sp -- Cleaned AC Testbench
 *******************************************************
-.option post=2 
+.option post=2
 .option nomod
-.option measform=3  $ Output measurements in scientific notation
+.option measform=3  $ Output measurements in scientific notation
 .temp 27
 
 
@@ -20,7 +20,7 @@
 
 .include "../design_params.sp"
 **************** Supplies & Inputs ********************
-VSS  vss 0 0
+VSS  vss 0 0
 VDD1 vdd 0 VDD
 
 * Bias Current
@@ -40,7 +40,7 @@ EDIFF vdiff 0 vp vn 1
 * Pin Order: In+, In-, Out, VDD, VSS, Bias, Vbias2
 XU1 vp vn vout vdd vss ibias vb2 DUT_UNIVERSAL
 
-CLOAD  vout vss CL
+CLOAD  vout vss CL
 RLEAK1 vout vss RLEAK
 
 **************** Analysis *****************************

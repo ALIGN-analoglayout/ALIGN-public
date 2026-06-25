@@ -1,32 +1,31 @@
 # Single-Ended OTA Testbench Suite
 
-This directory contains reusable HSPICE testbenches for single-ended operational transconductance amplifiers (OTAs). The decks use a common DUT wrapper so the same measurements can be run on multiple OTA topologies with the same external pin convention.
+This directory contains reusable HSPICE testbenches for single-ended operational transconductance amplifiers (OTAs). Each DUT netlist is adapted through `dut_wrapper.sp` so the same testbench set can be reused across OTA topologies with a common external pin order.
 
 ## Directory Contents
 
 | Path | Purpose |
 | --- | --- |
-| `dut/` | OTA DUT netlists and reference schematic images. Each netlist defines a `.subckt DUT ...`. |
-| `testbenches/` | Main AC, DC, transient, CMRR, PSRR, ICMR, OCMR, slew-rate, and operating-point testbenches. |
-| `design_params.sp` | Shared supply, bias, load, simulator, and device sizing parameters. |
-| `dut_wrapper.sp` | Universal adapter that instantiates the selected `DUT` netlist as `DUT_UNIVERSAL`. |
-| `tb_ac.sp` | Top-level copy of the AC testbench using root-relative includes. |
+| `dut/` | OTA DUT netlists and reference schematic images. |
+| `testbenches/` | AC, CMRR, ICMR, OCMR, PSRR, slew-rate, and operating-point decks. |
+| `design_params.sp` | Shared supplies, bias, load, simulator options, and placeholder device sizing parameters. |
+| `dut_wrapper.sp` | Adapter that instantiates the selected `DUT` netlist as `DUT_UNIVERSAL`. |
+
+The old top-level `tb_ac.sp` deck has been removed. Use `testbenches/tb_ac.sp`.
 
 ## DUT Library
 
-All DUTs expose a single-ended output and differential inputs. The default DUT selected by `dut_wrapper.sp` is `dut/5t_ota.sp`.
+The default DUT selected by `dut_wrapper.sp` is `dut/5t_ota.sp`.
 
-| DUT | Netlist | Wrapper setting | Image |
-| --- | --- | --- | --- |
-| Two-stage OTA | `dut/2s_ota.sp` | `DUT_HAS_VB2 = 0` | ![Two-stage OTA](dut/2s_ota.png) |
-| Five-transistor OTA | `dut/5t_ota.sp` | `DUT_HAS_VB2 = 0` | ![Five-transistor OTA](dut/5t_ota.png) |
-| Cascode OTA | `dut/cascode_ota.sp` | `DUT_HAS_VB2 = 1` | ![Cascode OTA](dut/cascode_ota.png) |
-| Current-mirror OTA | `dut/cm_ota.sp` | `DUT_HAS_VB2 = 0` | ![Current-mirror OTA](dut/cm_ota.png) |
-| Low-voltage cascode OTA | `dut/lv_cas_ota.sp` | `DUT_HAS_VB2 = 1` | ![Low-voltage cascode OTA](dut/lv_cas_ota.png) |
+| DUT | Netlist | `DUT_HAS_VB2` | Image |
+| --- | --- | ---: | --- |
+| Two-stage OTA | `dut/2s_ota.sp` | `0` | ![Two-stage OTA](dut/2s_ota.png) |
+| Five-transistor OTA | `dut/5t_ota.sp` | `0` | ![Five-transistor OTA](dut/5t_ota.png) |
+| Cascode OTA | `dut/cascode_ota.sp` | `1` | ![Cascode OTA](dut/cascode_ota.png) |
+| Current-mirror OTA | `dut/cm_ota.sp` | `0` | ![Current-mirror OTA](dut/cm_ota.png) |
+| Low-voltage cascode OTA | `dut/lv_cas_ota.sp` | `1` | ![Low-voltage cascode OTA](dut/lv_cas_ota.png) |
 
-### DUT Pin Conventions
-
-The raw DUT netlists use one of two pin lists:
+Raw DUT netlists use one of these pin lists:
 
 ```spice
 * DUT_HAS_VB2 = 0
@@ -36,13 +35,13 @@ The raw DUT netlists use one of two pin lists:
 .subckt DUT vp vn vout vdd vss ibias vb2
 ```
 
-The wrapper always exports this seven-pin interface:
+The wrapper always exports:
 
 ```spice
 .subckt DUT_UNIVERSAL vp vn vout vdd vss ibias vb2
 ```
 
-For DUTs without `vb2`, the wrapper ignores the `vb2` pin.
+For DUTs without `vb2`, `dut_wrapper.sp` ignores the wrapper `vb2` pin.
 
 ## Selecting a DUT
 
@@ -52,54 +51,28 @@ Edit `dut_wrapper.sp` and change the include line:
 .include "dut/5t_ota.sp"
 ```
 
-Then set `DUT_HAS_VB2` in the testbench:
+Then set `DUT_HAS_VB2` in each testbench:
 
 ```spice
 .param DUT_HAS_VB2 = 0   $ 2s_ota, 5t_ota, cm_ota
 .param DUT_HAS_VB2 = 1   $ cascode_ota, lv_cas_ota
 ```
 
-For cascode-style DUTs, also set the second bias voltage:
+For cascode-style DUTs, also set:
 
 ```spice
 .param VB2_DC = 600m
 ```
 
-Important: `design_params.sp` currently defines sizing parameters only for `m0` through `m5`. If the selected DUT uses devices such as `m6`, `m7`, or `m10`, add matching parameters such as:
+`design_params.sp` includes placeholder sizing parameters for `m0` through `m10`, plus `c0` and `r0`. Replace these placeholders with the intended values for the selected DUT before using measured results.
 
-```spice
-.param m6_l=180n
-.param m6_w=1u
-.param m7_l=180n
-.param m7_w=1u
-```
+The DUT devices reference technology model names such as `nch_lvt` and `pch_lvt`. Add the required PDK model include or library statement through your simulator setup, in the testbench, or in `design_params.sp`.
 
-## Common Parameters
+## Running
 
-Key shared parameters in `design_params.sp`:
-
-| Parameter | Default | Meaning |
-| --- | ---: | --- |
-| `VDD` | `1.0` | Positive supply voltage. |
-| `VSS` | `0.0` | Negative supply or ground reference. |
-| `IBIAS` | `5u` | Bias current source value. |
-| `CL` | `500f` | Output load capacitance. |
-| `RLEAK` | `100Meg` | High-value leak resistor for floating-node convergence. |
-| `UGF_DEFAULT` | `50Meg` | Fallback unity-gain estimate for timing-oriented tests. |
-
-The DUT devices use technology model names such as `nch_lvt` and `pch_lvt`. Add the required PDK model include or library statement before running the decks, either in the testbench, in `design_params.sp`, or through your simulator setup.
-
-## Running the Testbenches
-
-Run from this directory unless your HSPICE setup resolves `.include` paths relative to the input file. The testbenches under `testbenches/` include shared files with `../...`; the top-level `tb_ac.sp` is provided as a root-level AC deck.
-
-Example commands:
+Run the decks with include paths resolved relative to the input file, or run from a location where the `../design_params.sp` and `../dut_wrapper.sp` includes are valid for files under `testbenches/`.
 
 ```bash
-# Root-level AC deck
-hspice -i tb_ac.sp -o runs/ac_5t
-
-# Main testbench directory decks
 hspice -i testbenches/tb_ac.sp    -o runs/ac
 hspice -i testbenches/tb_cmrr.sp  -o runs/cmrr
 hspice -i testbenches/tb_icmr.sp  -o runs/icmr
@@ -116,33 +89,34 @@ Typical HSPICE outputs include `.lis` logs, `.mt*` measurement files, and wavefo
 
 1. Select the DUT in `dut_wrapper.sp`.
 2. Set `DUT_HAS_VB2` and `VB2_DC` in each testbench as needed.
-3. Confirm all DUT sizing parameters are defined in `design_params.sp`.
+3. Replace placeholder sizes in `design_params.sp`.
 4. Add or enable the correct PDK model library.
-5. Run `tb_ac.sp` first to obtain low-frequency gain, UGF, phase margin, bandwidth, and gain margin.
-6. Use the AC result values to update dependent decks:
-   - Set `A0_DIFF_DB` in `tb_cmrr.sp`.
-   - Set `ADC_GAIN_DB` in `tb_psrrp.sp` and `tb_psrrn.sp`.
-   - Set `UGF_EST`, `VICMR_MIN`, and `VICMR_MAX` in `tb_sr.sp`.
-7. Run the DC range tests (`tb_icmr.sp`, `tb_ocmr.sp`) and transient slew-rate test (`tb_sr.sp`).
+5. Run `testbenches/tb_ac.sp` first to obtain low-frequency gain, UGF, phase margin, bandwidth, and gain margin.
+6. Copy AC results into dependent decks:
+   - Set `A0_DIFF_DB` in `testbenches/tb_cmrr.sp`.
+   - Set `ADC_GAIN_DB` in `testbenches/tb_psrrp.sp` and `testbenches/tb_psrrn.sp`.
+   - Set `UGF_EST`, `VICMR_MIN`, and `VICMR_MAX` in `testbenches/tb_sr.sp`.
+7. Run the DC range tests and transient slew-rate test.
+8. Run `testbenches/tb_op.sp` when you need operating-point listing details.
 
 ## Testbench Summary
 
 | Testbench | Analysis | Main measurements | Purpose |
 | --- | --- | --- | --- |
-| `tb_ac.sp` | `.op`, `.ac` | `A0_DB`, `UGF`, `PM`, `BW_3DB`, `GM_DB` | Open-loop small-signal gain and stability. |
-| `tb_cmrr.sp` | `.op`, `.ac` | `ACM_DB`, `CMRR_DB` | Common-mode rejection. |
-| `tb_icmr.sp` | `.dc` | `ICMR_MIN`, `ICMR_MAX`, `ICMR_RANGE` | Valid input common-mode range. |
-| `tb_ocmr.sp` | `.dc` | `OCMR_MIN`, `OCMR_MAX`, `OCMR_RANGE` | Valid output common-mode swing in unity feedback. |
-| `tb_psrrp.sp` | `.op`, `.ac` | `APS_PLUS_DB`, `PSRR_PLUS_DB` | Rejection of positive-supply ripple. |
-| `tb_psrrn.sp` | `.op`, `.ac` | `APS_MINUS_DB`, `PSRR_MINUS_DB` | Rejection of negative-supply ripple. |
-| `tb_sr.sp` | `.tran` | `SR_POS_Vus`, `SR_NEG_Vus` | Positive and negative slew rate. |
-| `tb_op.sp` | `.dc` dummy sweep | Operating-point listing | Device operating-point extraction. |
+| `testbenches/tb_ac.sp` | `.op`, `.ac` | `A0_DB`, `UGF`, `PM`, `BW_3DB`, `GM_DB` | Open-loop gain and stability. |
+| `testbenches/tb_cmrr.sp` | `.op`, `.ac` | `ACM_DB`, `CMRR_DB` | Common-mode rejection. |
+| `testbenches/tb_icmr.sp` | `.dc` | `ICMR_MIN`, `ICMR_MAX`, `ICMR_RANGE` | Valid input common-mode range. |
+| `testbenches/tb_ocmr.sp` | `.dc` | `OCMR_MIN`, `OCMR_MAX`, `OCMR_RANGE` | Valid output common-mode swing in unity feedback. |
+| `testbenches/tb_psrrp.sp` | `.op`, `.ac` | `APS_PLUS_DB`, `PSRR_PLUS_DB` | Positive-supply ripple rejection. |
+| `testbenches/tb_psrrn.sp` | `.op`, `.ac` | `APS_MINUS_DB`, `PSRR_MINUS_DB` | Negative-supply ripple rejection. |
+| `testbenches/tb_sr.sp` | `.tran` | `SR_POS_Vus`, `SR_NEG_Vus` | Positive and negative slew rate. |
+| `testbenches/tb_op.sp` | `.dc` dummy sweep | Operating-point listing | Device operating-point extraction. |
 
-## Measurement Fundamentals
+## Measurement Notes
 
-### AC Gain and Stability (`tb_ac.sp`)
+### AC Gain and Stability
 
-The testbench applies a differential AC input with total magnitude of 1 V:
+`tb_ac.sp` applies a 1 V total differential AC input:
 
 ```spice
 VINP vp 0 DC VCM AC 0.5 0
@@ -150,128 +124,61 @@ VINN vn 0 DC VCM AC 0.5 180
 EDIFF vdiff 0 vp vn 1
 ```
 
-Because the differential input magnitude is 1 V, `vm(vout)/vm(vdiff)` directly gives differential gain. The deck measures:
+Because `vm(vdiff)` is 1 V, `vm(vout)/vm(vdiff)` gives differential gain directly. The deck measures low-frequency gain, unity-gain frequency, phase margin, 3 dB bandwidth, and gain margin.
 
-| Metric | How it is measured |
-| --- | --- |
-| `A0_MAG` | Low-frequency gain at `FMIN`. |
-| `A0_DB` | `20*log10(A0_MAG)`. |
-| `UGF` | Frequency where gain crosses 0 dB. |
-| `PH_H_RAW` | Output phase minus input differential phase at `UGF`. |
-| `PM` | `180 + PH_H`, after phase wrapping. |
-| `BW_3DB` | Frequency where gain falls to `A0_DB - 3 dB`. |
-| `GM_DB` | Negative of gain at the first -180 degree phase crossing. |
+### CMRR
 
-### CMRR (`tb_cmrr.sp`)
-
-The common-mode test drives both inputs with the same AC signal while keeping a small DC input offset:
+`tb_cmrr.sp` drives both inputs with the same AC signal while keeping a small DC offset:
 
 ```spice
 E_VIP vip 0 VOL='v(n_cm_ref) + v(n_ac_cm) + V_OFFSET/2'
 E_VIN vin 0 VOL='v(n_cm_ref) + v(n_ac_cm) - V_OFFSET/2'
 ```
 
-The deck measures common-mode gain at `FMIN`:
+It computes:
 
 ```spice
-.meas ac ACM_MAG FIND vm(vout) AT=FMIN
-.meas ac ACM_DB  PARAM='20*log10(ACM_MAG)'
-.meas ac CMRR_DB PARAM='A0_DIFF_DB - ACM_DB'
+CMRR_DB = A0_DIFF_DB - ACM_DB
 ```
 
-Update `A0_DIFF_DB` from the AC gain test before trusting `CMRR_DB`.
+Update `A0_DIFF_DB` from the AC gain deck before trusting this value.
 
-### ICMR (`tb_icmr.sp`)
+### ICMR
 
-The input common-mode voltage is swept from `VCM_START` to `VCM_STOP`. The DUT is connected as a unity-gain follower:
+`tb_icmr.sp` connects the DUT as a unity-gain follower and sweeps the input common-mode voltage from `VCM_START` to `VCM_STOP`. It monitors output tracking error and total supply current:
 
 ```spice
-XU1 vip vout vout vdd vss vbias vb2 DUT_UNIVERSAL
+error_node = abs(v(vout) - v(vcm))
+idd_node   = abs(i(VVDD))
 ```
 
-Two black-box indicators are monitored:
+`ICMR_MIN` is based on recovery to 95% of nominal supply current. `ICMR_MAX` is based on tracking error exceeding the nominal error by 10 mV.
 
-| Indicator | Meaning |
-| --- | --- |
-| `error_node = abs(v(vout) - v(vcm))` | Output tracking error in unity feedback. |
-| `idd_node = abs(i(VVDD))` | Total supply current. |
+### OCMR
 
-The lower ICMR limit is found when supply current rises back to 95% of its nominal mid-supply value. The upper ICMR limit is found when tracking error exceeds nominal error by 10 mV.
+`tb_ocmr.sp` sweeps the unity-gain buffer input rail-to-rail and uses the output slope to estimate valid output swing. The valid range is where the slope remains above 80% of the peak slope.
 
-### OCMR (`tb_ocmr.sp`)
+### PSRR
 
-The OTA is configured as a unity-gain buffer and the input is swept rail-to-rail. The output should follow the input with slope near 1 in the valid output range.
-
-The deck computes:
+`tb_psrrp.sp` injects a 1 V AC perturbation on `vdd`. `tb_psrrn.sp` injects a 1 V AC perturbation on `vss`. Both compute PSRR as:
 
 ```spice
-PEAK_SLOPE = max(deriv(v(vout)))
-TARGET_SLOPE = 0.8 * PEAK_SLOPE
+PSRR = ADC_GAIN_DB - supply_gain_db
 ```
 
-`OCMR_MIN` and `OCMR_MAX` are the first and last output voltages where the buffer slope crosses the 80% target. This approximates the output swing range before the output stage loses strong linear tracking.
+Update `ADC_GAIN_DB` from the AC gain deck first.
 
-### PSRR+ (`tb_psrrp.sp`)
+### Slew Rate
 
-The inputs are AC-grounded and a 1 V AC perturbation is injected on the positive supply:
+`tb_sr.sp` configures the OTA as a unity-gain buffer and steps the input between `VICMR_MIN` and `VICMR_MAX`. It reports positive and negative slew rate in V/us using 10% to 90% output transition times.
 
-```spice
-VDC_SRC vdd_node 0 DC VDD
-VAC_SRC vdd vdd_node AC 1
-```
+### Operating Point
 
-The deck measures output response to positive-supply ripple:
-
-```spice
-.meas ac APS_PLUS_DB  FIND vdb(vout) AT=FMIN
-.meas ac PSRR_PLUS_DB PARAM='ADC_GAIN_DB - APS_PLUS_DB'
-```
-
-Set `ADC_GAIN_DB` from the AC gain test before using the PSRR result.
-
-### PSRR- (`tb_psrrn.sp`)
-
-The positive rail is held at DC and a 1 V AC perturbation is injected on `vss`:
-
-```spice
-VAC_NEG vss 0 DC 0 AC 1
-```
-
-The deck measures output response to negative-supply ripple and computes:
-
-```spice
-PSRR_MINUS_DB = ADC_GAIN_DB - APS_MINUS_DB
-```
-
-Set `ADC_GAIN_DB` from the AC gain test before using the PSRR result.
-
-### Slew Rate (`tb_sr.sp`)
-
-The OTA is configured as a unity-gain buffer. The input uses a PWL waveform that steps from `VICMR_MIN` to `VICMR_MAX`, holds, then steps back down:
-
-```spice
-V_IN_POS vip 0 PWL(...)
-XU1 vip vout vout vdd vss ibias vb2 DUT_UNIVERSAL
-```
-
-The deck measures the output transition time between 10% and 90% thresholds:
-
-```spice
-SR_POS_Vus = (V_TH_90_R - V_TH_10_R) / (T_90_R - T_10_R) * 1e-6
-SR_NEG_Vus = abs((V_TH_90_F - V_TH_10_F) / (T_90_F - T_10_F)) * 1e-6
-```
-
-The reported units are V/us. Update `VICMR_MIN`, `VICMR_MAX`, and `UGF_EST` from earlier simulations before running this deck.
-
-### Operating Point (`tb_op.sp`)
-
-The operating-point deck biases the OTA at a fixed common-mode input voltage and runs a dummy DC sweep to force printed output. It is intended for checking device regions, node voltages, currents, and extracted operating-point parameters in the HSPICE listing.
-
-If the simulator reports an unexpected end-of-file error, add a final `.end` statement to the deck.
+`tb_op.sp` biases the OTA at a fixed common-mode input voltage and runs a dummy DC sweep to force printed operating-point output in the HSPICE listing.
 
 ## Practical Notes
 
-- `tb_cmrr.sp`, `tb_psrrp.sp`, `tb_psrrn.sp`, and `tb_sr.sp` depend on values measured by earlier simulations. Update those parameters instead of relying on placeholder defaults.
-- The wrapper does not automatically detect DUT pins. The `DUT_HAS_VB2` value must match the selected DUT netlist.
-- The testbenches are written for HSPICE syntax and measurement functions such as `.meas`, `deriv()`, `vm()`, `vp()`, and `vdb()`.
-- If include-path errors occur, run the deck from the directory expected by its `.include` statements or adjust the include paths consistently.
+- The wrapper does not auto-detect DUT pins. Keep `DUT_HAS_VB2` consistent with the selected DUT.
+- The decks are written for HSPICE syntax and measurement functions such as `.meas`, `deriv()`, `vm()`, `vp()`, and `vdb()`.
+- Several decks contain placeholder measured values. Update them after running the earlier decks in the recommended flow.
+- If include-path errors occur, adjust the run directory or include paths consistently for all decks.

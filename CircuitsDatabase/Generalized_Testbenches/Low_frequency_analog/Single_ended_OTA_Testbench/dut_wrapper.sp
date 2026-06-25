@@ -2,7 +2,7 @@
 * dut_wrapper.sp -- Universal DUT Interface Adapter
 *******************************************************
 *
-* Put or generate the selected OTA netlist as ../dut.sp.
+* Select one DUT netlist from dut/ by changing the include below.
 *
 * DUT_HAS_VB2 = 0:
 *   Underlying DUT pin order is:

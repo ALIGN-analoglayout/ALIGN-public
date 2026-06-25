@@ -35,10 +35,9 @@
 *******************************************************
 * Device parameters
 *******************************************************
-* Example MOS sizes for dut/5t_ota.sp only.
-* Replace these placeholder lengths and widths with the actual sizes for your DUT
-* before running the testbenches. All testbenches include this file and extract
-* the MOS sizing parameters from it.
+* Placeholder MOS sizes for the DUT library.
+* Replace these placeholder lengths and widths with the actual sizes for your
+* selected DUT before running the testbenches.
 .param m0_l=180n
 .param m0_w=1u
 .param m1_l=180n
@@ -51,3 +50,13 @@
 .param m4_w=1u
 .param m5_l=180n
 .param m5_w=1u
+.param m6_l=180n
+.param m6_w=1u
+.param m7_l=180n
+.param m7_w=1u
+.param m8_l=180n
+.param m8_w=1u
+.param m9_l=180n
+.param m9_w=1u
+.param m10_l=180n
+.param m10_w=1u

@@ -1,8 +1,8 @@
-Now check the testbench for Common mode rejection ration: *******************************************************
+*******************************************************
 * tb_cmrr.sp -- CMRR Testbench
 * Measures Differential Gain, Common Mode Gain, and CMRR
 *******************************************************
-.option post=2 
+.option post=2
 .option nomod
 .option measform=3
 .temp 27
@@ -15,11 +15,11 @@ Now check the testbench for Common mode rejection ration: **********************
 .include "../design_params.sp"
 .param V_OFFSET=1m
 .param FMIN = 1
-.param FMAx = 200G
+.param FMAX = 200G
 .param vcm=0.6
 .param A0_DIFF_DB=20
 **************** Supplies *****************************
-VSS  vss 0 0
+VSS  vss 0 0
 VDD1 vdd 0 VDD
 IBIAS vdd ibias DC IBIAS
 VVB2 vb2 0 DC 'VB2_DC'
@@ -30,7 +30,7 @@ VVB2 vb2 0 DC 'VB2_DC'
 * Pin Order: In+, In-, Out, VDD, VSS, Bias, Vbias2
 XU1 vip vin vout vdd vss ibias vb2 DUT_UNIVERSAL
 
-CLOAD  vout vss CL
+CLOAD  vout vss CL
 RLEAK1 vout vss RLEAK
 
 **************** Stimulus Setup ***********************
@@ -63,15 +63,15 @@ E_VIN vin 0 VOL='v(n_cm_ref) + v(n_ac_cm) - V_OFFSET/2'
 
 * 1. Measure Common Mode Gain (A_cm) at low freq
 * A_cm = Vout / Vin_common_mode
-.meas ac ACM_MAG  FIND vm(vout) AT=FMIN
-.meas ac ACM_DB   PARAM='20*log10(ACM_MAG)'
+.meas ac ACM_MAG  FIND vm(vout) AT=FMIN
+.meas ac ACM_DB   PARAM='20*log10(ACM_MAG)'
 
 
 
 
 * 3. Calculate CMRR
 * CMRR(dB) = A_diff(dB) - A_cm(dB)
-.meas ac CMRR_DB  PARAM='A0_DIFF_DB - ACM_DB'
+.meas ac CMRR_DB  PARAM='A0_DIFF_DB - ACM_DB'
 
 
 .end

@@ -46,3 +46,4 @@ CLOAD  vout vss CL
 **************** Operating Point Print ****************
 * Note: Ensure all parameters for a device are on one CONTINUOUS line 
 
+.end
