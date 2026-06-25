@@ -10,9 +10,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 203.46,
       "via_count": 230,
-      "runtime_s": 45.5,
-      "tphl_ns": 1.0922,
-      "tplh_ns": -1.0204
+      "runtime_s": 40.85
     },
     {
       "circuit": "five_transistor_ota",
@@ -23,8 +21,7 @@
       "cell_height_um": 13.44,
       "wirelength_um": 1372.27,
       "via_count": 786,
-      "runtime_s": 18.65,
-      "gain_db": 147.8244
+      "runtime_s": 19.48
     },
     {
       "circuit": "high_speed_comparator",
@@ -35,7 +32,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 269.99,
       "via_count": 717,
-      "runtime_s": 65.93,
+      "runtime_s": 69.36,
       "static_power_uw": 8.6836
     },
     {
@@ -47,8 +44,7 @@
       "cell_height_um": 25.2,
       "wirelength_um": 1091.9,
       "via_count": 672,
-      "runtime_s": 25.91,
-      "gain_db": 144.8608
+      "runtime_s": 26.98
     },
     {
       "circuit": "buffer",
@@ -59,7 +55,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 33.81,
       "via_count": 131,
-      "runtime_s": 39.52,
+      "runtime_s": 34.83,
       "tphl_ns": 0.0,
       "tplh_ns": -0.0002
     },
@@ -72,7 +68,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 178.35,
       "via_count": 455,
-      "runtime_s": 23.03,
+      "runtime_s": 21.41,
       "gain_db": 170.098
     },
     {
@@ -84,8 +80,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 278.98,
       "via_count": 197,
-      "runtime_s": 53.09,
-      "gain_db": -39.8332
+      "runtime_s": 49.51
     },
     {
       "circuit": "current_mirror_ota",
@@ -96,7 +91,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 115.73,
       "via_count": 452,
-      "runtime_s": 52.2,
+      "runtime_s": 47.73,
       "gain_db": -17.4819
     }
   ],
