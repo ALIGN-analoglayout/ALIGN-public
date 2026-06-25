@@ -119,38 +119,67 @@ import os, re, sys
 
 tb_path, flat_path, models_path = sys.argv[1], sys.argv[2], sys.argv[3]
 
-def expand_section(lib_file, section, depth=0):
-    """Recursively flatten a named .lib section into raw model text."""
-    if depth > 8:
-        return f'* skipped (depth limit): {lib_file}\n'
-    lib_dir = os.path.dirname(os.path.realpath(lib_file))
+def expand_file(file_path, depth=0):
+    """Inline a file, recursively resolving .include statements."""
+    if depth > 12:
+        return f'* max depth reached: {file_path}\n'
+    fdir = os.path.dirname(os.path.realpath(file_path))
     try:
-        raw = open(lib_file).read()
+        content = open(file_path).read()
     except OSError:
-        return f'* missing file: {lib_file}\n'
+        return f'* missing file: {file_path}\n'
 
-    # Extract the named section body (handles both .lib name / .endl name forms)
-    pat = re.compile(
-        r'\.lib\s+' + re.escape(section) + r'\b(.*?)\.endl(?:\s+' + re.escape(section) + r'\b)?',
-        re.DOTALL | re.IGNORECASE
+    def inline_include(m):
+        rel = m.group(1) or m.group(2)
+        return expand_file(os.path.normpath(os.path.join(fdir, rel)), depth + 1)
+
+    return re.sub(
+        r"\.include\s+(?:'([^']+)'|\"([^\"]+)\")",
+        inline_include, content, flags=re.IGNORECASE
     )
-    m = pat.search(raw)
-    body = m.group(1) if m else raw  # no section: include everything
 
-    # Recursively expand nested  .lib 'relpath' corner  references
-    def expand_nested(nm):
-        rel = nm.group(1) or nm.group(2)  # single- or double-quoted path
-        corner = (nm.group(3) or nm.group(4) or section).strip()
-        abs_path = os.path.normpath(os.path.join(lib_dir, rel))
-        return expand_section(abs_path, corner, depth + 1)
+def flatten_lib(lib_path, section, depth=0):
+    """Flatten a named .lib/.endl section; all nested .lib and .include refs
+    are recursively resolved using each file's own directory as base."""
+    if depth > 12:
+        return f'* max depth reached: {lib_path}\n'
+    fdir = os.path.dirname(os.path.realpath(lib_path))
+    try:
+        raw = open(lib_path).read()
+    except OSError:
+        return f'* missing file: {lib_path}\n'
+
+    # Extract named section body; fall back to full file if no section found
+    m = re.search(
+        r'\.lib\s+' + re.escape(section) + r'\b(.*?)\.endl(?:\s+' + re.escape(section) + r'\b)?',
+        raw, re.DOTALL | re.IGNORECASE
+    )
+    body = m.group(1) if m else raw
+
+    # Expand nested .lib 'relpath' corner references
+    def expand_lib(nm):
+        rel = nm.group(1) or nm.group(2)
+        corner = (nm.group(3) or section).strip()
+        return flatten_lib(os.path.normpath(os.path.join(fdir, rel)), corner, depth + 1)
 
     body = re.sub(
-        r"""\.lib\s+(?:'([^']+)'|\"([^\"]+)\")\s+(\w+)""",
-        expand_nested, body, flags=re.IGNORECASE
+        r"\.lib\s+(?:'([^']+)'|\"([^\"]+)\")\s+(\w+)",
+        expand_lib, body, flags=re.IGNORECASE
     )
+
+    # Expand .include 'relpath' references (sky130.lib.spice may use these)
+    def expand_include(nm):
+        rel = nm.group(1) or nm.group(2)
+        return expand_file(os.path.normpath(os.path.join(fdir, rel)), depth + 1)
+
+    body = re.sub(
+        r"\.include\s+(?:'([^']+)'|\"([^\"]+)\")",
+        expand_include, body, flags=re.IGNORECASE
+    )
+
     return body
 
-flat_content = expand_section(models_path, 'tt')
+flat_content = flatten_lib(models_path, 'tt')
 open(flat_path, 'w').write(flat_content)
 print(f'[run_simulation] flattened sky130 BSIM4 tt models -> {flat_path}')
 
