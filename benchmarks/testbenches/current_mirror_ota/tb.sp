@@ -46,7 +46,7 @@ vinp vinp 0 dc 0.5 ac  0.5
 
 .ac dec 100 1k 1g
 
-.measure ac gain_lin max v(voutp)
-.measure ac bandwidth_mhz when v(voutp)=gain_lin*0.7071 fall=last
+.measure ac gain_lin max mag(v(voutp))
+.measure ac ugbw_mhz when mag(v(voutp))=1.0 cross=last
 
 .end
