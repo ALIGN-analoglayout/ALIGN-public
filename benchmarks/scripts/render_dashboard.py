@@ -3,21 +3,24 @@
 render_dashboard.py <history_json> <output_html>
 Generates static Chart.js dashboard from benchmark history.
 """
-import json, sys, pathlib, html as _html
+import json, sys, pathlib
 
 LAYOUT_METRICS = ['area_um2', 'wirelength_um', 'via_count', 'runtime_s']
+
+# Only include metrics that are actually measured in current testbenches.
+# ugbw_mhz becomes available once real sky130 BSIM4 models (volare) are active.
 SIM_METRICS = {
-    'buffer':                   ['tphl_ns', 'tplh_ns'],
-    'five_transistor_ota':      ['gain_db', 'ugbw_mhz', 'phase_margin_deg'],
-    'current_mirror_ota':       ['gain_db', 'bandwidth_mhz'],
-    'high_speed_comparator':    ['regen_time_ns', 'static_power_uw'],
-    'variable_gain_amplifier':  ['gain_db', 'bandwidth_mhz'],
-    'switched_capacitor_filter':['f3db_mhz', 'passband_ripple_db'],
+    'buffer':                    ['tphl_ns', 'tplh_ns'],
+    'five_transistor_ota':       ['gain_db', 'ugbw_mhz'],
+    'current_mirror_ota':        ['gain_db', 'ugbw_mhz'],
+    'telescopic_ota':            ['gain_db', 'ugbw_mhz'],
+    'high_speed_comparator':     ['static_power_uw'],
+    'variable_gain_amplifier':   ['gain_db', 'bandwidth_mhz'],
+    'switched_capacitor_filter': ['f3db_mhz', 'passband_ripple_db'],
 }
 
 def json_for_html(data):
-    """Serialize JSON safely for embedding in HTML <script> blocks.
-    Escapes </ to <\\/ to prevent premature script termination."""
+    """Serialize JSON safely for embedding in HTML <script> blocks."""
     return json.dumps(data).replace('</', '<\\/')
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -28,15 +31,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; color: #333; }
+  body { font-family: -apple-system, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; color: #333; }
   h1 { border-bottom: 2px solid #007bff; padding-bottom: 8px; }
+  .pdk-section-header { margin: 24px 0 4px; color: #555; font-size: 15px;
+                         border-bottom: 1px solid #eee; padding-bottom: 4px; }
   .tabs { display: flex; gap: 8px; margin: 16px 0; }
   .tab-btn { padding: 8px 20px; border: 1px solid #007bff; border-radius: 4px;
              background: white; color: #007bff; cursor: pointer; font-size: 14px; }
   .tab-btn.active { background: #007bff; color: white; }
   .tab { display: none; }
   .tab.active { display: block; }
-  .circuit-card { border: 1px solid #ddd; border-radius: 6px; padding: 16px; margin: 12px 0; }
+  .circuit-card { border: 1px solid #ddd; border-radius: 6px; padding: 16px; margin: 8px 0; }
   .circuit-card h3 { margin-top: 0; color: #007bff; font-size: 16px; }
   .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
   .chart-wrap { position: relative; height: 140px; }
@@ -51,7 +56,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <h1>ALIGN Release Benchmarks</h1>
-<p>Post-layout metrics tracked across PyPI releases. PDK: FinFET14nm_Mock_PDK.</p>
+<p>Post-layout metrics tracked across PyPI releases. Circuits run on both
+   <strong>FinFET14nm_Mock_PDK</strong> (transistor physics) and
+   <strong>SKY130_PDK</strong> (open-source 130 nm CMOS).</p>
 
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('layout', this)">Layout Quality</button>
@@ -88,6 +95,26 @@ function showTab(name, btn) {
 
 const versions = history.map(r => r.version);
 
+// Build ordered list of unique {circuit, pdk} pairs present in any version.
+// Sort by pdk (alphabetical), then by circuit name so the same circuit
+// appears adjacent across PDKs rather than scattered.
+const _cpSeen = new Set();
+const circuitPdks = [];
+history.forEach(r => {
+  (r.circuits || []).forEach(c => {
+    const key = c.circuit + '|' + (c.pdk || '');
+    if (!_cpSeen.has(key)) {
+      _cpSeen.add(key);
+      circuitPdks.push({circuit: c.circuit, pdk: c.pdk || ''});
+    }
+  });
+});
+circuitPdks.sort((a, b) => a.pdk.localeCompare(b.pdk) || a.circuit.localeCompare(b.circuit));
+
+function pdkLabel(pdk) {
+  return pdk.replace('_Mock_PDK', '').replace('_PDK', '');
+}
+
 function miniChart(canvasId, label, versions, data) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
@@ -97,7 +124,8 @@ function miniChart(canvasId, label, versions, data) {
       labels: versions,
       datasets: [{ label, data,
         borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.08)',
-        tension: 0.2, pointRadius: 3, fill: true }]
+        tension: 0.2, pointRadius: 3, fill: true,
+        spanGaps: true }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -110,58 +138,89 @@ function miniChart(canvasId, label, versions, data) {
   });
 }
 
-function getVals(circuit, metric) {
+// Retrieve per-version values for a specific circuit+PDK combination.
+function getVals(circuit, pdk, metric) {
   return history.map(r => {
-    const c = (r.circuits || []).find(x => x.circuit === circuit);
+    const c = (r.circuits || []).find(
+      x => x.circuit === circuit && (x.pdk || '') === pdk
+    );
     return (c && c[metric] != null) ? c[metric] : null;
   });
 }
 
-function buildSection(containerId, circuits, metricsMap) {
+function buildSection(containerId, circuitPdks, metricsMap) {
   const container = document.getElementById(containerId);
-  circuits.forEach(circuit => {
-    const metrics = Array.isArray(metricsMap) ? metricsMap : (metricsMap[circuit] || []);
+  let lastPdk = null;
+
+  circuitPdks.forEach(({circuit, pdk}) => {
+    // PDK group header
+    if (pdk !== lastPdk) {
+      const hdr = document.createElement('h3');
+      hdr.className = 'pdk-section-header';
+      hdr.textContent = pdkLabel(pdk);
+      container.appendChild(hdr);
+      lastPdk = pdk;
+    }
+
+    const metrics = Array.isArray(metricsMap)
+      ? metricsMap
+      : (metricsMap[circuit] || []);
+
+    if (metrics.length === 0) return;  // no tracked metrics for this circuit
+
     const card = document.createElement('div');
     card.className = 'circuit-card';
-    card.innerHTML = '<h3>' + circuit.replace(/_/g,' ') + '</h3><div class="charts-grid"></div>';
+    card.innerHTML = '<h3>' + circuit.replace(/_/g, ' ') +
+                     '</h3><div class="charts-grid"></div>';
     const grid = card.querySelector('.charts-grid');
+
     metrics.forEach(metric => {
-      const id = 'ch_' + circuit + '_' + metric;
+      const safePdk = pdk.replace(/[^a-z0-9]/gi, '_');
+      const id = 'ch_' + circuit + '_' + safePdk + '_' + metric;
       const wrap = document.createElement('div');
-      wrap.innerHTML = '<div class="chart-label">' + metric + '</div><div class="chart-wrap"><canvas id="' + id + '"></canvas></div>';
+      wrap.innerHTML =
+        '<div class="chart-label">' + metric + '</div>' +
+        '<div class="chart-wrap"><canvas id="' + id + '"></canvas></div>';
       grid.appendChild(wrap);
-      const vals = getVals(circuit, metric);
+      const vals = getVals(circuit, pdk, metric);
       setTimeout(() => miniChart(id, metric, versions, vals), 0);
     });
+
     container.appendChild(card);
   });
 }
 
-const circuits = history.length > 0
-  ? [...new Set(history.flatMap(r => (r.circuits||[]).map(c => c.circuit)))]
-  : [];
+buildSection('layout-content', circuitPdks, LAYOUT_METRICS);
+buildSection('sim-content',    circuitPdks, SIM_METRICS);
 
-buildSection('layout-content', circuits, LAYOUT_METRICS);
-buildSection('sim-content', circuits, SIM_METRICS);
-
+// Regression table
 const regContainer = document.getElementById('reg-content');
 history.slice().reverse().forEach(release => {
   const regs = release.regressions || {};
-  const all = [...(regs.failures||[]).map(r=>({...r,level:'fail'})),
-               ...(regs.warnings||[]).map(r=>({...r,level:'warn'}))];
+  const all = [
+    ...(regs.failures || []).map(r => ({...r, level: 'fail'})),
+    ...(regs.warnings || []).map(r => ({...r, level: 'warn'})),
+  ];
   const section = document.createElement('div');
   section.innerHTML = '<h3>' + release.version + '</h3>';
   if (!all.length) {
     section.innerHTML += '<p style="color:#28a745">&#10003; No regressions detected.</p>';
   } else {
-    let html = '<table class="regression-table"><tr><th>Circuit</th><th>Metric</th><th>Previous</th><th>Current</th><th>Change %</th></tr>';
+    let tbl = '<table class="regression-table">' +
+      '<tr><th>Circuit</th><th>PDK</th><th>Metric</th>' +
+      '<th>Previous</th><th>Current</th><th>Change %</th></tr>';
     all.forEach(r => {
-      html += '<tr class="' + r.level + '"><td>' + r.circuit + '</td><td>' + r.metric +
-              '</td><td>' + r.previous + '</td><td>' + r.current +
-              '</td><td>' + (r.pct_change > 0 ? '+' : '') + r.pct_change + '%</td></tr>';
+      const [circ, pdk] = (r.circuit || '').split('|');
+      tbl += '<tr class="' + r.level + '">' +
+        '<td>' + (circ || r.circuit) + '</td>' +
+        '<td>' + pdkLabel(pdk || '') + '</td>' +
+        '<td>' + r.metric + '</td>' +
+        '<td>' + r.previous + '</td>' +
+        '<td>' + r.current + '</td>' +
+        '<td>' + (r.pct_change > 0 ? '+' : '') + r.pct_change + '%</td></tr>';
     });
-    html += '</table>';
-    section.innerHTML += html;
+    tbl += '</table>';
+    section.innerHTML += tbl;
   }
   regContainer.appendChild(section);
 });
