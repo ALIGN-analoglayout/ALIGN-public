@@ -24,6 +24,7 @@ DESIGN_DIR="${6:-${ALIGN_HOME}/examples/${CIRCUIT}}"
 PDK_NAME="$(basename "${PDK_PATH}")"
 
 mkdir -p "$WORK_DIR"
+WORK_DIR="$(realpath "$WORK_DIR")"
 cd "$WORK_DIR"
 
 echo "[run_align] Running ALIGN on ${CIRCUIT} ..."
@@ -33,7 +34,7 @@ START_MS=$(python3 -c "import time; print(int(time.time()*1000))")
 
 [[ -d "$DESIGN_DIR" ]] || { echo "ERROR: design directory not found: $DESIGN_DIR"; exit 1; }
 
-python3 -m align \
+python3 "${ALIGN_HOME}/bin/schematic2layout.py" \
   "${DESIGN_DIR}" \
   -f "${DESIGN_DIR}/${CIRCUIT}.sp" \
   -s "${CIRCUIT}" \

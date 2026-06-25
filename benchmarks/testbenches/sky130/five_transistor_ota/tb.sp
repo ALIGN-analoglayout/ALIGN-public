@@ -30,7 +30,7 @@ Xota vss vdd vout vinn vinp id five_transistor_ota
 .op
 .ac dec 20 1k 10g
 
-.measure ac gain_db MAX vdb(vout)
-.measure ac ugbw_mhz WHEN vdb(vout)=0 CROSS=1
+.measure ac gain_lin MAX v(vout)
+.measure ac ugbw_mhz WHEN v(vout)=1 CROSS=1
 
 .end

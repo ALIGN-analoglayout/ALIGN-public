@@ -19,8 +19,9 @@ def load_artifacts(artifacts_dir):
             print(f"WARNING: failed to load {f}: {e}", file=sys.stderr)
             continue
         circuit = data.get('circuit')
+        pdk = data.get('pdk', 'unknown')
         if circuit:
-            results[circuit] = data
+            results[f"{circuit}|{pdk}"] = data
     return results
 
 def check_regressions(current, previous, thresholds):
@@ -29,12 +30,15 @@ def check_regressions(current, previous, thresholds):
     fail_pct = thresholds['failure_pct']
     warnings, failures = [], []
 
+    # Keys that are non-deterministic on shared CI runners and must not gate CI
+    skip_keys = {'circuit', 'version', 'timestamp', 'runtime_s', 'pdk'}
+
     for circuit, metrics in current.items():
         if circuit not in previous:
             continue
         prev = previous[circuit]
         for key, val in metrics.items():
-            if key in ('circuit', 'version', 'timestamp'):
+            if key in skip_keys:
                 continue
             if not isinstance(val, (int, float)):
                 continue
@@ -88,7 +92,8 @@ def main():
     previous = {}
     if history:
         for c in history[-1].get('circuits', []):
-            previous[c['circuit']] = c
+            key = f"{c['circuit']}|{c.get('pdk', 'unknown')}"
+            previous[key] = c
 
     warnings, failures = check_regressions(current, previous, config['regression_thresholds'])
 

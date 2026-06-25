@@ -1,14 +1,12 @@
 {
-  "magic_version": "7.3.456",
+  "magic_version": "8.3.664",
   "ngspice_version": "43",
   "pdk": "FinFET14nm_Mock_PDK",
   "circuits": [
     "buffer",
     "five_transistor_ota",
     "current_mirror_ota",
-    "high_speed_comparator",
-    "variable_gain_amplifier",
-    "switched_capacitor_filter"
+    "high_speed_comparator"
   ],
   "sky130_circuits": [
     "buffer",

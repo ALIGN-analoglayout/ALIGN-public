@@ -32,37 +32,20 @@ types
 end
 
 contact
-  via0  170 m1  active
-  via1  170 m2  metal1
-  via2  150 m3  metal2
-  via3  200 m4  metal3
-  via4  200 m5  metal4
+  via0  via0  m1  poly
+  via1  via1  m2  m1
+  via2  via2  m3  m2
+  via3  via3  m4  m3
+  via4  via4  m5  m4
 end
 
 styles
   styletype mos
 end
 
-cifinput
-  style gds
-  scalefactor 1 calmadefault
-  layer poly  66 20
-  layer m1    67 20
-  layer m2    68 20
-  layer m3    69 20
-  layer m4    70 20
-  layer m5    71 20
-  layer via0  66 44
-  layer via1  67 44
-  layer via2  68 44
-  layer via3  69 44
-  layer via4  70 44
-end
-
 cifoutput
-  style gds
-  scalefactor 1
-  layer 66 20 poly
+  style gds2
+  scalefactor 1 calmadefault
   layer 67 20 m1
   layer 68 20 m2
   layer 69 20 m3
@@ -75,8 +58,63 @@ cifoutput
   layer 70 44 via4
 end
 
+cifinput
+  style gds2
+  scalefactor 1 calmadefault
+  layer poly  poly
+  calma poly  66 20
+  layer m1    m1
+  calma m1    67 20
+  layer m2    m2
+  calma m2    68 20
+  layer m3    m3
+  calma m3    69 20
+  layer m4    m4
+  calma m4    70 20
+  layer m5    m5
+  calma m5    71 20
+  layer via0  via0
+  calma via0  66 44
+  layer via1  via1
+  calma via1  67 44
+  layer via2  via2
+  calma via2  68 44
+  layer via3  via3
+  calma via3  69 44
+  layer via4  via4
+  calma via4  70 44
+end
+
+compose
+end
+
+connect
+  m1,via0 via0,m1
+  m2,via0 via0,m2
+  m2,via1 via1,m2
+  m3,via1 via1,m3
+  m3,via2 via2,m3
+  m4,via2 via2,m4
+  m4,via3 via3,m4
+  m5,via3 via3,m5
+end
+
+drc
+end
+
 extract
   style default
+  planeorder active 0
+  planeorder metal1 1
+  planeorder metal2 2
+  planeorder metal3 3
+  planeorder metal4 4
+  planeorder metal5 5
+  planeorder via0 6
+  planeorder via1 7
+  planeorder via2 8
+  planeorder via3 9
+  planeorder via4 10
   resist m1  0.080
   resist m2  0.060
   resist m3  0.040

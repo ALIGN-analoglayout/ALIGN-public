@@ -31,7 +31,7 @@ Xota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp vdd 0 telescopic_ota
 .op
 .ac dec 20 1k 10g
 
-.measure ac gain_db MAX vdb(voutn)
-.measure ac ugbw_mhz WHEN vdb(voutn)=0 CROSS=1
+.measure ac gain_lin MAX v(voutn)
+.measure ac ugbw_mhz WHEN v(voutn)=1 CROSS=1
 
 .end
