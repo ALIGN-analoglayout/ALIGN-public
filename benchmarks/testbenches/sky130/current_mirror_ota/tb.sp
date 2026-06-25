@@ -29,8 +29,9 @@ Xota vss vdd vout vinn vinp id current_mirror_ota
 
 .op
 .ac dec 20 1k 10g
+.print ac v(vout)
 
-.measure ac gain_lin MAX mag(v(vout))
-.measure ac ugbw_mhz WHEN mag(v(vout))=1 CROSS=1
+.measure ac gain_lin MAX v(vout)
+.measure ac ugbw_mhz WHEN v(vout)=1 CROSS=1
 
 .end

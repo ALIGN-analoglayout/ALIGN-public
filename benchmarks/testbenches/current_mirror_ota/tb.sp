@@ -45,8 +45,9 @@ vinn vinn 0 dc 0.5 ac -0.5
 vinp vinp 0 dc 0.5 ac  0.5
 
 .ac dec 100 1k 1g
+.print ac v(voutp)
 
-.measure ac gain_lin max mag(v(voutp))
-.measure ac ugbw_mhz when mag(v(voutp))=1.0 cross=last
+.measure ac gain_lin max v(voutp)
+.measure ac ugbw_mhz when v(voutp)=1.0 cross=last
 
 .end

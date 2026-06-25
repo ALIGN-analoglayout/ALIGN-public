@@ -44,8 +44,9 @@ vin vin 0 dc 0.5 ac 0.5
 vip vip 0 dc 0.5 ac -0.5
 
 .ac dec 100 1k 1g
+.print ac v(von)
 
-.measure ac gain_lin max mag(v(von))
-.measure ac ugbw_mhz when mag(v(von))=1.0 cross=last
+.measure ac gain_lin max v(von)
+.measure ac ugbw_mhz when v(von)=1.0 cross=last
 
 .end

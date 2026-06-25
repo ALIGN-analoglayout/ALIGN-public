@@ -23,7 +23,7 @@ def scale_sim_metrics(raw, circuit):
         'tphl_ns':            ('tphl_ns',            1e9),
         'tplh_ns':            ('tplh_ns',             1e9),
         'gain_db':            ('gain_db',             1.0),
-        'gain_lin':           ('gain_db',             lambda v: 20.0 * math.log10(v) if v > 0 else -999.0),
+        'gain_lin':           ('gain_db',             lambda v: 20.0 * math.log10(abs(v)) if v != 0 else -999.0),
         'ugbw_mhz':           ('ugbw_mhz',            1e-6),
         'phase_at_ugbw':      ('phase_margin_deg',    lambda v: 180.0 + v),
         'bandwidth_mhz':      ('bandwidth_mhz',       1e-6),
