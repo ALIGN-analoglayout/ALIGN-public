@@ -22,7 +22,7 @@ Vbias id vss 0.6
 
 * DC operating point: vinn = 0.9V, vinp = 0.9V + AC
 Vinn vinn vss 0.9
-Vinp vinp vss AC 1 0.9
+Vinp vinp vss 0.9 AC 1
 
 * DUT
 Xota vss vdd vout vinn vinp id five_transistor_ota

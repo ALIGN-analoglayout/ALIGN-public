@@ -22,7 +22,7 @@ Vbias id vss 0.6
 
 * inputs
 Vinn vinn vss 0.9
-Vinp vinp vss AC 1 0.9
+Vinp vinp vss 0.9 AC 1
 
 * DUT
 Xota vss vdd vout vinn vinp id current_mirror_ota

@@ -20,10 +20,13 @@ Vdd vdd 0 1.8
 Vbiasn vbiasn 0 0.4
 Vbiasp1 vbiasp1 0 1.4
 Vbiasp2 vbiasp2 0 1.6
+* self-biased current mirror reference: id node is internal to the subcircuit
+* stub models have no subthreshold current so it must be driven explicitly
+Vbias_id xota.id 0 dc 0.3
 
 * inputs (single-ended AC drive, measure single-ended output voutn)
 Vinn vinn 0 0.9
-Vinp vinp 0 AC 1 0.9
+Vinp vinp 0 0.9 AC 1
 
 * DUT: .subckt telescopic_ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp vdd 0
 Xota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp vdd 0 telescopic_ota
