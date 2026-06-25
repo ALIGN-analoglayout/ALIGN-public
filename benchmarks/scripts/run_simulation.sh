@@ -83,12 +83,21 @@ elif schematic_sp:
         schematic = sp.read_text()
         if real_bsim4 == 'true':
             # Real BSIM4: keep nf (valid parameter), strip only FinFET/ALIGN-layout hints.
-            # Also map ALIGN device names to canonical sky130_fd_pr__ names so every
-            # instance matches a model defined in the real PDK library file.
+            # Map ALIGN device names to canonical sky130_fd_pr__ names.
             strip_params = ('nfin', 'stack', 'parallel')
             for align_name, sky130_name in ALIGN_TO_SKY130.items():
                 schematic = re.sub(rf'\b{re.escape(align_name)}\b', sky130_name, schematic)
             print('[run_simulation] mapped ALIGN device names to sky130_fd_pr__ equivalents')
+            # sky130 PDK defines all transistors as .subckt wrappers, NOT as .model
+            # entries.  SPICE M devices look for .model; X devices use .subckt.
+            # Convert every "M<name> ... sky130_fd_pr__..." line to "X<name> ...".
+            schematic = re.sub(
+                r'^(\s*)[mM](\S+)((?:\s+\S+){4}\s+sky130_fd_pr__)',
+                r'\1x\2\3',
+                schematic,
+                flags=re.MULTILINE
+            )
+            print('[run_simulation] converted M to X instances for sky130_fd_pr__ subcircuits')
         else:
             # Level-1 stub models: nf is unrecognised — strip all non-standard params.
             strip_params = ('nfin', 'nf', 'stack', 'parallel')
