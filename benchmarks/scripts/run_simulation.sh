@@ -109,14 +109,54 @@ PYEOF
 
 cp "$TB_SRC" "${WORK_DIR}/tb.sp"
 
-# If real sky130 BSIM4 models are available, replace the stub MODELS_BEGIN/END
-# block in the testbench with a .lib include of the real PDK model file.
+# If real sky130 BSIM4 models are available, flatten the sky130 .lib file's
+# tt section (resolving all nested .lib references with absolute paths) into a
+# single models_tt.spice in WORK_DIR.  Using a flat .include avoids ngspice's
+# nested-lib relative-path resolution bugs seen with some Ubuntu builds.
 if [ "$REAL_BSIM4" = "true" ]; then
-  python3 - "${WORK_DIR}/tb.sp" "$SKY130_MODELS" <<'PYEOF'
-import re, sys
-tb_path, models_path = sys.argv[1], sys.argv[2]
+  python3 - "${WORK_DIR}/tb.sp" "${WORK_DIR}/models_tt.spice" "$SKY130_MODELS" <<'PYEOF'
+import os, re, sys
+
+tb_path, flat_path, models_path = sys.argv[1], sys.argv[2], sys.argv[3]
+
+def expand_section(lib_file, section, depth=0):
+    """Recursively flatten a named .lib section into raw model text."""
+    if depth > 8:
+        return f'* skipped (depth limit): {lib_file}\n'
+    lib_dir = os.path.dirname(os.path.realpath(lib_file))
+    try:
+        raw = open(lib_file).read()
+    except OSError:
+        return f'* missing file: {lib_file}\n'
+
+    # Extract the named section body (handles both .lib name / .endl name forms)
+    pat = re.compile(
+        r'\.lib\s+' + re.escape(section) + r'\b(.*?)\.endl(?:\s+' + re.escape(section) + r'\b)?',
+        re.DOTALL | re.IGNORECASE
+    )
+    m = pat.search(raw)
+    body = m.group(1) if m else raw  # no section: include everything
+
+    # Recursively expand nested  .lib 'relpath' corner  references
+    def expand_nested(nm):
+        rel = nm.group(1) or nm.group(2)  # single- or double-quoted path
+        corner = (nm.group(3) or nm.group(4) or section).strip()
+        abs_path = os.path.normpath(os.path.join(lib_dir, rel))
+        return expand_section(abs_path, corner, depth + 1)
+
+    body = re.sub(
+        r"""\.lib\s+(?:'([^']+)'|\"([^\"]+)\")\s+(\w+)""",
+        expand_nested, body, flags=re.IGNORECASE
+    )
+    return body
+
+flat_content = expand_section(models_path, 'tt')
+open(flat_path, 'w').write(flat_content)
+print(f'[run_simulation] flattened sky130 BSIM4 tt models -> {flat_path}')
+
+# Splice the flat include into the testbench
 content = open(tb_path).read()
-replacement = f'.lib {models_path} tt'
+replacement = '.include models_tt.spice'
 content_new = re.sub(
     r'(\* MODELS_BEGIN[^\n]*\n).*?(\n\* MODELS_END)',
     rf'\1{replacement}\2',
@@ -125,7 +165,7 @@ content_new = re.sub(
 )
 if content_new != content:
     open(tb_path, 'w').write(content_new)
-    print(f'[run_simulation] substituted real sky130 BSIM4 models: {models_path}')
+    print(f'[run_simulation] testbench now uses flat model include')
 else:
     print('[run_simulation] WARNING: MODELS_BEGIN/END not found; stub models will be used')
 PYEOF
