@@ -98,6 +98,36 @@ elif schematic_sp:
                 flags=re.MULTILINE
             )
             print('[run_simulation] converted M to X instances for sky130_fd_pr__ subcircuits')
+            # sky130 models_tt.spice sets .option scale=1.0u, so ngspice expects
+            # device W/L in µm. ALIGN generates W/L in meters. Additionally,
+            # nf (finger count) must be folded into total W because BSIM4 binning
+            # selects per-finger models, and narrow-W bins have unphysical negative u0
+            # when evaluated at L=150nm — folding nf into total W selects a wide-W
+            # bin (model.8) that has valid u0 for our devices.
+            # Also fold m (instance multiplier) into W when present.
+            def _convert_sky130_dims(line):
+                if 'sky130_fd_pr__' not in line:
+                    return line
+                if re.match(r'\s*[\*\.]', line):
+                    return line
+                def _gp(name):
+                    m = re.search(rf'(?<![a-zA-Z_]){re.escape(name)}\s*=\s*([\d.e+-]+)', line, re.IGNORECASE)
+                    return float(m.group(1)) if m else None
+                l_m = _gp('l')
+                w_m = _gp('w')
+                if l_m is None or w_m is None:
+                    return line
+                nf_v = _gp('nf') or 1.0
+                m_v  = _gp('m')  or 1.0
+                l_um = l_m * 1e6
+                w_um = w_m * nf_v * m_v * 1e6
+                r = re.sub(r'(?<![a-zA-Z_])l\s*=\s*[\d.e+-]+', '', line,   flags=re.IGNORECASE)
+                r = re.sub(r'(?<![a-zA-Z_])w\s*=\s*[\d.e+-]+', '', r,      flags=re.IGNORECASE)
+                r = re.sub(r'(?<![a-zA-Z_])nf\s*=\s*[\d.e+-]+', '', r,     flags=re.IGNORECASE)
+                r = re.sub(r'(?<![a-zA-Z_])m\s*=\s*[\d.e+-]+', '', r,      flags=re.IGNORECASE)
+                return r.rstrip() + f' l={l_um:.6g} w={w_um:.6g}\n'
+            schematic = ''.join(_convert_sky130_dims(ln) for ln in schematic.splitlines(keepends=True))
+            print('[run_simulation] converted sky130 L/W from meters to µm, folded nf+m into total W')
         else:
             # Level-1 stub models: nf is unrecognised — strip all non-standard params.
             strip_params = ('nfin', 'nf', 'stack', 'parallel')
