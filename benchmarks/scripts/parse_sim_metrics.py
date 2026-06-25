@@ -16,6 +16,47 @@ def parse_ngspice_output(ngspice_stdout):
                 pass
     return results
 
+def parse_ac_print_data(ngspice_stdout):
+    """Parse .print ac rows to compute magnitude-based gain_lin and ugbw_mhz.
+
+    ngspice AC print rows have format: index<tab>freq<tab>real,<tab>imag
+    Using magnitude avoids the real-part-only limitation of .measure ac v(node),
+    which gives wrong UGBW for high-gain BSIM4 circuits where phase is near -90°
+    at the unity-gain crossing.
+
+    Returns raw values in the same units as .measure ac (Hz for frequency).
+    scale_sim_metrics applies the usual unit conversions.
+    """
+    row_re = re.compile(
+        r'^\s*\d+\s+([\d.e+\-]+)\s+([-+]?[\d.e+\-]+),\s*([-+]?[\d.e+\-]+)',
+        re.MULTILINE
+    )
+    rows = []
+    for m in row_re.finditer(ngspice_stdout):
+        freq = float(m.group(1))
+        real = float(m.group(2))
+        imag = float(m.group(3))
+        rows.append((freq, math.sqrt(real ** 2 + imag ** 2)))
+
+    if len(rows) < 2:
+        return {}
+
+    result = {}
+    max_mag = max(mag for _, mag in rows)
+    if max_mag > 0:
+        result['gain_lin'] = max_mag
+
+    if max_mag > 1.0:
+        for i in range(len(rows) - 1):
+            f1, m1 = rows[i]
+            f2, m2 = rows[i + 1]
+            if m1 >= 1.0 >= m2 and m1 != m2:
+                t = (1.0 - m1) / (m2 - m1)
+                result['ugbw_mhz'] = f1 * (f2 / f1) ** t
+                break
+
+    return result
+
 def scale_sim_metrics(raw, circuit):
     """Convert raw ngspice values to display units (ns, MHz, dB, µW)."""
     scaled = {}
@@ -50,6 +91,10 @@ def main():
 
     ngspice_out = pathlib.Path(ngspice_output_file).read_text()
     raw = parse_ngspice_output(ngspice_out)
+    # AC print-data values (magnitude-based) override .measure results:
+    # .measure ac uses real-part only, which is inaccurate at UGBW for BSIM4
+    # circuits where the gain phase is near -90° at the unity-gain crossing.
+    raw.update(parse_ac_print_data(ngspice_out))
     sim_metrics = scale_sim_metrics(raw, circuit)
 
     layout_file = work_dir / 'layout_metrics.json'

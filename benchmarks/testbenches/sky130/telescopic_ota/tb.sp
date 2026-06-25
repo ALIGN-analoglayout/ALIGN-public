@@ -1,9 +1,11 @@
 * sky130 telescopic_ota AC testbench
 .title sky130_telescopic_ota_tb
 
-* models
+* MODELS_BEGIN - sky130_fd_pr__* stubs; run_simulation.sh replaces with real PDK .lib when available
 .model sky130_fd_pr__pfet_01v8 pmos w=1 l=1 vt0=-0.1
 .model sky130_fd_pr__nfet_01v8 nmos w=1 l=1 vt0=0.1
+* MODELS_END
+* ALIGN convenience aliases - level-1 stubs; mapped to sky130_fd_pr__ names in circuit when real PDK is used
 .model nmos_rvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=0.1
 .model pmos_rvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=-0.1
 .model nmos_lvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=0.1

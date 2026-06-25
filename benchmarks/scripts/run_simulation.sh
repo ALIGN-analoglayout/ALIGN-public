@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
-# run_simulation.sh <circuit> <work_dir> <testbench_dir> [schematic_sp]
+# run_simulation.sh <circuit> <work_dir> <testbench_dir> [schematic_sp] [sky130_models]
 # Runs ngspice on testbench → metrics.json
 #
 # If extracted.spice (from Magic) has no .subckt definition (common for
 # mock PDKs with metal-only layers), <schematic_sp> is prepended so the
 # testbench can instantiate the circuit using schematic-level transistors.
+#
+# If <sky130_models> is provided and points to a sky130 ngspice library file
+# (e.g. from volare), the testbench's MODELS_BEGIN/END stub block is replaced
+# with a real sky130 BSIM4 .lib include and ALIGN device names are mapped to
+# their canonical sky130_fd_pr__ equivalents.
 set -euo pipefail
 
 CIRCUIT="$1"
 WORK_DIR="$2"
 TESTBENCH_DIR="$3"
 SCHEMATIC_SP="${4:-}"
+SKY130_MODELS="${5:-}"
 TB_SRC="${TESTBENCH_DIR}/${CIRCUIT}/tb.sp"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -27,11 +33,34 @@ fi
 
 echo "[run_simulation] Running ngspice for ${CIRCUIT} ..."
 
+# Determine whether real sky130 BSIM4 models are available.
+# With real models: nf is a valid BSIM4 instance parameter and must not be
+# stripped. With level-1 stubs: nf is unrecognised and must be stripped.
+if [ -n "$SKY130_MODELS" ] && [ -f "$SKY130_MODELS" ]; then
+  REAL_BSIM4="true"
+else
+  REAL_BSIM4="false"
+fi
+
 # If extracted.spice lacks a .subckt (metal-only PDK — only RC parasitics),
 # prepend the schematic .sp so the testbench can instantiate the circuit.
-python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" "${SCHEMATIC_SP}" <<'PYEOF'
+python3 - "${WORK_DIR}/extracted.spice" "${CIRCUIT}" "${SCHEMATIC_SP}" "${REAL_BSIM4}" <<'PYEOF'
 import re, sys
-path, circuit, schematic_sp = sys.argv[1], sys.argv[2], sys.argv[3]
+
+path, circuit, schematic_sp, real_bsim4 = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+
+# Map ALIGN convenience device names to canonical sky130_fd_pr__ names.
+# Used when real BSIM4 models are available so every instance references a
+# device that the real PDK model file actually defines.
+ALIGN_TO_SKY130 = {
+    'nmos_rvt':  'sky130_fd_pr__nfet_01v8',
+    'pmos_rvt':  'sky130_fd_pr__pfet_01v8',
+    'nmos_lvt':  'sky130_fd_pr__nfet_01v8__lvt',
+    'pmos_lvt':  'sky130_fd_pr__pfet_01v8__lvt',
+    'nmos_hvt':  'sky130_fd_pr__nfet_01v8__hvt',
+    'pmos_hvt':  'sky130_fd_pr__pfet_01v8__hvt',
+}
+
 content = open(path).read()
 subckts = re.findall(r'^\.subckt\s+(\S+)', content, re.MULTILINE | re.IGNORECASE)
 if subckts:
@@ -52,10 +81,18 @@ elif schematic_sp:
     sp = pathlib.Path(schematic_sp)
     if sp.exists():
         schematic = sp.read_text()
-        # Strip FinFET-specific MOSFET instance parameters that ngspice rejects.
-        # These are layout hints (nfin=fins, nf=fingers, stack, parallel) that
-        # don't map to standard SPICE MOSFET parameters.
-        for param in ('nfin', 'nf', 'stack', 'parallel'):
+        if real_bsim4 == 'true':
+            # Real BSIM4: keep nf (valid parameter), strip only FinFET/ALIGN-layout hints.
+            # Also map ALIGN device names to canonical sky130_fd_pr__ names so every
+            # instance matches a model defined in the real PDK library file.
+            strip_params = ('nfin', 'stack', 'parallel')
+            for align_name, sky130_name in ALIGN_TO_SKY130.items():
+                schematic = re.sub(rf'\b{re.escape(align_name)}\b', sky130_name, schematic)
+            print('[run_simulation] mapped ALIGN device names to sky130_fd_pr__ equivalents')
+        else:
+            # Level-1 stub models: nf is unrecognised — strip all non-standard params.
+            strip_params = ('nfin', 'nf', 'stack', 'parallel')
+        for param in strip_params:
             schematic = re.sub(rf'\s+{param}=\S+', '', schematic)
         # Replace extracted.spice with just the schematic subckt.
         # The RC-only extracted.spice from mock PDKs contains ".option scale=1n"
@@ -71,6 +108,28 @@ else:
 PYEOF
 
 cp "$TB_SRC" "${WORK_DIR}/tb.sp"
+
+# If real sky130 BSIM4 models are available, replace the stub MODELS_BEGIN/END
+# block in the testbench with a .lib include of the real PDK model file.
+if [ "$REAL_BSIM4" = "true" ]; then
+  python3 - "${WORK_DIR}/tb.sp" "$SKY130_MODELS" <<'PYEOF'
+import re, sys
+tb_path, models_path = sys.argv[1], sys.argv[2]
+content = open(tb_path).read()
+replacement = f'.lib {models_path} tt'
+content_new = re.sub(
+    r'(\* MODELS_BEGIN[^\n]*\n).*?(\n\* MODELS_END)',
+    rf'\1{replacement}\2',
+    content,
+    flags=re.DOTALL
+)
+if content_new != content:
+    open(tb_path, 'w').write(content_new)
+    print(f'[run_simulation] substituted real sky130 BSIM4 models: {models_path}')
+else:
+    print('[run_simulation] WARNING: MODELS_BEGIN/END not found; stub models will be used')
+PYEOF
+fi
 
 NGSPICE_OUT="${WORK_DIR}/ngspice_out.txt"
 
