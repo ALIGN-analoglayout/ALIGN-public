@@ -55,9 +55,12 @@ path, circuit, schematic_sp, real_bsim4 = sys.argv[1], sys.argv[2], sys.argv[3],
 ALIGN_TO_SKY130 = {
     'nmos_rvt':  'sky130_fd_pr__nfet_01v8',
     'pmos_rvt':  'sky130_fd_pr__pfet_01v8',
-    # LVT: sky130 uses single underscore before the variant suffix
+    # LVT nfet: sky130 uses single underscore before the variant suffix.
+    # LVT pfet (pfet_01v8_lvt) is only characterised for L >= 0.35µm; ALIGN
+    # uses L=0.15µm so that model has no valid bin.  Fall back to standard
+    # pfet_01v8 (characterised down to L=0.15µm) as a simulation proxy.
     'nmos_lvt':  'sky130_fd_pr__nfet_01v8_lvt',
-    'pmos_lvt':  'sky130_fd_pr__pfet_01v8_lvt',
+    'pmos_lvt':  'sky130_fd_pr__pfet_01v8',
     # HVT: sky130 has no NFET HVT device; fall back to standard threshold.
     # PFET HVT exists and uses single underscore before the variant suffix.
     'nmos_hvt':  'sky130_fd_pr__nfet_01v8',

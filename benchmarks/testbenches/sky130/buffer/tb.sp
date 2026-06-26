@@ -28,10 +28,13 @@ Xbuf vss vdd in out buffer
 * load
 Cload out 0 10f
 
-.ic v(out)=1.8
 .tran 10p 4n
 
-.measure tran tphl_ns TRIG v(in) VAL=0.9 RISE=1 TARG v(out) VAL=0.9 FALL=1
-.measure tran tplh_ns TRIG v(in) VAL=0.9 FALL=1 TARG v(out) VAL=0.9 RISE=1
+* sky130 buffer.sp is a 2-stage non-inverting chain (two cascaded inverters).
+* Both input and output transition in the same direction: use matching edges.
+* tphl: input falls → output falls after 2×inverter delay
+* tplh: input rises → output rises after 2×inverter delay
+.measure tran tphl_ns TRIG v(in) VAL=0.9 FALL=1 TARG v(out) VAL=0.9 FALL=1
+.measure tran tplh_ns TRIG v(in) VAL=0.9 RISE=1 TARG v(out) VAL=0.9 RISE=1
 
 .end

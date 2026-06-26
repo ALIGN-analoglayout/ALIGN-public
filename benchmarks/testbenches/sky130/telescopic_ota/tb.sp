@@ -18,10 +18,15 @@
 * supplies
 Vdd vdd 0 1.8
 
-* bias voltages
-Vbiasn vbiasn 0 0.4
-Vbiasp1 vbiasp1 0 1.4
-Vbiasp2 vbiasp2 0 1.6
+* bias voltages — tuned for real sky130 BSIM4 models:
+*   nfet_01v8_lvt Vt≈0.40V, pfet_01v8 Vtp≈-0.58V (stub models had Vt=0.1V)
+* Vbias_id: tail current mirror reference (diode-connected m1 gate/drain).
+*   Needed regardless of model type; sets tail current via Vgs of mirror NFET.
+*   0.55V gives Vov≈0.15V for LVT NFET, yielding ~10µA tail current.
+Vbias_id xota.id 0 dc 0.658
+Vbiasn vbiasn 0 1.0
+Vbiasp1 vbiasp1 0 0.8
+Vbiasp2 vbiasp2 0 1.0
 
 * inputs (single-ended AC drive, measure single-ended output voutn)
 Vinn vinn 0 0.9
