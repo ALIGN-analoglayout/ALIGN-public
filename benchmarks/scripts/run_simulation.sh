@@ -188,12 +188,15 @@ def flatten_lib(lib_path, section, depth=0):
     except OSError:
         return f'* missing file: {lib_path}\n'
 
-    # Extract named section body; fall back to full file if no section found
-    m = re.search(
+    # sky130.lib.spice has multiple .lib tt ... .endl tt blocks (one per device
+    # family: standard, LVT, HVT, etc.).  re.search only finds the first block,
+    # leaving LVT/HVT subckt definitions out of the flattened file.  Use
+    # finditer to concatenate every block for the requested section.
+    bodies = [m.group(1) for m in re.finditer(
         r'\.lib\s+' + re.escape(section) + r'\b(.*?)\.endl(?:\s+' + re.escape(section) + r'\b)?',
         raw, re.DOTALL | re.IGNORECASE
-    )
-    body = m.group(1) if m else raw
+    )]
+    body = '\n'.join(bodies) if bodies else raw
 
     # Expand nested .lib 'relpath' corner references
     def expand_lib(nm):

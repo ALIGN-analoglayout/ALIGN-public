@@ -28,6 +28,7 @@ Xbuf vss vdd in out buffer
 * load
 Cload out 0 10f
 
+.ic v(out)=1.8
 .tran 10p 4n
 
 .measure tran tphl_ns TRIG v(in) VAL=0.9 RISE=1 TARG v(out) VAL=0.9 FALL=1
