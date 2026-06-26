@@ -55,10 +55,13 @@ path, circuit, schematic_sp, real_bsim4 = sys.argv[1], sys.argv[2], sys.argv[3],
 ALIGN_TO_SKY130 = {
     'nmos_rvt':  'sky130_fd_pr__nfet_01v8',
     'pmos_rvt':  'sky130_fd_pr__pfet_01v8',
-    'nmos_lvt':  'sky130_fd_pr__nfet_01v8__lvt',
-    'pmos_lvt':  'sky130_fd_pr__pfet_01v8__lvt',
-    'nmos_hvt':  'sky130_fd_pr__nfet_01v8__hvt',
-    'pmos_hvt':  'sky130_fd_pr__pfet_01v8__hvt',
+    # LVT: sky130 uses single underscore before the variant suffix
+    'nmos_lvt':  'sky130_fd_pr__nfet_01v8_lvt',
+    'pmos_lvt':  'sky130_fd_pr__pfet_01v8_lvt',
+    # HVT: sky130 has no NFET HVT device; fall back to standard threshold.
+    # PFET HVT exists and uses single underscore before the variant suffix.
+    'nmos_hvt':  'sky130_fd_pr__nfet_01v8',
+    'pmos_hvt':  'sky130_fd_pr__pfet_01v8_hvt',
 }
 
 content = open(path).read()
