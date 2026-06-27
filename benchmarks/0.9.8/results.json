@@ -10,7 +10,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 203.46,
       "via_count": 230,
-      "runtime_s": 42.95,
+      "runtime_s": 41.18,
       "tphl_ns": 0.0379,
       "tplh_ns": 0.0334
     },
@@ -23,7 +23,7 @@
       "cell_height_um": 13.44,
       "wirelength_um": 1372.27,
       "via_count": 786,
-      "runtime_s": 16.73,
+      "runtime_s": 17.45,
       "gain_db": 18.2135,
       "ugbw_mhz": 274.9037
     },
@@ -36,7 +36,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 269.99,
       "via_count": 717,
-      "runtime_s": 198.03,
+      "runtime_s": 61.22,
       "static_power_uw": 8.6836
     },
     {
@@ -48,7 +48,7 @@
       "cell_height_um": 25.2,
       "wirelength_um": 1091.9,
       "via_count": 672,
-      "runtime_s": 23.45,
+      "runtime_s": 27.82,
       "gain_db": 16.3583,
       "ugbw_mhz": 68.1955
     },
@@ -61,7 +61,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 33.81,
       "via_count": 131,
-      "runtime_s": 31.21,
+      "runtime_s": 31.15,
       "tphl_ns": 0.0,
       "tplh_ns": -0.0002
     },
@@ -74,7 +74,7 @@
       "cell_height_um": 3.528,
       "wirelength_um": 178.35,
       "via_count": 455,
-      "runtime_s": 22.43,
+      "runtime_s": 24.11,
       "gain_db": 170.098
     },
     {
@@ -86,7 +86,7 @@
       "cell_height_um": 7.56,
       "wirelength_um": 278.98,
       "via_count": 197,
-      "runtime_s": 49.99,
+      "runtime_s": 45.37,
       "gain_db": 28.6313,
       "ugbw_mhz": 4940.9619
     },
@@ -99,7 +99,7 @@
       "cell_height_um": 2.352,
       "wirelength_um": 115.73,
       "via_count": 452,
-      "runtime_s": 51.16,
+      "runtime_s": 48.82,
       "gain_db": -17.4819
     }
   ],
