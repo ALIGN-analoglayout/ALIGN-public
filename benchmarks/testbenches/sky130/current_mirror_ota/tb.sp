@@ -1,15 +1,17 @@
 * sky130 current_mirror_ota AC testbench
 .title sky130_current_mirror_ota_tb
 
-* models
-.model sky130_fd_pr__pfet_01v8 pmos w=1 l=1
-.model sky130_fd_pr__nfet_01v8 nmos w=1 l=1
-.model nmos_rvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
-.model pmos_rvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
-.model nmos_lvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
-.model pmos_lvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
-.model nmos_hvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
-.model pmos_hvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
+* MODELS_BEGIN - sky130_fd_pr__* stubs; run_simulation.sh replaces with real PDK .lib when available
+.model sky130_fd_pr__pfet_01v8 pmos w=1 l=1 vt0=-0.1
+.model sky130_fd_pr__nfet_01v8 nmos w=1 l=1 vt0=0.1
+* MODELS_END
+* ALIGN convenience aliases - level-1 stubs; mapped to sky130_fd_pr__ names in circuit when real PDK is used
+.model nmos_rvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=0.1
+.model pmos_rvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=-0.1
+.model nmos_lvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=0.1
+.model pmos_lvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=-0.1
+.model nmos_hvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=0.1
+.model pmos_hvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1 vt0=-0.1
 
 .include extracted.spice
 
@@ -22,15 +24,15 @@ Vbias id vss 0.6
 
 * inputs
 Vinn vinn vss 0.9
-Vinp vinp vss AC 1 0.9
+Vinp vinp vss 0.9 AC 1
 
 * DUT
 Xota vss vdd vout vinn vinp id current_mirror_ota
 
-.op
 .ac dec 20 1k 10g
+.print ac v(vout)
 
 .measure ac gain_lin MAX v(vout)
-.measure ac bandwidth_mhz WHEN v(vout)=gain_lin*0.7071 CROSS=1
+.measure ac ugbw_mhz WHEN v(vout)=1 CROSS=1
 
 .end

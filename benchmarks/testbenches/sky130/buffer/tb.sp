@@ -1,9 +1,11 @@
 * sky130 buffer transient testbench
 .title sky130_buffer_tb
 
-* models
+* MODELS_BEGIN - sky130_fd_pr__* stubs; run_simulation.sh replaces with real PDK .lib when available
 .model sky130_fd_pr__pfet_01v8 pmos w=1 l=1
 .model sky130_fd_pr__nfet_01v8 nmos w=1 l=1
+* MODELS_END
+* ALIGN convenience aliases - level-1 stubs; mapped to sky130_fd_pr__ names in circuit when real PDK is used
 .model nmos_rvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
 .model pmos_rvt pmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
 .model nmos_lvt nmos l=1 w=1 nfin=1 nf=1 m=1 stack=1 parallel=1
@@ -28,7 +30,11 @@ Cload out 0 10f
 
 .tran 10p 4n
 
-.measure tran tphl_ns TRIG v(in) VAL=0.9 RISE=1 TARG v(out) VAL=0.9 FALL=1
-.measure tran tplh_ns TRIG v(in) VAL=0.9 FALL=1 TARG v(out) VAL=0.9 RISE=1
+* sky130 buffer.sp is a 2-stage non-inverting chain (two cascaded inverters).
+* Both input and output transition in the same direction: use matching edges.
+* tphl: input falls → output falls after 2×inverter delay
+* tplh: input rises → output rises after 2×inverter delay
+.measure tran tphl_ns TRIG v(in) VAL=0.9 FALL=1 TARG v(out) VAL=0.9 FALL=1
+.measure tran tplh_ns TRIG v(in) VAL=0.9 RISE=1 TARG v(out) VAL=0.9 RISE=1
 
 .end
