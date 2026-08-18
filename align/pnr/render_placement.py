@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from itertools import combinations
 from collections import defaultdict
 from ..cell_fabric import transformation
+from ..schema.types import skip_constraint_reverification
 
 from .. import PnR
 
@@ -72,13 +73,15 @@ def gen_placement_verilog(hN, idx, sel, DB, verilog_d):
     traverse( hN, sel)
     logger.debug( f'used_leaves: {used_leaves} used_internal: {used_internal}')
 
-    d = verilog_d.copy()
+    with skip_constraint_reverification():
+        d = verilog_d.copy()
 
     modules = []
     for module in d['modules']:
         abstract_name = module['name']
         for concrete_name, (module_idx, module_sel, module_r) in used_internal[abstract_name].items():
-           new_module =  module.copy()
+           with skip_constraint_reverification():
+               new_module =  module.copy()
            del new_module['name']
            new_module['abstract_name'] = abstract_name
            new_module['concrete_name'] = concrete_name
@@ -141,9 +144,9 @@ def scalar_rational_scaling( v, *, mul=1, div=1):
 def array_rational_scaling( a, *, mul=1, div=1):
     return [ scalar_rational_scaling(v, mul=mul, div=div) for v in a]
 
-def scale_placement_verilog( placement_verilog_d, scale_factor, invert=False):
+def scale_placement_verilog( placement_verilog_d, scale_factor, invert=False, in_place=False):
     # Convert from 0.5 nm to 0.1 nm if the scale_factor is 10
-    d = copy.deepcopy(placement_verilog_d)
+    d = placement_verilog_d if in_place else copy.deepcopy(placement_verilog_d)
 
     if invert:
         mul = 2
@@ -301,6 +304,5 @@ def dump_blocks( fig, boxes_and_hovertext, leaves_only, levels, netnames):
                 if netnames is not None and (netnames == [] or pinname in netnames):
                     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={ 'color': 'RoyalBlue'},
                                              name=hovertext, fill="toself", showlegend=False))
-
 
 

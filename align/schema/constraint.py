@@ -1514,7 +1514,7 @@ class ConstraintDB(types.List[ConstraintType]):
     @types.validate_arguments
     def append(self, constraint: ConstraintType):
         if (constraint_str := repr(constraint)) not in self._cache:
-            if hasattr(constraint, 'translate'):
+            if hasattr(constraint, 'translate') and types.constraint_reverification_enabled():
                 if self.parent._checker is None:
                     self.parent.verify()
                 self.parent.verify(constraint=constraint)

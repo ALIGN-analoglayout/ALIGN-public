@@ -334,6 +334,11 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
         with (pdk_dir / pdk_file).open( 'rt') as fp:
             scale_factor = json.load(fp)["ScaleFactor"]
 
+        placement_candidate_limit = nvariants
+        if not gui and ('3_pnr:route' in steps_to_run or router_mode in ['collect_pins', 'no_op']):
+            placement_candidate_limit = max(1, min(nvariants, nroutings))
+        dump_all_placements = gui or not ('3_pnr:route' in steps_to_run or router_mode in ['collect_pins', 'no_op'])
+
         current_working_dir = os.getcwd()
         os.chdir(working_dir)
 
@@ -352,6 +357,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, *, pr
                           select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP, seed=seed,
                           use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver, primitives=primitives,
                           toplevel_args_d=toplevel_args_d, results_dir=None,
+                          placement_candidate_limit=placement_candidate_limit,
+                          dump_all_placements=dump_all_placements,
+                          run_placement_checks=dump_all_placements,
                           placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
         with open(working_dir/"__placer_dump__.json", "wt") as fp:

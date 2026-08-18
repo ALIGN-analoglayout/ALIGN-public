@@ -8,6 +8,7 @@ TODO: Eliminate this module by replacing these data
       structures with SubCircuit, Instance etc.
 '''
 
+import copy
 import itertools
 
 from typing import Any
@@ -121,6 +122,18 @@ class VerilogJsonModule(DictEmulator):
     # Private attribute affecting class behavior
     #
     _checker = types.PrivateAttr(None)
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        new = cls.__new__(cls)
+        memo[id(self)] = new
+        for k, v in self.__dict__.items():
+            if k == '_checker':
+                object.__setattr__(new, k, None)
+            else:
+                object.__setattr__(new, k, copy.deepcopy(v, memo))
+        object.__setattr__(new, '__fields_set__', copy.deepcopy(self.__fields_set__, memo))
+        return new
 
 
 class VerilogJsonTop(DictEmulator):

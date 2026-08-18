@@ -23,6 +23,83 @@ logger = logging.getLogger(__name__)
 Omark, NType = PnR.Omark, PnR.NType
 TransformType = PnR.TransformType
 
+def _sref_transform_from_instance(instance):
+    tr = instance.get('transformation') or {}
+    sx = tr.get('sX', 1)
+    sy = tr.get('sY', 1)
+    ox = int(round(tr.get('oX', 0)))
+    oy = int(round(tr.get('oY', 0)))
+
+    if sx == 1 and sy == 1:
+        return 0, 0.0, [ox, oy]
+    if sx == -1 and sy == 1:
+        return 32768, 180.0, [ox, oy]
+    if sx == 1 and sy == -1:
+        return 32768, 0.0, [ox, oy]
+    if sx == -1 and sy == -1:
+        return 0, 180.0, [ox, oy]
+
+    logger.warning(f"Unsupported SREF transform scale ({sx}, {sy}) for {instance.get('instance_name')}")
+    return 0, 0.0, [ox, oy]
+
+def _patch_gds_srefs_from_placement(gds_json_path, placement_verilog_d, concrete_top_name):
+    gds_json_path = pathlib.Path(gds_json_path)
+    if not gds_json_path.exists():
+        logger.warning(f"Missing GDS JSON for SREF placement repair: {gds_json_path}")
+        return
+
+    module = next((m for m in placement_verilog_d['modules'] if m['concrete_name'] == concrete_top_name), None)
+    if module is None:
+        logger.warning(f"Missing placement module {concrete_top_name}; leaving {gds_json_path} unchanged")
+        return
+
+    with gds_json_path.open("rt") as fp:
+        gds_data = json.load(fp=fp)
+
+    cells = gds_data.get('bgnlib', [{}])[0].get('bgnstr', [])
+    top_cell = next((cell for cell in cells if cell.get('strname') == concrete_top_name), None)
+    if top_cell is None:
+        logger.warning(f"Missing top cell {concrete_top_name} in {gds_json_path}")
+        return
+
+    srefs = [elm for elm in top_cell.get('elements', []) if elm.get('type') == 'sref' and 'sname' in elm]
+    used = [False] * len(srefs)
+    patched = 0
+
+    for instance in module.get('instances', []):
+        concrete_template_name = instance.get('concrete_template_name') or instance.get('abstract_template_name')
+        if concrete_template_name is None:
+            continue
+
+        match_idx = None
+        for idx, sref in enumerate(srefs):
+            if used[idx]:
+                continue
+            sname = sref.get('sname', '')
+            if sname == concrete_template_name or sname.startswith(f'{concrete_template_name}_'):
+                match_idx = idx
+                break
+
+        if match_idx is None:
+            logger.warning(
+                f"Could not match GDS SREF for {instance.get('instance_name')} "
+                f"({concrete_template_name}) in {gds_json_path}"
+            )
+            continue
+
+        strans, angle, xy = _sref_transform_from_instance(instance)
+        srefs[match_idx]['strans'] = strans
+        srefs[match_idx]['angle'] = angle
+        srefs[match_idx]['xy'] = xy
+        used[match_idx] = True
+        patched += 1
+
+    if patched:
+        with gds_json_path.open("wt") as fp:
+            json.dump(gds_data, fp=fp, indent=4)
+            fp.write("\n")
+        logger.info(f"Repaired {patched} top-level GDS SREF placements in {gds_json_path}")
+
 def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, PDN_mode, return_name=None, noGDS=False, noExtra=False):
 
     # Hack to read in default layers
@@ -148,6 +225,9 @@ def route_single_variant( DB, drcInfo, current_node, lidx, opath, adr_mode, *, P
             DB.Write_Router_Report(current_node, opath)
 
     # transform current_node into current_node coordinate
+    return write_variant_outputs(DB, drcInfo, current_node, lidx, opath, noGDS=noGDS, return_name=return_name)
+
+def write_variant_outputs(DB, drcInfo, current_node, lidx, opath, *, noGDS=False, return_name=None):
     if not noGDS:
         if current_node.isTop:
             return_name = f'{current_node.name}_{lidx}' if return_name is None else return_name
@@ -414,7 +494,9 @@ def router_driver(*, cap_map, cap_lef_s,
                                placement_verilog_d=scaled_placement_verilog_d.dict(),
                                select_in_ILP=False, place_using_ILP=False, seed=0,
                                use_analytical_placer=False, ilp_solver='symphony',
-                               primitives=primitives, placer_sa_iterations=10000, placer_ilp_runtime=1, black_box_flow=False)
+                               primitives=primitives, dump_all_placements=False,
+                               run_placement_checks=False,
+                               placer_sa_iterations=10000, placer_ilp_runtime=1, black_box_flow=False)
 
             placements_to_run = None
 
@@ -429,7 +511,7 @@ def router_driver(*, cap_map, cap_lef_s,
                 with (pathlib.Path(fpath)/scaled_placement_verilog_file).open("r") as fp:
                     pldata = fp.read()
                     if lef_s_in:
-                        hrouter.LoadPlacement(pldata, lef_s_in)
+                        hrouter.LoadPlacement(pldata, lef_s_in, ndrfn)
                     else:
                         with (idir/new_lef_file).open("r") as lfp:
                             lefdata = lfp.read()
@@ -442,6 +524,12 @@ def router_driver(*, cap_map, cap_lef_s,
             if router == 'astar':
                 res = route( DB=DB, idx=DB.TraverseHierTree()[-1], opath=opath, adr_mode=adr_mode, PDN_mode=PDN_mode,
                              router_mode=router_mode, skipGDS=skipGDS, placements_to_run=placements_to_run, nroutings=nroutings)
+                if not skipGDS:
+                    placement_verilog_dict = scaled_placement_verilog_d.dict()
+                    for result_name in res:
+                        _patch_gds_srefs_from_placement(pathlib.Path(opath) / f'{result_name}.gds.json',
+                                                        placement_verilog_dict,
+                                                        result_name)
                 res_dict.update(res)
     
         elif router_mode in ['collect_pins']:
@@ -455,4 +543,3 @@ def router_driver(*, cap_map, cap_lef_s,
 
 
     return res_dict
-

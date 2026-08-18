@@ -46,6 +46,20 @@ def set_context(obj):
     finally:
         _ctx.reset(token)
 
+_verify_constraints_ctx = contextvars.ContextVar('verify_constraints', default=True)
+
+@contextlib.contextmanager
+def skip_constraint_reverification():
+    token = _verify_constraints_ctx.set(False)
+    try:
+        yield
+    finally:
+        _verify_constraints_ctx.reset(token)
+
+
+def constraint_reverification_enabled():
+    return _verify_constraints_ctx.get()
+
 def cast_to_solver(item, solver):
     if hasattr(item, 'translate'):
         generator = item.translate(solver)
