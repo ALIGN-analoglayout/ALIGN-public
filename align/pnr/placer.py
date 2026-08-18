@@ -350,7 +350,7 @@ def update_grid_constraints(grid_constraints, DB, idx, verilog_d, primitives, sc
 
 def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
                        lambda_coeff, scale_factor,
-                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, dump_all_placements, run_placement_checks, placer_sa_iterations, placer_ilp_runtime, black_box_flow):
+                       placement_verilog_d, select_in_ILP, place_using_ILP, seed, use_analytical_placer, ilp_solver, primitives, dump_all_placements, run_placement_checks, placer_sa_iterations, placer_ilp_runtime, black_box_flow, top_level_numLayout=None):
 
     logger.debug(f'Calling hierarchical_place with {"existing placement" if placement_verilog_d is not None else "no placement"}')
 
@@ -364,7 +364,9 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
     grid_constraints = {}
     propagate_grid_constraints = has_place_on_grid_constraints(primitives)
 
-    for idx in DB.TraverseHierTree():
+    TraverseOrder = DB.TraverseHierTree()
+
+    for idx in TraverseOrder:
 
         json_str = json.dumps([{'concrete_name': k, 'constraints': v} for k, v in grid_constraints.items()], indent=2)
 
@@ -372,7 +374,10 @@ def hierarchical_place(*, DB, opath, fpath, numLayout, effort, verilog_d,
         if placement_verilog_d is not None:
             modules_d = modules[DB.hierTree[idx].name]
 
-        place(DB=DB, opath=opath, fpath=fpath, numLayout=numLayout, effort=effort, idx=idx,
+        is_toplevel = idx == TraverseOrder[-1]
+        node_numLayout = top_level_numLayout if (top_level_numLayout is not None and is_toplevel) else numLayout
+
+        place(DB=DB, opath=opath, fpath=fpath, numLayout=node_numLayout, effort=effort, idx=idx,
               lambda_coeff=lambda_coeff, select_in_ILP=select_in_ILP, place_using_ILP=place_using_ILP,
               seed=seed, use_analytical_placer=use_analytical_placer,
               modules_d=modules_d, ilp_solver=ilp_solver, place_on_grid_constraints_json=json_str,
@@ -429,11 +434,11 @@ def placer_driver(*, cap_map, cap_lef_s,
 
     assert new_fpath == fpath
 
+    top_level_numLayout = None
     if placement_candidate_limit is not None:
-        bounded_num_layout = max(1, min(numLayout, placement_candidate_limit))
-        if bounded_num_layout != numLayout:
-            logger.debug(f'Limiting placement candidates from {numLayout} to {bounded_num_layout}')
-        numLayout = bounded_num_layout
+        top_level_numLayout = max(1, min(numLayout, placement_candidate_limit))
+        if top_level_numLayout != numLayout:
+            logger.debug(f'Limiting top-level placement candidates from {numLayout} to {top_level_numLayout}')
 
     logger.debug(f'Using {ilp_solver} to solve ILP in placer')
 
@@ -445,6 +450,7 @@ def placer_driver(*, cap_map, cap_lef_s,
                                                                                       use_analytical_placer=use_analytical_placer, ilp_solver=ilp_solver,
                                                                                       primitives=primitives, dump_all_placements=dump_all_placements,
                                                                                       run_placement_checks=run_placement_checks,
+                                                                                      top_level_numLayout=top_level_numLayout,
                                                                                       placer_sa_iterations=placer_sa_iterations, placer_ilp_runtime=placer_ilp_runtime, black_box_flow=black_box_flow)
 
     return top_level, leaf_map, placement_verilog_alternatives, metrics
