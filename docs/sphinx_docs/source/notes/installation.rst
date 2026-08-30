@@ -6,7 +6,7 @@ Step 0: Check prerequisites
 --------------------------------
 The following dependencies must be met by your system:
   * gcc >= 6.1.0 (For C++14 support)
-  * python >= 3.8 (For walrus (`:=`) operator support
+  * python >= 3.10
 
 You may optionally install `Boost <https://www.boost.org/>`_ & `lp_solve <http://lpsolve.sourceforge.net/5.5/>`_ using your distro package manager (apt, yum etc) to save some compilation time.
 
@@ -43,7 +43,7 @@ Step 2: Create a `Python virtualenv <https://docs.python.org/3/tutorial/venv.htm
 
 Step 3a: Install ALIGN as a USER
 --------------------------------------
-If you already have a working installation of Python 3.8 or above, the easiest way to install ALIGN is:
+If you already have a working installation of Python 3.10 or above, the easiest way to install ALIGN is:
 
 .. code-block:: bash
 
