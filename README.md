@@ -63,7 +63,7 @@ Steps 0-3 below are to install ALIGN locally. Step 4 is to run ALIGN either loca
 ### Step 0: Check prerequisites
 The following dependencies must be met by your system:
   * gcc >= 6.1.0 (For C++14 support)
-  * python >= 3.7 (For [PEP 560](https://www.python.org/dev/peps/pep-0560/) support)
+  * python >= 3.10
 You may optionally install [Boost](https://www.boost.org/) & [lp_solve](http://lpsolve.sourceforge.net/5.5/) using your distro package manager (apt, yum, etc) to save some compilation time.
 
 Note: In case you have multiple gcc versions installed on your system, we recommend explicitly setting the compiler paths as follows:
@@ -89,7 +89,7 @@ source install_deps.sh
 ```
 
 ### Step 3a: Install ALIGN as a USER
-If you already have a working installation of Python 3.8 or above, the easiest way to install ALIGN is:
+If you already have a working installation of Python 3.10 or above, the easiest way to install ALIGN is:
 ```console
 pip install -v .
 ```
