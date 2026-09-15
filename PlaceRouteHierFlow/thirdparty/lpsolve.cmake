@@ -4,11 +4,17 @@ FetchContent_Declare(
   URL https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
   URL_HASH MD5=a829a8d9c60ff81dc72ff52363703886
 )
-# Use bare name so cmake resolves the platform extension (.so on Linux, .dylib on macOS).
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(_lpsolve_saved_suffixes "${CMAKE_FIND_LIBRARY_SUFFIXES}")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
+endif()
 find_library(
   lpsolve_lib
-  NAMES lpsolve55 liblpsolve55.so
+  NAMES lpsolve55
   PATH_SUFFIXES lpsolve lp_solve)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES "${_lpsolve_saved_suffixes}")
+endif()
 if (NOT lpsolve_lib)
   message(STATUS "lpsolve library file not found. Building from source.")
   FetchContent_GetProperties(lpsolve)

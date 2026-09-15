@@ -45,6 +45,13 @@ code_coverage = os.environ.get('CODE_COVERAGE', None)
 if code_coverage and code_coverage == 'ON':
     cmake_args.append("-DCODE_COVERAGE=ON")
 cmake_args.append("-DCMAKE_POLICY_VERSION_MINIMUM=3.5")
+# Allow a compiler launcher (e.g. ccache) to be injected at build time without
+# modifying CMakeLists.txt.  Set CMAKE_CXX_COMPILER_LAUNCHER=ccache in the
+# environment to enable; cibuildwheel sets this via its environment table.
+compiler_launcher = os.environ.get('CMAKE_CXX_COMPILER_LAUNCHER', None)
+if compiler_launcher:
+    cmake_args.append(f"-DCMAKE_CXX_COMPILER_LAUNCHER={compiler_launcher}")
+    cmake_args.append(f"-DCMAKE_C_COMPILER_LAUNCHER={compiler_launcher}")
 
 # if devmode and not any(x.startswith('-DBUILD_TESTING') for x in sys.argv):
 #     cmake_args.append('-DBUILD_TESTING=ON')
