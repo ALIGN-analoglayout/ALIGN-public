@@ -111,10 +111,12 @@ class Graph(networkx.Graph):
                 try:
                     self.check_constraint_satisfiability(graph, match)
                     correct_matches.append(match)
-                except BaseException:  # Make this more specific
+                except Exception as exc:  # invalid subgraph candidates should be rejected, but not via fatal interpreter exceptions
                     # primitives with unsatisfied constraints will not be created
-                    logger.debug(f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints")
-                    pass
+                    logger.debug(
+                        f"skipping match {graph.subckt.name} {match.keys()} due to unsatisfied constraints: {exc}",
+                        exc_info=True,
+                    )
         # revert any added const TODO: add checker here
         while len(self.subckt.constraints) > _temp:
             self.subckt.constraints.pop()

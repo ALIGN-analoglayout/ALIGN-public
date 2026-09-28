@@ -173,6 +173,18 @@ def test_find_subgraph_matches(simple_circuit, matching_subckt):
     assert len(netlist.find_subgraph_matches(Graph(subckt3))) == 1
 
 
+def test_find_subgraph_matches_does_not_swallow_fatal_exceptions(simple_circuit, matching_subckt, monkeypatch):
+    netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
+
+    def raise_keyboard_interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(netlist, 'check_constraint_satisfiability', raise_keyboard_interrupt)
+
+    with pytest.raises(KeyboardInterrupt):
+        netlist.find_subgraph_matches(matching_netlist)
+
+
 def test_replace_matching_subgraph(simple_circuit, matching_subckt):
     netlist, matching_netlist = Graph(simple_circuit), Graph(matching_subckt)
     matches = [{'X3': 'X1', 'NET3': 'PIN3', 'NET1': 'PIN1', 'X4': 'X2', 'NET2': 'PIN2'}]
