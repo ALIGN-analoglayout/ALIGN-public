@@ -21,7 +21,28 @@ jobs:
         with:
           submodules: recursive
 
+      # Cache ccache's object-file store between runs.
+      # Key is a hash of all C++ sources, headers, and cmake files under
+      # PlaceRouteHierFlow/.  When only align/*.py files change the key is
+      # unchanged → full cache hit → ccache returns every .o instantly.
+      # restore-keys allows partial reuse when only some C++ files changed.
+      - name: Restore C++ build cache (ccache)
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-pnr-${{ matrix.os }}-${{ hashFiles('PlaceRouteHierFlow/**/*.cpp', 'PlaceRouteHierFlow/**/*.h', 'PlaceRouteHierFlow/**/*.hpp', 'CMakeLists.txt', 'PlaceRouteHierFlow/**/*.cmake') }}
+          restore-keys: |
+            ccache-pnr-${{ matrix.os }}-
+          save-always: true
+
       - uses: pypa/cibuildwheel@v2.21
+
+      - name: Show ccache stats
+        if: always()
+        run: |
+          if command -v ccache >/dev/null 2>&1; then
+            ccache --show-stats || true
+          fi
 
       - uses: actions/upload-artifact@v4
         with:

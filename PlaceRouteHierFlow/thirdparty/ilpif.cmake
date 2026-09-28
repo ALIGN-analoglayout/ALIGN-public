@@ -12,10 +12,12 @@ FetchContent_GetProperties(ilpsolverif)
 if(NOT ilpsolverif_POPULATED)
   FetchContent_Populate(ilpsolverif)
   set (solver_search_path ${ilpsolverif_SOURCE_DIR}/lib)
-  if (DEFINED ENV{BUILD_PLATFORM})
-    set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{BUILD_PLATFORM}/lib)
-  elseif(DEFINED ENV{ALIGN_ILP_PATH})
+  # ALIGN_ILP_PATH (prebuilt bundle from ci/build_cpp_deps.sh) takes precedence
+  # over BUILD_PLATFORM (old convention: libs committed inside ILPSolverInterface).
+  if (DEFINED ENV{ALIGN_ILP_PATH} AND NOT "$ENV{ALIGN_ILP_PATH}" STREQUAL "")
     set (solver_search_path $ENV{ALIGN_ILP_PATH}/lib)
+  elseif (DEFINED ENV{BUILD_PLATFORM})
+    set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{BUILD_PLATFORM}/lib)
   endif()
   find_library(
     ilp_solver_lib
@@ -70,7 +72,15 @@ target_link_libraries(ILPSolverIf_shared PRIVATE ${cbc_LIBRARIES})]=]
     add_library(osisym_if STATIC IMPORTED)
     set_property(TARGET ilp_solver_if PROPERTY IMPORTED_LOCATION ${ilp_solver_lib})
     target_include_directories(ilp_solver_if INTERFACE ${ilpsolverif_SOURCE_DIR}/ILPSolverIf)
-    target_include_directories(ilp_solver_if INTERFACE ${solver_search_path})
+    # When using a prebuilt bundle (ALIGN_ILP_PATH), headers live in
+    # $ALIGN_ILP_PATH/include (flat) and $ALIGN_ILP_PATH/include/coin (coin-prefixed).
+    # Fall back to the FetchContent source tree for from-source builds.
+    if (DEFINED ENV{ALIGN_ILP_PATH})
+      target_include_directories(ilp_solver_if INTERFACE $ENV{ALIGN_ILP_PATH}/include)
+      target_include_directories(ilp_solver_if INTERFACE $ENV{ALIGN_ILP_PATH}/include/coin)
+    else()
+      target_include_directories(ilp_solver_if INTERFACE ${solver_search_path})
+    endif()
     find_library(cbc_lib NAMES libCbc.a PATHS ${solver_search_path})
     set_property(TARGET cbc_if PROPERTY IMPORTED_LOCATION ${cbc_lib})
     find_library(cbcsolver_lib NAMES libCbcSolver.a PATHS ${solver_search_path})

@@ -17,9 +17,24 @@ build-verbosity = 1
 [tool.cibuildwheel.linux]
 archs = ["x86_64"]
 manylinux-x86_64-image = "manylinux_2_28"
-before-all = "dnf install -y epel-release && dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel"
+# Install system deps then attempt to fetch prebuilt C++ solver/SuperLU bundle.
+# The fetch is best-effort (|| true): a cache miss or network error falls through
+# to the from-source CMake build transparently.
+# ccache is installed here; the cache directory /project/.ccache is persisted
+# between runs by actions/cache in publish-wheels.yml (keyed on C++ source hash).
+before-all = """
+  dnf install -y epel-release && dnf install -y boost-devel lpsolve-devel || dnf install -y boost-devel
+  dnf install -y ccache
+  bash /project/ci/fetch_cpp_deps.sh /tmp/align-cpp-deps || true
+"""
 repair-wheel-command = "find /project/_skbuild -name 'lib*.so*' -exec cp {} /usr/local/lib/ \\; 2>/dev/null; ldconfig 2>/dev/null; auditwheel repair -w {dest_dir} {wheel}"
-environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}" }
+# ALIGN_ILP_PATH/ALIGN_SUPERLU_PATH point to where fetch_cpp_deps.sh extracts the
+# bundle.  CMake's find_library gracefully skips these if the files are absent.
+# CMAKE_CXX_COMPILER_LAUNCHER=ccache wires ccache into cmake via setup.py.
+# CCACHE_DIR is /project/.ccache so it lives inside the checkout directory that
+# the host runner mounts into the manylinux container — making it visible to the
+# actions/cache step which runs on the host.
+environment = { BUILD_PLATFORM = "{AUDITWHEEL_PLAT}", ALIGN_ILP_PATH = "/tmp/align-cpp-deps/ilp", ALIGN_SUPERLU_PATH = "/tmp/align-cpp-deps/superlu", CMAKE_CXX_COMPILER_LAUNCHER = "ccache", CMAKE_C_COMPILER_LAUNCHER = "ccache", CCACHE_DIR = "/project/.ccache", CCACHE_MAXSIZE = "500M" }
 
 [tool.cibuildwheel.macos]
 archs = ["auto"]
@@ -29,8 +44,12 @@ archs = ["auto"]
 # #error "only meant to be used on x86".  -DNO_AVX_HARDWARE prevents the HASWELL/
 # SKYLAKE intrinsics blocks from being compiled so the stub can be truly empty.
 # CPPFLAGS/LDFLAGS also cover both Homebrew prefixes so CBC --enable-openmp works.
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib" }
-before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h && brew install boost lp_solve libomp || true"
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -I/usr/local/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib -L/usr/local/opt/libomp/lib", ALIGN_ILP_PATH = "/tmp/align-cpp-deps/ilp", ALIGN_SUPERLU_PATH = "/tmp/align-cpp-deps/superlu", CMAKE_CXX_COMPILER_LAUNCHER = "ccache", CMAKE_C_COMPILER_LAUNCHER = "ccache", CCACHE_DIR = "{project}/.ccache", CCACHE_MAXSIZE = "500M" }
+before-all = """
+  mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h
+  brew install boost lp_solve libomp ccache || true
+  bash {project}/ci/fetch_cpp_deps.sh /tmp/align-cpp-deps || true
+"""
 
 # Homebrew on the macos-14 (arm64) runner builds lp_solve targeting macOS 14.0.
 # delocate-wheel rejects bundling a lib whose min-target exceeds the wheel's
@@ -39,4 +58,4 @@ before-all = "mkdir -p /tmp/arm64-stubs && touch /tmp/arm64-stubs/immintrin.h &&
 # arm64 runners only have Homebrew at /opt/homebrew, not /usr/local.
 [[tool.cibuildwheel.overrides]]
 select = "*-macosx_arm64"
-environment = { MACOSX_DEPLOYMENT_TARGET = "14.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib" }
+environment = { MACOSX_DEPLOYMENT_TARGET = "14.0", CPPFLAGS = "-I/tmp/arm64-stubs -I/opt/homebrew/opt/libomp/include -DNO_AVX_HARDWARE", LDFLAGS = "-L/opt/homebrew/opt/libomp/lib", ALIGN_ILP_PATH = "/tmp/align-cpp-deps/ilp", ALIGN_SUPERLU_PATH = "/tmp/align-cpp-deps/superlu", CMAKE_CXX_COMPILER_LAUNCHER = "ccache", CMAKE_C_COMPILER_LAUNCHER = "ccache", CCACHE_DIR = "{project}/.ccache", CCACHE_MAXSIZE = "500M" }
