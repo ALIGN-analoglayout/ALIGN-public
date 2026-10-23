@@ -7,7 +7,7 @@ FetchContent_Declare(
 # Use bare name so cmake resolves the platform extension (.so on Linux, .dylib on macOS).
 find_library(
   lpsolve_lib
-  NAMES lpsolve55 liblpsolve55.so
+  NAMES lpsolve55_pic lpsolve55 liblpsolve55.so
   PATH_SUFFIXES lpsolve lp_solve)
 if (NOT lpsolve_lib)
   message(STATUS "lpsolve library file not found. Building from source.")
