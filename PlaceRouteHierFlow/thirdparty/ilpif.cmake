@@ -11,6 +11,23 @@ endif ()
 FetchContent_GetProperties(ilpsolverif)
 if(NOT ilpsolverif_POPULATED)
   FetchContent_Populate(ilpsolverif)
+  # CBC 2.10.5's bundled config.guess/config.sub predate aarch64. Refresh
+  # them from the host's autotools scripts before CBC's configure step runs.
+  set(_ilpif_cbc_cmake "${ilpsolverif_SOURCE_DIR}/ILPSolverIf/cbc.cmake")
+  file(READ "${_ilpif_cbc_cmake}" _ilpif_cbc_content)
+  string(APPEND _ilpif_cbc_content [=[
+if(DEFINED cbc_SOURCE_DIR AND EXISTS "/usr/share/misc/config.guess" AND EXISTS "/usr/share/misc/config.sub")
+  file(GLOB_RECURSE _cbc_cfg_scripts
+    "${cbc_SOURCE_DIR}/config.guess"
+    "${cbc_SOURCE_DIR}/config.sub")
+  foreach(_cfg_script IN LISTS _cbc_cfg_scripts)
+    get_filename_component(_cfg_dir "${_cfg_script}" DIRECTORY)
+    configure_file("/usr/share/misc/config.guess" "${_cfg_dir}/config.guess" COPYONLY)
+    configure_file("/usr/share/misc/config.sub" "${_cfg_dir}/config.sub" COPYONLY)
+  endforeach()
+endif()
+]=])
+  file(WRITE "${_ilpif_cbc_cmake}" "${_ilpif_cbc_content}")
   set (solver_search_path ${ilpsolverif_SOURCE_DIR}/lib)
   if (DEFINED ENV{BUILD_PLATFORM})
     set (solver_search_path ${ilpsolverif_SOURCE_DIR}/$ENV{BUILD_PLATFORM}/lib)
